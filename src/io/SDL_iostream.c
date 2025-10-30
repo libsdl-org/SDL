@@ -94,16 +94,22 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
 
     // "r" = reading, file must exist
     // "w" = writing, truncate existing, file may not exist
+    // "wx"= writing, file must not exist
     // "r+"= reading or writing, file must exist
     // "a" = writing, append file may not exist
     // "a+"= append + read, file may not exist
     // "w+" = read, write, truncate. file may not exist
+    // "w+x"= read, write, file must not exist
 
     must_exist = (SDL_strchr(mode, 'r') != NULL) ? OPEN_EXISTING : 0;
     truncate = (SDL_strchr(mode, 'w') != NULL) ? CREATE_ALWAYS : 0;
     r_right = (SDL_strchr(mode, '+') != NULL || must_exist) ? GENERIC_READ : 0;
     a_mode = (SDL_strchr(mode, 'a') != NULL) ? OPEN_ALWAYS : 0;
     w_right = (a_mode || SDL_strchr(mode, '+') || truncate) ? GENERIC_WRITE : 0;
+
+    if (truncate && (SDL_strchr(mode, 'x') != NULL)) {
+        truncate = CREATE_NEW;
+    }
 
     if (!r_right && !w_right) {
         return INVALID_HANDLE_VALUE; // inconsistent mode
@@ -1171,9 +1177,7 @@ static bool SDLCALL dynamic_mem_close(void *userdata)
 {
     const IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
     void *mem = SDL_GetPointerProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
-    if (mem) {
-        SDL_free(mem);
-    }
+    SDL_free(mem);
     SDL_free(userdata);
     return true;
 }

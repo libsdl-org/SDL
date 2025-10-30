@@ -114,7 +114,6 @@ extern bool VITA_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext conte
 extern bool VITA_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void VITA_PumpEvents(SDL_VideoDevice *_this);
 

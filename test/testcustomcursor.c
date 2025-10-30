@@ -106,12 +106,12 @@ static const char *cross[] = {
     "                                ",
     "                                ",
     "                                ",
-    "0,0"
+    "16,16"
 };
 
 static SDL_Surface *load_image_file(const char *file)
 {
-    SDL_Surface *surface = SDL_LoadBMP(file);
+    SDL_Surface *surface = SDL_strstr(file, ".png") ? SDL_LoadPNG(file) : SDL_LoadBMP(file);
     if (surface) {
         if (SDL_GetSurfacePalette(surface)) {
             const Uint8 bpp = SDL_BITSPERPIXEL(surface->format);
@@ -171,11 +171,51 @@ static SDL_Surface *load_image(const char *file)
 static SDL_Cursor *init_color_cursor(const char *file)
 {
     SDL_Cursor *cursor = NULL;
-    SDL_Surface *surface = load_image(file);
-    if (surface) {
-        cursor = SDL_CreateColorCursor(surface, 0, 0);
-        SDL_DestroySurface(surface);
+    SDL_CursorFrameInfo *frames = NULL;
+    int frame_cnt = 0;
+    int i;
+
+    char *str = SDL_strdup(file);
+    if (!str) {
+        return NULL;
     }
+
+    char *saveptr = NULL;
+    char *token = SDL_strtok_r(str, ";", &saveptr);
+    while(token != NULL) {
+        SDL_Surface *img = load_image(token);
+        if (!img) {
+            goto cleanup;
+        }
+
+        frames = SDL_realloc(frames, (frame_cnt + 1) * sizeof(SDL_CursorFrameInfo));
+        if (!frames) {
+            goto cleanup;
+        }
+
+        frames[frame_cnt].surface = img;
+        frames[frame_cnt++].duration = 150;
+
+        token = SDL_strtok_r(NULL, ";", &saveptr);
+    }
+
+    if (frame_cnt == 1) {
+        cursor = SDL_CreateColorCursor(frames[0].surface, 0, 0);
+    } else {
+        cursor = SDL_CreateAnimatedCursor(frames, frame_cnt, 0, 0);
+    }
+
+cleanup:
+    if (frames) {
+        for (i = 0; i < frame_cnt; ++i) {
+            SDL_DestroySurface(frames[i].surface);
+        }
+
+        SDL_free(frames);
+    }
+
+    SDL_free(str);
+
     return cursor;
 }
 
@@ -217,10 +257,78 @@ static SDL_Cursor *init_system_cursor(const char *image[])
     return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
 }
 
+static SDL_Cursor *init_animated_cursor(const char *image[], bool oneshot)
+{
+    int row, col;
+    SDL_Surface *surface, *invsurface;
+    Uint32 *pixels, *invpixels;
+    SDL_CursorFrameInfo frames[6];
+    int hot_x = 0;
+    int hot_y = 0;
+
+    surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (!surface) {
+        return NULL;
+    }
+
+    invsurface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    if (!invsurface) {
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
+
+    for (row = 4; row < 36; ++row) {
+        pixels = (Uint32 *)((Uint8 *)surface->pixels + ((row - 4) * surface->pitch));
+        invpixels = (Uint32 *)((Uint8 *)invsurface->pixels + ((row - 4) * surface->pitch));
+        for (col = 0; col < 32; ++col) {
+            switch (image[row][col]) {
+            case 'X':
+                pixels[col] = 0xFFFFFFFF;
+                invpixels[col] = 0xFF000000;
+                break;
+            case '.':
+                pixels[col] = 0xFF000000;
+                invpixels[col] = 0xFFFFFFFF;
+                break;
+            case ' ':
+                pixels[col] = 0;
+                invpixels[col] = 0;
+                break;
+            }
+        }
+    }
+
+    int frame_count = 2;
+
+    frames[0].surface = surface;
+    frames[0].duration = 100;
+
+    frames[1].surface = invsurface;
+    frames[1].duration = 100;
+
+    if (oneshot) {
+        frames[2].surface = surface;
+        frames[2].duration = 200;
+
+        frames[3].surface = invsurface;
+        frames[3].duration = 300;
+
+        frames[4].surface = surface;
+        frames[4].duration = 400;
+
+        frames[5].surface = invsurface;
+        frames[5].duration = 0;
+
+        frame_count = 6;
+    }
+
+    return SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+}
+
 static SDLTest_CommonState *state;
 static int done;
-static SDL_Cursor *cursors[3 + SDL_SYSTEM_CURSOR_COUNT];
-static SDL_SystemCursor cursor_types[3 + SDL_SYSTEM_CURSOR_COUNT];
+static SDL_Cursor *cursors[5 + SDL_SYSTEM_CURSOR_COUNT];
+static SDL_SystemCursor cursor_types[5 + SDL_SYSTEM_CURSOR_COUNT];
 static int num_cursors;
 static int current_cursor;
 static bool show_cursor;
@@ -257,6 +365,12 @@ static void loop(void)
                 SDL_SetCursor(cursors[current_cursor]);
 
                 switch ((int)cursor_types[current_cursor]) {
+                case (SDL_SystemCursor)-3:
+                    SDL_Log("Animated custom cursor (one-shot)");
+                    break;
+                case (SDL_SystemCursor)-2:
+                    SDL_Log("Animated custom cursor");
+                    break;
                 case (SDL_SystemCursor)-1:
                     SDL_Log("Custom cursor");
                     break;
@@ -405,12 +519,21 @@ int main(int argc, char *argv[])
     num_cursors = 0;
 
     if (color_cursor) {
-        SDL_Surface *icon = load_image(color_cursor);
-        if (icon) {
-            for (i = 0; i < state->num_windows; ++i) {
-                SDL_SetWindowIcon(state->windows[i], icon);
+        /* Only load the first file in the list for the icon. */
+        char *icon_str = SDL_strdup(color_cursor);
+        if (icon_str) {
+            char *tok = SDL_strchr(icon_str, ';');
+            if (tok) {
+                *tok = '\0';
             }
-            SDL_DestroySurface(icon);
+            SDL_Surface *icon = load_image(icon_str);
+            SDL_free(icon_str);
+            if (icon) {
+                for (i = 0; i < state->num_windows; ++i) {
+                    SDL_SetWindowIcon(state->windows[i], icon);
+                }
+                SDL_DestroySurface(icon);
+            }
         }
 
         cursor = init_color_cursor(color_cursor);
@@ -432,6 +555,20 @@ int main(int argc, char *argv[])
     if (cursor) {
         cursors[num_cursors] = cursor;
         cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+        num_cursors++;
+    }
+
+    cursor = init_animated_cursor(arrow, false);
+    if (cursor) {
+        cursors[num_cursors] = cursor;
+        cursor_types[num_cursors] = (SDL_SystemCursor)-2;
+        num_cursors++;
+    }
+
+    cursor = init_animated_cursor(arrow, true);
+    if (cursor) {
+        cursors[num_cursors] = cursor;
+        cursor_types[num_cursors] = (SDL_SystemCursor)-3;
         num_cursors++;
     }
 

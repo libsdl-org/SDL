@@ -67,6 +67,7 @@
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
 #include "pointer-warp-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -456,11 +457,22 @@ SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface)
     return NULL;
 }
 
+struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name)
+{
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
+    if (WAYLAND_wl_display_create_queue_with_name) {
+        return WAYLAND_wl_display_create_queue_with_name(display, name);
+    }
+#elif SDL_WAYLAND_CHECK_VERSION(1, 23, 0)
+    return WAYLAND_wl_display_create_queue_with_name(display, name);
+#endif
+    return WAYLAND_wl_display_create_queue(display);
+}
+
 static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = device->internal;
     if (data->display && !data->display_externally_owned) {
-        WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
         SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER);
     }
@@ -1322,6 +1334,9 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         Wayland_InitColorManager(d);
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "zwp_pointer_gestures_v1") == 0) {
+        d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, SDL_min(version, 3));
+        Wayland_DisplayInitPointerGestureManager(d);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, "wl_fixes") == 0) {
@@ -1449,10 +1464,7 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
 
     Wayland_FinalizeDisplays(data);
 
-    Wayland_InitMouse();
-
-    WAYLAND_wl_display_flush(data->display);
-
+    Wayland_InitMouse(data);
     Wayland_InitKeyboard(_this);
 
     if (data->primary_selection_device_manager) {
@@ -1500,11 +1512,8 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     SDL_WaylandSeat *seat, *tmp;
-    int i;
 
-    Wayland_FiniMouse(data);
-
-    for (i = _this->num_displays - 1; i >= 0; --i) {
+    for (int i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = _this->displays[i];
         Wayland_free_display(display, false);
     }
@@ -1513,6 +1522,8 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     wl_list_for_each_safe (seat, tmp, &data->seat_list, link) {
         Wayland_SeatDestroy(seat, false);
     }
+
+    Wayland_FiniMouse(data);
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);
@@ -1643,6 +1654,15 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->wp_pointer_warp_v1) {
         wp_pointer_warp_v1_destroy(data->wp_pointer_warp_v1);
         data->wp_pointer_warp_v1 = NULL;
+    }
+
+    if (data->zwp_pointer_gestures) {
+        if (zwp_pointer_gestures_v1_get_version(data->zwp_pointer_gestures) >= ZWP_POINTER_GESTURES_V1_RELEASE_SINCE_VERSION) {
+            zwp_pointer_gestures_v1_release(data->zwp_pointer_gestures);
+        } else {
+            zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
+        }
+        data->zwp_pointer_gestures = NULL;
     }
 
     if (data->compositor) {

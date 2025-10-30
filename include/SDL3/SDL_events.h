@@ -127,8 +127,9 @@ typedef enum SDL_EventType
     SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED,  /**< Display has changed desktop mode */
     SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED,  /**< Display has changed current mode */
     SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED, /**< Display has changed content scale */
+    SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, /**< Display has changed usable bounds */
     SDL_EVENT_DISPLAY_FIRST = SDL_EVENT_DISPLAY_ORIENTATION,
-    SDL_EVENT_DISPLAY_LAST = SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED,
+    SDL_EVENT_DISPLAY_LAST = SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED,
 
     /* Window events */
     /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
@@ -175,6 +176,8 @@ typedef enum SDL_EventType
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
     SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
+    SDL_EVENT_SCREEN_KEYBOARD_SHOWN,   /**< The on-screen keyboard has been shown */
+    SDL_EVENT_SCREEN_KEYBOARD_HIDDEN,  /**< The on-screen keyboard has been hidden */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -215,10 +218,15 @@ typedef enum SDL_EventType
     SDL_EVENT_FINGER_MOTION,
     SDL_EVENT_FINGER_CANCELED,
 
+    /* Pinch events */
+    SDL_EVENT_PINCH_BEGIN      = 0x710,     /**< Pinch gesture started */
+    SDL_EVENT_PINCH_UPDATE,                 /**< Pinch gesture updated */
+    SDL_EVENT_PINCH_END,                    /**< Pinch gesture ended */
+
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
-    SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard or primary selection changed */
+    SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard changed */
 
     /* Drag and drop events */
     SDL_EVENT_DROP_FILE        = 0x1000, /**< The system requests a file open */
@@ -299,7 +307,7 @@ typedef struct SDL_CommonEvent
  */
 typedef struct SDL_DisplayEvent
 {
-    SDL_EventType type; /**< SDL_DISPLAYEVENT_* */
+    SDL_EventType type; /**< SDL_EVENT_DISPLAY_* */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_DisplayID displayID;/**< The associated display */
@@ -786,6 +794,18 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 /**
+ * Pinch event structure (event.pinch.*)
+ */
+typedef struct SDL_PinchFingerEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_PINCH_BEGIN or ::SDL_EVENT_PINCH_UPDATE or ::SDL_EVENT_PINCH_END */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    float scale;        /**< The scale change since the last SDL_EVENT_PINCH_UPDATE. Scale < 1 is "zoom out". Scale > 1 is "zoom in". */
+    SDL_WindowID windowID; /**< The window underneath the finger, if any */
+} SDL_PinchFingerEvent;
+
+/**
  * Pressure-sensitive pen proximity event structure (event.pproximity.*)
  *
  * When a pen becomes visible to the system (it is close enough to a tablet,
@@ -972,7 +992,7 @@ typedef struct SDL_QuitEvent
  */
 typedef struct SDL_UserEvent
 {
-    Uint32 type;        /**< SDL_EVENT_USER through SDL_EVENT_LAST-1, Uint32 because these are not in the SDL_EventType enumeration */
+    Uint32 type;        /**< SDL_EVENT_USER through SDL_EVENT_LAST, Uint32 because these are not in the SDL_EventType enumeration */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The associated window if any */
@@ -1022,6 +1042,7 @@ typedef union SDL_Event
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
+    SDL_PinchFingerEvent pinch;             /**< Pinch event data */
     SDL_PenProximityEvent pproximity;       /**< Pen proximity event data */
     SDL_PenTouchEvent ptouch;               /**< Pen tip touching event data */
     SDL_PenMotionEvent pmotion;             /**< Pen motion event data */
@@ -1048,7 +1069,7 @@ typedef union SDL_Event
 } SDL_Event;
 
 /* Make sure we haven't broken binary compatibility */
-SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof(((SDL_Event *)NULL)->padding));
+SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == sizeof((SDL_static_cast(SDL_Event *, NULL))->padding));
 
 
 /* Function prototypes */
@@ -1259,6 +1280,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  *     // update game state, draw the current frame
  * }
  * ```
+ *
+ * Note that Windows (and possibly other platforms) has a quirk about how it
+ * handles events while dragging/resizing a window, which can cause this
+ * function to block for significant amounts of time. Technical explanations
+ * and solutions are discussed on the wiki:
+ *
+ * https://wiki.libsdl.org/SDL3/AppFreezeDuringDrag
  *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL.
@@ -1576,7 +1604,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
 
 /**
- * Generate a human-readable description of an event.
+ * Generate an English description of an event.
  *
  * This will fill `buf` with a null-terminated string that might look
  * something like this:

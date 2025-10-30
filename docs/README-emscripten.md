@@ -208,6 +208,21 @@ Calling SDL_RenderPresent (or SDL_GL_SwapWindow) will not actually
 present anything on the screen until your return from your mainloop
 function.
 
+Note that on other platforms, SDL will default to vsync _off_ in the 2D render
+API. Since changing this will affect how the mainloop runs, the 2D render API
+will only change vsync settings if explicitly requested by the app, either
+with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, or calling
+SDL_SetRenderVSync(). Otherwise it will default to whatever the Emscripten
+mainloop is set to use via emscripten_set_main_loop().
+
+If you're using the SDL main callbacks, the mainloop defaults to using
+requestAnimationFrame (effectively vsync), because it calls
+emscripten_set_main_loop() with a zero fps. This is almost certainly what you
+want to do! Do this even if you aren't using the main callbacks!
+SDL will attempt to accomodate the app if it messes with vsync settings, or
+doesn't use requestAnimationFrame, but modern thinking is that this is the
+most efficient, consistent, and correct way to run a game in a web browser.
+
 
 ## Building SDL/emscripten
 

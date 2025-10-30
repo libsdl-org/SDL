@@ -1,7 +1,12 @@
 # Helper for Find modules
 
 function(get_flags_from_pkg_config _library _pc_prefix _out_prefix)
-  if(NOT "${_library}" MATCHES "${CMAKE_SHARED_LIBRARY_SUFFIX}$")
+  if(MINGW)
+    set(re_shared_suffix ".dll.a$")
+  else()
+    set(re_shared_suffix "${CMAKE_SHARED_LIBRARY_SUFFIX}$")
+  endif()
+  if("${_library}" MATCHES "${re_shared_suffix}")
     set(_cflags ${_pc_prefix}_CFLAGS_OTHER)
     set(_link_libraries ${_pc_prefix}_LIBRARIES)
     set(_link_options ${_pc_prefix}_LDFLAGS_OTHER)

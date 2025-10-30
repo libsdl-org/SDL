@@ -21,7 +21,7 @@
 #define MAX_SPEED   1
 
 static SDLTest_CommonState *state;
-static const char *icon = "icon.bmp";
+static const char *icon = "icon.png";
 static int num_sprites;
 static SDL_Texture **sprites;
 static bool cycle_color;
@@ -56,7 +56,7 @@ static int LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadPNG step repeatedly, but that's OK for test code. */
         if (sprites[i]) {
             SDL_DestroyTexture(sprites[i]);
         }
@@ -119,7 +119,11 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     }
 
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0x00 /* used with --transparent */);
+    if (SDL_GetWindowFlags(SDL_GetRenderWindow(renderer)) & SDL_WINDOW_TRANSPARENT) {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_TRANSPARENT);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_OPAQUE);
+    }
     SDL_RenderClear(renderer);
 
     /* Test points */
@@ -488,7 +492,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                 "[--iterations N]",
                 "[--use-rendergeometry mode1|mode2]",
                 "[num_sprites]",
-                "[icon.bmp]",
+                "[icon.png]",
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);

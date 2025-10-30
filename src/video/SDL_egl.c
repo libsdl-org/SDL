@@ -1281,8 +1281,11 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
         }
     }
 
+    int opaque_ext_idx = -1;
+
 #ifdef EGL_EXT_present_opaque
     if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque")) {
+        opaque_ext_idx = attr;
         bool allow_transparent = false;
         if (window && (window->flags & SDL_WINDOW_TRANSPARENT)) {
             allow_transparent = true;
@@ -1318,10 +1321,17 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 
     attribs[attr++] = EGL_NONE;
 
-    surface = _this->egl_data->eglCreateWindowSurface(
-        _this->egl_data->egl_display,
-        _this->egl_data->egl_config,
-        nw, &attribs[0]);
+    surface = _this->egl_data->eglCreateWindowSurface(_this->egl_data->egl_display, _this->egl_data->egl_config, nw, &attribs[0]);
+    if (surface == EGL_NO_SURFACE) {
+        // we had a report of Nvidia drivers that report EGL_BAD_ATTRIBUTE if you try to
+        //  use EGL_PRESENT_OPAQUE_EXT, even when EGL_EXT_present_opaque is reported as available.
+        //  If we used it, try a second time without this attribute.
+        if ((_this->egl_data->eglGetError() == EGL_BAD_ATTRIBUTE) && (opaque_ext_idx >= 0)) {
+            SDL_memmove(&attribs[opaque_ext_idx], &attribs[opaque_ext_idx + 2], sizeof (attribs[0]) * ((attr - opaque_ext_idx) - 2));
+            surface = _this->egl_data->eglCreateWindowSurface(_this->egl_data->egl_display, _this->egl_data->egl_config, nw, &attribs[0]);
+        }
+    }
+
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }

@@ -742,7 +742,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     if (window->undefined_x && window->undefined_y &&
-        window->last_displayID == SDL_GetPrimaryDisplay()) {
+        window->displayID == SDL_GetPrimaryDisplay()) {
         undefined_position = true;
     }
 

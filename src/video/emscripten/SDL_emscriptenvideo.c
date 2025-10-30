@@ -42,6 +42,7 @@ static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoD
 
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable);
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
@@ -159,6 +160,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     /*device->SetWindowIcon = Emscripten_SetWindowIcon;
     device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
+    device->SetWindowResizable = Emscripten_SetWindowResizable;
     /*device->ShowWindow = Emscripten_ShowWindow;
     device->HideWindow = Emscripten_HideWindow;
     device->RaiseWindow = Emscripten_RaiseWindow;
@@ -578,6 +580,11 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     // Window has been successfully created
     return true;
+}
+
+static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable)
+{
+    // this function just has to exist or the higher level won't let the window change its SDL_WINDOW_RESIZABLE flag.
 }
 
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)

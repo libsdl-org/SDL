@@ -5,7 +5,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 # See docs/release_checklist.md
-project(SDL3 LANGUAGES C VERSION "3.3.0")
+project(SDL3 LANGUAGES C VERSION "3.3.3")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_MAINPROJECT ON)
@@ -347,6 +347,8 @@ dep_option(SDL_X11_XSCRNSAVER      "Enable Xscrnsaver support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XSHAPE          "Enable XShape support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XSYNC           "Enable Xsync support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XTEST           "Enable XTest support" ON SDL_X11 OFF)
+dep_option(SDL_FRIBIDI             "Enable Fribidi support" ON SDL_X11 OFF)
+dep_option(SDL_FRIBIDI_SHARED      "Dynamically load Fribidi support" ON "SDL_FRIBIDI;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_WAYLAND             "Use Wayland video driver" ${UNIX_SYS} "SDL_VIDEO" OFF)
 dep_option(SDL_WAYLAND_SHARED      "Dynamically load Wayland support" ON "SDL_WAYLAND;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_WAYLAND_LIBDECOR    "Use client-side window decorations on Wayland" ON "SDL_WAYLAND" OFF)
@@ -1003,7 +1005,14 @@ set(SDL_DISABLE_ALLOCA 0)
 check_include_file("alloca.h" "HAVE_ALLOCA_H")
 if(MSVC)
   check_include_file("malloc.h" "HAVE_MALLOC_H")
-  check_symbol_exists("_alloca" "malloc.h" _ALLOCA_IN_MALLOC_H)
+  # Cannot use CheckSymbolExists for _alloca: purely intrinsic functions have no address (C7552)
+  if(NOT DEFINED _ALLOCA_IN_MALLOC_H)
+    message(STATUS "Looking for _alloca in malloc.h")
+    set(testsrc "${CMAKE_CURRENT_SOURCE_DIR}/test_malloc_alloca.c")
+    file(WRITE "${testsrc}" "#include <malloc.h>\n\nint main(int argc, char *argv[]) { void *ptr = _alloca(argc * (int)argv[0][0]); return ptr != (void *)0; }")
+    try_compile(_ALLOCA_IN_MALLOC_H "${CMAKE_CURRENT_BINARY_DIR}/alloca_in_malloc_h" SOURCES "${testsrc}")
+    message(STATUS "Looking for _alloca in malloc.h - ${_ALLOCA_IN_MALLOC_H}")
+  endif()
   if(NOT HAVE_ALLOCA_H AND NOT _ALLOCA_IN_MALLOC_H)
     set(SDL_DISABLE_ALLOCA 1)
   endif()
@@ -1142,7 +1151,7 @@ if(SDL_LIBC)
     check_symbol_exists(sysctlbyname "sys/types.h;sys/sysctl.h" HAVE_SYSCTLBYNAME)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
     check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
-    check_symbol_exists(poll "poll.h" HAVE_POLL)
+    check_symbol_exists(ppoll "poll.h" HAVE_PPOLL)
     check_symbol_exists(memfd_create "sys/mman.h" HAVE_MEMFD_CREATE)
     check_symbol_exists(posix_fallocate "fcntl.h" HAVE_POSIX_FALLOCATE)
     check_symbol_exists(posix_spawn_file_actions_addchdir "spawn.h" HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR)
@@ -1755,6 +1764,15 @@ elseif(EMSCRIPTEN)
     set(HAVE_CLOCK_GETTIME 1)
   endif()
 
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_EMSCRIPTEN 1)
+    set(HAVE_SDL_SENSORS TRUE)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/sensor/emscripten/*.c"
+      "${SDL3_SOURCE_DIR}/src/sensor/emscripten/*.h"
+    )
+  endif()
+
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_EMSCRIPTEN 1)
     sdl_glob_sources(
@@ -1788,9 +1806,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       return argc + dlnote.hdr.a;
     }
     ]==])
+    set(SDL_DISABLE_DLOPEN_NOTES FALSE)
     check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
-    if(COMPILER_SUPPORTS_ELFNOTES)
-      set(HAVE_DLOPEN_NOTES TRUE)
+    if(NOT COMPILER_SUPPORTS_ELFNOTES)
+      set(SDL_DISABLE_DLOPEN_NOTES TRUE)
     endif()
   endif()
 
@@ -1825,6 +1844,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     # Need to check for ROCKCHIP platform and get rid of "Can't window GBM/EGL surfaces on window creation."
     CheckROCKCHIP()
     CheckX11()
+    CheckFribidi()
     # Need to check for EGL first because KMSDRM and Wayland depend on it.
     CheckEGL()
     CheckKMSDRM()
@@ -1974,7 +1994,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           set(HAVE_LIBURING TRUE)
         endif()
       endif()
-
       if((FREEBSD OR NETBSD) AND NOT HAVE_INOTIFY)
         set(LibInotify_PKG_CONFIG_SPEC libinotify)
         pkg_check_modules(PC_LIBINOTIFY IMPORTED_TARGET ${LibInotify_PKG_CONFIG_SPEC})
@@ -2182,7 +2201,7 @@ elseif(WINDOWS)
     target_compile_options(SDL_uclibc PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/GS-> $<$<COMPILE_LANGUAGE:C,CXX>:/Gs1048576>)
     if(SDL_CPU_X86)
       target_compile_options(SDL3-shared PRIVATE "/arch:SSE")
-      target_compile_options(SDL3-SDL_uclibc PRIVATE "/arch:SSE")
+      target_compile_options(SDL_uclibc PRIVATE "/arch:SSE")
     endif()
   endif()
 
@@ -3491,7 +3510,10 @@ int main(void)
     return 0;
 }
 " HAVE_POSIX_SPAWN)
-  if(HAVE_POSIX_SPAWN)
+  if(NOT APPLE)
+    check_symbol_exists(vfork "unistd.h" LIBC_HAS_VFORK)
+  endif()
+  if(HAVE_POSIX_SPAWN AND (APPLE OR LIBC_HAS_VFORK))
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/process/posix/*.c"
       "${SDL3_SOURCE_DIR}/src/process/posix/*.h"

@@ -20,7 +20,7 @@
 */
 
 /**
- * Main include header for the SDL library, version 3.3.0
+ * Main include header for the SDL library, version 3.3.3
  *
  * It is almost always best to include just this one header instead of
  * picking out individual headers included here. There are exceptions to
@@ -42,6 +42,7 @@
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_cpuinfo.h>
 #include <SDL3/SDL_dialog.h>
+#include <SDL3/SDL_dlopennote.h>
 #include <SDL3/SDL_endian.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>

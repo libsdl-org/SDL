@@ -116,6 +116,44 @@ static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y
 
     return cursor;
 }
+
+static Cursor X11_CreateAnimatedXCursorCursor(SDL_CursorFrameInfo *frames, int num_frames, int hot_x, int hot_y)
+{
+    Display *display = GetDisplay();
+    Cursor cursor = None;
+    XcursorImage *image;
+    XcursorImages *images;
+
+    images = X11_XcursorImagesCreate(num_frames);
+    if (!images) {
+        SDL_OutOfMemory();
+        return None;
+    }
+
+    for (int i = 0; i < num_frames; ++i) {
+        image = X11_XcursorImageCreate(frames[i].surface->w, frames[i].surface->h);
+        if (!image) {
+            SDL_OutOfMemory();
+            goto cleanup;
+        }
+        image->xhot = hot_x;
+        image->yhot = hot_y;
+        image->delay = frames[i].duration;
+
+        SDL_assert(frames[i].surface->format == SDL_PIXELFORMAT_ARGB8888);
+        SDL_assert(frames[i].surface->pitch == frames[i].surface->w * 4);
+        SDL_memcpy(image->pixels, frames[i].surface->pixels, (size_t)frames[i].surface->h * frames[i].surface->pitch);
+
+        images->images[i] = image;
+        images->nimage++;
+    }
+
+    cursor = X11_XcursorImagesLoadCursor(display, images);
+
+cleanup:
+    X11_XcursorImagesDestroy(images);
+    return cursor;
+}
 #endif // SDL_VIDEO_DRIVER_X11_XCURSOR
 
 static Cursor X11_CreatePixmapCursor(SDL_Surface *surface, int hot_x, int hot_y)
@@ -217,6 +255,22 @@ static SDL_Cursor *X11_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         x11_cursor = X11_CreatePixmapCursor(surface, hot_x, hot_y);
     }
     return X11_CreateCursorAndData(x11_cursor);
+}
+
+static SDL_Cursor *X11_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int num_frames, int hot_x, int hot_y)
+{
+    Cursor x11_cursor = None;
+
+#ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
+    if (SDL_X11_HAVE_XCURSOR) {
+        x11_cursor = X11_CreateAnimatedXCursorCursor(frames, num_frames, hot_x, hot_y);
+    }
+#endif
+    if (x11_cursor == None) {
+        x11_cursor = X11_CreatePixmapCursor(frames[0].surface, hot_x, hot_y);
+    }
+
+    return X11_CreateCursorAndData(x11_cursor);;
 }
 
 static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
@@ -499,6 +553,7 @@ void X11_InitMouse(SDL_VideoDevice *_this)
     SDL_Mouse *mouse = SDL_GetMouse();
 
     mouse->CreateCursor = X11_CreateCursor;
+    mouse->CreateAnimatedCursor = X11_CreateAnimatedCursor;
     mouse->CreateSystemCursor = X11_CreateSystemCursor;
     mouse->ShowCursor = X11_ShowCursor;
     mouse->FreeCursor = X11_FreeCursor;

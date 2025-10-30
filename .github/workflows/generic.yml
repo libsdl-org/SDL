@@ -79,7 +79,7 @@ jobs:
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
         with:
-          local-cache: true
+          local-cache: false
           ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
@@ -330,7 +330,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.27.0
+        uses: cross-platform-actions/action@v0.29.0
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'

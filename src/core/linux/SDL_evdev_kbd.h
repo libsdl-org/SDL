@@ -22,6 +22,14 @@
 #ifndef SDL_evdev_kbd_h_
 #define SDL_evdev_kbd_h_
 
+#ifdef SDL_INPUT_FBSDKBIO
+enum {
+    VT_OURS,
+    VT_THEIRS,
+};
+extern SDL_AtomicInt vt_current;
+#endif
+
 struct SDL_EVDEV_keyboard_state;
 typedef struct SDL_EVDEV_keyboard_state SDL_EVDEV_keyboard_state;
 

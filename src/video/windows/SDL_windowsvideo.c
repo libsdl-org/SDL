@@ -149,6 +149,13 @@ static void SDLCALL UpdateWindowsRawKeyboard(void *userdata, const char *name, c
     WIN_SetRawKeyboardEnabled(_this, enabled);
 }
 
+static void SDLCALL UpdateWindowsRawKeyboardNoHotkeys(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    bool enabled = SDL_GetStringBoolean(newValue, false);
+    WIN_SetRawKeyboardFlag_NoHotkeys(_this, enabled);
+}
+
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     g_WindowsEnableMessageLoop = SDL_GetStringBoolean(newValue, true);
@@ -423,7 +430,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;
     device->HideScreenKeyboard = GDK_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = GDK_IsScreenKeyboardShown;
 #endif
 
     device->free = WIN_DeleteDevice;
@@ -603,7 +609,7 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
     SDL_Log("DPI awareness: %s", WIN_GetDPIAwareness(_this));
 #endif
 
-    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_GAMEINPUT, true)) {
+    if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_GAMEINPUT, false)) {
         WIN_InitGameInput(_this);
     }
 
@@ -633,6 +639,7 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
 #endif
 
     SDL_AddHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD, UpdateWindowsRawKeyboard, _this);
+    SDL_AddHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS, UpdateWindowsRawKeyboardNoHotkeys, _this);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
@@ -650,6 +657,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->internal;
 
     SDL_RemoveHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD, UpdateWindowsRawKeyboard, _this);
+    SDL_RemoveHintCallback(SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS, UpdateWindowsRawKeyboardNoHotkeys, _this);
     SDL_RemoveHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
     SDL_RemoveHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_RemoveHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);

@@ -80,6 +80,15 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
          * will have the same storage index for this id.
          */
         storage_index = SDL_GetAtomicInt(id) - 1;
+    } else {
+        // Make sure we don't allocate an ID clobbering this one
+        int tls_id = SDL_GetAtomicInt(&SDL_tls_id);
+        while (storage_index >= tls_id) {
+            if (SDL_CompareAndSwapAtomicInt(&SDL_tls_id, tls_id, storage_index + 1)) {
+                break;
+            }
+            tls_id = SDL_GetAtomicInt(&SDL_tls_id);
+        }
     }
 
     // Get the storage for the current thread

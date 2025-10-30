@@ -233,6 +233,7 @@ static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, 
     renderer->window = window;
 
     renderer->name = VITA_GXM_RenderDriver.name;
+    renderer->npot_texture_wrap_unsupported = true;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);

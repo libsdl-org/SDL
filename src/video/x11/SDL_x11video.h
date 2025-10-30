@@ -190,7 +190,6 @@ struct SDL_VideoData
 
     // Used to interact with the on-screen keyboard
     bool is_steam_deck;
-    bool steam_keyboard_open;
 
     bool is_xwayland;
 };

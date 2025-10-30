@@ -238,7 +238,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->HasScreenKeyboardSupport = X11_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
     device->HideScreenKeyboard = X11_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = X11_IsScreenKeyboardShown;
 
     device->free = X11_DeleteDevice;
 
@@ -446,6 +445,10 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     X11_InitTouch(_this);
 
     X11_InitPen(_this);
+
+    // Request currently available mime-types in the clipboard.
+    X11_XConvertSelection(data->display, data->atoms.CLIPBOARD, data->atoms.TARGETS,
+            data->atoms.SDL_FORMATS, GetWindow(_this), CurrentTime);
 
     return true;
 }

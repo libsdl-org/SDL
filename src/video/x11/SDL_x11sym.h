@@ -235,7 +235,9 @@ SDL_X11_SYM(int,Xutf8TextExtents,(XFontSet a, _Xconst char* b, int c, XRectangle
 SDL_X11_SYM(char*,XSetLocaleModifiers,(const char *a))
 SDL_X11_SYM(char*,Xutf8ResetIC,(XIC a))
 SDL_X11_SYM(XFontSetExtents*,XExtentsOfFontSet,(XFontSet a))
+SDL_X11_SYM(Bool,XContextDependentDrawing,(XFontSet a))
 #endif
+
 
 #ifndef NO_SHARED_MEMORY
 SDL_X11_MODULE(SHM)
@@ -275,8 +277,11 @@ SDL_X11_SYM(int,ipUnallocateAndSendData,(ChannelPtr a,IPCard b))
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 SDL_X11_MODULE(XCURSOR)
 SDL_X11_SYM(XcursorImage*,XcursorImageCreate,(int a,int b))
+SDL_X11_SYM(XcursorImages*,XcursorImagesCreate,(int a))
 SDL_X11_SYM(void,XcursorImageDestroy,(XcursorImage *a))
+SDL_X11_SYM(void,XcursorImagesDestroy,(XcursorImages *a))
 SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b))
+SDL_X11_SYM(Cursor,XcursorImagesLoadCursor,(Display *a,const XcursorImages *b))
 SDL_X11_SYM(Cursor,XcursorLibraryLoadCursor,(Display *a, const char *b))
 #endif
 

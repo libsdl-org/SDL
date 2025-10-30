@@ -139,7 +139,7 @@ static bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, bool *
     waitStart = SDL_GetTicks();
     *flag = true;
     while (*flag) {
-        SDL_PumpEvents();
+        X11_PumpEvents(_this);
         waitElapsed = SDL_GetTicks() - waitStart;
         // Wait one second for a selection response.
         if (waitElapsed > 1000) {
@@ -273,6 +273,14 @@ bool X11_SetClipboardData(SDL_VideoDevice *_this)
 void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *videodata = _this->internal;
+
+    *length = 0;
+
+    if (!SDL_HasInternalClipboardData(_this, mime_type)) {
+        // This mime type wasn't advertised by the last selection owner.
+        // The atom might still have data, but it's stale, so ignore it.
+        return NULL;
+    }
     return GetSelectionData(_this, videodata->atoms.CLIPBOARD, mime_type, length);
 }
 
@@ -281,9 +289,7 @@ bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, mime_type, &length);
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     return length > 0;
 }
 

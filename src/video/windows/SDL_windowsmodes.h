@@ -50,6 +50,7 @@ extern bool WIN_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay 
 extern bool WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern bool WIN_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void WIN_RefreshDisplays(SDL_VideoDevice *_this);
+extern void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this);
 extern void WIN_QuitModes(SDL_VideoDevice *_this);
 
 #endif // SDL_windowsmodes_h_

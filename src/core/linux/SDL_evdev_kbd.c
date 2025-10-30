@@ -534,9 +534,7 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
     if (state->key_maps && state->key_maps != default_key_maps) {
         int i;
         for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
-            if (state->key_maps[i]) {
-                SDL_free(state->key_maps[i]);
-            }
+            SDL_free(state->key_maps[i]);
         }
         SDL_free(state->key_maps);
     }

@@ -45,6 +45,9 @@
 #include "tablet-v2-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "cursor-shape-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -66,8 +69,6 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
-#include "cursor-shape-v1-client-protocol.h"
-#include "viewporter-client-protocol.h"
 
 // Weston uses a ratio of 10 units per scroll tick
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -214,16 +215,32 @@ static Uint64 Wayland_AdjustEventTimestampBase(Uint64 nsTimestamp)
  */
 static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
 {
+    static const Uint32 ROLLOVER_INTERVAL_LOW = SDL_MAX_UINT32 / 16;
+    static const Uint32 ROLLOVER_INTERVAL_HIGH = ROLLOVER_INTERVAL_LOW * 15;
+
     static Uint64 timestamp_offset = 0;
     static Uint32 last = 0;
+    Uint64 timestamp = SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
 
-    // Handle 32-bit timer rollover.
-    if (wl_timestamp_ms < last) {
-        timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
+    if (wl_timestamp_ms >= last) {
+        if (timestamp_offset && last < ROLLOVER_INTERVAL_LOW && wl_timestamp_ms > ROLLOVER_INTERVAL_HIGH) {
+            // A time that crossed backwards across zero was received. Subtract the increased time base offset.
+            timestamp -= SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
+        } else {
+            last = wl_timestamp_ms;
+        }
+    } else {
+        /* Only increment the base time offset if the timer actually crossed forward across 0,
+         * and not if this is just a timestamp from a slightly older event.
+         */
+        if (wl_timestamp_ms < ROLLOVER_INTERVAL_LOW && last > ROLLOVER_INTERVAL_HIGH) {
+            timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
+            timestamp += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
+            last = wl_timestamp_ms;
+        }
     }
-    last = wl_timestamp_ms;
 
-    return SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
+    return timestamp;
 }
 
 /* Even if high-res timestamps are available, the millisecond timestamps are still processed
@@ -288,6 +305,71 @@ void Wayland_DisplayInitInputTimestampManager(SDL_VideoData *display)
     }
 }
 
+static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers)
+{
+    if (!surface) {
+        return;
+    }
+
+    SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
+    if (wind) {
+        SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_focus = wind;
+
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, timestamp, wind->sdlwindow, 0.0f);
+    }
+}
+
+static void handle_pinch_update(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t time,
+                                wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        const float s = (float)wl_fixed_to_double(scale);
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, timestamp, seat->pointer.gesture_focus->sdlwindow, s);
+    }
+}
+
+static void handle_pinch_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0.0f);
+
+        seat->pointer.gesture_focus = NULL;
+    }
+}
+
+static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener = {
+    handle_pinch_begin,
+    handle_pinch_update,
+    handle_pinch_end
+};
+
+static void Wayland_SeatCreatePointerGestures(SDL_WaylandSeat *seat)
+{
+    if (seat->display->zwp_pointer_gestures) {
+        if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
+            seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
+            zwp_pointer_gesture_pinch_v1_set_user_data(seat->pointer.gesture_pinch, seat);
+            zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
+        }
+    }
+}
+
+void Wayland_DisplayInitPointerGestureManager(SDL_VideoData *display)
+{
+    SDL_WaylandSeat *seat;
+    wl_list_for_each (seat, &display->seat_list, link) {
+        Wayland_SeatCreatePointerGestures(seat);
+    }
+}
+
 static void Wayland_SeatCreateCursorShape(SDL_WaylandSeat *seat)
 {
     if (seat->display->cursor_shape_manager) {
@@ -307,10 +389,12 @@ void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display)
 
 static void Wayland_SeatSetKeymap(SDL_WaylandSeat *seat)
 {
+    const bool send_event = !seat->display->initializing;
+
     if (seat->keyboard.sdl_keymap &&
         seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
         seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] != SDL_GetCurrentKeymap(true)) {
-        SDL_SetKeymap(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], true);
+        SDL_SetKeymap(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], send_event);
         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
     }
 }
@@ -411,127 +495,108 @@ void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     WAYLAND_wl_display_flush(d->display);
 }
 
-static int dispatch_queued_events(SDL_VideoData *viddata)
-{
-    int rc;
-
-    /*
-     * NOTE: When reconnection is implemented, check if libdecor needs to be
-     *       involved in the reconnection process.
-     */
-#ifdef HAVE_LIBDECOR_H
-    if (viddata->shell.libdecor) {
-        libdecor_dispatch(viddata->shell.libdecor, 0);
-    }
-#endif
-
-    rc = WAYLAND_wl_display_dispatch_pending(viddata->display);
-    return rc >= 0 ? 1 : rc;
-}
-
 int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     SDL_VideoData *d = _this->internal;
     SDL_WaylandSeat *seat;
-    bool key_repeat_active = false;
-
-    WAYLAND_wl_display_flush(d->display);
+    Uint64 start = SDL_GetTicksNS();
+    const int display_fd = WAYLAND_wl_display_get_fd(d->display);
+    int ret;
+    bool poll_alarm_set = false;
 
 #ifdef SDL_USE_IME
     SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
     if (!d->text_input_manager && keyboard_focus && SDL_TextInputActive(keyboard_focus)) {
-        SDL_IME_PumpEvents();
+        // If a DBus IME is active with no text input protocol, periodically wake to poll it.
+        if (timeoutNS < 0 || SDL_MS_TO_NS(200) <= timeoutNS) {
+            timeoutNS = SDL_MS_TO_NS(200);
+            poll_alarm_set = true;
+        }
     }
-#endif
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
 #endif
 
     // If key repeat is active, we'll need to cap our maximum wait time to handle repeats
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            Wayland_SeatSetKeymap(seat);
-
-            const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
-            if (keyboard_repeat_handle(&seat->keyboard.repeat, elapsed)) {
-                // A repeat key event was already due
-                return 1;
-            } else {
-                const Uint64 next_repeat_wait_time = (seat->keyboard.repeat.next_repeat_ns - elapsed) + 1;
-                if (timeoutNS >= 0) {
-                    timeoutNS = SDL_min(timeoutNS, next_repeat_wait_time);
-                } else {
-                    timeoutNS = next_repeat_wait_time;
-                }
-                key_repeat_active = true;
+            const Uint64 elapsed = start - seat->keyboard.repeat.sdl_press_time_ns;
+            const Uint64 next_repeat_wait_time = (seat->keyboard.repeat.next_repeat_ns - elapsed) + 1;
+            if (timeoutNS < 0 || next_repeat_wait_time <= timeoutNS) {
+                timeoutNS = next_repeat_wait_time;
+                poll_alarm_set = true;
             }
         }
     }
 
-    /* wl_display_prepare_read() will return -1 if the default queue is not empty.
-     * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
     if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
-        // Use SDL_IOR_NO_RETRY to ensure SIGINT will break us out of our wait
-        int err = SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
-        if (err > 0) {
-            // There are new events available to read
-            WAYLAND_wl_display_read_events(d->display);
-            return dispatch_queued_events(d);
-        } else if (err == 0) {
-            int ret = 0;
+        if (timeoutNS > 0) {
+            const Uint64 now = SDL_GetTicksNS();
+            const Uint64 elapsed = now - start;
+            start = now;
+            timeoutNS = elapsed <= timeoutNS ? timeoutNS - elapsed : 0;
+        }
 
-            // No events available within the timeout
-            WAYLAND_wl_display_cancel_read(d->display);
+        ret = WAYLAND_wl_display_flush(d->display);
 
-            // If key repeat is active, we might have woken up to generate a key event
-            if (key_repeat_active) {
-                wl_list_for_each (seat, &d->seat_list, link) {
-                    if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-                        Wayland_SeatSetKeymap(seat);
+        if (ret == -1 && errno == EAGAIN) {
+            // Unable to write to the socket; poll until the socket can be written to, it times out, or is interrupted.
+            ret = SDL_IOReady(display_fd, SDL_IOR_WRITE | SDL_IOR_NO_RETRY, timeoutNS);
 
-                        const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
-                        if (keyboard_repeat_handle(&seat->keyboard.repeat, elapsed)) {
-                            ++ret;
-                        }
-                    }
-                }
-            }
-
-            return ret;
-        } else {
-            // Error returned from poll()/select()
-            WAYLAND_wl_display_cancel_read(d->display);
-
-            if (errno == EINTR) {
-                /* If the wait was interrupted by a signal, we may have generated a
-                 * SDL_EVENT_QUIT event. Let the caller know to call SDL_PumpEvents(). */
-                return 1;
-            } else {
-                return err;
+            if (ret <= 0) {
+                // The poll operation timed out or experienced an error, so see if there are any events to read without waiting.
+                timeoutNS = 0;
             }
         }
-    } else {
-        // We already had pending events
-        return dispatch_queued_events(d);
+
+        if (ret < 0) {
+            // Pump events on an interrupt or broken pipe to handle the error.
+            WAYLAND_wl_display_cancel_read(d->display);
+            return errno == EINTR || errno == EPIPE ? 1 : ret;
+        }
+
+        if (timeoutNS > 0) {
+            const Uint64 now = SDL_GetTicksNS();
+            const Uint64 elapsed = now - start;
+            start = now;
+            timeoutNS = elapsed <= timeoutNS ? timeoutNS - elapsed : 0;
+        }
+
+        // Use SDL_IOR_NO_RETRY to catch EINTR.
+        ret = SDL_IOReady(display_fd, SDL_IOR_READ | SDL_IOR_NO_RETRY, timeoutNS);
+        if (ret <= 0) {
+            // Timeout or error, cancel the read.
+            WAYLAND_wl_display_cancel_read(d->display);
+
+            // The poll timed out with no data to read, but signal the caller to pump events if polling is required.
+            if (ret == 0) {
+                return poll_alarm_set ? 1 : 0;
+            } else {
+                // Pump events on an interrupt or broken pipe to handle the error.
+                return errno == EINTR || errno == EPIPE ? 1 : ret;
+            }
+        }
+
+        ret = WAYLAND_wl_display_read_events(d->display);
+        if (ret == -1) {
+            return ret;
+        }
     }
+
+    // Signal to the caller that there might be an event available.
+    return 1;
 }
 
 void Wayland_PumpEvents(SDL_VideoDevice *_this)
 {
     SDL_VideoData *d = _this->internal;
     SDL_WaylandSeat *seat;
-    int err;
+    const int display_fd = WAYLAND_wl_display_get_fd(d->display);
+    int ret = 0;
 
 #ifdef SDL_USE_IME
     SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
     if (!d->text_input_manager && keyboard_focus && SDL_TextInputActive(keyboard_focus)) {
         SDL_IME_PumpEvents();
     }
-#endif
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
 #endif
 
 #ifdef HAVE_LIBDECOR_H
@@ -540,31 +605,66 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 #endif
 
-    WAYLAND_wl_display_flush(d->display);
+    /* If the queue isn't empty, dispatch any old events, and try to prepare for reading again.
+     * If preparing to read returns -1 on the second try, wl_display_read_events() enqueued new
+     * events at some point between dispatching the old events and preparing for the read,
+     * probably from another thread, which means that the events in the queue are current.
+     */
+    ret = WAYLAND_wl_display_prepare_read(d->display);
+    if (ret == -1) {
+        ret = WAYLAND_wl_display_dispatch_pending(d->display);
+        if (ret < 0) {
+            goto connection_error;
+        }
 
-    /* wl_display_prepare_read() will return -1 if the default queue is not empty.
-     * If the default queue is empty, it will prepare us for our SDL_IOReady() call. */
-    if (WAYLAND_wl_display_prepare_read(d->display) == 0) {
-        if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_IOR_READ, 0) > 0) {
-            WAYLAND_wl_display_read_events(d->display);
+        ret = WAYLAND_wl_display_prepare_read(d->display);
+    }
+
+    if (ret == 0) {
+        ret = WAYLAND_wl_display_flush(d->display);
+
+        if (ret == -1 && errno == EAGAIN) {
+            // Unable to write to the socket; wait a brief time to see if it becomes writable.
+            ret = SDL_IOReady(display_fd, SDL_IOR_WRITE, SDL_MS_TO_NS(4));
+            if (ret > 0) {
+                ret = WAYLAND_wl_display_flush(d->display);
+            }
+        }
+
+        // If the compositor closed the socket, just jump to the error handler.
+        if (ret < 0 && errno == EPIPE) {
+            WAYLAND_wl_display_cancel_read(d->display);
+            goto connection_error;
+        }
+
+        ret = SDL_IOReady(display_fd, SDL_IOR_READ, 0);
+        if (ret > 0) {
+            ret = WAYLAND_wl_display_read_events(d->display);
+            if (ret == 0) {
+                ret = WAYLAND_wl_display_dispatch_pending(d->display);
+            }
         } else {
             WAYLAND_wl_display_cancel_read(d->display);
         }
+
+    } else {
+        ret = WAYLAND_wl_display_dispatch_pending(d->display);
     }
 
-    // Dispatch any pre-existing pending events or new events we may have read
-    err = WAYLAND_wl_display_dispatch_pending(d->display);
+    if (ret >= 0) {
+        // Synthesize key repeat events.
+        wl_list_for_each (seat, &d->seat_list, link) {
+            if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+                Wayland_SeatSetKeymap(seat);
 
-    wl_list_for_each (seat, &d->seat_list, link) {
-        if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            Wayland_SeatSetKeymap(seat);
-
-            const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
-            keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
+                const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
+                keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
+            }
         }
     }
 
-    if (err < 0 && !d->display_disconnected) {
+connection_error:
+    if (ret < 0 && !d->display_disconnected) {
         /* Something has failed with the Wayland connection -- for example,
          * the compositor may have shut down and closed its end of the socket,
          * or there is a library-specific error.
@@ -575,9 +675,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
             d->display_disconnected = 1;
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wayland display connection closed by server (fatal)");
 
-            /* Only send a single quit message, as application shutdown might call
-             * SDL_PumpEvents
-             */
+            // Only send a single quit message, as application shutdown might call SDL_PumpEvents().
             SDL_SendQuit();
         }
     }
@@ -1429,38 +1527,34 @@ static size_t xkb_legacy_get_mods_for_level(SDL_WaylandSeat *seat, xkb_keycode_t
     }
 
     size_t mask_idx = 0;
-    struct xkb_state *state = WAYLAND_xkb_state_new(seat->keyboard.xkb.keymap);
-    if (state) {
-        const xkb_mod_mask_t keymod_masks[] = {
-            0,
-            seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level3_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level5_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask
-        };
-        const xkb_mod_mask_t pressed_mod_mask = seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask;
-        const xkb_mod_mask_t locked_mod_mask = seat->keyboard.xkb.caps_mask;
+    const xkb_mod_mask_t keymod_masks[] = {
+        0,
+        seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level3_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level5_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask
+    };
+    const xkb_mod_mask_t pressed_mod_mask = seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask;
+    const xkb_mod_mask_t locked_mod_mask = seat->keyboard.xkb.caps_mask;
 
-        for (size_t i = 0; i < SDL_arraysize(keymod_masks); ++i) {
-            WAYLAND_xkb_state_update_mask(state, keymod_masks[i] & pressed_mod_mask, 0, keymod_masks[i] & locked_mod_mask, 0, 0, layout);
-            if (WAYLAND_xkb_state_key_get_level(state, key, layout) == level) {
-                masks_out[mask_idx] = keymod_masks[i];
+    for (size_t i = 0; i < SDL_arraysize(keymod_masks); ++i) {
+        WAYLAND_xkb_state_update_mask(seat->keyboard.xkb.state, keymod_masks[i] & pressed_mod_mask, 0, keymod_masks[i] & locked_mod_mask, 0, 0, layout);
+        if (WAYLAND_xkb_state_key_get_level(seat->keyboard.xkb.state, key, layout) == level) {
+            masks_out[mask_idx] = keymod_masks[i];
 
-                if (++mask_idx == masks_size) {
-                    break;
-                }
+            if (++mask_idx == masks_size) {
+                break;
             }
         }
-
-        WAYLAND_xkb_state_unref(state);
     }
+
     return mask_idx;
 }
 #endif
@@ -1663,6 +1757,11 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         }
 
         WAYLAND_xkb_keymap_key_for_each(seat->keyboard.xkb.keymap, Wayland_KeymapIterator, seat);
+
+        // Restore any previously set modifier/layout information, if valid.
+        WAYLAND_xkb_state_update_mask(seat->keyboard.xkb.state,
+                                      seat->keyboard.xkb.wl_pressed_modifiers, seat->keyboard.xkb.wl_latched_modifiers, seat->keyboard.xkb.wl_locked_modifiers,
+                                      0, 0, seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts ? seat->keyboard.xkb.current_layout : 0);
         Wayland_SeatSetKeymap(seat);
     }
 
@@ -1806,7 +1905,9 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
      * The modifier will remain active until the latch/lock is released by
      * the system.
      */
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.shift_mask) {
+    const xkb_mod_mask_t xkb_locked_modifiers = seat->keyboard.xkb.wl_latched_modifiers | seat->keyboard.xkb.wl_locked_modifiers;
+
+    if (xkb_locked_modifiers & seat->keyboard.xkb.shift_mask) {
         if (seat->keyboard.pressed_modifiers & SDL_KMOD_SHIFT) {
             seat->keyboard.locked_modifiers &= ~SDL_KMOD_SHIFT;
             seat->keyboard.locked_modifiers |= (seat->keyboard.pressed_modifiers & SDL_KMOD_SHIFT);
@@ -1817,7 +1918,7 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_SHIFT;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.ctrl_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.ctrl_mask) {
         if (seat->keyboard.pressed_modifiers & SDL_KMOD_CTRL) {
             seat->keyboard.locked_modifiers &= ~SDL_KMOD_CTRL;
             seat->keyboard.locked_modifiers |= (seat->keyboard.pressed_modifiers & SDL_KMOD_CTRL);
@@ -1828,7 +1929,7 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_CTRL;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.alt_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.alt_mask) {
         if (seat->keyboard.pressed_modifiers & SDL_KMOD_ALT) {
             seat->keyboard.locked_modifiers &= ~SDL_KMOD_ALT;
             seat->keyboard.locked_modifiers |= (seat->keyboard.pressed_modifiers & SDL_KMOD_ALT);
@@ -1839,7 +1940,7 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_ALT;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.gui_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.gui_mask) {
         if (seat->keyboard.pressed_modifiers & SDL_KMOD_GUI) {
             seat->keyboard.locked_modifiers &= ~SDL_KMOD_GUI;
             seat->keyboard.locked_modifiers |= (seat->keyboard.pressed_modifiers & SDL_KMOD_GUI);
@@ -1850,26 +1951,26 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_GUI;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.level3_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.level3_mask) {
         seat->keyboard.locked_modifiers |= SDL_KMOD_MODE;
     } else {
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_MODE;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.level5_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.level5_mask) {
         seat->keyboard.locked_modifiers |= SDL_KMOD_LEVEL5;
     } else {
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_LEVEL5;
     }
 
     // Capslock and Numlock can only be locked, not pressed.
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.caps_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.caps_mask) {
         seat->keyboard.locked_modifiers |= SDL_KMOD_CAPS;
     } else {
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_CAPS;
     }
 
-    if (seat->keyboard.xkb.wl_locked_modifiers & seat->keyboard.xkb.num_mask) {
+    if (xkb_locked_modifiers & seat->keyboard.xkb.num_mask) {
         seat->keyboard.locked_modifiers |= SDL_KMOD_NUM;
     } else {
         seat->keyboard.locked_modifiers &= ~SDL_KMOD_NUM;
@@ -2195,20 +2296,23 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                                       uint32_t group)
 {
     SDL_WaylandSeat *seat = data;
+    const uint32_t previous_layout = seat->keyboard.xkb.current_layout;
 
-    if (seat->keyboard.xkb.state == NULL) {
-        /* if we get a modifier notification before the keymap, there's nothing we can do with the information
-        */
+    seat->keyboard.xkb.wl_pressed_modifiers = mods_depressed;
+    seat->keyboard.xkb.wl_latched_modifiers = mods_latched;
+    seat->keyboard.xkb.wl_locked_modifiers = mods_locked;
+    seat->keyboard.xkb.current_layout = group;
+
+    Wayland_ReconcileModifiers(seat, false);
+
+    // If we get a modifier notification before the keymap, there's no further state to update yet.
+    if (!seat->keyboard.xkb.state) {
         return;
     }
 
-    WAYLAND_xkb_state_update_mask(seat->keyboard.xkb.state, mods_depressed, mods_latched,
-                                  mods_locked, 0, 0, group);
-
-    seat->keyboard.xkb.wl_pressed_modifiers = mods_depressed;
-    seat->keyboard.xkb.wl_locked_modifiers = mods_latched | mods_locked;
-
-    Wayland_ReconcileModifiers(seat, false);
+    WAYLAND_xkb_state_update_mask(seat->keyboard.xkb.state,
+                                  mods_depressed, mods_latched, mods_locked,
+                                  0, 0, group);
 
     // If a key is repeating, update the text to apply the modifier.
     if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
@@ -2220,8 +2324,7 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
         }
     }
 
-    if (group != seat->keyboard.xkb.current_layout) {
-        seat->keyboard.xkb.current_layout = group;
+    if (group != previous_layout) {
         Wayland_SeatSetKeymap(seat);
 
         if (seat->keyboard.xkb.compose_state) {
@@ -2251,6 +2354,13 @@ static const struct wl_keyboard_listener keyboard_listener = {
 
 static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 {
+    Wayland_SeatDestroyCursorFrameCallback(seat);
+
+    // End any active gestures.
+    if (seat->pointer.gesture_focus) {
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, seat->pointer.gesture_focus->sdlwindow, 0.0f);
+    }
+
     // Make sure focus is removed from a surface before the pointer is destroyed.
     if (seat->pointer.focus) {
         pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, seat->pointer.focus->surface);
@@ -2274,8 +2384,8 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
         zwp_input_timestamps_v1_destroy(seat->pointer.timestamps);
     }
 
-    if (seat->pointer.cursor_state.frame_callback) {
-        wl_callback_destroy(seat->pointer.cursor_state.frame_callback);
+    if (seat->pointer.gesture_pinch) {
+        zwp_pointer_gesture_pinch_v1_destroy(seat->pointer.gesture_pinch);
     }
 
     if (seat->pointer.cursor_state.surface) {
@@ -2397,6 +2507,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
         wl_pointer_set_user_data(seat->pointer.wl_pointer, seat);
         wl_pointer_add_listener(seat->pointer.wl_pointer, &pointer_listener, seat);
+
+        // Pointer gestures
+        Wayland_SeatCreatePointerGestures(seat);
 
         seat->pointer.sdl_id = SDL_GetNextObjectID();
 
@@ -3526,7 +3639,6 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     seat->wl_seat = wl_seat;
     seat->display = display;
     seat->registry_id = id;
-    seat->keyboard.xkb.current_layout = XKB_LAYOUT_INVALID;
 
     Wayland_SeatCreateDataDevice(seat);
     Wayland_SeatCreatePrimarySelectionDevice(seat);
@@ -3538,8 +3650,6 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     if (display->tablet_manager) {
         Wayland_SeatInitTabletSupport(seat);
     }
-
-    WAYLAND_wl_display_flush(display->display);
 }
 
 void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window)

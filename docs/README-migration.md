@@ -611,6 +611,9 @@ The following enums have been renamed:
 The following structures have been renamed:
 * SDL_GameController => SDL_Gamepad
 
+The following structures have been removed:
+* SDL_GameControllerButtonBind - replaced with SDL_GamepadBinding
+
 The following functions have been renamed:
 * SDL_GameControllerAddMapping() => SDL_AddGamepadMapping()
 * SDL_GameControllerAddMappingsFromFile() => SDL_AddGamepadMappingsFromFile()

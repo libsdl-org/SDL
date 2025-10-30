@@ -52,6 +52,7 @@ extern "C" {
  * \returns 0 if comparison succeeded, >0 (=number of pixels for which the comparison failed) if comparison failed, -1 if any of the surfaces were NULL, -2 if the surface sizes differ.
  */
 int SDLCALL SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error);
+int SDLCALL SDLTest_CompareSurfacesIgnoreTransparentPixels(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error);
 
 /**
  * Compares 2 memory blocks for equality

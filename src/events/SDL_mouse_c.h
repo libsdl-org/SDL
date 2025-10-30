@@ -31,10 +31,24 @@
 
 typedef struct SDL_CursorData SDL_CursorData;
 
+struct SDL_Cursor;
+
+typedef struct
+{
+    Uint64 last_update;
+    int num_frames;
+    int current_frame;
+    struct SDL_Cursor **frames;
+    Uint32 *durations;
+} SDL_CursorAnimation;
+
 struct SDL_Cursor
 {
-    struct SDL_Cursor *next;
+    SDL_CursorAnimation *animation;
+
     SDL_CursorData *internal;
+
+    struct SDL_Cursor *next;
 };
 
 typedef struct
@@ -59,6 +73,9 @@ typedef struct
 {
     // Create a cursor from a surface
     SDL_Cursor *(*CreateCursor)(SDL_Surface *surface, int hot_x, int hot_y);
+
+    // Create an animated cursor from a sequence of surfaces
+    SDL_Cursor *(*CreateAnimatedCursor)(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y);
 
     // Create a system cursor
     SDL_Cursor *(*CreateSystemCursor)(SDL_SystemCursor id);
@@ -180,6 +197,9 @@ extern void SDL_SetDefaultCursor(SDL_Cursor *cursor);
 
 // Get the preferred default system cursor
 extern SDL_SystemCursor SDL_GetDefaultSystemCursor(void);
+
+// Update the current cursor animation if needed
+extern void SDL_UpdateCursorAnimation(void);
 
 // Set the mouse focus window
 extern void SDL_SetMouseFocus(SDL_Window *window);

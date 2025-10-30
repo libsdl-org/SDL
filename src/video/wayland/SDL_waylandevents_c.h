@@ -110,6 +110,7 @@ typedef struct SDL_WaylandSeat
 
             // Current system modifier flags
             xkb_mod_mask_t wl_pressed_modifiers;
+            xkb_mod_mask_t wl_latched_modifiers;
             xkb_mod_mask_t wl_locked_modifiers;
         } xkb;
     } keyboard;
@@ -122,9 +123,13 @@ typedef struct SDL_WaylandSeat
         struct wp_cursor_shape_device_v1 *cursor_shape;
         struct zwp_locked_pointer_v1 *locked_pointer;
         struct zwp_confined_pointer_v1 *confined_pointer;
+        struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
 
         SDL_WindowData *focus;
         SDL_CursorData *current_cursor;
+
+        // According to the spec, a seat can only have one active gesture of any type at a time.
+        SDL_WindowData *gesture_focus;
 
         Uint64 highres_timestamp_ns;
         Uint32 enter_serial;
@@ -177,10 +182,14 @@ typedef struct SDL_WaylandSeat
             struct wl_surface *surface;
             struct wp_viewport *viewport;
 
-            // Animation state for legacy animated cursors
+            // Animation state for cursors
+            void *cursor_handle;
+
+            // The cursor animation thread lock must be held when modifying this.
             struct wl_callback *frame_callback;
-            Uint64 last_frame_callback_time_ns;
-            Uint64 current_frame_time_ns;
+
+            Uint64 last_frame_callback_time_ms;
+            Uint32 current_frame_time_ms;
             int current_frame;
         } cursor_state;
     } pointer;
@@ -218,6 +227,7 @@ extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
 extern void Wayland_DisplayInitInputTimestampManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display);
+extern void Wayland_DisplayInitPointerGestureManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitTabletManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitDataDeviceManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitPrimarySelectionDeviceManager(SDL_VideoData *display);

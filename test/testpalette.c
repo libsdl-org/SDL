@@ -327,21 +327,25 @@ static bool CreateTextures()
     if (!black_texture1) {
         return false;
     }
+    SDL_SetTextureScaleMode(black_texture1, SDL_SCALEMODE_NEAREST);
 
     black_texture2 = CreateTexture(data, SDL_arraysize(data));
     if (!black_texture2) {
         return false;
     }
+    SDL_SetTextureScaleMode(black_texture2, SDL_SCALEMODE_NEAREST);
 
     white_texture1 = CreateTexture(data, SDL_arraysize(data));
     if (!white_texture1) {
         return false;
     }
+    SDL_SetTextureScaleMode(white_texture1, SDL_SCALEMODE_NEAREST);
 
     white_texture2 = CreateTexture(data, SDL_arraysize(data));
     if (!white_texture2) {
         return false;
     }
+    SDL_SetTextureScaleMode(white_texture2, SDL_SCALEMODE_NEAREST);
 
     return true;
 }
@@ -452,7 +456,6 @@ int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
     int i, return_code = -1;
-    bool pixelart = false;
 
     SDLTest_TrackAllocations();
 
@@ -460,10 +463,8 @@ int main(int argc, char *argv[])
         if (SDL_strcmp(argv[1], "--renderer") == 0 && argv[i + 1]) {
             ++i;
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, argv[i]);
-        } else if (SDL_strcmp(argv[1], "--pixelart") == 0) {
-            pixelart = true;
         } else {
-            SDL_Log("Usage: %s [--pixelart]", argv[0]);
+            SDL_Log("Usage: %s [--renderer driver]", argv[0]);
             return_code = 1;
             goto quit;
         }
@@ -473,12 +474,6 @@ int main(int argc, char *argv[])
         SDL_Log("SDL_CreateWindowAndRenderer failed: %s", SDL_GetError());
         return_code = 2;
         goto quit;
-    }
-
-    if (pixelart) {
-        SDL_SetDefaultTextureScaleMode(renderer, SDL_SCALEMODE_PIXELART);
-    } else {
-        SDL_SetDefaultTextureScaleMode(renderer, SDL_SCALEMODE_NEAREST);
     }
 
     if (!CreateTextures()) {

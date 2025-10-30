@@ -69,11 +69,12 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_PALETTE_PIXELART = 4;
-static const float TEXTURETYPE_NV12 = 5;
-static const float TEXTURETYPE_NV21 = 6;
-static const float TEXTURETYPE_YUV = 7;
+static const float TEXTURETYPE_PALETTE_NEAREST = 3;
+static const float TEXTURETYPE_PALETTE_LINEAR = 4;
+static const float TEXTURETYPE_PALETTE_PIXELART = 5;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -291,6 +292,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
         return DXGI_FORMAT_NV12;
     case SDL_PIXELFORMAT_P010:
         return DXGI_FORMAT_P010;
+    case SDL_PIXELFORMAT_RGB565:
+        return DXGI_FORMAT_B5G6R5_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
     }
@@ -541,16 +544,11 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
      * Don't forget to declare your application's minimum required feature level in its
-     * description.  All applications are assumed to support 9.1 unless otherwise stated.
+     * description. All applications are assumed to support 11.0 unless otherwise stated.
      */
     D3D_FEATURE_LEVEL featureLevels[] = {
         D3D_FEATURE_LEVEL_11_1,
-        D3D_FEATURE_LEVEL_11_0,
-        D3D_FEATURE_LEVEL_10_1,
-        D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1
+        D3D_FEATURE_LEVEL_11_0
     };
 
     D3D11_BUFFER_DESC constantBufferDesc;
@@ -721,31 +719,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
      * Max texture sizes are documented on MSDN, at:
      * http://msdn.microsoft.com/en-us/library/windows/apps/ff476876.aspx
      */
-    switch (data->featureLevel) {
-    case D3D_FEATURE_LEVEL_11_1:
-    case D3D_FEATURE_LEVEL_11_0:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
-        break;
-
-    case D3D_FEATURE_LEVEL_10_1:
-    case D3D_FEATURE_LEVEL_10_0:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 8192);
-        break;
-
-    case D3D_FEATURE_LEVEL_9_3:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
-        break;
-
-    case D3D_FEATURE_LEVEL_9_2:
-    case D3D_FEATURE_LEVEL_9_1:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 2048);
-        break;
-
-    default:
-        SDL_SetError("%s, Unexpected feature level: %d", __FUNCTION__, data->featureLevel);
-        result = E_FAIL;
-        goto done;
-    }
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
     if (!D3D11_CreateVertexShader(data->d3dDevice, &data->vertexShader, &data->inputLayout)) {
         goto done;
@@ -2190,12 +2164,20 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_INDEX8:
-            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+                break;
+            case SDL_SCALEMODE_PIXELART:
                 constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
-            } else {
-                constants->texture_type = TEXTURETYPE_PALETTE;
+                break;
+            default:
+                SDL_assert(!"Unknown scale mode");
+                break;
             }
-            constants->input_type = INPUTTYPE_UNSPECIFIED;
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -2231,7 +2213,9 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             break;
         }
 
-        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+            constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+            constants->texture_type == TEXTURETYPE_RGB_PIXELART) {
             constants->texture_width = texture->w;
             constants->texture_height = texture->h;
             constants->texel_width = 1.0f / constants->texture_width;
@@ -2437,7 +2421,7 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     return true;
 }
 
-static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
@@ -2456,7 +2440,12 @@ static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_Sca
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            } else {
+                samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -2514,7 +2503,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     shaderResources[numShaderResources++] = textureData->mainTextureResourceView;
 
-    shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+    shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
     if (!shaderSamplers[numShaderSamplers]) {
         return false;
     }
@@ -2525,7 +2514,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
         shaderResources[numShaderResources++] = palette->resourceView;
 
-        shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+        shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (!shaderSamplers[numShaderSamplers]) {
             return false;
         }
@@ -2803,12 +2792,6 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
      */
     result = IDXGISwapChain1_Present1(data->swapChain, data->syncInterval, data->presentFlags, &parameters);
 
-    /* Discard the contents of the render target.
-     * This is a valid operation only when the existing contents will be entirely
-     * overwritten. If dirty or scroll rects are used, this call should be removed.
-     */
-    ID3D11DeviceContext1_DiscardView(data->d3dContext, (ID3D11View *)data->mainRenderTargetView);
-
     // When the present flips, it unbinds the current view, so bind it again on the next draw call
     data->currentRenderTargetView = NULL;
 
@@ -2932,6 +2915,11 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     }
     if (FAILED(D3D11_CreateWindowSizeDependentResources(renderer))) {
         return false;
+    }
+
+    // DXGI_FORMAT_B5G6R5_UNORM is supported since Direct3D 11.1 on Windows 8 and later
+    if (data->featureLevel >= D3D_FEATURE_LEVEL_11_1 && WIN_IsWindows8OrGreater()) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
     }
 
     return true;
