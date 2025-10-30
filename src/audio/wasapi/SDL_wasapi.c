@@ -739,6 +739,9 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
         SDL_zero(audioProps);
         audioProps.cbSize = sizeof(audioProps);
 
+// Setting AudioCategory_GameChat breaks audio on several devices, including Behringer U-PHORIA UM2 and RODE NT-USB Mini.
+// We'll disable this for now until we understand more about what's happening.
+#if 0
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
         if (hint && *hint) {
             if (SDL_strcasecmp(hint, "Communications") == 0) {
@@ -754,6 +757,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
                 audioProps.eCategory = AudioCategory_Media;
             }
         }
+#endif
 
         if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
             audioProps.Options = AUDCLNT_STREAMOPTIONS_RAW;
