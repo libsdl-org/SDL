@@ -5,6 +5,8 @@ import { promptAction } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
 import { Action, Key, KeyEvent } from '@kit.InputKit';
 import { pasteboard, BusinessError } from '@kit.BasicServicesKit';
+import { webview } from '@kit.ArkWeb';
+import WebPageExternal from './WebPageExternal';
 
 const DOMAIN = 0x0000;
 
@@ -64,6 +66,11 @@ let callbackRef: ArkNapiCallback = new ArkNapiCallback()
 @Component
 struct Index {
   async aboutToAppear(): Promise<void> {
+    let dlg = new CustomDialogController({
+      builder: WebPageExternal({onClose: () => { dlg.close() }, url: "https://cn.bing.com"})
+    })
+    dlg.open()
+
     sdltest.sdlCallbackInit(callbackRef)
     focusControl.requestFocus('mainView')
     await controller.attach(true, {

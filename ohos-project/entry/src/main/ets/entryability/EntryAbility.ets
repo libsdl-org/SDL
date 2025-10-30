@@ -40,9 +40,16 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+
+    windowStage.getMainWindow().then(async (win) => {
+      win.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
+      win.setWindowLayoutFullScreen(true)
+      win.setPreferredOrientation(window.Orientation.UNSPECIFIED)
+      win.setResizeByDragEnabled(true)
+    })
 
     windowStage.loadContent('pages/Index', (err) => {
       reqPermissionsFromUser(permissions, this.context);
@@ -51,8 +58,6 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
-      windowStage.getMainWindowSync().getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
-      windowStage.getMainWindowSync().setWindowLayoutFullScreen(true)
     });
   }
 

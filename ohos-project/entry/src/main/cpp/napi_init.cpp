@@ -1,6 +1,7 @@
 #include "SDL3/SDL_assert.h"
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_messagebox.h"
+#include "SDL3/SDL_misc.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3/SDL_timer.h"
 #include "SDL3/SDL_video.h"
@@ -118,6 +119,8 @@ int main()
     SDL_Log("sdl error: %s", SDL_GetError());
     SDL_Window* win = SDL_CreateWindow("test", 1024, 1024, SDL_WINDOW_OPENGL);
     
+    SDL_OpenURL("https://bilibili.com");
+    
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "SDL Application", "test!", win);
     SDL_StartTextInput(win);
     // SDL_StopTextInput();
@@ -159,6 +162,7 @@ int main()
     
     ((PFNGLDELETESHADERPROC)SDL_GL_GetProcAddress("glDeleteShader"))(vexshader);
     ((PFNGLDELETESHADERPROC)SDL_GL_GetProcAddress("glDeleteShader"))(frgshader);
+    ((PFNGLCLEARCOLORPROC)SDL_GL_GetProcAddress("glClearColor"))(0, 0, 0, 0);
     
     while (true) {
         int w, h;
