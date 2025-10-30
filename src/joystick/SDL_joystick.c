@@ -2718,7 +2718,7 @@ void SDL_UpdateJoysticks(void)
     Uint64 now;
     SDL_Joystick *joystick;
 
-    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
+    if (!SDL_joysticks_initialized) {
         return;
     }
 
