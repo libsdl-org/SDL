@@ -102,7 +102,9 @@ typedef struct
     Uint64 rumble_timestamp;
     Uint32 rumble_seq;
     Uint16 rumble_hi_amp;
+    Uint16 rumble_hi_freq;
     Uint16 rumble_lo_amp;
+    Uint16 rumble_lo_freq;
     Uint32 rumble_error;
     bool rumble_updated;
 
@@ -569,6 +571,9 @@ static bool HIDAPI_DriverSwitch2_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
+    ctx->rumble_hi_freq = 0x187;
+    ctx->rumble_lo_freq = 0x112;
+
     // Set up for vertical mode
     ctx->vertical_mode = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, false);
 
@@ -970,6 +975,15 @@ static void HandleSwitchProState(Uint64 timestamp, SDL_Joystick *joystick, SDL_D
     );
 }
 
+static void EncodeHDRumble(Uint16 high_freq, Uint16 high_amp, Uint16 low_freq, Uint16 low_amp, Uint8 rumble_data[5])
+{
+    rumble_data[0] = high_freq & 0xFF;
+    rumble_data[1] = ((high_amp >> 4) & 0xfc) | ((high_freq >> 8) & 0x03);
+    rumble_data[2] = (high_amp >> 12) | (low_freq << 4);
+    rumble_data[3] = (low_amp & 0xc0) | ((low_freq >> 4) & 0x3f);
+    rumble_data[4] = low_amp >> 8;
+}
+
 static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
 {
     if (!ctx->rumble_updated && !ctx->rumble_lo_amp && !ctx->rumble_hi_amp) {
@@ -1010,11 +1024,7 @@ static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
         int low_amp = ctx->rumble_lo_amp * RUMBLE_MAX / UINT16_MAX;
         int high_amp = ctx->rumble_hi_amp * RUMBLE_MAX / UINT16_MAX;
         rumble_data[0x01] = 0x50 | (ctx->rumble_seq & 0xf);
-        rumble_data[0x02] = 0x87;
-        rumble_data[0x03] = ((high_amp >> 4) & 0xfc) | 1;
-        rumble_data[0x04] = (high_amp >> 12) | 0x20;
-        rumble_data[0x05] = (low_amp & 0xc0) | 0x11;
-        rumble_data[0x06] = low_amp >> 8;
+        EncodeHDRumble(ctx->rumble_hi_freq, high_amp, ctx->rumble_lo_freq, low_amp, &rumble_data[0x02]);
         switch (ctx->device->product_id) {
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT:
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT:
