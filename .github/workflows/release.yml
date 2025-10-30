@@ -204,10 +204,22 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}"  \
               -DCMAKE_SYSTEM_NAME=iOS                                       \
               -DCMAKE_OSX_ARCHITECTURES="arm64"                             \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                            \
               -Werror=dev                                                   \
               -B build_ios
           cmake --build build_ios --config Release --verbose
+
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                          \
+              -DTEST_FULL=FALSE                                                                        \
+              -DTEST_STATIC=FALSE                                                                      \
+              -DTEST_TEST=FALSE                                                                        \
+              -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/ios-arm64"  \
+              -DCMAKE_SYSTEM_NAME=iOS                                                                  \
+              -DCMAKE_OSX_ARCHITECTURES="arm64"                                                        \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                                                       \
+              -Werror=dev                                                                              \
+              -B build_ios2
+          cmake --build build_ios2 --config Release --verbose
       - name: 'CMake (configure + build) tvOS'
         run: |
           cmake -S "${{ steps.src.outputs.path }}/cmake/test"               \
@@ -217,10 +229,22 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}"  \
               -DCMAKE_SYSTEM_NAME=tvOS                                      \
               -DCMAKE_OSX_ARCHITECTURES="arm64"                             \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                            \
               -Werror=dev                                                   \
               -B build_tvos
           cmake --build build_tvos --config Release --verbose
+
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                          \
+              -DTEST_FULL=FALSE                                                                        \
+              -DTEST_STATIC=FALSE                                                                      \
+              -DTEST_TEST=FALSE                                                                        \
+              -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/tvos-arm64" \
+              -DCMAKE_SYSTEM_NAME=tvOS                                                                 \
+              -DCMAKE_OSX_ARCHITECTURES="arm64"                                                        \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                                                       \
+              -Werror=dev                                                                              \
+              -B build_tvos2
+          cmake --build build_tvos2 --config Release --verbose
       - name: 'CMake (configure + build) iOS simulator'
         run: |
           sysroot=$(xcodebuild -version -sdk iphonesimulator Path)
@@ -237,6 +261,19 @@ jobs:
               -Werror=dev                                                   \
               -B build_ios_simulator
           cmake --build build_ios_simulator --config Release --verbose
+
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                                          \
+              -DTEST_FULL=FALSE                                                                                        \
+              -DTEST_STATIC=FALSE                                                                                      \
+              -DTEST_TEST=FALSE                                                                                        \
+              -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/ios-arm64_x86_64-simulator" \
+              -DCMAKE_SYSTEM_NAME=iOS                                                                                  \
+              -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                                                                 \
+              -DCMAKE_OSX_SYSROOT="${sysroot}"                                                                         \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                                                                       \
+              -Werror=dev                                                                                              \
+              -B build_ios_simulator2
+          cmake --build build_ios_simulator2 --config Release --verbose
       - name: 'CMake (configure + build) tvOS simulator'
         run: |
           sysroot=$(xcodebuild -version -sdk appletvsimulator Path)
@@ -253,6 +290,19 @@ jobs:
               -Werror=dev                                                   \
               -B build_tvos_simulator
           cmake --build build_tvos_simulator --config Release --verbose
+
+          cmake -S "${{ steps.src.outputs.path }}/cmake/test"                                                           \
+              -DTEST_FULL=FALSE                                                                                         \
+              -DTEST_STATIC=FALSE                                                                                       \
+              -DTEST_TEST=FALSE                                                                                         \
+              -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/tvos-arm64_x86_64-simulator" \
+              -DCMAKE_SYSTEM_NAME=tvOS                                                                                  \
+              -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                                                                  \
+              -DCMAKE_OSX_SYSROOT="${sysroot}"                                                                          \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                                                                        \
+              -Werror=dev                                                                                               \
+              -B build_tvos_simulator2
+          cmake --build build_tvos_simulator2 --config Release --verbose
 
   msvc:
     needs: [src]
@@ -535,7 +585,7 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          local-cache: true
+          local-cache: false
           ndk-version: r28c
       - name: 'Setup Java JDK'
         uses: actions/setup-java@v4
@@ -610,8 +660,14 @@ jobs:
           python "${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" -o /tmp/SDL3-android
           echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
           echo "sdl3-aar=/tmp/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" >>$GITHUB_OUTPUT
+      - name: 'Verify alignment of libSDL3.so (arm64-v8a/x86_64)'
+        run: |
+          set -e
+          ${{ steps.src.outputs.path }}/build-scripts/check_elf_alignment.sh ${{ steps.sdk.outputs.prefix }}/lib/arm64-v8a/libSDL3.so
+          ${{ steps.src.outputs.path }}/build-scripts/check_elf_alignment.sh ${{ steps.sdk.outputs.prefix }}/lib/x86_64/libSDL3.so
       - name: 'CMake (configure + build) x86, x64, arm32, arm64'
         run: |
+          set -e
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
           for android_abi in ${android_abis}; do
             echo "Configuring ${android_abi}..."

@@ -33,6 +33,7 @@ typedef struct Wayland_ColorInfoState
 {
     struct wp_image_description_v1 *wp_image_description;
     struct wp_image_description_info_v1 *wp_image_description_info;
+    struct wl_event_queue *queue;
 
     union
     {
@@ -73,6 +74,9 @@ void Wayland_FreeColorInfoState(Wayland_ColorInfoState *state)
 {
     if (state) {
         Wayland_CancelColorInfoRequest(state);
+        if (state->queue) {
+            WAYLAND_wl_event_queue_destroy(state->queue);
+        }
 
         switch (state->object_type) {
         case WAYLAND_COLOR_OBJECT_TYPE_WINDOW:
@@ -212,18 +216,10 @@ static void PumpColorspaceEvents(Wayland_ColorInfoState *state)
     SDL_VideoData *vid = SDL_GetVideoDevice()->internal;
 
     // Run the image description sequence to completion in its own queue.
-    struct wl_event_queue *queue = WAYLAND_wl_display_create_queue(vid->display);
-    if (state->deferred_event_processing) {
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)state->wp_image_description_info, queue);
-    } else {
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)state->wp_image_description, queue);
-    }
-
     while (state->wp_image_description) {
-        WAYLAND_wl_display_dispatch_queue(vid->display, queue);
+        WAYLAND_wl_display_dispatch_queue(vid->display, state->queue);
     }
 
-    WAYLAND_wl_event_queue_destroy(queue);
     Wayland_FreeColorInfoState(state);
 }
 
@@ -246,8 +242,20 @@ static void image_description_handle_ready(void *data,
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
 
-    // This will inherit the queue of the factory image description object.
-    state->wp_image_description_info = wp_image_description_v1_get_information(state->wp_image_description);
+    /* If event processing was deferred, then the image description is on the default queue.
+     * Otherwise, it will inherit the queue from the image description object.
+     */
+    if (state->deferred_event_processing) {
+        SDL_VideoData *vid = SDL_GetVideoDevice()->internal;
+        state->queue = Wayland_DisplayCreateQueue(vid->display, "SDL Color Management Queue");
+
+        struct wl_proxy *image_desc_wrapper = WAYLAND_wl_proxy_create_wrapper(state->wp_image_description);
+        WAYLAND_wl_proxy_set_queue(image_desc_wrapper, state->queue);
+        state->wp_image_description_info = wp_image_description_v1_get_information((struct wp_image_description_v1 *)image_desc_wrapper);
+        WAYLAND_wl_proxy_wrapper_destroy(image_desc_wrapper);
+    } else {
+        state->wp_image_description_info = wp_image_description_v1_get_information(state->wp_image_description);
+    }
     wp_image_description_info_v1_add_listener(state->wp_image_description_info, &image_description_info_listener, data);
 
     if (state->deferred_event_processing) {
@@ -271,7 +279,17 @@ void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event
         state->window_data = window_data;
         state->object_type = WAYLAND_COLOR_OBJECT_TYPE_WINDOW;
         state->deferred_event_processing = defer_event_processing;
-        state->wp_image_description = wp_color_management_surface_feedback_v1_get_preferred(window_data->wp_color_management_surface_feedback);
+
+        if (!defer_event_processing) {
+            state->queue = Wayland_DisplayCreateQueue(window_data->waylandData->display, "SDL Color Management Queue");
+
+            struct wl_proxy *surface_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(window_data->wp_color_management_surface_feedback);
+            WAYLAND_wl_proxy_set_queue(surface_feedback_wrapper, state->queue);
+            state->wp_image_description = wp_color_management_surface_feedback_v1_get_preferred((struct wp_color_management_surface_feedback_v1 *)surface_feedback_wrapper);
+            WAYLAND_wl_proxy_wrapper_destroy(surface_feedback_wrapper);
+        } else {
+            state->wp_image_description = wp_color_management_surface_feedback_v1_get_preferred(window_data->wp_color_management_surface_feedback);
+        }
         wp_image_description_v1_add_listener(state->wp_image_description, &image_description_listener, state);
 
         if (!defer_event_processing) {
@@ -291,7 +309,17 @@ void Wayland_GetColorInfoForOutput(SDL_DisplayData *display_data, bool defer_eve
         state->display_data = display_data;
         state->object_type = WAYLAND_COLOR_OBJECT_TYPE_DISPLAY;
         state->deferred_event_processing = defer_event_processing;
-        state->wp_image_description = wp_color_management_output_v1_get_image_description(display_data->wp_color_management_output);
+
+        if (!defer_event_processing) {
+            state->queue = Wayland_DisplayCreateQueue(display_data->videodata->display, "SDL Color Management Queue");
+
+            struct wl_proxy *output_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(display_data->wp_color_management_output);
+            WAYLAND_wl_proxy_set_queue(output_feedback_wrapper, state->queue);
+            state->wp_image_description = wp_color_management_output_v1_get_image_description((struct wp_color_management_output_v1 *)output_feedback_wrapper);
+            WAYLAND_wl_proxy_wrapper_destroy(output_feedback_wrapper);
+        } else {
+            state->wp_image_description = wp_color_management_output_v1_get_image_description(display_data->wp_color_management_output);
+        }
         wp_image_description_v1_add_listener(state->wp_image_description, &image_description_listener, state);
 
         if (!defer_event_processing) {

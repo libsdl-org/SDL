@@ -35,7 +35,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
@@ -89,7 +89,7 @@ static void MoveSprites(void)
 static int InitSprites(void)
 {
     /* Create the sprite texture and initialize the sprite positions */
-    sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
+    sprite = CreateTexture(renderer, icon_png, icon_png_len, &sprite_w, &sprite_h);
 
     if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create sprite texture");

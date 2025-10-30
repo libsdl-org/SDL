@@ -315,6 +315,8 @@ typedef struct
     Uint64 m_ulIMUUpdateIntervalNS;
     Uint64 m_ulTimestampNS;
     bool m_bVerticalMode;
+    SDL_PowerState m_ePowerState;
+    int m_nPowerPercent;
 
     SwitchInputOnlyControllerStatePacket_t m_lastInputOnlyState;
     SwitchSimpleStatePacket_t m_lastSimpleState;
@@ -2583,21 +2585,29 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
      * LSB of the battery nibble is used to report charging.
      * The battery level is reported from 0(empty)-8(full)
      */
-    SDL_PowerState state;
     int charging = (packet->controllerState.ucBatteryAndConnection & 0x10);
     int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
-    int percent = (int)SDL_roundf((level / 8.0f) * 100.0f);
-
     if (charging) {
         if (level == 8) {
-            state = SDL_POWERSTATE_CHARGED;
+            ctx->m_ePowerState = SDL_POWERSTATE_CHARGED;
         } else {
-            state = SDL_POWERSTATE_CHARGING;
+            ctx->m_ePowerState = SDL_POWERSTATE_CHARGING;
         }
     } else {
-        state = SDL_POWERSTATE_ON_BATTERY;
+        ctx->m_ePowerState = SDL_POWERSTATE_ON_BATTERY;
     }
-    SDL_SendJoystickPowerInfo(joystick, state, percent);
+    ctx->m_nPowerPercent = (int)SDL_roundf((level / 8.0f) * 100.0f);
+
+    if (!ctx->device->parent) {
+        SDL_PowerState state = ctx->m_ePowerState;
+        int percent = ctx->m_nPowerPercent;
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
+    } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        SDL_DriverSwitch_Context *other = (SDL_DriverSwitch_Context *)ctx->device->parent->children[0]->context;
+        SDL_PowerState state = (SDL_PowerState)SDL_min(ctx->m_ePowerState, other->m_ePowerState);
+        int percent = SDL_min(ctx->m_nPowerPercent, other->m_nPowerPercent);
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
+    }
 
     if (ctx->m_bReportSensors) {
         bool bHasSensorData = (packet->imuState[0].sAccelZ != 0 ||

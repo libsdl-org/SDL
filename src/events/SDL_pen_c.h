@@ -36,6 +36,8 @@ typedef Uint32 SDL_PenCapabilityFlags;
 #define SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE (1u << 6)  /**< Provides barrel pressure on SDL_PEN_AXIS_TANGENTIAL_PRESSURE. */
 #define SDL_PEN_CAPABILITY_ERASER    (1u << 7)  /**< Pen also has an eraser tip. */
 
+// Rename before making this public as it clashes with SDL_PenDeviceType.
+// Prior art in Android calls this "tool type".
 typedef enum SDL_PenSubtype
 {
     SDL_PEN_TYPE_UNKNOWN,   /**< Unknown pen device */
@@ -53,6 +55,7 @@ typedef struct SDL_PenInfo
     Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
     int num_buttons; /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
     SDL_PenSubtype subtype;  /**< type of pen device */
+    SDL_PenDeviceType device_type;
 } SDL_PenInfo;
 
 // Backend calls this when a new pen device is hotplugged, plus once for each pen already connected at startup.

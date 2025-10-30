@@ -184,8 +184,9 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_PALETTE_PIXELART = 4;
+static const float TEXTURETYPE_PALETTE_NEAREST = 3;
+static const float TEXTURETYPE_PALETTE_LINEAR = 4;
+static const float TEXTURETYPE_PALETTE_PIXELART = 5;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -1725,7 +1726,6 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
     };
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    SDL_VideoDevice *device = SDL_GetVideoDevice();
     VkResult result = VK_SUCCESS;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     bool createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_VULKAN_DEBUG, false);
@@ -1735,7 +1735,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "SDL_Vulkan_LoadLibrary failed" );
         return VK_ERROR_UNKNOWN;
     }
-    vkGetInstanceProcAddr = device ? (PFN_vkGetInstanceProcAddr)device->vulkan_config.vkGetInstanceProcAddr : NULL;
+    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
     if(!vkGetInstanceProcAddr) {
         SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "vkGetInstanceProcAddr is NULL" );
         return VK_ERROR_UNKNOWN;
@@ -1810,9 +1810,8 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     if (rendererData->surface) {
         rendererData->surface_external = true;
     } else {
-        if (!device->Vulkan_CreateSurface || !device->Vulkan_CreateSurface(device, renderer->window, rendererData->instance, NULL, &rendererData->surface)) {
+        if (!SDL_Vulkan_CreateSurface(renderer->window, rendererData->instance, NULL, &rendererData->surface)) {
             VULKAN_DestroyAll(renderer);
-            SET_ERROR_MESSAGE("Vulkan_CreateSurface() failed");
             return VK_ERROR_UNKNOWN;
         }
     }
@@ -2468,7 +2467,7 @@ static VkResult VULKAN_CreateWindowSizeDependentResources(SDL_Renderer *renderer
 
     result = VULKAN_CreateSwapChain(renderer, w, h);
     if (result != VK_SUCCESS) {
-        rendererData->recreateSwapchain = VK_TRUE;
+        rendererData->recreateSwapchain = true;
     }
 
     rendererData->viewportDirty = true;
@@ -2518,6 +2517,13 @@ static void VULKAN_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *ev
     if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         rendererData->recreateSwapchain = true;
     }
+
+#ifdef SDL_PLATFORM_ANDROID
+    // Prevent black screen when app returns from background
+    if (event->type == SDL_EVENT_WINDOW_RESTORED) {
+        VULKAN_HandleDeviceLost(renderer);
+    }
+#endif
 }
 
 static bool VULKAN_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
@@ -3424,10 +3430,19 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
         }
 
         if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+                break;
+            case SDL_SCALEMODE_PIXELART:
                 constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
-            } else {
-                constants->texture_type = TEXTURETYPE_PALETTE;
+                break;
+            default:
+                SDL_assert(!"Unknown scale mode");
+                break;
             }
         } else {
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
@@ -3437,7 +3452,9 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             }
         }
 
-        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+            constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+            constants->texture_type == TEXTURETYPE_RGB_PIXELART) {
             constants->texture_width = texture->w;
             constants->texture_height = texture->h;
             constants->texel_width = 1.0f / constants->texture_width;
@@ -3810,7 +3827,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
     return true;
 }
 
-static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
@@ -3831,8 +3848,14 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+                samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+            } else {
+                samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+                samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -3907,7 +3930,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     }
     imageViews[numImageViews++] = textureData->mainImage.imageView;
 
-    samplers[numSamplers] = VULKAN_GetSampler(rendererData, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+    samplers[numSamplers] = VULKAN_GetSampler(rendererData, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
     if (samplers[numSamplers] == VK_NULL_HANDLE) {
         return false;
     }
@@ -3938,7 +3961,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
         }
         imageViews[numImageViews++] = palette->image.imageView;
 
-        samplers[numSamplers] = VULKAN_GetSampler(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+        samplers[numSamplers] = VULKAN_GetSampler(rendererData, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (samplers[numSamplers] == VK_NULL_HANDLE) {
             return false;
         }

@@ -21,6 +21,8 @@
 #include "SDL_internal.h"
 
 #include "../SDL_dialog_utils.h"
+#include "SDL_zenitydialog.h"
+#include "SDL_zenitymessagebox.h"
 
 #define X11_HANDLE_MAX_WIDTH 28
 typedef struct
@@ -88,6 +90,7 @@ static bool get_x11_window_handle(SDL_PropertiesID props, char *out)
 static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     zenityArgs *args = SDL_calloc(1, sizeof(*args));
+    int zenity_major = 0, zenity_minor = 0;
     if (!args) {
         return NULL;
     }
@@ -109,6 +112,8 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
         goto cleanup;
     }
     args->argv = argv;
+
+    SDL_get_zenity_version(&zenity_major, &zenity_minor);
 
     /* Properties can be destroyed as soon as the function returns; copy over what we need. */
 #define COPY_STRING_PROPERTY(dst, prop)                             \
@@ -158,7 +163,8 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
         argv[argc++] = args->filename;
     }
 
-    if (get_x11_window_handle(props, args->x11_window_handle)) {
+    if (get_x11_window_handle(props, args->x11_window_handle) &&
+        (zenity_major > 3 || (zenity_major == 3 && zenity_minor >= 6))) {
         argv[argc++] = "--modal";
         argv[argc++] = "--attach";
         argv[argc++] = args->x11_window_handle;

@@ -76,7 +76,6 @@ struct SDL_VideoData {
 	int input_action_handles_axes_count;
 	VRActionHandle_t input_action_handles_haptics[2];
 
-    bool bKeyboardShown;
     bool bHasShownOverlay;
     int targw, targh;
     int last_targw, last_targh;

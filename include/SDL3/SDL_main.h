@@ -110,7 +110,8 @@
  * Even if available, an app can define SDL_MAIN_HANDLED and provide their
  * own, if they know what they're doing.
  *
- * This macro is used internally by SDL, and apps probably shouldn't rely on it.
+ * This macro is used internally by SDL, and apps probably shouldn't rely on
+ * it.
  *
  * \since This macro is available since SDL 3.2.0.
  */
@@ -125,10 +126,11 @@
  * This macro is defined by `SDL_main.h`, which is not automatically included
  * by `SDL.h`.
  *
- * Even if required, an app can define SDL_MAIN_HANDLED and provide their
- * own, if they know what they're doing.
+ * Even if required, an app can define SDL_MAIN_HANDLED and provide their own,
+ * if they know what they're doing.
  *
- * This macro is used internally by SDL, and apps probably shouldn't rely on it.
+ * This macro is used internally by SDL, and apps probably shouldn't rely on
+ * it.
  *
  * \since This macro is available since SDL 3.2.0.
  */

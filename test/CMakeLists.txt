@@ -37,7 +37,7 @@ add_library(sdltests_utils OBJECT
 )
 target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
-file(GLOB RESOURCE_FILES *.bmp *.wav *.csv *.hex moose.dat utf8.txt)
+file(GLOB RESOURCE_FILES *.png *.wav *.csv *.hex moose.dat utf8.txt)
 
 option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 
@@ -239,7 +239,7 @@ function(files2headers OUTPUT)
             add_custom_command(OUTPUT "${intermediate}"
                 COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
                 COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
-                DEPENDS "${xxd}" "${bmp}"
+                DEPENDS "${xxd}" "${png}"
             )
         endif()
     endforeach()
@@ -248,24 +248,25 @@ function(files2headers OUTPUT)
 endfunction()
 
 files2headers(gamepad_image_headers
-    gamepad_axis_arrow.bmp
-    gamepad_axis.bmp
-    gamepad_back.bmp
-    gamepad_battery.bmp
-    gamepad_battery_wired.bmp
-    gamepad_button_background.bmp
-    gamepad_button.bmp
-    gamepad_button_small.bmp
-    gamepad_face_abxy.bmp
-    gamepad_face_bayx.bmp
-    gamepad_face_sony.bmp
-    gamepad_front.bmp
-    gamepad_touchpad.bmp
-    gamepad_wired.bmp
-    gamepad_wireless.bmp
+    gamepad_axis_arrow.png
+    gamepad_axis.png
+    gamepad_back.png
+    gamepad_battery.png
+    gamepad_battery_wired.png
+    gamepad_button_background.png
+    gamepad_button.png
+    gamepad_button_small.png
+    gamepad_face_abxy.png
+    gamepad_face_axby.png
+    gamepad_face_bayx.png
+    gamepad_face_sony.png
+    gamepad_front.png
+    gamepad_touchpad.png
+    gamepad_wired.png
+    gamepad_wireless.png
 )
-files2headers(icon_bmp_header icon.bmp)
-files2headers(glass_bmp_header glass.bmp)
+files2headers(icon_png_header icon.png)
+files2headers(glass_png_header glass.png)
 
 set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FindFFmpeg.cmake")
@@ -278,7 +279,7 @@ if(FFmpeg_FOUND)
     cmake_pop_check_state()
 endif()
 if(FFmpeg_FOUND AND LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
-    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_png_header} DEPENDS generate-icon_png_header)
     if(LIBAVUTIL_AVFULKANFRAMESCONTEXT_HAS_FORMAT)
       target_compile_definitions(testffmpeg PRIVATE FFMPEG_VULKAN_SUPPORT)
     endif()
@@ -355,11 +356,12 @@ add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURC
 add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
 add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers} DEPENDS generate-gamepad_image_headers)
+add_sdl_test_executable(testdlopennote TESTUTILS SOURCES testdlopennote.c)
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
 add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
-add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
 if(ANDROID)
@@ -391,6 +393,7 @@ if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_sdl_test_executable(pretest SOURCES pretest.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60)
 endif()
 add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS SOURCES testrendertarget.c)
+add_sdl_test_executable(testrotate SOURCES testrotate.c)
 add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS SOURCES testscale.c)
 add_sdl_test_executable(testsem NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" NONINTERACTIVE_ARGS 10 NONINTERACTIVE_TIMEOUT 30 SOURCES testsem.c)
 add_sdl_test_executable(testsensor SOURCES testsensor.c)
@@ -398,18 +401,17 @@ add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.
 if(EMSCRIPTEN)
     target_link_options(testshader PRIVATE "-sLEGACY_GL_EMULATION")
 endif()
-add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_bmp_header} DEPENDS generate-glass_bmp_header)
+add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_png_header} DEPENDS generate-glass_png_header)
 add_sdl_test_executable(testsoftwaretransparent SOURCES testsoftwaretransparent.c)
 add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
-add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
-add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_png_header} DEPENDS generate-icon_png_header)
+add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testpalette SOURCES testpalette.c)
-add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c)
 add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c)
-add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
 add_sdl_test_executable(testwm SOURCES testwm.c)
 add_sdl_test_executable(testyuv NONINTERACTIVE NONINTERACTIVE_ARGS "--automated" NEEDS_RESOURCES TESTUTILS SOURCES testyuv.c testyuv_cvt.c)

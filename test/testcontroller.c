@@ -1237,12 +1237,8 @@ static void DelController(SDL_JoystickID id)
         CyclePS5TriggerEffect(&controllers[i]);
     }
     SDL_assert(controllers[i].gamepad == NULL);
-    if (controllers[i].axis_state) {
-        SDL_free(controllers[i].axis_state);
-    }
-    if (controllers[i].imu_state) {
-        SDL_free(controllers[i].imu_state);
-    }
+    SDL_free(controllers[i].axis_state);
+    SDL_free(controllers[i].imu_state);
     if (controllers[i].joystick) {
         SDL_CloseJoystick(controllers[i].joystick);
     }
@@ -2212,9 +2208,9 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         }
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
-            if (GamepadButtonContains(GetGyroResetButton(gyro_elements), event->button.x, event->button.y)) {
+            if (controller && GamepadButtonContains(GetGyroResetButton(gyro_elements), event->button.x, event->button.y)) {
                 ResetGyroOrientation(controller->imu_state);
-            } else if (GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), event->button.x, event->button.y)) {
+            } else if (controller && GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), event->button.x, event->button.y)) {
                 BeginNoiseCalibrationPhase(controller->imu_state);
             } else if (GamepadButtonContains(setup_mapping_button, event->button.x, event->button.y)) {
                 SetDisplayMode(CONTROLLER_MODE_BINDING);

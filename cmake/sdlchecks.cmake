@@ -441,6 +441,23 @@ macro(CheckX11)
         if(HAVE_XINPUT2_MULTITOUCH)
           set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
         endif()
+
+        # Check for gesture
+        check_c_source_compiles("
+            #include <X11/Xlib.h>
+            #include <X11/Xproto.h>
+            #include <X11/extensions/XInput2.h>
+            int event_type = XI_GesturePinchBegin;
+            XITouchClassInfo *t;
+            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
+              return (Status)0;
+            }
+            int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_GESTURE)
+        if(HAVE_XINPUT2_GESTURE)
+          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE 1)
+        endif()
+
+
       endif()
 
       # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
@@ -509,6 +526,31 @@ macro(CheckX11)
     sdl_compile_definitions(PRIVATE "MESA_EGL_NO_X11_HEADERS" "EGL_NO_X11")
   endif()
   cmake_pop_check_state()
+endmacro()
+
+macro(CheckFribidi)
+  if(SDL_FRIBIDI)
+    set(FRIBIDI_PKG_CONFIG_SPEC fribidi)
+    set(PC_FRIBIDI_FOUND FALSE)
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(PC_FRIBIDI IMPORTED_TARGET ${FRIBIDI_PKG_CONFIG_SPEC})
+    endif()
+    if(PC_FRIBIDI_FOUND)
+      set(HAVE_FRIBIDI TRUE)
+      set(HAVE_FRIBIDI_H 1)
+      if(SDL_FRIBIDI_SHARED AND NOT HAVE_SDL_LOADSO)
+        message(WARNING "You must have SDL_LoadObject() support for dynamic fribidi loading")
+      endif()
+      FindLibraryAndSONAME("fribidi" LIBDIRS ${PC_FRIBIDI_LIBRARY_DIRS})
+      if(SDL_FRIBIDI_SHARED AND FRIBIDI_LIB AND HAVE_SDL_LOADSO)
+        set(SDL_FRIBIDI_DYNAMIC "\"${FRIBIDI_LIB_SONAME}\"")
+        set(HAVE_FRIBIDI_SHARED TRUE)
+        sdl_include_directories(PRIVATE SYSTEM $<TARGET_PROPERTY:PkgConfig::PC_FRIBIDI,INTERFACE_INCLUDE_DIRECTORIES>)
+      else()
+        sdl_link_dependency(fribidi LIBS PkgConfig::PC_FRIBIDI PKG_CONFIG_PREFIX PC_FRIBIDI PKG_CONFIG_SPECS ${FRIBIDI_PKG_CONFIG_SPEC})
+      endif()
+    endif()
+  endif()
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)

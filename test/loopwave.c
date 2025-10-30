@@ -62,13 +62,17 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
-            if (!filename) {
+            if (SDL_strcmp(argv[i], "--role") == 0 && argv[i + 1]) {
+                SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, argv[i + 1]);
+                ++i;
+                consumed = 1;
+            } else if (!filename) {
                 filename = argv[i];
                 consumed = 1;
             }
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[sample.wav]", NULL };
+            static const char *options[] = { "[--role ROLE]", "[sample.wav]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             exit(1);
         }

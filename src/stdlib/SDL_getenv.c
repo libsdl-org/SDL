@@ -564,9 +564,7 @@ const char *SDL_getenv_unsafe(const char *name)
             maxlen = length;
         } else {
             if (GetLastError() != ERROR_SUCCESS) {
-                if (string) {
-                    SDL_free(string);
-                }
+                SDL_free(string);
                 return NULL;
             }
             break;

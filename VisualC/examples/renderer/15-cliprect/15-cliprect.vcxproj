@@ -8,7 +8,7 @@
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\15-cliprect\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\renderer\15-cliprect\cliprect.c" />
-    <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)\..\test\sample.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

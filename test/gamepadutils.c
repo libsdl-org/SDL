@@ -388,7 +388,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *renderer, unsigned char *data, u
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_DestroySurface(surface);
@@ -402,32 +402,32 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
     GamepadImage *ctx = SDL_calloc(1, sizeof(*ctx));
     if (ctx) {
         ctx->renderer = renderer;
-        ctx->front_texture = CreateTexture(renderer, gamepad_front_bmp, gamepad_front_bmp_len);
-        ctx->back_texture = CreateTexture(renderer, gamepad_back_bmp, gamepad_back_bmp_len);
+        ctx->front_texture = CreateTexture(renderer, gamepad_front_png, gamepad_front_png_len);
+        ctx->back_texture = CreateTexture(renderer, gamepad_back_png, gamepad_back_png_len);
         SDL_GetTextureSize(ctx->front_texture, &ctx->gamepad_width, &ctx->gamepad_height);
 
-        ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_bmp, gamepad_face_abxy_bmp_len);
-        ctx->face_axby_texture = CreateTexture(renderer, gamepad_face_axby_bmp, gamepad_face_axby_bmp_len);
-        ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_bmp, gamepad_face_bayx_bmp_len);
-        ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
+        ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_png, gamepad_face_abxy_png_len);
+        ctx->face_axby_texture = CreateTexture(renderer, gamepad_face_axby_png, gamepad_face_axby_png_len);
+        ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_png, gamepad_face_bayx_png_len);
+        ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_png, gamepad_face_sony_png_len);
         SDL_GetTextureSize(ctx->face_abxy_texture, &ctx->face_width, &ctx->face_height);
 
-        ctx->connection_texture[0] = CreateTexture(renderer, gamepad_wired_bmp, gamepad_wired_bmp_len);
-        ctx->connection_texture[1] = CreateTexture(renderer, gamepad_wireless_bmp, gamepad_wireless_bmp_len);
+        ctx->connection_texture[0] = CreateTexture(renderer, gamepad_wired_png, gamepad_wired_png_len);
+        ctx->connection_texture[1] = CreateTexture(renderer, gamepad_wireless_png, gamepad_wireless_png_len);
         SDL_GetTextureSize(ctx->connection_texture[0], &ctx->connection_width, &ctx->connection_height);
 
-        ctx->battery_texture[0] = CreateTexture(renderer, gamepad_battery_bmp, gamepad_battery_bmp_len);
-        ctx->battery_texture[1] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
+        ctx->battery_texture[0] = CreateTexture(renderer, gamepad_battery_png, gamepad_battery_png_len);
+        ctx->battery_texture[1] = CreateTexture(renderer, gamepad_battery_wired_png, gamepad_battery_wired_png_len);
         SDL_GetTextureSize(ctx->battery_texture[0], &ctx->battery_width, &ctx->battery_height);
 
-        ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_bmp, gamepad_touchpad_bmp_len);
+        ctx->touchpad_texture = CreateTexture(renderer, gamepad_touchpad_png, gamepad_touchpad_png_len);
         SDL_GetTextureSize(ctx->touchpad_texture, &ctx->touchpad_width, &ctx->touchpad_height);
 
-        ctx->button_texture = CreateTexture(renderer, gamepad_button_bmp, gamepad_button_bmp_len);
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_png, gamepad_button_png_len);
         SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
         SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
 
-        ctx->axis_texture = CreateTexture(renderer, gamepad_axis_bmp, gamepad_axis_bmp_len);
+        ctx->axis_texture = CreateTexture(renderer, gamepad_axis_png, gamepad_axis_png_len);
         SDL_GetTextureSize(ctx->axis_texture, &ctx->axis_width, &ctx->axis_height);
         SDL_SetTextureColorMod(ctx->axis_texture, 10, 255, 21);
 
@@ -1001,10 +1001,10 @@ GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
     if (ctx) {
         ctx->renderer = renderer;
 
-        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_png, gamepad_button_small_png_len);
         SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
 
-        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
+        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_png, gamepad_axis_arrow_png_len);
         SDL_GetTextureSize(ctx->arrow_texture, &ctx->arrow_width, &ctx->arrow_height);
 
         ctx->element_highlighted = SDL_GAMEPAD_ELEMENT_INVALID;
@@ -2192,10 +2192,10 @@ JoystickDisplay *CreateJoystickDisplay(SDL_Renderer *renderer)
     if (ctx) {
         ctx->renderer = renderer;
 
-        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_bmp, gamepad_button_small_bmp_len);
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_png, gamepad_button_small_png_len);
         SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
 
-        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_bmp, gamepad_axis_arrow_bmp_len);
+        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_png, gamepad_axis_arrow_png_len);
         SDL_GetTextureSize(ctx->arrow_texture, &ctx->arrow_width, &ctx->arrow_height);
     }
     return ctx;
@@ -2628,7 +2628,7 @@ GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
     if (ctx) {
         ctx->renderer = renderer;
 
-        ctx->background = CreateTexture(renderer, gamepad_button_background_bmp, gamepad_button_background_bmp_len);
+        ctx->background = CreateTexture(renderer, gamepad_button_background_png, gamepad_button_background_png_len);
         SDL_GetTextureSize(ctx->background, &ctx->background_width, &ctx->background_height);
 
         SetGamepadButtonLabel(ctx, label);
@@ -2642,9 +2642,7 @@ void SetGamepadButtonLabel(GamepadButton *ctx, const char *label)
         return;
     }
 
-    if (ctx->label) {
-        SDL_free(ctx->label);
-    }
+    SDL_free(ctx->label);
 
     ctx->label = SDL_strdup(label);
     ctx->label_width = (float)(FONT_CHARACTER_SIZE * SDL_strlen(label));

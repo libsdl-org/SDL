@@ -1449,7 +1449,7 @@ while (my $d = readdir(DH)) {
             }
             $decl .= $additional_decl;
         } elsif ($symtype == 2) {  # a macro
-            if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)\s+/) {
+            if ($decl =~ /\A\s*\#\s*define\s+(.*?)(\(.*?\)|)(\s+|\Z)/) {
                 $sym = $1;
             } else {
                 #print "Found doxygen but no macro:\n$str\n\n";

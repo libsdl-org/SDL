@@ -153,6 +153,10 @@ typedef struct
     SDL_Rect confine;
     bool hide_cursor;
 
+    /* Misc. */
+    int quit_after_ms_interval;
+    SDL_TimerID quit_after_ms_timer;
+
     /* Options info */
     SDLTest_ArgumentParser common_argparser;
     SDLTest_ArgumentParser video_argparser;

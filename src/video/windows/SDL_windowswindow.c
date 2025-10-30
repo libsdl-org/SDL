@@ -391,7 +391,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = true;
-    data->last_displayID = window->last_displayID;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
 
@@ -590,9 +589,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
         if (data->drop_target) {
             WIN_AcceptDragAndDrop(window, false);
         }
-        if (data->ICMFileName) {
-            SDL_free(data->ICMFileName);
-        }
+        SDL_free(data->ICMFileName);
         if (data->keyboard_hook) {
             UnhookWindowsHookEx(data->keyboard_hook);
         }
@@ -1392,9 +1389,7 @@ void WIN_UpdateWindowICCProfile(SDL_Window *window, bool send_event)
                 // fileNameSize includes '\0' on return
                 if (!data->ICMFileName ||
                     SDL_wcscmp(data->ICMFileName, fileName) != 0) {
-                    if (data->ICMFileName) {
-                        SDL_free(data->ICMFileName);
-                    }
+                    SDL_free(data->ICMFileName);
                     data->ICMFileName = SDL_wcsdup(fileName);
                     if (send_event) {
                         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);

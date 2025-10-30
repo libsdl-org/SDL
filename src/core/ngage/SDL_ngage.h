@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 bool NGAGE_IsClassicModel();
+void NGAGE_DebugPrintf(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 #ifdef __cplusplus
 }

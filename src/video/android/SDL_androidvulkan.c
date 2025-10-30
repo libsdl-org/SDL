@@ -145,6 +145,7 @@ bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         return SDL_SetError(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME
                             " extension is not enabled in the Vulkan instance.");
     }
+
     SDL_zero(createInfo);
     createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
@@ -152,7 +153,11 @@ bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.window = windowData->native_window;
     result = vkCreateAndroidSurfaceKHR(instance, &createInfo, allocator, surface);
     if (result != VK_SUCCESS) {
-        return SDL_SetError("vkCreateAndroidSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
+        if (result == VK_ERROR_NATIVE_WINDOW_IN_USE_KHR) {
+            return SDL_SetError("vkCreateAndroidSurfaceKHR failed: %s, was the window created with SDL_WINDOW_VULKAN?", SDL_Vulkan_GetResultString(result));
+        } else {
+            return SDL_SetError("vkCreateAndroidSurfaceKHR failed: %s", SDL_Vulkan_GetResultString(result));
+        }
     }
     return true;
 }
