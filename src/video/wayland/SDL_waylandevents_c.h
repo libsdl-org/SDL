@@ -126,7 +126,7 @@ typedef struct SDL_WaylandSeat
     struct wl_list link;
 
     Uint32 last_implicit_grab_serial; // The serial of the last implicit grab event for window activation and selection data.
-    Uint32 registry_id;                        // The ID of the Wayland seat object,
+    Uint32 registry_id;               // The ID of the Wayland seat object,
 
     struct
     {
