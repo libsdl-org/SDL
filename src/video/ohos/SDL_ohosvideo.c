@@ -104,7 +104,6 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     device->HasClipboardText = OHOS_HasClipboardText;
     
     device->HasScreenKeyboardSupport = OHOS_HasScreenKeyboardSupport;
-    device->IsScreenKeyboardShown = OHOS_IsScreenKeyboardShownImpl;
     device->StartTextInput = OHOS_StartTextInputImpl;
     device->StopTextInput = OHOS_StopTextInputImpl;
     
