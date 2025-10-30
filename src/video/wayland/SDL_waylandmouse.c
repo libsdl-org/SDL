@@ -309,23 +309,11 @@ static struct wl_buffer *Wayland_CursorStateGetFrame(SDL_WaylandCursorState *sta
              * desired size are preferred over images that are smaller.
              */
             CustomCursorImage *closest = NULL;
-            int desired_w = (int)SDL_round(data->cursor_data.custom.width * state->scale);
-            int desired_h = (int)SDL_round(data->cursor_data.custom.height * state->scale);
-            int desired_size = desired_w * desired_h;
-            int closest_distance = -1;
-            int closest_size = -1;
-            for (int i = 0; i < data->cursor_data.custom.images_per_frame && closest_distance && data->cursor_data.custom.images[offset + i].buffer; ++i) {
-                CustomCursorImage *candidate = &data->cursor_data.custom.images[offset + i];
-                int size = candidate->width * candidate->height;
-                int delta_w = candidate->width - desired_w;
-                int delta_h = candidate->height - desired_h;
-                int distance = (delta_w * delta_w) + (delta_h * delta_h);
-                if (closest_distance < 0 || distance < closest_distance ||
-                    (size > desired_size && closest_size < desired_size)) {
-                    closest = candidate;
-                    closest_distance = distance;
-                    closest_size = size;
-                }
+            const int target_area = SDL_lround(data->cursor_data.custom.width * data->cursor_data.custom.height * state->scale);
+            int closest_area = 0;
+            for (int i = 0; i < data->cursor_data.custom.images_per_frame && closest_area < target_area && data->cursor_data.custom.images[offset + i].buffer; ++i) {
+                closest = &data->cursor_data.custom.images[offset + i];
+                closest_area = closest->width * closest->height;
             }
 
             return closest ? closest->buffer : NULL;
@@ -732,6 +720,14 @@ static bool Wayland_GetSystemCursor(SDL_CursorData *cdata, SDL_WaylandCursorStat
     return true;
 }
 
+static int surface_sort_callback(const void *a, const void *b)
+{
+    SDL_Surface *s1 = (SDL_Surface *)a;
+    SDL_Surface *s2 = (SDL_Surface *)b;
+
+    return (s1->w * s1->h) <= (s2->w * s2->h) ? -1 : 1;
+}
+
 static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
@@ -760,6 +756,7 @@ static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int
             goto failed;
         }
 
+        SDL_qsort(surfaces[i].surfaces, surfaces[i].count, sizeof(SDL_Surface *), surface_sort_callback);
         max_images = SDL_max(max_images, surfaces[i].count);
         for (int j = 0; j < surfaces[i].count; ++j) {
             pool_size += surfaces[i].surfaces[j]->w * surfaces[i].surfaces[j]->h * 4;
