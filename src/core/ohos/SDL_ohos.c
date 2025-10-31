@@ -294,6 +294,19 @@ void OHOS_MessageBox(const char* title, const char* message)
     napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
 }
 
+void OHOS_OpenLink(const char* url)
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "openLink";
+    data->argCount = 1;
+    data->arg[0].type = String;
+    data->arg[0].enabled = true;
+    data->arg[0].data.str = url;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+}
+
 const char* OHOS_Locale()
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));

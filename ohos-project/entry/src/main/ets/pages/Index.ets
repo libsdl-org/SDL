@@ -6,13 +6,18 @@ import { inputMethod } from '@kit.IMEKit'
 import { Action, Key, KeyEvent } from '@kit.InputKit';
 import { pasteboard, BusinessError } from '@kit.BasicServicesKit';
 import { webview } from '@kit.ArkWeb';
-import WebPageExternal from './WebPageExternal';
+import WebPageExternal, { updateURL } from './WebPageExternal';
+import { common } from '@kit.AbilityKit';
 
 const DOMAIN = 0x0000;
 
 let controller = inputMethod.getController()
 let input = false
 let targetText = ""
+let dlg = new CustomDialogController({
+  builder: WebPageExternal({onClose: () => { dlg.close() }})
+})
+let context: UIContext
 
 export class ArkNapiCallback {
   onMainLaunch() {
@@ -28,6 +33,11 @@ export class ArkNapiCallback {
   test(): number {
     hilog.info(DOMAIN, 'testTag', 'Call from native !!!')
     return 1
+  }
+
+  openLink(url: string) {
+    let con = context.getHostContext() as common.UIAbilityContext
+    con.openLink(url)
   }
 
   setPasteboardString(text: string) {
@@ -66,11 +76,7 @@ let callbackRef: ArkNapiCallback = new ArkNapiCallback()
 @Component
 struct Index {
   async aboutToAppear(): Promise<void> {
-    let dlg = new CustomDialogController({
-      builder: WebPageExternal({onClose: () => { dlg.close() }, url: "https://cn.bing.com"})
-    })
-    dlg.open()
-
+    context = this.getUIContext()
     sdltest.sdlCallbackInit(callbackRef)
     focusControl.requestFocus('mainView')
     await controller.attach(true, {

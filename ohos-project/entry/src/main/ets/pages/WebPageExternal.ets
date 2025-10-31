@@ -1,11 +1,15 @@
 import webview from "@ohos.web.webview";
 
+let pageURL = ""
+export function updateURL(url: string)
+{
+  pageURL = url;
+}
 @CustomDialog
 export default struct WebPageExternal {
   controller: CustomDialogController
   webcontroller: webview.WebviewController = new webview.WebviewController();
   onClose: () => void = () => {}
-  url: string = ""
 
   build() {
     Column() {
@@ -27,7 +31,7 @@ export default struct WebPageExternal {
           .height(20)
       }
       Web({
-        src: this.url,
+        src: pageURL,
         controller: this.webcontroller
       })
         .height('90%')
