@@ -7,6 +7,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { promptAction, window } from '@kit.ArkUI';
 import { KeyboardAvoidMode } from '@ohos.arkui.UIContext';
 import { BusinessError } from '@kit.BasicServicesKit';
+import bundleManager from '@ohos.bundle.bundleManager';
 
 const DOMAIN = 0x0000;
 
@@ -44,15 +45,22 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    windowStage.getMainWindow().then(async (win) => {
-      win.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET);
-      win.setWindowLayoutFullScreen(true)
-      win.setPreferredOrientation(window.Orientation.UNSPECIFIED)
-      win.setResizeByDragEnabled(true)
-    })
-
     windowStage.loadContent('pages/Index', (err) => {
       reqPermissionsFromUser(permissions, this.context);
+
+      windowStage.getMainWindow().then(async (win) => {
+        try {
+          win.setWindowTitleButtonVisible(true, true, true)
+          win.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
+          // win.setWindowLayoutFullScreen(true)
+          // win.setPreferredOrientation(window.Orientation.FOLLOW_DESKTOP)
+          win.setResizeByDragEnabled(true)
+        } catch (error) {
+          let ll: BusinessError = error;
+          hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(ll));
+        }
+      })
+
       if (err.code) {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;

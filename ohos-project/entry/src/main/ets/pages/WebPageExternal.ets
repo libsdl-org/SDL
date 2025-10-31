@@ -9,11 +9,6 @@ export default struct WebPageExternal {
 
   build() {
     Column() {
-      Web({
-        src: this.url,
-        controller: this.webcontroller
-      })
-        .height('90%')
       Flex({ direction: FlexDirection.Row }) {
         Button("Close").onClick((event: ClickEvent) => {
           this.onClose()
@@ -31,6 +26,11 @@ export default struct WebPageExternal {
           .width(100)
           .height(20)
       }
+      Web({
+        src: this.url,
+        controller: this.webcontroller
+      })
+        .height('90%')
     }
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Start)

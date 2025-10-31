@@ -109,7 +109,5 @@ struct Index {
     .onKeyEvent((keyevent) => {
       sdltest.sdlKeyEvent(keyevent.keyCode, keyevent.type);
     })
-    .alignItems(HorizontalAlign.End)
-    .justifyContent(FlexAlign.End)
   }
 }

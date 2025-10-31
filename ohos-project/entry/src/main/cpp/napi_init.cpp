@@ -194,6 +194,10 @@ int main()
             if (event.type == SDL_EVENT_FINGER_DOWN || event.type == SDL_EVENT_FINGER_UP || event.type == SDL_EVENT_FINGER_MOTION) {
                 SDL_Log("%f %f", event.tfinger.x, event.tfinger.y); 
             }
+            
+            if (event.type == SDL_EVENT_QUIT) {
+                break;
+            }
         }
     }
     
