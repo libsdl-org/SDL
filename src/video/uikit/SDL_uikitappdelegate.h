@@ -29,6 +29,15 @@
 
 @end
 
+API_AVAILABLE(ios(13.0))
+@interface SDLUIKitSceneDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+
++ (NSString *)getSceneDelegateClassName;
+
+- (void)hideLaunchScreen;
+
+@end
+
 @interface SDLUIKitDelegate : NSObject <UIApplicationDelegate>
 
 + (id)sharedAppDelegate;
