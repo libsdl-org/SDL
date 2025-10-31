@@ -209,13 +209,8 @@ static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, boo
         FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND,
         23,
         acquire ? 1 : 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        'S', 'D', 'L', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
-
-    // Set the name of the application acquiring the controller
-    const char *name = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
-    SDL_assert(name != NULL);
-    SDL_strlcpy((char *)&acquireControllerCmd[6], name, sizeof(acquireControllerCmd) - 6);
 
     if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
         return SDL_SetError("Couldn't send acquire command");
@@ -225,7 +220,7 @@ static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, boo
 
 static bool HIDAPI_DriverFlydigi_HandleAcquireResponse(Uint8 *data, int size)
 {
-    if (data[5] != 1) {
+    if (data[5] != 1 && data[6] == 0) {
         return SDL_SetError("Controller acquiring has been disabled");
     }
     return true;
