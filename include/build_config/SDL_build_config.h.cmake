@@ -491,6 +491,7 @@
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
+#cmakedefine SDL_POWER_OHOS 1
 #cmakedefine SDL_POWER_LINUX 1
 #cmakedefine SDL_POWER_WINDOWS 1
 #cmakedefine SDL_POWER_MACOSX 1

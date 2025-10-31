@@ -3,20 +3,15 @@ import sdltest from 'libSDL3.so';
 import { intl } from '@kit.LocalizationKit';
 import { promptAction } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
-import { Action, Key, KeyEvent } from '@kit.InputKit';
-import { pasteboard, BusinessError } from '@kit.BasicServicesKit';
-import { webview } from '@kit.ArkWeb';
-import WebPageExternal, { updateURL } from './WebPageExternal';
+import { pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
+import { batteryInfo } from '@kit.BasicServicesKit';
 
 const DOMAIN = 0x0000;
 
 let controller = inputMethod.getController()
 let input = false
 let targetText = ""
-let dlg = new CustomDialogController({
-  builder: WebPageExternal({onClose: () => { dlg.close() }})
-})
 let context: UIContext
 
 export class ArkNapiCallback {
@@ -38,6 +33,19 @@ export class ArkNapiCallback {
   openLink(url: string) {
     let con = context.getHostContext() as common.UIAbilityContext
     con.openLink(url)
+  }
+
+  hasBattery(): boolean {
+    return batteryInfo.isBatteryPresent
+  }
+  batteryCharging(): boolean {
+    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.ENABLE
+  }
+  batteryCharged(): boolean {
+    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.FULL
+  }
+  batteryPercent(): number {
+    return batteryInfo.batterySOC
   }
 
   setPasteboardString(text: string) {

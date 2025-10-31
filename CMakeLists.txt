@@ -1663,6 +1663,15 @@ elseif(OHOS)
   )
   set(HAVE_SDL_MISC TRUE)
 
+  if(SDL_POWER)
+    set(SDL_POWER_OHOS 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/power/ohos/*.c"
+      "${SDL3_SOURCE_DIR}/src/power/ohos/*.h"
+    )
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ohos/*.c")
   set(HAVE_SDL_LOCALE TRUE)
 

@@ -255,6 +255,78 @@ bool OHOS_IsScreenKeyboardShown()
     SDL_free(data);
     return d;
 }
+
+bool OHOS_IsBatteryPresent()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "hasBattery";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    bool d = data->ret.data.i == 1;
+    SDL_free(data);
+    return d;
+}
+
+bool OHOS_IsBatteryCharging()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "batteryCharging";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    bool d = data->ret.data.i == 1;
+    SDL_free(data);
+    return d;
+}
+
+bool OHOS_IsBatteryCharged()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "batteryCharged";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    bool d = data->ret.data.i == 1;
+    SDL_free(data);
+    return d;
+}
+
+int OHOS_GetBatteryPercent()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "batteryPercent";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    int d = data->ret.data.i;
+    SDL_free(data);
+    return d;
+}
 void OHOS_StartTextInput()
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));

@@ -15,6 +15,10 @@ int OHOS_FetchHeight();
 void OHOS_MessageBox(const char* title, const char* message);
 const char* OHOS_Locale();
 void OHOS_OpenLink(const char* url);
+bool OHOS_IsBatteryPresent();
+bool OHOS_IsBatteryCharging();
+bool OHOS_IsBatteryCharged();
+int OHOS_GetBatteryPercent();
 void OHOS_SetClipboardText(const char* data);
 
 bool OHOS_IsScreenKeyboardShown(); 
