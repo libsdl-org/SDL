@@ -97,6 +97,8 @@ typedef Uint32 SDL_WindowID;
  * uninitialized will either return the user provided value, if one was set
  * prior to initialization, or NULL. See docs/README-wayland.md for more
  * information.
+ *
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
