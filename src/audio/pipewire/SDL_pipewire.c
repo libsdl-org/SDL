@@ -28,9 +28,18 @@
 #include "SDL_loadso.h"
 #include "SDL_pipewire.h"
 
+#if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
+#endif
+
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
 #include <spa/utils/json.h>
+
+#if (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 /*
  * The following keys are defined for compatability when building against older versions of Pipewire
