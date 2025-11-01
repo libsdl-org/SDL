@@ -1114,6 +1114,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                         SDL_free(driver_error);
                         rc = driver->CreateRenderer(renderer, window, props);
                         if (rc) {
+                            driver_error = NULL;
                             break;
                         }
                         driver_error = SDL_strdup(SDL_GetError());
