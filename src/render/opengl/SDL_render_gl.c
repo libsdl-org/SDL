@@ -1671,6 +1671,7 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     if (renderdata->drawstate.texture == texture) {
         renderdata->drawstate.texture = NULL;
+        renderdata->drawstate.shader_params = NULL;
     }
     if (renderdata->drawstate.target == texture) {
         renderdata->drawstate.target = NULL;
