@@ -328,11 +328,31 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
 }
 #endif // SDL_HAVE_STB
 
-SDL_Surface *SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio)
+bool SDL_IsPNG(SDL_IOStream* src)
 {
     Sint64 start;
     Uint8 magic[4];
     bool is_PNG;
+
+    is_PNG = false;
+    start = SDL_TellIO(src);
+    if (start >= 0) {
+        if (SDL_ReadIO(src, magic, sizeof(magic)) == sizeof(magic)) {
+            if (magic[0] == 0x89 &&
+                magic[1] == 'P' &&
+                magic[2] == 'N' &&
+                magic[3] == 'G') {
+                is_PNG = true;
+            }
+        }
+        SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    }
+
+    return is_PNG;
+}
+
+SDL_Surface *SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio)
+{
     SDL_Surface *surface = NULL;
 
     CHECK_PARAM(!src) {
@@ -340,19 +360,7 @@ SDL_Surface *SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio)
         goto done;
     }
 
-    start = SDL_TellIO(src);
-    is_PNG = false;
-    if (SDL_ReadIO(src, magic, sizeof(magic)) == sizeof(magic)) {
-        if (magic[0] == 0x89 &&
-            magic[1] == 'P' &&
-            magic[2] == 'N' &&
-            magic[3] == 'G') {
-            is_PNG = true;
-        }
-    }
-    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
-
-    if (!is_PNG) {
+    if (!SDL_IsPNG(src)) {
         SDL_SetError("File is not a PNG file");
         goto done;
     }
