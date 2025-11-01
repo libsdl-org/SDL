@@ -81,7 +81,9 @@ enum
 
 typedef struct
 {
+    SDL_HIDAPI_Device *device;
     Uint8 deviceID;
+    bool available;
     bool has_cz;
     bool has_lmrm;
     bool wireless;
@@ -173,7 +175,29 @@ static bool HIDAPI_DriverFlydigi_InitControllerV1(SDL_HIDAPI_Device *device)
             }
         }
     }
+    ctx->available = true;
+
     return true;
+}
+
+static void HIDAPI_DriverFlydigi_SetAvailable(SDL_HIDAPI_Device* device, bool available)
+{
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    if (available == ctx->available) {
+        return;
+    }
+
+    if (available) {
+        if (device->num_joysticks == 0) {
+            HIDAPI_JoystickConnected(device, NULL);
+        }
+    } else {
+        if (device->num_joysticks > 0) {
+            HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        }
+    }
+    ctx->available = available;
 }
 
 static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size_t length)
@@ -218,12 +242,12 @@ static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, boo
     return true;
 }
 
-static bool HIDAPI_DriverFlydigi_HandleAcquireResponse(Uint8 *data, int size)
+static void HIDAPI_DriverFlydigi_HandleAcquireResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
     if (data[5] != 1 && data[6] == 0) {
-        return SDL_SetError("Controller acquiring has been disabled");
+        // Controller acquiring failed or has been disabled
+        HIDAPI_DriverFlydigi_SetAvailable(device, false);
     }
-    return true;
 }
 
 static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
@@ -267,13 +291,14 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     if (!GetReply(device, FLYDIGI_V2_GET_STATUS_COMMAND, data, sizeof(data))) {
         return SDL_SetError("Couldn't get controller status");
     }
-    if (data[10] != 1) {
+    if (data[10] == 1) {
+        ctx->available = true;
+    } else {
 #ifdef SDL_PLATFORM_WINDOWS
         // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
-        return SDL_SetError("Controller acquiring is disabled");
 #else
         // The FlyDigi Space Station app isn't available, we need to enable this ourselves
-        Uint8 enable_acquire[32] = {
+        Uint8 enable_acquire[] = {
             FLYDIGI_V2_CMD_REPORT_ID,
             FLYDIGI_V2_MAGIC1,
             FLYDIGI_V2_MAGIC2,
@@ -419,6 +444,8 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
     if (!ctx) {
         return false;
     }
+    ctx->device = device;
+
     device->context = ctx;
 
     bool initialized;
@@ -433,7 +460,12 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
 
     HIDAPI_DriverFlydigi_UpdateDeviceIdentity(device);
 
-    return HIDAPI_JoystickConnected(device, NULL);
+    if (ctx->available) {
+        return HIDAPI_JoystickConnected(device, NULL);
+    } else {
+        // We'll connect it once it becomes available
+        return true;
+    }
 }
 
 static int HIDAPI_DriverFlydigi_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
@@ -657,15 +689,16 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static bool HIDAPI_DriverFlydigi_HandlePacketV1(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverFlydigi_HandlePacketV1(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
 {
     if (data[0] != 0x04 || data[1] != 0xFE) {
         // We don't know how to handle this report, ignore it
-        return true;
+        return;
     }
 
-    HIDAPI_DriverFlydigi_HandleStatePacketV1(joystick, ctx, data, size);
-    return true;
+    if (joystick) {
+        HIDAPI_DriverFlydigi_HandleStatePacketV1(joystick, ctx, data, size);
+    }
 }
 
 static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
@@ -792,7 +825,18 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static bool HIDAPI_DriverFlydigi_HandlePacketV2(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverFlydigi_HandleStatusUpdate(SDL_HIDAPI_Device *device, Uint8 *data, int size)
+{
+    if (data[9] == 1) {
+        // We can now acquire the controller
+        HIDAPI_DriverFlydigi_SetAvailable(device, true);
+    } else {
+        // We can no longer acquire the controller
+        HIDAPI_DriverFlydigi_SetAvailable(device, false);
+    }
+}
+
+static void HIDAPI_DriverFlydigi_HandlePacketV2(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
 {
     if (size > 0 && data[0] != 0x5A) {
         // If first byte is not 0x5A, it must be REPORT_ID, we need to remove it.
@@ -801,23 +845,25 @@ static bool HIDAPI_DriverFlydigi_HandlePacketV2(SDL_Joystick *joystick, SDL_Driv
     }
     if (size < 31 || data[0] != FLYDIGI_V2_MAGIC1 || data[1] != FLYDIGI_V2_MAGIC2) {
         // We don't know how to handle this report, ignore it
-        return true;
+        return;
     }
 
     switch (data[2]) {
     case FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND:
-        if (!HIDAPI_DriverFlydigi_HandleAcquireResponse(data, size)) {
-            return false;
-        }
+        HIDAPI_DriverFlydigi_HandleAcquireResponse(ctx->device, data, size);
         break;
     case FLYDIGI_V2_INPUT_REPORT:
-        HIDAPI_DriverFlydigi_HandleStatePacketV2(joystick, ctx, data, size);
+        if (joystick) {
+            HIDAPI_DriverFlydigi_HandleStatePacketV2(joystick, ctx, data, size);
+        }
+        break;
+    case FLYDIGI_V2_SET_STATUS_COMMAND:
+        HIDAPI_DriverFlydigi_HandleStatusUpdate(ctx->device, data, size);
         break;
     default:
         // We don't recognize this command, ignore it
         break;
     }
-    return true;
 }
 
 static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
@@ -845,20 +891,10 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 #endif
         ctx->last_packet = now;
 
-        if (!joystick) {
-            continue;
-        }
-
         if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
-            if (!HIDAPI_DriverFlydigi_HandlePacketV1(joystick, ctx, data, size)) {
-                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
-                return false;
-            }
+            HIDAPI_DriverFlydigi_HandlePacketV1(joystick, ctx, data, size);
         } else {
-            if (!HIDAPI_DriverFlydigi_HandlePacketV2(joystick, ctx, data, size)) {
-                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
-                return false;
-            }
+            HIDAPI_DriverFlydigi_HandlePacketV2(joystick, ctx, data, size);
         }
     }
 
