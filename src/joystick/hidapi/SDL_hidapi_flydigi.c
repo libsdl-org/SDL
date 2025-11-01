@@ -268,8 +268,22 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
         return SDL_SetError("Couldn't get controller status");
     }
     if (data[10] != 1) {
+#ifdef SDL_PLATFORM_WINDOWS
         // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
         return SDL_SetError("Controller acquiring is disabled");
+#else
+        // The FlyDigi Space Station app isn't available, we need to enable this ourselves
+        Uint8 enable_acquire[32] = {
+            FLYDIGI_V2_CMD_REPORT_ID,
+            FLYDIGI_V2_MAGIC1,
+            FLYDIGI_V2_MAGIC2,
+            FLYDIGI_V2_SET_STATUS_COMMAND,
+            0x07, 0xff, 0xff, 0xff, 0xff, 0x01, 0x15
+        };
+        if (SDL_hid_write(device->dev, enable_acquire, sizeof(enable_acquire)) < 0) {
+            return SDL_SetError("Couldn't set controller status");
+        }
+#endif // SDL_PLATFORM_WINDOWS
     }
     return true;
 }
