@@ -7,6 +7,10 @@ import { pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { batteryInfo } from '@kit.BasicServicesKit';
 
+import  { picker } from '@kit.CoreFileKit';
+import { fileIo as fs } from '@kit.CoreFileKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+
 const DOMAIN = 0x0000;
 
 let controller = inputMethod.getController()
@@ -35,14 +39,14 @@ export class ArkNapiCallback {
     con.openLink(url)
   }
 
-  hasBattery(): boolean {
-    return batteryInfo.isBatteryPresent
+  hasBattery(): number {
+    return batteryInfo.isBatteryPresent ? 1 : 0
   }
-  batteryCharging(): boolean {
-    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.ENABLE
+  batteryCharging(): number {
+    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.ENABLE ? 1 : 0
   }
-  batteryCharged(): boolean {
-    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.FULL
+  batteryCharged(): number {
+    return batteryInfo.chargingStatus == batteryInfo.BatteryChargeState.FULL ? 1 : 0
   }
   batteryPercent(): number {
     return batteryInfo.batterySOC
@@ -76,6 +80,67 @@ export class ArkNapiCallback {
     hilog.info(DOMAIN, 'testTag', 'text input stop')
     targetText = ""
   }
+
+  openFileDialog(id: number, defpath: string, itemcount: number, filter: string) {
+    const documentSelectOptions = new picker.DocumentSelectOptions();
+    documentSelectOptions.maxSelectNumber = itemcount;
+    documentSelectOptions.defaultFilePathUri = defpath;
+
+    if (id == 0 || id == 1)
+    {
+      documentSelectOptions.selectMode = picker.DocumentSelectMode.FILE;
+    }
+    if (id == 2)
+    {
+      documentSelectOptions.selectMode = picker.DocumentSelectMode.FOLDER;
+    }
+
+    let targetfilter: string[] = []
+    let temp = filter.split('\u0002')
+    for (let index = 0; index < temp.length; index++) {
+      const element = temp[index];
+
+      let temp2 = element.split("|")
+
+      // broken filter!
+      if (temp2.length == 1)
+      {
+        targetfilter.push(element + "|.*")
+      }
+      else
+      {
+        let targettemp = temp2[0] + "|";
+
+        let temp3 = temp2[1].split(";")
+        for (let index1 = 0; index1 < temp3.length; index1++) {
+          targettemp += "." + temp3[index1] + ",";
+        }
+        targetfilter.push(targettemp)
+      }
+    }
+
+    documentSelectOptions.fileSuffixFilters = targetfilter;
+    documentSelectOptions.authMode = false;
+    documentSelectOptions.mergeMode = picker.MergeTypeMode.DEFAULT;
+    documentSelectOptions.isEncryptionSupported = false;
+
+    let uris: string[] = [];
+    let contextt = context.getHostContext() as common.UIAbilityContext;
+    const documentViewPicker = new picker.DocumentViewPicker(contextt);
+    documentViewPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
+      uris = documentSelectResult;
+      sdltest.sdlDialogClearSelection()
+      for (let idx = 0; idx < uris.length; idx++)
+      {
+        let target = uris[idx].replace("file://docs", "")
+        sdltest.sdlDialogFileSelected(target)
+        console.info('documentViewPicker.select to file succeed and uris are: ' + target);
+      }
+      sdltest.sdlDialogExecCallback()
+    }).catch((err: BusinessError) => {
+      console.error(`Invoke documentViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
+    })
+  }
 }
 
 let callbackRef: ArkNapiCallback = new ArkNapiCallback()
@@ -85,6 +150,7 @@ let callbackRef: ArkNapiCallback = new ArkNapiCallback()
 struct Index {
   async aboutToAppear(): Promise<void> {
     context = this.getUIContext()
+
     sdltest.sdlCallbackInit(callbackRef)
     focusControl.requestFocus('mainView')
     await controller.attach(true, {

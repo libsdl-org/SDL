@@ -11,6 +11,8 @@
 #include "napi/native_api.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_hints.h"
+#include "SDL3/SDL_power.h"
+#include "SDL3/SDL_dialog.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
 #include <thread>
@@ -18,6 +20,7 @@
 #include <vulkan/vulkan_core.h>
 #include <ohaudio/native_audiorenderer.h>
 #include <ohaudio/native_audiostreambuilder.h>
+#include <fstream>
 
 static napi_value Add(napi_env env, napi_callback_info info)
 {
@@ -118,8 +121,6 @@ int main()
     // SDL_GL_LoadLibrary("libGLESv2.so");
     SDL_Log("sdl error: %s", SDL_GetError());
     SDL_Window* win = SDL_CreateWindow("test", 1024, 1024, SDL_WINDOW_OPENGL);
-    
-    SDL_OpenURL("https://bilibili.com");
     
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "SDL Application", "test!", win);
     SDL_StartTextInput(win);
