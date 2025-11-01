@@ -1111,7 +1111,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                 for (int i = 0; render_drivers[i]; i++) {
                     const SDL_RenderDriver *driver = render_drivers[i];
                     if ((driver_attempt_len == SDL_strlen(driver->name)) && (SDL_strncasecmp(driver->name, driver_attempt, driver_attempt_len) == 0)) {
-                        SDL_free(driver_error);
+                        if (driver_error) {
+                            // Free any previous driver error
+                            SDL_free(driver_error);
+                            driver_error = NULL;
+                        }
+
                         rc = driver->CreateRenderer(renderer, window, props);
                         if (rc) {
                             break;
