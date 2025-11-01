@@ -6,3 +6,4 @@ export const sdlTextEditing: (str: string, loc: number, length: number) => numbe
 export const sdlDialogExecCallback: () => void;
 export const sdlDialogClearSelection: () => void;
 export const sdlDialogFileSelected: (path: string) => void;
+export const sdlSendDialogStatus: (idx: number) => void;

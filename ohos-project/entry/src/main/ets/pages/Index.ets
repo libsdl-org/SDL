@@ -1,14 +1,13 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import sdltest from 'libSDL3.so';
 import { intl } from '@kit.LocalizationKit';
-import { promptAction } from '@kit.ArkUI';
+import { promptAction, ShowDialogSuccessResponse } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
 import { pasteboard } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { batteryInfo } from '@kit.BasicServicesKit';
 
 import  { picker } from '@kit.CoreFileKit';
-import { fileIo as fs } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 const DOMAIN = 0x0000;
@@ -22,8 +21,16 @@ export class ArkNapiCallback {
   onMainLaunch() {
     sdltest.sdlLaunchMain("libentry.so", "main")
   }
-  showDialog(title: string, message: string) {
-    promptAction.showDialog({title: title, message: message, buttons: [{text: 'Ok', color: '#999999'}]})
+
+  showDialog(title: string, message: string, indexMapping: number[], names: string[]) {
+    let target: promptAction.Button[] = []
+    for (let i = 0; i < names.length; i++)
+    {
+      target.push({ text: names[i], color: '#999999' })
+    }
+    promptAction.showDialog({ title: title, message: message, buttons: target }).then((a) => {
+      sdltest.sdlSendDialogStatus(indexMapping[a.index])
+    })
   }
   fetchLocale(): string {
     let locale = new intl.Locale()
