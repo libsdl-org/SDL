@@ -1984,7 +1984,7 @@ const char *SDL_GameControllerPathForIndex(int joystick_index)
 SDL_GameControllerType SDL_GameControllerTypeForIndex(int joystick_index)
 {
     SDL_JoystickGUID joystick_guid = SDL_JoystickGetDeviceGUID(joystick_index);
-    const char *mapping = SDL_GameControllerMappingForGUID(joystick_guid);
+    char *mapping = SDL_GameControllerMappingForGUID(joystick_guid);
     char *type_string, *comma;
     SDL_GameControllerType type;
     if (mapping) {
@@ -1999,8 +1999,10 @@ SDL_GameControllerType SDL_GameControllerTypeForIndex(int joystick_index)
             } else {
                 type = SDL_GetGameControllerTypeFromString(type_string);
             }
+            SDL_free(mapping);
             return type;
         }
+        SDL_free(mapping);
     }
     return SDL_GetJoystickGameControllerTypeFromGUID(joystick_guid, SDL_JoystickNameForIndex(joystick_index));
 }
