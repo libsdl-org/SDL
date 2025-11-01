@@ -1305,6 +1305,11 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
      */
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+            // Ignore the Apex 5, as it can dynamically switch between Xbox and HIDAPI mode
+            continue;
+        }
+
         if (device->driver &&
             HIDAPI_IsEquivalentToDevice(vendor_id, product_id, device)) {
             result = true;
