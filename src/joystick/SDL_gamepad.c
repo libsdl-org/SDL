@@ -1251,7 +1251,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
         if (SDL_IsJoystickSteamController(vendor, product)) {
             // Steam controllers have 2 back paddle buttons
-            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b12,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchPro(vendor, product) ||
                    SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
             // Nintendo Switch Pro controllers have a screenshot button
