@@ -2729,18 +2729,12 @@ bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     SDL_Instance = hInst ? (HINSTANCE)hInst : GetModuleHandle(NULL);
 
     // Register the application class
+    SDL_zero(wcex);
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.hCursor = NULL;
-    wcex.hIcon = NULL;
-    wcex.hIconSm = NULL;
-    wcex.lpszMenuName = NULL;
     wcex.lpszClassName = SDL_Appname;
     wcex.style = SDL_Appstyle;
-    wcex.hbrBackground = NULL;
-    wcex.lpfnWndProc = WIN_WindowProc;
+    wcex.lpfnWndProc = DefWindowProc;
     wcex.hInstance = SDL_Instance;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);
