@@ -1028,6 +1028,7 @@ class Releaser:
                     # NDK 21e does not support -ffile-prefix-map
                     # f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
                     # f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                    f"-DANDROID_USE_LEGACY_TOOLCHAIN=0",
                     f"-DCMAKE_EXE_LINKER_FLAGS={extra_link_options}",
                     f"-DCMAKE_SHARED_LINKER_FLAGS={extra_link_options}",
                     f"-DCMAKE_TOOLCHAIN_FILE={cmake_toolchain_file}",
