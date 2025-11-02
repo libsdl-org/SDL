@@ -1337,6 +1337,11 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #endif
 #ifdef HAVE_LIBUSB
             for (usb_dev = usb_devs; usb_dev; usb_dev = usb_dev->next) {
+                if (use_libusb_whitelist) {
+                    if (!IsInWhitelist(usb_dev->vendor_id, usb_dev->product_id)) {
+                        continue;
+                    }
+                }
                 if (raw_dev->vendor_id == usb_dev->vendor_id &&
                     raw_dev->product_id == usb_dev->product_id &&
                     (raw_dev->interface_number < 0 || raw_dev->interface_number == usb_dev->interface_number)) {
