@@ -36,3 +36,7 @@ typedef enum
     SDL_FLYDIGI_VADER4_PRO,
 } SDL_FlyDigiControllerType;
 
+#ifndef SDL_PLATFORM_WINDOWS
+// The FlyDigi Space Station app isn't available on this platform
+#define SDL_AUTO_ENABLE_ENHANCED_FLYDIGI
+#endif
