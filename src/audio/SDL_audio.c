@@ -678,6 +678,7 @@ static int SDLCALL SDL_RunAudio(void *userdata)
     int data_len = 0;
     Uint8 *data;
     Uint8 *device_buf_keepsafe = NULL;
+    Uint32 delay;
 
     SDL_assert(!device->iscapture);
 
@@ -761,7 +762,7 @@ static int SDLCALL SDL_RunAudio(void *userdata)
                 SDL_assert((got <= 0) || (got == device->spec.size));
 
                 if (data == NULL) { /* device is having issues... */
-                    const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
+                    delay = ((device->spec.samples * 1000) / device->spec.freq);
                     SDL_Delay(delay); /* wait for as long as this buffer would have played. Maybe device recovers later? */
                 } else {
                     if (got != device->spec.size) {
@@ -781,7 +782,7 @@ static int SDLCALL SDL_RunAudio(void *userdata)
             }
         } else if (data == device->work_buffer) {
             /* nothing to do; pause like we queued a buffer to play. */
-            const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
+            delay = ((device->spec.samples * 1000) / device->spec.freq);
             SDL_Delay(delay);
         } else { /* writing directly to the device. */
             /* queue this buffer and wait for it to finish playing. */
@@ -791,7 +792,11 @@ static int SDLCALL SDL_RunAudio(void *userdata)
     }
 
     /* Wait for the audio to drain. */
-    SDL_Delay(((device->spec.samples * 1000) / device->spec.freq) * 2);
+    delay = ((device->spec.samples * 1000) / device->spec.freq) * 2;
+    if (delay > 100) {
+        delay = 100;
+    }
+    SDL_Delay(delay);
 
     current_audio.impl.ThreadDeinit(device);
 

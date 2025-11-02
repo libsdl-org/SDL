@@ -472,6 +472,9 @@ static void ALSA_CloseDevice(_THIS)
            ALSA_snd_pcm_drop() can hang, so don't use that.
          */
         Uint32 delay = ((this->spec.samples * 1000) / this->spec.freq) * 2;
+        if (delay > 100) {
+            delay = 100;
+        }
         SDL_Delay(delay);
 
         ALSA_snd_pcm_close(this->hidden->pcm_handle);
