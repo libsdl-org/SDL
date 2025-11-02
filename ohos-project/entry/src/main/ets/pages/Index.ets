@@ -148,6 +148,11 @@ export class ArkNapiCallback {
       console.error(`Invoke documentViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
     })
   }
+
+  getInternalPath(): string {
+    let contextt = context.getHostContext() as common.UIAbilityContext
+    return contextt.filesDir
+  }
 }
 
 let callbackRef: ArkNapiCallback = new ArkNapiCallback()

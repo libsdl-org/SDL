@@ -13,6 +13,7 @@
 #include "SDL3/SDL_hints.h"
 #include "SDL3/SDL_power.h"
 #include "SDL3/SDL_dialog.h"
+#include "SDL3/SDL_sensor.h"
 #include <GLES2/gl2.h>
 #include <stdlib.h>
 #include <thread>
@@ -114,7 +115,7 @@ int main()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_SENSOR);
     int i = 0;
     auto t = SDL_GetPreferredLocales(&i);
     SDL_Log("Main func invoke !!! %s %s", t[0]->country, t[0]->language);
