@@ -876,7 +876,7 @@ struct D3D12Renderer
     SDL_SharedObject *d3d12_dll;
     ID3D12Device *device;
     PFN_D3D12_SERIALIZE_ROOT_SIGNATURE D3D12SerializeRootSignature_func;
-    const char *semantic;
+    char *semantic;
     SDL_iconv_t iconv;
 
     ID3D12CommandQueue *commandQueue;
@@ -1739,6 +1739,7 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
     SDL_DestroyMutex(renderer->windowLock);
     SDL_DestroyMutex(renderer->fenceLock);
     SDL_DestroyMutex(renderer->disposeLock);
+    SDL_free(renderer->semantic);
     SDL_free(renderer);
 }
 
@@ -9212,7 +9213,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     renderer->debug_mode = debugMode;
     renderer->allowedFramesInFlight = 2;
 
-    renderer->semantic = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD");
+    renderer->semantic = SDL_strdup(SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING, "TEXCOORD"));
 
     // Blit resources
     D3D12_INTERNAL_InitBlitResources(renderer);
