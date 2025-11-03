@@ -4094,8 +4094,15 @@ bool SDL_SetWindowRelativeMouseMode(SDL_Window *window, bool enabled)
     } else {
         window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
     }
-    SDL_UpdateRelativeMouseMode();
 
+    if (!SDL_UpdateRelativeMouseMode()) {
+        if (enabled) {
+            window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        } else {
+            window->flags |= SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        }
+        return false;
+    }
     return true;
 }
 
