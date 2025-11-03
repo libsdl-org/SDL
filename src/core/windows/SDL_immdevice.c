@@ -156,7 +156,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
             SDL_free(handle);
             return NULL;
         }
-        SDL_copyp(&handle->directsound_guid, &dsoundguid);
+        SDL_copyp(&handle->directsound_guid, dsoundguid);
 
         SDL_AudioSpec spec;
         SDL_zero(spec);
@@ -173,10 +173,16 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
                 return NULL;
             }
 
-            SDL_memcpy(&recording_handle->directsound_guid, dsoundguid, sizeof(GUID));
             recording_handle->immdevice_id = SDL_wcsdup(devid);
+            if (!recording_handle->immdevice_id) {
+                SDL_free(recording_handle);
+                return NULL;
+            }
 
-            if (!recording_handle->immdevice_id || !SDL_AddAudioDevice(true, devname, &spec, recording_handle)) {
+            SDL_copyp(&recording_handle->directsound_guid, dsoundguid);
+
+            if (!SDL_AddAudioDevice(true, devname, &spec, recording_handle)) {
+                SDL_free(recording_handle->immdevice_id);
                 SDL_free(recording_handle);
             }
         }
