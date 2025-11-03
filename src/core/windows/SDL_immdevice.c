@@ -147,7 +147,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
 
     if (!device) {
         // handle is freed by SDL_IMMDevice_FreeDeviceHandle!
-        SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *)SDL_malloc(sizeof(SDL_IMMDevice_HandleData));
+        SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *)SDL_calloc(1, sizeof(*handle));
         if (!handle) {
             return NULL;
         }
@@ -156,7 +156,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
             SDL_free(handle);
             return NULL;
         }
-        SDL_memcpy(&handle->directsound_guid, dsoundguid, sizeof(GUID));
+        SDL_copyp(&handle->directsound_guid, &dsoundguid);
 
         SDL_AudioSpec spec;
         SDL_zero(spec);
@@ -168,7 +168,7 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
 
         if (!recording && supports_recording_playback_devices) {
             // handle is freed by SDL_IMMDevice_FreeDeviceHandle!
-            SDL_IMMDevice_HandleData *recording_handle = (SDL_IMMDevice_HandleData *)SDL_malloc(sizeof(SDL_IMMDevice_HandleData));
+            SDL_IMMDevice_HandleData *recording_handle = (SDL_IMMDevice_HandleData *)SDL_malloc(sizeof(*recording_handle));
             if (!recording_handle) {
                 return NULL;
             }
