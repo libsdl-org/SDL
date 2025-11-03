@@ -228,25 +228,17 @@ static void xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x,
 }
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
 
-#endif // SDL_VIDEO_DRIVER_X11_XINPUT2
-
 static bool X11_Xinput2IsMultitouchSupported(void)
 {
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     return xinput2_initialized && xinput2_multitouch_supported;
-#else
-    return false;
-#endif
 }
 
 static bool X11_Xinput2IsScrollingSupported(void)
 {
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     return xinput2_initialized && xinput2_scrolling_supported;
-#else
-    return false;
-#endif
 }
+
+#endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
 bool X11_InitXinput2(SDL_VideoDevice *_this)
 {
