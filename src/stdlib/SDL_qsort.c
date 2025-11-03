@@ -333,7 +333,7 @@ typedef struct { char * first; char * last; } stack_entry;
     char *test;					\
     /* Find the right place for |first|.	\
      * My apologies for var reuse. */		\
-    for (test=first-size;test>(char*)base&&compare(userdata,test,first)>0;test-=size) ;	\
+    for (test=first-size;test>=(char*)base&&compare(userdata,test,first)>0;test-=size) ;	\
     test+=size;					\
     if (test!=first) {				\
       /* Shift everything in [test,first)	\
@@ -509,7 +509,7 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
     /* Find the right place for |first|. My apologies for var reuse */
     int *pl=(int*)(first-WORD_BYTES),*pr=(int*)first;
     *(int*)pivot=*(int*)first;
-    for (;pl>(int*)base&&compare(userdata,pl,pivot)>0;pr=pl,--pl) {
+    for (;pl>=(int*)base&&compare(userdata,pl,pivot)>0;pr=pl,--pl) {
       *pr=*pl; }
     if (pr!=(int*)first) *pr=*(int*)pivot;
   }
@@ -574,4 +574,3 @@ void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, 
     // qsort_non_r_bridge just happens to match calling conventions, so reuse it.
     return SDL_bsearch_r(key, base, nmemb, size, qsort_non_r_bridge, compare);
 }
-
