@@ -1369,10 +1369,11 @@ bool SDL_SetRelativeMouseMode(bool enabled)
     }
 
     // Set the relative mode
-    if (!mouse->SetRelativeMouseMode || !mouse->SetRelativeMouseMode(enabled)) {
-        if (enabled) {
-            return SDL_SetError("No relative mode implementation available");
-        }
+    if (!mouse->SetRelativeMouseMode) {
+        return SDL_Unsupported();
+    }
+    if (!mouse->SetRelativeMouseMode(enabled)) {
+        return false;
     }
     mouse->relative_mode = enabled;
 
