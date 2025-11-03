@@ -728,8 +728,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
 
     newspec.freq = waveformat->nSamplesPerSec;
 
-    if (device->recording && device->hidden->isplayback)
-    {
+    if (device->recording && device->hidden->isplayback) {
         streamflags |= AUDCLNT_STREAMFLAGS_LOOPBACK;
     }
 
