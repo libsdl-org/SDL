@@ -449,6 +449,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "libxfixes-dev",
                     "libxi-dev",
                     "libxss-dev",
+                    "libxtst-dev",
                     "libwayland-dev",
                     "libxkbcommon-dev",
                     "libdrm-dev",
