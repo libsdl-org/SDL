@@ -417,13 +417,29 @@ function(SDL_PrintSummary)
           "Most likely, this is not wanted."
           "\n"
           "On Linux, install the packages listed at "
-          "https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md#build-dependencies "
+          "https://wiki.libsdl.org/SDL3/README-linux#build-dependencies "
           "\n"
           "If you really don't need desktop windows, the documentation tells you how to skip this check. "
           "https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md#cmake-fails-to-build-without-x11-or-wayland-support\n"
         )
       endif()
     endif()
+  endif()
+endfunction()
+
+function(SDL_missing_dependency NAME OPTION)
+  if(LINUX)
+    message( FATAL_ERROR
+      "Couldn't find dependency package for ${NAME}. Please install the needed packages or configure with -D${OPTION}=OFF"
+      "\n"
+      "The full set of dependencies is available at "
+      "https://wiki.libsdl.org/SDL3/README-linux#build-dependencies "
+      "\n"
+    )
+  else()
+    message( FATAL_ERROR
+      "Couldn't find dependency package for ${NAME}. Please install the needed packages or configure with -D${OPTION}=OFF"
+    )
   endif()
 endfunction()
 
