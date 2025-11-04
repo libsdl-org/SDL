@@ -1127,8 +1127,7 @@ class Releaser:
         for dep, depinfo in self.release_info.get("dependencies", {}).items():
             startswith = depinfo["startswith"]
             dep_repo = depinfo["repo"]
-            # FIXME: dropped "--exclude-pre-releases"
-            dep_string_data = self.executer.check_output(["gh", "-R", dep_repo, "release", "list", "--exclude-drafts", "--json", "name,createdAt,tagName", "--jq", f'[.[]|select(.name|startswith("{startswith}"))]|max_by(.createdAt)']).strip()
+            dep_string_data = self.executer.check_output(["gh", "-R", dep_repo, "release", "list", "--exclude-drafts", "--exclude-pre-releases", "--json", "name,createdAt,tagName", "--jq", f'[.[]|select(.name|startswith("{startswith}"))]|max_by(.createdAt)']).strip()
             dep_data = json.loads(dep_string_data)
             dep_tag = dep_data["tagName"]
             dep_version = dep_data["name"]
