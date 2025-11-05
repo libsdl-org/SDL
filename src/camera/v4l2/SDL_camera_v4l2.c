@@ -570,7 +570,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
         setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         if (xioctl(fd, VIDIOC_G_PARM, &setfps) == 0) {
             if ( (setfps.parm.capture.timeperframe.denominator != spec->framerate_numerator) ||
-                 (setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator) ) {
+                 (setfps.parm.capture.timeperframe.numerator != spec->framerate_denominator) ) {
                 setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator;
                 setfps.parm.capture.timeperframe.denominator = spec->framerate_numerator;
