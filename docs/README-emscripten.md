@@ -226,9 +226,14 @@ most efficient, consistent, and correct way to run a game in a web browser.
 
 ## Building SDL/emscripten
 
+Use the latest stable Emscripten release!
 
-SDL currently requires at least Emscripten 3.16.0 to build. Newer versions
-are likely to work, as well.
+It's possible to build SDL with older Emscripten releases, such as 3.x, but
+several things will be silently broken, as bugs got fixed and web standards
+solidified over time. At the time of this writing, Emscripten 4.0.x is the
+current stable release. You're encouraged to install the latest stable release
+(`emsdk install latest ; emsdk activate latest` if using Emscripten's setup
+script), and make sure you're reasonably up to date as time goes on.
 
 
 Build:
