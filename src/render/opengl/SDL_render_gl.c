@@ -649,7 +649,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     data->texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
-    SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
 #ifdef SDL_PLATFORM_MACOS
 #ifndef GL_TEXTURE_STORAGE_HINT_APPLE
 #define GL_TEXTURE_STORAGE_HINT_APPLE 0x85BC
