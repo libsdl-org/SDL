@@ -4052,6 +4052,10 @@ bool SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
+    if (!_this->SetWindowMouseRect) {
+        return SDL_Unsupported();
+    }
+
     SDL_Rect zero = { 0, 0, 0, 0 };
     if (!rect) {
         rect = &zero;
@@ -4062,10 +4066,7 @@ bool SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
     }
     SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
 
-    if (_this->SetWindowMouseRect) {
-        return _this->SetWindowMouseRect(_this, window);
-    }
-    return true;
+    return _this->SetWindowMouseRect(_this, window);
 }
 
 const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
