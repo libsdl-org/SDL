@@ -418,6 +418,7 @@ static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspa
     #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
     CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
     CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG, SDL_COLORSPACE_SRGB);
+    CASE(V4L2_PIX_FMT_RGBX32, SDL_PIXELFORMAT_RGBX32, SDL_COLORSPACE_SRGB);
     #undef CASE
     default:
         #if DEBUG_CAMERA
@@ -439,6 +440,7 @@ static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
         #define CASE(y, x)  case x: return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG);
+        CASE(V4L2_PIX_FMT_RGBX32, SDL_PIXELFORMAT_RGBX32);
         #undef CASE
         default:
             return 0;
