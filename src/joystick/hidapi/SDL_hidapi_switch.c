@@ -393,7 +393,7 @@ static int WriteOutput(SDL_DriverSwitch_Context *ctx, const Uint8 *data, int siz
 #endif // SWITCH_SYNCHRONOUS_WRITES
 }
 
-static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs expectedID)
+static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs expectedID, const Uint8 *pBuf, Uint8 ucLen)
 {
     // Average response time for messages is ~30ms
     Uint64 endTicks = SDL_GetTicks() + 100;
@@ -403,9 +403,17 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
         if (nRead > 0) {
             if (ctx->m_rgucReadBuffer[0] == k_eSwitchInputReportIDs_SubcommandReply) {
                 SwitchSubcommandInputPacket_t *reply = (SwitchSubcommandInputPacket_t *)&ctx->m_rgucReadBuffer[1];
-                if (reply->ucSubcommandID == expectedID && (reply->ucSubcommandAck & 0x80)) {
-                    return reply;
+                if (reply->ucSubcommandID != expectedID || !(reply->ucSubcommandAck & 0x80)) {
+                    continue;
                 }
+                if (reply->ucSubcommandID == k_eSwitchSubcommandIDs_SPIFlashRead) {
+                    SDL_assert(ucLen == sizeof(reply->spiReadData.opData));
+                    if (SDL_memcmp(&reply->spiReadData.opData, pBuf, ucLen) != 0) {
+                        // This was a reply for another SPI read command
+                        continue;
+                    }
+                }
+                return reply;
             }
         } else {
             SDL_Delay(1);
@@ -492,7 +500,7 @@ static bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs 
             continue;
         }
 
-        reply = ReadSubcommandReply(ctx, ucCommandID);
+        reply = ReadSubcommandReply(ctx, ucCommandID, pBuf, ucLen);
     }
 
     if (ppReply) {
