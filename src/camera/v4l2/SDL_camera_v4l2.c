@@ -32,6 +32,9 @@
 #include <unistd.h>
 #include <linux/videodev2.h>
 
+#ifndef V4L2_PIX_FMT_RGBX32
+#define V4L2_PIX_FMT_RGBX32 v4l2_fourcc('X','B','2','4')
+#endif
 #ifndef V4L2_CAP_DEVICE_CAPS
 // device_caps was added to struct v4l2_capability as of kernel 3.4.
 #define device_caps reserved[0]
