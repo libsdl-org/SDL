@@ -56,6 +56,8 @@ typedef struct VulkanExtensions
     Uint8 KHR_driver_properties;
     // Only required for special implementations (i.e. MoltenVK)
     Uint8 KHR_portability_subset;
+    // Only required to detect devices using Dozen D3D12 driver
+    Uint8 MSFT_layered_driver;
     // Only required for decoding HDR ASTC textures
     Uint8 EXT_texture_compression_astc_hdr;
 } VulkanExtensions;
@@ -11024,7 +11026,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(EXT_texture_compression_astc_hdr)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
     }
 
@@ -11039,6 +11041,7 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_maintenance1 +
         supports->KHR_driver_properties +
         supports->KHR_portability_subset +
+        supports->MSFT_layered_driver +
         supports->EXT_texture_compression_astc_hdr);
 }
 
@@ -11055,6 +11058,7 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_maintenance1)
     CHECK(KHR_driver_properties)
     CHECK(KHR_portability_subset)
+    CHECK(MSFT_layered_driver)
     CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
 }
@@ -11367,6 +11371,28 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
             physicalDevice,
             physicalDeviceExtensions)) {
         return 0;
+    }
+
+    // Ignore Dozen, for now
+    if (renderer->supports.MSFT_layered_driver) {
+        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
+        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        physicalDeviceProperties.pNext = &physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceLayeredDriverProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
+        physicalDeviceLayeredDriverProperties.pNext = NULL;
+
+        renderer->vkGetPhysicalDeviceProperties2KHR(
+            renderer->physicalDevice,
+            &physicalDeviceProperties);
+
+        if (physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
+            return 0;
+        }
     }
 
     renderer->vkGetPhysicalDeviceQueueFamilyProperties(
