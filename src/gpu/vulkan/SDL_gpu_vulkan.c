@@ -81,22 +81,6 @@ typedef struct VulkanExtensions
 
 // Conversions
 
-static const Uint8 DEVICE_PRIORITY_HIGHPERFORMANCE[] = {
-    0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
-    3, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
-    4, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-    2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
-    1  // VK_PHYSICAL_DEVICE_TYPE_CPU
-};
-
-static const Uint8 DEVICE_PRIORITY_LOWPOWER[] = {
-    0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
-    4, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
-    3, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-    2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
-    1  // VK_PHYSICAL_DEVICE_TYPE_CPU
-};
-
 static VkPresentModeKHR SDLToVK_PresentMode[] = {
     VK_PRESENT_MODE_FIFO_KHR,
     VK_PRESENT_MODE_IMMEDIATE_KHR,
@@ -11307,35 +11291,62 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     return 1;
 }
 
-static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
+static bool VULKAN_INTERNAL_GetDeviceRank(
     VulkanRenderer *renderer,
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
-    Uint32 *queueFamilyIndex,
     Uint64 *deviceRank)
 {
-    Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
-    VkQueueFamilyProperties *queueProps;
-    bool supportsPresent;
-    VkPhysicalDeviceProperties deviceProperties;
-    VkPhysicalDeviceFeatures deviceFeatures;
-    VkPhysicalDeviceMemoryProperties deviceMemory;
-    Uint32 i;
-
+    static const Uint8 DEVICE_PRIORITY_HIGHPERFORMANCE[] = {
+        0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
+        3, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+        4, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
+        2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
+        1  // VK_PHYSICAL_DEVICE_TYPE_CPU
+    };
+    static const Uint8 DEVICE_PRIORITY_LOWPOWER[] = {
+        0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
+        4, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+        3, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
+        2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
+        1  // VK_PHYSICAL_DEVICE_TYPE_CPU
+    };
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
 
-    /* Get the device rank before doing any checks, in case one fails.
-     * Note: If no dedicated device exists, one that supports our features
-     * would be fine
-     */
-    renderer->vkGetPhysicalDeviceProperties(
-        physicalDevice,
-        &deviceProperties);
+    VkPhysicalDeviceType deviceType;
+    if (physicalDeviceExtensions->MSFT_layered_driver) {
+        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
+        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        physicalDeviceProperties.pNext = &physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceLayeredDriverProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
+        physicalDeviceLayeredDriverProperties.pNext = NULL;
+
+        renderer->vkGetPhysicalDeviceProperties2KHR(
+            physicalDevice,
+            &physicalDeviceProperties);
+
+        if (physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
+            deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+        } else {
+            deviceType = physicalDeviceProperties.properties.deviceType;
+        }
+    } else {
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        renderer->vkGetPhysicalDeviceProperties(
+            physicalDevice,
+            &physicalDeviceProperties);
+        deviceType = physicalDeviceProperties.deviceType;
+    }
 
     /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
      * We also rank by e.g. VRAM which should have less influence than the device type.
      */
-    Uint64 devicePriorityValue = devicePriority[deviceProperties.deviceType] * 1000000;
+    Uint64 devicePriorityValue = devicePriority[deviceType] * 1000000;
 
     if (*deviceRank < devicePriorityValue) {
         /* This device outranks the best device we've found so far!
@@ -11349,8 +11360,49 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
          * run a query and reset the rank to avoid overwrites
          */
         *deviceRank = 0;
-        return 0;
+        return false;
     }
+
+    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
+     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
+     * system, this theoretically picks the most powerful one (or at least the one with the
+     * most memory!)
+     *
+     * We do this *after* discarding all non suitable devices, which means if this computer
+     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
+     * performance, then we always pick the GPU with more VRAM.
+     */
+    if (!renderer->preferLowPower) {
+        Uint32 i;
+        Uint64 videoMemory = 0;
+        VkPhysicalDeviceMemoryProperties deviceMemory;
+        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
+        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
+            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
+            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+                videoMemory += heap.size;
+            }
+        }
+        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
+        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
+        *deviceRank += videoMemoryRounded;
+    }
+
+    return true;
+}
+
+static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
+    VulkanRenderer *renderer,
+    VkPhysicalDevice physicalDevice,
+    VulkanExtensions *physicalDeviceExtensions,
+    Uint32 *queueFamilyIndex,
+    Uint64 *deviceRank)
+{
+    Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
+    VkQueueFamilyProperties *queueProps;
+    bool supportsPresent;
+    VkPhysicalDeviceFeatures deviceFeatures;
+    Uint32 i;
 
     renderer->vkGetPhysicalDeviceFeatures(
         physicalDevice,
@@ -11373,26 +11425,13 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
-    // Ignore Dozen, for now
-    if (renderer->supports.MSFT_layered_driver) {
-        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
-        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
-
-        physicalDeviceProperties.sType =
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        physicalDeviceProperties.pNext = &physicalDeviceLayeredDriverProperties;
-
-        physicalDeviceLayeredDriverProperties.sType =
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
-        physicalDeviceLayeredDriverProperties.pNext = NULL;
-
-        renderer->vkGetPhysicalDeviceProperties2KHR(
-            renderer->physicalDevice,
-            &physicalDeviceProperties);
-
-        if (physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
-            return 0;
-        }
+    // Device rank depends on extension support, do NOT move this block any higher!
+    if (!VULKAN_INTERNAL_GetDeviceRank(
+            renderer,
+            physicalDevice,
+            physicalDeviceExtensions,
+            deviceRank)) {
+        return 0;
     }
 
     renderer->vkGetPhysicalDeviceQueueFamilyProperties(
@@ -11468,30 +11507,6 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         // Somehow no graphics queues existed. Compute-only device?
         return 0;
     }
-
-    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
-     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
-     * system, this theoretically picks the most powerful one (or at least the one with the
-     * most memory!)
-     *
-     * We do this *after* discarding all non suitable devices, which means if this computer
-     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
-     * performance, then we always pick the GPU with more VRAM.
-     */
-    if (!renderer->preferLowPower) {
-        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
-        Uint64 videoMemory = 0;
-        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
-            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
-            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
-                videoMemory += heap.size;
-            }
-        }
-        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
-        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
-        *deviceRank += videoMemoryRounded;
-    }
-
 
     // FIXME: Need better structure for checking vs storing swapchain support details
     return 1;
