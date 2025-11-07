@@ -1096,6 +1096,7 @@ struct VulkanRenderer
 
     bool debugMode;
     bool preferLowPower;
+    bool requireHardwareAcceleration;
     SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
@@ -11343,6 +11344,15 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
         deviceType = physicalDeviceProperties.deviceType;
     }
 
+    if (renderer->requireHardwareAcceleration) {
+        if (deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+            deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU &&
+            deviceType != VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU) {
+            // In addition to CPU, "Other" drivers (including layered drivers) don't count as hardware-accelerated
+            return 0;
+        }
+    }
+
     /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
      * We also rank by e.g. VRAM which should have less influence than the device type.
      */
@@ -11818,6 +11828,8 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
         renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
+        renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION, false);
+
         result = VULKAN_INTERNAL_PrepareVulkan(renderer);
         if (result) {
             renderer->vkDestroyInstance(renderer->instance, NULL);
@@ -11866,6 +11878,8 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->desiredDeviceFeatures.independentBlend = VK_TRUE;
     renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
     renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
+
+    renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION, false);
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");
