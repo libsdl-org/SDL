@@ -11581,17 +11581,6 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
             suitableIndex = i;
             suitableQueueFamilyIndex = queueFamilyIndex;
             highestRank = deviceRank;
-        } else if (deviceRank > highestRank) {
-            /* In this case, we found a... "realer?" GPU,
-             * but it doesn't actually support our Vulkan.
-             * We should disqualify all devices below as a
-             * result, because if we don't we end up
-             * ignoring real hardware and risk using
-             * something like LLVMpipe instead!
-             * -flibit
-             */
-            suitableIndex = -1;
-            highestRank = deviceRank;
         }
     }
 
