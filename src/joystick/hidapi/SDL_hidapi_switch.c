@@ -573,8 +573,8 @@ static Uint16 EncodeRumbleLowAmplitude(Uint16 amplitude)
 static void SetNeutralRumble(SwitchRumbleData_t *pRumble)
 {
     pRumble->rgucData[0] = 0x00;
-    pRumble->rgucData[1] = 0x01;
-    pRumble->rgucData[2] = 0x40;
+    pRumble->rgucData[1] = 0x00;
+    pRumble->rgucData[2] = 0x01;
     pRumble->rgucData[3] = 0x40;
 }
 
