@@ -1334,12 +1334,33 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, false);
         }
 
-        POINT position;
-        position.x = (LONG) GET_X_LPARAM(lParam);
-        position.y = (LONG) GET_Y_LPARAM(lParam);
-        ScreenToClient(data->hwnd, &position);
+        const POINTER_INFO *pointer_info = &pen_info.pointerInfo;
+        RECT tablet_bounds, tablet_mapping;
+        float fx, fy;
 
-        SDL_SendPenMotion(timestamp, pen, window, (float) position.x, (float) position.y);
+        // try to get a more-precise position than is stored in lParam...GetPointerDeviceRects is available starting in Windows 8.
+        // we might need to cache this somewhere (and if we cache it, we will need to update it if the display changes)...for now we'll see if GetPointerDeviceRect is fast enough.
+        if (!data->videodata->GetPointerDeviceRects || !data->videodata->GetPointerDeviceRects(pointer_info->sourceDevice, &tablet_bounds, &tablet_mapping)) {
+            POINT position = { (LONG) GET_X_LPARAM(lParam), (LONG) GET_Y_LPARAM(lParam) };
+            ScreenToClient(data->hwnd, &position);
+            fx = (float) position.x;
+            fy = (float) position.y;
+        } else {
+            int ix, iy;
+            SDL_GetWindowPosition(window, &ix, &iy);
+            const SDL_FPoint window_pos = { (float) ix, (float) iy };
+
+            const float facX = pointer_info->ptHimetricLocationRaw.x / (float) (tablet_bounds.right );
+            const float facY = pointer_info->ptHimetricLocationRaw.y / (float) (tablet_bounds.bottom);
+
+            const float w = tablet_mapping.right  - tablet_mapping.left;
+            const float h = tablet_mapping.bottom - tablet_mapping.top;
+
+            fx = (tablet_mapping.left + (facX * w)) - window_pos.x;
+            fy = (tablet_mapping.top  + (facY * h)) - window_pos.y;
+        }
+
+        SDL_SendPenMotion(timestamp, pen, window, fx, fy);
         SDL_SendPenButton(timestamp, pen, window, 1, (pen_info.penFlags & PEN_FLAG_BARREL) != 0);
         SDL_SendPenButton(timestamp, pen, window, 2, (pen_info.penFlags & PEN_FLAG_ERASER) != 0);
 
