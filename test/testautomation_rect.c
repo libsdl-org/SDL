@@ -733,8 +733,8 @@ int rect_testIntersectRectEmpty(void *arg)
  */
 int rect_testIntersectRectParam(void *arg)
 {
-    SDL_Rect rectA;
-    SDL_Rect rectB = { 0 };
+    const SDL_Rect rectA = { 0, 0, 32, 32 };
+    const SDL_Rect rectB = { 0, 0, 32, 32 };
     SDL_Rect result;
     SDL_bool intersection;
 
@@ -988,8 +988,8 @@ int rect_testHasIntersectionEmpty(void *arg)
  */
 int rect_testHasIntersectionParam(void *arg)
 {
-    SDL_Rect rectA;
-    SDL_Rect rectB = { 0 };
+    const SDL_Rect rectA = { 0, 0, 32, 32 };
+    const SDL_Rect rectB = { 0, 0, 32, 32 };
     SDL_bool intersection;
 
     /* invalid parameter combinations */
@@ -1524,7 +1524,8 @@ int rect_testUnionRectInside(void *arg)
  */
 int rect_testUnionRectParam(void *arg)
 {
-    SDL_Rect rectA, rectB = { 0 };
+    const SDL_Rect rectA = { 0, 0, 32, 32 };
+    const SDL_Rect rectB = { 0, 0, 32, 32 };
     SDL_Rect result;
 
     /* invalid parameter combinations */
