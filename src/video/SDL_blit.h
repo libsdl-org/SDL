@@ -60,6 +60,7 @@ typedef struct
     int src_w, src_h;
     int src_pitch;
     int src_skip;
+    int leading_skip;
     SDL_Surface *dst_surface;
     Uint8 *dst;
     int dst_w, dst_h;
