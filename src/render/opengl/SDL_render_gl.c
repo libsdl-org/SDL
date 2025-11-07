@@ -1926,20 +1926,20 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     }
 
     // RGBA32 is always supported with OpenGL
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     if (bgra_supported) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
     }
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
 
     // Check for shader support
     data->shaders = GL_CreateShaderContext();
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
     if (GL_SupportsShader(data->shaders, SHADER_RGB)) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
         if (bgra_supported) {
             SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
         }
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL RGB shaders not supported");
     }
