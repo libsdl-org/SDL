@@ -65,7 +65,6 @@ typedef struct
     int hot_x;
     int hot_y;
 
-    Wayland_SHMPool *shmPool;
     int images_per_frame;
     CustomCursorImage images[];
 } Wayland_CustomCursor;
@@ -736,6 +735,7 @@ static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int
     }
 
     SDL_CursorData *data = NULL;
+    Wayland_SHMPool *shm_pool = NULL;
     int pool_size = 0;
     int max_images = 0;
     bool is_stack = false;
@@ -773,8 +773,8 @@ static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int
         goto failed;
     }
 
-    data->cursor_data.custom.shmPool = Wayland_AllocSHMPool(pool_size);
-    if (!data->cursor_data.custom.shmPool) {
+    shm_pool = Wayland_AllocSHMPool(pool_size);
+    if (!shm_pool) {
         goto failed;
     }
 
@@ -812,7 +812,7 @@ static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int
             data->cursor_data.custom.images[offset + j].height = surface->h;
 
             void *buf_data;
-            data->cursor_data.custom.images[offset + j].buffer = Wayland_AllocBufferFromPool(data->cursor_data.custom.shmPool, surface->w, surface->h, &buf_data);
+            data->cursor_data.custom.images[offset + j].buffer = Wayland_AllocBufferFromPool(shm_pool, surface->w, surface->h, &buf_data);
             // Wayland requires premultiplied alpha for its surfaces.
             SDL_PremultiplyAlpha(surface->w, surface->h,
                                  surface->format, surface->pixels, surface->pitch,
@@ -828,12 +828,13 @@ static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int
     }
 
     SDL_small_free(surfaces, is_stack);
+    Wayland_ReleaseSHMPool(shm_pool);
 
     return cursor;
 
 failed:
+    Wayland_ReleaseSHMPool(shm_pool);
     if (data) {
-        Wayland_ReleaseSHMPool(data->cursor_data.custom.shmPool);
         SDL_free(data->frame_durations_ms);
         for (int i = 0; i < data->cursor_data.custom.images_per_frame * frame_count; ++i) {
             if (data->cursor_data.custom.images[i].buffer) {
@@ -922,8 +923,6 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
                 wl_buffer_destroy(d->cursor_data.custom.images[i].buffer);
             }
         }
-
-        Wayland_ReleaseSHMPool(d->cursor_data.custom.shmPool);
     }
 
     SDL_free(d->frame_durations_ms);
