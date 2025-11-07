@@ -158,7 +158,7 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
      * discards the color values of pixels with an alpha value of zero.
      */
     if (texture->access == SDL_TEXTUREACCESS_STATIC && !SDL_ISPIXELFORMAT_ALPHA(surface->format)) {
-        SDL_SetSurfaceRLE(surface, 1);
+        SDL_SetSurfaceRLE(surface, true);
     }
 
     return true;
@@ -676,7 +676,7 @@ static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *
     const bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD) || (blend == SDL_BLENDMODE_MUL));
 
     if (colormod || alphamod || blending) {
-        SDL_SetSurfaceRLE(surface, 0);
+        SDL_SetSurfaceRLE(surface, false);
     }
 
     // !!! FIXME: we can probably avoid some of these calls.
@@ -876,7 +876,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                 /* If scaling is ever done, permanently disable RLE (which doesn't support scaling)
                  * to avoid potentially frequent RLE encoding/decoding.
                  */
-                SDL_SetSurfaceRLE(surface, 0);
+                SDL_SetSurfaceRLE(surface, false);
 
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
