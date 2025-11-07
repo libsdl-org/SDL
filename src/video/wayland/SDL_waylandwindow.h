@@ -127,7 +127,7 @@ struct SDL_WindowData
     char *app_id;
     double scale_factor;
 
-    Wayland_SHMBuffer *icon_buffers;
+    struct wl_buffer **icon_buffers;
     int icon_buffer_count;
 
     // Keyboard, pointer, and touch focus refcount.
