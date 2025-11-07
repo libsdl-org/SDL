@@ -11395,8 +11395,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VulkanRenderer *renderer,
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
-    Uint32 *queueFamilyIndex,
-    Uint64 *deviceRank)
+    Uint32 *queueFamilyIndex)
 {
     Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
     VkQueueFamilyProperties *queueProps;
@@ -11499,15 +11498,6 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
-    // Now that we know this device supports what we need, rank it against any other devices
-    if (!VULKAN_INTERNAL_GetDeviceRank(
-            renderer,
-            physicalDevice,
-            physicalDeviceExtensions,
-            deviceRank)) {
-        return 0;
-    }
-
     // FIXME: Need better structure for checking vs storing swapchain support details
     return 1;
 }
@@ -11519,8 +11509,8 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     VulkanExtensions *physicalDeviceExtensions;
     Uint32 i, physicalDeviceCount;
     Sint32 suitableIndex;
-    Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
-    Uint64 deviceRank, highestRank;
+    Uint32 suitableQueueFamilyIndex;
+    Uint64 highestRank;
 
     vulkanResult = renderer->vkEnumeratePhysicalDevices(
         renderer->instance,
@@ -11566,12 +11556,23 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     suitableQueueFamilyIndex = 0;
     highestRank = 0;
     for (i = 0; i < physicalDeviceCount; i += 1) {
-        deviceRank = highestRank;
-        if (VULKAN_INTERNAL_IsDeviceSuitable(
+        Uint32 queueFamilyIndex;
+        Uint64 deviceRank;
+
+        if (!VULKAN_INTERNAL_IsDeviceSuitable(
                 renderer,
                 physicalDevices[i],
                 &physicalDeviceExtensions[i],
-                &queueFamilyIndex,
+                &queueFamilyIndex)) {
+            // Device does not meet the minimum requirements, skip it entirely
+            continue;
+        }
+
+        deviceRank = highestRank;
+        if (VULKAN_INTERNAL_GetDeviceRank(
+                renderer,
+                physicalDevices[i],
+                &physicalDeviceExtensions[i],
                 &deviceRank)) {
             /* Use this for rendering.
              * Note that this may override a previous device that
