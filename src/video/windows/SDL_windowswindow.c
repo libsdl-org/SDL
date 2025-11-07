@@ -427,16 +427,14 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     // Set up the window proc function
 #ifdef GWLP_WNDPROC
     data->wndproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-    if (data->wndproc == WIN_WindowProc) {
+    if (data->wndproc == DefWindowProc) {
         data->wndproc = NULL;
-    } else {
         SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WIN_WindowProc);
     }
 #else
     data->wndproc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
-    if (data->wndproc == WIN_WindowProc) {
+    if (data->wndproc == DefWindowProc) {
         data->wndproc = NULL;
-    } else {
         SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)WIN_WindowProc);
     }
 #endif
