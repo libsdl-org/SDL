@@ -5953,7 +5953,7 @@ static void D3D12_UploadToTexture(
                 SDL_memcpy(
                     temporaryBuffer->mapPointer + (sliceIndex * rowsPerSlice) + (rowIndex * alignedRowPitch),
                     transferBufferContainer->activeBuffer->mapPointer + source->offset + (sliceIndex * bytesPerSlice) + (rowIndex * rowPitch),
-                    alignedRowPitch);
+                    rowPitch);
             }
             Uint32 offset = source->offset + (sliceIndex * bytesPerSlice) + ((rowsPerSlice - 1) * rowPitch);
             SDL_memcpy(
