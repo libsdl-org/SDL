@@ -552,6 +552,7 @@ struct SDL_VideoData
     /* *INDENT-OFF* */ // clang-format off
     BOOL (WINAPI *GetPointerType)(UINT32 pointerId, POINTER_INPUT_TYPE *pointerType);
     BOOL (WINAPI *GetPointerPenInfo)(UINT32 pointerId, POINTER_PEN_INFO *penInfo);
+    BOOL (WINAPI *GetPointerDeviceRects)(HANDLE device, RECT *pointerDeviceRect, RECT *displayRect);
     /* *INDENT-ON* */ // clang-format on
 
     // DPI functions
