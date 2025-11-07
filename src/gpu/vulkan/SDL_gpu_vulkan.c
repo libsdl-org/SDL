@@ -11425,15 +11425,6 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
-    // Device rank depends on extension support, do NOT move this block any higher!
-    if (!VULKAN_INTERNAL_GetDeviceRank(
-            renderer,
-            physicalDevice,
-            physicalDeviceExtensions,
-            deviceRank)) {
-        return 0;
-    }
-
     renderer->vkGetPhysicalDeviceQueueFamilyProperties(
         physicalDevice,
         &queueFamilyCount,
@@ -11505,6 +11496,15 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
 
     if (*queueFamilyIndex == SDL_MAX_UINT32) {
         // Somehow no graphics queues existed. Compute-only device?
+        return 0;
+    }
+
+    // Now that we know this device supports what we need, rank it against any other devices
+    if (!VULKAN_INTERNAL_GetDeviceRank(
+            renderer,
+            physicalDevice,
+            physicalDeviceExtensions,
+            deviceRank)) {
         return 0;
     }
 
