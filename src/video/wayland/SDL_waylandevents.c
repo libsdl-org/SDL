@@ -802,7 +802,20 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
 
 static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
 {
-    SDL_WindowData *window = seat->pointer.pending_frame.enter_window;
+    SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(seat->pointer.pending_frame.enter_surface);
+    if (!window) {
+        // Entering a surface not managed by SDL; just set the cursor reset flag.
+        Wayland_SeatResetCursor(seat);
+        return;
+    }
+
+    if (window->surface != seat->pointer.pending_frame.enter_surface) {
+        /* This surface is part of the window managed by SDL, but it is not the main content
+         * surface and doesn't get focus. Just set the default cursor and leave.
+         */
+        Wayland_SeatSetDefaultCursor(seat);
+        return;
+    }
 
     seat->pointer.focus = window;
     ++window->pointer_focus_count;
@@ -834,14 +847,8 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
         return;
     }
 
-    SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
-    if (!window) {
-        // Not a surface owned by SDL.
-        return;
-    }
-
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    seat->pointer.pending_frame.enter_window = window;
+    seat->pointer.pending_frame.enter_surface = surface;
     seat->pointer.enter_serial = serial;
 
     /* In the case of e.g. a pointer confine warp, we may receive an enter
@@ -860,32 +867,39 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
 
 static void pointer_dispatch_leave(SDL_WaylandSeat *seat, bool update_pointer)
 {
-    SDL_WindowData *window = seat->pointer.pending_frame.leave_window;
+    SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(seat->pointer.pending_frame.leave_surface);
 
     if (window) {
-        // Clear the capture flag and raise all buttons
-        window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+        if (seat->pointer.focus) {
+            if (seat->pointer.focus->surface == seat->pointer.pending_frame.leave_surface) {
+                // Clear the capture flag and raise all buttons
+                window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
 
-        seat->pointer.focus = NULL;
-        for (Uint8 i = 1; seat->pointer.buttons_pressed; ++i) {
-            if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
-                SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
-                seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
+                seat->pointer.focus = NULL;
+                for (Uint8 i = 1; seat->pointer.buttons_pressed; ++i) {
+                    if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
+                        SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
+                        seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
+                    }
+                }
+
+                /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
+                 * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
+                 */
+                SDL_Window *mouse_focus = SDL_GetMouseFocus();
+                const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
+                if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
+                    SDL_SetMouseFocus(NULL);
+                }
+
+                if (update_pointer) {
+                    Wayland_SeatUpdatePointerGrab(seat);
+                    Wayland_SeatUpdatePointerCursor(seat);
+                }
             }
-        }
-
-        /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
-         * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
-         */
-        SDL_Window *mouse_focus = SDL_GetMouseFocus();
-        const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
-        if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
-            SDL_SetMouseFocus(NULL);
-        }
-
-        if (update_pointer) {
-            Wayland_SeatUpdatePointerGrab(seat);
-            Wayland_SeatUpdatePointerCursor(seat);
+        } else if (update_pointer) {
+            // Leaving a non-content surface managed by SDL; just set the cursor reset flag.
+            Wayland_SeatResetCursor(seat);
         }
     }
 }
@@ -898,15 +912,9 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
         return;
     }
 
-    SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
-    if (!window) {
-        // Not a surface owned by SDL.
-        return;
-    }
-
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    seat->pointer.pending_frame.leave_window = window;
-    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION && window == seat->pointer.focus) {
+    seat->pointer.pending_frame.leave_surface = surface;
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
         pointer_dispatch_leave(seat, true);
     }
 }
@@ -1277,11 +1285,13 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     SDL_WaylandSeat *seat = data;
 
-    if (seat->pointer.pending_frame.enter_window) {
-        if (seat->pointer.focus && seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+    if (seat->pointer.pending_frame.enter_surface) {
+        if (seat->pointer.pending_frame.leave_surface) {
             // Leaving the previous surface before entering a new surface.
             pointer_dispatch_leave(seat, false);
+            seat->pointer.pending_frame.leave_surface = NULL;
         }
+
         pointer_dispatch_enter(seat);
     }
 
@@ -1309,7 +1319,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
         pointer_dispatch_axis(seat);
     }
 
-    if (seat->pointer.focus && seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+    if (seat->pointer.pending_frame.leave_surface) {
         pointer_dispatch_leave(seat, true);
     }
 
@@ -1435,7 +1445,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
     Wayland_UpdateImplicitGrabSerial(seat, serial);
     window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
-    if (window_data) {
+    if (window_data && window_data->surface == surface) {
         float x, y;
 
         if (window_data->current.logical_width <= 1) {
@@ -1457,8 +1467,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
     }
 }
 
-static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial,
-                             uint32_t timestamp, int id)
+static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial, uint32_t timestamp, int id)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     wl_fixed_t fx = 0, fy = 0;
@@ -1469,7 +1478,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
     if (surface) {
         SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
-        if (window_data) {
+        if (window_data && window_data->surface == surface) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
             const float y = (float)wl_fixed_to_double(fy) / window_data->current.logical_height;
 
@@ -1489,8 +1498,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
     }
 }
 
-static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t timestamp,
-                                 int id, wl_fixed_t fx, wl_fixed_t fy)
+static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t timestamp, int id, wl_fixed_t fx, wl_fixed_t fy)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     struct wl_surface *surface = NULL;
@@ -1500,7 +1508,7 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
     if (surface) {
         SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
-        if (window_data) {
+        if (window_data && window_data->surface == surface) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
             const float y = (float)wl_fixed_to_double(fy) / window_data->current.logical_height;
 
@@ -2395,9 +2403,9 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat)
 
     // Make sure focus is removed from a surface before the pointer is destroyed.
     if (seat->pointer.focus) {
-        seat->pointer.pending_frame.leave_window = seat->pointer.focus;
+        seat->pointer.pending_frame.leave_surface = seat->pointer.focus->surface;
         pointer_dispatch_leave(seat, false);
-        seat->pointer.pending_frame.leave_window = NULL;
+        seat->pointer.pending_frame.leave_surface = NULL;
     }
 
     SDL_RemoveMouse(seat->pointer.sdl_id);
@@ -3349,7 +3357,7 @@ static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v
 {
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     SDL_WindowData *windowdata = surface ? Wayland_GetWindowDataForOwnedSurface(surface) : NULL;
-    sdltool->focus = windowdata;
+    sdltool->focus = windowdata && windowdata->surface == surface ? windowdata : NULL;
     sdltool->proximity_serial = serial;
     sdltool->frame.have_proximity = true;
     sdltool->frame.in_proximity = true;
@@ -3664,9 +3672,9 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
         }
 
         if (seat->pointer.focus == window) {
-            seat->pointer.pending_frame.leave_window = seat->pointer.focus;
+            seat->pointer.pending_frame.leave_surface = seat->pointer.focus->surface;
             pointer_dispatch_leave(seat, true);
-            seat->pointer.pending_frame.leave_window = NULL;
+            seat->pointer.pending_frame.leave_surface = NULL;
         }
 
         // Need the safe loop variant here as cancelling a touch point removes it from the list.

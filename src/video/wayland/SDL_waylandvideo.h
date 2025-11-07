@@ -61,6 +61,7 @@ struct SDL_VideoData
         struct libdecor *libdecor;
 #endif
     } shell;
+    struct wl_subcompositor *subcompositor;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wp_pointer_warp_v1 *wp_pointer_warp_v1;
@@ -85,6 +86,7 @@ struct SDL_VideoData
     struct zwp_tablet_manager_v2 *tablet_manager;
     struct wl_fixes *wl_fixes;
     struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
+    struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
 
     struct xkb_context *xkb_context;
 
