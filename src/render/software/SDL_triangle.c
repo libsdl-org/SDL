@@ -803,7 +803,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
         src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
         if (FORMAT_INDEXED(srcfmt_val)) {
             srcpixel = *src;
-            const SDL_Color *color = &palette->colors[*src];
+            const SDL_Color *color = &palette->colors[srcpixel];
             srcR = color->r;
             srcG = color->g;
             srcB = color->b;
