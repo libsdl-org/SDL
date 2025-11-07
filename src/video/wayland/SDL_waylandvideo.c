@@ -69,6 +69,7 @@
 #include "color-management-v1-client-protocol.h"
 #include "pointer-warp-v1-client-protocol.h"
 #include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "single-pixel-buffer-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -653,6 +654,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->SetWindowResizable = Wayland_SetWindowResizable;
     device->SetWindowPosition = Wayland_SetWindowPosition;
     device->SetWindowSize = Wayland_SetWindowSize;
+    device->SetWindowAspectRatio = Wayland_SetWindowAspectRatio;
     device->SetWindowMinimumSize = Wayland_SetWindowMinimumSize;
     device->SetWindowMaximumSize = Wayland_SetWindowMaximumSize;
     device->SetWindowParent = Wayland_SetWindowParent;
@@ -1278,6 +1280,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
 
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(SDL_WL_COMPOSITOR_VERSION, version));
+    } else if (SDL_strcmp(interface, "wl_subcompositor") == 0) {
+        d->subcompositor = wl_registry_bind(d->registry, id, &wl_subcompositor_interface, 1);
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id, SDL_min(version, SDL_WL_OUTPUT_VERSION));
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
@@ -1344,6 +1348,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
     } else if (SDL_strcmp(interface, "zwp_pointer_gestures_v1") == 0) {
         d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, SDL_min(version, 3));
         Wayland_DisplayInitPointerGestureManager(d);
+    } else if (SDL_strcmp(interface, "wp_single_pixel_buffer_manager_v1") == 0) {
+        d->single_pixel_buffer_manager = wl_registry_bind(d->registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, "wl_fixes") == 0) {
@@ -1690,6 +1696,16 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
             zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
         }
         data->zwp_pointer_gestures = NULL;
+    }
+
+    if (data->single_pixel_buffer_manager) {
+        wp_single_pixel_buffer_manager_v1_destroy(data->single_pixel_buffer_manager);
+        data->single_pixel_buffer_manager = NULL;
+    }
+
+    if (data->subcompositor) {
+        wl_subcompositor_destroy(data->subcompositor);
+        data->subcompositor = NULL;
     }
 
     if (data->compositor) {
