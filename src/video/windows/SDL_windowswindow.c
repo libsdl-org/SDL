@@ -722,8 +722,6 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return WIN_SetError("Couldn't create window");
         }
 
-        WIN_UpdateDarkModeForHWND(hwnd);
-
         WIN_PumpEvents(_this);
 
         if (!SetupWindowData(_this, window, hwnd, parent)) {
@@ -733,6 +731,8 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             }
             return false;
         }
+
+        WIN_SetDarkModeColorsForHWND(_this, window, _this->system_theme == SDL_SYSTEM_THEME_DARK ? TRUE : FALSE);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         // Ensure that the IME isn't active on the new window until explicitly requested.
@@ -824,6 +824,18 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
     return true;
+}
+
+void WIN_SetDarkModeColorsForHWND(SDL_VideoDevice *_this, SDL_Window *window, BOOL value)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    HWND hwnd = window->internal->hwnd;
+    WINDOWCOMPOSITIONATTRIBDATA data = {
+        WCA_USEDARKMODECOLORS,
+        &value, sizeof(value)
+    };
+    _this->internal->SetWindowCompositionAttribute(hwnd, &data);
+#endif
 }
 
 void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)

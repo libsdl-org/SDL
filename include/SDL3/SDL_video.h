@@ -603,6 +603,19 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
+ * Set the preferred system theme.
+ * This is a hint to the system to use the preferred theme for the window
+ *
+ * \param theme the preferred system theme, light, dark, or unknown for auto.
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetSystemTheme
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetPreferredSystemTheme(SDL_SystemTheme theme);
+
+/**
  * Get the current system theme.
  *
  * \returns the current system theme, light, dark, or unknown.

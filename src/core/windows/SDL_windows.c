@@ -54,18 +54,6 @@ typedef enum {
     UXTHEME_APPMODE_MAX
 } UxthemePreferredAppMode;
 
-typedef enum {
-    WCA_UNDEFINED = 0,
-    WCA_USEDARKMODECOLORS = 26,
-    WCA_LAST = 27
-} WINDOWCOMPOSITIONATTRIB;
-
-typedef struct {
-    WINDOWCOMPOSITIONATTRIB Attrib;
-    PVOID pvData;
-    SIZE_T cbData;
-} WINDOWCOMPOSITIONATTRIBDATA;
-
 typedef struct {
     ULONG dwOSVersionInfoSize;
     ULONG dwMajorVersion;
@@ -80,7 +68,6 @@ typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
 typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
 typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
 typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
-typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
 typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Fake window to help with DirectInput events.
@@ -438,12 +425,25 @@ bool WIN_WindowRectValid(const RECT *rect)
     return (rect->right > 0);
 }
 
-void WIN_UpdateDarkModeForHWND(HWND hwnd)
+UxthemePreferredAppMode WIN_PreferredUXTheme(const SDL_SystemTheme theme)
+{
+    switch (theme) {
+        case SDL_SYSTEM_THEME_DARK:
+                return UXTHEME_APPMODE_FORCE_DARK;
+        case SDL_SYSTEM_THEME_LIGHT:
+                return UXTHEME_APPMODE_FORCE_LIGHT;
+        case SDL_SYSTEM_THEME_UNKNOWN:
+        default:
+                return UXTHEME_APPMODE_ALLOW_DARK;
+    }
+}
+
+BOOL WIN_UpdatePreferredTheme(SDL_SystemTheme preferredTheme)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
     if (!ntdll) {
-        return;
+        return false;
     }
     // There is no function to get Windows build number, so let's get it here via RtlGetVersion
     RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
@@ -457,52 +457,29 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     os_info.dwBuildNumber &= ~0xF0000000;
     if (os_info.dwBuildNumber < 17763) {
         // Too old to support dark mode
-        return;
+        return false;
     }
     HMODULE uxtheme = LoadLibrary(TEXT("uxtheme.dll"));
     if (!uxtheme) {
-        return;
+        return false;
     }
     RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
     if (os_info.dwBuildNumber < 18362) {
         AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc) {
-            AllowDarkModeForAppFunc(true);
+            AllowDarkModeForAppFunc(preferredTheme != SDL_SYSTEM_THEME_LIGHT);
         }
     } else {
         SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (SetPreferredAppModeFunc) {
-            SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
+            SetPreferredAppModeFunc(WIN_PreferredUXTheme(preferredTheme));
         }
     }
     if (RefreshImmersiveColorPolicyStateFunc) {
         RefreshImmersiveColorPolicyStateFunc();
     }
-    if (AllowDarkModeForWindowFunc) {
-        AllowDarkModeForWindowFunc(hwnd, true);
-    }
-    BOOL value;
-    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
-    if (ShouldAppsUseDarkModeFunc) {
-        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
-    } else {
-        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-    }
     FreeLibrary(uxtheme);
-    if (os_info.dwBuildNumber < 18362) {
-        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
-    } else {
-        HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
-        if (user32) {
-            SetWindowCompositionAttribute_t SetWindowCompositionAttributeFunc = (SetWindowCompositionAttribute_t)GetProcAddress(user32, "SetWindowCompositionAttribute");
-            if (SetWindowCompositionAttributeFunc) {
-                WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &value, sizeof(value) };
-                SetWindowCompositionAttributeFunc(hwnd, &data);
-            }
-        }
-    }
+    return true;
 #endif
 }
 

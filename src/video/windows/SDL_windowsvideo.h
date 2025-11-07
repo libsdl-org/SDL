@@ -510,6 +510,18 @@ typedef struct
     BOOL transition_on_maxed;
 } DWM_BLURBEHIND;
 
+typedef enum {
+    WCA_UNDEFINED = 0,
+    WCA_USEDARKMODECOLORS = 26,
+    WCA_LAST = 27
+} WINDOWCOMPOSITIONATTRIB;
+
+typedef struct {
+    WINDOWCOMPOSITIONATTRIB Attrib;
+    PVOID pvData;
+    SIZE_T cbData;
+} WINDOWCOMPOSITIONATTRIBDATA;
+
 // Private display data
 
 struct SDL_VideoData
@@ -572,6 +584,9 @@ struct SDL_VideoData
                                         UINT             *dpiX,
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
+
+    BOOL (WINAPI *SetWindowCompositionAttribute)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
+
     /* *INDENT-ON* */ // clang-format on
 #endif                // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
@@ -661,5 +676,7 @@ extern bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 
 extern SDL_SystemTheme WIN_GetSystemTheme(void);
 extern bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
+
+extern void WIN_SetPreferredTheme(SDL_VideoDevice *_this, SDL_SystemTheme theme);
 
 #endif // SDL_windowsvideo_h_
