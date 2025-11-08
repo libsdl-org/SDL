@@ -114,10 +114,10 @@ static void shoot(int shooter, Player players[], int players_len)
 static void updatePlayerGamepad(Player *player)
 {
     if (player->gamepad) {
-        const int leftx = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_LEFTX);
-        const int lefty = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
-        player->yaw -= leftx * 0x00000800;
-        player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - lefty * 0x00000800));
+        const int rightx = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
+        const int righty = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
+        player->yaw -= rightx * 0x00000800;
+        player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - righty * 0x00000800));
     }
 }
 
