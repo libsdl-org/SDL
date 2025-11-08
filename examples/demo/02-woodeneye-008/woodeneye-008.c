@@ -122,8 +122,10 @@ static void updatePlayerGamepad(Player *player)
     if (player->gamepad) {
         const int rightx = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
         const int righty = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
-        player->yaw -= rightx * 0x00000800;
-        player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - righty * 0x00000800));
+        if ((SDL_abs(rightx) > 0x1000) || (SDL_abs(righty) > 0x1000)) {  /* ignore if stick is near center, since it might be noise and the user is actually using the mouse, etc. */
+            player->yaw -= rightx * 0x00000800;
+            player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - righty * 0x00000800));
+        }
     }
 }
 
