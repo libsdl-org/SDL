@@ -111,9 +111,29 @@ static void shoot(int shooter, Player players[], int players_len)
     }
 }
 
+static void updatePlayerGamepad(Player *player)
+{
+    if (player->gamepad) {
+        const int leftx = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_LEFTX);
+        const int lefty = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_LEFTY);
+        player->yaw -= leftx * 0x00000800;
+        player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - lefty * 0x00000800));
+    }
+}
+
 static void update(Player *players, int players_len, Uint64 dt_ns)
 {
+    static int gamepad_update_ticks = 0;
+    const Uint64 now = SDL_GetTicks();
     int i;
+
+    if ((now - gamepad_update_ticks) >= 16) {  /* only update joysticks at about 60Hz so framerate doesn't matter. */
+        gamepad_update_ticks += 16;
+        for (i = 0; i < players_len; i++) {
+            updatePlayerGamepad(&players[i]);  /* check current gamepad state before we do any processing. */
+        }
+    }
+
     for (i = 0; i < players_len; i++) {
         Player *player = &players[i];
         double rate = 6.0;
@@ -476,17 +496,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             }
             break;
         }
-        case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
-            SDL_JoystickID id = event->gaxis.which;
-            int index = whoseGamepad(id, players, player_count);
-            if (index >= 0) {
-                if (event->gaxis.axis == SDL_GAMEPAD_AXIS_LEFTX)
-                    players[index].yaw -= ((int)event->gaxis.value) * 0x00000800;
-                if (event->gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY)
-                    players[index].pitch = SDL_max(-0x40000000, SDL_min(0x40000000, players[index].pitch - ((int)event->gaxis.value) * 0x00000800));
-            }
-            break;
-        }
+
+        /* We query the gamepad sticks every frame, so we don't check for SDL_EVENT_GAMEPAD_AXIS_MOTION here. */
+
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
             Uint8 button = event->gbutton.button;
             SDL_JoystickID id = event->gbutton.which;
