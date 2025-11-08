@@ -47,7 +47,9 @@ static int whoseMouse(SDL_MouseID mouse, const Player players[], int players_len
 {
     int i;
     for (i = 0; i < players_len; i++) {
-        if (players[i].mouse == mouse) return i;
+        if (players[i].mouse == mouse) {
+            return i;
+        }
     }
     return -1;
 }
@@ -56,7 +58,9 @@ static int whoseKeyboard(SDL_KeyboardID keyboard, const Player players[], int pl
 {
     int i;
     for (i = 0; i < players_len; i++) {
-        if (players[i].keyboard == keyboard) return i;
+        if (players[i].keyboard == keyboard) {
+            return i;
+        }
     }
     return -1;
 }
@@ -65,7 +69,9 @@ static int whoseGamepad(SDL_JoystickID gamepad, const Player players[], int play
 {
     int i;
     for (i = 0; i < players_len; i++) {
-        if (SDL_GetGamepadID(players[i].gamepad) == gamepad) return i;
+        if (SDL_GetGamepadID(players[i].gamepad) == gamepad) {
+            return i;
+        }
     }
     return -1;
 }
@@ -561,8 +567,9 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     int player_count = as->player_count;
     int i;
     for (i = 0; i < player_count; i++) {
-         if (players[i].gamepad)
+         if (players[i].gamepad) {
              SDL_CloseGamepad(players[i].gamepad);
+         }
     }
     SDL_free(appstate); // just free the memory, SDL will clean up the window/renderer for us.
 }
