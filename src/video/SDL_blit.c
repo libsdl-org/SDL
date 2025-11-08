@@ -198,12 +198,8 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
         return SDL_SetError("Blit combination not supported");
     }
 
-#ifdef SDL_HAVE_RLE
-    // Clean everything out to start
-    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface);
-    }
-#endif
+    // We should have cleared out RLE at this point
+    SDL_assert(!(surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL));
 
     map->blit = SDL_SoftBlit;
     map->info.src_surface = surface;
