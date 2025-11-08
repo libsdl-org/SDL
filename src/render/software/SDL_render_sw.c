@@ -400,6 +400,9 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
         }
         return false;
     }
+    if (src->palette) {
+        SDL_SetSurfacePalette(src_clone, src->palette);
+    }
 
     SDL_GetSurfaceBlendMode(src, &blendmode);
     SDL_GetSurfaceAlphaMod(src, &alphaMod);
@@ -880,7 +883,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, src->format);
+                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, surface->format);
                     // Scale to an intermediate surface, then blit
                     if (tmp) {
                         SDL_Rect r;
