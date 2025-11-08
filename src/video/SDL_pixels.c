@@ -1560,7 +1560,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     map = &src->map;
 #ifdef SDL_HAVE_RLE
     if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(src, true);
+        SDL_UnRLESurface(src);
     }
 #endif
     SDL_InvalidateMap(map);

@@ -201,7 +201,7 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
 #ifdef SDL_HAVE_RLE
     // Clean everything out to start
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, true);
+        SDL_UnRLESurface(surface);
     }
 #endif
 
