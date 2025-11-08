@@ -1725,7 +1725,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
 #ifdef SDL_HAVE_RLE
         // Perform the lock
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-            SDL_UnRLESurface(surface, true);
+            SDL_UnRLESurface(surface);
             surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
             SDL_UpdateSurfaceLockFlag(surface);
         }
@@ -3068,7 +3068,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
     }
 #ifdef SDL_HAVE_RLE
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, false);
+        SDL_UnRLESurface(surface);
     }
 #endif
     SDL_SetSurfacePalette(surface, NULL);

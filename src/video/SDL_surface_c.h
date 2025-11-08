@@ -78,6 +78,9 @@ struct SDL_Surface
 
     /** info for fast blit mapping to other surfaces */
     SDL_BlitMap map;
+
+    /** Original pixels when RLE is enabled */
+    void *saved_pixels;
 };
 
 // Surface functions
