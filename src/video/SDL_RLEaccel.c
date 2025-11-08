@@ -89,6 +89,7 @@
 
 #include "SDL_sysvideo.h"
 #include "SDL_surface_c.h"
+#include "SDL_pixels_c.h"
 #include "SDL_RLEaccel_c.h"
 
 #define PIXEL_COPY(to, from, len, bpp) \
@@ -1384,6 +1385,8 @@ void SDL_UnRLESurface(SDL_Surface *surface)
 
         SDL_free(surface->map.data);
         surface->map.data = NULL;
+
+        SDL_InvalidateMap(&surface->map);
 
         SDL_UpdateSurfaceLockFlag(surface);
     }

@@ -50,7 +50,9 @@ bool SDL_SurfaceValid(SDL_Surface *surface)
 
 void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 {
-    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
+    // We need to mark the surface as needing unlock while locked
+    if ((surface->flags & SDL_SURFACE_LOCKED) ||
+        (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL)) {
         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
     } else {
         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
@@ -1726,7 +1728,6 @@ bool SDL_LockSurface(SDL_Surface *surface)
         // Perform the lock
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface);
-            surface->flags |= SDL_SURFACE_LOCK_NEEDED;
         }
 #endif
     }
@@ -1734,6 +1735,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
     // Increment the surface lock count, for recursive locks
     ++surface->locked;
     surface->flags |= SDL_SURFACE_LOCKED;
+    SDL_UpdateSurfaceLockFlag(surface);
 
     // Ready to go..
     return true;
@@ -1754,6 +1756,7 @@ void SDL_UnlockSurface(SDL_Surface *surface)
     }
 
     surface->flags &= ~SDL_SURFACE_LOCKED;
+    SDL_UpdateSurfaceLockFlag(surface);
 }
 
 static bool SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
