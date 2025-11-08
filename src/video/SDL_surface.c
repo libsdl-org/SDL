@@ -1252,7 +1252,8 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
     if (scaleMode == SDL_SCALEMODE_NEAREST || scaleMode == SDL_SCALEMODE_PIXELART) {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
-            !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
+            (!SDL_ISPIXELFORMAT_INDEXED(src->format) ||
+             (SDL_BITSPERPIXEL(src->format) == 8 && SDL_IsSamePalette(src->palette, dst->palette))) &&
             SDL_BYTESPERPIXEL(src->format) <= 4) {
             return SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
@@ -2242,6 +2243,11 @@ SDL_Surface *SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_S
         SDL_Surface *result = SDL_ConvertSurfaceAndColorspace(scaled, surface->format, NULL, surface->colorspace, surface->props);
         SDL_DestroySurface(scaled);
         return result;
+    }
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        // Linear scaling requires conversion to RGBA and then slow pixel color lookup
+        scaleMode = SDL_SCALEMODE_NEAREST;
     }
 
     // Create a new surface with the desired size

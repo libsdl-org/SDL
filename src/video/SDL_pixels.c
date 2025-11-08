@@ -1441,24 +1441,31 @@ void SDL_GetRGBA(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const 
     }
 }
 
+bool SDL_IsSamePalette(const SDL_Palette *src, const SDL_Palette *dst)
+{
+    if (src->ncolors <= dst->ncolors) {
+        // If an identical palette, no need to map
+        if (src == dst ||
+            (SDL_memcmp(src->colors, dst->colors,
+                        src->ncolors * sizeof(SDL_Color)) == 0)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Map from Palette to Palette
 static Uint8 *Map1to1(const SDL_Palette *src, const SDL_Palette *dst, int *identical)
 {
     Uint8 *map;
     int i;
 
-    if (identical) {
-        if (src->ncolors <= dst->ncolors) {
-            // If an identical palette, no need to map
-            if (src == dst ||
-                (SDL_memcmp(src->colors, dst->colors,
-                            src->ncolors * sizeof(SDL_Color)) == 0)) {
-                *identical = 1;
-                return NULL;
-            }
-        }
-        *identical = 0;
+    if (SDL_IsSamePalette(src, dst)) {
+        *identical = 1;
+        return NULL;
     }
+    *identical = 0;
+
     map = (Uint8 *)SDL_calloc(256, sizeof(Uint8));
     if (!map) {
         return NULL;
