@@ -1726,8 +1726,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
         // Perform the lock
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface);
-            surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
-            SDL_UpdateSurfaceLockFlag(surface);
+            surface->flags |= SDL_SURFACE_LOCK_NEEDED;
         }
 #endif
     }
@@ -1753,14 +1752,6 @@ void SDL_UnlockSurface(SDL_Surface *surface)
     if (!surface->locked || (--surface->locked > 0)) {
         return;
     }
-
-#ifdef SDL_HAVE_RLE
-    // Update RLE encoded surface with new data
-    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        surface->internal_flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL; // stop lying
-        SDL_RLESurface(surface);
-    }
-#endif
 
     surface->flags &= ~SDL_SURFACE_LOCKED;
 }
