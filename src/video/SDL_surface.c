@@ -1310,14 +1310,15 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
                 SDL_PixelFormat fmt;
                 tmprect.x = 0;
                 tmprect.y = 0;
-                tmprect.w = src->w;
-                tmprect.h = src->h;
+                tmprect.w = srcrect->w;
+                tmprect.h = srcrect->h;
                 if (SDL_BYTESPERPIXEL(dst->format) == 4 && dst->format != SDL_PIXELFORMAT_ARGB2101010) {
                     fmt = dst->format;
                 } else {
                     fmt = SDL_PIXELFORMAT_ARGB8888;
                 }
-                tmp1 = SDL_CreateSurface(src->w, src->h, fmt);
+                // FIXME: We really want a SDL_DuplicateSurface() with a rectangle here
+                tmp1 = SDL_CreateSurface(tmprect.w, tmprect.h, fmt);
                 SDL_BlitSurfaceUnchecked(src, srcrect, tmp1, &tmprect);
 
                 srcrect2.x = 0;
