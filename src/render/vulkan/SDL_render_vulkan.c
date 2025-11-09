@@ -3159,6 +3159,7 @@ static bool VULKAN_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cm
 {
     VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VULKAN_VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
+    SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
@@ -3166,15 +3167,17 @@ static bool VULKAN_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cm
     }
 
     cmd->data.draw.count = count;
+
+    if (convert_color) {
+        SDL_ConvertToLinear(&color);
+    }
+
     for (i = 0; i < count; i++) {
         verts->pos[0] = points[i].x + 0.5f;
         verts->pos[1] = points[i].y + 0.5f;
         verts->tex[0] = 0.0f;
         verts->tex[1] = 0.0f;
-        verts->color = cmd->data.draw.color;
-        if (convert_color) {
-            SDL_ConvertToLinear(&verts->color);
-        }
+        verts->color = color;
         verts++;
     }
     return true;
