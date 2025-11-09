@@ -49,17 +49,23 @@ static char *GetDBUSObjectPath(void)
 
     // Ensure it starts with a letter or underscore
     if (!SDL_isalpha(app_id[0]) && app_id[0] != '_') {
+        app_id = SDL_realloc(app_id, SDL_strlen(app_id) + 2);
+        if (!app_id) {
+            return NULL;
+        }
         SDL_memmove(app_id + 1, app_id, SDL_strlen(app_id) + 1);
         app_id[0] = '_';
     }
 
     // Create full path
-    char path[1024];
-    SDL_snprintf(path, sizeof(path), "/org/libsdl/%s_%d", app_id, getpid());
+    char *path;
+    if (SDL_asprintf(&path, "/org/libsdl/%s_%d", app_id, getpid()) < 0) {
+        path = NULL;
+    }
 
     SDL_free(app_id);
 
-    return SDL_strdup(path);
+    return path;
 }
 
 static char *GetAppDesktopPath(void)
