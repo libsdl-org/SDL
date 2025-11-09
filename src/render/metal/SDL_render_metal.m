@@ -1250,7 +1250,7 @@ static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
        angles. Maybe !!! FIXME for later, though. */
 
     points -= 2; // update the last line.
-    verts -= 2 + 1;
+    verts -= 6;
 
     {
         const float xstart = points[0].x;
@@ -1784,13 +1784,40 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                 break;
             }
 
-            case SDL_RENDERCMD_DRAW_POINTS:
             case SDL_RENDERCMD_DRAW_LINES:
             {
-                const size_t count = cmd->data.draw.count;
-                const MTLPrimitiveType primtype = (cmd->command == SDL_RENDERCMD_DRAW_POINTS) ? MTLPrimitiveTypePoint : MTLPrimitiveTypeLineStrip;
                 if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
-                    [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
+                    size_t count = cmd->data.draw.count;
+                    if (count > 2) {
+                        // joined lines cannot be grouped
+                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeLineStrip vertexStart:0 vertexCount:count];
+                    } else {
+                        // let's group non joined lines
+                        SDL_RenderCommand *finalcmd = cmd;
+                        SDL_RenderCommand *nextcmd;
+                        SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                        for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                            const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                            if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                                if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                                    // The vertex data has the draw color built in, ignore this
+                                    continue;
+                                }
+                                break; // can't go any further on this draw call, different render command up next.
+                            } else if (nextcmd->data.draw.count != 2) {
+                                break; // can't go any further on this draw call, those are joined lines
+                            } else if (nextcmd->data.draw.blend != thisblend) {
+                                break; // can't go any further on this draw call, different blendmode copy up next.
+                            } else {
+                                finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                                count += nextcmd->data.draw.count;
+                            }
+                        }
+
+                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeLine vertexStart:0 vertexCount:count];
+                        cmd = finalcmd; // skip any copy commands we just combined in here.
+                    }
                 }
                 break;
             }
@@ -1804,20 +1831,54 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             case SDL_RENDERCMD_COPY_EX: // unused
                 break;
 
+            case SDL_RENDERCMD_DRAW_POINTS:
             case SDL_RENDERCMD_GEOMETRY:
             {
-                const size_t count = cmd->data.draw.count;
-                SDL_Texture *texture = cmd->data.draw.texture;
-
-                if (texture) {
-                    if (SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
-                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
-                    }
-                } else {
-                    if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
-                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                SDL_Texture *thistexture = cmd->data.draw.texture;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+                SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
+                SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
+                SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
+                const SDL_RenderCommandType thiscmdtype = cmd->command;
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd;
+                size_t count = cmd->data.draw.count;
+                for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != thiscmdtype) {
+                        if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                            // The vertex data has the draw color built in, ignore this
+                            continue;
+                        }
+                        break; // can't go any further on this draw call, different render command up next.
+                    } else if (nextcmd->data.draw.texture != thistexture ||
+                               nextcmd->data.draw.texture_scale_mode != thisscalemode ||
+                               nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
+                               nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
+                               nextcmd->data.draw.blend != thisblend) {
+                        break; // can't go any further on this draw call, different texture/blendmode copy up next.
+                    } else {
+                        finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                        count += nextcmd->data.draw.count;
                     }
                 }
+
+                if (thiscmdtype == SDL_RENDERCMD_GEOMETRY) {
+                    if (thistexture) {
+                        if (SetCopyState(renderer, cmd, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
+                            [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                        }
+                    } else {
+                        if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache)) {
+                            [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:count];
+                        }
+                    }
+                } else {
+                    if (SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, NULL, CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, mtlbufvertex, &statecache)) {
+                        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypePoint vertexStart:0 vertexCount:count];
+                    }
+                }
+                cmd = finalcmd; // skip any copy commands we just combined in here.
                 break;
             }
 
