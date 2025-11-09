@@ -3109,6 +3109,7 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                 // let's group non joined lines
                 SDL_RenderCommand *finalcmd = cmd;
                 SDL_RenderCommand *nextcmd;
+                float thiscolorscale = cmd->data.draw.color_scale;
                 SDL_BlendMode thisblend = cmd->data.draw.blend;
 
                 for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
@@ -3121,7 +3122,8 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                         break; // can't go any further on this draw call, different render command up next.
                     } else if (nextcmd->data.draw.count != 2) {
                         break; // can't go any further on this draw call, those are joined lines
-                    } else if (nextcmd->data.draw.blend != thisblend) {
+                    } else if (nextcmd->data.draw.blend != thisblend ||
+                               nextcmd->data.draw.color_scale != thiscolorscale) {
                         break; // can't go any further on this draw call, different blendmode copy up next.
                     } else {
                         finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
@@ -3161,6 +3163,7 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         {
             /* as long as we have the same copy command in a row, with the
                same texture, we can combine them all into a single draw call. */
+            float thiscolorscale = cmd->data.draw.color_scale;
             SDL_Texture *thistexture = cmd->data.draw.texture;
             SDL_BlendMode thisblend = cmd->data.draw.blend;
             SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
@@ -3184,7 +3187,8 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                            nextcmd->data.draw.texture_scale_mode != thisscalemode ||
                            nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
                            nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
-                           nextcmd->data.draw.blend != thisblend) {
+                           nextcmd->data.draw.blend != thisblend ||
+                           nextcmd->data.draw.color_scale != thiscolorscale) {
                     break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
                     finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
