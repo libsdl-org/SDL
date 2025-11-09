@@ -399,6 +399,7 @@ function(SDL_PrintSummary)
   PrintEnabledBackends("GPU drivers" "^SDL_GPU_([A-Z0-9]*)$")
   PrintEnabledBackends("Audio drivers" "^SDL_AUDIO_DRIVER_([A-Z0-9]*)$")
   PrintEnabledBackends("Joystick drivers" "^SDL_JOYSTICK_([A-Z0-9]*)$")
+  PrintEnabledBackends("Camera drivers" "^SDL_CAMERA_DRIVER_([A-Z0-9]*)$")
   message(STATUS "")
 
   if(UNIX)
