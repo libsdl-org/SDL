@@ -1248,6 +1248,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 SDL_RenderCommand *finalcmd = cmd;
                 SDL_RenderCommand *nextcmd;
                 SDL_BlendMode thisblend = cmd->data.draw.blend;
+                SDL_GPURenderState *thisrenderstate = cmd->data.draw.gpu_render_state;
 
                 for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
                     const SDL_RenderCommandType nextcmdtype = nextcmd->command;
@@ -1259,7 +1260,8 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                         break; // can't go any further on this draw call, different render command up next.
                     } else if (nextcmd->data.draw.count != 2) {
                         break; // can't go any further on this draw call, those are joined lines
-                    } else if (nextcmd->data.draw.blend != thisblend) {
+                    } else if (nextcmd->data.draw.blend != thisblend ||
+                               nextcmd->data.draw.gpu_render_state != thisrenderstate) {
                         break; // can't go any further on this draw call, different blendmode copy up next.
                     } else {
                         finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
@@ -1283,6 +1285,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
             SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
             SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
+            SDL_GPURenderState *thisrenderstate = cmd->data.draw.gpu_render_state;
             const SDL_RenderCommandType thiscmdtype = cmd->command;
             SDL_RenderCommand *finalcmd = cmd;
             SDL_RenderCommand *nextcmd;
@@ -1301,8 +1304,8 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                            nextcmd->data.draw.texture_scale_mode != thisscalemode ||
                            nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
                            nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
-                           nextcmd->data.draw.blend != thisblend) {
-                    // FIXME should we check address mode too?
+                           nextcmd->data.draw.blend != thisblend ||
+                           nextcmd->data.draw.gpu_render_state != thisrenderstate) {
                     break; // can't go any further on this draw call, different texture/blendmode copy up next.
                 } else {
                     finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
