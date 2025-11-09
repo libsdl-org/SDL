@@ -301,7 +301,7 @@ static void SetSurfaceOpaqueRegion(SDL_WindowData *wind, bool is_opaque)
     }
 }
 
-static bool ConfigureWindowGeometry(SDL_Window *window)
+static void ConfigureWindowGeometry(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     const double scale_factor = GetWindowScale(window);
@@ -309,17 +309,6 @@ static bool ConfigureWindowGeometry(SDL_Window *window)
     const int old_pixel_height = data->current.pixel_height;
     int window_width, window_height;
     bool window_size_changed;
-
-    // Throttle interactive resize events to once per refresh cycle to prevent lag.
-    if (data->resizing) {
-        data->resizing = false;
-
-        if (data->drop_interactive_resizes) {
-            return false;
-        } else {
-            data->drop_interactive_resizes = true;
-        }
-    }
 
     // Set the drawable backbuffer size.
     GetBufferSize(window, &data->current.pixel_width, &data->current.pixel_height);
@@ -469,8 +458,6 @@ static bool ConfigureWindowGeometry(SDL_Window *window)
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
         }
     }
-
-    return true;
 }
 
 static void CommitLibdecorFrame(SDL_Window *window)
@@ -690,7 +677,15 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
         wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     }
 
-    wind->drop_interactive_resizes = false;
+    if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
+        if (wind->pending_config_ack) {
+            wind->pending_config_ack = false;
+            ConfigureWindowGeometry(wind->sdlwindow);
+            xdg_surface_ack_configure(wind->shell_surface.xdg.surface, wind->shell_surface.xdg.serial);
+        }
+    } else {
+        wind->resizing = false;
+    }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME) {
         wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_SHOWN;
@@ -746,8 +741,17 @@ static void handle_xdg_surface_configure(void *data, struct xdg_surface *xdg, ui
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
 
-    if (ConfigureWindowGeometry(window)) {
+    /* Interactive resizes are throttled by acking and committing only the most recent configuration at
+     * the next frame callback, or certain combinations of clients and compositors can exhibit severe lag
+     * when resizing.
+     */
+    wind->shell_surface.xdg.serial = serial;
+    if (!wind->resizing) {
+        wind->pending_config_ack = false;
+        ConfigureWindowGeometry(window);
         xdg_surface_ack_configure(xdg, serial);
+    } else {
+        wind->pending_config_ack = true;
     }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
@@ -1404,6 +1408,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     }
 
     // Store the new state.
+    const bool started_resize = !wind->resizing && resizing;
     wind->last_configure.width = width;
     wind->last_configure.height = height;
     wind->floating = floating;
@@ -1430,9 +1435,15 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     }
 #endif
 
-    // Calculate the new window geometry
-    if (ConfigureWindowGeometry(window)) {
-        // ... then commit the changes on the libdecor side.
+    if (!wind->resizing || started_resize) {
+        /* Calculate the new window geometry and commit the changes on the libdecor side.
+         *
+         * XXX: This will potentially leave un-acked configurations, but libdecor invalidates the
+         *      configuration upon returning from the frame event, so there is nothing that can be
+         *      done, unless libdecor adds the ability to copy or refcount the configuration state
+         *      to apply later.
+         */
+        ConfigureWindowGeometry(window);
         struct libdecor_state *state = libdecor_state_new(wind->current.logical_width, wind->current.logical_height);
         libdecor_frame_commit(frame, state, configuration);
         libdecor_state_free(state);

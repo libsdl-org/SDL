@@ -63,6 +63,8 @@ struct SDL_WindowData
                     struct xdg_positioner *xdg_positioner;
                 } popup;
             };
+
+            Uint32 serial;
         } xdg;
     } shell_surface;
     enum
@@ -203,7 +205,7 @@ struct SDL_WindowData
     bool suspended;
     bool resizing;
     bool active;
-    bool drop_interactive_resizes;
+    bool pending_config_ack;
     bool is_fullscreen;
     bool fullscreen_exclusive;
     bool drop_fullscreen_requests;
