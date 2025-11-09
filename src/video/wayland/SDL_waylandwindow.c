@@ -2036,8 +2036,16 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (data->shell_surface.libdecor.frame) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-                libdecor_dispatch(c->shell.libdecor, -1);
-                WAYLAND_wl_display_dispatch_pending(c->display);
+                if (libdecor_dispatch(c->shell.libdecor, -1) < 0) {
+                    if (!Wayland_HandleDisplayDisconnected(_this)) {
+                        return;
+                    }
+                }
+                if (WAYLAND_wl_display_dispatch_pending(c->display) < 0) {
+                    if (!Wayland_HandleDisplayDisconnected(_this)) {
+                        return;
+                    }
+                }
             }
         }
     } else
@@ -2050,7 +2058,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wl_surface_commit(data->surface);
         if (data->shell_surface.xdg.surface) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-                WAYLAND_wl_display_dispatch(c->display);
+                if (WAYLAND_wl_display_dispatch(c->display) < 0) {
+                    if (!Wayland_HandleDisplayDisconnected(_this)) {
+                        return;
+                    }
+                }
             }
         }
     } else {

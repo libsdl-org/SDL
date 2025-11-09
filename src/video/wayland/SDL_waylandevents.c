@@ -671,20 +671,8 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 
 connection_error:
-    if (ret < 0 && !d->display_disconnected) {
-        /* Something has failed with the Wayland connection -- for example,
-         * the compositor may have shut down and closed its end of the socket,
-         * or there is a library-specific error.
-         *
-         * Try to recover once, then quit.
-         */
-        if (!Wayland_VideoReconnect(_this)) {
-            d->display_disconnected = 1;
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wayland display connection closed by server (fatal)");
-
-            // Only send a single quit message, as application shutdown might call SDL_PumpEvents().
-            SDL_SendQuit();
-        }
+    if (ret < 0) {
+        Wayland_HandleDisplayDisconnected(_this);
     }
 }
 
