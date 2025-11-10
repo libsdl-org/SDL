@@ -1459,7 +1459,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->HDR_headroom > output_headroom && output_headroom > 0.0f) {
             constants->tonemap_method = TONEMAP_CHROME;
             constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
