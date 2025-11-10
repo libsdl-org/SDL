@@ -120,6 +120,10 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGlobalProperties(void);
  *
  * All properties are automatically destroyed when SDL_Quit() is called.
  *
+ * If you are making a temporary property group with a handful of values,
+ * meant to be used and disposed of right away, it might be more efficient
+ * to use SDL_CreateTemporaryProperties() instead.
+ *
  * \returns an ID for a new group of properties, or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -560,6 +564,120 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateProperties(SDL_PropertiesID props,
  * \sa SDL_CreateProperties
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyProperties(SDL_PropertiesID props);
+
+
+/**
+ * One key/value pair for a temporary property.
+ *
+ * An array of this struct is passed to SDL_CreateTemporaryProperties().
+ * Each struct holds a single key/value pair: a single property in the total
+ * set of properties.
+ *
+ * This is intended to be faster than SDL_CreateProperties for simple, one-use,
+ * disposable data sets.
+ *
+ * \since This struct is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTemporaryProperties
+ */
+typedef struct SDL_TemporaryPropertyItem
+{
+    const char *name;       /**< property name (the key). */
+    SDL_PropertyType type;  /**< property type (pointer, string, number, float, bool). */
+    union {
+        Uint64 ui64;        /**< a probably-reasonable default field if you initialize without a C99-style designated initializer. */
+        void *p;            /**< for SDL_PROPERTY_TYPE_POINTER */
+        const char *s;      /**< for SDL_PROPERTY_TYPE_STRING */
+        Sint64 n;           /**< for SDL_PROPERTY_TYPE_NUMBER */
+        float f;            /**< for SDL_PROPERTY_TYPE_FLOAT */
+        bool b;             /**< for SDL_PROPERTY_TYPE_BOOLEAN */
+    } value;                /**< property data (the value). */
+} SDL_TemporaryPropertyItem;
+
+
+/**
+ * Create a throwaway property set with lower overhead.
+ *
+ * A common pattern in SDL is to create an SDL_PropertiesID, set some values
+ * in it, pass it to a function with "WithProperties" in its name, and then
+ * immediately destroy the property set afterwards. However, since property
+ * sets are meant to be robust--thread safe, tolerant of incorrect data types,
+ * etc--they have a lot of overhead for this usage pattern.
+ *
+ * A "temporary" property set avoid this overhead by operating mostly like
+ * a standard set, but with a few limitations:
+ *
+ * - They don't have locks, so they can't be accessed from multiple threads
+ *   at the same time.
+ * - They don't own their data; the data used to create them must continue
+ *   to live until the property set is destroyed.
+ * - They are read-only (no adding/removing/changing properties).
+ * - They will not convert data; if a property was created with a certain
+ *   datatype, the set will treat a key as missing if requested as a different
+ *   datatype.
+ * - They don't have an internal hash table, they only iterate the array
+ *   provided at creation, so they're only suitable for data sets with a
+ *   handful of items.
+ *
+ * If these rules are followed, a temporary property set created through this
+ * function is interchangeable with a standard one created through
+ * SDL_CreateProperties(), and can be used anywhere an SDL_PropertiesID is
+ * required.
+ *
+ * A common usage pattern is to create a temporary property set on the stack,
+ * use it to initialize some other object, and then destroy it while the
+ * stack data is still valid.
+ *
+ * For example, if you were to use a normal property set to launch a program
+ * through SDL_CreateProcessWithProperties(), it might look like this:
+ *
+ * ```c
+ * SDL_PropertiesID props = SDL_CreateProperties();
+ * SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, MyArgs);
+ * SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+ * SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
+ * SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+ * SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, true);
+ * SDL_Process *handle = SDL_CreateProcessWithProperties(props);
+ * SDL_DestroyProperties(props);
+ * ```
+ *
+ * With a temporary property set, however, a large amount of allocations and
+ * failure cases can be removed:
+ *
+ * ```c
+ * const SDL_TemporaryPropertyItem prop_items[] = {
+ *     { SDL_PROP_PROCESS_CREATE_ARGS_POINTER, SDL_PROPERTY_TYPE_POINTER, { .p = MyArgs } },
+ *     { SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROPERTY_TYPE_NUMBER, { .n = SDL_PROCESS_STDIO_NULL } },
+ *     { SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROPERTY_TYPE_NUMBER, { .n = SDL_PROCESS_STDIO_NULL } },
+ *     { SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROPERTY_TYPE_NUMBER, { .n = SDL_PROCESS_STDIO_NULL } },
+ *     { SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, SDL_PROPERTY_TYPE_BOOLEAN, { .b = true } }
+ * };
+ * SDL_PropertiesID props = SDL_CreateTemporaryProperties(prop_items, SDL_arraysize(prop_items));
+ * SDL_Process *handle = SDL_CreateProcessWithProperties(props);
+ * SDL_DestroyProperties(props);
+ * ```
+ *
+ * (This example uses C99 designated initializers--`.n = value`--but the first
+ * field in the union is a Uint64, which might be a sufficient default on older
+ * compilers without explicitly specifying a union field.)
+ *
+ * This function does allocate a small amount of memory, so it can fail, and
+ * a successful return value must eventually be disposed of with
+ * SDL_DestroyProperties().
+ *
+ * All properties are automatically destroyed when SDL_Quit() is called.
+ *
+ * \param items an array of items that comprises the entire property set.
+ * \param num_items the number of items in the `items` array.
+ * \returns an ID for the new temporary property set, or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_CreateTemporaryProperties(const SDL_TemporaryPropertyItem *items, int num_items);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
