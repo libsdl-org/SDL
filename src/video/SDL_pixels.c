@@ -1217,16 +1217,18 @@ static Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Ui
 Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
 {
     Uint8 color_index = 0;
-    const void *value;
-    if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
-        color_index = (Uint8)(uintptr_t)value;
-    } else {
-        Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
-        Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
-        Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
-        Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
-        color_index = SDL_FindColor(pal, r, g, b, a);
-        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+    if (pal) {
+        const void *value;
+        if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
+            color_index = (Uint8)(uintptr_t)value;
+        } else {
+            Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
+            Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
+            Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
+            Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
+            color_index = SDL_FindColor(pal, r, g, b, a);
+            SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+        }
     }
     return color_index;
 }
