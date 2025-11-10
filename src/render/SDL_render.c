@@ -29,6 +29,12 @@
 #include "software/SDL_render_sw_c.h"
 #include "../video/SDL_pixels_c.h"
 
+#if defined(__loongarch__)
+#if SDL_VIDEO_OPENGL
+#include "SDL_opengl.h"
+#endif /* SDL_VIDEO_OPENGL */
+#endif
+
 #if defined(__ANDROID__)
 #include "../core/android/SDL_android.h"
 #endif
@@ -954,6 +960,34 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 }
 #endif /* !SDL_RENDER_DISABLED */
 
+#if defined(__loongarch__)
+static SDL_bool SDL_CheckIntegratedGraphics()
+{
+     SDL_Window *window = SDL_CreateWindow("OpenGL test", -32, -32, 32, 32,
+                                           SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+     SDL_bool has_lg100_or_lg110 = SDL_FALSE;
+
+     if (window) {
+        SDL_GLContext context = SDL_GL_CreateContext(window);
+
+        if (context) {
+            const GLubyte *(APIENTRY *glGetStringFunc)(GLenum) =
+                SDL_GL_GetProcAddress("glGetString");
+            if (glGetStringFunc) {
+                const char *renderer = (const char*)glGetStringFunc(GL_RENDERER);
+                if (renderer && (SDL_strstr(renderer, "LG110") ||
+                    SDL_strstr(renderer, "LG100"))) {
+                    has_lg100_or_lg110 = SDL_TRUE;
+                }
+            }
+            SDL_GL_DeleteContext(context);
+        }
+        SDL_DestroyWindow(window);
+    }
+    return has_lg100_or_lg110;
+}
+#endif
+
 SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
 {
 #ifndef SDL_RENDER_DISABLED
@@ -965,6 +999,14 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, int index, Uint32 flags)
 
 #if defined(__ANDROID__)
     Android_ActivityMutex_Lock_Running();
+#endif
+
+/* CPU acceleration runs faster than integrated graphics on Loongson at present. */
+#if defined(__linux__) && defined(__loongarch__)
+    if (SDL_CheckIntegratedGraphics()) {
+        SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0");
+        flags = SDL_RENDERER_SOFTWARE;
+    }
 #endif
 
     if (!window) {
