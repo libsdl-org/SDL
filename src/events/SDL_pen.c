@@ -218,7 +218,7 @@ SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
     return 0;  // oh well.
 }
 
-SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle)
+SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *window, const SDL_PenInfo *info, void *handle)
 {
     SDL_assert(handle != NULL);  // just allocate a Uint8 so you have a unique pointer if not needed!
     SDL_assert(SDL_FindPenByHandle(handle) == 0);  // Backends shouldn't double-add pens!
@@ -262,13 +262,14 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo
         event.pproximity.type = SDL_EVENT_PEN_PROXIMITY_IN;
         event.pproximity.timestamp = timestamp;
         event.pproximity.which = result;
+        event.pproximity.windowID = window ? window->id : 0;
         SDL_PushEvent(&event);
     }
 
     return result;
 }
 
-void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
+void SDL_RemovePenDevice(Uint64 timestamp, SDL_Window *window, SDL_PenID instance_id)
 {
     if (!instance_id) {
         return;
@@ -306,6 +307,7 @@ void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id)
         event.pproximity.type = SDL_EVENT_PEN_PROXIMITY_OUT;
         event.pproximity.timestamp = timestamp;
         event.pproximity.which = instance_id;
+        event.pproximity.windowID = window ? window->id : 0;
         SDL_PushEvent(&event);
     }
 }

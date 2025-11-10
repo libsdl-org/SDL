@@ -855,7 +855,7 @@ static void Emscripten_HandlePenEnter(SDL_WindowData *window_data, const Emscrip
     peninfo.max_tilt = 90.0f;
     peninfo.num_buttons = 2;
     peninfo.subtype = SDL_PEN_TYPE_PEN;
-    SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) event->pointerid);
+    SDL_AddPenDevice(0, NULL, window_data->window, &peninfo, (void *) (size_t) event->pointerid);
     Emscripten_UpdatePenFromEvent(window_data, event);
 }
 
@@ -878,7 +878,7 @@ static void Emscripten_HandlePenLeave(SDL_WindowData *window_data, const Emscrip
     const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
     if (pen) {
         Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
-        SDL_RemovePenDevice(0, pen);
+        SDL_RemovePenDevice(0, window_data->window, pen);
     }
 }
 

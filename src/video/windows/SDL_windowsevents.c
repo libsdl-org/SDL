@@ -1277,7 +1277,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         info.max_tilt = 90.0f;
         info.num_buttons = 1;
         info.subtype = SDL_PEN_TYPE_PENCIL;
-        SDL_AddPenDevice(0, NULL, &info, hpointer);
+        SDL_AddPenDevice(0, NULL, data->window, &info, hpointer);
         returnCode = 0;
     } break;
 
@@ -1293,7 +1293,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
-            SDL_RemovePenDevice(WIN_GetEventTimestamp(), pen);
+            SDL_RemovePenDevice(WIN_GetEventTimestamp(), data->window, pen);
         }
         returnCode = 0;
     } break;
