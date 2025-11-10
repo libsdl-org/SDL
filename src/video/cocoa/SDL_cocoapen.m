@@ -105,14 +105,14 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
         handle->deviceid = devid;
         handle->toolid = toolid;
         handle->is_eraser = is_eraser;
-        handle->pen = SDL_AddPenDevice(Cocoa_GetEventTimestamp([event timestamp]), NULL, &peninfo, handle);
+        handle->pen = SDL_AddPenDevice(Cocoa_GetEventTimestamp([event timestamp]), NULL, _data.window, &peninfo, handle);
         if (!handle->pen) {
             SDL_free(handle);  // oh well.
         }
     } else {  // old pen leaving!
         Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID(devid, toolid);
         if (handle) {
-            SDL_RemovePenDevice(Cocoa_GetEventTimestamp([event timestamp]), handle->pen);
+            SDL_RemovePenDevice(Cocoa_GetEventTimestamp([event timestamp]), _data.window, handle->pen);
             SDL_free(handle);
         }
     }
