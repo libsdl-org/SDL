@@ -1187,7 +1187,7 @@ void SDL_DitherPalette(SDL_Palette *palette)
 /*
  * Match an RGB value to a particular palette index
  */
-Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+static Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     // Do colorspace distance matching
     unsigned int smallest;
