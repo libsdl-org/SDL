@@ -1407,8 +1407,11 @@ if(ANDROID)
     "${SDL3_SOURCE_DIR}/src/core/android/*.c"
     "${SDL3_SOURCE_DIR}/src/core/android/*.h"
   )
-  sdl_sources("${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c")
-  set_property(SOURCE "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-declaration-after-statement")
+  if(SDL_CPU_ARM32 AND NOT HAVE_GETAUXVAL)
+    sdl_sources("${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c")
+    set_property(SOURCE "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c" APPEND PROPERTY COMPILE_OPTIONS "-Wno-declaration-after-statement")
+    sdl_include_directories(PRIVATE SYSTEM "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures")
+  endif()
 
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/misc/android/*.c"
@@ -3817,10 +3820,6 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ARCH_64 TRUE)
 else()
   set(ARCH_64 FALSE)
-endif()
-
-if(ANDROID)
-  sdl_include_directories(PRIVATE SYSTEM "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures")
 endif()
 
 if(APPLE)
