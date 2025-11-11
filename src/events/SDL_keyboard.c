@@ -51,6 +51,7 @@ typedef struct SDL_Keyboard
     SDL_Keymod modstate;
     Uint8 keysource[SDL_SCANCODE_COUNT];
     bool keystate[SDL_SCANCODE_COUNT];
+    Uint8 keyrefcount[SDL_SCANCODE_COUNT]; // how many devices hold this key //
     SDL_Keymap *keymap;
     Uint32 keycode_options;
     bool autorelease_pending;
@@ -88,6 +89,12 @@ static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, 
 // Public functions
 bool SDL_InitKeyboard(void)
 {
+    // Init key reference counts to 0
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    for (int i = 0; i < SDL_SCANCODE_COUNT; ++i) {
+        keyboard->keyrefcount[i] = 0;
+    }
+
     SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
 
@@ -225,6 +232,7 @@ void SDL_ResetKeyboard(void)
         if (keyboard->keystate[scancode]) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, (SDL_Scancode)scancode, false);
         }
+        keyboard->keyrefcount[scancode] = 0; // Reset reference count
     }
 }
 
@@ -522,6 +530,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     SDL_Keycode keycode = SDLK_UNKNOWN;
     Uint32 type;
     bool repeat = false;
+    bool last_release = true;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
 #ifdef DEBUG_KEYBOARD
@@ -538,6 +547,9 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     if (scancode > SDL_SCANCODE_UNKNOWN && scancode < SDL_SCANCODE_COUNT) {
         // Drop events that don't change state
         if (down) {
+            if (keyboard->keyrefcount[scancode] < 255) {
+                keyboard->keyrefcount[scancode]++;
+            }
             if (keyboard->keystate[scancode]) {
                 if (!(keyboard->keysource[scancode] & source)) {
                     keyboard->keysource[scancode] |= source;
@@ -547,14 +559,25 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
             }
             keyboard->keysource[scancode] |= source;
         } else {
-            if (!keyboard->keystate[scancode]) {
-                return false;
+            if (keyboard->keyrefcount[scancode] > 0) {
+                keyboard->keyrefcount[scancode]--;
             }
-            keyboard->keysource[scancode] = 0;
+            if (keyboard->keyrefcount[scancode] == 0) {
+                keyboard->keysource[scancode] = 0;
+                last_release = true;
+            } else {
+                last_release = false;
+            }
         }
 
         // Update internal keyboard state
-        keyboard->keystate[scancode] = down;
+        if (down) {
+            keyboard->keystate[scancode] = true;
+        } else {
+            if (keyboard->keyrefcount[scancode] == 0) {
+                keyboard->keystate[scancode] = false;
+            }
+        }
 
         keycode = SDL_GetKeyFromScancode(scancode, keyboard->modstate, true);
 
@@ -621,7 +644,9 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
                 break;
             }
         } else {
-            keyboard->modstate &= ~modifier;
+            if (last_release) {
+                keyboard->modstate &= ~modifier;
+            }
         }
     }
 
@@ -657,6 +682,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
 
     return posted;
 }
+
 
 void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
