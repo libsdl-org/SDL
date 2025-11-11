@@ -38,52 +38,25 @@ typedef struct _COMDLG_FILTERSPEC
 
 typedef enum FDE_OVERWRITE_RESPONSE
 {
-    FDEOR_DEFAULT
-    FDEOR_ACCEPT
-    FDEOR_REFUSE
+    FDEOR_DEFAULT,
+    FDEOR_ACCEPT,
+    FDEOR_REFUSE,
 } FDE_OVERWRITE_RESPONSE;
 
 typedef enum FDE_SHAREVIOLATION_RESPONSE
 {
-    FDESVR_DEFAULT
-    FDESVR_ACCEPT
-    FDESVR_REFUSE
+    FDESVR_DEFAULT,
+    FDESVR_ACCEPT,
+    FDESVR_REFUSE,
 } FDE_SHAREVIOLATION_RESPONSE;
 
 typedef enum FDAP
 {
-    FDAP_BOTTOM
-    FDAP_TOP
+    FDAP_BOTTOM,
+    FDAP_TOP,
 } FDAP;
 
 typedef ULONG SFGAOF;
-
-typedef enum GETPROPERTYSTOREFLAGS
-{
-    GPS_DEFAULT = 0x0,
-    GPS_HANDLERPROPERTIESONLY = 0x1,
-    GPS_READWRITE = 0x2,
-    GPS_TEMPORARY = 0x4,
-    GPS_FASTPROPERTIESONLY = 0x8,
-    GPS_OPENSLOWITEM = 0x10,
-    GPS_DELAYCREATION = 0x20,
-    GPS_BESTEFFORT = 0x40,
-    GPS_NO_OPLOCK = 0x80,
-    GPS_PREFERQUERYPROPERTIES = 0x100,
-    GPS_EXTRINSICPROPERTIES = 0x200,
-    GPS_EXTRINSICPROPERTIESONLY = 0x400,
-    GPS_VOLATILEPROPERTIES = 0x800,
-    GPS_VOLATILEPROPERTIESONLY = 0x1000,
-    GPS_MASK_VALID = 0x1FFF
-} GETPROPERTYSTOREFLAGS;
-
-typedef struct _tagpropertykey {
-    GUID fmtid;
-    DWORD pid;
-} PROPERTYKEY;
-
-#define REFPROPERTYKEY const PROPERTYKEY * const
-
 typedef DWORD SHCONTF;
 
 #endif // WINVER < _WIN32_WINNT_VISTA
@@ -758,25 +731,17 @@ quit:
     // default_file_w is a pointer into default_folder_w.
     if (default_folder_w) {
         SDL_free(default_folder_w);
-    } else if (default_file_w) {
+    } else {
         SDL_free(default_file_w);
     }
 
-    if (title_w) {
-        SDL_free(title_w);
-    }
+    SDL_free(title_w);
 
-    if (accept_w) {
-        SDL_free(accept_w);
-    }
+    SDL_free(accept_w);
 
-    if (cancel_w) {
-        SDL_free(cancel_w);
-    }
+    SDL_free(cancel_w);
 
-    if (filter_data) {
-        SDL_free(filter_data);
-    }
+    SDL_free(filter_data);
 
     if (files) {
         for (char** files_ptr = files; *files_ptr; files_ptr++) {

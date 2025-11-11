@@ -1290,3 +1290,7 @@
 #define SDL_LoadPNG SDL_LoadPNG_REAL
 #define SDL_SavePNG_IO SDL_SavePNG_IO_REAL
 #define SDL_SavePNG SDL_SavePNG_REAL
+#define SDL_GetSystemPageSize SDL_GetSystemPageSize_REAL
+#define SDL_GetPenDeviceType SDL_GetPenDeviceType_REAL
+#define SDL_CreateAnimatedCursor SDL_CreateAnimatedCursor_REAL
+#define SDL_RotateSurface SDL_RotateSurface_REAL

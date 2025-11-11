@@ -226,9 +226,7 @@ static bool mime_data_list_add(struct wl_list *list,
     }
 
     if (mime_data && buffer && length > 0) {
-        if (mime_data->data) {
-            SDL_free(mime_data->data);
-        }
+        SDL_free(mime_data->data);
         mime_data->data = internal_buffer;
         mime_data->length = length;
     } else {
@@ -244,12 +242,8 @@ static void mime_data_list_free(struct wl_list *list)
     SDL_MimeDataList *next = NULL;
 
     wl_list_for_each_safe (mime_data, next, list, link) {
-        if (mime_data->data) {
-            SDL_free(mime_data->data);
-        }
-        if (mime_data->mime_type) {
-            SDL_free(mime_data->mime_type);
-        }
+        SDL_free(mime_data->data);
+        SDL_free(mime_data->mime_type);
         SDL_free(mime_data);
     }
 }

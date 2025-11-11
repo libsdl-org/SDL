@@ -96,6 +96,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(
     JNIEnv *env, jclass jcls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardShown)(
+    JNIEnv *env, jclass jcls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardHidden)(
+    JNIEnv *env, jclass jcls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyDown)(
     JNIEnv *env, jclass jcls,
     jint keycode);
@@ -115,13 +121,23 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
     jint touch_device_id_in, jint pointer_finger_id_in,
     jint action, jfloat x, jfloat y, jfloat p);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchStart)(
+    JNIEnv *env, jclass jcls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchUpdate)(
+    JNIEnv *env, jclass jcls,
+    jfloat scale);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchEnd)(
+    JNIEnv *env, jclass jcls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     JNIEnv *env, jclass jcls,
     jint button, jint action, jfloat x, jfloat y, jboolean relative);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     JNIEnv *env, jclass jcls,
-    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p);
+    jint pen_id_in, jint device_type, jint button, jint action, jfloat x, jfloat y, jfloat p);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
     JNIEnv *env, jclass jcls,
@@ -208,13 +224,18 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeSurfaceCreated", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceCreated) },
     { "onNativeSurfaceChanged", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceChanged) },
     { "onNativeSurfaceDestroyed", "()V", SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed) },
+    { "onNativeScreenKeyboardShown", "()V", SDL_JAVA_INTERFACE(onNativeScreenKeyboardShown) },
+    { "onNativeScreenKeyboardHidden", "()V", SDL_JAVA_INTERFACE(onNativeScreenKeyboardHidden) },
     { "onNativeKeyDown", "(I)V", SDL_JAVA_INTERFACE(onNativeKeyDown) },
     { "onNativeKeyUp", "(I)V", SDL_JAVA_INTERFACE(onNativeKeyUp) },
     { "onNativeSoftReturnKey", "()Z", SDL_JAVA_INTERFACE(onNativeSoftReturnKey) },
     { "onNativeKeyboardFocusLost", "()V", SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost) },
     { "onNativeTouch", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
+    { "onNativePinchStart", "()V", SDL_JAVA_INTERFACE(onNativePinchStart) },
+    { "onNativePinchUpdate", "(F)V", SDL_JAVA_INTERFACE(onNativePinchUpdate) },
+    { "onNativePinchEnd", "()V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
-    { "onNativePen", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
+    { "onNativePen", "(IIIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
     { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
@@ -352,7 +373,6 @@ static jmethodID midInitTouch;
 static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
-static jmethodID midIsScreenKeyboardShown;
 static jmethodID midIsTablet;
 static jmethodID midManualBackButton;
 static jmethodID midMinimizeWindow;
@@ -642,7 +662,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass, "isAndroidTV", "()Z");
     midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass, "isChromebook", "()Z");
     midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass, "isDeXMode", "()Z");
-    midIsScreenKeyboardShown = (*env)->GetStaticMethodID(env, mActivityClass, "isScreenKeyboardShown", "()Z");
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
     midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass, "manualBackButton", "()V");
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow", "()V");
@@ -675,7 +694,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midIsAndroidTV ||
         !midIsChromebook ||
         !midIsDeXMode ||
-        !midIsScreenKeyboardShown ||
         !midIsTablet ||
         !midManualBackButton ||
         !midMinimizeWindow ||
@@ -1242,6 +1260,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     }
 #endif
 
+    if (Android_Window) {
+        Android_RestoreScreenKeyboard(SDL_GetVideoDevice(), Android_Window);
+    }
+
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
@@ -1285,6 +1307,16 @@ retry:
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardShown)(JNIEnv *env, jclass jcls)
+{
+    SDL_SendScreenKeyboardShown();
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardHidden)(JNIEnv *env, jclass jcls)
+{
+    SDL_SendScreenKeyboardHidden();
 }
 
 // Keydown
@@ -1347,6 +1379,43 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
+// Pinch
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchStart)(
+    JNIEnv *env, jclass jcls)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, Android_Window, 0);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchUpdate)(
+    JNIEnv *env, jclass jcls, jfloat scale)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, Android_Window, scale);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchEnd)(
+    JNIEnv *env, jclass jcls)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, Android_Window, 0);
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
 // Mouse
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     JNIEnv *env, jclass jcls,
@@ -1362,11 +1431,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
 // Pen
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     JNIEnv *env, jclass jcls,
-    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p)
+    jint pen_id_in, jint device_type, jint button, jint action, jfloat x, jfloat y, jfloat p)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    Android_OnPen(Android_Window, pen_id_in, button, action, x, y, p);
+    Android_OnPen(Android_Window, pen_id_in, device_type, button, action, x, y, p);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1729,18 +1798,24 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
             exceptionName = (jstring)(*env)->CallObjectMethod(env, exceptionClass, mid);
             exceptionNameUTF8 = (*env)->GetStringUTFChars(env, exceptionName, 0);
 
+            (*env)->DeleteLocalRef(env, classClass);
+
             mid = (*env)->GetMethodID(env, exceptionClass, "getMessage", "()Ljava/lang/String;");
             exceptionMessage = (jstring)(*env)->CallObjectMethod(env, exception, mid);
+
+            (*env)->DeleteLocalRef(env, exceptionClass);
 
             if (exceptionMessage != NULL) {
                 const char *exceptionMessageUTF8 = (*env)->GetStringUTFChars(env, exceptionMessage, 0);
                 SDL_SetError("%s: %s", exceptionNameUTF8, exceptionMessageUTF8);
                 (*env)->ReleaseStringUTFChars(env, exceptionMessage, exceptionMessageUTF8);
+                (*env)->DeleteLocalRef(env, exceptionMessage);
             } else {
                 SDL_SetError("%s", exceptionNameUTF8);
             }
 
             (*env)->ReleaseStringUTFChars(env, exceptionName, exceptionNameUTF8);
+            (*env)->DeleteLocalRef(env, exceptionName);
         }
 
         return true;
@@ -2147,14 +2222,6 @@ void Android_JNI_HideScreenKeyboard(void)
     // has to match Activity constant
     const int COMMAND_TEXTEDIT_HIDE = 3;
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
-}
-
-bool Android_JNI_IsScreenKeyboardShown(void)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    jboolean is_shown = 0;
-    is_shown = (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsScreenKeyboardShown);
-    return is_shown;
 }
 
 bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
@@ -2831,6 +2898,7 @@ bool Android_JNI_OpenFileDialog(
     if (filters) {
         jclass stringClass = (*env)->FindClass(env, "java/lang/String");
         filtersArray = (*env)->NewObjectArray(env, nfilters, stringClass, NULL);
+        (*env)->DeleteLocalRef(env, stringClass);
 
         // Convert to string
         for (int i = 0; i < nfilters; i++) {

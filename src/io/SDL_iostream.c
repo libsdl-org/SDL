@@ -458,7 +458,7 @@ static size_t SDLCALL fd_read(void *userdata, void *ptr, size_t size, SDL_IOStat
     } else if (result == 0) {
         *status = SDL_IO_STATUS_EOF;
     } else if (result < size) {
-        *status = SDL_IO_STATUS_NOT_READY;;
+        *status = SDL_IO_STATUS_NOT_READY;
     }
     return (size_t)bytes;
 }
@@ -496,7 +496,7 @@ static size_t SDLCALL fd_write(void *userdata, const void *ptr, size_t size, SDL
             bytes = 0;
         }
     } else if (result < size) {
-        *status = SDL_IO_STATUS_NOT_READY;;
+        *status = SDL_IO_STATUS_NOT_READY;
     }
 
     return (size_t)bytes;
@@ -1177,9 +1177,7 @@ static bool SDLCALL dynamic_mem_close(void *userdata)
 {
     const IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
     void *mem = SDL_GetPointerProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
-    if (mem) {
-        SDL_free(mem);
-    }
+    SDL_free(mem);
     SDL_free(userdata);
     return true;
 }

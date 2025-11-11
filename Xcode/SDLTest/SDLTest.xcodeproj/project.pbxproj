@@ -87,7 +87,6 @@
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
-		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 		A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859482BC72FC20045DD6C /* testautomation_properties.c */; };
 		A1A859502BC72FC20045DD6C /* testautomation_subsystems.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */; };
 		A1A859522BC72FC20045DD6C /* testautomation_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A8594A2BC72FC20045DD6C /* testautomation_log.c */; };
@@ -116,22 +115,21 @@
 		DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9016A1D1A500A1396C /* SDL_test_log.c */; };
 		DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D9116A1D1A500A1396C /* SDL_test_md5.c */; };
 		DB166DD716A1D37800A1396C /* testmessage.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBD16A1C74100A1396C /* testmessage.c */; };
-		DB166DDB16A1D42F00A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
+		DB166DDB16A1D42F00A1396C /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
 		DB166DF016A1D52500A1396C /* testrelative.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CBF16A1C74100A1396C /* testrelative.c */; };
 		DB166E0716A1D59400A1396C /* testrendercopyex.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC016A1C74100A1396C /* testrendercopyex.c */; };
 		DB166E1E16A1D5C300A1396C /* testrendertarget.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC116A1C74100A1396C /* testrendertarget.c */; };
-		DB166E2216A1D5EC00A1396C /* sample.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.bmp */; };
-		DB166E2316A1D60B00A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
-		DB166E2516A1D61900A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
-		DB166E2616A1D61900A1396C /* sample.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.bmp */; };
+		DB166E2216A1D5EC00A1396C /* sample.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.png */; };
+		DB166E2316A1D60B00A1396C /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
+		DB166E2516A1D61900A1396C /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
+		DB166E2616A1D61900A1396C /* sample.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.png */; };
 		DB166E3C16A1D66500A1396C /* testrumble.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC216A1C74100A1396C /* testrumble.c */; };
-		DB166E4D16A1D69000A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
-		DB166E4E16A1D69000A1396C /* sample.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.bmp */; };
+		DB166E4D16A1D69000A1396C /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
+		DB166E4E16A1D69000A1396C /* sample.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6109D20839003FC8A1 /* sample.png */; };
 		DB166E5416A1D6A300A1396C /* testscale.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC316A1C74100A1396C /* testscale.c */; };
 		DB166E6A16A1D70C00A1396C /* testshader.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC416A1C74100A1396C /* testshader.c */; };
 		DB166E9316A1D7BC00A1396C /* testspriteminimal.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166CC516A1C74100A1396C /* testspriteminimal.c */; };
-		DB166E9A16A1D7F700A1396C /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
-		DB166E9C16A1D80900A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
+		DB166E9C16A1D80900A1396C /* icon.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
 		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
 		F35E56CF2983130F00A43A5F /* testautomation_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F35E56B62983130A00A43A5F /* testautomation_main.c */; };
@@ -184,9 +182,9 @@
 		F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17CD628E416AC00E1A26D /* testgeometry.c */; };
 		F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17D3928E424B800E1A26D /* sample.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
-		F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
+		F3C17D3B28E4252900E1A26D /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
 		F3C2CAC62C5C8BD6004D7998 /* unifont-15.1.05.hex in Resources */ = {isa = PBXBuildFile; fileRef = F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */; };
-		F3C2CB072C5D3FB2004D7998 /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
+		F3C2CB072C5D3FB2004D7998 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
 		F3CB56892A7895F800766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3CB568A2A7895F800766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3CB568C2A7896BF00766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
@@ -275,6 +273,12 @@
 		F3CB570D2A78986000766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3CB570F2A78986700766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3CB57102A78986700766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3DB65DF2E9DA90000568044 /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
+		F3DB65E12E9DA90000568044 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
+		F3DB65E52E9DA90000568044 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */ = {isa = PBXBuildFile; fileRef = F3DB65ED2E9DA95D00568044 /* testyuv.png */; };
+		F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DB65EF2E9DA98E00568044 /* testyuv.c */; };
+		F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -632,7 +636,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166DDB16A1D42F00A1396C /* icon.bmp in CopyFiles */,
+				DB166DDB16A1D42F00A1396C /* icon.png in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -642,8 +646,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166E2316A1D60B00A1396C /* icon.bmp in CopyFiles */,
-				DB166E2216A1D5EC00A1396C /* sample.bmp in CopyFiles */,
+				DB166E2316A1D60B00A1396C /* icon.png in CopyFiles */,
+				DB166E2216A1D5EC00A1396C /* sample.png in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -653,8 +657,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166E2516A1D61900A1396C /* icon.bmp in CopyFiles */,
-				DB166E2616A1D61900A1396C /* sample.bmp in CopyFiles */,
+				DB166E2516A1D61900A1396C /* icon.png in CopyFiles */,
+				DB166E2616A1D61900A1396C /* sample.png in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -664,8 +668,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166E4D16A1D69000A1396C /* icon.bmp in CopyFiles */,
-				DB166E4E16A1D69000A1396C /* sample.bmp in CopyFiles */,
+				DB166E4D16A1D69000A1396C /* icon.png in CopyFiles */,
+				DB166E4E16A1D69000A1396C /* sample.png in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -675,7 +679,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				DB166E9C16A1D80900A1396C /* icon.bmp in CopyFiles */,
+				DB166E9C16A1D80900A1396C /* icon.png in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1194,6 +1198,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3DB65E42E9DA90000568044 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3DB65E52E9DA90000568044 /* SDL3.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1237,9 +1252,9 @@
 		002F346A09CA204F00EBEB88 /* testplatform.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testplatform.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F346F09CA20A600EBEB88 /* testplatform.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testplatform.c; sourceTree = "<group>"; };
 		003FA63A093FFD41000C53B3 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
-		00794E5D09D20839003FC8A1 /* icon.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = icon.bmp; sourceTree = "<group>"; };
+		00794E5D09D20839003FC8A1 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		00794E5E09D20839003FC8A1 /* moose.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = moose.dat; sourceTree = "<group>"; };
-		00794E6109D20839003FC8A1 /* sample.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = sample.bmp; sourceTree = "<group>"; };
+		00794E6109D20839003FC8A1 /* sample.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sample.png; sourceTree = "<group>"; };
 		00794E6209D20839003FC8A1 /* sample.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = sample.wav; sourceTree = "<group>"; };
 		00794E6309D20839003FC8A1 /* utf8.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = utf8.txt; sourceTree = "<group>"; };
 		083E4872006D84C97F000001 /* loopwave.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = loopwave.c; sourceTree = "<group>"; };
@@ -1345,6 +1360,10 @@
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "unifont-15.1.05.hex"; sourceTree = "<group>"; };
+		F3DB65E92E9DA90000568044 /* testyuv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testyuv.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3DB65ED2E9DA95D00568044 /* testyuv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testyuv.png; sourceTree = "<group>"; };
+		F3DB65EF2E9DA98E00568044 /* testyuv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv.c; sourceTree = "<group>"; };
+		F3DB65F02E9DA98E00568044 /* testyuv_cvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testyuv_cvt.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1724,6 +1743,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3DB65E02E9DA90000568044 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65E12E9DA90000568044 /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1738,10 +1765,10 @@
 		00794E4609D207B4003FC8A1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				00794E5D09D20839003FC8A1 /* icon.bmp */,
+				F3DB65ED2E9DA95D00568044 /* testyuv.png */,
+				00794E5D09D20839003FC8A1 /* icon.png */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
-				00794E5F09D20839003FC8A1 /* picture.xbm */,
-				00794E6109D20839003FC8A1 /* sample.bmp */,
+				00794E6109D20839003FC8A1 /* sample.png */,
 				00794E6209D20839003FC8A1 /* sample.wav */,
 				F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */,
 				00794E6309D20839003FC8A1 /* utf8.txt */,
@@ -1848,6 +1875,8 @@
 				F3C17C7328E40ADE00E1A26D /* testutils.c */,
 				083E4882006D86A17F000001 /* testver.c */,
 				0017993B10743FEF00F5D044 /* testwm.c */,
+				F3DB65EF2E9DA98E00568044 /* testyuv.c */,
+				F3DB65F02E9DA98E00568044 /* testyuv_cvt.h */,
 				66E88E8A203B778F0004D44E /* testyuv_cvt.c */,
 				083E4887006D86A17F000001 /* torturethread.c */,
 			);
@@ -1905,6 +1934,7 @@
 				F35E56AA298312CB00A43A5F /* testautomation.app */,
 				F36C34272C0F85DB00991150 /* testcamera.app */,
 				F3B7FD6A2D73FC630086D1D0 /* testpen.app */,
+				F3DB65E92E9DA90000568044 /* testyuv.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1961,7 +1991,6 @@
 			dependencies = (
 			);
 			name = testatomic;
-			productName = testalpha;
 			productReference = 0017958C10741F7900F5D044 /* testatomic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1978,7 +2007,6 @@
 			dependencies = (
 			);
 			name = testaudioinfo;
-			productName = testalpha;
 			productReference = 001795AD107421BF00F5D044 /* testaudioinfo.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -1995,7 +2023,6 @@
 			dependencies = (
 			);
 			name = testgl;
-			productName = testalpha;
 			productReference = 0017972110742F3200F5D044 /* testgl.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2012,7 +2039,6 @@
 			dependencies = (
 			);
 			name = testhaptic;
-			productName = testalpha;
 			productReference = 00179748107430D600F5D044 /* testhaptic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2029,7 +2055,6 @@
 			dependencies = (
 			);
 			name = testdraw;
-			productName = testalpha;
 			productReference = 0017976E107431B300F5D044 /* testdraw.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2047,7 +2072,6 @@
 			dependencies = (
 			);
 			name = testime;
-			productName = testalpha;
 			productReference = 0017978E107432AE00F5D044 /* testime.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2064,7 +2088,6 @@
 			dependencies = (
 			);
 			name = testintersections;
-			productName = testalpha;
 			productReference = 001797AE1074334C00F5D044 /* testintersections.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2081,7 +2104,6 @@
 			dependencies = (
 			);
 			name = testloadso;
-			productName = testalpha;
 			productReference = 001797D0107433C600F5D044 /* testloadso.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2099,7 +2121,6 @@
 			dependencies = (
 			);
 			name = testmultiaudio;
-			productName = testalpha;
 			productReference = 001798121074355200F5D044 /* testmultiaudio.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2117,7 +2138,6 @@
 			dependencies = (
 			);
 			name = testnative;
-			productName = testalpha;
 			productReference = 001798941074392D00F5D044 /* testnative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2134,7 +2154,6 @@
 			dependencies = (
 			);
 			name = testpower;
-			productName = testalpha;
 			productReference = 001798B5107439DF00F5D044 /* testpower.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2151,7 +2170,6 @@
 			dependencies = (
 			);
 			name = testresample;
-			productName = testalpha;
 			productReference = 001798F210743BEC00F5D044 /* testresample.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2169,7 +2187,6 @@
 			dependencies = (
 			);
 			name = testsprite;
-			productName = testalpha;
 			productReference = 0017991610743F1000F5D044 /* testsprite.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2186,7 +2203,6 @@
 			dependencies = (
 			);
 			name = testwm;
-			productName = testalpha;
 			productReference = 0017993810743FB700F5D044 /* testwm.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2203,7 +2219,6 @@
 			dependencies = (
 			);
 			name = testfile;
-			productName = testalpha;
 			productReference = 002F341209CA1BFF00EBEB88 /* testfile.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2221,7 +2236,6 @@
 			dependencies = (
 			);
 			name = testiconv;
-			productName = testalpha;
 			productReference = 002F343109CA1F0300EBEB88 /* testiconv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2239,7 +2253,6 @@
 			dependencies = (
 			);
 			name = testoverlay;
-			productName = testalpha;
 			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2256,7 +2269,6 @@
 			dependencies = (
 			);
 			name = testplatform;
-			productName = testalpha;
 			productReference = 002F346A09CA204F00EBEB88 /* testplatform.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2479,7 +2491,6 @@
 			dependencies = (
 			);
 			name = testdrawchessboard;
-			productName = testalpha;
 			productReference = DB0F48EC17CA51E5008798C5 /* testdrawchessboard.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2496,7 +2507,6 @@
 			dependencies = (
 			);
 			name = testfilesystem;
-			productName = testalpha;
 			productReference = DB0F490117CA5212008798C5 /* testfilesystem.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2530,7 +2540,6 @@
 			dependencies = (
 			);
 			name = testmessage;
-			productName = testalpha;
 			productReference = DB166DD516A1D36A00A1396C /* testmessage.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2547,7 +2556,6 @@
 			dependencies = (
 			);
 			name = testrelative;
-			productName = testalpha;
 			productReference = DB166DEE16A1D50C00A1396C /* testrelative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2565,7 +2573,6 @@
 			dependencies = (
 			);
 			name = testrendercopyex;
-			productName = testalpha;
 			productReference = DB166E0516A1D57C00A1396C /* testrendercopyex.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2583,7 +2590,6 @@
 			dependencies = (
 			);
 			name = testrendertarget;
-			productName = testalpha;
 			productReference = DB166E1C16A1D5AD00A1396C /* testrendertarget.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2600,7 +2606,6 @@
 			dependencies = (
 			);
 			name = testrumble;
-			productName = testalpha;
 			productReference = DB166E3816A1D64D00A1396C /* testrumble.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2618,7 +2623,6 @@
 			dependencies = (
 			);
 			name = testscale;
-			productName = testalpha;
 			productReference = DB166E5216A1D69000A1396C /* testscale.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2687,7 +2691,6 @@
 			dependencies = (
 			);
 			name = testhotplug;
-			productName = testalpha;
 			productReference = DB89957E18A19ABA0092407C /* testhotplug.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2704,7 +2707,6 @@
 			dependencies = (
 			);
 			name = testautomation;
-			productName = testalpha;
 			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2721,7 +2723,6 @@
 			dependencies = (
 			);
 			name = testcamera;
-			productName = testalpha;
 			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2738,7 +2739,6 @@
 			dependencies = (
 			);
 			name = testpen;
-			productName = testalpha;
 			productReference = F3B7FD6A2D73FC630086D1D0 /* testpen.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2757,6 +2757,23 @@
 			name = testgeometry;
 			productName = testgeometry;
 			productReference = F3C17CDC28E416CF00E1A26D /* testgeometry.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F3DB65DC2E9DA90000568044 /* testyuv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3DB65E62E9DA90000568044 /* Build configuration list for PBXNativeTarget "testyuv" */;
+			buildPhases = (
+				F3DB65DD2E9DA90000568044 /* Sources */,
+				F3DB65E02E9DA90000568044 /* Frameworks */,
+				F3DB65E22E9DA90000568044 /* Resources */,
+				F3DB65E42E9DA90000568044 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testyuv;
+			productReference = F3DB65E92E9DA90000568044 /* testyuv.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2972,6 +2989,7 @@
 				BEC5678D0761D90500A33029 /* testtimer */,
 				BEC567A70761D90500A33029 /* testversion */,
 				0017992010743FB700F5D044 /* testwm */,
+				F3DB65DC2E9DA90000568044 /* testyuv */,
 				BEC567EA0761D90600A33029 /* torturethread */,
 			);
 		};
@@ -3000,7 +3018,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C17D3B28E4252900E1A26D /* icon.bmp in Resources */,
+				F3C17D3B28E4252900E1A26D /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3008,8 +3026,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F3C2CB072C5D3FB2004D7998 /* icon.bmp in Resources */,
+				F3C2CB072C5D3FB2004D7998 /* icon.png in Resources */,
 				F3C2CAC62C5C8BD6004D7998 /* unifont-15.1.05.hex in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3DB65E22E9DA90000568044 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3155,7 +3181,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				002F345409CA202000EBEB88 /* testoverlay.c in Sources */,
-				66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */,
 				F3C17C7F28E4101000E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3444,6 +3469,16 @@
 			files = (
 				F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */,
 				F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3DB65DD2E9DA90000568044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65DF2E9DA90000568044 /* testutils.c in Sources */,
+				F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */,
+				F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3979,7 +4014,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = ../../include;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -3990,7 +4025,8 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Debug;
 		};
@@ -4153,7 +4189,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = ../../include;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4163,7 +4199,8 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Release;
 		};
@@ -4660,6 +4697,25 @@
 			};
 			name = Release;
 		};
+		F37E49E22EB5250B00E508F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F37E49E32EB5250B00E508F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		F3B7FD682D73FC630086D1D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5140,6 +5196,15 @@
 			buildConfigurations = (
 				F3C17CE928E416D000E1A26D /* Debug */,
 				F3C17CEA28E416D000E1A26D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F3DB65E62E9DA90000568044 /* Build configuration list for PBXNativeTarget "testyuv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F37E49E22EB5250B00E508F7 /* Debug */,
+				F37E49E32EB5250B00E508F7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

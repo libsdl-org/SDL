@@ -354,12 +354,8 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
     return true;
 
 error:
-    if (driver) {
-        SDL_free(driver);
-    }
-    if (name) {
-        SDL_free(name);
-    }
+    SDL_free(driver);
+    SDL_free(name);
     return false;
 }
 

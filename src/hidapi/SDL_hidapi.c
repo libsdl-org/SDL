@@ -1041,9 +1041,7 @@ static void SDLCALL OnlyControllersChanged(void *userdata, const char *name, con
 
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (SDL_hidapi_ignored_devices) {
-        SDL_free(SDL_hidapi_ignored_devices);
-    }
+    SDL_free(SDL_hidapi_ignored_devices);
     if (hint && *hint) {
         SDL_hidapi_ignored_devices = SDL_strdup(hint);
     } else {
@@ -1068,7 +1066,13 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
                 (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
                 return true;
             }
-        } else if (vendor_id == USB_VENDOR_FLYDIGI && product_id == USB_PRODUCT_FLYDIGI_GAMEPAD) {
+        } else if (vendor_id == USB_VENDOR_FLYDIGI_V1 && product_id == USB_PRODUCT_FLYDIGI_V1_GAMEPAD) {
+            if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
+                return false;
+            }
+            return true;
+        } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }
@@ -1336,7 +1340,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
 
         if (use_libusb_whitelist) {
-            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
+            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs, LIBUSB_hid_free_enumeration);
         }
     }
 #endif // HAVE_LIBUSB

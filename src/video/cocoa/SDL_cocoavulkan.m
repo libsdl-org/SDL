@@ -36,6 +36,7 @@
 #include <dlfcn.h>
 
 const char *defaultPaths[] = {
+    "@executable_path/../Frameworks/libMoltenVK.dylib",
     "vulkan.framework/vulkan",
     "libvulkan.1.dylib",
     "libvulkan.dylib",

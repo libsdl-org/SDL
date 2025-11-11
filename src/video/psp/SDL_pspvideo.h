@@ -76,6 +76,5 @@ extern bool PSP_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 extern bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_pspvideo_h_

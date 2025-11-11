@@ -148,6 +148,8 @@ static void CALLBACK GDK_InternalTextEntryCallback(XAsyncBlock *asyncBlock)
     SDL_free(asyncBlock);
     asyncBlock = NULL;
     g_TextBlock = NULL; // once we do this we're fully done with the keyboard
+
+    SDL_SendScreenKeyboardHidden();
 }
 
 void GDK_EnsureHints(void)
@@ -288,13 +290,15 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     g_TextBlock->queue = g_TextTaskQueue;
     g_TextBlock->context = _this;
     g_TextBlock->callback = GDK_InternalTextEntryCallback;
-    if (FAILED(hR = XGameUiShowTextEntryAsync(
+    if (SUCCEEDED(hR = XGameUiShowTextEntryAsync(
                    g_TextBlock,
                    g_TitleText,
                    g_DescriptionText,
                    g_DefaultText,
                    scope,
                    (uint32_t)g_MaxTextLength))) {
+        SDL_SendScreenKeyboardShown();
+    } else {
         SDL_free(g_TextBlock);
         g_TextBlock = NULL;
         SDL_SetError("XGameUiShowTextEntryAsync failure with HRESULT of %08X", hR);
@@ -307,11 +311,6 @@ void GDK_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
         XAsyncCancel(g_TextBlock);
         // the completion callback will free the block
     }
-}
-
-bool GDK_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    return (g_TextBlock != NULL);
 }
 
 #ifdef __cplusplus

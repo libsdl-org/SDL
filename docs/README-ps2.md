@@ -11,6 +11,9 @@ Credit to
 ## Building
 To build SDL library for the PS2, make sure you have the latest PS2Dev status and run:
 ```bash
+export PS2DEV=/usr/local/ps2dev # or wherever your ps2dev installation is
+export PS2SDK=$PS2DEV/ps2sdk
+export PATH=$PATH:$PS2DEV/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin:$PS2SDK/bin
 cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake
 cmake --build build
 cmake --install build

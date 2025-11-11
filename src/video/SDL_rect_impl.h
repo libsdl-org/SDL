@@ -51,10 +51,6 @@ bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
         return false;
     }
 
-    if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) {
-        return false; // Special cases for empty rects
-    }
-
     // Horizontal intersection
     Amin = A->x;
     Amax = Amin + A->w;
@@ -104,12 +100,6 @@ bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
     }
     CHECK_PARAM(!result) {
         SDL_InvalidParamError("result");
-        return false;
-    }
-
-    if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) { // Special cases for empty rects
-        result->w = 0;
-        result->h = 0;
         return false;
     }
 

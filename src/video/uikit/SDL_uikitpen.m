@@ -72,6 +72,7 @@ static SDL_PenID UIKit_AddPenIfNecesary()
         info.max_tilt = 90.0f;
         info.num_buttons = 0;
         info.subtype = SDL_PEN_TYPE_PENCIL;
+        info.device_type = SDL_PEN_DEVICE_TYPE_DIRECT;  // Apple Pencil on iOS is always a direct device; it works on the tablet's screen.
 
         if (@available(iOS 17.5, *)) {  // need rollAngle method.
             info.capabilities |= SDL_PEN_CAPABILITY_ROTATION;

@@ -59,7 +59,7 @@ extern "C" {
 #endif
 
 /**
- * SDL properties ID
+ * An ID that represents a properties set.
  *
  * \since This datatype is available since SDL 3.2.0.
  */

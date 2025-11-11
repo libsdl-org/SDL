@@ -36,6 +36,9 @@
 #ifndef SDL_SENSOR_DISABLED
 #include "../sensor/SDL_sensor_c.h"
 #endif
+#ifdef HAVE_DBUS_DBUS_H
+#include "core/linux/SDL_dbus.h"
+#endif
 #include "../video/SDL_sysvideo.h"
 
 #ifdef SDL_PLATFORM_ANDROID
@@ -58,6 +61,9 @@
 
 // Determines how often to pump events if tray items are active
 #define TRAY_POLL_INTERVAL_NS SDL_MS_TO_NS(50)
+
+// Determines how often to pump events if DBus is active
+#define DBUS_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
 
 // Make sure the type in the SDL_Event aligns properly across the union
 SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
@@ -601,6 +607,10 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_EVENT_CASE(SDL_EVENT_TEXT_INPUT)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s')", (uint)event->text.timestamp, (uint)event->text.windowID, event->text.text);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)
+        break;
 
 #define PRINT_MOUSEDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->mdevice.timestamp, (uint)event->mdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_ADDED)
@@ -766,6 +776,20 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_FINGER_EVENT
 
+#define PRINT_PINCH_EVENT(event)                                                                                                                      \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u scale=%f)", \
+                       (uint)event->pinch.timestamp, event->pinch.scale)
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_BEGIN)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_UPDATE)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_END)
+        PRINT_PINCH_EVENT(event);
+        break;
+#undef PRINT_PINCH_EVENT
+
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        (uint)event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
@@ -898,12 +922,13 @@ static void SDL_LogEvent(const SDL_Event *event)
         return;
     }
 
-    // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
+    // sensor/mouse/pen/finger/pinch motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
+         (event->type == SDL_EVENT_PINCH_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_AXIS_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
@@ -1458,6 +1483,8 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_UpdateCursorAnimation();
+
     SDL_UpdateTrays();
 
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
@@ -1474,6 +1501,11 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 
     // Run any pending main thread callbacks
     SDL_RunMainThreadCallbacks();
+
+#ifdef SDL_USE_LIBDBUS
+    // DBus event processing is independent of the video subsystem
+    SDL_DBus_PumpEvents();
+#endif
 
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
@@ -1544,6 +1576,11 @@ static Sint64 SDL_events_get_polling_interval(void)
         // Tray events on *nix platforms run separately from window system events, and need periodic polling
         poll_intervalNS = SDL_min(poll_intervalNS, TRAY_POLL_INTERVAL_NS);
     }
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    // Wake periodically to pump DBus events
+    poll_intervalNS = SDL_min(poll_intervalNS, DBUS_POLL_INTERVAL_NS);
 #endif
     return poll_intervalNS;
 }

@@ -1028,6 +1028,7 @@ class Releaser:
                     # NDK 21e does not support -ffile-prefix-map
                     # f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
                     # f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                    f"-DANDROID_USE_LEGACY_TOOLCHAIN=0",
                     f"-DCMAKE_EXE_LINKER_FLAGS={extra_link_options}",
                     f"-DCMAKE_SHARED_LINKER_FLAGS={extra_link_options}",
                     f"-DCMAKE_TOOLCHAIN_FILE={cmake_toolchain_file}",
@@ -1126,8 +1127,7 @@ class Releaser:
         for dep, depinfo in self.release_info.get("dependencies", {}).items():
             startswith = depinfo["startswith"]
             dep_repo = depinfo["repo"]
-            # FIXME: dropped "--exclude-pre-releases"
-            dep_string_data = self.executer.check_output(["gh", "-R", dep_repo, "release", "list", "--exclude-drafts", "--json", "name,createdAt,tagName", "--jq", f'[.[]|select(.name|startswith("{startswith}"))]|max_by(.createdAt)']).strip()
+            dep_string_data = self.executer.check_output(["gh", "-R", dep_repo, "release", "list", "--exclude-drafts", "--exclude-pre-releases", "--json", "name,createdAt,tagName", "--jq", f'[.[]|select(.name|startswith("{startswith}"))]|max_by(.createdAt)']).strip()
             dep_data = json.loads(dep_string_data)
             dep_tag = dep_data["tagName"]
             dep_version = dep_data["name"]

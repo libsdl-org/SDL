@@ -46,6 +46,9 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+#if !defined(SDL_PLATFORM_TVOS)
+- (IBAction)sdlPinchGesture:(UIPinchGestureRecognizer *)sender;
+#endif
 
 - (void)safeAreaInsetsDidChange;
 

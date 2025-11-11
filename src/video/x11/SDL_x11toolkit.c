@@ -212,6 +212,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     XDestroyImage(data->image);
                     data->image = NULL;
                     data->shm = false;
+                    return;
                 }
 
                 data->shm_info.readOnly = False;
@@ -220,6 +221,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     XDestroyImage(data->image);
                     data->shm = false;
                     data->image = NULL;
+                    return;
                 }
 
                 g_shm_error = False;
@@ -233,6 +235,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     shmctl(data->shm_info.shmid, IPC_RMID, 0);
                     data->image = NULL;
                     data->shm = false;
+                    return;
                 }
 
                 if (data->shm_pixmap) {
@@ -1864,12 +1867,8 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
             data->controls[i]->func_free(data->controls[i]);
         }
     }
-    if (data->controls) {
-        SDL_free(data->controls);
-    }
-    if (data->dyn_controls) {
-        SDL_free(data->dyn_controls);
-    }
+    SDL_free(data->controls);
+    SDL_free(data->dyn_controls);
 
     if (data->popup_windows) {
         SDL_ListClear(&data->popup_windows);

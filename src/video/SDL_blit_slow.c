@@ -85,8 +85,8 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
         last_index = SDL_LookupRGBAColor(palette_map, last_pixel, dst_pal);
     }
 
-    incy = ((Uint64)info->src_h << 16) / info->dst_h;
-    incx = ((Uint64)info->src_w << 16) / info->dst_w;
+    incy = info->dst_h ? ((Uint64)info->src_h << 16) / info->dst_h : 0;
+    incx = info->dst_w ? ((Uint64)info->src_w << 16) / info->dst_w : 0;
     posy = incy / 2; // start at the middle of pixel
 
     while (info->dst_h--) {

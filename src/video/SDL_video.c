@@ -430,6 +430,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         if (!SDL_ISPIXELFORMAT_FOURCC(texture_format) &&
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
+            !SDL_ISPIXELFORMAT_INDEXED(texture_format) &&
             transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
             *format = texture_format;
             break;
@@ -1453,9 +1454,7 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 
     SDL_copyp(&last_mode, &display->desktop_mode);
 
-    if (display->desktop_mode.internal) {
-        SDL_free(display->desktop_mode.internal);
-    }
+    SDL_free(display->desktop_mode.internal);
     SDL_copyp(&display->desktop_mode, mode);
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);
@@ -4054,16 +4053,21 @@ bool SDL_SetWindowMouseRect(SDL_Window *window, const SDL_Rect *rect)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (rect) {
-        SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
-    } else {
-        SDL_zero(window->mouse_rect);
+    if (!_this->SetWindowMouseRect) {
+        return SDL_Unsupported();
     }
 
-    if (_this->SetWindowMouseRect) {
-        return _this->SetWindowMouseRect(_this, window);
+    SDL_Rect zero = { 0, 0, 0, 0 };
+    if (!rect) {
+        rect = &zero;
     }
-    return true;
+
+    if (SDL_memcmp(&window->mouse_rect, rect, sizeof(*rect)) == 0) {
+        return true;
+    }
+    SDL_memcpy(&window->mouse_rect, rect, sizeof(*rect));
+
+    return _this->SetWindowMouseRect(_this, window);
 }
 
 const SDL_Rect *SDL_GetWindowMouseRect(SDL_Window *window)
@@ -4096,8 +4100,15 @@ bool SDL_SetWindowRelativeMouseMode(SDL_Window *window, bool enabled)
     } else {
         window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
     }
-    SDL_UpdateRelativeMouseMode();
 
+    if (!SDL_UpdateRelativeMouseMode()) {
+        if (enabled) {
+            window->flags &= ~SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        } else {
+            window->flags |= SDL_WINDOW_MOUSE_RELATIVE_MODE;
+        }
+        return false;
+    }
     return true;
 }
 
@@ -5823,10 +5834,39 @@ bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (_this->IsScreenKeyboardShown) {
-        return _this->IsScreenKeyboardShown(_this, window);
+    return _this->screen_keyboard_shown;
+}
+
+void SDL_SendScreenKeyboardShown(void)
+{
+    if (_this->screen_keyboard_shown) {
+        return;
     }
-    return false;
+
+    _this->screen_keyboard_shown = true;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_SHOWN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendScreenKeyboardHidden(void)
+{
+    if (!_this->screen_keyboard_shown) {
+        return;
+    }
+
+    _this->screen_keyboard_shown = false;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_HIDDEN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
 }
 
 int SDL_GetMessageBoxCount(void)

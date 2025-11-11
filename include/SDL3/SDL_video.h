@@ -97,6 +97,8 @@ typedef Uint32 SDL_WindowID;
  * uninitialized will either return the user provided value, if one was set
  * prior to initialization, or NULL. See docs/README-wayland.md for more
  * information.
+ *
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
@@ -350,6 +352,9 @@ typedef enum SDL_ProgressState
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GL_CreateContext
+ * \sa SDL_GL_SetAttribute
+ * \sa SDL_GL_MakeCurrent
+ * \sa SDL_GL_DestroyContext
  */
 typedef struct SDL_GLContextState *SDL_GLContext;
 
@@ -3192,8 +3197,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             set.
+ * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -3202,6 +3206,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GL_CreateContext
  * \sa SDL_GL_GetAttribute
  * \sa SDL_GL_ResetAttributes
  */
@@ -3227,6 +3232,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 
 /**
  * Create an OpenGL context for an OpenGL window, and make it current.
+ *
+ * The OpenGL context will be created with the current states set through
+ * SDL_GL_SetAttribute().
+ *
+ * The SDL_Window specified must have been created with the SDL_WINDOW_OPENGL
+ * flag, or context creation will fail.
  *
  * Windows users new to OpenGL should note that, for historical reasons, GL
  * functions added after OpenGL version 1.1 are not available by default.

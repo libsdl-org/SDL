@@ -991,9 +991,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			break;
 		}
 
-		if (device_interface_list != NULL) {
-			free(device_interface_list);
-		}
+		free(device_interface_list); // This should NOT be SDL_free()
 
 		device_interface_list = (wchar_t*)calloc(len, sizeof(wchar_t));
 		if (device_interface_list == NULL) {

@@ -223,9 +223,7 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
         audiodata->playsem = NULL;
     }
 
-    if (audiodata->mixbuff) {
-        SDL_free(audiodata->mixbuff);
-    }
+    SDL_free(audiodata->mixbuff);
 }
 
 // !!! FIXME: make this non-blocking!
@@ -419,9 +417,7 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
         audiodata->playsem = NULL;
     }
 
-    if (audiodata->mixbuff) {
-        SDL_free(audiodata->mixbuff);
-    }
+    SDL_free(audiodata->mixbuff);
 }
 
 static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)

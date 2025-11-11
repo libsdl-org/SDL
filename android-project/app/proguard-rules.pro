@@ -30,7 +30,6 @@
     boolean isAndroidTV();
     boolean isChromebook();
     boolean isDeXMode();
-    boolean isScreenKeyboardShown();
     boolean isTablet();
     void manualBackButton();
     int messageboxShowMessageBox(int, java.lang.String, java.lang.String, int[], int[], java.lang.String[], int[]);

@@ -815,9 +815,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
 
     length = ImmGetCompositionStringW(himc, string, NULL, 0);
     if (length > 0 && videodata->ime_composition_length < length) {
-        if (videodata->ime_composition) {
-            SDL_free(videodata->ime_composition);
-        }
+        SDL_free(videodata->ime_composition);
 
         videodata->ime_composition = (WCHAR *)SDL_malloc(length + sizeof(WCHAR));
         videodata->ime_composition_length = length;

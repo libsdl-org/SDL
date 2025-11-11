@@ -143,7 +143,6 @@ static SDL_VideoDevice *VITA_Create(void)
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = VITA_ShowScreenKeyboard;
     device->HideScreenKeyboard = VITA_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = VITA_IsScreenKeyboardShown;
 
     device->PumpEvents = VITA_PumpEvents;
 
@@ -327,10 +326,7 @@ void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data;
 
     data = window->internal;
-    if (data) {
-        // TODO: should we destroy egl context? No one sane should recreate ogl window as non-ogl
-        SDL_free(data);
-    }
+    SDL_free(data);
 
     window->internal = NULL;
     Vita_Window = NULL;
@@ -404,10 +400,11 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
     case SCE_IME_EVENT_PRESS_CLOSE:
         sceImeClose();
         videodata->ime_active = false;
+        SDL_SendScreenKeyboardHidden();
         break;
     }
 }
-#endif
+#endif // SDL_VIDEO_VITA_PVR
 
 void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
@@ -506,6 +503,8 @@ void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Pro
 #endif
 
     videodata->ime_active = true;
+
+    SDL_SendScreenKeyboardShown();
 }
 
 void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
@@ -526,17 +525,8 @@ void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     videodata->ime_active = false;
-#endif
-}
 
-bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-#ifdef SDL_VIDEO_VITA_PVR
-    SDL_VideoData *videodata = _this->internal;
-    return videodata->ime_active;
-#else
-    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
-    return dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING;
+    SDL_SendScreenKeyboardHidden();
 #endif
 }
 
@@ -580,6 +570,8 @@ void VITA_PumpEvents(SDL_VideoDevice *_this)
             sceImeDialogTerm();
 
             videodata->ime_active = false;
+
+            SDL_SendScreenKeyboardHidden();
         }
     }
 #endif

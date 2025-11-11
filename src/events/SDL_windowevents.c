@@ -77,9 +77,6 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     }
     SDL_assert(SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW));
 
-    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
-        return false;
-    }
     switch (windowevent) {
     case SDL_EVENT_WINDOW_SHOWN:
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
@@ -217,6 +214,10 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         break;
     default:
         break;
+    }
+
+    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
+        return false;
     }
 
     // Post the event, if desired

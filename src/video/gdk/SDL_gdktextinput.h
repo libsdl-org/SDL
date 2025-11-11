@@ -40,7 +40,6 @@ bool GDK_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 bool GDK_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 void GDK_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-bool GDK_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 #ifdef __cplusplus
 }

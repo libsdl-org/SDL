@@ -62,7 +62,7 @@
     }
 
 #if 0
-// The below validation is too aggressive, since there are advanced situations 
+// The below validation is too aggressive, since there are advanced situations
 // where this is legal. This is being temporarily disabled for further review.
 // See: https://github.com/libsdl-org/SDL/issues/13871
 #define CHECK_SAMPLER_TEXTURES                                                                                                          \
@@ -1338,6 +1338,12 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
     CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
+    }
+
+    if (device->debug_mode) {
+        if (createinfo->size < 4) {
+            SDL_assert_release(!"Cannot create a buffer with size less than 4 bytes!");
+        }
     }
 
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, NULL);

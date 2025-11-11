@@ -2642,9 +2642,7 @@ void SetGamepadButtonLabel(GamepadButton *ctx, const char *label)
         return;
     }
 
-    if (ctx->label) {
-        SDL_free(ctx->label);
-    }
+    SDL_free(ctx->label);
 
     ctx->label = SDL_strdup(label);
     ctx->label_width = (float)(FONT_CHARACTER_SIZE * SDL_strlen(label));

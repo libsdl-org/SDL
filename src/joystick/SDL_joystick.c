@@ -123,6 +123,7 @@ static bool SDL_joystick_being_added;
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static bool SDL_joystick_allows_background_events = false;
 
 static Uint32 initial_old_xboxone_controllers[] = {
@@ -833,6 +834,8 @@ bool SDL_InitJoysticks(void)
 
     SDL_joysticks_initialized = true;
 
+    SDL_joystick_names = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+
     SDL_LoadVIDPIDList(&old_xboxone_controllers);
     SDL_LoadVIDPIDList(&arcadestick_devices);
     SDL_LoadVIDPIDList(&blacklist_devices);
@@ -980,20 +983,52 @@ const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_Jo
 /*
  * Get the implementation dependent name of a joystick
  */
-const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
+static const char *SDL_UpdateJoystickNameForID(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
     int device_index;
-    const char *name = NULL;
+    const char *current_name = NULL;
     const SDL_SteamVirtualGamepadInfo *info;
 
-    SDL_LockJoysticks();
     info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
-        name = SDL_GetPersistentString(info->name);
+        current_name = info->name;
     } else if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        name = SDL_GetPersistentString(driver->GetDeviceName(device_index));
+        current_name = driver->GetDeviceName(device_index);
     }
+
+    if (!SDL_joystick_names) {
+        return SDL_GetPersistentString(current_name);
+    }
+
+    char *name = NULL;
+    bool found = SDL_FindInHashTable(SDL_joystick_names, (const void *)(uintptr_t)instance_id, (const void **)&name);
+    if (!current_name) {
+        if (!found) {
+            SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        return name;
+    }
+
+    if (!name || SDL_strcmp(name, current_name) != 0) {
+        name = SDL_strdup(current_name);
+        SDL_InsertIntoHashTable(SDL_joystick_names, (const void *)(uintptr_t)instance_id, name, true);
+    }
+    return name;
+}
+
+const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
+{
+    const char *name;
+
+    SDL_LockJoysticks();
+    name = SDL_UpdateJoystickNameForID(instance_id);
     SDL_UnlockJoysticks();
 
     return name;
@@ -2234,6 +2269,11 @@ void SDL_QuitJoysticks(void)
 
     SDL_QuitGamepadMappings();
 
+    if (SDL_joystick_names) {
+        SDL_DestroyHashTable(SDL_joystick_names);
+        SDL_joystick_names = NULL;
+    }
+
     SDL_joysticks_quitting = false;
     SDL_joysticks_initialized = false;
 
@@ -2342,6 +2382,8 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
     if (player_index >= 0) {
         SDL_SetJoystickIDForPlayerIndex(player_index, instance_id);
     }
+
+    SDL_UpdateJoystickNameForID(instance_id);
 
     {
         SDL_Event event;
@@ -2676,7 +2718,7 @@ void SDL_UpdateJoysticks(void)
     Uint64 now;
     SDL_Joystick *joystick;
 
-    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
+    if (!SDL_joysticks_initialized) {
         return;
     }
 
@@ -3234,7 +3276,17 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
 {
-    return vendor_id == USB_VENDOR_FLYDIGI && product_id == USB_PRODUCT_FLYDIGI_GAMEPAD;
+    if (vendor_id == USB_VENDOR_FLYDIGI_V1) {
+        if (product_id == USB_PRODUCT_FLYDIGI_V1_GAMEPAD) {
+            return true;
+        }
+    }
+    if (vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        if (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
@@ -3809,9 +3861,7 @@ static void SDL_LoadVIDPIDListFromHint(const char *hint, int *num_entries, int *
         (*entries)[(*num_entries)++] = entry;
     }
 
-    if (file) {
-        SDL_free(file);
-    }
+    SDL_free(file);
 }
 
 void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list)
