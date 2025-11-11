@@ -30,7 +30,8 @@ class JobOs(Enum):
     Ubuntu22_04 = "ubuntu-22.04"
     Ubuntu24_04 = "ubuntu-24.04"
     Ubuntu24_04_arm = "ubuntu-24.04-arm"
-    Macos13 = "macos-13"  # macOS Ventura (2022)
+    Macos14 = "macos-14"  # macOS Sonoma (2023)
+    Macos15 = "macos-15"  # macOS Sequoia (2024)
     Macos26 = "macos-26"  # macOS Tahoe (2025)
 
 
@@ -99,6 +100,7 @@ class JobSpec:
     clang_cl: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
+    more_hard_deps: bool = False
 
 
 JOB_SPECS = {
@@ -115,11 +117,11 @@ JOB_SPECS = {
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
     "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest", ),
     "ubuntu-24.04-arm64": JobSpec(name="Ubuntu 24.04 (ARM64)",              os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-arm64", ),
-    "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest", ),
-    "steamrt3-arm64": JobSpec(name="Steam Linux Runtime 3.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt3-arm64",     container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest", ),
+    "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest", more_hard_deps = True, ),
+    "steamrt3-arm64": JobSpec(name="Steam Linux Runtime 3.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt3-arm64",     container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest", more_hard_deps = True, ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 22.04 (Intel oneAPI)",         os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-oneapi", intel=IntelCompiler.Icx, ),
     "ubuntu-intel-icc": JobSpec(name="Ubuntu 22.04 (Intel Compiler)",       os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-icc",    intel=IntelCompiler.Icc, ),
-    "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x64)",         os=JobOs.Macos13,           platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, xcode=True, ),
+    "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x64)",         os=JobOs.Macos14,           platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, xcode=True, ),
     "macos-framework-arm64": JobSpec(name="MacOS (Framework) (arm64)",      os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-26-framework-arm64": JobSpec(name="MacOS 26 (Framework) (arm64)",os=JobOs.Macos26,           platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-gnu-arm64": JobSpec(name="MacOS (GNU prefix)",                   os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-gnu",    apple_framework=False, apple_archs={AppleArch.Aarch64, },  ),
@@ -447,6 +449,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "libxfixes-dev",
                     "libxi-dev",
                     "libxss-dev",
+                    "libxtst-dev",
                     "libwayland-dev",
                     "libxkbcommon-dev",
                     "libdrm-dev",
@@ -482,6 +485,19 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
             fpic = True
+            if spec.more_hard_deps:
+                # Some distros prefer to make important dependencies
+                # mandatory, so that SDL won't start up but lack expected
+                # functionality if they're missing
+                job.cmake_arguments.extend([
+                    "-DSDL_ALSA_SHARED=OFF",
+                    "-DSDL_FRIBIDI_SHARED=OFF",
+                    "-DSDL_HIDAPI_LIBUSB_SHARED=OFF",
+                    "-DSDL_PULSEAUDIO_SHARED=OFF",
+                    "-DSDL_X11_SHARED=OFF",
+                    "-DSDL_WAYLAND_LIBDECOR_SHARED=OFF",
+                    "-DSDL_WAYLAND_SHARED=OFF",
+                ])
         case SdlPlatform.Ios | SdlPlatform.Tvos:
             job.brew_packages.extend([
                 "ccache",
@@ -535,8 +551,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 job.shared_lib = SharedLibType.DYLIB
                 job.static_lib = StaticLibType.A
             job.ccache = True
-            if spec.os == JobOs.Macos13:
-                job.ccache = False
             job.apt_packages = []
             job.brew_packages.extend((
                 "ninja",

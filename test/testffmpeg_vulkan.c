@@ -938,12 +938,8 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
         if (context->device) {
             context->vkDeviceWaitIdle(context->device);
         }
-        if (context->instanceExtensions) {
-            SDL_free(context->instanceExtensions);
-        }
-        if (context->deviceExtensions) {
-            SDL_free(context->deviceExtensions);
-        }
+        SDL_free(context->instanceExtensions);
+        SDL_free(context->deviceExtensions);
         if (context->waitSemaphores) {
             for (uint32_t i = 0; i < context->waitSemaphoreCount; ++i) {
                 context->vkDestroySemaphore(context->device, context->waitSemaphores[i], NULL);

@@ -353,8 +353,6 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_PASTE,            // AKEYCODE_PASTE
 };
 
-static bool SDL_screen_keyboard_shown;
-
 static SDL_Scancode TranslateKeycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
@@ -444,25 +442,18 @@ void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         }
     }
     Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
-    SDL_screen_keyboard_shown = true;
 }
 
 void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_HideScreenKeyboard();
-    SDL_screen_keyboard_shown = false;
 }
 
-void Android_RestoreScreenKeyboardOnResume(SDL_VideoDevice *_this, SDL_Window *window)
+void Android_RestoreScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (SDL_screen_keyboard_shown) {
+    if (_this->screen_keyboard_shown) {
         Android_ShowScreenKeyboard(_this, window, window->text_input_props);
     }
-}
-
-bool Android_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    return Android_JNI_IsScreenKeyboardShown();
 }
 
 #endif // SDL_VIDEO_DRIVER_ANDROID

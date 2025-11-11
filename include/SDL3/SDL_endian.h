@@ -252,7 +252,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 #elif defined(__x86_64__)
 SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 {
-  __asm__("xchgb %b0,%h0": "=Q"(x):"0"(x));
+  __asm__("xchgb %b0,%h0": "=abcd"(x):"0"(x));
     return x;
 }
 #elif (defined(__powerpc__) || defined(__ppc__))

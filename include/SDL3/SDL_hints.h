@@ -391,11 +391,45 @@ extern "C" {
  * concept, so it applies to a physical audio device in this case, and not an
  * SDL_AudioStream, nor an SDL logical audio device.
  *
+ * For Windows WASAPI audio, the following roles are supported, and map to
+ * `AUDIO_STREAM_CATEGORY`:
+ *
+ * - "Other" (default)
+ * - "Communications" - Real-time communications, such as VOIP or chat
+ * - "Game" - Game audio
+ * - "GameChat" - Game chat audio, similar to "Communications" except that
+ *   this will not attenuate other audio streams
+ * - "Movie" - Music or sound with dialog
+ * - "Media" - Music or sound without dialog
+ *
+ * If your application applies its own echo cancellation, gain control, and
+ * noise reduction it should also set SDL_HINT_AUDIO_DEVICE_RAW_STREAM.
+ *
  * This hint should be set before an audio device is opened.
  *
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
+
+/**
+ * Specify whether this audio device should do audio processing.
+ *
+ * Some operating systems perform echo cancellation, gain control, and noise
+ * reduction as needed. If your application already handles these, you can set
+ * this hint to prevent the OS from doing additional audio processing.
+ *
+ * This corresponds to the WASAPI audio option `AUDCLNT_STREAMOPTIONS_RAW`.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": audio processing can be done by the OS. (default)
+ * - "1": audio processing is done by the application.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_AUDIO_DEVICE_RAW_STREAM "SDL_AUDIO_DEVICE_RAW_STREAM"
 
 /**
  * Specify the input file when recording audio using the disk audio driver.
@@ -2378,9 +2412,9 @@ extern "C" {
  *   pressing the 1 key would yield the keycode SDLK_1, or '1', instead of
  *   SDLK_AMPERSAND, or '&'
  * - "latin_letters": For keyboards using non-Latin letters, such as Russian
- *   or Thai, the letter keys generate keycodes as though it had an en_US
- *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
- *   keyboard would yield 'a' instead of a Cyrillic letter.
+ *   or Thai, the letter keys generate keycodes as though it had an English
+ *   QWERTY layout. e.g. pressing the key associated with SDL_SCANCODE_A on a
+ *   Russian keyboard would yield 'a' instead of a Cyrillic letter.
  *
  * The default value for this hint is "french_numbers,latin_letters"
  *
@@ -2438,6 +2472,27 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER "SDL_KMSDRM_REQUIRE_DRM_MASTER"
+
+/**
+ * A variable that controls whether KMSDRM will use "atomic" functionality.
+ *
+ * The KMSDRM backend can use atomic commits, if both DRM_CLIENT_CAP_ATOMIC
+ * and DRM_CLIENT_CAP_UNIVERSAL_PLANES is supported by the system. As of SDL
+ * 3.4.0, it will favor this functionality, but in case this doesn't work well
+ * on a given system or other surprises, this hint can be used to disable it.
+ *
+ * This hint can not enable the functionality if it isn't available.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": SDL will not use the KMSDRM "atomic" functionality.
+ * - "1": SDL will allow usage of the KMSDRM "atomic" functionality. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_KMSDRM_ATOMIC "SDL_KMSDRM_ATOMIC"
 
 /**
  * A variable controlling the default SDL log levels.
@@ -4330,6 +4385,28 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
+ * A variable controlling whether or not the RIDEV_NOHOTKEYS flag is set when
+ * enabling Windows raw keyboard events.
+ *
+ * This blocks any hotkeys that have been registered by applications from
+ * having any effect beyond generating raw WM_INPUT events.
+ *
+ * This flag does not affect system-hotkeys like ALT-TAB or CTRL-ALT-DEL, but
+ * does affect the Windows Logo key since it is a userland hotkey registered
+ * by explorer.exe.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Hotkeys are not excluded. (default)
+ * - "1": Hotkeys are excluded.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
+
+/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every
@@ -4530,31 +4607,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_PEN_TOUCH_EVENTS "SDL_PEN_TOUCH_EVENTS"
-
-/**
- * A variable controlling whether SDL logs some debug information.
- *
- * The variable can be set to the following values:
- *
- * - "0": SDL debug information will not be logged. (default)
- * - "1": SDL debug information will be logged.
- *
- * This is generally meant to be used as an environment variable to let
- * end-users report what subsystems were chosen on their system, perhaps what
- * sort of hardware they are running on, etc, to aid in debugging. Logged
- * information is sent through SDL_Log(), which means by default they appear
- * on stdout on most platforms, or maybe OutputDebugString() on Windows, and
- * can be funneled by the app with SDL_SetLogOutputFunction(), etc.
- *
- * The specific output might change between SDL versions; more information
- * might be deemed useful in the future.
- *
- * This hint can be set anytime, but the specific logs are generated during
- * subsystem init.
- *
- * \since This hint is available since SDL 3.4.0.
- */
-#define SDL_HINT_DEBUG_LOGGING "SDL_DEBUG_LOGGING"
 
 /**
  * An enumeration of hint priorities.

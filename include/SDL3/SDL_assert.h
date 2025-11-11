@@ -176,12 +176,48 @@ extern "C" {
 #   define SDL_FUNCTION "???"
 #endif
 
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro that reports the current file being compiled.
  *
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
+ * define this macro before including SDL.h or SDL_assert.h.
+ *
  * \since This macro is available since SDL 3.2.0.
  */
+#define SDL_FILE    __FILE_NAME__
+
+#elif !defined(SDL_FILE)
+#ifdef __FILE_NAME__
+#define SDL_FILE    __FILE_NAME__
+#else
 #define SDL_FILE    __FILE__
+#endif
+#endif
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro that reports the current file being compiled, for use in
+ * assertions.
+ *
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
+ * define this macro before including SDL_assert.h. For example, defining this
+ * to `""` will make sure no source path information is included in asserts.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_ASSERT_FILE SDL_FILE
+
+#elif !defined(SDL_ASSERT_FILE)
+#define SDL_ASSERT_FILE SDL_FILE
+#endif
+
 
 /**
  * A macro that reports the current line number of the file being compiled.
@@ -360,7 +396,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
     do { \
         while ( !(condition) ) { \
             static struct SDL_AssertData sdl_assert_data = { false, 0, #condition, NULL, 0, NULL, NULL }; \
-            const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+            const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_ASSERT_FILE, SDL_LINE); \
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
             } else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \

@@ -392,54 +392,82 @@ macro(CheckX11)
 
       check_include_file("X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLIB)
 
-      if(SDL_X11_XCURSOR AND HAVE_XCURSOR_H AND XCURSOR_LIB)
-        set(HAVE_X11_XCURSOR TRUE)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "\"${XCURSOR_LIB_SONAME}\"")
+      if(SDL_X11_XCURSOR)
+        if (HAVE_XCURSOR_H AND XCURSOR_LIB)
+          set(HAVE_X11_XCURSOR TRUE)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "\"${XCURSOR_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xcursor LIBS X11::Xcursor CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xcursor_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XCURSOR 1)
         else()
-          sdl_link_dependency(xcursor LIBS X11::Xcursor CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xcursor_PKG_CONFIG_SPEC})
+          SDL_missing_dependency(XCURSOR, SDL_X11_XCURSOR)
         endif()
-        set(SDL_VIDEO_DRIVER_X11_XCURSOR 1)
       endif()
 
-      if(SDL_X11_XDBE AND HAVE_XDBE_H)
-        set(HAVE_X11_XDBE TRUE)
-        set(SDL_VIDEO_DRIVER_X11_XDBE 1)
+      if(SDL_X11_XDBE)
+        if(HAVE_XDBE_H)
+          set(HAVE_X11_XDBE TRUE)
+          set(SDL_VIDEO_DRIVER_X11_XDBE 1)
+        else()
+          SDL_missing_dependency(XDBE, SDL_X11_XDBE)
+        endif()
       endif()
 
-      if(SDL_X11_XINPUT AND HAVE_XINPUT2_H AND XI_LIB)
-        set(HAVE_X11_XINPUT TRUE)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
+      if(SDL_X11_XINPUT)
+        if(HAVE_XINPUT2_H AND XI_LIB)
+          set(HAVE_X11_XINPUT TRUE)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xi LIBS X11::Xi CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xi_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
+
+          # Check for scroll info
+          check_c_source_compiles("
+              #include <X11/Xlib.h>
+              #include <X11/Xproto.h>
+              #include <X11/extensions/XInput2.h>
+              XIScrollClassInfo *s;
+              int main(int argc, char **argv) {}" HAVE_XINPUT2_SCROLLINFO)
+          if(HAVE_XINPUT2_SCROLLINFO)
+            set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO 1)
+          endif()
+
+          # Check for multitouch
+          check_c_source_compiles_static("
+              #include <X11/Xlib.h>
+              #include <X11/Xproto.h>
+              #include <X11/extensions/XInput2.h>
+              int event_type = XI_TouchBegin;
+              XITouchClassInfo *t;
+              Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
+                return (Status)0;
+              }
+              int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_MULTITOUCH)
+          if(HAVE_XINPUT2_MULTITOUCH)
+            set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
+          endif()
+
+          # Check for gesture
+          check_c_source_compiles("
+              #include <X11/Xlib.h>
+              #include <X11/Xproto.h>
+              #include <X11/extensions/XInput2.h>
+              int event_type = XI_GesturePinchBegin;
+              XITouchClassInfo *t;
+              Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
+                return (Status)0;
+              }
+              int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_GESTURE)
+          if(HAVE_XINPUT2_GESTURE)
+            set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE 1)
+          endif()
+
         else()
-          sdl_link_dependency(xi LIBS X11::Xi CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xi_PKG_CONFIG_SPEC})
-        endif()
-        set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
-
-        # Check for scroll info
-        check_c_source_compiles("
-            #include <X11/Xlib.h>
-            #include <X11/Xproto.h>
-            #include <X11/extensions/XInput2.h>
-            XIScrollClassInfo *s;
-            int main(int argc, char **argv) {}" HAVE_XINPUT2_SCROLLINFO)
-        if(HAVE_XINPUT2_SCROLLINFO)
-          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO 1)
-        endif()
-
-        # Check for multitouch
-        check_c_source_compiles_static("
-            #include <X11/Xlib.h>
-            #include <X11/Xproto.h>
-            #include <X11/extensions/XInput2.h>
-            int event_type = XI_TouchBegin;
-            XITouchClassInfo *t;
-            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
-              return (Status)0;
-            }
-            int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_MULTITOUCH)
-        if(HAVE_XINPUT2_MULTITOUCH)
-          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
+          SDL_missing_dependency(XINPUT, SDL_X11_XINPUT)
         endif()
       endif()
 
@@ -453,54 +481,78 @@ macro(CheckX11)
             BarrierEventID b;
             int main(int argc, char **argv) { return 0; }" HAVE_XFIXES_H)
       endif()
-      if(SDL_X11_XFIXES AND HAVE_XFIXES_H AND HAVE_XINPUT2_H AND XFIXES_LIB)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"${XFIXES_LIB_SONAME}\"")
+      if(SDL_X11_XFIXES)
+        if (HAVE_XFIXES_H AND HAVE_XINPUT2_H AND XFIXES_LIB)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES "\"${XFIXES_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xfixes LIBS X11::Xfixes CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xfixes_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XFIXES 1)
+          set(HAVE_X11_XFIXES TRUE)
         else()
-          sdl_link_dependency(xfixes LIBS X11::Xfixes CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xfixes_PKG_CONFIG_SPEC})
+          SDL_missing_dependency(XFIXES, SDL_X11_XFIXES)
         endif()
-        set(SDL_VIDEO_DRIVER_X11_XFIXES 1)
-        set(HAVE_X11_XFIXES TRUE)
       endif()
 
-      if(SDL_X11_XSYNC AND HAVE_XSYNC_H AND XEXT_LIB)
-        set(SDL_VIDEO_DRIVER_X11_XSYNC 1)
-        set(HAVE_X11_XSYNC TRUE)
-      endif()
-
-      if(SDL_X11_XRANDR AND HAVE_XRANDR_H AND XRANDR_LIB)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "\"${XRANDR_LIB_SONAME}\"")
+      if(SDL_X11_XSYNC)
+        if(HAVE_XSYNC_H AND XEXT_LIB)
+          set(SDL_VIDEO_DRIVER_X11_XSYNC 1)
+          set(HAVE_X11_XSYNC TRUE)
         else()
-          sdl_link_dependency(xrandr LIBS X11::Xrandr CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xrandr_PKG_CONFIG_SPEC})
+          SDL_missing_dependency(XSYNC, SDL_X11_XSYNC)
         endif()
-        set(SDL_VIDEO_DRIVER_X11_XRANDR 1)
-        set(HAVE_X11_XRANDR TRUE)
       endif()
 
-      if(SDL_X11_XSCRNSAVER AND HAVE_XSS_H AND XSS_LIB)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "\"${XSS_LIB_SONAME}\"")
+      if(SDL_X11_XRANDR)
+        if(HAVE_XRANDR_H AND XRANDR_LIB)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "\"${XRANDR_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xrandr LIBS X11::Xrandr CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xrandr_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XRANDR 1)
+          set(HAVE_X11_XRANDR TRUE)
         else()
-          sdl_link_dependency(xss LIBS X11::Xss CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xss_PKG_CONFIG_SPEC})
+          SDL_missing_dependency(XRANDR, SDL_X11_XRANDR)
         endif()
-        set(SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1)
-        set(HAVE_X11_XSCRNSAVER TRUE)
       endif()
 
-      if(SDL_X11_XSHAPE AND HAVE_XSHAPE_H)
-        set(SDL_VIDEO_DRIVER_X11_XSHAPE 1)
-        set(HAVE_X11_XSHAPE TRUE)
-      endif()
-
-      if(SDL_X11_XTEST AND HAVE_XTEST_H AND XTST_LIB)
-        if(HAVE_X11_SHARED)
-          set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST "\"${XTST_LIB_SONAME}\"")
+      if(SDL_X11_XSCRNSAVER)
+        if(HAVE_XSS_H AND XSS_LIB)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "\"${XSS_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xss LIBS X11::Xss CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xss_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1)
+          set(HAVE_X11_XSCRNSAVER TRUE)
         else()
-          sdl_link_dependency(xtst LIBS X11::Xtst CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xtst_PKG_CONFIG_SPEC})
+          SDL_missing_dependency(XSCRNSAVER, SDL_X11_XSCRNSAVER)
         endif()
-        set(SDL_VIDEO_DRIVER_X11_XTEST 1)
-        set(HAVE_X11_XTEST TRUE)
+      endif()
+
+      if(SDL_X11_XSHAPE)
+        if(HAVE_XSHAPE_H)
+          set(SDL_VIDEO_DRIVER_X11_XSHAPE 1)
+          set(HAVE_X11_XSHAPE TRUE)
+        else()
+          SDL_missing_dependency(XSHAPE, SDL_X11_XSHAPE)
+        endif()
+      endif()
+
+      if(SDL_X11_XTEST)
+        if(HAVE_XTEST_H AND XTST_LIB)
+          if(HAVE_X11_SHARED)
+            set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST "\"${XTST_LIB_SONAME}\"")
+          else()
+            sdl_link_dependency(xtst LIBS X11::Xtst CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xtst_PKG_CONFIG_SPEC})
+          endif()
+          set(SDL_VIDEO_DRIVER_X11_XTEST 1)
+          set(HAVE_X11_XTEST TRUE)
+        else()
+          SDL_missing_dependency(XTEST SDL_X11_XTEST)
+        endif()
       endif()
     endif()
   endif()

@@ -288,7 +288,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 	return -1; /* failure */
 }
 
-#if defined(__FreeBSD__) && __FreeBSD__ < 10
+#if defined(__FreeBSD__) && __FreeBSD__ < 10 && !defined(libusb_get_string_descriptor)
 /* The libusb version included in FreeBSD < 10 doesn't have this function. In
    mainline libusb, it's inlined in libusb.h. This function will bear a striking
    resemblance to that one, because there's about one way to code it.

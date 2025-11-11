@@ -110,6 +110,10 @@ typedef enum SDL_TextureAccess
  *
  * This affects how texture coordinates are interpreted outside of [0, 1]
  *
+ * Texture wrapping is always supported for power of two texture sizes, and is
+ * supported for other texture sizes if
+ * SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN is set to true.
+ *
  * \since This enum is available since SDL 3.4.0.
  */
 typedef enum SDL_TextureAddressMode
@@ -474,6 +478,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormat *)
  *   array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
  *   representing the available texture formats for this renderer.
+ * - `SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN`: true if the renderer
+ *   supports SDL_TEXTURE_ADDRESS_WRAP on non-power-of-two textures.
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_Colorspace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
@@ -550,6 +556,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Rende
 #define SDL_PROP_RENDERER_VSYNC_NUMBER                              "SDL.renderer.vsync"
 #define SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER                   "SDL.renderer.max_texture_size"
 #define SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER                   "SDL.renderer.texture_formats"
+#define SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN                  "SDL.renderer.texture_wrapping"
 #define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER                  "SDL.renderer.output_colorspace"
 #define SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN                       "SDL.renderer.HDR_enabled"
 #define SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT                     "SDL.renderer.SDR_white_point"
@@ -1697,8 +1704,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *ren
  *
  * \param renderer the rendering context.
  * \param event the event to modify.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
+ * \returns true if the event is converted or doesn't need conversion, or
+ *          false on failure; call SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -2383,6 +2390,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureTiled(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderTexture
+ * \sa SDL_RenderTexture9GridTiled
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect);
 
@@ -2420,6 +2428,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_RenderTexture
+ * \sa SDL_RenderTexture9Grid
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect, float tileScale);
 

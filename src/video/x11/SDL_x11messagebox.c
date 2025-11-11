@@ -288,6 +288,8 @@ static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data
 
 static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
+    SDL_VideoDevice *video = SDL_GetVideoDevice();
+    SDL_Window *parent_window = NULL;
     SDL_MessageBoxControlsX11 controls;
     SDL_MessageBoxCallbackDataX11 data;
     const SDL_MessageBoxColor *colorhints;
@@ -305,10 +307,14 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     }
 
     /* Create window */
+    if (messageboxdata->window && video && SDL_strcmp(video->name, "x11") == 0) {
+        // Only use the window as a parent if it is from the X11 driver.
+        parent_window = messageboxdata->window;
+    }
 #if SDL_FORK_MESSAGEBOX
-    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, true);
+    controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, true);
 #else 
-    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, false);
+    controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, false);
 #endif
     controls.window->cb_data = &controls;
     controls.window->cb_on_scale_change = X11_OnMessageBoxScaleChange;
@@ -338,9 +344,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     X11Toolkit_CreateWindowRes(controls.window, w, h, 0, 0, (char *)messageboxdata->title);
     X11Toolkit_DoWindowEventLoop(controls.window);
     X11Toolkit_DestroyWindow(controls.window);
-    if (controls.buttons) {
-        SDL_free(controls.buttons);
-    }
+    SDL_free(controls.buttons);
     return true;
 }
 

@@ -268,6 +268,7 @@ _m_prefetch(void *__P)
 #endif /* compiler version */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro to decide if the compiler supports `__attribute__((target))`.
  *
@@ -280,12 +281,14 @@ _m_prefetch(void *__P)
  * \sa SDL_TARGETING
  */
 #define SDL_HAS_TARGET_ATTRIBS
-
+#elif defined(__loongarch64) && defined(__GNUC__) && (__GNUC__ >= 15)
+/* LoongArch requires GCC 15+ for target attribute support */
+# define SDL_HAS_TARGET_ATTRIBS
 #elif defined(__clang__) && defined(__has_attribute)
 # if __has_attribute(target)
 # define SDL_HAS_TARGET_ATTRIBS
 # endif
-#elif defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 9) > 4) /* gcc >= 4.9 */
+#elif defined(__GNUC__) && !defined(__loongarch64) && (__GNUC__ + (__GNUC_MINOR__ >= 9) > 4) /* gcc >= 4.9 */
 # define SDL_HAS_TARGET_ATTRIBS
 #elif defined(__ICC) && __ICC >= 1600
 # define SDL_HAS_TARGET_ATTRIBS

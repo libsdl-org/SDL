@@ -55,7 +55,6 @@ static bool _InitWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         // TODO: Add support for this flag
-        printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }
     if (window->flags & SDL_WINDOW_OPENGL) {
         // TODO: Add support for this flag

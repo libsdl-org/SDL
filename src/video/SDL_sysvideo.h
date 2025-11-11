@@ -372,7 +372,6 @@ struct SDL_VideoDevice
     void (*ShowScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
     void (*HideScreenKeyboard)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*SetTextInputProperties)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
-    bool (*IsScreenKeyboardShown)(SDL_VideoDevice *_this, SDL_Window *window);
 
     // Clipboard
     const char **(*GetTextMimeTypes)(SDL_VideoDevice *_this, size_t *num_mime_types);
@@ -422,6 +421,7 @@ struct SDL_VideoDevice
     bool setting_display_mode;
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
+    bool screen_keyboard_shown;
 
     /* * * */
     // Data used by the GL drivers
@@ -612,5 +612,8 @@ extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
 extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
+
+extern void SDL_SendScreenKeyboardShown(void);
+extern void SDL_SendScreenKeyboardHidden(void);
 
 #endif // SDL_sysvideo_h_

@@ -122,6 +122,7 @@ typedef enum
 - (void)touchesMovedWithEvent:(NSEvent *)theEvent;
 - (void)touchesEndedWithEvent:(NSEvent *)theEvent;
 - (void)touchesCancelledWithEvent:(NSEvent *)theEvent;
+- (void)magnifyWithEvent:(NSEvent *) theEvent;
 
 // Touch event handling
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent;
@@ -140,6 +141,7 @@ typedef enum
 @property(nonatomic) SDL_Window *window;
 @property(nonatomic) NSWindow *nswindow;
 @property(nonatomic) NSView *sdlContentView;
+@property(nonatomic) NSRect viewport;
 @property(nonatomic) NSMutableArray *nscontexts;
 @property(nonatomic) BOOL in_blocking_transition;
 @property(nonatomic) BOOL fullscreen_space_requested;

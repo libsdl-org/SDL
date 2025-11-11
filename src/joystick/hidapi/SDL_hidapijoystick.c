@@ -363,7 +363,7 @@ static SDL_HIDAPI_DeviceDriver *HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device
         return NULL;
     }
 
-    if (device->vendor_id != USB_VENDOR_VALVE && device->vendor_id != USB_VENDOR_FLYDIGI) {
+    if (device->vendor_id != USB_VENDOR_VALVE && device->vendor_id != USB_VENDOR_FLYDIGI_V1 && device->vendor_id != USB_VENDOR_FLYDIGI_V2) {
         if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
             return NULL;
         }
@@ -1305,6 +1305,16 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
      */
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        // The HIDAPI functionality will be available when the FlyDigi Space Station app has
+        // enabled third party controller mapping, so the driver needs to be active to watch
+        // for that change. Since this is dynamic and we don't have a way to re-trigger device
+        // changes when that happens, we'll pretend the driver isn't available so the XInput
+        // interface will always show up (but won't have any input when the controller is in
+        // enhanced mode)
+        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+            continue;
+        }
+
         if (device->driver &&
             HIDAPI_IsEquivalentToDevice(vendor_id, product_id, device)) {
             result = true;

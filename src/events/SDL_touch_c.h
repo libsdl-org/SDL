@@ -57,4 +57,7 @@ extern void SDL_DelTouch(SDL_TouchID id);
 // Shutdown the touch subsystem
 extern void SDL_QuitTouch(void);
 
+// Send Gesture events
+extern int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale);
+
 #endif // SDL_touch_c_h_

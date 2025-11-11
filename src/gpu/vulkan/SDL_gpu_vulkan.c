@@ -56,6 +56,8 @@ typedef struct VulkanExtensions
     Uint8 KHR_driver_properties;
     // Only required for special implementations (i.e. MoltenVK)
     Uint8 KHR_portability_subset;
+    // Only required to detect devices using Dozen D3D12 driver
+    Uint8 MSFT_layered_driver;
     // Only required for decoding HDR ASTC textures
     Uint8 EXT_texture_compression_astc_hdr;
 } VulkanExtensions;
@@ -78,22 +80,6 @@ typedef struct VulkanExtensions
     }
 
 // Conversions
-
-static const Uint8 DEVICE_PRIORITY_HIGHPERFORMANCE[] = {
-    0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
-    3, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
-    4, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-    2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
-    1  // VK_PHYSICAL_DEVICE_TYPE_CPU
-};
-
-static const Uint8 DEVICE_PRIORITY_LOWPOWER[] = {
-    0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
-    4, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
-    3, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-    2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
-    1  // VK_PHYSICAL_DEVICE_TYPE_CPU
-};
 
 static VkPresentModeKHR SDLToVK_PresentMode[] = {
     VK_PRESENT_MODE_FIFO_KHR,
@@ -1120,6 +1106,7 @@ struct VulkanRenderer
 
     bool debugMode;
     bool preferLowPower;
+    bool requireHardwareAcceleration;
     SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
@@ -4968,9 +4955,7 @@ static void VULKAN_DestroyDevice(
                 j);
         }
 
-        if (renderer->memoryAllocator->subAllocators[i].allocations != NULL) {
-            SDL_free(renderer->memoryAllocator->subAllocators[i].allocations);
-        }
+        SDL_free(renderer->memoryAllocator->subAllocators[i].allocations);
 
         SDL_free(renderer->memoryAllocator->subAllocators[i].sortedFreeRegions);
     }
@@ -5898,7 +5883,10 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
             texture);
         VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
-        VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer);
+        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
+            VULKAN_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
     }
 
     return texture;
@@ -6997,9 +6985,7 @@ static void VULKAN_ReleaseTexture(
     SDL_DestroyProperties(vulkanTextureContainer->header.info.props);
 
     // Containers are just client handles, so we can destroy immediately
-    if (vulkanTextureContainer->debugName != NULL) {
-        SDL_free(vulkanTextureContainer->debugName);
-    }
+    SDL_free(vulkanTextureContainer->debugName);
     SDL_free(vulkanTextureContainer->textures);
     SDL_free(vulkanTextureContainer);
 
@@ -9925,7 +9911,12 @@ static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
         }
     }
 
+#ifdef SDL_VIDEO_DRIVER_PRIVATE
+    // Private platforms also invalidate the window, so don't try to preserve the surface/swapchain
+    VULKAN_INTERNAL_DestroySwapchain(renderer, windowData);
+#else
     VULKAN_INTERNAL_DestroySwapchainImage(renderer, windowData);
+#endif
     return VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
 }
 
@@ -11030,7 +11021,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(EXT_texture_compression_astc_hdr)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
     }
 
@@ -11045,6 +11036,7 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_maintenance1 +
         supports->KHR_driver_properties +
         supports->KHR_portability_subset +
+        supports->MSFT_layered_driver +
         supports->EXT_texture_compression_astc_hdr);
 }
 
@@ -11061,6 +11053,7 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_maintenance1)
     CHECK(KHR_driver_properties)
     CHECK(KHR_portability_subset)
+    CHECK(MSFT_layered_driver)
     CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
 }
@@ -11836,35 +11829,71 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     return 1;
 }
 
-static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
+static bool VULKAN_INTERNAL_GetDeviceRank(
     VulkanRenderer *renderer,
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
-    Uint32 *queueFamilyIndex,
     Uint64 *deviceRank)
 {
-    Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
-    VkQueueFamilyProperties *queueProps;
-    bool supportsPresent;
-    VkPhysicalDeviceProperties deviceProperties;
-    VkPhysicalDeviceFeatures deviceFeatures;
-    VkPhysicalDeviceMemoryProperties deviceMemory;
-    Uint32 i;
-
+    static const Uint8 DEVICE_PRIORITY_HIGHPERFORMANCE[] = {
+        0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
+        3, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+        4, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
+        2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
+        1  // VK_PHYSICAL_DEVICE_TYPE_CPU
+    };
+    static const Uint8 DEVICE_PRIORITY_LOWPOWER[] = {
+        0, // VK_PHYSICAL_DEVICE_TYPE_OTHER
+        4, // VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+        3, // VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
+        2, // VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU
+        1  // VK_PHYSICAL_DEVICE_TYPE_CPU
+    };
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
 
-    /* Get the device rank before doing any checks, in case one fails.
-     * Note: If no dedicated device exists, one that supports our features
-     * would be fine
-     */
-    renderer->vkGetPhysicalDeviceProperties(
-        physicalDevice,
-        &deviceProperties);
+    VkPhysicalDeviceType deviceType;
+    if (physicalDeviceExtensions->MSFT_layered_driver) {
+        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
+        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        physicalDeviceProperties.pNext = &physicalDeviceLayeredDriverProperties;
+
+        physicalDeviceLayeredDriverProperties.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
+        physicalDeviceLayeredDriverProperties.pNext = NULL;
+
+        renderer->vkGetPhysicalDeviceProperties2KHR(
+            physicalDevice,
+            &physicalDeviceProperties);
+
+        if (physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
+            deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+        } else {
+            deviceType = physicalDeviceProperties.properties.deviceType;
+        }
+    } else {
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        renderer->vkGetPhysicalDeviceProperties(
+            physicalDevice,
+            &physicalDeviceProperties);
+        deviceType = physicalDeviceProperties.deviceType;
+    }
+
+    if (renderer->requireHardwareAcceleration) {
+        if (deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+            deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU &&
+            deviceType != VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU) {
+            // In addition to CPU, "Other" drivers (including layered drivers) don't count as hardware-accelerated
+            return 0;
+        }
+    }
 
     /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
      * We also rank by e.g. VRAM which should have less influence than the device type.
      */
-    Uint64 devicePriorityValue = devicePriority[deviceProperties.deviceType] * 1000000;
+    Uint64 devicePriorityValue = devicePriority[deviceType] * 1000000;
 
     if (*deviceRank < devicePriorityValue) {
         /* This device outranks the best device we've found so far!
@@ -11878,8 +11907,48 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
          * run a query and reset the rank to avoid overwrites
          */
         *deviceRank = 0;
-        return 0;
+        return false;
     }
+
+    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
+     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
+     * system, this theoretically picks the most powerful one (or at least the one with the
+     * most memory!)
+     *
+     * We do this *after* discarding all non suitable devices, which means if this computer
+     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
+     * performance, then we always pick the GPU with more VRAM.
+     */
+    if (!renderer->preferLowPower) {
+        Uint32 i;
+        Uint64 videoMemory = 0;
+        VkPhysicalDeviceMemoryProperties deviceMemory;
+        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
+        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
+            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
+            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+                videoMemory += heap.size;
+            }
+        }
+        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
+        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
+        *deviceRank += videoMemoryRounded;
+    }
+
+    return true;
+}
+
+static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
+    VulkanRenderer *renderer,
+    VkPhysicalDevice physicalDevice,
+    VulkanExtensions *physicalDeviceExtensions,
+    Uint32 *queueFamilyIndex)
+{
+    Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
+    VkQueueFamilyProperties *queueProps;
+    bool supportsPresent;
+    VkPhysicalDeviceFeatures deviceFeatures;
+    Uint32 i;
 
     renderer->vkGetPhysicalDeviceFeatures(
         physicalDevice,
@@ -11984,30 +12053,6 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
-    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
-     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
-     * system, this theoretically picks the most powerful one (or at least the one with the
-     * most memory!)
-     *
-     * We do this *after* discarding all non suitable devices, which means if this computer
-     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
-     * performance, then we always pick the GPU with more VRAM.
-     */
-    if (!renderer->preferLowPower) {
-        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
-        Uint64 videoMemory = 0;
-        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
-            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
-            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
-                videoMemory += heap.size;
-            }
-        }
-        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
-        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
-        *deviceRank += videoMemoryRounded;
-    }
-
-
     // FIXME: Need better structure for checking vs storing swapchain support details
     return 1;
 }
@@ -12019,8 +12064,8 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     VulkanExtensions *physicalDeviceExtensions;
     Uint32 i, physicalDeviceCount;
     Sint32 suitableIndex;
-    Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
-    Uint64 deviceRank, highestRank;
+    Uint32 suitableQueueFamilyIndex;
+    Uint64 highestRank;
 
     vulkanResult = renderer->vkEnumeratePhysicalDevices(
         renderer->instance,
@@ -12066,12 +12111,23 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     suitableQueueFamilyIndex = 0;
     highestRank = 0;
     for (i = 0; i < physicalDeviceCount; i += 1) {
-        deviceRank = highestRank;
-        if (VULKAN_INTERNAL_IsDeviceSuitable(
+        Uint32 queueFamilyIndex;
+        Uint64 deviceRank;
+
+        if (!VULKAN_INTERNAL_IsDeviceSuitable(
                 renderer,
                 physicalDevices[i],
                 &physicalDeviceExtensions[i],
-                &queueFamilyIndex,
+                &queueFamilyIndex)) {
+            // Device does not meet the minimum requirements, skip it entirely
+            continue;
+        }
+
+        deviceRank = highestRank;
+        if (VULKAN_INTERNAL_GetDeviceRank(
+                renderer,
+                physicalDevices[i],
+                &physicalDeviceExtensions[i],
                 &deviceRank)) {
             /* Use this for rendering.
              * Note that this may override a previous device that
@@ -12079,17 +12135,6 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
              */
             suitableIndex = i;
             suitableQueueFamilyIndex = queueFamilyIndex;
-            highestRank = deviceRank;
-        } else if (deviceRank > highestRank) {
-            /* In this case, we found a... "realer?" GPU,
-             * but it doesn't actually support our Vulkan.
-             * We should disqualify all devices below as a
-             * result, because if we don't we end up
-             * ignoring real hardware and risk using
-             * something like LLVMpipe instead!
-             * -flibit
-             */
-            suitableIndex = -1;
             highestRank = deviceRank;
         }
     }
@@ -12327,6 +12372,9 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer) {
+        // This needs to be set early for log filtering
+        renderer->debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+
         // Opt out device features (higher compatibility in exchange for reduced functionality)
         renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
         renderer->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
@@ -12340,6 +12388,8 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
         // Handle opt-in device features
         VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
+
+        renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN, false);
 
         result = VULKAN_INTERNAL_PrepareVulkan(renderer);
         if (result) {
@@ -12393,6 +12443,8 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     // Handle opt-in device features
     VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
+
+    renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN, false);
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");

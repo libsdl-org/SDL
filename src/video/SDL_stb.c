@@ -23,8 +23,8 @@
 #include "SDL_stb_c.h"
 #include "SDL_surface_c.h"
 
-// We currently only support JPEG, but we could add other image formats if we wanted
 #ifdef SDL_HAVE_STB
+////////////////////////////////////////////////////////////////////////////
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
@@ -58,15 +58,23 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#undef memcpy
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_STATIC
-#define STBI_WRITE_NO_STDIO
-#define STBIW_ASSERT SDL_assert
-#include "stb_image_write.h"
+////////////////////////////////////////////////////////////////////////////
+#define MZ_ASSERT(x) SDL_assert(x)
+//#undef memcpy
+//#define memcpy SDL_memcpy
+//#undef memset
+//#define memset SDL_memset
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define MINIZ_LITTLE_ENDIAN 1
+#else
+#define MINIZ_LITTLE_ENDIAN 0
+#endif
+#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 0
+#define MINIZ_SDL_NOUNUSED
+#include "miniz.h"
 
 #undef memset
-#endif
+#endif // SDL_HAVE_STB
 
 #ifdef SDL_HAVE_STB
 static bool SDL_ConvertPixels_MJPG_to_NV12(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
@@ -372,16 +380,12 @@ SDL_Surface *SDL_LoadPNG(const char *file)
     return SDL_LoadPNG_IO(stream, true);
 }
 
-#ifdef SDL_HAVE_STB
-static void SDL_STBWriteFunc(void *context, void *data, int size)
-{
-    SDL_WriteIO(context, data, size);
-}
-#endif
-
 bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
 {
     bool retval = false;
+    Uint8 *plte = NULL;
+    Uint8 *trns = NULL;
+    bool free_surface = false;
 
     // Make sure we have somewhere to save
     CHECK_PARAM(!SDL_SurfaceValid(surface)) {
@@ -394,29 +398,69 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     }
 
 #ifdef SDL_HAVE_STB
-    bool free_surface = false;
-    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-        surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-        if (!surface) {
+    int plte_size = 0;
+    int trns_size = 0;
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        if (!surface->palette) {
+            SDL_SetError("Indexed surfaces must have a palette");
             goto done;
         }
-        free_surface = true;
-    }
 
-    if (stbi_write_png_to_func(SDL_STBWriteFunc, dst, surface->w, surface->h, 4, surface->pixels, surface->pitch)) {
-        retval = true;
+        if (surface->format != SDL_PIXELFORMAT_INDEX8) {
+            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_INDEX8);
+            if (!surface) {
+                goto done;
+            }
+            free_surface = true;
+        }
+
+        plte_size = surface->palette->ncolors * 3;
+        trns_size = surface->palette->ncolors;
+        plte = (Uint8 *)SDL_malloc(plte_size);
+        trns = (Uint8 *)SDL_malloc(trns_size);
+        if (!plte || !trns) {
+            goto done;
+        }
+        SDL_Color *colors = surface->palette->colors;
+        for (int i = 0; i < surface->palette->ncolors; ++i) {
+            plte[i * 3 + 0] = colors[i].r;
+            plte[i * 3 + 1] = colors[i].g;
+            plte[i * 3 + 2] = colors[i].b;
+            trns[i] = colors[i].a;
+        }
     } else {
-        SDL_SetError("Failed to write PNG");
+        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            if (!surface) {
+                goto done;
+            }
+            free_surface = true;
+        }
     }
 
-    if (free_surface) {
-        SDL_DestroySurface(surface);
+    size_t size = 0;
+    void *png = tdefl_write_image_to_png_file_in_memory_ex(surface->pixels, surface->w, surface->h, SDL_BYTESPERPIXEL(surface->format), surface->pitch, &size, 6, MZ_FALSE, plte, plte_size, trns, trns_size);
+    if (png) {
+        if (SDL_WriteIO(dst, png, size)) {
+            retval = true;
+        }
+        mz_free(png); /* calls SDL_free() */
+    } else {
+        SDL_SetError("Failed to convert and save image");
     }
+
 #else
     SDL_SetError("SDL not built with STB image support");
 #endif
 
 done:
+    if (free_surface) {
+        SDL_DestroySurface(surface);
+    }
+    SDL_free(plte);
+    SDL_free(trns);
+
     if (dst && closeio) {
         retval &= SDL_CloseIO(dst);
     }

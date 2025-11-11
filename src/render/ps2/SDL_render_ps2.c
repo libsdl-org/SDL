@@ -113,6 +113,16 @@ static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color, float color_scale)
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
 
+static gs_rgbaq float_color_to_RGBAQ_tex(const SDL_FColor *color, float color_scale)
+{
+    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 63.0f);
+
+    return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+}
+
 static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color, float color_scale)
 {
     uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 255.0f);
@@ -281,7 +291,7 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = float_color_to_RGBAQ(col_, color_scale);
+            vertices->rgbaq = float_color_to_RGBAQ_tex(col_, color_scale);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
@@ -742,6 +752,7 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->window = window;
 
     renderer->name = PS2_RenderDriver.name;
+    renderer->npot_texture_wrap_unsupported = true;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);

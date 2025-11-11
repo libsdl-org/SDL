@@ -37,7 +37,8 @@
  * will report failure without doing anything.
  *
  * If you're going to work with threads, you almost certainly need to have a
- * good understanding of [CategoryMutex](CategoryMutex) as well.
+ * good understanding of thread safety measures: locking and synchronization
+ * mechanisms are handled by the functions in SDL_mutex.h.
  */
 
 #include <SDL3/SDL_stdinc.h>

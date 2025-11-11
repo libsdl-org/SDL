@@ -43,6 +43,7 @@ struct SDL_PrivateAudioData
     SDL_AtomicInt device_disconnecting;
     bool device_lost;
     bool device_dead;
+    bool isplayback;
 };
 
 // win32 implementation calls into these.
