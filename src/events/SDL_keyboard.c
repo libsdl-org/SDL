@@ -528,7 +528,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     SDL_Keycode keycode = SDLK_UNKNOWN;
     Uint32 type;
     bool repeat = false;
-    bool last_release = true;
+    bool last_release = false;
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
 #ifdef DEBUG_KEYBOARD
@@ -564,8 +564,6 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
             if (keyboard->keyrefcount[scancode] == 0) {
                 keyboard->keysource[scancode] = 0;
                 last_release = true;
-            } else {
-                last_release = false;
             }
         }
 
