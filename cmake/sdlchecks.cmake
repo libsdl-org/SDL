@@ -806,9 +806,9 @@ macro(FindOpenGLHeaders)
   find_package(OpenGL MODULE)
   # OPENGL_INCLUDE_DIRS is preferred over OPENGL_INCLUDE_DIR, but was only added in 3.29,
   # If the CMake minimum version is changed to be >= 3.29, the second check should be removed.
-  if(DEFINED OPENGL_INCLUDE_DIRS)
+  if(OPENGL_INCLUDE_DIRS)
     list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_INCLUDE_DIRS})
-  elseif(DEFINED OPENGL_INCLUDE_DIR)
+  elseif(OPENGL_INCLUDE_DIR)
     list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_INCLUDE_DIR})
   endif()
 endmacro()
