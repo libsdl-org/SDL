@@ -51,7 +51,7 @@ typedef struct SDL_Keyboard
     SDL_Keymod modstate;
     Uint8 keysource[SDL_SCANCODE_COUNT];
     bool keystate[SDL_SCANCODE_COUNT];
-    Uint8 keyrefcount[SDL_SCANCODE_COUNT]; // how many devices hold this key //
+    Uint8 keyrefcount[SDL_SCANCODE_COUNT]; // how many devices hold this key
     SDL_Keymap *keymap;
     Uint32 keycode_options;
     bool autorelease_pending;
@@ -681,7 +681,6 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
 
     return posted;
 }
-
 
 void SDL_SendKeyboardUnicodeKey(Uint64 timestamp, Uint32 ch)
 {
