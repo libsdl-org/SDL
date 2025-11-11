@@ -2304,11 +2304,18 @@ static bool GLES2_SetVSync(SDL_Renderer *renderer, const int vsync)
 static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     GLES2_RenderData *data = NULL;
-    SDL_WindowFlags window_flags = 0; // -Wconditional-uninitialized
+    SDL_WindowFlags window_flags = 0;
     GLint window_framebuffer;
     GLint value;
     int profile_mask = 0, major = 0, minor = 0;
     bool changed_window = false;
+
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        goto error;
+    }
 
     if (!SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask)) {
         goto error;
@@ -2335,13 +2342,6 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         if (!SDL_ReconfigureWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL)) {
             goto error;
         }
-    }
-
-    SDL_SetupRendererColorspace(renderer, create_props);
-
-    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        goto error;
     }
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));

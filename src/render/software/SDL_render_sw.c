@@ -1161,6 +1161,12 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
         return SDL_SetError("Unsupported surface format");
     }
 
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        return SDL_SetError("Unsupported output colorspace");
+    }
+
     renderer->software = true;
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
@@ -1201,12 +1207,6 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
     renderer->name = SW_RenderDriver.name;
 
     SW_SelectBestFormats(renderer, surface->format);
-
-    SDL_SetupRendererColorspace(renderer, create_props);
-
-    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        return SDL_SetError("Unsupported output colorspace");
-    }
 
     return true;
 }

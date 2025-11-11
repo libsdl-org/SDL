@@ -1759,7 +1759,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 {
     GL_RenderData *data = NULL;
     GLint value;
-    SDL_WindowFlags window_flags;
+    SDL_WindowFlags window_flags = 0;
     int profile_mask = 0, major = 0, minor = 0;
     int real_major = 0, real_minor = 0;
     bool changed_window = false;
@@ -1767,9 +1767,22 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     bool non_power_of_two_supported = false;
     bool bgra_supported = false;
 
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+    SDL_SetupRendererColorspace(renderer, create_props);
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SDL_SetError("Unsupported output colorspace");
+        goto error;
+    }
+
+    if (!SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask)) {
+        goto error;
+    }
+    if (!SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major)) {
+        goto error;
+    }
+    if (!SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor)) {
+        goto error;
+    }
 
 #ifndef SDL_VIDEO_VITA_PVR_OGL
     SDL_SyncWindow(window);
@@ -1787,13 +1800,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         }
     }
 #endif
-
-    SDL_SetupRendererColorspace(renderer, create_props);
-
-    if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
-        SDL_SetError("Unsupported output colorspace");
-        goto error;
-    }
 
     data = (GL_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
