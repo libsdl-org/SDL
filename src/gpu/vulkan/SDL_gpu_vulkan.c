@@ -11828,7 +11828,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
         renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
-        renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION, false);
+        renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN, false);
 
         result = VULKAN_INTERNAL_PrepareVulkan(renderer);
         if (result) {
@@ -11879,7 +11879,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
     renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
-    renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION, false);
+    renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN, false);
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");
