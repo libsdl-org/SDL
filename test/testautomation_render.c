@@ -2134,6 +2134,11 @@ static int SDLCALL render_testColorspaceLinear(void *arg)
     SDL_DestroyRenderer(renderer);
 
     props = SDL_CreateProperties();
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Something about falling back to the software renderer and failing causes  window surface updates to fail in video_getWindowSurface()
+    // Adding this as a workaround to prevent software fallback until we figure this out.
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "opengles2");
+#endif
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
     renderer = SDL_CreateRendererWithProperties(props);
