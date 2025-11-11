@@ -91,9 +91,7 @@ bool SDL_InitKeyboard(void)
 {
     // Init key reference counts to 0
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    for (int i = 0; i < SDL_SCANCODE_COUNT; ++i) {
-        keyboard->keyrefcount[i] = 0;
-    }
+    SDL_zeroa(keyboard->keyrefcount);
 
     SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
@@ -559,9 +557,10 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
             }
             keyboard->keysource[scancode] |= source;
         } else {
-            if (keyboard->keyrefcount[scancode] > 0) {
-                keyboard->keyrefcount[scancode]--;
+            if (keyboard->keyrefcount[scancode] == 0) {
+                return false; //Early out
             }
+            keyboard->keyrefcount[scancode]--;
             if (keyboard->keyrefcount[scancode] == 0) {
                 keyboard->keysource[scancode] = 0;
                 last_release = true;
