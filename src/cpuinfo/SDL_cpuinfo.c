@@ -76,10 +76,6 @@
 #include <sys/param.h>
 #endif
 
-#if defined(SDL_PLATFORM_ANDROID) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
-#include <cpu-features.h>
-#endif
-
 #if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
 #include <sys/auxv.h>
 #endif
