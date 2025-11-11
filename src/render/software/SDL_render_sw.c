@@ -1236,7 +1236,11 @@ static bool SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         return false;
     }
 
-    return SW_CreateRendererForSurface(renderer, surface, create_props);
+    if (!SW_CreateRendererForSurface(renderer, surface, create_props)) {
+        SDL_DestroyWindowSurface(window);
+        return false;
+    }
+    return true;
 }
 
 SDL_RenderDriver SW_RenderDriver = {
