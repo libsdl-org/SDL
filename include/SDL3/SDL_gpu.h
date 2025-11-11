@@ -2307,13 +2307,13 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
  *
- * With the Vulkan renderer:
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION`: By
- *   default, Vulkan device enumeration includes drivers of all types, including
- *   software renderers (for example, the Lavapipe Mesa driver). This can be
- *   useful if your application _requires_ SDL_GPU, but if you can provide your
- *   own fallback renderer (for example, an OpenGL renderer) this property can
- *   be set to true. Defaults to false.
+ * With the Vulkan renderer: -
+ * `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION`: By
+ * default, Vulkan device enumeration includes drivers of all types, including
+ * software renderers (for example, the Lavapipe Mesa driver). This can be
+ * useful if your application _requires_ SDL_GPU, but if you can provide your
+ * own fallback renderer (for example, an OpenGL renderer) this property can
+ * be set to true. Defaults to false.
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
