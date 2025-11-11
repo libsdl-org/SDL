@@ -2321,7 +2321,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   increasing the API version and opting into extensions aside from the
  *   minimal set SDL requires. The structure is NOT deep-copied. Make sure
  *   that the pointer valid memory during window creation.
- * 
+ *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2360,20 +2360,19 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
  * A structure specifying additional options when using Vulkan.
  *
  * When no such structure is provided, SDL will use Vulkan API version 1.0 and
- * a minimal set of features.
- * The requested API version influences how the feature_list is processed by
- * SDL. When requesting API version 1.0, the feature_list is ignored. Only the
- * vulkan_10_phyisical_device_features and the extension lists are used. When
- * requesting API version 1.1, the feature_list is scanned for feature
- * structures introduced in Vulkan 1.1. When requesting Vulkan 1.2 or higher,
- * the feature_list is additionally scanned for compound feature structs such
- * as VkPhysicalDeviceVulkan11Features. The device and instance extension
- * lists, as well as vulkan_10_physical_device_features, are always processed.
- * The pointers inside this structure are NOT deep-copied. Make sure they are
+ * a minimal set of features. The requested API version influences how the
+ * feature_list is processed by SDL. When requesting API version 1.0, the
+ * feature_list is ignored. Only the vulkan_10_phyisical_device_features and
+ * the extension lists are used. When requesting API version 1.1, the
+ * feature_list is scanned for feature structures introduced in Vulkan 1.1.
+ * When requesting Vulkan 1.2 or higher, the feature_list is additionally
+ * scanned for compound feature structs such as
+ * VkPhysicalDeviceVulkan11Features. The device and instance extension lists,
+ * as well as vulkan_10_physical_device_features, are always processed. The
+ * pointers inside this structure are NOT deep-copied. Make sure they are
  * valid during window creation.
- * 
- * \since This struct is available since SDL 3.4.0.
  *
+ * \since This struct is available since SDL 3.4.0.
  */
 typedef struct SDL_GPUVulkanOptions
 {
