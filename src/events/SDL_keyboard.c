@@ -558,7 +558,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
             keyboard->keysource[scancode] |= source;
         } else {
             if (keyboard->keyrefcount[scancode] == 0) {
-                return false; //Early out
+                return false;
             }
             keyboard->keyrefcount[scancode]--;
             if (keyboard->keyrefcount[scancode] == 0) {
