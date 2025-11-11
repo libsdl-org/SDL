@@ -677,6 +677,7 @@ jobs:
               -DTEST_TEST=TRUE \
               -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}" \
               -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
+              -DANDROID_USE_LEGACY_TOOLCHAIN=0 \
               -DANDROID_ABI=${android_abi} \
               -DCMAKE_BUILD_TYPE=Release \
               -B "${android_abi}"
