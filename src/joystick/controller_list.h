@@ -588,9 +588,10 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa715 ), k_eControllerType_SwitchInputOnlyController, NULL },  // Power A Fusion Wireless Arcade Stick (USB Mode) Over BT is shows up as 057e 2009
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa716 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Fusion Pro Controller - USB requires toggling switch on back of device
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa718 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Nano Wired Controller
-    { MAKE_CONTROLLER_ID( 0x33dd, 0x0001 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Black
-    { MAKE_CONTROLLER_ID( 0x33dd, 0x0002 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch ??
-    { MAKE_CONTROLLER_ID( 0x33dd, 0x0003 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Red
+	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0001 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Black
+	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0002 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch ??
+	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0003 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Red
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f0 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Taiko Controller For Switch
 
 	// Valve products
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch, NULL },	// Streaming mobile touch virtual controls
@@ -603,4 +604,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1201 ), k_eControllerType_SteamControllerV2, NULL },	// Valve wired Steam Controller (HEADCRAB)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2, NULL },	// Valve Bluetooth Steam Controller (HEADCRAB)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1205 ), k_eControllerType_SteamControllerNeptune, NULL },	// Valve Steam Deck Builtin Controller
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1302 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Triton Controller
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1303 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Triton Controller (BLE)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1304 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Proteus Dongle (Proprietary)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1305 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Nereid Dongle (Proprietary)
 };

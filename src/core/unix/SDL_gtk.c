@@ -64,6 +64,11 @@ static gulong signal_connect(gpointer instance, const gchar *detailed_signal, vo
 
 static void QuitGtk(void)
 {
+    if (sdl_main_context) {
+        gtk.g.main_context_unref(sdl_main_context);
+        sdl_main_context = NULL;
+    }
+
     SDL_UnloadObject(libgdk);
     SDL_UnloadObject(libgtk);
 
@@ -137,6 +142,7 @@ static bool InitGtk(void)
     SDL_GTK_SYM(gtk, libgdk, g, main_context_push_thread_default);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_pop_thread_default);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_new);
+    SDL_GTK_SYM(gtk, libgdk, g, main_context_unref);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_acquire);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_iteration);
 
@@ -192,7 +198,6 @@ void SDL_Gtk_Quit(void)
 
     QuitGtk();
     SDL_zero(gtk);
-    sdl_main_context = NULL;
 
     SDL_SetInitialized(&gtk_init, false);
 }
