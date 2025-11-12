@@ -302,6 +302,48 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, in
     return true;
 }
 
+bool SDL_UDEV_GetProductSerial(const char *device_path,const char **serial)
+{
+    struct stat statbuf;
+    char type;
+    struct udev_device *dev;
+    const char *val;
+    int class_temp;
+
+    if (!_this) {
+        return false;
+    }
+
+    if (stat(device_path, &statbuf) == -1) {
+        return false;
+    }
+
+    if (S_ISBLK(statbuf.st_mode)) {
+        type = 'b';
+    }
+    else if (S_ISCHR(statbuf.st_mode)) {
+        type = 'c';
+    }
+    else {
+        return false;
+    }
+
+    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
+
+    if (!dev) {
+        return false;
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_SERIAL_SHORT");
+    if (val) {
+        *serial = val;
+        return true;
+    }
+
+    serial = NULL;
+    return false;
+}
+
 void SDL_UDEV_UnloadLibrary(void)
 {
     if (!_this) {
