@@ -180,6 +180,9 @@ extern BOOL WIN_IsWindows7OrGreater(void);
 // Returns true if we're running on Windows 8 and newer
 extern BOOL WIN_IsWindows8OrGreater(void);
 
+// Returns true if we're running on Windows 11 and newer
+extern BOOL WIN_IsWindows11OrGreater(void);
+
 // You need to SDL_free() the result of this call.
 extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);
 
