@@ -1608,9 +1608,9 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         item_sensor->hwdata = joystick->hwdata;
     }
 
-    const char *s;
-    if (SDL_UDEV_GetProductSerial(item->path, &s) && s) {
-        joystick->serial = SDL_strdup(s);
+    const char *serial = NULL;
+    if (SDL_UDEV_GetProductSerial(item->path, &serial) {
+        joystick->serial = SDL_strdup(serial);
     }
 
     // mark joystick as fresh and ready
