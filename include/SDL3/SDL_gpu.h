@@ -2315,12 +2315,11 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   This can be useful if your application _requires_ SDL_GPU, but if you can
  *   provide your own fallback renderer (for example, an OpenGL renderer) this
  *   property can be set to true. Defaults to false.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER`: pointer to an
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER`: a pointer to an
  *   SDL_GPUVulkanOptions structure to be processed during device creation.
  *   This allows configuring a variety of Vulkan-specific options such as
  *   increasing the API version and opting into extensions aside from the
- *   minimal set SDL requires. The structure is NOT deep-copied. Make sure
- *   that the pointer valid memory during window creation.
+ *   minimal set SDL requires.
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
@@ -2368,9 +2367,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
  * When requesting Vulkan 1.2 or higher, the feature_list is additionally
  * scanned for compound feature structs such as
  * VkPhysicalDeviceVulkan11Features. The device and instance extension lists,
- * as well as vulkan_10_physical_device_features, are always processed. The
- * pointers inside this structure are NOT deep-copied. Make sure they are
- * valid during window creation.
+ * as well as vulkan_10_physical_device_features, are always processed.
  *
  * \since This struct is available since SDL 3.4.0.
  */
