@@ -308,7 +308,6 @@ bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial)
     char type;
     struct udev_device *dev;
     const char *val;
-    int class_temp;
 
     if (!_this) {
         return false;
