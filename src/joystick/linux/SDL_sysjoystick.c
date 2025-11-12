@@ -1609,7 +1609,7 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
     const char *serial = NULL;
-    if (SDL_UDEV_GetProductSerial(item->path, &serial) {
+    if (SDL_UDEV_GetProductSerial(item->path, &serial)) {
         joystick->serial = SDL_strdup(serial);
     }
 
