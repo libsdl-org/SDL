@@ -1079,6 +1079,24 @@ struct VulkanCommandPool
     Uint32 inactiveCommandBufferCount;
 };
 
+// Feature Checks
+
+typedef struct VulkanFeatures
+{
+    Uint32 desiredApiVersion;
+    VkPhysicalDeviceFeatures desiredVulkan10DeviceFeatures;
+    VkPhysicalDeviceVulkan11Features desiredVulkan11DeviceFeatures;
+    VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
+    VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
+
+    bool usesCustomVulkanOptions;
+
+    Uint32 additionalDeviceExtensionCount;
+    const char **additionalDeviceExtensionNames;
+    Uint32 additionalInstanceExtensionCount;
+    const char **additionalInstanceExtensionNames;
+} VulkanFeatures;
+
 // Context
 
 struct VulkanRenderer
@@ -1087,22 +1105,11 @@ struct VulkanRenderer
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
-    VkPhysicalDeviceFeatures desiredVulkan10DeviceFeatures;
     VkDevice logicalDevice;
     Uint8 integratedMemoryNotification;
     Uint8 outOfDeviceLocalMemoryWarning;
     Uint8 outofBARMemoryWarning;
     Uint8 fillModeOnlyWarning;
-
-    bool usesCustomVulkanOptions;
-    Uint32 desiredApiVersion;
-    VkPhysicalDeviceVulkan11Features desiredVulkan11DeviceFeatures;
-    VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
-    VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
-    Uint32 additionalDeviceExtensionCount;
-    const char **additionalDeviceExtensionNames;
-    Uint32 additionalInstanceExtensionCount;
-    const char **additionalInstanceExtensionNames;
 
     bool debugMode;
     bool preferLowPower;
@@ -11128,23 +11135,22 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     return allExtensionsSupported;
 }
 
-static Uint8 CheckOptInDeviceExtensions(VulkanRenderer *renderer,
-                                        VkPhysicalDevice physicalDevice,
+static Uint8 CheckOptInDeviceExtensions(VulkanFeatures *features,
                                         Uint32 numExtensions,
                                         VkExtensionProperties *availableExtensions,
                                         const char **missingExtensionName) {
     Uint8 supportsAll = 1;
-    for (Uint32 extensionIdx = 0; extensionIdx < renderer->additionalDeviceExtensionCount; extensionIdx++) {
+    for (Uint32 extensionIdx = 0; extensionIdx < features->additionalDeviceExtensionCount; extensionIdx++) {
         bool found = false;
         for (Uint32 searchIdx = 0; searchIdx < numExtensions; searchIdx++) {
-            if (SDL_strcmp(renderer->additionalDeviceExtensionNames[extensionIdx], availableExtensions[searchIdx].extensionName) == 0) {
+            if (SDL_strcmp(features->additionalDeviceExtensionNames[extensionIdx], availableExtensions[searchIdx].extensionName) == 0) {
                 found = true;
                 break;
             }
         }
         if (!found) {
             supportsAll = 0;
-            *missingExtensionName = renderer->additionalDeviceExtensionNames[extensionIdx];
+            *missingExtensionName = features->additionalDeviceExtensionNames[extensionIdx];
             break;
         }
     }
@@ -11154,6 +11160,7 @@ static Uint8 CheckOptInDeviceExtensions(VulkanRenderer *renderer,
 
 static Uint8 VULKAN_INTERNAL_CheckDeviceExtensions(
     VulkanRenderer *renderer,
+    VulkanFeatures *features,
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions)
 {
@@ -11179,9 +11186,9 @@ static Uint8 VULKAN_INTERNAL_CheckDeviceExtensions(
         extensionCount,
         physicalDeviceExtensions);
 
-    if (renderer->usesCustomVulkanOptions) {
+    if (features->usesCustomVulkanOptions) {
         const char *missingExtensionName;
-        if (!CheckOptInDeviceExtensions(renderer, physicalDevice, extensionCount, availableExtensions, &missingExtensionName)) {
+        if (!CheckOptInDeviceExtensions(features, extensionCount, availableExtensions, &missingExtensionName)) {
             SDL_assert(missingExtensionName);
             if (renderer->debugMode) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU,
@@ -11416,14 +11423,14 @@ static bool VULKAN_INTERNAL_ValidateOptInVulkan13Features(VkPhysicalDeviceVulkan
 
 #undef CHECK_OPTIONAL_DEVICE_FEATURE
 
-static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures *vk10Features)
+static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VulkanFeatures *features, VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures *vk10Features)
 {
     bool supportsAllFeatures = true;
 
-    int minorVersion = VK_API_VERSION_MINOR(renderer->desiredApiVersion);
+    int minorVersion = VK_API_VERSION_MINOR(features->desiredApiVersion);
 
     if (minorVersion < 1) {
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&features->desiredVulkan10DeviceFeatures, vk10Features);
     } else if (minorVersion < 2) {
         // Query device features using the pre-1.2 structures
         VkPhysicalDevice16BitStorageFeatures storage = { 0 };
@@ -11472,8 +11479,8 @@ static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VkPh
         vk11Features.variablePointersStorageBuffer = varPointers.variablePointersStorageBuffer;
 
         // Check support
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&features->desiredVulkan10DeviceFeatures, vk10Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&features->desiredVulkan11DeviceFeatures, &vk11Features);
     } else {
         VkPhysicalDeviceVulkan11Features vk11Features = { 0 };
         vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -11492,10 +11499,10 @@ static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VkPh
 
         renderer->vkGetPhysicalDeviceFeatures2(physicalDevice, &supportedFeatureList);
 
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan12Features(&renderer->desiredVulkan12DeviceFeatures, &vk12Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan13Features(&renderer->desiredVulkan13DeviceFeatures, &vk13Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&features->desiredVulkan10DeviceFeatures, vk10Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&features->desiredVulkan11DeviceFeatures, &vk11Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan12Features(&features->desiredVulkan12DeviceFeatures, &vk12Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan13Features(&features->desiredVulkan13DeviceFeatures, &vk13Features);
     }
 
     return supportsAllFeatures;
@@ -11629,35 +11636,35 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
     return hasAdded;
 }
 
-static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer)
+static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer, VulkanFeatures *features)
 {
     if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER)) {
         SDL_GPUVulkanOptions *options = (SDL_GPUVulkanOptions *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER, NULL);
         if (options) {
-            renderer->usesCustomVulkanOptions = true;
-            renderer->desiredApiVersion = options->vulkan_api_version;
+            features->usesCustomVulkanOptions = true;
+            features->desiredApiVersion = options->vulkan_api_version;
 
-            SDL_memset(&renderer->desiredVulkan11DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan11Features));
-            SDL_memset(&renderer->desiredVulkan12DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan12Features));
-            SDL_memset(&renderer->desiredVulkan13DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan13Features));
-            renderer->desiredVulkan11DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-            renderer->desiredVulkan12DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-            renderer->desiredVulkan13DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+            SDL_memset(&features->desiredVulkan11DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan11Features));
+            SDL_memset(&features->desiredVulkan12DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan12Features));
+            SDL_memset(&features->desiredVulkan13DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan13Features));
+            features->desiredVulkan11DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+            features->desiredVulkan12DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+            features->desiredVulkan13DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 
             // Handle requested device features
-            VkPhysicalDeviceFeatures *vk10Features = &renderer->desiredVulkan10DeviceFeatures;
-            VkPhysicalDeviceVulkan11Features *vk11Features = &renderer->desiredVulkan11DeviceFeatures;
-            VkPhysicalDeviceVulkan12Features *vk12Features = &renderer->desiredVulkan12DeviceFeatures;
-            VkPhysicalDeviceVulkan13Features *vk13Features = &renderer->desiredVulkan13DeviceFeatures;
+            VkPhysicalDeviceFeatures *vk10Features = &features->desiredVulkan10DeviceFeatures;
+            VkPhysicalDeviceVulkan11Features *vk11Features = &features->desiredVulkan11DeviceFeatures;
+            VkPhysicalDeviceVulkan12Features *vk12Features = &features->desiredVulkan12DeviceFeatures;
+            VkPhysicalDeviceVulkan13Features *vk13Features = &features->desiredVulkan13DeviceFeatures;
 
             if (options->vulkan_10_physical_device_features) {
-                VkPhysicalDeviceFeatures *features = (VkPhysicalDeviceFeatures *)options->vulkan_10_physical_device_features;
+                VkPhysicalDeviceFeatures *deviceFeatures = (VkPhysicalDeviceFeatures *)options->vulkan_10_physical_device_features;
                 VULKAN_INTERNAL_AddDeviceFeatures(&vk10Features->robustBufferAccess,
                                                   &vk10Features->inheritedQueries,
-                                                  &features->robustBufferAccess);
+                                                  &deviceFeatures->robustBufferAccess);
             }
 
-            int minorVersion = VK_API_VERSION_MINOR(renderer->desiredApiVersion);
+            int minorVersion = VK_API_VERSION_MINOR(features->desiredApiVersion);
             bool supportsHigherLevelFeatures = minorVersion > 0;
             if (supportsHigherLevelFeatures && options->feature_list) {
                 if (minorVersion < 2) {
@@ -11675,17 +11682,17 @@ static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                                                                                 vk11Features,
                                                                                 vk12Features,
                                                                                 vk13Features,
-                                                                                renderer->desiredApiVersion,
+                                                                                features->desiredApiVersion,
                                                                                 nextStructure);
                         nextStructure = nextStructure->pNext;
                     }
                 }
             }
 
-            renderer->additionalDeviceExtensionCount = options->device_extension_count;
-            renderer->additionalDeviceExtensionNames = options->device_extension_names;
-            renderer->additionalInstanceExtensionCount = options->instance_extension_count;
-            renderer->additionalInstanceExtensionNames = options->instance_extension_names;
+            features->additionalDeviceExtensionCount = options->device_extension_count;
+            features->additionalDeviceExtensionNames = options->device_extension_names;
+            features->additionalInstanceExtensionCount = options->instance_extension_count;
+            features->additionalInstanceExtensionNames = options->instance_extension_names;
         } else if (renderer->debugMode) {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
                         "VULKAN_INTERNAL_AddOptInVulkanOptions: Additional options property was set, but value was null. This may be a bug.");
@@ -11693,7 +11700,7 @@ static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
     }
 }
 
-static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
+static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeatures *features)
 {
     VkResult vulkanResult;
     VkApplicationInfo appInfo;
@@ -11710,8 +11717,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     appInfo.applicationVersion = 0;
     appInfo.pEngineName = "SDLGPU";
     appInfo.engineVersion = SDL_VERSION;
-    appInfo.apiVersion = renderer->usesCustomVulkanOptions
-                             ? renderer->desiredApiVersion
+    appInfo.apiVersion = features->usesCustomVulkanOptions
+                             ? features->desiredApiVersion
                              : VK_MAKE_VERSION(1, 0, 0);
 
     createFlags = 0;
@@ -11726,8 +11733,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         return 0;
     }
 
-    Uint32 extraInstanceExtensionCount = renderer->additionalInstanceExtensionCount;
-    const char** extraInstanceExtensionNames = renderer->additionalInstanceExtensionNames;
+    Uint32 extraInstanceExtensionCount = features->additionalInstanceExtensionCount;
+    const char** extraInstanceExtensionNames = features->additionalInstanceExtensionNames;
 
     /* Extra space for the following extensions:
      * VK_KHR_get_physical_device_properties2
@@ -11940,6 +11947,7 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
 
 static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VulkanRenderer *renderer,
+    VulkanFeatures *features,
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
     Uint32 *queueFamilyIndex)
@@ -11954,19 +11962,19 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         physicalDevice,
         &deviceFeatures);
 
-    if ((!deviceFeatures.independentBlend && renderer->desiredVulkan10DeviceFeatures.independentBlend) ||
-        (!deviceFeatures.imageCubeArray && renderer->desiredVulkan10DeviceFeatures.imageCubeArray) ||
-        (!deviceFeatures.depthClamp && renderer->desiredVulkan10DeviceFeatures.depthClamp) ||
-        (!deviceFeatures.shaderClipDistance && renderer->desiredVulkan10DeviceFeatures.shaderClipDistance) ||
-        (!deviceFeatures.drawIndirectFirstInstance && renderer->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance) ||
-        (!deviceFeatures.sampleRateShading && renderer->desiredVulkan10DeviceFeatures.sampleRateShading) ||
-        (!deviceFeatures.samplerAnisotropy && renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy)) {
+    if ((!deviceFeatures.independentBlend && features->desiredVulkan10DeviceFeatures.independentBlend) ||
+        (!deviceFeatures.imageCubeArray && features->desiredVulkan10DeviceFeatures.imageCubeArray) ||
+        (!deviceFeatures.depthClamp && features->desiredVulkan10DeviceFeatures.depthClamp) ||
+        (!deviceFeatures.shaderClipDistance && features->desiredVulkan10DeviceFeatures.shaderClipDistance) ||
+        (!deviceFeatures.drawIndirectFirstInstance && features->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance) ||
+        (!deviceFeatures.sampleRateShading && features->desiredVulkan10DeviceFeatures.sampleRateShading) ||
+        (!deviceFeatures.samplerAnisotropy && features->desiredVulkan10DeviceFeatures.samplerAnisotropy)) {
         return 0;
     }
 
     // Check opt-in device features
-    if (renderer->usesCustomVulkanOptions) {
-        bool supportsAllFeatures = VULKAN_INTERNAL_ValidateOptInFeatures(renderer, physicalDevice, &deviceFeatures);
+    if (features->usesCustomVulkanOptions) {
+        bool supportsAllFeatures = VULKAN_INTERNAL_ValidateOptInFeatures(renderer, features, physicalDevice, &deviceFeatures);
         if (!supportsAllFeatures) {
             return 0;
         }
@@ -11974,6 +11982,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
 
     if (!VULKAN_INTERNAL_CheckDeviceExtensions(
             renderer,
+            features,
             physicalDevice,
             physicalDeviceExtensions)) {
         return 0;
@@ -12057,7 +12066,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     return 1;
 }
 
-static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
+static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, VulkanFeatures *features)
 {
     VkResult vulkanResult;
     VkPhysicalDevice *physicalDevices;
@@ -12116,6 +12125,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
 
         if (!VULKAN_INTERNAL_IsDeviceSuitable(
                 renderer,
+                features,
                 physicalDevices[i],
                 &physicalDeviceExtensions[i],
                 &queueFamilyIndex)) {
@@ -12180,7 +12190,8 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
 }
 
 static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
-    VulkanRenderer *renderer)
+    VulkanRenderer *renderer,
+    VulkanFeatures *features)
 {
     VkResult vulkanResult;
     VkDeviceCreateInfo deviceCreateInfo;
@@ -12208,12 +12219,12 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     // specifying used device features
 
     if (haveDeviceFeatures.fillModeNonSolid) {
-        renderer->desiredVulkan10DeviceFeatures.fillModeNonSolid = VK_TRUE;
+        features->desiredVulkan10DeviceFeatures.fillModeNonSolid = VK_TRUE;
         renderer->supportsFillModeNonSolid = true;
     }
 
     if (haveDeviceFeatures.multiDrawIndirect) {
-        renderer->desiredVulkan10DeviceFeatures.multiDrawIndirect = VK_TRUE;
+        features->desiredVulkan10DeviceFeatures.multiDrawIndirect = VK_TRUE;
         renderer->supportsMultiDrawIndirect = true;
     }
 
@@ -12256,17 +12267,17 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
     VkPhysicalDeviceFeatures2 featureList;
-    if (renderer->usesCustomVulkanOptions) {
+    if (features->usesCustomVulkanOptions) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        featureList.features = renderer->desiredVulkan10DeviceFeatures;
-        featureList.pNext = &renderer->desiredVulkan11DeviceFeatures;
-        renderer->desiredVulkan11DeviceFeatures.pNext = &renderer->desiredVulkan12DeviceFeatures;
-        renderer->desiredVulkan12DeviceFeatures.pNext = &renderer->desiredVulkan13DeviceFeatures;
-        renderer->desiredVulkan13DeviceFeatures.pNext = (void *)deviceCreateInfo.pNext;
+        featureList.features = features->desiredVulkan10DeviceFeatures;
+        featureList.pNext = &features->desiredVulkan11DeviceFeatures;
+        features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
+        features->desiredVulkan12DeviceFeatures.pNext = &features->desiredVulkan13DeviceFeatures;
+        features->desiredVulkan13DeviceFeatures.pNext = (void *)deviceCreateInfo.pNext;
         deviceCreateInfo.pEnabledFeatures = NULL;
         deviceCreateInfo.pNext = &featureList;
     } else {
-        deviceCreateInfo.pEnabledFeatures = &renderer->desiredVulkan10DeviceFeatures;
+        deviceCreateInfo.pEnabledFeatures = &features->desiredVulkan10DeviceFeatures;
     }
 
     vulkanResult = renderer->vkCreateDevice(
@@ -12333,27 +12344,30 @@ static void VULKAN_INTERNAL_LoadEntryPoints(void)
 
 static bool VULKAN_INTERNAL_PrepareVulkan(
     VulkanRenderer *renderer,
+    VulkanFeatures *features,
     SDL_PropertiesID props)
 {
     VULKAN_INTERNAL_LoadEntryPoints();
 
+    SDL_zerop(features);
+
     // Opt out device features (higher compatibility in exchange for reduced functionality)
-    renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredVulkan10DeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    features->desiredVulkan10DeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    features->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    features->desiredVulkan10DeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    features->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
     // These features have near universal support so they are always enabled
-    renderer->desiredVulkan10DeviceFeatures.independentBlend = VK_TRUE;
-    renderer->desiredVulkan10DeviceFeatures.sampleRateShading = VK_TRUE;
-    renderer->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
+    features->desiredVulkan10DeviceFeatures.independentBlend = VK_TRUE;
+    features->desiredVulkan10DeviceFeatures.sampleRateShading = VK_TRUE;
+    features->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
 
     // Handle opt-in device features
-    VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
+    VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer, features);
 
     renderer->requireHardwareAcceleration = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN, false);
 
-    if (!VULKAN_INTERNAL_CreateInstance(renderer)) {
+    if (!VULKAN_INTERNAL_CreateInstance(renderer, features)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Vulkan: Could not create Vulkan instance");
         return false;
     }
@@ -12362,7 +12376,7 @@ static bool VULKAN_INTERNAL_PrepareVulkan(
     renderer->func = (PFN_##func)vkGetInstanceProcAddr(renderer->instance, #func);
 #include "SDL_gpu_vulkan_vkfuncs.h"
 
-    if (!VULKAN_INTERNAL_DeterminePhysicalDevice(renderer)) {
+    if (!VULKAN_INTERNAL_DeterminePhysicalDevice(renderer, features)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Vulkan: Failed to determine a suitable physical device");
         return false;
     }
@@ -12373,6 +12387,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 {
     // Set up dummy VulkanRenderer
     VulkanRenderer *renderer;
+    VulkanFeatures features;
     bool result = false;
 
     if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, false)) {
@@ -12394,7 +12409,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
         renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
 
-        result = VULKAN_INTERNAL_PrepareVulkan(renderer, props);
+        result = VULKAN_INTERNAL_PrepareVulkan(renderer, &features, props);
         if (result) {
             renderer->vkDestroyInstance(renderer->instance, NULL);
         }
@@ -12409,6 +12424,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     VulkanRenderer *renderer;
+    VulkanFeatures features;
 
     SDL_GPUDevice *result;
     Uint32 i;
@@ -12433,18 +12449,12 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->preferLowPower = preferLowPower;
     renderer->allowedFramesInFlight = 2;
 
-    if (!VULKAN_INTERNAL_PrepareVulkan(renderer, props)) {
+    if (!VULKAN_INTERNAL_PrepareVulkan(renderer, &features, props)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
         return NULL;
     }
-
-    // Make sure we don't hold onto potentially unsafe pointers after initialization
-    renderer->additionalDeviceExtensionCount = 0;
-    renderer->additionalInstanceExtensionCount = 0;
-    renderer->additionalDeviceExtensionNames = NULL;
-    renderer->additionalInstanceExtensionNames = NULL;
 
     renderer->props = SDL_CreateProperties();
     if (verboseLogs) {
@@ -12546,8 +12556,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         }
     }
 
-    if (!VULKAN_INTERNAL_CreateLogicalDevice(
-            renderer)) {
+    if (!VULKAN_INTERNAL_CreateLogicalDevice(renderer, &features)) {
         SET_STRING_ERROR("Failed to create logical device!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
