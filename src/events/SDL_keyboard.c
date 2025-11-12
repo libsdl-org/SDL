@@ -570,10 +570,8 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
         // Update internal keyboard state
         if (down) {
             keyboard->keystate[scancode] = true;
-        } else {
-            if (keyboard->keyrefcount[scancode] == 0) {
-                keyboard->keystate[scancode] = false;
-            }
+        } else if (last_release) {
+            keyboard->keystate[scancode] = false;
         }
 
         keycode = SDL_GetKeyFromScancode(scancode, keyboard->modstate, true);
