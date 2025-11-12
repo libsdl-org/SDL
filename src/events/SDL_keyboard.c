@@ -560,7 +560,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
             if (keyboard->keyrefcount[scancode] == 0) {
                 return false;
             }
-            keyboard->keyrefcount[scancode]--;
+            --keyboard->keyrefcount[scancode];
             if (keyboard->keyrefcount[scancode] == 0) {
                 keyboard->keysource[scancode] = 0;
                 last_release = true;
