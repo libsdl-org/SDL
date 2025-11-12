@@ -8476,10 +8476,9 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     SDL_COMPILE_TIME_ASSERT(featurelevel, D3D_FEATURE_LEVEL_CHOICE < D3D_FEATURE_LEVEL_11_1);
 
-    /* FIXME: If Windows 11 is running and the app has neither DXIL nor TIER2
+    /* If Windows 11 is running and the app has neither DXIL nor TIER2
      * requirements, we can skip doing any device checks entirely
      */
-#if 0
     if (!needs_64UAVs && !has_dxil && WIN_IsWindows11OrGreater()) {
         IDXGIAdapter1_Release(adapter);
         IDXGIFactory1_Release(factory);
@@ -8489,7 +8488,6 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
         return true;
     }
-#endif
 
     res = pD3D12CreateDevice(
         (IUnknown *)adapter,
