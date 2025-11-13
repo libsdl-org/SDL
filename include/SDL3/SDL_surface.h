@@ -519,8 +519,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_DestroySurface
- * \sa SDL_LoadBMP
- * \sa SDL_SaveBMP_IO
+ * \sa SDL_LoadSurface
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio);
 
@@ -530,7 +529,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, 
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
  *
- * \param file the BMP file to load.
+ * \param file the file to load.
  * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -539,8 +538,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, 
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_DestroySurface
- * \sa SDL_LoadBMP_IO
- * \sa SDL_SaveBMP
+ * \sa SDL_LoadSurface_IO
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface(const char *file);
 

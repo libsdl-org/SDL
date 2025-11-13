@@ -177,7 +177,7 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
-bool SDL_IsBMP(SDL_IOStream* src)
+bool SDL_IsBMP(SDL_IOStream *src)
 {
     Sint64 start;
     Uint8 magic[2];

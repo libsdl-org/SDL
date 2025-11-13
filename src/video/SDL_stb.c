@@ -328,7 +328,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
 }
 #endif // SDL_HAVE_STB
 
-bool SDL_IsPNG(SDL_IOStream* src)
+bool SDL_IsPNG(SDL_IOStream *src)
 {
     Sint64 start;
     Uint8 magic[4];
