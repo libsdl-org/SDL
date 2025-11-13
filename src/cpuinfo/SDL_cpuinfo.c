@@ -76,7 +76,7 @@
 #include <sys/param.h>
 #endif
 
-#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO) || defined(SDL_PLATFORM_ANDROID)
 #include <sys/auxv.h>
 #endif
 
@@ -488,7 +488,7 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_GETAUXVAL)
+#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
