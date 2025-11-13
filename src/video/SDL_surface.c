@@ -3083,3 +3083,28 @@ void SDL_DestroySurface(SDL_Surface *surface)
         SDL_free(surface);
     }
 }
+
+SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
+{
+    if (SDL_IsBMP(src)) {
+        return SDL_LoadBMP_IO(src, closeio);
+    } else if (SDL_IsPNG(src)) {
+        return SDL_LoadPNG_IO(src, closeio);
+    } else {
+        if (closeio) {
+            SDL_CloseIO(src);
+        }
+        SDL_SetError("Unsupported image format");
+        return NULL;
+    }
+}
+
+SDL_Surface *SDL_LoadSurface(const char *file)
+{
+    SDL_IOStream *stream = SDL_IOFromFile(file, "rb");
+    if (!stream) {
+        return NULL;
+    }
+
+    return SDL_LoadSurface_IO(stream, true);
+}

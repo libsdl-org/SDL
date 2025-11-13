@@ -84,7 +84,7 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transpar
         file = path;
     }
 
-    temp = SDL_strstr(file, ".png") ? SDL_LoadPNG(file) : SDL_LoadBMP(file);
+    temp = SDL_LoadSurface(file);
     if (!temp) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
     } else {
