@@ -1298,7 +1298,11 @@ void SDL_PlaybackAudioThreadShutdown(SDL_AudioDevice *device)
     const int frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
     // Wait for the audio to drain if device didn't die.
     if (!SDL_GetAtomicInt(&device->zombie)) {
-        SDL_Delay(((frames * 1000) / device->spec.freq) * 2);
+        int delay = ((frames * 1000) / device->spec.freq) * 2;
+        if (delay > 100) {
+            delay = 100;
+        }
+        SDL_Delay(delay);
     }
     current_audio.impl.ThreadDeinit(device);
     SDL_AudioThreadFinalize(device);

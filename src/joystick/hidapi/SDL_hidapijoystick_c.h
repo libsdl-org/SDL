@@ -43,6 +43,7 @@
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
 #define SDL_JOYSTICK_HIDAPI_STEAM_HORI
+#define SDL_JOYSTICK_HIDAPI_STEAM_TRITON
 #define SDL_JOYSTICK_HIDAPI_LG4FF
 #define SDL_JOYSTICK_HIDAPI_8BITDO
 #define SDL_JOYSTICK_HIDAPI_FLYDIGI
@@ -168,6 +169,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;

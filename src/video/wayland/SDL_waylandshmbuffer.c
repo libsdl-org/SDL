@@ -114,58 +114,6 @@ static struct wl_buffer_listener buffer_listener = {
     buffer_handle_release
 };
 
-bool Wayland_AllocSHMBuffer(int width, int height, Wayland_SHMBuffer *shmBuffer)
-{
-    SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *data = vd->internal;
-    const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
-
-    if (!shmBuffer) {
-        return SDL_InvalidParamError("shmBuffer");
-    }
-
-    const int stride = width * 4;
-    shmBuffer->shm_data_size = stride * height;
-
-    const int shm_fd = CreateTempFD(shmBuffer->shm_data_size);
-    if (shm_fd < 0) {
-        return SDL_SetError("Creating SHM buffer failed.");
-    }
-
-    shmBuffer->shm_data = mmap(NULL, shmBuffer->shm_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (shmBuffer->shm_data == MAP_FAILED) {
-        shmBuffer->shm_data = NULL;
-        close(shm_fd);
-        return SDL_SetError("mmap() failed.");
-    }
-
-    SDL_assert(shmBuffer->shm_data != NULL);
-
-    struct wl_shm_pool *shm_pool = wl_shm_create_pool(data->shm, shm_fd, shmBuffer->shm_data_size);
-    shmBuffer->wl_buffer = wl_shm_pool_create_buffer(shm_pool, 0, width, height, stride, SHM_FMT);
-    wl_buffer_add_listener(shmBuffer->wl_buffer, &buffer_listener, shmBuffer);
-
-    wl_shm_pool_destroy(shm_pool);
-    close(shm_fd);
-
-    return true;
-}
-
-void Wayland_ReleaseSHMBuffer(Wayland_SHMBuffer *shmBuffer)
-{
-    if (shmBuffer) {
-        if (shmBuffer->wl_buffer) {
-            wl_buffer_destroy(shmBuffer->wl_buffer);
-            shmBuffer->wl_buffer = NULL;
-        }
-        if (shmBuffer->shm_data) {
-            munmap(shmBuffer->shm_data, shmBuffer->shm_data_size);
-            shmBuffer->shm_data = NULL;
-        }
-        shmBuffer->shm_data_size = 0;
-    }
-}
-
 struct Wayland_SHMPool
 {
     struct wl_shm_pool *shm_pool;

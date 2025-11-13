@@ -612,6 +612,19 @@ static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const Emscripte
     SDL_WindowData *window_data = (SDL_WindowData *) userData;
     SDL_SendDisplayEvent(SDL_GetVideoDisplayForWindow(window_data->window), SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
 
+    // fake a UI event so we can tell the app the canvas might have resized.
+    EmscriptenUiEvent uiEvent;
+    SDL_zero(uiEvent);
+    uiEvent.documentBodyClientWidth = MAIN_THREAD_EM_ASM_INT( { return document.body.clientWidth; } );
+    uiEvent.documentBodyClientHeight = MAIN_THREAD_EM_ASM_INT( { return document.body.clientHeight; } );
+    uiEvent.windowInnerWidth = MAIN_THREAD_EM_ASM_INT( { return window.innerWidth; } );
+    uiEvent.windowInnerHeight = MAIN_THREAD_EM_ASM_INT( { return window.innerHeight; } );
+    uiEvent.windowOuterWidth = MAIN_THREAD_EM_ASM_INT( { return window.outerWidth; } );
+    uiEvent.windowOuterHeight = MAIN_THREAD_EM_ASM_INT( { return window.outerHeight; } );
+    uiEvent.scrollTop = MAIN_THREAD_EM_ASM_INT( { return window.pageXOffset; } );
+    uiEvent.scrollLeft = MAIN_THREAD_EM_ASM_INT( { return window.pageYOffset; } );
+    Emscripten_HandleResize(EMSCRIPTEN_EVENT_RESIZE, &uiEvent, userData);
+
     return 0;
 }
 
@@ -842,7 +855,7 @@ static void Emscripten_HandlePenEnter(SDL_WindowData *window_data, const Emscrip
     peninfo.max_tilt = 90.0f;
     peninfo.num_buttons = 2;
     peninfo.subtype = SDL_PEN_TYPE_PEN;
-    SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) event->pointerid);
+    SDL_AddPenDevice(0, NULL, window_data->window, &peninfo, (void *) (size_t) event->pointerid);
     Emscripten_UpdatePenFromEvent(window_data, event);
 }
 
@@ -865,7 +878,7 @@ static void Emscripten_HandlePenLeave(SDL_WindowData *window_data, const Emscrip
     const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
     if (pen) {
         Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
-        SDL_RemovePenDevice(0, pen);
+        SDL_RemovePenDevice(0, window_data->window, pen);
     }
 }
 

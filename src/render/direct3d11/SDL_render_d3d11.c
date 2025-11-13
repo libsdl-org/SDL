@@ -2230,7 +2230,7 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->HDR_headroom > output_headroom && output_headroom > 0.0f) {
             constants->tonemap_method = TONEMAP_CHROME;
             constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
@@ -2623,26 +2623,60 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             break;
         }
 
-        case SDL_RENDERCMD_DRAW_POINTS:
-        {
-            const size_t count = cmd->data.draw.count;
-            const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(D3D11_VertexPositionColor);
-            D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, 0, NULL, NULL);
-            D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
-            break;
-        }
-
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            const size_t count = cmd->data.draw.count;
+            size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D11_VertexPositionColor);
             const D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)(((Uint8 *)vertices) + first);
+
             D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, 0, NULL, NULL);
-            D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
-            if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
-                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start + (count - 1), 1);
+
+            // Add the final point in the line
+            size_t line_start = 0;
+            size_t line_end = line_start + count - 1;
+            if (verts[line_start].pos.x != verts[line_end].pos.x || verts[line_start].pos.y != verts[line_end].pos.y) {
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start + line_end, 1);
+            }
+
+            if (count > 2) {
+                // joined lines cannot be grouped
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
+            } else {
+                // let's group non joined lines
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd;
+                float thiscolorscale = cmd->data.draw.color_scale;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                        if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                            // The vertex data has the draw color built in, ignore this
+                            continue;
+                        }
+                        break; // can't go any further on this draw call, different render command up next.
+                    } else if (nextcmd->data.draw.count != 2) {
+                        break; // can't go any further on this draw call, those are joined lines
+                    } else if (nextcmd->data.draw.blend != thisblend ||
+                               nextcmd->data.draw.color_scale != thiscolorscale) {
+                        break; // can't go any further on this draw call, different blendmode copy up next.
+                    } else {
+                        finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+
+                        // Add the final point in the line
+                        line_start = count;
+                        line_end = line_start + nextcmd->data.draw.count - 1;
+                        if (verts[line_start].pos.x != verts[line_end].pos.x || verts[line_start].pos.y != verts[line_end].pos.y) {
+                            D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start + line_end, 1);
+                        }
+                        count += nextcmd->data.draw.count;
+                    }
+                }
+
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINELIST, start, count);
+                cmd = finalcmd; // skip any copy commands we just combined in here.
             }
             break;
         }
@@ -2656,20 +2690,56 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         case SDL_RENDERCMD_COPY_EX: // unused
             break;
 
+        case SDL_RENDERCMD_DRAW_POINTS:
         case SDL_RENDERCMD_GEOMETRY:
         {
-            SDL_Texture *texture = cmd->data.draw.texture;
-            const size_t count = cmd->data.draw.count;
+            /* as long as we have the same copy command in a row, with the
+               same texture, we can combine them all into a single draw call. */
+            float thiscolorscale = cmd->data.draw.color_scale;
+            SDL_Texture *thistexture = cmd->data.draw.texture;
+            SDL_BlendMode thisblend = cmd->data.draw.blend;
+            SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
+            SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
+            SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
+            const SDL_RenderCommandType thiscmdtype = cmd->command;
+            SDL_RenderCommand *finalcmd = cmd;
+            SDL_RenderCommand *nextcmd;
+            size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D11_VertexPositionColor);
+            for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                if (nextcmdtype != thiscmdtype) {
+                    if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                        // The vertex data has the draw color built in, ignore this
+                        continue;
+                    }
+                    break; // can't go any further on this draw call, different render command up next.
+                } else if (nextcmd->data.draw.texture != thistexture ||
+                           nextcmd->data.draw.texture_scale_mode != thisscalemode ||
+                           nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
+                           nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
+                           nextcmd->data.draw.blend != thisblend ||
+                           nextcmd->data.draw.color_scale != thiscolorscale) {
+                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
+                } else {
+                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                    count += nextcmd->data.draw.count;
+                }
+            }
 
-            if (texture) {
+            if (thistexture) {
                 D3D11_SetCopyState(renderer, cmd, NULL);
             } else {
                 D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, 0, NULL, NULL);
             }
 
-            D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
+            if (thiscmdtype == SDL_RENDERCMD_GEOMETRY) {
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);
+            } else {
+                D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
+            }
+            cmd = finalcmd; // skip any copy commands we just combined in here.
             break;
         }
 

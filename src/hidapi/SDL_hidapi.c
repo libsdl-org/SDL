@@ -1340,7 +1340,7 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
 
         if (use_libusb_whitelist) {
-            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
+            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs, LIBUSB_hid_free_enumeration);
         }
     }
 #endif // HAVE_LIBUSB

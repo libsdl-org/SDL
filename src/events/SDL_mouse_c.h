@@ -225,7 +225,7 @@ extern void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, b
 // Relative mouse mode
 extern bool SDL_SetRelativeMouseMode(bool enabled);
 extern bool SDL_GetRelativeMouseMode(void);
-extern void SDL_UpdateRelativeMouseMode(void);
+extern bool SDL_UpdateRelativeMouseMode(void);
 extern void SDL_DisableMouseWarpEmulation(void);
 
 // TODO RECONNECT: Set mouse state to "zero"

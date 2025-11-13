@@ -139,7 +139,7 @@ static bool VITACAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec
     info->format = SCE_CAMERA_FORMAT_YUV420_PLANE;
     info->pitch = 0; // same size surface
 
-    info->sizeIBase =  spec->width * spec->height;;
+    info->sizeIBase =  spec->width * spec->height;
     info->sizeUBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
     info->sizeVBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
 

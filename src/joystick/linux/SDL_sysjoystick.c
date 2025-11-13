@@ -1608,6 +1608,10 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         item_sensor->hwdata = joystick->hwdata;
     }
 
+#ifdef SDL_USE_LIBUDEV
+    joystick->serial = SDL_UDEV_GetProductSerial(item->path);
+#endif
+
     // mark joystick as fresh and ready
     joystick->hwdata->fresh = true;
 

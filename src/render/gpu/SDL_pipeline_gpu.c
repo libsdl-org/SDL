@@ -96,16 +96,12 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     SDL_GPUVertexAttribute attribs[4];
     SDL_zero(attribs);
 
-    bool have_attr_color = false;
     bool have_attr_uv = false;
 
     switch (params->vert_shader) {
     case VERT_SHADER_TRI_TEXTURE:
         have_attr_uv = true;
-        SDL_FALLTHROUGH;
-    case VERT_SHADER_TRI_COLOR:
-        have_attr_color = true;
-        SDL_FALLTHROUGH;
+        break;
     default:
         break;
     }
@@ -117,14 +113,12 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     vertex_buffer_desc.pitch += 2 * sizeof(float);
     num_attribs++;
 
-    if (have_attr_color) {
-        // Color
-        attribs[num_attribs].location = num_attribs;
-        attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
-        attribs[num_attribs].offset = vertex_buffer_desc.pitch;
-        vertex_buffer_desc.pitch += 4 * sizeof(float);
-        num_attribs++;
-    }
+    // Color
+    attribs[num_attribs].location = num_attribs;
+    attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+    attribs[num_attribs].offset = vertex_buffer_desc.pitch;
+    vertex_buffer_desc.pitch += 4 * sizeof(float);
+    num_attribs++;
 
     if (have_attr_uv) {
         // UVs

@@ -70,6 +70,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
     &SDL_HIDAPI_DriverSteamDeck,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
+    &SDL_HIDAPI_DriverSteamTriton,
+#endif 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
     &SDL_HIDAPI_DriverNintendoClassic,
     &SDL_HIDAPI_DriverJoyCons,
@@ -1305,6 +1308,16 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
      */
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        // The HIDAPI functionality will be available when the FlyDigi Space Station app has
+        // enabled third party controller mapping, so the driver needs to be active to watch
+        // for that change. Since this is dynamic and we don't have a way to re-trigger device
+        // changes when that happens, we'll pretend the driver isn't available so the XInput
+        // interface will always show up (but won't have any input when the controller is in
+        // enhanced mode)
+        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+            continue;
+        }
+
         if (device->driver &&
             HIDAPI_IsEquivalentToDevice(vendor_id, product_id, device)) {
             result = true;

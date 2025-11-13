@@ -3159,6 +3159,7 @@ static bool VULKAN_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cm
 {
     VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)SDL_AllocateRenderVertices(renderer, count * sizeof(VULKAN_VertexPositionColor), 0, &cmd->data.draw.first);
     int i;
+    SDL_FColor color = cmd->data.draw.color;
     bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     if (!verts) {
@@ -3166,15 +3167,17 @@ static bool VULKAN_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cm
     }
 
     cmd->data.draw.count = count;
+
+    if (convert_color) {
+        SDL_ConvertToLinear(&color);
+    }
+
     for (i = 0; i < count; i++) {
         verts->pos[0] = points[i].x + 0.5f;
         verts->pos[1] = points[i].y + 0.5f;
         verts->tex[0] = 0.0f;
         verts->tex[1] = 0.0f;
-        verts->color = cmd->data.draw.color;
-        if (convert_color) {
-            SDL_ConvertToLinear(&verts->color);
-        }
+        verts->color = color;
         verts++;
     }
     return true;
@@ -3469,7 +3472,7 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
             output_headroom = renderer->HDR_headroom;
         }
 
-        if (texture->HDR_headroom > output_headroom) {
+        if (texture->HDR_headroom > output_headroom && output_headroom > 0.0f) {
             constants->tonemap_method = TONEMAP_CHROME;
             constants->tonemap_factor1 = (output_headroom / (texture->HDR_headroom * texture->HDR_headroom));
             constants->tonemap_factor2 = (1.0f / output_headroom);
@@ -4068,27 +4071,68 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
             break;
         }
 
-        case SDL_RENDERCMD_DRAW_POINTS:
-        {
-            const size_t count = cmd->data.draw.count;
-            const size_t first = cmd->data.draw.first;
-            const size_t start = first / sizeof(VULKAN_VertexPositionColor);
-            VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
-            VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start, count);
-            break;
-        }
-
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            const size_t count = cmd->data.draw.count;
+            size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(VULKAN_VertexPositionColor);
             const VULKAN_VertexPositionColor *verts = (VULKAN_VertexPositionColor *)(((Uint8 *)vertices) + first);
-            VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, 0, NULL, 0, NULL, NULL, &stateCache);
-            VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, start, count);
-            if (verts[0].pos[0] != verts[count - 1].pos[0] || verts[0].pos[1] != verts[count - 1].pos[1]) {
+            bool have_point_draw_state = false;
+
+            // Add the final point in the line
+            size_t line_start = 0;
+            size_t line_end = line_start + count - 1;
+            if (verts[line_start].pos[0] != verts[line_end].pos[0] || verts[line_start].pos[1] != verts[line_end].pos[1]) {
                 VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
-                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start + (count - 1), 1);
+                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start + line_end, 1);
+                have_point_draw_state = true;
+            }
+
+            if (count > 2) {
+                // joined lines cannot be grouped
+                VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, 0, NULL, 0, NULL, NULL, &stateCache);
+                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, start, count);
+            } else {
+                // let's group non joined lines
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd;
+                float thiscolorscale = cmd->data.draw.color_scale;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                        if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                            // The vertex data has the draw color built in, ignore this
+                            continue;
+                        }
+                        break; // can't go any further on this draw call, different render command up next.
+                    } else if (nextcmd->data.draw.count != 2) {
+                        break; // can't go any further on this draw call, those are joined lines
+                    } else if (nextcmd->data.draw.blend != thisblend ||
+                               nextcmd->data.draw.color_scale != thiscolorscale) {
+                        break; // can't go any further on this draw call, different blendmode copy up next.
+                    } else {
+                        finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+
+                        // Add the final point in the line
+                        line_start = count;
+                        line_end = line_start + nextcmd->data.draw.count - 1;
+                        if (verts[line_start].pos[0] != verts[line_end].pos[0] || verts[line_start].pos[1] != verts[line_end].pos[1]) {
+                            if (!have_point_draw_state) {
+                                VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
+                                have_point_draw_state = true;
+                            }
+                            VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start + line_end, 1);
+                        }
+                        count += nextcmd->data.draw.count;
+                    }
+                }
+
+                VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
+                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, start, count);
+
+                cmd = finalcmd; // skip any copy commands we just combined in here.
             }
             break;
         }
@@ -4102,20 +4146,57 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
         case SDL_RENDERCMD_COPY_EX: // unused
             break;
 
+        case SDL_RENDERCMD_DRAW_POINTS:
         case SDL_RENDERCMD_GEOMETRY:
         {
-            SDL_Texture *texture = cmd->data.draw.texture;
-            const size_t count = cmd->data.draw.count;
+            /* as long as we have the same copy command in a row, with the
+               same texture, we can combine them all into a single draw call. */
+            float thiscolorscale = cmd->data.draw.color_scale;
+            SDL_Texture *thistexture = cmd->data.draw.texture;
+            SDL_BlendMode thisblend = cmd->data.draw.blend;
+            SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
+            SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
+            SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
+            const SDL_RenderCommandType thiscmdtype = cmd->command;
+            SDL_RenderCommand *finalcmd = cmd;
+            SDL_RenderCommand *nextcmd;
+            size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(VULKAN_VertexPositionColor);
-
-            if (texture) {
-                VULKAN_SetCopyState(renderer, cmd, NULL, &stateCache);
-            } else {
-                VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
+            for (nextcmd = cmd->next; nextcmd; nextcmd = nextcmd->next) {
+                const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                if (nextcmdtype != thiscmdtype) {
+                    if (nextcmdtype == SDL_RENDERCMD_SETDRAWCOLOR) {
+                        // The vertex data has the draw color built in, ignore this
+                        continue;
+                    }
+                    break; // can't go any further on this draw call, different render command up next.
+                } else if (nextcmd->data.draw.texture != thistexture ||
+                           nextcmd->data.draw.texture_scale_mode != thisscalemode ||
+                           nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
+                           nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
+                           nextcmd->data.draw.blend != thisblend ||
+                           nextcmd->data.draw.color_scale != thiscolorscale) {
+                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
+                } else {
+                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                    count += nextcmd->data.draw.count;
+                }
             }
 
-            VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, start, count);
+            if (thiscmdtype == SDL_RENDERCMD_GEOMETRY) {
+                if (thistexture) {
+                    VULKAN_SetCopyState(renderer, cmd, NULL, &stateCache);
+                } else {
+                    VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
+                }
+
+                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, start, count);
+            } else {
+                VULKAN_SetDrawState(renderer, cmd, rendererData->pipelineLayout, rendererData->descriptorSetLayout, NULL, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 0, NULL, 0, NULL, NULL, &stateCache);
+                VULKAN_DrawPrimitives(renderer, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, start, count);
+            }
+            cmd = finalcmd; // skip any copy commands we just combined in here.
             break;
         }
 

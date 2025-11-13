@@ -49,6 +49,8 @@
 #define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    -25058 // Uint8 30 scaled to Sint16 full range
 
+#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+
 enum
 {
     SDL_GAMEPAD_BUTTON_XBOX_SHARE_BUTTON = 11
@@ -810,7 +812,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
     }
 
-    axis = ((int)SDL_Swap16LE(*(Sint16 *)(&data[2])) * 64) - 32768;
+    axis = ((int)LOAD16(data[2], data[3]) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
@@ -819,7 +821,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
 
-    axis = ((int)SDL_Swap16LE(*(Sint16 *)(&data[4])) * 64) - 32768;
+    axis = ((int)LOAD16(data[4], data[5]) * 64) - 32768;
     if (axis == -32768 && size == 26 && (data[18] & 0x40)) {
         axis = 32767;
     }
@@ -828,13 +830,13 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
 
-    axis = SDL_Swap16LE(*(Sint16 *)(&data[6]));
+    axis = LOAD16(data[6], data[7]);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
-    axis = SDL_Swap16LE(*(Sint16 *)(&data[8]));
+    axis = LOAD16(data[8], data[9]);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, ~axis);
-    axis = SDL_Swap16LE(*(Sint16 *)(&data[10]));
+    axis = LOAD16(data[10], data[11]);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-    axis = SDL_Swap16LE(*(Sint16 *)(&data[12]));
+    axis = LOAD16(data[12], data[13]);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
@@ -1030,25 +1032,25 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joysti
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 
-    axis = ((int)SDL_Swap16LE(*(Sint16 *)(&data[9])) * 64) - 32768;
+    axis = ((int)LOAD16(data[9], data[10]) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
 
-    axis = ((int)SDL_Swap16LE(*(Sint16 *)(&data[11])) * 64) - 32768;
+    axis = ((int)LOAD16(data[11], data[12]) * 64) - 32768;
     if (axis == 32704) {
         axis = 32767;
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
 
-    axis = (int)SDL_Swap16LE(*(Uint16 *)(&data[1])) - 0x8000;
+    axis = (int)(Uint16)LOAD16(data[1], data[2]) - 0x8000;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
-    axis = (int)SDL_Swap16LE(*(Uint16 *)(&data[3])) - 0x8000;
+    axis = (int)(Uint16)LOAD16(data[3], data[4]) - 0x8000;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
-    axis = (int)SDL_Swap16LE(*(Uint16 *)(&data[5])) - 0x8000;
+    axis = (int)(Uint16)LOAD16(data[5], data[6]) - 0x8000;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-    axis = (int)SDL_Swap16LE(*(Uint16 *)(&data[7])) - 0x8000;
+    axis = (int)(Uint16)LOAD16(data[7], data[8]) - 0x8000;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));

@@ -168,6 +168,9 @@ extern void WIN_CoUninitialize(void);
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
 
+// Returns true if we're running on Wine
+extern BOOL WIN_IsWine(void);
+
 // Returns true if we're running on Windows XP (any service pack). DOES NOT CHECK XP "OR GREATER"!
 extern BOOL WIN_IsWindowsXP(void);
 
@@ -179,6 +182,9 @@ extern BOOL WIN_IsWindows7OrGreater(void);
 
 // Returns true if we're running on Windows 8 and newer
 extern BOOL WIN_IsWindows8OrGreater(void);
+
+// Returns true if we're running on Windows 11 and newer
+extern BOOL WIN_IsWindows11OrGreater(void);
 
 // You need to SDL_free() the result of this call.
 extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);

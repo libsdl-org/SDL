@@ -29,7 +29,11 @@
 
 // CPU feature detection for SDL
 
-#if defined(HAVE_SYSCONF) || defined(HAVE_GETPAGESIZE)
+#if defined(HAVE_GETPAGESIZE) && !defined(SDL_PLATFORM_WINDOWS)
+#define USE_GETPAGESIZE
+#endif
+
+#if defined(HAVE_SYSCONF) || defined(USE_GETPAGESIZE)
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYSCTLBYNAME
@@ -70,10 +74,6 @@
 
 #if defined (SDL_PLATFORM_FREEBSD)
 #include <sys/param.h>
-#endif
-
-#if defined(SDL_PLATFORM_ANDROID) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
-#include <cpu-features.h>
 #endif
 
 #if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
@@ -1252,7 +1252,7 @@ int SDL_GetSystemPageSize(void)
             }
         }
 #endif
-#ifdef HAVE_GETPAGESIZE
+#ifdef USE_GETPAGESIZE
         if (SDL_SystemPageSize <= 0) {
             SDL_SystemPageSize = getpagesize();
         }

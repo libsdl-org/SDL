@@ -63,6 +63,8 @@ struct SDL_WindowData
                     struct xdg_positioner *xdg_positioner;
                 } popup;
             };
+
+            Uint32 serial;
         } xdg;
     } shell_surface;
     enum
@@ -127,7 +129,7 @@ struct SDL_WindowData
     char *app_id;
     double scale_factor;
 
-    Wayland_SHMBuffer *icon_buffers;
+    struct wl_buffer **icon_buffers;
     int icon_buffer_count;
 
     // Keyboard, pointer, and touch focus refcount.
@@ -203,7 +205,7 @@ struct SDL_WindowData
     bool suspended;
     bool resizing;
     bool active;
-    bool drop_interactive_resizes;
+    bool pending_config_ack;
     bool is_fullscreen;
     bool fullscreen_exclusive;
     bool drop_fullscreen_requests;

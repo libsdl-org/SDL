@@ -51,7 +51,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         peninfo.num_buttons = 2;
         peninfo.subtype = SDL_PEN_TYPE_PEN;
         peninfo.device_type = device_type;
-        pen = SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) pen_id_in);
+        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *) (size_t) pen_id_in);
         if (!pen) {
             SDL_Log("error: can't add a pen device %d", pen_id_in);
             return;
@@ -78,7 +78,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
     switch (action) {
     case ACTION_CANCEL:
     case ACTION_HOVER_EXIT:
-        SDL_RemovePenDevice(0, pen);
+        SDL_RemovePenDevice(0, window, pen);
         break;
 
     case ACTION_DOWN:

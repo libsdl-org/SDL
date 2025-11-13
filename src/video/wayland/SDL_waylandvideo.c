@@ -1681,7 +1681,7 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 }
 
-bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
+static bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
 {
 #if 0 // TODO RECONNECT: Uncomment all when https://invent.kde.org/plasma/kwin/-/wikis/Restarting is completed
     SDL_VideoData *data = _this->internal;
@@ -1726,6 +1726,33 @@ bool Wayland_VideoReconnect(SDL_VideoDevice *_this)
 #else
     return false;
 #endif // 0
+}
+
+bool Wayland_HandleDisplayDisconnected(SDL_VideoDevice *_this)
+{
+    SDL_VideoData *video_data = _this->internal;
+
+    /* Something has failed with the Wayland connection -- for example,
+     * the compositor may have shut down and closed its end of the socket,
+     * or there is a library-specific error.
+     *
+     * Try to recover once, then quit.
+     */
+    if (video_data->display_disconnected) {
+        return false;
+    }
+
+    if (Wayland_VideoReconnect(_this)) {
+        return true;
+    }
+
+    video_data->display_disconnected = true;
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wayland display connection closed by server (fatal)");
+
+    // Only send a single quit message, as application shutdown might call SDL_PumpEvents().
+    SDL_SendQuit();
+
+    return false;
 }
 
 void Wayland_VideoQuit(SDL_VideoDevice *_this)

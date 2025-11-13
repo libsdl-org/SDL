@@ -671,20 +671,8 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 
 connection_error:
-    if (ret < 0 && !d->display_disconnected) {
-        /* Something has failed with the Wayland connection -- for example,
-         * the compositor may have shut down and closed its end of the socket,
-         * or there is a library-specific error.
-         *
-         * Try to recover once, then quit.
-         */
-        if (!Wayland_VideoReconnect(_this)) {
-            d->display_disconnected = 1;
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Wayland display connection closed by server (fatal)");
-
-            // Only send a single quit message, as application shutdown might call SDL_PumpEvents().
-            SDL_SendQuit();
-        }
+    if (ret < 0) {
+        Wayland_HandleDisplayDisconnected(_this);
     }
 }
 
@@ -3318,7 +3306,8 @@ static void tablet_tool_handle_removed(void *data, struct zwp_tablet_tool_v2 *to
 {
     SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     if (sdltool->instance_id) {
-        SDL_RemovePenDevice(0, sdltool->instance_id);
+        SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
+        SDL_RemovePenDevice(0, window, sdltool->instance_id);
     }
 
     Wayland_CursorStateRelease(&sdltool->cursor_state);
@@ -3451,7 +3440,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame.have_proximity_in) {
         SDL_assert(sdltool->instance_id == 0);  // shouldn't be added at this point.
         if (sdltool->info.subtype != SDL_PEN_TYPE_UNKNOWN) {   // don't tell SDL about it if we don't know its role.
-            sdltool->instance_id = SDL_AddPenDevice(timestamp, NULL, &sdltool->info, sdltool);
+            sdltool->instance_id = SDL_AddPenDevice(timestamp, NULL, window, &sdltool->info, sdltool);
             Wayland_TabletToolUpdateCursor(sdltool);
         }
     }
@@ -3499,7 +3488,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame.have_proximity_out) {
         sdltool->focus = NULL;
         Wayland_TabletToolUpdateCursor(sdltool);
-        SDL_RemovePenDevice(timestamp, sdltool->instance_id);
+        SDL_RemovePenDevice(timestamp, window, sdltool->instance_id);
         sdltool->instance_id = 0;
     }
 
@@ -3668,7 +3657,7 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
                 tool->focus = NULL;
                 Wayland_TabletToolUpdateCursor(tool);
                 if (tool->instance_id) {
-                    SDL_RemovePenDevice(0, tool->instance_id);
+                    SDL_RemovePenDevice(0, window->sdlwindow, tool->instance_id);
                     tool->instance_id = 0;
                 }
             }

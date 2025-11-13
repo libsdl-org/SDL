@@ -932,7 +932,17 @@ if(SDL_ASSEMBLY)
       cmake_pop_check_state()
 
       if(COMPILER_SUPPORTS_LSX AND HAVE_LSXINTRIN_H)
-        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/yuv_rgb_lsx.c" APPEND PROPERTY COMPILE_OPTIONS "-mlsx")
+        set_property(SOURCE
+            "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/yuv_rgb_lsx.c"
+            "${SDL3_SOURCE_DIR}/src/video/SDL_blit_A.c"
+            "${SDL3_SOURCE_DIR}/src/video/SDL_fillrect.c"
+            APPEND PROPERTY COMPILE_OPTIONS "-mlsx")
+
+        set_property(SOURCE
+            "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/yuv_rgb_lsx.c"
+            "${SDL3_SOURCE_DIR}/src/video/SDL_blit_A.c"
+            "${SDL3_SOURCE_DIR}/src/video/SDL_fillrect.c"
+            PROPERTY SKIP_PRECOMPILE_HEADERS 1)
         set(HAVE_LSX TRUE)
       endif()
     endif()
@@ -1397,8 +1407,6 @@ if(ANDROID)
     "${SDL3_SOURCE_DIR}/src/core/android/*.c"
     "${SDL3_SOURCE_DIR}/src/core/android/*.h"
   )
-  sdl_sources("${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c")
-  set_property(SOURCE "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-declaration-after-statement")
 
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/misc/android/*.c"
@@ -3807,10 +3815,6 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(ARCH_64 TRUE)
 else()
   set(ARCH_64 FALSE)
-endif()
-
-if(ANDROID)
-  sdl_include_directories(PRIVATE SYSTEM "${CMAKE_ANDROID_NDK}/sources/android/cpufeatures")
 endif()
 
 if(APPLE)
