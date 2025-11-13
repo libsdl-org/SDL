@@ -1609,10 +1609,7 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
 
 #ifdef SDL_USE_LIBUDEV
-    const char *serial = NULL;
-    if (SDL_UDEV_GetProductSerial(item->path, &serial)) {
-        joystick->serial = SDL_strdup(serial);
-    }
+    joystick->serial = SDL_UDEV_GetProductSerial(item->path);
 #endif
 
     // mark joystick as fresh and ready

@@ -36,7 +36,7 @@
 #include "SDL_evdev_capabilities.h"
 #include "../unix/SDL_poll.h"
 
-#define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0" 
+#define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0"
 
 static const char *SDL_UDEV_LIBS[] = { SDL_UDEV_FALLBACK_LIBS };
 
@@ -247,22 +247,19 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, in
         return false;
     }
 
-    if (stat(device_path, &statbuf) == -1) {
+    if (stat(device_path, &statbuf) < 0) {
         return false;
     }
 
     if (S_ISBLK(statbuf.st_mode)) {
         type = 'b';
-    }
-    else if (S_ISCHR(statbuf.st_mode)) {
+    } else if (S_ISCHR(statbuf.st_mode)) {
         type = 'c';
-    }
-    else {
+    } else {
         return false;
     }
 
     dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
-
     if (!dev) {
         return false;
     }
@@ -302,19 +299,20 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, in
     return true;
 }
 
-bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial)
+char *SDL_UDEV_GetProductSerial(const char *device_path)
 {
     struct stat statbuf;
     char type;
     struct udev_device *dev;
     const char *val;
+    char *result = NULL;
 
     if (!_this) {
-        return false;
+        return NULL;
     }
 
     if (stat(device_path, &statbuf) < 0) {
-        return false;
+        return NULL;
     }
 
     if (S_ISBLK(statbuf.st_mode)) {
@@ -322,21 +320,22 @@ bool SDL_UDEV_GetProductSerial(const char *device_path, const char **serial)
     } else if (S_ISCHR(statbuf.st_mode)) {
         type = 'c';
     } else {
-        return false;
+        return NULL;
     }
 
     dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
     if (!dev) {
-        return false;
+        return NULL;
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_SERIAL_SHORT");
-    if (val) {
-        *serial = val;
-        return true;
+    if (val && *val) {
+        result = SDL_strdup(val);
     }
 
-    return false;
+    _this->syms.udev_device_unref(dev);
+
+    return result;
 }
 
 void SDL_UDEV_UnloadLibrary(void)
