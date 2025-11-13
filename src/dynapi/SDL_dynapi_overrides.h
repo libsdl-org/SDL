@@ -1294,3 +1294,4 @@
 #define SDL_GetPenDeviceType SDL_GetPenDeviceType_REAL
 #define SDL_CreateAnimatedCursor SDL_CreateAnimatedCursor_REAL
 #define SDL_RotateSurface SDL_RotateSurface_REAL
+#define SDL_CreateTemporaryProperties SDL_CreateTemporaryProperties_REAL
