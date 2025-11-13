@@ -492,18 +492,6 @@ static int CPU_haveNEON(void)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
-#elif defined(SDL_PLATFORM_ANDROID)
-    // Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo
-    {
-        AndroidCpuFamily cpu_family = android_getCpuFamily();
-        if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
-            uint64_t cpu_features = android_getCpuFeatures();
-            if (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) {
-                return 1;
-            }
-        }
-        return 0;
-    }
 #elif defined(SDL_PLATFORM_RISCOS)
     // Use the VFPSupport_Features SWI to access the MVFR registers
     {

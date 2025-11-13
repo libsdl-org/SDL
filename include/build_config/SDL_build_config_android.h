@@ -139,6 +139,7 @@
 #define HAVE_LOCALTIME_R 1
 #define HAVE_SYSCONF 1
 #define HAVE_CLOCK_GETTIME 1
+#define HAVE_GETAUXVAL 1
 
 /* Enable various audio drivers */
 #ifndef SDL_AUDIO_DISABLED
