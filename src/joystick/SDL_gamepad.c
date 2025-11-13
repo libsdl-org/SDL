@@ -34,9 +34,10 @@
 #include "hidapi/SDL_hidapi_sinput.h"
 #include "../events/SDL_events_c.h"
 
-
-#ifdef SDL_PLATFORM_ANDROID
+#ifdef SDL_PLATFORM_WIN32
+#include "../core/windows/SDL_windows.h"
 #endif
+
 
 // Many gamepads turn the center button into an instantaneous button press
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS 250
@@ -3262,10 +3263,10 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
 
 #ifdef SDL_PLATFORM_WIN32
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false) &&
-        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", false)) {
-        // We are launched by Steam and running under Proton
+        WIN_IsWine()) {
+        // We are launched by Steam and running under Proton or Wine
         // We can't tell whether this controller is a Steam Virtual Gamepad,
-        // so assume that Proton is doing the appropriate filtering of controllers
+        // so assume that is doing the appropriate filtering of controllers
         // and anything we see here is fine to use.
         return false;
     }
