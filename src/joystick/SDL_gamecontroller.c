@@ -37,6 +37,10 @@
 #include "../events/SDL_events_c.h"
 #endif
 
+#if defined(__WIN32__)
+#include "../core/windows/SDL_windows.h"
+#endif
+
 #if defined(__ANDROID__)
 #include "SDL_system.h"
 #endif
@@ -2130,7 +2134,7 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
 
 #ifdef __WIN32__
     if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE) &&
-        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", SDL_FALSE)) {
+        WIN_IsWine()) {
         /* We are launched by Steam and running under Proton
          * We can't tell whether this controller is a Steam Virtual Gamepad,
          * so assume that Proton is doing the appropriate filtering of controllers
