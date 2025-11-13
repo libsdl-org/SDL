@@ -199,6 +199,24 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 }
 #endif
 
+BOOL WIN_IsWine(void)
+{
+    static SDL_bool checked;
+    static SDL_bool is_wine;
+
+    if (!checked) {
+        HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+        if (ntdll) {
+            if (GetProcAddress(ntdll, "wine_get_version") != NULL) {
+                is_wine = SDL_TRUE;
+            }
+            FreeLibrary(ntdll);
+        }
+        checked = SDL_TRUE;
+    }
+    return is_wine;
+}
+
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
 #if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)

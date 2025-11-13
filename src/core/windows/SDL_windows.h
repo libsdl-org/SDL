@@ -136,6 +136,9 @@ extern void WIN_CoUninitialize(void);
 extern HRESULT WIN_RoInitialize(void);
 extern void WIN_RoUninitialize(void);
 
+/* Returns true if we're running on Wine */
+extern BOOL WIN_IsWine(void);
+
 /* Returns SDL_TRUE if we're running on Windows Vista and newer */
 extern BOOL WIN_IsWindowsVistaOrGreater(void);
 
