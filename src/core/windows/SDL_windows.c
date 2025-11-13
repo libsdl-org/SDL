@@ -270,6 +270,24 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
         return result;
 #endif
 
+BOOL WIN_IsWine(void)
+{
+    static bool checked;
+    static bool is_wine;
+
+    if (!checked) {
+        HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+        if (ntdll) {
+            if (GetProcAddress(ntdll, "wine_get_version") != NULL) {
+                is_wine = true;
+            }
+            FreeLibrary(ntdll);
+        }
+        checked = true;
+    }
+    return is_wine;
+}
+
 // this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
 //  so there's no "OrGreater" as that would always be TRUE. The other functions are here to
 //  ask "can we support a specific feature?" but this function is here to ask "do we need to do
