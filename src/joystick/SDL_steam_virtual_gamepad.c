@@ -31,6 +31,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
+#ifdef __LINUX__
+#include <unistd.h>
+#endif
 
 #define SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE    "SteamVirtualGamepadInfo"
 
@@ -123,6 +126,28 @@ static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
     SDL_zerop(info);
 }
 
+#ifdef __LINUX__
+static const char *SDL_GetExeName(void)
+{
+    const char *proc_name = NULL;
+    static char linkfile[1024];
+    int linksize;
+    const char *proc_path = "/proc/self/exe";
+
+    linksize = readlink(proc_path, linkfile, sizeof(linkfile) - 1);
+    if (linksize > 0) {
+        linkfile[linksize] = '\0';
+        proc_name = SDL_strrchr(linkfile, '/');
+        if (proc_name) {
+            ++proc_name;
+        } else {
+            proc_name = linkfile;
+        }
+    }
+    return proc_name;
+}
+#endif /* __LINUX__ */
+
 void SDL_InitSteamVirtualGamepadInfo(void)
 {
     const char *file;
@@ -131,6 +156,16 @@ void SDL_InitSteamVirtualGamepadInfo(void)
 
     file = SDL_GetHint(SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
     if (file && *file) {
+#ifdef __LINUX__
+        /* Older versions of Wine will blacklist the Steam Virtual Gamepad if
+         * it appears to have the real controller's VID/PID, so ignore this.
+         */
+        const char *exe = SDL_GetExeName();
+        if (exe && SDL_strcmp(exe, "wine64-preloader") == 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Wine launched by Steam, ignoring %s", SDL_HINT_STEAM_VIRTUAL_GAMEPAD_INFO_FILE);
+            return;
+        }
+#endif
         SDL_steam_virtual_gamepad_info_file = SDL_strdup(file);
     }
     SDL_UpdateSteamVirtualGamepadInfo();
