@@ -1868,6 +1868,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, in
  * \sa SDL_GetRenderOutputSize
  * \sa SDL_GetWindowSizeInPixels
  * \sa SDL_SetWindowSize
+ * \sa SDL_EVENT_WINDOW_RESIZED
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);
 
