@@ -51,7 +51,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     SDLTest_CommonQuit(state);
 }
 
-static int LoadSprite(const char *file)
+static bool LoadSprite(const char *file)
 {
     int i;
 
@@ -66,17 +66,17 @@ static int LoadSprite(const char *file)
             sprite_h = (float)sprites[i]->h;
         }
         if (!sprites[i]) {
-            return -1;
+            return false;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
-            return -1;
+            return false;
         }
     }
 
     /* We're ready to roll. :) */
-    return 0;
+    return true;
 }
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
@@ -516,7 +516,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
-    if (LoadSprite(icon) < 0) {
+    if (!LoadSprite(icon)) {
         return SDL_APP_FAILURE;
     }
 
