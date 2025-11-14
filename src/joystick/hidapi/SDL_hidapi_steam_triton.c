@@ -245,6 +245,8 @@ static bool HIDAPI_DriverSteamTriton_SetControllerConnected(SDL_HIDAPI_Device *d
     SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
 
     if (ctx->connected != connected) {
+        ctx->connected = connected;
+
         if (connected) {
             SDL_JoystickID joystickID;
             if (!HIDAPI_JoystickConnected(device, &joystickID)) {
@@ -255,7 +257,6 @@ static bool HIDAPI_DriverSteamTriton_SetControllerConnected(SDL_HIDAPI_Device *d
                 HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             }
         }
-        ctx->connected = connected;
     }
     return true;
 }
