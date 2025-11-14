@@ -64,12 +64,6 @@ extern SDL_JoystickDriver SDL_DSU_JoystickDriver;
 /* Global DSU context pointer */
 struct DSU_Context_t *s_dsu_ctx = NULL;
 
-/* Helper function to work around macro issues */
-static SDL_INLINE SDL_Mutex* GetDSUMutex(void) {
-    struct DSU_Context_t *ctx = s_dsu_ctx;
-    return ctx ? ctx->slots_mutex : NULL;
-}
-
 /* Forward declarations */
 extern int SDLCALL DSU_ReceiverThread(void *data);
 extern void DSU_RequestControllerInfo(struct DSU_Context_t *ctx, Uint8 slot);

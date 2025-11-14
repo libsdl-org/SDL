@@ -61,7 +61,9 @@ typedef int socklen_t;
     #include <fcntl.h>
     #include <unistd.h>
     #include <errno.h>
-    #include <sys/ioctl.h>
+    #ifdef HAVE_SYS_IOCTL_H
+        #include <sys/ioctl.h>
+    #endif
     #ifdef __sun
         #include <sys/filio.h>
     #endif
