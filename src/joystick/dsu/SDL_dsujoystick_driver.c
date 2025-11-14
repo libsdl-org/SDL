@@ -21,7 +21,6 @@
 
 /* Include socket headers before SDL to avoid macro conflicts */
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #ifdef _MSC_VER
@@ -108,14 +107,14 @@ static bool DSU_JoystickInit(void)
 
     server_port = SDL_GetHint(SDL_HINT_DSU_SERVER_PORT);
     if (server_port && *server_port) {
-        ctx->server_port = SDL_atoi(server_port);
+        ctx->server_port = (Uint16)SDL_atoi(server_port);
     } else {
         ctx->server_port = DSU_SERVER_PORT_DEFAULT;
     }
 
     client_port = SDL_GetHint(SDL_HINT_DSU_CLIENT_PORT);
     if (client_port && *client_port) {
-        ctx->client_port = SDL_atoi(client_port);
+        ctx->client_port = (Uint16)SDL_atoi(client_port);
     } else {
         ctx->client_port = DSU_CLIENT_PORT_DEFAULT;
     }
@@ -207,12 +206,12 @@ static void DSU_JoystickDetect(void)
     /* Periodically request controller info and re-subscribe to data */
     now = SDL_GetTicks();
     if (now - ctx->last_request_time >= 500) {  /* Request more frequently */
-        DSU_RequestControllerInfo(ctx, 0xFF);
+        DSU_RequestControllerInfo(ctx, (Uint8)0xFF);
 
         /* Re-subscribe to data for detected controllers */
         for (i = 0; i < DSU_MAX_SLOTS; i++) {
             if (ctx->slots[i].detected || ctx->slots[i].connected) {
-                DSU_RequestControllerData(ctx, i);
+                DSU_RequestControllerData(ctx, (Uint8)i);
             }
         }
 
@@ -389,7 +388,7 @@ static SDL_JoystickID DSU_JoystickGetDeviceInstanceID(int device_index)
 
     ctx = s_dsu_ctx;
     if (!ctx) {
-        return -1;
+        return 0;
     }
 
     mutex = ctx->slots_mutex;
@@ -607,7 +606,7 @@ static void DSU_JoystickUpdate(SDL_Joystick *joystick)
         if (pressed) {
             SDL_Log("  Button %d (%s): PRESSED", i, button_names[i]);
         }
-        SDL_SendJoystickButton(timestamp, joystick, i, pressed);
+        SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, pressed);
     }
 
     /* Update axes with detailed logging */
@@ -615,7 +614,7 @@ static void DSU_JoystickUpdate(SDL_Joystick *joystick)
             slot->axes[0], slot->axes[1], slot->axes[2],
             slot->axes[3], slot->axes[4], slot->axes[5]);
     for (i = 0; i < 6; i++) {
-        SDL_SendJoystickAxis(timestamp, joystick, i, slot->axes[i]);
+        SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, slot->axes[i]);
     }
 
     /* Update hat (D-Pad) */

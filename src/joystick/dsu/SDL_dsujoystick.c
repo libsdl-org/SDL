@@ -338,7 +338,7 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
         slot->battery = data->info.battery;
         slot->model = data->info.device_model;
         slot->connection = data->info.connection_type;
-        slot->slot_id = slot_id;
+        slot->slot_id = (Uint8)slot_id;
 
         /* Generate name */
         SDL_snprintf(slot->name, sizeof(slot->name), "DSUClient/%d", slot_id);
@@ -444,7 +444,7 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
 
     /* Subscribe to controller data updates if just detected */
     if (!was_connected && slot->detected) {
-        DSU_RequestControllerData(ctx, slot_id);
+        DSU_RequestControllerData(ctx, (Uint8)slot_id);
     }
     SDL_Log("DSU: Finished processing data for slot %d\n", slot_id);
 }
