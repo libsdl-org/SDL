@@ -66,19 +66,25 @@ static void deinit_drivers(void)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
-    int res;
+    char fallbackargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+    char *fallbackargv[2] = { fallbackargv0, NULL };
+    int result;
     (void)reserved;
+
+    if (!argv || argc < 0) {
+        argc = 1;
+        argv = fallbackargv;
+    }
 
     prepare_IOP();
     init_drivers();
 
     SDL_SetMainReady();
-
-    res = mainFunction(argc, argv);
+    result = mainFunction(argc, argv);
 
     deinit_drivers();
 
-    return res;
+    return result;
 }
 
 #endif // SDL_PLATFORM_PS2
