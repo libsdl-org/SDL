@@ -466,6 +466,13 @@ static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
         _this->gl_data->HAS_GLX_ARB_create_context_no_error = true;
     }
 
+    // Check for GLX_ARB_framebuffer_sRGB
+    if (HasExtension("GLX_ARB_framebuffer_sRGB", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB = true;
+    } else if (HasExtension("GLX_EXT_framebuffer_sRGB", extensions)) {   // same thing.
+        _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB = true;
+    }
+
     if (context) {
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
@@ -576,9 +583,9 @@ static int X11_GL_GetAttributes(SDL_VideoDevice *_this, Display *display, int sc
         attribs[i++] = GLX_RGBA_FLOAT_TYPE_ARB;
     }
 
-    if (_this->gl_config.framebuffer_srgb_capable) {
+    if ((_this->gl_config.framebuffer_srgb_capable >= 0) && _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB) {
         attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        attribs[i++] = True; // always needed, for_FBConfig or not!
+        attribs[i++] = _this->gl_config.framebuffer_srgb_capable ? True : False; // always needed, for_FBConfig or not!
     }
 
     if (_this->gl_config.accelerated >= 0 &&

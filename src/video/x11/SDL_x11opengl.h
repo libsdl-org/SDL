@@ -47,6 +47,7 @@ struct SDL_GLDriverData
     bool HAS_GLX_ARB_context_flush_control;
     bool HAS_GLX_ARB_create_context_robustness;
     bool HAS_GLX_ARB_create_context_no_error;
+    bool HAS_GLX_ARB_framebuffer_sRGB;
 
     /* Max version of OpenGL ES context that can be created if the
        implementation supports GLX_EXT_create_context_es2_profile.
