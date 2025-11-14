@@ -162,6 +162,10 @@ function(SDL_AddCommonCompilerFlags TARGET)
       sdl_target_compile_option_all_languages(${TARGET} "-fdiagnostics-color=always")
     endif()
   endif()
+
+  if(USE_TCC)
+      sdl_target_compile_option_all_languages(${TARGET} "-DSTBI_NO_SIMD")
+  endif()
 endfunction()
 
 function(check_x86_source_compiles BODY VAR)
