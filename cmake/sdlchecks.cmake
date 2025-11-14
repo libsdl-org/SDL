@@ -800,13 +800,29 @@ macro(CheckOpenVR)
   endif()
 endmacro()
 
+# Requires
+# - N/A
+macro(FindOpenGLHeaders)
+  find_package(OpenGL MODULE)
+  # OPENGL_INCLUDE_DIRS is preferred over OPENGL_INCLUDE_DIR, but was only added in 3.29,
+  # If the CMake minimum version is changed to be >= 3.29, the second check should be removed.
+  if(OPENGL_INCLUDE_DIRS)
+    list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_INCLUDE_DIRS})
+  elseif(OPENGL_INCLUDE_DIR)
+    list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_INCLUDE_DIR})
+  endif()
+endmacro()
+
 # Requires:
 # - nada
 macro(CheckGLX)
   if(SDL_OPENGL)
+    cmake_push_check_state()
+    FindOpenGLHeaders()
     check_c_source_compiles("
         #include <GL/glx.h>
         int main(int argc, char** argv) { return 0; }" HAVE_OPENGL_GLX)
+    cmake_pop_check_state()
     if(HAVE_OPENGL_GLX AND NOT HAVE_ROCKCHIP)
       set(SDL_VIDEO_OPENGL_GLX 1)
     endif()
@@ -840,10 +856,13 @@ endmacro()
 # - nada
 macro(CheckOpenGL)
   if(SDL_OPENGL)
+    cmake_push_check_state()
+    FindOpenGLHeaders()
     check_c_source_compiles("
         #include <GL/gl.h>
         #include <GL/glext.h>
         int main(int argc, char** argv) { return 0; }" HAVE_OPENGL)
+    cmake_pop_check_state()
     if(HAVE_OPENGL)
       set(SDL_VIDEO_OPENGL 1)
       set(SDL_VIDEO_RENDER_OGL 1)
@@ -856,6 +875,7 @@ endmacro()
 macro(CheckOpenGLES)
   if(SDL_OPENGLES)
     cmake_push_check_state()
+    FindOpenGLHeaders()
     list(APPEND CMAKE_REQUIRED_INCLUDES "${SDL3_SOURCE_DIR}/src/video/khronos")
     check_c_source_compiles("
         #include <GLES/gl.h>
