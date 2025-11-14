@@ -61,9 +61,9 @@ typedef int socklen_t;
     #include <fcntl.h>
     #include <unistd.h>
     #include <errno.h>
-    #include <sys/ioctl.h>  /* Required for ioctl on Unix-like systems including Haiku */
+    #include <sys/ioctl.h>
     #ifdef __sun
-        #include <sys/filio.h>  /* FIONBIO on Solaris */
+        #include <sys/filio.h>
     #endif
     #define closesocket close
 #endif
@@ -111,6 +111,9 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
     u_long mode = 1;
 #else
     int flags;
+#if defined(FIONBIO)
+    int nonblock = 1;
+#endif
 #endif
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -125,15 +128,19 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
 #ifdef _WIN32
     ioctlsocket(sock, FIONBIO, &mode);
 #else
-    /* Use ioctl with FIONBIO for better compatibility across Unix-like systems */
-    #ifdef FIONBIO
-        int mode_unix = 1;
-        ioctl(sock, FIONBIO, &mode_unix);
-    #else
-        /* Fallback to fcntl if FIONBIO is not available */
+#if defined(FIONBIO)
+    if (ioctl(sock, FIONBIO, &nonblock) < 0) {
         flags = fcntl(sock, F_GETFL, 0);
+        if (flags != -1) {
+            fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+        }
+    }
+#else
+    flags = fcntl(sock, F_GETFL, 0);
+    if (flags != -1) {
         fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-    #endif
+    }
+#endif
 #endif
 
     /* Bind to client port if specified */
