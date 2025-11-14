@@ -216,7 +216,7 @@ static Uint64 Wayland_AdjustEventTimestampBase(Uint64 nsTimestamp)
 static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
 {
     static const Uint32 ROLLOVER_INTERVAL_LOW = SDL_MAX_UINT32 / 16;
-    static const Uint32 ROLLOVER_INTERVAL_HIGH = ROLLOVER_INTERVAL_LOW * 15;
+    static const Uint32 ROLLOVER_INTERVAL_HIGH = (SDL_MAX_UINT32 / 16U) * 15U;
 
     static Uint64 timestamp_offset = 0;
     static Uint32 last = 0;
