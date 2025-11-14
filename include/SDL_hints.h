@@ -1235,6 +1235,40 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
 
 /**
+ * A variable controlling whether the DSU (DualShock UDP) joystick driver should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": DSU driver is disabled
+ * - "1": DSU driver is enabled (default)
+ *
+ * The DSU driver allows SDL to connect to DSU servers (DS4Windows, BetterJoy, etc.)
+ * to receive controller data over UDP, including motion sensors and touchpad data.
+ */
+#define SDL_HINT_JOYSTICK_DSU "SDL_JOYSTICK_DSU"
+
+/**
+ * A variable controlling the DSU server address.
+ *
+ * The default value is "127.0.0.1"
+ */
+#define SDL_HINT_DSU_SERVER "SDL_DSU_SERVER"
+
+/**
+ * A variable controlling the DSU server port.
+ *
+ * The default value is "26760"
+ */
+#define SDL_HINT_DSU_SERVER_PORT "SDL_DSU_SERVER_PORT"
+
+/**
+ * A variable controlling the DSU client port.
+ *
+ * The default value is "0" (auto-select)
+ */
+#define SDL_HINT_DSU_CLIENT_PORT "SDL_DSU_CLIENT_PORT"
+
+/**
  * A variable controlling whether IOKit should be used for controller
  * handling.
  *
