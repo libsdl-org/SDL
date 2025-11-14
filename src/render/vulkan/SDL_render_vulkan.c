@@ -909,7 +909,7 @@ static void VULKAN_RecordPipelineImageBarrier(VULKAN_RenderData *rendererData, V
 
 static VkResult VULKAN_AcquireNextSwapchainImage(SDL_Renderer *renderer)
 {
-    VULKAN_RenderData *rendererData = ( VULKAN_RenderData * )renderer->internal;
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
 
     VkResult result;
 
@@ -917,10 +917,12 @@ static VkResult VULKAN_AcquireNextSwapchainImage(SDL_Renderer *renderer)
     result = vkAcquireNextImageKHR(rendererData->device, rendererData->swapchain, UINT64_MAX,
         rendererData->imageAvailableSemaphores[rendererData->currentCommandBufferIndex], VK_NULL_HANDLE, &rendererData->currentSwapchainImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_ERROR_SURFACE_LOST_KHR) {
-        result = VULKAN_CreateWindowSizeDependentResources(renderer);
+        if (!(renderer->window->flags & SDL_WINDOW_MINIMIZED)) {
+            result = VULKAN_CreateWindowSizeDependentResources(renderer);
+        }
         return result;
     } else if(result == VK_SUBOPTIMAL_KHR) {
-        // Suboptimal, but we can contiue
+        // Suboptimal, but we can continue
     } else if (result != VK_SUCCESS) {
         SET_ERROR_CODE("vkAcquireNextImageKHR()", result);
         return result;
