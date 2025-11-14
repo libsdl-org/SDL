@@ -1860,6 +1860,25 @@ void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
     g_WindowsMessageHookData = userdata;
 }
 
+// A user implement API: GetMessage
+static SDL_WindowsGetMessageImpl g_WindowsGetMessageImpl = NULL;
+static void *g_WindowsGetMessageImplData = NULL;
+
+void SDLCALL SDL_SetWindowsGetMessageImpl(SDL_WindowsGetMessageImpl callback, void* userdata)
+{
+    g_WindowsGetMessageImpl = callback;
+    g_WindowsGetMessageImplData = userdata;
+}
+
+static BOOL GetMessageImpl(LPMSG lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax)
+{
+    if (g_WindowsGetMessageImpl)
+    {
+        return g_WindowsGetMessageImpl(g_WindowsGetMessageImplData, lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+    }
+    return GetMessage(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
+}
+
 int WIN_WaitEventTimeout(_THIS, int timeout)
 {
     if (g_WindowsEnableMessageLoop) {
@@ -1879,12 +1898,12 @@ int WIN_WaitEventTimeout(_THIS, int timeout)
         UINT_PTR timer_id = 0;
         if (timeout > 0) {
             timer_id = SetTimer(NULL, 0, timeout, NULL);
-            message_result = GetMessage(&msg, 0, 0, 0);
+            message_result = GetMessageImpl(&msg, 0, 0, 0);
             KillTimer(NULL, timer_id);
         } else if (timeout == 0) {
             message_result = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
         } else {
-            message_result = GetMessage(&msg, 0, 0, 0);
+            message_result = GetMessageImpl(&msg, 0, 0, 0);
         }
         if (message_result) {
             if (msg.message == WM_TIMER && !msg.hwnd && msg.wParam == timer_id) {
