@@ -42,7 +42,7 @@ function(SDL_AddCommonCompilerFlags TARGET)
     cmake_pop_check_state()
   endif()
 
-  if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
+  if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC OR USE_TCC)
     if(MINGW)
       # See if GCC's -gdwarf-4 is supported
       # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
