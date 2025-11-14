@@ -515,8 +515,10 @@ check_linker_supports_version_file(HAVE_WL_VERSION_SCRIPT)
 if(HAVE_WL_VERSION_SCRIPT)
   sdl_shared_link_options("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
 else()
-   # tcc silently ignores linker flags that it does not support
-  if((LINUX AND LIBC_IS_GLIBC) OR ANDROID AND NOT USE_TCC)
+   # When building with tcc on Linux+glibc or Android, avoid emitting an error
+   # for lack of support of the version-script linker flag: the option will be
+   # silently ignored by the compiler and the build will still succeed.
+   if(((LINUX AND LIBC_IS_GLIBC) OR ANDROID) AND (NOT USE_TCC))
     message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
   endif()
 endif()
