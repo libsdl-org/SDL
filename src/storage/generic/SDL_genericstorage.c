@@ -345,21 +345,22 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
     char *prepend = NULL;
     bool is_absolute = false;
 
-    if (path && !*path) {
-        path = NULL;  // so we don't end up with str[-1] later due to empty string.
+    if (!path || !*path) {
+#ifdef SDL_PLATFORM_WINDOWS
+        path = "C:/";
+#else
+        path = "/";
+#endif
     }
 
-    if (path) {
-        #ifdef SDL_PLATFORM_WINDOWS
-        const char ch = (char) SDL_toupper(path[0]);
-        is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
-                      (ch == '\\') ||  // some sort of absolute Windows-style path.
-                      (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/')));  // an absolute path with a drive letter.
-        #else
-        is_absolute = (path[0] == '/');   // some sort of absolute Unix-style path.
-        #endif
-    }
-
+#ifdef SDL_PLATFORM_WINDOWS
+    const char ch = (char) SDL_toupper(path[0]);
+    is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
+                  (ch == '\\') ||  // some sort of absolute Windows-style path.
+                  (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/')));  // an absolute path with a drive letter.
+#else
+    is_absolute = (path[0] == '/');   // some sort of absolute Unix-style path.
+#endif
     if (!is_absolute) {
         prepend = SDL_GetCurrentDirectory();
         if (!prepend) {
@@ -367,21 +368,18 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
         }
     }
 
-    const char *finalpath = path ? path : prepend;
-    SDL_assert(finalpath != NULL);  // _one_ of these had to be non-NULL...
-    const size_t len = SDL_strlen(finalpath);
-    SDL_assert(len > 0);  // _one_ of these had to be non-empty...
+    const size_t len = SDL_strlen(path);
     const char *appended_separator = "";
-    #ifdef SDL_PLATFORM_WINDOWS
-    if ((finalpath[len-1] != '/') && (finalpath[len-1] != '\\')) {
+#ifdef SDL_PLATFORM_WINDOWS
+    if ((path[len-1] != '/') && (path[len-1] != '\\')) {
         appended_separator = "/";
     }
-    #else
-    if (finalpath[len-1] != '/') {
+#else
+    if (path[len-1] != '/') {
         appended_separator = "/";
     }
-    #endif
-    const int rc = SDL_asprintf(&basepath, "%s%s%s", prepend ? prepend : "", path ? path : "", appended_separator);
+#endif
+    const int rc = SDL_asprintf(&basepath, "%s%s%s", prepend ? prepend : "", path, appended_separator);
     SDL_free(prepend);
     if (rc < 0) {
         return NULL;
