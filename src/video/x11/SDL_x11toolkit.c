@@ -2387,7 +2387,7 @@ static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control
             control->lines[i].rect.y = 0;
         }
     }
-    
+
 #ifdef HAVE_FRIBIDI_H
     if (base_control->window->fribidi) {
         FriBidiParType first_ndn_dir;
@@ -2505,7 +2505,7 @@ int X11Toolkit_GetLabelControlFirstLineHeight(SDL_ToolkitControlX11 *control) {
 
     label_control = (SDL_ToolkitLabelControlX11 *)control;
 
-	return label_control->lines[0].rect.h;
+    return label_control->lines[0].rect.h;
 }
 
 void X11Toolkit_SignalWindowClose(SDL_ToolkitWindowX11 *data) {
