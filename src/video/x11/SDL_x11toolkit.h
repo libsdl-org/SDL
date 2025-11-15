@@ -32,6 +32,9 @@
 #ifdef HAVE_FRIBIDI_H
 #include "../../core/unix/SDL_fribidi.h"
 #endif
+#ifdef HAVE_LIBTHAI_H
+#include "../../core/unix/SDL_libthai.h"
+#endif
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
@@ -49,6 +52,22 @@ typedef enum SDL_ToolkitChildModeX11
     SDL_TOOLKIT_WINDOW_MODE_X11_MENU,
     SDL_TOOLKIT_WINDOW_MODE_X11_TOOLTIP
 } SDL_ToolkitWindowModeX11;
+
+typedef enum SDL_ToolkitThaiEncodingX11
+{
+    SDL_TOOLKIT_THAI_ENCODING_X11_NONE,
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS, /* -0 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS_WIN, /* -2 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS_MAC, /* -1 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_8859,
+    SDL_TOOLKIT_THAI_ENCODING_X11_UNICODE
+} SDL_ToolkitThaiEncodingX11;
+
+typedef enum SDL_ToolkitThaiFontX11
+{
+    SDL_TOOLKIT_THAI_FONT_X11_OFFSET,
+    SDL_TOOLKIT_THAI_FONT_X11_CELL
+} SDL_ToolkitThaiFontX11;
 
 typedef struct SDL_ToolkitWindowX11
 {
@@ -119,7 +138,9 @@ typedef struct SDL_ToolkitWindowX11
     /* Font */
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
-
+    SDL_ToolkitThaiEncodingX11 thai_encoding;
+    SDL_ToolkitThaiFontX11 thai_font;
+    
     /* Control colors */
     const SDL_MessageBoxColor *color_hints;
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
@@ -162,6 +183,10 @@ typedef struct SDL_ToolkitWindowX11
     /* BIDI engine */
     SDL_FriBidi *fribidi;
     bool do_shaping;
+#endif
+
+#ifdef HAVE_LIBTHAI_H
+    SDL_LibThai *th;
 #endif
 
     bool flip_interface;
