@@ -3,6 +3,7 @@ macro(SDL_DetectCompiler)
   set(USE_GCC FALSE)
   set(USE_INTELCC FALSE)
   set(USE_QCC FALSE)
+  set(USE_TCC FALSE)
   if(CMAKE_C_COMPILER_ID MATCHES "Clang|IntelLLVM")
     set(USE_CLANG TRUE)
     # Visual Studio 2019 v16.2 added support for Clang/LLVM.
@@ -16,6 +17,8 @@ macro(SDL_DetectCompiler)
     set(USE_INTELCC TRUE)
   elseif(CMAKE_C_COMPILER_ID MATCHES "QCC")
     set(USE_QCC TRUE)
+  elseif(CMAKE_C_COMPILER_ID MATCHES "TinyCC")
+    set(USE_TCC TRUE)
   endif()
 endmacro()
 
@@ -39,7 +42,7 @@ function(SDL_AddCommonCompilerFlags TARGET)
     cmake_pop_check_state()
   endif()
 
-  if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
+  if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC OR USE_TCC)
     if(MINGW)
       # See if GCC's -gdwarf-4 is supported
       # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101377 for why this is needed on Windows
@@ -158,6 +161,10 @@ function(SDL_AddCommonCompilerFlags TARGET)
     if(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS)
       sdl_target_compile_option_all_languages(${TARGET} "-fdiagnostics-color=always")
     endif()
+  endif()
+
+  if(USE_TCC)
+      sdl_target_compile_option_all_languages(${TARGET} "-DSTBI_NO_SIMD")
   endif()
 endfunction()
 
