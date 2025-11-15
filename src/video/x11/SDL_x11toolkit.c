@@ -603,7 +603,7 @@ SDL_ListNode *X11Toolkit_MakeTextElements(SDL_ToolkitWindowX11 *data, char *txt,
     
 #ifdef HAVE_FRIBIDI_H
     if (par) {
-        *par = FRIBIDI_TYPE_LTR;
+        *par = FRIBIDI_PAR_LTR;
     }
     if (data->fribidi) {
         char *fstr;
