@@ -341,29 +341,52 @@ static const SDL_StorageInterface GENERIC_file_iface = {
 SDL_Storage *GENERIC_OpenFileStorage(const char *path)
 {
     SDL_Storage *result;
-    size_t len = 0;
     char *basepath = NULL;
+    char *prepend = NULL;
+    bool is_absolute = false;
+
+    if (path && !*path) {
+        path = NULL;  // so we don't end up with str[-1] later due to empty string.
+    }
 
     if (path) {
-        len += SDL_strlen(path);
-    }
-    if (len > 0) {
         #ifdef SDL_PLATFORM_WINDOWS
-        const bool appended_separator = (path[len-1] == '/') || (path[len-1] == '\\');
+        const char ch = (char) SDL_toupper(path[0]);
+        is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
+                      (ch == '\\') ||  // some sort of absolute Windows-style path.
+                      (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/')));  // an absolute path with a drive letter.
         #else
-        const bool appended_separator = (path[len-1] == '/');
+        is_absolute = (path[0] == '/');   // some sort of absolute Unix-style path.
         #endif
-        if (appended_separator) {
-            basepath = SDL_strdup(path);
-            if (!basepath) {
-                return NULL;
-            }
-        } else {
-            if (SDL_asprintf(&basepath, "%s/", path) < 0) {
-                return NULL;
-            }
+    }
+
+    if (!is_absolute) {
+        prepend = SDL_GetCurrentDirectory();
+        if (!prepend) {
+            return NULL;
         }
     }
+
+    const char *finalpath = path ? path : prepend;
+    SDL_assert(finalpath != NULL);  // _one_ of these had to be non-NULL...
+    const size_t len = SDL_strlen(finalpath);
+    SDL_assert(len > 0);  // _one_ of these had to be non-empty...
+    const char *appended_separator = "";
+    #ifdef SDL_PLATFORM_WINDOWS
+    if ((finalpath[len-1] != '/') && (finalpath[len-1] != '\\')) {
+        appended_separator = "/";
+    }
+    #else
+    if (finalpath[len-1] != '/') {
+        appended_separator = "/";
+    }
+    #endif
+    const int rc = SDL_asprintf(&basepath, "%s%s%s", prepend ? prepend : "", path ? path : "", appended_separator);
+    SDL_free(prepend);
+    if (rc < 0) {
+        return NULL;
+    }
+
     result = SDL_OpenStorage(&GENERIC_file_iface, basepath);
     if (result == NULL) {
         SDL_free(basepath);
