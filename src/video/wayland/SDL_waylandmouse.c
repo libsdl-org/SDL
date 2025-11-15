@@ -478,6 +478,7 @@ static void Wayland_DestroyCursorThread(SDL_VideoData *data)
 
         WAYLAND_wl_proxy_wrapper_destroy(cursor_thread_context.compositor_wrapper);
         WAYLAND_wl_event_queue_destroy(cursor_thread_context.queue);
+        SDL_DestroyMutex(cursor_thread_context.lock);
         SDL_zero(cursor_thread_context);
     }
 }
