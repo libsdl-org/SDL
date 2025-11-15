@@ -1268,14 +1268,14 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
 #endif
 
-    if (_this->gl_config.framebuffer_srgb_capable) {
+    if (_this->gl_config.framebuffer_srgb_capable >= 0) {
 #ifdef EGL_KHR_gl_colorspace
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
             attribs[attr++] = EGL_GL_COLORSPACE_KHR;
-            attribs[attr++] = EGL_GL_COLORSPACE_SRGB_KHR;
+            attribs[attr++] = _this->gl_config.framebuffer_srgb_capable ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
         } else
 #endif
-        {
+        if (_this->gl_config.framebuffer_srgb_capable > 0) {
             SDL_SetError("EGL implementation does not support sRGB system framebuffers");
             return EGL_NO_SURFACE;
         }

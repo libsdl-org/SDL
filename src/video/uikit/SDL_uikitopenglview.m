@@ -67,7 +67,7 @@
                         aBits:(int)aBits
                     depthBits:(int)depthBits
                   stencilBits:(int)stencilBits
-                         sRGB:(BOOL)sRGB
+                         sRGB:(int)sRGB
                  multisamples:(int)multisamples
                       context:(EAGLContext *)glcontext
 {
@@ -93,7 +93,7 @@
             samples = SDL_min(samples, maxsamples);
         }
 
-        if (sRGB) {
+        if (sRGB > 0) {
             colorFormat = kEAGLColorFormatSRGBA8;
             colorBufferFormat = GL_SRGB8_ALPHA8;
         } else if (rBits >= 8 || gBits >= 8 || bBits >= 8 || aBits > 0) {
