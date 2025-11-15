@@ -362,7 +362,7 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
                 } else if (SDL_strstr(font_names[i], "iso10646-1")) {
                     thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_UNICODE;
                 }
-                                
+                                                
                 /* TODO: Set encoding to none if the font does not actually have any Thai codepoints */
                 if (thai_encoding != SDL_TOOLKIT_THAI_ENCODING_X11_NONE) {
                     XFontStruct *font_struct;
@@ -2443,7 +2443,10 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     if (!utf8) {
         return NULL;
     }
-    
+ 
+    if (!SDL_strcmp(utf8, "")) {
+        return NULL;
+    }   
     control = (SDL_ToolkitLabelControlX11 *)SDL_malloc(sizeof(SDL_ToolkitLabelControlX11));
     base_control = (SDL_ToolkitControlX11 *)control;
     if (!control) {
@@ -2497,11 +2500,12 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     return base_control;
 }
 
-int X11Toolkit_GetIconControlCharY(SDL_ToolkitControlX11 *control) {
-    SDL_ToolkitIconControlX11 *icon_control;
+int X11Toolkit_GetLabelControlFirstLineHeight(SDL_ToolkitControlX11 *control) {
+    SDL_ToolkitLabelControlX11 *label_control;
 
-    icon_control = (SDL_ToolkitIconControlX11 *)control;
-    return icon_control->icon_char_y - icon_control->icon_char_a + icon_control->icon_char_h/4;
+    label_control = (SDL_ToolkitLabelControlX11 *)control;
+
+	return label_control->lines[0].rect.h;
 }
 
 void X11Toolkit_SignalWindowClose(SDL_ToolkitWindowX11 *data) {

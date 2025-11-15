@@ -256,10 +256,10 @@ extern bool X11Toolkit_NotifyControlOfSizeChange(SDL_ToolkitControlX11 *control)
 
 /* ICON CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window, SDL_MessageBoxFlags flags);
-extern int X11Toolkit_GetIconControlCharY(SDL_ToolkitControlX11 *control);
 
 /* LABEL CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8);
+extern int X11Toolkit_GetLabelControlFirstLineHeight(SDL_ToolkitControlX11 *control);
 
 /* BUTTON CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *window, const SDL_MessageBoxButtonData *data);
