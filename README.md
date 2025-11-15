@@ -1,7 +1,17 @@
-# This is Ryan's temporary experimental fork of SDL.
 
-I'm trying out various things that might be merged later.
+Simple DirectMedia Layer (SDL for short) is a cross-platform library
+designed to make it easy to write multi-media software, such as games
+and emulators.
 
-If you want SDL, this is not the fork you want. You want
-[the main repository](https://github.com/libsdl-org/SDL).
+You can find the latest release and additional information at:
+https://www.libsdl.org/
 
+Installation instructions and a quick introduction is available in
+[INSTALL.md](INSTALL.md)
+
+This library is distributed under the terms of the zlib license,
+available in [LICENSE.txt](LICENSE.txt).
+
+Enjoy!
+
+Sam Lantinga (slouken@libsdl.org)
