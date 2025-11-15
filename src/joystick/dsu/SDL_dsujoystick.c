@@ -37,7 +37,6 @@
 
 /* Additional Windows headers */
 #ifdef _WIN32
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <ws2tcpip.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")
@@ -77,20 +76,41 @@ typedef int socklen_t;
 #define SERVER_TIMEOUT_INTERVAL 2000     /* ms */
 #define GRAVITY_ACCELERATION 9.80665f    /* m/s² */
 
-/* Internal DSU helper macros */
+/* Internal DSU helper macros and functions */
 #ifdef _WIN32
     #define DSU_htons(x) htons(x)
     #define DSU_htonl(x) htonl(x)
-    #define DSU_ipv4_addr(str) inet_addr(str)
     #define DSU_SOCKET_ERROR SOCKET_ERROR
     #define DSU_INVALID_SOCKET INVALID_SOCKET
 #else
     #define DSU_htons(x) htons(x)
     #define DSU_htonl(x) htonl(x)
-    #define DSU_ipv4_addr(str) inet_addr(str)
     #define DSU_SOCKET_ERROR (-1)
     #define DSU_INVALID_SOCKET (-1)
 #endif
+
+/* Helper function to convert IP address string to network byte order */
+static unsigned long DSU_ipv4_addr(const char *str)
+{
+    struct sockaddr_in addr;
+    SDL_memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+
+#ifdef _WIN32
+    /* Use InetPton on Windows to avoid deprecated API warning */
+    if (InetPtonA(AF_INET, str, &addr.sin_addr) == 1) {
+        return addr.sin_addr.s_addr;
+    }
+#else
+    /* Use inet_pton on Unix-like systems */
+    if (inet_pton(AF_INET, str, &addr.sin_addr) == 1) {
+        return addr.sin_addr.s_addr;
+    }
+#endif
+
+    /* Return INADDR_NONE on error (same as inet_addr would) */
+    return (unsigned long)(-1);
+}
 
 /* Global DSU context pointer */
 struct DSU_Context_t *s_dsu_ctx = NULL;
