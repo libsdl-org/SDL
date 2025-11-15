@@ -89,6 +89,10 @@
 // Focus clickthrough timeout
 #define WAYLAND_FOCUS_CLICK_TIMEOUT_NS SDL_MS_TO_NS(10)
 
+// Timer rollover detection thresholds
+#define WAYLAND_TIMER_ROLLOVER_INTERVAL_LOW  (SDL_MAX_UINT32 / 16U)
+#define WAYLAND_TIMER_ROLLOVER_INTERVAL_HIGH (WAYLAND_TIMER_ROLLOVER_INTERVAL_LOW * 15U)
+
 // Scoped function declarations
 static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat);
 
@@ -215,15 +219,12 @@ static Uint64 Wayland_AdjustEventTimestampBase(Uint64 nsTimestamp)
  */
 static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
 {
-    static const Uint32 ROLLOVER_INTERVAL_LOW = SDL_MAX_UINT32 / 16;
-    static const Uint32 ROLLOVER_INTERVAL_HIGH = ROLLOVER_INTERVAL_LOW * 15;
-
     static Uint64 timestamp_offset = 0;
     static Uint32 last = 0;
     Uint64 timestamp = SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
 
     if (wl_timestamp_ms >= last) {
-        if (timestamp_offset && last < ROLLOVER_INTERVAL_LOW && wl_timestamp_ms > ROLLOVER_INTERVAL_HIGH) {
+        if (timestamp_offset && last < WAYLAND_TIMER_ROLLOVER_INTERVAL_LOW && wl_timestamp_ms > WAYLAND_TIMER_ROLLOVER_INTERVAL_HIGH) {
             // A time that crossed backwards across zero was received. Subtract the increased time base offset.
             timestamp -= SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
         } else {
@@ -233,7 +234,7 @@ static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
         /* Only increment the base time offset if the timer actually crossed forward across 0,
          * and not if this is just a timestamp from a slightly older event.
          */
-        if (wl_timestamp_ms < ROLLOVER_INTERVAL_LOW && last > ROLLOVER_INTERVAL_HIGH) {
+        if (wl_timestamp_ms < WAYLAND_TIMER_ROLLOVER_INTERVAL_LOW && last > WAYLAND_TIMER_ROLLOVER_INTERVAL_HIGH) {
             timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
             timestamp += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
             last = wl_timestamp_ms;
