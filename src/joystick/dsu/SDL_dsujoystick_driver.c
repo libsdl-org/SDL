@@ -405,7 +405,7 @@ static SDL_JoystickID DSU_JoystickGetDeviceInstanceID(int device_index)
     }
     SDL_UnlockMutex(mutex);
 
-    return -1;
+    return 0;
 }
 
 static bool DSU_JoystickOpen(SDL_Joystick *joystick, int device_index)
