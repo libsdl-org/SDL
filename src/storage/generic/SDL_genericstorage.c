@@ -263,12 +263,7 @@ static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID 
         }
     } else {
         const char *base = SDL_GetBasePath();
-        // On Android, SDL_GetBasePath() can be NULL: use empty base.
-#ifdef SDL_PLATFORM_ANDROID
-        basepath = base ? SDL_strdup(base) : SDL_strdup("");
-#else
         basepath = base ? SDL_strdup(base) : NULL;
-#endif
     }
 
     if (basepath != NULL) {
@@ -343,8 +338,13 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
     SDL_Storage *result;
     char *basepath = NULL;
     char *prepend = NULL;
-    bool is_absolute = false;
 
+#ifdef SDL_PLATFORM_ANDROID
+    // Use a base path of "." so the filesystem operations fall back to internal storage and the asset system
+    if (!path || !*path) {
+        path = "./";
+    }
+#else
     if (!path || !*path) {
 #ifdef SDL_PLATFORM_WINDOWS
         path = "C:/";
@@ -353,6 +353,7 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
 #endif
     }
 
+    bool is_absolute = false;
 #ifdef SDL_PLATFORM_WINDOWS
     const char ch = (char) SDL_toupper(path[0]);
     is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
@@ -367,6 +368,7 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
             return NULL;
         }
     }
+#endif // SDL_PLATFORM_ANDROID
 
     const size_t len = SDL_strlen(path);
     const char *appended_separator = "";
