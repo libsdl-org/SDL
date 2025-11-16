@@ -22,6 +22,8 @@
 
 #ifdef SDL_PROCESS_POSIX
 
+#define SDLIPC_FILENO 3
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -32,6 +34,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
+#include <limits.h>
 
 #include "../SDL_sysprocess.h"
 #include "../../io/SDL_iostream_c.h"
@@ -46,8 +50,18 @@
 #define READ_END 0
 #define WRITE_END 1
 
+#define PARENT_END 0
+#define CHILD_END 1
+
+#define SDL_IPC_ENVVAR "_SDL_IPC"
+
+struct SDL_IPC {
+    int socket;
+};
+
 struct SDL_ProcessData {
     pid_t pid;
+    SDL_IPC ipc;
 };
 
 static void CleanupStream(void *userdata, void *value)
@@ -88,6 +102,19 @@ static void IgnoreSignal(int sig)
     }
 }
 
+static bool CreateSockets(int fds[2])
+{
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
+        return false;
+    }
+
+    // Make sure the pipe isn't accidentally inherited by another thread creating a process
+    fcntl(fds[READ_END], F_SETFD, fcntl(fds[READ_END], F_GETFD) | FD_CLOEXEC);
+    fcntl(fds[WRITE_END], F_SETFD, fcntl(fds[WRITE_END], F_GETFD) | FD_CLOEXEC);
+
+    return true;
+}
+
 static bool CreatePipe(int fds[2])
 {
     if (pipe(fds) < 0) {
@@ -122,14 +149,15 @@ static bool GetStreamFD(SDL_PropertiesID props, const char *property, int *resul
     return true;
 }
 
-static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
+static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa, bool has_ipc)
 {
     DIR *dir = opendir("/proc/self/fd");
+    const int keep_fileno = has_ipc ? SDLIPC_FILENO : STDERR_FILENO;
     if (dir) {
         struct dirent *entry;
         while ((entry = readdir(dir)) != NULL) {
             int fd = SDL_atoi(entry->d_name);
-            if (fd <= STDERR_FILENO) {
+            if (fd <= keep_fileno) {
                 continue;
             }
 
@@ -144,7 +172,7 @@ static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
         }
         closedir(dir);
     } else {
-        for (int fd = (int)(sysconf(_SC_OPEN_MAX) - 1); fd > STDERR_FILENO; --fd) {
+        for (int fd = (int)(sysconf(_SC_OPEN_MAX) - 1); fd > keep_fileno; --fd) {
             int flags = fcntl(fd, F_GETFD);
             if (flags < 0 || (flags & FD_CLOEXEC)) {
                 continue;
@@ -168,10 +196,21 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     bool redirect_stderr = SDL_GetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, false) &&
                            !SDL_HasProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER);
+    bool sdl_ipc = SDL_GetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_SDL_IPC, false);
     int stdin_pipe[2] = { -1, -1 };
     int stdout_pipe[2] = { -1, -1 };
     int stderr_pipe[2] = { -1, -1 };
+    int sockets[2] = { -1, -1 };
     int fd = -1;
+
+    if (sdl_ipc) {
+        // allows children who have already opened a new file descriptor
+        // to distinguish between "fd 3 came from SDL" vs. "fd 3 is the fd I just opened"
+        //
+        // also gives us the option to change fd logic in the future without breaking
+        // clients
+        SDL_SetEnvironmentVariable(env, SDL_IPC_ENVVAR, "3", true);
+    }
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
     envp = SDL_GetEnvironmentVariables(env);
@@ -296,6 +335,16 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         break;
     }
 
+    if (sdl_ipc) {
+        if (!CreateSockets(sockets)) {
+            goto posix_spawn_fail_all;
+        }
+        if (posix_spawn_file_actions_adddup2(&fa, sockets[CHILD_END], SDLIPC_FILENO) != 0) {
+            SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
+            goto posix_spawn_fail_all;
+        }
+    }
+
     if (redirect_stderr) {
         if (posix_spawn_file_actions_adddup2(&fa, STDOUT_FILENO, STDERR_FILENO) != 0) {
             SDL_SetError("posix_spawn_file_actions_adddup2 failed: %s", strerror(errno));
@@ -333,7 +382,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         }
     }
 
-    if (!AddFileDescriptorCloseActions(&fa)) {
+    if (!AddFileDescriptorCloseActions(&fa, sdl_ipc)) {
         goto posix_spawn_fail_all;
     }
 
@@ -400,6 +449,12 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         close(stderr_pipe[WRITE_END]);
     }
 
+    if (sdl_ipc) {
+        data->ipc.socket = sockets[PARENT_END];
+        close(sockets[CHILD_END]);
+    }
+    SDL_SetBooleanProperty(process->props, SDL_PROP_PROCESS_SDL_IPC, sdl_ipc);
+
     posix_spawn_file_actions_destroy(&fa);
     posix_spawnattr_destroy(&attr);
     SDL_free(envp);
@@ -432,6 +487,12 @@ posix_spawn_fail_none:
     }
     if (stderr_pipe[WRITE_END] >= 0) {
         close(stderr_pipe[WRITE_END]);
+    }
+    if (sockets[PARENT_END] >= 0) {
+        close(sockets[PARENT_END]);
+    }
+    if (sockets[CHILD_END] >= 0) {
+        close(sockets[CHILD_END]);
     }
     SDL_free(envp);
     return false;
@@ -509,6 +570,57 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     }
 
     SDL_free(process->internal);
+}
+
+SDL_IPC * SDL_SYS_GetProcessIPC(SDL_Process *process)
+{
+    SDL_ProcessData *data = (SDL_ProcessData*)process->internal;
+    return &data->ipc;
+}
+
+SDL_IPC * SDL_SYS_GetParentIPC(void)
+{
+    const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name);
+
+    // hmmmm
+    static SDL_IPC ipc = {
+        .socket = -1,
+    };
+
+    SDL_Environment *env = NULL;
+
+    if (ipc.socket == -1) {
+        env = SDL_GetEnvironment();
+        if (!env) {
+            goto return_null;
+        }
+
+        const char *env_fd = SDL_GetEnvironmentVariable(env, SDL_IPC_ENVVAR);
+        if (!env_fd) {
+            goto destroy_environment;
+        }
+
+        char *end = NULL;
+        long result = strtol(env_fd, &end, 10);
+
+        const bool error = end == NULL
+            || end == env_fd
+            || result > INT_MAX
+            || result < 0;
+
+        if (error) {
+            goto destroy_environment;
+        }
+
+        ipc.socket = (int)result;
+    }
+
+    return &ipc;
+
+destroy_environment:
+    SDL_DestroyEnvironment(env);
+return_null:
+    return NULL;
 }
 
 #endif // SDL_PROCESS_POSIX

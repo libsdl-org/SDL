@@ -202,3 +202,13 @@ void SDL_DestroyProcess(SDL_Process *process)
     SDL_DestroyProperties(process->props);
     SDL_free(process);
 }
+
+SDL_IPC * SDL_GetProcessIPC(SDL_Process *process)
+{
+    return SDL_SYS_GetProcessIPC(process);
+}
+
+SDL_IPC * SDL_GetParentIPC(void)
+{
+    return SDL_SYS_GetParentIPC();
+}

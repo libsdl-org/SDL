@@ -24,7 +24,6 @@
 
 #include "../SDL_sysprocess.h"
 
-
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     return SDL_Unsupported();
@@ -43,6 +42,16 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
 void SDL_SYS_DestroyProcess(SDL_Process *process)
 {
     return;
+}
+
+SDL_IPC * SDL_SYS_GetProcessIPC(SDL_Process *process)
+{
+    return NULL;
+}
+
+SDL_IPC * SDL_SYS_GetParentIPC(void)
+{
+    return NULL;
 }
 
 #endif // SDL_PROCESS_DUMMY

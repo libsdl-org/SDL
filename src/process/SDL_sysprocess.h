@@ -38,5 +38,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
 bool SDL_SYS_KillProcess(SDL_Process *process, bool force);
 bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode);
 void SDL_SYS_DestroyProcess(SDL_Process *process);
+SDL_IPC * SDL_SYS_GetProcessIPC(SDL_Process *process);
+SDL_IPC * SDL_SYS_GetParentIPC(void);
 
 #endif // SDL_sysprocess_h_
