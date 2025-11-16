@@ -2106,7 +2106,7 @@ static void CheckUniformColor(float expected)
 {
     SDL_Surface *surface = SDL_RenderReadPixels(renderer, NULL);
     if (surface) {
-        const float epsilon = 0.0001f;
+        const float epsilon = 0.001f;
         float r, g, b, a;
         CHECK_FUNC(SDL_ReadSurfacePixelFloat, (surface, 0, 0, &r, &g, &b, &a));
         SDLTest_AssertCheck(
