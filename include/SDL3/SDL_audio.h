@@ -1336,7 +1336,7 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * \threadsafety It is safe to call this function from any thread, as it holds
  *               a stream-specific mutex while running. Don't change the
  *               stream's format to have a different number of channels from a
- *               a different thread at the same time, though!
+ *               different thread at the same time, though!
  *
  * \since This function is available since SDL 3.2.0.
  *
