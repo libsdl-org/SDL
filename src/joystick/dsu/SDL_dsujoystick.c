@@ -72,37 +72,6 @@ typedef int socklen_t;
         #include <unistd.h>
         #include <errno.h>
         #include <sys/ioctl.h>
-    /* PlayStation Vita */
-    #elif defined(__VITA__)
-        #include <psp2/net/net.h>
-        #include <psp2/net/netctl.h>
-        #include <psp2/errno.h>
-        #define socklen_t unsigned int
-        #define closesocket sceNetSocketClose
-        #define EAGAIN SCE_NET_EAGAIN
-        #define EWOULDBLOCK SCE_NET_EWOULDBLOCK
-    /* PlayStation Portable */
-    #elif defined(__PSP__)
-        #include <pspnet.h>
-        #include <pspnet_inet.h>
-        #include <pspnet_resolver.h>
-        #include <psperror.h>
-        #define socklen_t unsigned int
-        #define closesocket sceNetInetClose
-    /* Nintendo 3DS */
-    #elif defined(__3DS__)
-        #include <3ds.h>
-        #include <arpa/inet.h>
-        #include <fcntl.h>
-        #include <errno.h>
-        #define closesocket closesocket  /* 3DS uses closesocket like Windows */
-    /* PlayStation 2 */
-    #elif defined(__PS2__)
-        /* PS2 networking support - requires ps2sdk */
-        #include <ps2ip.h>
-        #include <errno.h>
-        #define socklen_t unsigned int
-        #define closesocket lwip_close
     /* RISC OS */
     #elif defined(__riscos__)
         #include <sys/socket.h>
@@ -187,31 +156,10 @@ void DSU_RequestControllerInfo(DSU_Context *ctx, Uint8 slot);
 void DSU_RequestControllerData(DSU_Context *ctx, Uint8 slot);
 
 /* Platform-specific network function wrappers */
-#if defined(__VITA__)
-    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
-        sceNetSendto((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
-        sceNetRecvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_GetLastError() sce_net_errno
-#elif defined(__PSP__)
-    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
-        sceNetInetSendto((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
-        sceNetInetRecvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_GetLastError() sceNetInetGetErrno()
-#elif defined(__PS2__)
-    /* PS2 uses lwIP */
-    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
-        lwip_sendto((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
-        lwip_recvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
-    #define DSU_GetLastError() errno
-#else
-    /* Standard sendto/recvfrom */
-    #define DSU_sendto sendto
-    #define DSU_recvfrom recvfrom
-    #define DSU_GetLastError() errno
-#endif
+/* Standard sendto/recvfrom for all supported platforms */
+#define DSU_sendto sendto
+#define DSU_recvfrom recvfrom
+#define DSU_GetLastError() errno
 
 /* Socket helpers implementation */
 int DSU_InitSockets(void)
@@ -219,18 +167,6 @@ int DSU_InitSockets(void)
 #ifdef _WIN32
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData);
-#elif defined(__VITA__)
-    /* PS Vita network initialization is handled by SDL main */
-    return 0;
-#elif defined(__PSP__)
-    /* PSP network initialization is handled by SDL main */
-    return 0;
-#elif defined(__PS2__)
-    /* PS2 network initialization is handled by SDL main */
-    return 0;
-#elif defined(__3DS__)
-    /* 3DS network initialization is handled by SDL main */
-    return 0;
 #else
     /* Unix/Linux - no initialization needed */
     return 0;
@@ -241,8 +177,6 @@ void DSU_CleanupSockets(void)
 {
 #ifdef _WIN32
     WSACleanup();
-#elif defined(__VITA__) || defined(__PSP__) || defined(__PS2__) || defined(__3DS__)
-    /* Console platforms handle cleanup elsewhere */
 #else
     /* Unix/Linux - no cleanup needed */
 #endif
@@ -255,17 +189,6 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
     int reuse = 1;
 #ifdef _WIN32
     u_long mode = 1;
-#elif defined(__VITA__)
-    /* PS Vita uses different socket creation */
-    int nonblock = 1;
-#elif defined(__PSP__)
-    /* PSP socket creation */
-#elif defined(__PS2__)
-    /* PS2 socket creation */
-    int nb = 1;
-#elif defined(__3DS__)
-    /* 3DS socket creation */
-    int nonblock = 1;
 #else
     int flags;
 #if defined(FIONBIO)
@@ -273,41 +196,17 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
 #endif
 #endif
 
-#if defined(__VITA__)
-    sock = sceNetSocket("DSU_Socket", AF_INET, SOCK_DGRAM, 0);
-#elif defined(__PSP__)
-    sock = sceNetInetSocket(AF_INET, SOCK_DGRAM, 0);
-#elif defined(__PS2__)
-    sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
-#elif defined(__3DS__)
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-#else
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-#endif
     if (sock == DSU_INVALID_SOCKET) {
         return DSU_INVALID_SOCKET;
     }
 
     /* Allow address reuse */
-#if !defined(__VITA__) && !defined(__PSP__) && !defined(__PS2__)  /* These platforms may not support SO_REUSEADDR */
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
-#endif
 
     /* Set socket to non-blocking */
 #ifdef _WIN32
     ioctlsocket(sock, FIONBIO, &mode);
-#elif defined(__VITA__)
-    sceNetSetSockOpt(sock, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &nonblock, sizeof(nonblock));
-#elif defined(__PSP__)
-    /* PSP: Set non-blocking mode differently */
-    sceNetInetSetNonblock(sock, 1);
-#elif defined(__PS2__)
-    /* PS2: lwIP non-blocking mode */
-    int nb = 1;
-    lwip_ioctl(sock, FIONBIO, &nb);
-#elif defined(__3DS__)
-    /* 3DS: Use fcntl for non-blocking */
-    fcntl(sock, F_SETFL, O_NONBLOCK);
 #else
 #if defined(FIONBIO)
     if (ioctl(sock, FIONBIO, &nonblock) < 0) {
