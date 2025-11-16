@@ -54,19 +54,84 @@ typedef int socklen_t;
 
 /* Platform-specific socket includes */
 #ifndef _WIN32
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
-    #include <fcntl.h>
-    #include <unistd.h>
-    #include <errno.h>
-    #ifdef HAVE_SYS_IOCTL_H
+    /* iOS/tvOS/watchOS/visionOS - Same as macOS */
+    #if defined(__APPLE__)
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <arpa/inet.h>
+        #include <fcntl.h>
+        #include <unistd.h>
+        #include <errno.h>
         #include <sys/ioctl.h>
+    /* QNX */
+    #elif defined(__QNXNTO__)
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <arpa/inet.h>
+        #include <fcntl.h>
+        #include <unistd.h>
+        #include <errno.h>
+        #include <sys/ioctl.h>
+    /* PlayStation Vita */
+    #elif defined(__VITA__)
+        #include <psp2/net/net.h>
+        #include <psp2/net/netctl.h>
+        #include <psp2/errno.h>
+        #define socklen_t unsigned int
+        #define closesocket sceNetSocketClose
+        #define EAGAIN SCE_NET_EAGAIN
+        #define EWOULDBLOCK SCE_NET_EWOULDBLOCK
+    /* PlayStation Portable */
+    #elif defined(__PSP__)
+        #include <pspnet.h>
+        #include <pspnet_inet.h>
+        #include <pspnet_resolver.h>
+        #include <psperror.h>
+        #define socklen_t unsigned int
+        #define closesocket sceNetInetClose
+    /* Nintendo 3DS */
+    #elif defined(__3DS__)
+        #include <3ds.h>
+        #include <arpa/inet.h>
+        #include <fcntl.h>
+        #include <errno.h>
+        #define closesocket closesocket  /* 3DS uses closesocket like Windows */
+    /* PlayStation 2 */
+    #elif defined(__PS2__)
+        /* PS2 networking support - requires ps2sdk */
+        #include <ps2ip.h>
+        #include <errno.h>
+        #define socklen_t unsigned int
+        #define closesocket lwip_close
+    /* RISC OS */
+    #elif defined(__riscos__)
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <arpa/inet.h>
+        #include <fcntl.h>
+        #include <unistd.h>
+        #include <errno.h>
+    /* Standard Unix/Linux */
+    #else
+        #include <sys/socket.h>
+        #include <netinet/in.h>
+        #include <arpa/inet.h>
+        #include <fcntl.h>
+        #include <unistd.h>
+        #include <errno.h>
+        #ifdef HAVE_SYS_IOCTL_H
+            #include <sys/ioctl.h>
+        #endif
+        #ifdef __sun
+            #include <sys/filio.h>
+        #endif
+        #define closesocket close
     #endif
-    #ifdef __sun
-        #include <sys/filio.h>
+
+    /* Default closesocket if not defined */
+    #ifndef closesocket
+        #define closesocket close
     #endif
-    #define closesocket close
 #endif
 
 #include <math.h>
@@ -121,21 +186,65 @@ struct DSU_Context_t *s_dsu_ctx = NULL;
 void DSU_RequestControllerInfo(DSU_Context *ctx, Uint8 slot);
 void DSU_RequestControllerData(DSU_Context *ctx, Uint8 slot);
 
+/* Platform-specific network function wrappers */
+#if defined(__VITA__)
+    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
+        sceNetSendto((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
+        sceNetRecvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_GetLastError() sce_net_errno
+#elif defined(__PSP__)
+    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
+        sceNetInetSendto((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
+        sceNetInetRecvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_GetLastError() sceNetInetGetErrno()
+#elif defined(__PS2__)
+    /* PS2 uses lwIP */
+    #define DSU_sendto(sock, buf, len, flags, addr, addrlen) \
+        lwip_sendto((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_recvfrom(sock, buf, len, flags, addr, addrlen) \
+        lwip_recvfrom((sock), (buf), (len), (flags), (addr), (addrlen))
+    #define DSU_GetLastError() errno
+#else
+    /* Standard sendto/recvfrom */
+    #define DSU_sendto sendto
+    #define DSU_recvfrom recvfrom
+    #define DSU_GetLastError() errno
+#endif
+
 /* Socket helpers implementation */
 int DSU_InitSockets(void)
 {
 #ifdef _WIN32
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData);
+#elif defined(__VITA__)
+    /* PS Vita network initialization is handled by SDL main */
+    return 0;
+#elif defined(__PSP__)
+    /* PSP network initialization is handled by SDL main */
+    return 0;
+#elif defined(__PS2__)
+    /* PS2 network initialization is handled by SDL main */
+    return 0;
+#elif defined(__3DS__)
+    /* 3DS network initialization is handled by SDL main */
+    return 0;
 #else
+    /* Unix/Linux - no initialization needed */
     return 0;
 #endif
 }
 
-void DSU_QuitSockets(void)
+void DSU_CleanupSockets(void)
 {
 #ifdef _WIN32
     WSACleanup();
+#elif defined(__VITA__) || defined(__PSP__) || defined(__PS2__) || defined(__3DS__)
+    /* Console platforms handle cleanup elsewhere */
+#else
+    /* Unix/Linux - no cleanup needed */
 #endif
 }
 
@@ -146,6 +255,17 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
     int reuse = 1;
 #ifdef _WIN32
     u_long mode = 1;
+#elif defined(__VITA__)
+    /* PS Vita uses different socket creation */
+    int nonblock = 1;
+#elif defined(__PSP__)
+    /* PSP socket creation */
+#elif defined(__PS2__)
+    /* PS2 socket creation */
+    int nb = 1;
+#elif defined(__3DS__)
+    /* 3DS socket creation */
+    int nonblock = 1;
 #else
     int flags;
 #if defined(FIONBIO)
@@ -153,17 +273,41 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
 #endif
 #endif
 
+#if defined(__VITA__)
+    sock = sceNetSocket("DSU_Socket", AF_INET, SOCK_DGRAM, 0);
+#elif defined(__PSP__)
+    sock = sceNetInetSocket(AF_INET, SOCK_DGRAM, 0);
+#elif defined(__PS2__)
+    sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
+#elif defined(__3DS__)
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+#else
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+#endif
     if (sock == DSU_INVALID_SOCKET) {
         return DSU_INVALID_SOCKET;
     }
 
     /* Allow address reuse */
+#if !defined(__VITA__) && !defined(__PSP__) && !defined(__PS2__)  /* These platforms may not support SO_REUSEADDR */
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
+#endif
 
     /* Set socket to non-blocking */
 #ifdef _WIN32
     ioctlsocket(sock, FIONBIO, &mode);
+#elif defined(__VITA__)
+    sceNetSetSockOpt(sock, SCE_NET_SOL_SOCKET, SCE_NET_SO_NBIO, &nonblock, sizeof(nonblock));
+#elif defined(__PSP__)
+    /* PSP: Set non-blocking mode differently */
+    sceNetInetSetNonblock(sock, 1);
+#elif defined(__PS2__)
+    /* PS2: lwIP non-blocking mode */
+    int nb = 1;
+    lwip_ioctl(sock, FIONBIO, &nb);
+#elif defined(__3DS__)
+    /* 3DS: Use fcntl for non-blocking */
+    fcntl(sock, F_SETFL, O_NONBLOCK);
 #else
 #if defined(FIONBIO)
     if (ioctl(sock, FIONBIO, &nonblock) < 0) {
@@ -276,15 +420,15 @@ static int DSU_SendPacket(DSU_Context *ctx, void *packet, size_t size)
     server.sin_port = DSU_htons(ctx->server_port);
     server.sin_addr.s_addr = DSU_ipv4_addr(ctx->server_address);
 
-    result = (sendto)(ctx->socket, (const char*)packet, (int)size, 0,
-                 (struct sockaddr *)&server, (int)sizeof(server));
+    result = DSU_sendto(ctx->socket, (const char*)packet, (int)size, 0,
+                        (struct sockaddr *)&server, (int)sizeof(server));
 
     if (result < 0) {
 #ifdef _WIN32
         int err = WSAGetLastError();
         SDL_Log("DSU: sendto failed with error %d\n", err);
 #else
-        SDL_Log("DSU: sendto failed with errno %d\n", errno);
+        SDL_Log("DSU: sendto failed with errno %d\n", DSU_GetLastError());
 #endif
     }
 
@@ -505,8 +649,8 @@ int SDLCALL DSU_ReceiverThread(void *data)
             SDL_Log("DSU: Receiver thread exiting - mutex destroyed\n");
             break;
         }
-        received = recvfrom(ctx->socket, (char*)buffer, sizeof(buffer), 0,
-                           (struct sockaddr *)&sender, &sender_len);
+        received = DSU_recvfrom(ctx->socket, (char*)buffer, sizeof(buffer), 0,
+                               (struct sockaddr *)&sender, &sender_len);
 
         if (received > (int)sizeof(DSU_Header)) {
             header = (DSU_Header *)buffer;
@@ -581,13 +725,14 @@ int SDLCALL DSU_ReceiverThread(void *data)
                 SDL_Delay(100);  /* Back off on errors */
             }
 #else
-            if (errno == EBADF) {
+            int err = DSU_GetLastError();
+            if (err == EBADF) {
                 /* Socket closed, exit gracefully */
                 SDL_Log("DSU: Socket closed, receiver thread exiting\n");
                 break;
             }
-            if (errno != EWOULDBLOCK && errno != EAGAIN && errno != EINTR) {
-                SDL_Log("DSU: recvfrom errno %d\n", errno);
+            if (err != EWOULDBLOCK && err != EAGAIN && err != EINTR) {
+                SDL_Log("DSU: recvfrom errno %d\n", err);
                 SDL_Delay(100);
             }
 #endif
@@ -656,7 +801,7 @@ static bool DSU_JoystickInit(void)
     /* Create UDP socket */
     ctx->socket = DSU_CreateSocket(ctx->client_port);
     if (ctx->socket == DSU_INVALID_SOCKET) {
-        DSU_QuitSockets();
+        DSU_CleanupSockets();
         SDL_free(ctx);
         return false;
     }
@@ -665,7 +810,7 @@ static bool DSU_JoystickInit(void)
     ctx->slots_mutex = SDL_CreateMutex();
     if (!ctx->slots_mutex) {
         DSU_CloseSocket(ctx->socket);
-        DSU_QuitSockets();
+        DSU_CleanupSockets();
         SDL_free(ctx);
         SDL_OutOfMemory();
         return false;
@@ -678,7 +823,7 @@ static bool DSU_JoystickInit(void)
     if (!ctx->receiver_thread) {
         SDL_DestroyMutex(ctx->slots_mutex);
         DSU_CloseSocket(ctx->socket);
-        DSU_QuitSockets();
+        DSU_CleanupSockets();
         SDL_free(ctx);
         SDL_SetError("Failed to create DSU receiver thread");
         return false;
@@ -1049,8 +1194,8 @@ static bool DSU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     server.sin_family = AF_INET;
     server.sin_port = DSU_htons(ctx->server_port);
     server.sin_addr.s_addr = DSU_ipv4_addr(ctx->server_address);
-    if ((sendto)(ctx->socket, (const char*)&packet, (int)sizeof(packet), 0,
-               (struct sockaddr *)&server, (int)sizeof(server)) < 0) {
+    if (DSU_sendto(ctx->socket, (const char*)&packet, (int)sizeof(packet), 0,
+                   (struct sockaddr *)&server, (int)sizeof(server)) < 0) {
         SDL_SetError("Failed to send rumble packet");
         return false;
     }
@@ -1314,7 +1459,7 @@ static void DSU_JoystickQuit(void)
     }
 
     /* Clean up sockets */
-    DSU_QuitSockets();
+    DSU_CleanupSockets();
 
     /* Clean up mutex */
     if (ctx->slots_mutex) {

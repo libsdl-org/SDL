@@ -1377,7 +1377,13 @@ if(SDL_JOYSTICK)
   endif()
 
   # DSU (DualShock UDP) client support
-  if(SDL_DSU_JOYSTICK AND NOT EMSCRIPTEN AND (WINDOWS OR LINUX OR ANDROID OR HAIKU OR FREEBSD OR NETBSD OR OPENBSD OR MACOS))
+  # Supported on platforms with UDP socket support (BSD sockets or WinSock)
+  # Note: Some of these platforms haven't been fully tested yet but should work in theory
+  if(SDL_DSU_JOYSTICK AND NOT EMSCRIPTEN AND
+     (WINDOWS OR LINUX OR ANDROID OR HAIKU OR FREEBSD OR NETBSD OR OPENBSD OR
+      MACOS OR IOS OR TVOS OR VISIONOS OR WATCHOS OR
+      QNX OR RISCOS OR
+      VITA OR PSP OR PS2 OR N3DS))
     set(SDL_JOYSTICK_DSU 1)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.c"
@@ -1389,6 +1395,30 @@ if(SDL_JOYSTICK)
       sdl_link_dependency(dsu LIBS ws2_32)
     elseif(HAIKU)
       sdl_link_dependency(dsu LIBS network)
+    elseif(QNX)
+      # QNX needs socket library
+      sdl_link_dependency(dsu LIBS socket)
+    elseif(VITA)
+      # PlayStation Vita networking libraries
+      sdl_link_dependency(dsu LIBS
+        SceNet_stub
+        SceNetCtl_stub
+      )
+    elseif(PSP)
+      # PSP networking libraries
+      sdl_link_dependency(dsu LIBS
+        pspnet
+        pspnet_inet
+        pspnet_resolver
+      )
+    elseif(PS2)
+      # PlayStation 2 uses ps2sdk's lwIP
+      sdl_link_dependency(dsu LIBS
+        ps2ip
+      )
+    elseif(N3DS)
+      # Nintendo 3DS networking libraries (if available)
+      sdl_link_dependency(dsu LIBS ctru)
     endif()
   endif()
 endif()
