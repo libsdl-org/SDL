@@ -11,6 +11,7 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 static void tryOpenURL(const char *url)
 {
@@ -25,19 +26,38 @@ static void tryOpenURL(const char *url)
 int main(int argc, char **argv)
 {
     int i;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
     }
 
-    if (argc > 1) {
-        for (i = 1; i < argc; i++) {
-            tryOpenURL(argv[i]);
+    /* Parse commandline */
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            if (argv[i][0] != '-') {
+                tryOpenURL(argv[i]);
+                consumed = 1;
+            }
         }
-    } else {
-        tryOpenURL("https://libsdl.org/");
+        if (consumed <= 0) {
+            static const char *options[] = {
+                "[URL [...]]",
+                NULL,
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return SDL_APP_FAILURE;
+        }
+        i += consumed;
     }
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }
