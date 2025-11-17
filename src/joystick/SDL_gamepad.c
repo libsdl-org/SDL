@@ -806,12 +806,14 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     int current_button = 0;
     int current_axis = 0;
     int misc_buttons = 0;
+    int misc_button, misc_end;
     bool digital_triggers = false;
     bool dualstage_triggers = false;
     int bumpers = 0;
     bool left_stick = false;
     bool right_stick = false;
     int paddle_pairs = 0;
+    char misc_label[32];
 
     // Determine how many misc buttons are used
     switch (styles->misc_style) {
@@ -834,6 +836,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     default:
         break;
     }
+    // The share button is reserved as misc1, additional buttons start at misc2
+    misc_button = 2;
+    misc_end = misc_button + misc_buttons;
 
     // Analog joysticks (always come first in axis mapping)
     switch (styles->analog_style) {
@@ -945,29 +950,14 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
         SDL_ADD_BUTTON_MAPPING("righttrigger", current_button++, mapping_string_len);
     } else if (dualstage_triggers) {
         // Dual-stage trigger buttons are appended as MISC buttons
-        // but only if we have the space to use them.
-        if (misc_buttons <= 2) {
-            switch (misc_buttons) {
-            case 0:
-                SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
-                SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
-                break;
-
-            case 1:
-                SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
-                SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
-                break;
-
-            case 2:
-                SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
-                SDL_ADD_BUTTON_MAPPING("misc6", current_button++, mapping_string_len);
-                break;
-
-            default:
-                // We do not overwrite other misc buttons if they are used.
-                break;
-            }
+        // By convention the trigger buttons are misc3 and misc4 for GameCube style controllers
+        if (misc_end < 3) {
+            misc_end = 3;
         }
+        SDL_snprintf(misc_label, sizeof(misc_label), "misc%d", misc_end++);
+        SDL_ADD_BUTTON_MAPPING(misc_label, current_button++, mapping_string_len);
+        SDL_snprintf(misc_label, sizeof(misc_label), "misc%d", misc_end++);
+        SDL_ADD_BUTTON_MAPPING(misc_label, current_button++, mapping_string_len);
     }
 
     // Paddle 1/2
@@ -1016,38 +1006,18 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 
     case SINPUT_TOUCHSTYLE_DOUBLE:
         SDL_ADD_BUTTON_MAPPING("touchpad", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc2", current_button++, mapping_string_len);
+        // Add the second touchpad button at the end of the misc buttons
+        SDL_snprintf(misc_label, sizeof(misc_label), "misc%d", misc_end++);
+        SDL_ADD_BUTTON_MAPPING(misc_label, current_button++, mapping_string_len);
         break;
 
     default:
         break;
     }
 
-    switch (misc_buttons) {
-    case 1:
-        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
-        break;
-
-    case 2:
-        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
-        break;
-
-    case 3:
-        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
-        break;
-
-    case 4:
-        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("misc6", current_button++, mapping_string_len);
-        break;
-
-    default:
-        break;
+    for (int i = 0; i < misc_buttons; ++i) {
+        SDL_snprintf(misc_label, sizeof(misc_label), "misc%d", misc_button++);
+        SDL_ADD_BUTTON_MAPPING(misc_label, current_button++, mapping_string_len);
     }
 }
 
