@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < nb_threads; ++i) {
         SDL_WaitThread(threads[i], NULL);
     }
+    SDL_free(threads);
 
     SDL_Log("Reader threads have terminated, quitting!");
     SDL_DestroyRWLock(rwlock);
