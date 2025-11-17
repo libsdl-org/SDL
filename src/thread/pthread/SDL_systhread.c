@@ -166,7 +166,7 @@ void SDL_SYS_SetupThread(const char *name)
     for (i = 0; sig_list[i]; ++i) {
         sigaddset(&mask, sig_list[i]);
     }
-    pthread_sigmask(SIG_BLOCK, &mask, 0);
+    pthread_sigmask(SIG_BLOCK, &mask, NULL);
 #endif
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
@@ -284,7 +284,7 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
 {
-    pthread_join(thread->handle, 0);
+    pthread_join(thread->handle, NULL);
 }
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)

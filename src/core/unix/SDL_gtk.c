@@ -148,7 +148,7 @@ static bool InitGtk(void)
 
     gtk.g.signal_connect = signal_connect;
 
-    if (gtk.gtk.init_check(0, NULL) == GTK_FALSE) {
+    if (gtk.gtk.init_check(NULL, NULL) == GTK_FALSE) {
         QuitGtk();
         return SDL_SetError("Could not init GTK");
     }

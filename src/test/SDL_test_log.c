@@ -20,9 +20,7 @@
 */
 
 /*
-
  Used by the test framework and test cases.
-
 */
 
 /* quiet windows compiler warnings */
@@ -89,7 +87,7 @@ void SDLTest_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_end(list);
 
     /* Log with timestamp and newline */
-    SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_INFO, " %s: %s", SDLTest_TimestampToString(time(0)), logMessage);
+    SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_INFO, " %s: %s", SDLTest_TimestampToString(time(NULL)), logMessage);
 }
 
 /*
@@ -107,7 +105,7 @@ void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     va_end(list);
 
     /* Log with timestamp and newline */
-    SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_ERROR, "%s: %s", SDLTest_TimestampToString(time(0)), logMessage);
+    SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_ERROR, "%s: %s", SDLTest_TimestampToString(time(NULL)), logMessage);
 }
 
 static char nibble_to_char(Uint8 nibble)

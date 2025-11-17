@@ -216,7 +216,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                 }
 
                 data->shm_info.readOnly = False;
-                data->shm_info.shmaddr = data->image->data = (char *)shmat(data->shm_info.shmid, 0, 0);
+                data->shm_info.shmaddr = data->image->data = (char *)shmat(data->shm_info.shmid, NULL, 0);
                 if (((signed char *)data->shm_info.shmaddr) == (signed char *)-1) {
                     XDestroyImage(data->image);
                     data->shm = false;
@@ -232,7 +232,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                 if (g_shm_error) {
                     XDestroyImage(data->image);
                     shmdt(data->shm_info.shmaddr);
-                    shmctl(data->shm_info.shmid, IPC_RMID, 0);
+                    shmctl(data->shm_info.shmid, IPC_RMID, NULL);
                     data->image = NULL;
                     data->shm = false;
                     return;
@@ -248,7 +248,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     }
                 }
 
-                shmctl(data->shm_info.shmid, IPC_RMID, 0);
+                shmctl(data->shm_info.shmid, IPC_RMID, NULL);
             } else {
                 data->shm = false;
             }

@@ -1727,7 +1727,7 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
 
-    CHECK_WINDOW_MAGIC(window, 0);
+    CHECK_WINDOW_MAGIC(window, NULL);
 
     // An explicit fullscreen display overrides all
     if (window->current_fullscreen_mode.displayID) {

@@ -192,7 +192,6 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callbac
         SDLTest_LogError("Timeout callback can't be NULL");
         return 0;
     }
-
     if (timeout < 0) {
         SDLTest_LogError("Timeout value must be bigger than zero.");
         return 0;
@@ -200,7 +199,7 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callbac
 
     /* Set timer */
     timeoutInMilliseconds = timeout * 1000;
-    timerID = SDL_AddTimer(timeoutInMilliseconds, callback, 0x0);
+    timerID = SDL_AddTimer(timeoutInMilliseconds, callback, NULL);
     if (timerID == 0) {
         SDLTest_LogError("Creation of SDL timer failed: %s", SDL_GetError());
         return 0;

@@ -342,9 +342,9 @@ static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
-    GLXContext prev_ctx = 0;
+    GLXContext prev_ctx = NULL;
     GLXDrawable prev_drawable = 0;
-    GLXContext context = 0;
+    GLXContext context = NULL;
     const char *(*glXQueryExtensionsStringFunc)(Display *, int);
     const char *extensions;
 
