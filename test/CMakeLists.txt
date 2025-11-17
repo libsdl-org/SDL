@@ -382,7 +382,7 @@ add_sdl_test_executable(testkeys SOURCES testkeys.c)
 add_sdl_test_executable(testloadso SOURCES testloadso.c)
 add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c)
 add_sdl_test_executable(testlock NO_C90 SOURCES testlock.c)
-add_sdl_test_executable(testrwlock SOURCES testrwlock.c)
+add_sdl_test_executable(testrwlock SOURCES testrwlock.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 20)
 add_sdl_test_executable(testmouse SOURCES testmouse.c)
 
 add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c)
