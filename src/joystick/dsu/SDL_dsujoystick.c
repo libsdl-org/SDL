@@ -131,9 +131,24 @@ static unsigned long DSU_ipv4_addr(const char *str)
     addr.sin_family = AF_INET;
 
 #ifdef _WIN32
-    /* Use InetPton on Windows to avoid deprecated API warning */
-    if (InetPtonA(AF_INET, str, &addr.sin_addr) == 1) {
-        return addr.sin_addr.s_addr;
+    /* Use getaddrinfo on Windows keeping compatibility with older systems (e.g. Windows XP). */
+    {
+        struct addrinfo hints;
+        struct addrinfo *result = NULL;
+
+        SDL_memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_INET;
+
+        if (getaddrinfo(str, NULL, &hints, &result) == 0 && result && result->ai_addr) {
+            const struct sockaddr_in *ipv4 = (const struct sockaddr_in *)result->ai_addr;
+            addr.sin_addr = ipv4->sin_addr;
+            freeaddrinfo(result);
+            return addr.sin_addr.s_addr;
+        }
+
+        if (result) {
+            freeaddrinfo(result);
+        }
     }
 #else
     /* Use inet_pton on Unix-like systems */
