@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 
     while (active) {
         Object *next = active->next;
-        SDL_free(next);
+        SDL_free(active);
         active = next;
     }
     SDL_DestroyRenderer(loop_data.renderer);
