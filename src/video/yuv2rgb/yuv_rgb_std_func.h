@@ -180,7 +180,8 @@ void STD_FUNCTION_NAME(
 		}
 
 		/* Catch the last pixel, if needed */
-		if (uv_x_sample_interval == 2 && x == (width-1))
+#if uv_x_sample_interval == 2
+		if (x == (width-1))
 		{
 			// Compute U and V contributions, common to the four pixels
 
@@ -201,10 +202,12 @@ void STD_FUNCTION_NAME(
 			PACK_PIXEL(rgb_ptr2);
 			#endif
 		}
+#endif
 	}
 
 	/* Catch the last line, if needed */
-	if (uv_y_sample_interval == 2 && y == (height-1))
+#if uv_y_sample_interval == 2
+	if (y == (height-1))
 	{
 		const YUV_TYPE *y_ptr1=Y+y*Y_stride,
 			*u_ptr=U+(y/uv_y_sample_interval)*UV_stride,
@@ -237,7 +240,8 @@ void STD_FUNCTION_NAME(
 		}
 
 		/* Catch the last pixel, if needed */
-		if (uv_x_sample_interval == 2 && x == (width-1))
+#if uv_x_sample_interval == 2
+		if (x == (width-1))
 		{
 			// Compute U and V contributions, common to the four pixels
 
@@ -253,7 +257,9 @@ void STD_FUNCTION_NAME(
 			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 		}
+#endif
 	}
+#endif
 
 	#undef y_pixel_stride
 	#undef uv_pixel_stride

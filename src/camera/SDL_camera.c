@@ -1093,7 +1093,6 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
     // that.
 
     SDL_zerop(closest);
-    SDL_assert(((Uint32) SDL_PIXELFORMAT_UNKNOWN) == 0);  // since we SDL_zerop'd to this value.
 
     if (device->num_specs == 0) {  // device listed no specs! You get whatever you want!
         if (spec) {

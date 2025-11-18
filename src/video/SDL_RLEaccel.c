@@ -170,13 +170,24 @@
 /*
  * The general slow catch-all function, for remaining depths and formats
  */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define SET_RGB24(dst, d)      \
+    dst[0] = (Uint8)(d >> 16); \
+    dst[1] = (Uint8)(d >> 8);  \
+    dst[2] = (Uint8)(d);
+#else
+#define SET_RGB24(dst, d)      \
+    dst[0] = (Uint8)(d);       \
+    dst[1] = (Uint8)(d >> 8);  \
+    dst[2] = (Uint8)(d >> 16);
+#endif
 #define ALPHA_BLIT_ANY(to, from, length, bpp, alpha)             \
     do {                                                         \
         int i;                                                   \
         Uint8 *src = from;                                       \
         Uint8 *dst = to;                                         \
         for (i = 0; i < (int)(length); i++) {                    \
-            Uint32 s = 0, d = 0;                                         \
+            Uint32 s = 0, d = 0;                                 \
             unsigned rs, gs, bs, rd, gd, bd;                     \
             switch (bpp) {                                       \
             case 2:                                              \
@@ -184,13 +195,8 @@
                 d = *(Uint16 *)dst;                              \
                 break;                                           \
             case 3:                                              \
-                if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
-                    s = (src[0] << 16) | (src[1] << 8) | src[2]; \
-                    d = (dst[0] << 16) | (dst[1] << 8) | dst[2]; \
-                } else {                                         \
-                    s = (src[2] << 16) | (src[1] << 8) | src[0]; \
-                    d = (dst[2] << 16) | (dst[1] << 8) | dst[0]; \
-                }                                                \
+                s = GET_RGB24(src);                              \
+                d = GET_RGB24(dst);                              \
                 break;                                           \
             case 4:                                              \
                 s = *(Uint32 *)src;                              \
@@ -208,15 +214,7 @@
                 *(Uint16 *)dst = (Uint16)d;                      \
                 break;                                           \
             case 3:                                              \
-                if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
-                    dst[0] = (Uint8)(d >> 16);                   \
-                    dst[1] = (Uint8)(d >> 8);                    \
-                    dst[2] = (Uint8)(d);                         \
-                } else {                                         \
-                    dst[0] = (Uint8)d;                           \
-                    dst[1] = (Uint8)(d >> 8);                    \
-                    dst[2] = (Uint8)(d >> 16);                   \
-                }                                                \
+                SET_RGB24(dst, d);                               \
                 break;                                           \
             case 4:                                              \
                 *(Uint32 *)dst = d;                              \
@@ -649,7 +647,8 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *surf_dst,
                     return;                                               \
             } while (ofs < w);                                            \
             /* skip padding if necessary */                               \
-            if (sizeof(Ptype) == 2)                                       \
+            const size_t psize = sizeof(Ptype);                           \
+            if (psize == 2)                                               \
                 srcbuf += (uintptr_t)srcbuf & 2;                          \
             /* blit translucent pixels on the same line */                \
             ofs = 0;                                                      \
@@ -806,7 +805,8 @@ static bool SDLCALL SDL_RLEAlphaBlit(SDL_Surface *surf_src, const SDL_Rect *srcr
                     goto done;                                       \
             } while (ofs < w);                                       \
             /* skip padding if necessary */                          \
-            if (sizeof(Ptype) == 2)                                  \
+            const size_t psize = sizeof(Ptype);                      \
+            if (psize == 2)                                          \
                 srcbuf += (uintptr_t)srcbuf & 2;                     \
             /* blit translucent pixels on the same line */           \
             ofs = 0;                                                 \

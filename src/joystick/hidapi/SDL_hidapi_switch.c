@@ -2621,8 +2621,8 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     if (ctx->m_bReportSensors) {
         // Need to copy the imuState to an aligned variable
         SwitchControllerIMUState_t imuState[3];
-        SDL_assert(sizeof(imuState) == sizeof(packet->imuState));
-        SDL_memcpy(imuState, packet->imuState, sizeof(imuState));
+        SDL_COMPILE_TIME_ASSERT(imuState_size, sizeof(imuState) == sizeof(packet->imuState));
+        SDL_memcpy(imuState, packet->imuState, sizeof(packet->imuState));
 
         bool bHasSensorData = (imuState[0].sAccelZ != 0 ||
                                imuState[0].sAccelY != 0 ||

@@ -150,6 +150,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         g = ((Pixel & 0xFF00) >> 8);    \
         b = (Pixel & 0xFF);             \
     }
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define GET_RGB24(B) (B[2] << 16) | (B[1] << 8) | B[0]
+#else
+#define GET_RGB24(B) (B[0] << 16) | (B[1] << 8) | B[2]
+#endif
 #define RETRIEVE_RGB_PIXEL(buf, bpp, Pixel)                \
     do {                                                   \
         switch (bpp) {                                     \
@@ -164,11 +169,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         case 3:                                            \
         {                                                  \
             Uint8 *B = (Uint8 *)(buf);                     \
-            if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {         \
-                Pixel = B[0] + (B[1] << 8) + (B[2] << 16); \
-            } else {                                       \
-                Pixel = (B[0] << 16) + (B[1] << 8) + B[2]; \
-            }                                              \
+            Pixel = GET_RGB24(B);                          \
         } break;                                           \
                                                            \
         case 4:                                            \
@@ -181,44 +182,43 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         }                                                  \
     } while (0)
 
-#define DISEMBLE_RGB(buf, bpp, fmt, Pixel, r, g, b) \
-    do {                                            \
-        switch (bpp) {                              \
-        case 1:                                     \
-            Pixel = *((Uint8 *)(buf));              \
-            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
-            break;                                  \
-                                                    \
-        case 2:                                     \
-            Pixel = *((Uint16 *)(buf));             \
-            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
-            break;                                  \
-                                                    \
-        case 3:                                     \
-        {                                           \
-            Pixel = 0;                              \
-            if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {  \
-                r = *((buf) + fmt->Rshift / 8);     \
-                g = *((buf) + fmt->Gshift / 8);     \
-                b = *((buf) + fmt->Bshift / 8);     \
-            } else {                                \
-                r = *((buf) + 2 - fmt->Rshift / 8); \
-                g = *((buf) + 2 - fmt->Gshift / 8); \
-                b = *((buf) + 2 - fmt->Bshift / 8); \
-            }                                       \
-        } break;                                    \
-                                                    \
-        case 4:                                     \
-            Pixel = *((Uint32 *)(buf));             \
-            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);    \
-            break;                                  \
-                                                    \
-        default:                                    \
-            /* stop gcc complaints */               \
-            Pixel = 0;                              \
-            r = g = b = 0;                          \
-            break;                                  \
-        }                                           \
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define GET_RGB24_COMPONENT(buf, fmt, shift) *((buf) + fmt->shift / 8)
+#else
+#define GET_RGB24_COMPONENT(buf, fmt, shift) *((buf) + 2 - fmt->shift / 8)
+#endif
+#define DISEMBLE_RGB(buf, bpp, fmt, Pixel, r, g, b)    \
+    do {                                               \
+        switch (bpp) {                                 \
+        case 1:                                        \
+            Pixel = *((Uint8 *)(buf));                 \
+            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);       \
+            break;                                     \
+                                                       \
+        case 2:                                        \
+            Pixel = *((Uint16 *)(buf));                \
+            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);       \
+            break;                                     \
+                                                       \
+        case 3:                                        \
+        {                                              \
+            Pixel = 0;                                 \
+            r = GET_RGB24_COMPONENT(buf, fmt, Rshift); \
+            g = GET_RGB24_COMPONENT(buf, fmt, Gshift); \
+            b = GET_RGB24_COMPONENT(buf, fmt, Bshift); \
+        } break;                                       \
+                                                       \
+        case 4:                                        \
+            Pixel = *((Uint32 *)(buf));                \
+            RGB_FROM_PIXEL(Pixel, fmt, r, g, b);       \
+            break;                                     \
+                                                       \
+        default:                                       \
+            /* stop gcc complaints */                  \
+            Pixel = 0;                                 \
+            r = g = b = 0;                             \
+            break;                                     \
+        }                                              \
     } while (0)
 
 // Assemble R-G-B values into a specified pixel format and store them
@@ -299,46 +299,40 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 (((Uint32)SDL_roundf(g)) << 10) |     \
                 (Uint32)SDL_roundf(r);                \
     }
-#define ASSEMBLE_RGB(buf, bpp, fmt, r, g, b)        \
-    {                                               \
-        switch (bpp) {                              \
-        case 1:                                     \
-        {                                           \
-            Uint8 _pixel;                           \
-                                                    \
-            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint8 *)(buf)) = _pixel;             \
-        } break;                                    \
-                                                    \
-        case 2:                                     \
-        {                                           \
-            Uint16 _pixel;                          \
-                                                    \
-            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint16 *)(buf)) = _pixel;            \
-        } break;                                    \
-                                                    \
-        case 3:                                     \
-        {                                           \
-            if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {  \
-                *((buf) + fmt->Rshift / 8) = r;     \
-                *((buf) + fmt->Gshift / 8) = g;     \
-                *((buf) + fmt->Bshift / 8) = b;     \
-            } else {                                \
-                *((buf) + 2 - fmt->Rshift / 8) = r; \
-                *((buf) + 2 - fmt->Gshift / 8) = g; \
-                *((buf) + 2 - fmt->Bshift / 8) = b; \
-            }                                       \
-        } break;                                    \
-                                                    \
-        case 4:                                     \
-        {                                           \
-            Uint32 _pixel;                          \
-                                                    \
-            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);   \
-            *((Uint32 *)(buf)) = _pixel;            \
-        } break;                                    \
-        }                                           \
+#define ASSEMBLE_RGB(buf, bpp, fmt, r, g, b)           \
+    {                                                  \
+        switch (bpp) {                                 \
+        case 1:                                        \
+        {                                              \
+            Uint8 _pixel;                              \
+                                                       \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);      \
+            *((Uint8 *)(buf)) = _pixel;                \
+        } break;                                       \
+                                                       \
+        case 2:                                        \
+        {                                              \
+            Uint16 _pixel;                             \
+                                                       \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);      \
+            *((Uint16 *)(buf)) = _pixel;               \
+        } break;                                       \
+                                                       \
+        case 3:                                        \
+        {                                              \
+            GET_RGB24_COMPONENT(buf, fmt, Rshift) = r; \
+            GET_RGB24_COMPONENT(buf, fmt, Gshift) = g; \
+            GET_RGB24_COMPONENT(buf, fmt, Bshift) = b; \
+        } break;                                       \
+                                                       \
+        case 4:                                        \
+        {                                              \
+            Uint32 _pixel;                             \
+                                                       \
+            PIXEL_FROM_RGB(_pixel, fmt, r, g, b);      \
+            *((Uint32 *)(buf)) = _pixel;               \
+        } break;                                       \
+        }                                              \
     }
 
 // FIXME: Should we rescale alpha into 0..255 here?
@@ -428,15 +422,9 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
         case 3:                                         \
         {                                               \
             Pixel = 0;                                  \
-            if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {      \
-                r = *((buf) + fmt->Rshift / 8);         \
-                g = *((buf) + fmt->Gshift / 8);         \
-                b = *((buf) + fmt->Bshift / 8);         \
-            } else {                                    \
-                r = *((buf) + 2 - fmt->Rshift / 8);     \
-                g = *((buf) + 2 - fmt->Gshift / 8);     \
-                b = *((buf) + 2 - fmt->Bshift / 8);     \
-            }                                           \
+            r = GET_RGB24_COMPONENT(buf, fmt, Rshift);  \
+            g = GET_RGB24_COMPONENT(buf, fmt, Gshift);  \
+            b = GET_RGB24_COMPONENT(buf, fmt, Bshift);  \
             a = 0xFF;                                   \
         } break;                                        \
                                                         \
@@ -461,46 +449,40 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) |  \
                 ((a >> (8 - fmt->Abits)) << fmt->Ashift);   \
     }
-#define ASSEMBLE_RGBA(buf, bpp, fmt, r, g, b, a)      \
-    {                                                 \
-        switch (bpp) {                                \
-        case 1:                                       \
-        {                                             \
-            Uint8 _pixel;                             \
-                                                      \
-            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint8 *)(buf)) = _pixel;               \
-        } break;                                      \
-                                                      \
-        case 2:                                       \
-        {                                             \
-            Uint16 _pixel;                            \
-                                                      \
-            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint16 *)(buf)) = _pixel;              \
-        } break;                                      \
-                                                      \
-        case 3:                                       \
-        {                                             \
-            if (SDL_BYTEORDER == SDL_LIL_ENDIAN) {    \
-                *((buf) + fmt->Rshift / 8) = r;       \
-                *((buf) + fmt->Gshift / 8) = g;       \
-                *((buf) + fmt->Bshift / 8) = b;       \
-            } else {                                  \
-                *((buf) + 2 - fmt->Rshift / 8) = r;   \
-                *((buf) + 2 - fmt->Gshift / 8) = g;   \
-                *((buf) + 2 - fmt->Bshift / 8) = b;   \
-            }                                         \
-        } break;                                      \
-                                                      \
-        case 4:                                       \
-        {                                             \
-            Uint32 _pixel;                            \
-                                                      \
-            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a); \
-            *((Uint32 *)(buf)) = _pixel;              \
-        } break;                                      \
-        }                                             \
+#define ASSEMBLE_RGBA(buf, bpp, fmt, r, g, b, a)       \
+    {                                                  \
+        switch (bpp) {                                 \
+        case 1:                                        \
+        {                                              \
+            Uint8 _pixel;                              \
+                                                       \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);  \
+            *((Uint8 *)(buf)) = _pixel;                \
+        } break;                                       \
+                                                       \
+        case 2:                                        \
+        {                                              \
+            Uint16 _pixel;                             \
+                                                       \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);  \
+            *((Uint16 *)(buf)) = _pixel;               \
+        } break;                                       \
+                                                       \
+        case 3:                                        \
+        {                                              \
+            GET_RGB24_COMPONENT(buf, fmt, Rshift) = r; \
+            GET_RGB24_COMPONENT(buf, fmt, Gshift) = g; \
+            GET_RGB24_COMPONENT(buf, fmt, Bshift) = b; \
+        } break;                                       \
+                                                       \
+        case 4:                                        \
+        {                                              \
+            Uint32 _pixel;                             \
+                                                       \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);  \
+            *((Uint32 *)(buf)) = _pixel;               \
+        } break;                                       \
+        }                                              \
     }
 
 // Convert any 32-bit 4-bpp pixel to ARGB format
