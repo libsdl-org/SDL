@@ -463,18 +463,21 @@ static void Wayland_DestroyCursorThread(SDL_VideoData *data)
         WAYLAND_wl_proxy_wrapper_destroy(display_wrapper);
 
         int ret = WAYLAND_wl_display_flush(data->display);
-        if (ret == -1 && errno == EAGAIN) {
-            // The timeout is long, but shutting down the thread requires a successful flush.
-            ret = SDL_IOReady(WAYLAND_wl_display_get_fd(data->display), SDL_IOR_WRITE, SDL_MS_TO_NS(1000));
+        while (ret == -1 && errno == EAGAIN) {
+            // Shutting down the thread requires a successful flush.
+            ret = SDL_IOReady(WAYLAND_wl_display_get_fd(data->display), SDL_IOR_WRITE, -1);
             if (ret >= 0) {
                 ret = WAYLAND_wl_display_flush(data->display);
             }
         }
 
-        // Wait for the thread to return. Don't wait if the flush failed, or this can hang.
-        if (ret >= 0) {
-            SDL_WaitThread(cursor_thread_context.thread, NULL);
+        // Avoid a warning if the flush failed due to a broken connection.
+        if (ret < 0) {
+            wl_callback_destroy(cb);
         }
+
+        // Wait for the thread to return; it will exit automatically on a broken connection.
+        SDL_WaitThread(cursor_thread_context.thread, NULL);
 
         WAYLAND_wl_proxy_wrapper_destroy(cursor_thread_context.compositor_wrapper);
         WAYLAND_wl_event_queue_destroy(cursor_thread_context.queue);
