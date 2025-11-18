@@ -1873,6 +1873,17 @@ static void Internal_Android_Destroy_AssetManager(void)
     }
 }
 
+static const char *GetAssetPath(const char *path)
+{
+    if (path && path[0] == '.' && path[1] == '/') {
+        path += 2;
+        while (*path == '/') {
+            ++path;
+        }
+    }
+    return path;
+}
+
 bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode)
 {
     SDL_assert(puserdata != NULL);
@@ -1882,11 +1893,12 @@ bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mo
 
     if (!asset_manager) {
         Internal_Android_Create_AssetManager();
+        if (!asset_manager) {
+            return SDL_SetError("Couldn't create asset manager");
+        }
     }
 
-    if (!asset_manager) {
-        return SDL_SetError("Couldn't create asset manager");
-    }
+    fileName = GetAssetPath(fileName);
 
     asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
     if (!asset) {
@@ -1944,6 +1956,8 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
         }
     }
 
+    path = GetAssetPath(path);
+
     AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
     if (!adir) {
         return SDL_SetError("AAssetManager_openDir failed");
@@ -1968,6 +1982,8 @@ bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
             return SDL_SetError("Couldn't create asset manager");
         }
     }
+
+    path = GetAssetPath(path);
 
     // this is sort of messy, but there isn't a stat()-like interface to the Assets.
     AAsset *aasset = AAssetManager_open(asset_manager, path, AASSET_MODE_UNKNOWN);
