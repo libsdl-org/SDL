@@ -234,6 +234,10 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if (!SetupWindowData(_this, window, uiwindow, true)) {
             return false;
         }
+
+#ifdef SDL_PLATFORM_VISIONOS
+        SDL_SetWindowSize(window, window->w, window->h);
+#endif
     }
 
     return true;
