@@ -259,9 +259,6 @@ void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             // Request failed, no worries
         }];
     }
-    return true;
-#else
-    return SDL_Unsupported();
 #endif
 }
 
