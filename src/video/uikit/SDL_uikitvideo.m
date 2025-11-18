@@ -87,6 +87,7 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->SuspendScreenSaver = UIKit_SuspendScreenSaver;
         device->CreateSDLWindow = UIKit_CreateWindow;
         device->SetWindowTitle = UIKit_SetWindowTitle;
+        device->SetWindowSize = UIKit_SetWindowSize;
         device->ShowWindow = UIKit_ShowWindow;
         device->HideWindow = UIKit_HideWindow;
         device->RaiseWindow = UIKit_RaiseWindow;

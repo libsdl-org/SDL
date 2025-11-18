@@ -247,6 +247,24 @@ void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
+void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    @autoreleasepool {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+        UIWindowScene *scene = data.uiwindow.windowScene;
+        CGSize size = { window->pending.w, window->pending.h };
+        UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
+        [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+            // Request failed, no worries
+        }];
+    }
+    return true;
+#else
+    return SDL_Unsupported();
+#endif
+}
+
 void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
