@@ -107,9 +107,10 @@ typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
             WAYLAND_TABLET_TOOL_STATE_UP
         } tool_state;
 
+        bool in_proximity;
+
         bool have_motion;
-        bool have_proximity_in;
-        bool have_proximity_out;
+        bool have_proximity;
     } frame;
 
     SDL_WaylandCursorState cursor_state;

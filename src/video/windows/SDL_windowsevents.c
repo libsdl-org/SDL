@@ -666,7 +666,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                 int screen_y = virtual_desktop ? GetSystemMetrics(SM_YVIRTUALSCREEN) : 0;
 
                 if (!data->raw_input_fake_pen_id) {
-                    data->raw_input_fake_pen_id = SDL_AddPenDevice(timestamp, "raw mouse input", window, NULL, (void *)(size_t)-1);
+                    data->raw_input_fake_pen_id = SDL_AddPenDevice(timestamp, "raw mouse input", window, NULL, (void *)(size_t)-1, true);
                 }
                 SDL_SendPenMotion(timestamp, data->raw_input_fake_pen_id, window, (float)(x + screen_x - window->x), (float)(y + screen_y - window->y));
             }
@@ -1275,22 +1275,25 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             break;  // oh well.
         } else if (pointer_type != PT_PEN) {
             break;  // we only care about pens here.
-        } else if (SDL_FindPenByHandle(hpointer)) {
-            break;  // we already have this one, don't readd it.
         }
 
-        // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
-        //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
-        //  could be unset at this moment because Windows is still deciding what capabilities the pen has, and/or
-        //  doesn't yet have valid data for them. As such, just say everything that the interface supports is
-        //  available...we don't expose this information through the public API at the moment anyhow.
-        SDL_PenInfo info;
-        SDL_zero(info);
-        info.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_DISTANCE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_ERASER;
-        info.max_tilt = 90.0f;
-        info.num_buttons = 1;
-        info.subtype = SDL_PEN_TYPE_PENCIL;
-        SDL_AddPenDevice(0, NULL, data->window, &info, hpointer);
+        const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        if (pen) {
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true);
+        } else {
+            // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
+            //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
+            //  could be unset at this moment because Windows is still deciding what capabilities the pen has, and/or
+            //  doesn't yet have valid data for them. As such, just say everything that the interface supports is
+            //  available...we don't expose this information through the public API at the moment anyhow.
+            SDL_PenInfo info;
+            SDL_zero(info);
+            info.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_DISTANCE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_ERASER;
+            info.max_tilt = 90.0f;
+            info.num_buttons = 1;
+            info.subtype = SDL_PEN_TYPE_PENCIL;
+            SDL_AddPenDevice(WIN_GetEventTimestamp(), NULL, data->window, &info, hpointer, true);
+        }
         returnCode = 0;
     } break;
 
@@ -1306,7 +1309,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
-            SDL_RemovePenDevice(WIN_GetEventTimestamp(), data->window, pen);
+            // technically this isn't just _proximity_ but maybe just leaving the window. Good enough. WinTab apparently has real proximity info.
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false);
         }
         returnCode = 0;
     } break;

@@ -130,6 +130,7 @@ static bool xinput2_version_atleast(const int version, const int wantmajor, cons
     return version >= ((wantmajor * 1000) + wantminor);
 }
 
+// !!! FIXME: isn't this just X11_FindWindow?
 static SDL_WindowData *xinput2_get_sdlwindowdata(SDL_VideoData *videodata, Window window)
 {
     int i;
@@ -511,6 +512,17 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     // !!! FIXME: the pen code used to rescan all devices here, but we can do this device-by-device with XI_HierarchyChanged. When do these events fire and why?
     //case XI_PropertyEvent:
     //case XI_DeviceChanged:
+
+    case XI_PropertyEvent:
+    {
+        const XIPropertyEvent *proev = (const XIPropertyEvent *)cookie->data;
+        // Handle pen proximity enter/leave
+        if (proev->what == XIPropertyModified && proev->property == videodata->atoms.pen_atom_wacom_serial_ids) {
+            const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
+            SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
+            X11_NotifyPenProximityChange(_this, windowdata ? windowdata->window : NULL, proev->deviceid);
+        }
+    } break;
 
     case XI_RawMotion:
     {

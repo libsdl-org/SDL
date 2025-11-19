@@ -86,7 +86,7 @@ static SDL_PenID UIKit_AddPenIfNecesary(SDL_Window *window)
         // so we can't use it for tangential pressure.
 
         // There's only ever one Apple Pencil at most, so we just pass a non-zero value for the handle.
-        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", window, &info, (void *) (size_t) 0x1);
+        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", window, &info, (void *) (size_t) 0x1, true);
     }
 
     return apple_pencil_id;
