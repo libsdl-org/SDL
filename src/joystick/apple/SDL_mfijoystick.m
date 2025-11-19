@@ -26,7 +26,10 @@
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
 #include "../../events/SDL_events_c.h"
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
+#endif
 
 #include "SDL_mfijoystick_c.h"
 
