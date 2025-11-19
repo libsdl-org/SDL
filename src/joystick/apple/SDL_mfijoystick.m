@@ -26,6 +26,7 @@
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
 #include "../../events/SDL_events_c.h"
+#include "../../video/uikit/SDL_uikitvideo.h"
 
 #include "SDL_mfijoystick_c.h"
 
@@ -790,6 +791,10 @@ static bool IOS_JoystickInit(void)
                                                SDL_UnlockJoysticks();
                                              }];
 #endif // SDL_JOYSTICK_MFI
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+        UIKit_SetGameControllerInteraction(true);
+#endif
     }
 
     return true;
@@ -1581,6 +1586,10 @@ static void IOS_JoystickQuit(void)
         while (deviceList != NULL) {
             IOS_RemoveJoystickDevice(deviceList);
         }
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+        UIKit_SetGameControllerInteraction(false);
+#endif
     }
 
     numjoysticks = 0;

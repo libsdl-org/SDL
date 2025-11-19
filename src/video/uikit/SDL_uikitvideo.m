@@ -23,6 +23,7 @@
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
 #import <UIKit/UIKit.h>
+#import <GameController/GameController.h>
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
@@ -210,7 +211,8 @@ SDL_SystemTheme UIKit_GetSystemTheme(void)
 }
 
 #ifdef SDL_PLATFORM_VISIONOS
-CGRect UIKit_ComputeViewFrame(SDL_Window *window){
+CGRect UIKit_ComputeViewFrame(SDL_Window *window)
+{
     return CGRectMake(window->x, window->y, window->w, window->h);
 }
 #else
@@ -251,8 +253,80 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 
     return frame;
 }
+#endif // SDL_PLATFORM_VISIONOS
 
-#endif
+UIWindowScene *UIKit_GetActiveWindowScene(void)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+
+        // First, try to find an active foreground scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+                    return windowScene;
+                }
+            }
+        }
+
+        // If no active scene, return any foreground scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (windowScene.activationState == UISceneActivationStateForegroundInactive) {
+                    return windowScene;
+                }
+            }
+        }
+
+        // Last resort: return first window scene
+        for (UIScene *scene in connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                return (UIWindowScene *)scene;
+            }
+        }
+    }
+
+    return nil;
+}
+
+void UIKit_SetGameControllerInteraction(bool enabled)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        UIWindowScene *scene = UIKit_GetActiveWindowScene();
+        if (scene == nil) {
+            return;
+        }
+
+        for (UIWindow *window in scene.windows) {
+            UIKit_SetViewGameControllerInteraction(window, enabled);
+        }
+    }
+}
+
+void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled)
+{
+#ifndef SDL_PLATFORM_TVOS
+    if (@available(iOS 18.0, visionOS 2.0, *)) {
+        if (enabled) {
+            GCEventInteraction *interaction = [[GCEventInteraction alloc] init];
+            interaction.handledEventTypes = GCUIEventTypeGamepad;
+            [view addInteraction:interaction];
+        } else {
+            for (id<UIInteraction> entry in view.interactions) {
+                if ([entry isKindOfClass:[GCEventInteraction class]]) {
+                    GCEventInteraction *interaction = (GCEventInteraction *)entry;
+                    if (interaction.handledEventTypes == GCUIEventTypeGamepad) {
+                        [view removeInteraction:interaction];
+                        break;
+                    }
+                }
+            }
+        }
+    }
+#endif // !SDL_PLATFORM_TVOS
+}
 
 void UIKit_ForceUpdateHomeIndicator(void)
 {

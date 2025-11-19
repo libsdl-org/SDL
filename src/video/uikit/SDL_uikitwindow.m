@@ -126,43 +126,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
     return true;
 }
 
-API_AVAILABLE(ios(13.0))
-static UIWindowScene *GetActiveWindowScene(void)
-{
-    if (@available(iOS 13.0, tvOS 13.0, *)) {
-        NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
-
-        // First, try to find an active foreground scene
-        for (UIScene *scene in connectedScenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                if (windowScene.activationState == UISceneActivationStateForegroundActive) {
-                    return windowScene;
-                }
-            }
-        }
-
-        // If no active scene, return any foreground scene
-        for (UIScene *scene in connectedScenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                UIWindowScene *windowScene = (UIWindowScene *)scene;
-                if (windowScene.activationState == UISceneActivationStateForegroundInactive) {
-                    return windowScene;
-                }
-            }
-        }
-
-        // Last resort: return first window scene
-        for (UIScene *scene in connectedScenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                return (UIWindowScene *)scene;
-            }
-        }
-    }
-
-    return nil;
-}
-
 bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     @autoreleasepool {
@@ -210,7 +173,7 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
         UIWindow *uiwindow = nil;
         if (@available(iOS 13.0, tvOS 13.0, *)) {
-            UIWindowScene *scene = GetActiveWindowScene();
+            UIWindowScene *scene = UIKit_GetActiveWindowScene();
             if (scene) {
                 uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
             }

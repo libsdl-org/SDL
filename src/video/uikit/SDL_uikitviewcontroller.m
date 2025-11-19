@@ -341,6 +341,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     [super setView:view];
 
+    if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
+        UIKit_SetViewGameControllerInteraction(view, true);
+    }
+
     [view addSubview:textField];
 
     if (textFieldFocused) {
