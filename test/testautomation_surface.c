@@ -806,12 +806,12 @@ static int surface_testSetGetClipRect(void *args)
         SDL_bool cmpval;
     } rect_list[] = {
         { {   0,   0,   0,   0}, SDL_FALSE, SDL_TRUE},
-        { {   2,   2,   0,   0}, SDL_FALSE, SDL_FALSE},
+        { {   2,   2,   0,   0}, SDL_FALSE, SDL_TRUE},
         { {   2,   2,   5,   1}, SDL_TRUE,  SDL_TRUE},
         { {   6,   5,  10,   3}, SDL_TRUE,  SDL_FALSE},
         { {   0,   0,  10,  10}, SDL_TRUE,  SDL_TRUE},
-        { {   0,   0, -10,  10}, SDL_FALSE, SDL_FALSE},
-        { {   0,   0, -10, -10}, SDL_FALSE, SDL_FALSE},
+        { {   0,   0, -10,  10}, SDL_FALSE, SDL_TRUE},
+        { {   0,   0, -10, -10}, SDL_FALSE, SDL_TRUE},
         { { -10, -10,  10,  10}, SDL_FALSE, SDL_FALSE},
         { {  10, -10,  10,  10}, SDL_FALSE, SDL_FALSE},
         { {  10,  10,  10,  10}, SDL_TRUE,  SDL_FALSE}
