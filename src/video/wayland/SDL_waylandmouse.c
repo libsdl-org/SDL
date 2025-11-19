@@ -1492,17 +1492,17 @@ void Wayland_InitMouse(SDL_VideoData *data)
 
 void Wayland_FiniMouse(SDL_VideoData *data)
 {
+    for (int i = 0; i < SDL_arraysize(sys_cursors); i++) {
+        Wayland_FreeCursor(sys_cursors[i]);
+        sys_cursors[i] = NULL;
+    }
+
     Wayland_DestroyCursorThread(data);
     Wayland_FreeCursorThemes(data);
 
 #ifdef SDL_USE_LIBDBUS
     Wayland_DBusFinishCursorProperties();
 #endif
-
-    for (int i = 0; i < SDL_arraysize(sys_cursors); i++) {
-        Wayland_FreeCursor(sys_cursors[i]);
-        sys_cursors[i] = NULL;
-    }
 }
 
 void Wayland_SeatUpdatePointerCursor(SDL_WaylandSeat *seat)
