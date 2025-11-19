@@ -1019,6 +1019,14 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
             SDL_DebugIMELog("WM_KEYDOWN normal");
         }
         break;
+    case WM_SYSKEYDOWN:
+        if (wParam == VK_PROCESSKEY) {
+            SDL_DebugIMELog("WM_SYSKEYDOWN VK_PROCESSKEY");
+            trap = true;
+        } else {
+            SDL_DebugIMELog("WM_SYSKEYDOWN normal");
+        }
+        break;
     case WM_INPUTLANGCHANGE:
         SDL_DebugIMELog("WM_INPUTLANGCHANGE");
         IME_InputLangChanged(videodata);
