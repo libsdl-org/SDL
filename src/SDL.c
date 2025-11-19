@@ -760,6 +760,8 @@ const char *SDL_GetPlatform(void)
     return "Xbox One";
 #elif defined(SDL_PLATFORM_XBOXSERIES)
     return "Xbox Series X|S";
+#elif defined(SDL_PLATFORM_VISIONOS)
+    return "visionOS";
 #elif defined(SDL_PLATFORM_IOS)
     return "iOS";
 #elif defined(SDL_PLATFORM_TVOS)
