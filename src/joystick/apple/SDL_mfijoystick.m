@@ -306,6 +306,12 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 
     if (controller.vendorName) {
         name = controller.vendorName.UTF8String;
+    } else {
+        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+            if (controller.productCategory) {
+                name = controller.productCategory.UTF8String;
+            }
+        }
     }
 
     if (!name) {
