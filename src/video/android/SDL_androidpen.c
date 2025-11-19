@@ -31,6 +31,7 @@
 #define ACTION_CANCEL 3
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP   6
+#define ACTION_HOVER_ENTER  9
 #define ACTION_HOVER_EXIT   10
 
 void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_type, int button, int action, float x, float y, float p)
@@ -51,7 +52,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         peninfo.num_buttons = 2;
         peninfo.subtype = SDL_PEN_TYPE_PEN;
         peninfo.device_type = device_type;
-        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *) (size_t) pen_id_in);
+        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *) (size_t) pen_id_in, true);
         if (!pen) {
             SDL_Log("error: can't add a pen device %d", pen_id_in);
             return;
@@ -76,9 +77,13 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
     // button contains DOWN/ERASER_TIP on DOWN/UP regardless of pressed state, use action to distinguish
     // we don't compare tip flags above because MotionEvent.getButtonState doesn't return stylus tip/eraser state.
     switch (action) {
+    case ACTION_HOVER_ENTER:
+        SDL_SendPenProximity(0, pen, window, true);
+        break;
+
     case ACTION_CANCEL:
-    case ACTION_HOVER_EXIT:
-        SDL_RemovePenDevice(0, window, pen);
+    case ACTION_HOVER_EXIT:  // strictly speaking, this can mean both "proximity out" and "left the View" but close enough.
+        SDL_SendPenProximity(0, pen, window, false);
         break;
 
     case ACTION_DOWN:

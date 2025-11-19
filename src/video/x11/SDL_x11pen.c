@@ -167,6 +167,18 @@ static bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, Ui
     return false;
 }
 
+// Check if a Wacom device is in proximity of the tablet
+static bool X11_XInput2PenIsInProximity(SDL_VideoDevice *_this, int deviceid, bool *in_proximity)
+{
+    SDL_VideoData *data = _this->internal;
+    Sint32 serial_id_buf[5];
+    if (X11_XInput2PenGetIntProperty(_this, deviceid, data->atoms.pen_atom_wacom_serial_ids, serial_id_buf, 5) == 5) {
+        *in_proximity = serial_id_buf[4] != 0 || serial_id_buf[3] != 0;
+        return true;
+    }
+    return false;
+}
+
 
 typedef struct FindPenByDeviceIDData
 {
@@ -272,7 +284,12 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
     handle->is_eraser = is_eraser;
     handle->x11_deviceid = dev->deviceid;
 
-    handle->pen = SDL_AddPenDevice(0, dev->name, NULL, &peninfo, handle);
+    bool in_proximity = false;
+    if (!X11_XInput2PenIsInProximity(_this, dev->deviceid, &in_proximity)) {
+        in_proximity = true;  // just say it's in proximity if we can't detect this state.
+    }
+
+    handle->pen = SDL_AddPenDevice(0, dev->name, NULL, &peninfo, handle, in_proximity);
     if (!handle->pen) {
         SDL_free(handle);
         return NULL;
@@ -303,6 +320,15 @@ void X11_RemovePenByDeviceID(int deviceid)
     if (handle) {
         SDL_RemovePenDevice(0, NULL, handle->pen);
         SDL_free(handle);
+    }
+}
+
+void X11_NotifyPenProximityChange(SDL_VideoDevice *_this, SDL_Window *window, int deviceid)
+{
+    bool in_proximity;
+    X11_PenHandle *pen = X11_FindPenByDeviceID(deviceid);
+    if (pen && X11_XInput2PenIsInProximity(_this, deviceid, &in_proximity)) {
+        SDL_SendPenProximity(0, pen->pen, window, in_proximity);
     }
 }
 
