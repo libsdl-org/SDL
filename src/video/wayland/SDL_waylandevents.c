@@ -2348,7 +2348,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_repeat_info, // Version 4
 };
 
-static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
+static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat)
 {
     Wayland_CursorStateRelease(&seat->pointer.cursor_state);
 
@@ -2395,7 +2395,7 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
     SDL_zero(seat->pointer);
 }
 
-static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
+static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat)
 {
     // Make sure focus is removed from a surface before the keyboard is destroyed.
     if (seat->keyboard.focus) {
@@ -2505,7 +2505,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
         SDL_AddMouse(seat->pointer.sdl_id, name_fmt);
     } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && seat->pointer.wl_pointer) {
-        Wayland_SeatDestroyPointer(seat, true);
+        Wayland_SeatDestroyPointer(seat);
     }
 
     if ((capabilities & WL_SEAT_CAPABILITY_TOUCH) && !seat->touch.wl_touch) {
@@ -2539,7 +2539,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
         SDL_AddKeyboard(seat->keyboard.sdl_id, name_fmt);
     } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && seat->keyboard.wl_keyboard) {
-        Wayland_SeatDestroyKeyboard(seat, true);
+        Wayland_SeatDestroyKeyboard(seat);
     }
 
     Wayland_SeatRegisterInputTimestampListeners(seat);
@@ -3581,9 +3581,9 @@ static void Wayland_remove_all_pens_callback(SDL_PenID instance_id, void *handle
     SDL_free(sdltool);
 }
 
-static void Wayland_SeatDestroyTablet(SDL_WaylandSeat *seat, bool send_events)
+static void Wayland_SeatDestroyTablet(SDL_WaylandSeat *seat, bool shutting_down)
 {
-    if (send_events) {
+    if (!shutting_down) {
         SDL_WaylandPenTool *tool, *temp;
         wl_list_for_each_safe (tool, temp, &seat->tablet.tool_list, link) {
             // Remove all tools for this seat, sending PROXIMITY_OUT events.
@@ -3666,7 +3666,7 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
     }
 }
 
-void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
+void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down)
 {
     if (!seat) {
         return;
@@ -3710,10 +3710,10 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
         zwp_text_input_v3_destroy(seat->text_input.zwp_text_input);
     }
 
-    Wayland_SeatDestroyKeyboard(seat, send_events);
-    Wayland_SeatDestroyPointer(seat, send_events);
+    Wayland_SeatDestroyKeyboard(seat);
+    Wayland_SeatDestroyPointer(seat);
     Wayland_SeatDestroyTouch(seat);
-    Wayland_SeatDestroyTablet(seat, send_events);
+    Wayland_SeatDestroyTablet(seat, shutting_down);
 
     if (wl_seat_get_version(seat->wl_seat) >= WL_SEAT_RELEASE_SINCE_VERSION) {
         wl_seat_release(seat->wl_seat);

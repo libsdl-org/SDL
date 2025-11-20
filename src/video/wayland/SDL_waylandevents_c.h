@@ -279,7 +279,7 @@ extern void Wayland_DisplayInitPrimarySelectionDeviceManager(SDL_VideoData *disp
 extern void Wayland_DisplayCreateTextInputManager(SDL_VideoData *d, uint32_t id);
 
 extern void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, Uint32 id);
-extern void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events);
+extern void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down);
 
 extern void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat);
 extern void Wayland_DisplayUpdatePointerGrabs(SDL_VideoData *display, SDL_WindowData *window);

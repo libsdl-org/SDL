@@ -1374,7 +1374,7 @@ static void handle_registry_remove_global(void *data, struct wl_registry *regist
             if (seat->pointer.wl_pointer) {
                 SDL_RemoveMouse(seat->pointer.sdl_id);
             }
-            Wayland_SeatDestroy(seat, true);
+            Wayland_SeatDestroy(seat, false);
         }
     }
 }
@@ -1520,7 +1520,7 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     SDL_free(data->output_list);
 
     wl_list_for_each_safe (seat, tmp, &data->seat_list, link) {
-        Wayland_SeatDestroy(seat, false);
+        Wayland_SeatDestroy(seat, true);
     }
 
     Wayland_FiniMouse(data);
