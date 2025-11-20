@@ -1264,19 +1264,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_POINTERENTER:
     {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
         if (!data->videodata->GetPointerType) {
             break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
-        }
-
-        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
-        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-        if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
+        } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
             break;  // oh well.
         } else if (pointer_type != PT_PEN) {
             break;  // we only care about pens here.
         }
 
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen) {
             SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true);
@@ -1300,8 +1299,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_POINTERCAPTURECHANGED:
     case WM_POINTERLEAVE:
     {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+        if (!data->videodata->GetPointerType) {
+            break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
+        } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
+            break;  // oh well.
+        } else if (pointer_type != PT_PEN) {
+            break;  // we only care about pens here.
+        }
+
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen == 0) {
             break;  // not a pen, or not a pen we already knew about.
@@ -1315,26 +1324,25 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         returnCode = 0;
     } break;
 
+    case WM_POINTERDOWN:
+    case WM_POINTERUP:
     case WM_POINTERUPDATE: {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
         POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-        if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(GET_POINTERID_WPARAM(wParam), &pointer_type)) {
+        if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(pointerid, &pointer_type)) {
             break;  // oh well.
-        }
-
-        if (pointer_type == PT_MOUSE) {
+        } else if ((msg == WM_POINTERUPDATE) && (pointer_type == PT_MOUSE)) {
             data->last_pointer_update = lParam;
             returnCode = 0;
             break;
+        } else if (pointer_type != PT_PEN) {
+            break; // we only care about pens here.
         }
-    }
-    SDL_FALLTHROUGH;
 
-    case WM_POINTERDOWN:
-    case WM_POINTERUP: {
-        POINTER_PEN_INFO pen_info;
-        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        POINTER_PEN_INFO pen_info;
         if (pen == 0) {
             break;  // not a pen, or not a pen we already knew about.
         } else if (!data->videodata->GetPointerPenInfo || !data->videodata->GetPointerPenInfo(pointerid, &pen_info)) {
