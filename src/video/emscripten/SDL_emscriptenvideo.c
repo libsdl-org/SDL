@@ -48,6 +48,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -157,8 +158,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
-    device->SetWindowPosition = Emscripten_SetWindowPosition;*/
+    device->SetWindowIcon = Emscripten_SetWindowIcon;
+    /*device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
     device->SetWindowResizable = Emscripten_SetWindowResizable;
     /*device->ShowWindow = Emscripten_ShowWindow;
@@ -714,6 +715,55 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     emscripten_set_window_title(window->title);
+}
+
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+{
+    // Icon is already converted to ARGB8888 by SDL_SetWindowIcon
+    SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
+
+    MAIN_THREAD_EM_ASM({
+        var w = $0;
+        var h = $1;
+        var pitch = $2;
+        var pixelsPtr = $3;
+
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        var imageData = ctx.createImageData(w, h);
+
+        // Copy pixels from SDL surface (ARGB8888) to ImageData (RGBA)
+        // ARGB8888 on little-endian: [B, G, R, A] bytes in memory
+        var src = HEAPU8.subarray(pixelsPtr, pixelsPtr + (h * pitch));
+        for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+                var si = y * pitch + x * 4;  // source index
+                var di = (y * w + x) * 4;    // destination index
+                imageData.data[di + 0] = src[si + 2];  // R
+                imageData.data[di + 1] = src[si + 1];  // G
+                imageData.data[di + 2] = src[si + 0];  // B
+                imageData.data[di + 3] = src[si + 3];  // A
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        var dataUrl = canvas.toDataURL('image/png');
+
+        // Set as favicon (create link element if it doesn't exist)
+        var link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.href = dataUrl;
+
+    }, icon->w, icon->h, icon->pitch, icon->pixels);
+
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
