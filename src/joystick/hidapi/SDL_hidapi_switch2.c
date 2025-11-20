@@ -250,17 +250,17 @@ static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
 
 static int ReadFlashBlock(SDL_DriverSwitch2_Context *ctx, Uint32 address, Uint8 *out)
 {
-    unsigned char flash_read_command[] = {
+    Uint8 flash_read_command[] = {
         0x02, 0x91, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
-    unsigned char buffer[0x50] = {0};
+    Uint8 buffer[0x50] = {0};
     int res;
 
-    flash_read_command[12] = address;
-    flash_read_command[13] = address >> 8;
-    flash_read_command[14] = address >> 16;
-    flash_read_command[15] = address >> 24;
+    flash_read_command[12] = (Uint8)address;
+    flash_read_command[13] = (Uint8)(address >> 8);
+    flash_read_command[14] = (Uint8)(address >> 16);
+    flash_read_command[15] = (Uint8)(address >> 24);
 
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
@@ -1030,11 +1030,11 @@ static void HandleSwitchProState(Uint64 timestamp, SDL_Joystick *joystick, SDL_D
 
 static void EncodeHDRumble(Uint16 high_freq, Uint16 high_amp, Uint16 low_freq, Uint16 low_amp, Uint8 rumble_data[5])
 {
-    rumble_data[0] = high_freq & 0xFF;
-    rumble_data[1] = ((high_amp >> 4) & 0xfc) | ((high_freq >> 8) & 0x03);
-    rumble_data[2] = (high_amp >> 12) | (low_freq << 4);
-    rumble_data[3] = (low_amp & 0xc0) | ((low_freq >> 4) & 0x3f);
-    rumble_data[4] = low_amp >> 8;
+    rumble_data[0] = (Uint8)(high_freq & 0xFF);
+    rumble_data[1] = (Uint8)(((high_amp >> 4) & 0xfc) | ((high_freq >> 8) & 0x03));
+    rumble_data[2] = (Uint8)((high_amp >> 12) | (low_freq << 4));
+    rumble_data[3] = (Uint8)((low_amp & 0xc0) | ((low_freq >> 4) & 0x3f));
+    rumble_data[4] = (Uint8)(low_amp >> 8);
 }
 
 static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
@@ -1074,8 +1074,8 @@ static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
     } else {
         // Rumble can get so strong that it might be dangerous to the controller...
         // This is a game controller, not a massage device, so let's clamp it somewhat
-        int low_amp = ctx->rumble_lo_amp * RUMBLE_MAX / UINT16_MAX;
-        int high_amp = ctx->rumble_hi_amp * RUMBLE_MAX / UINT16_MAX;
+        Uint16 low_amp = (Uint16)((int)ctx->rumble_lo_amp * RUMBLE_MAX / UINT16_MAX);
+        Uint16 high_amp = (Uint16)((int)ctx->rumble_hi_amp * RUMBLE_MAX / UINT16_MAX);
         rumble_data[0x01] = 0x50 | (ctx->rumble_seq & 0xf);
         EncodeHDRumble(ctx->rumble_hi_freq, high_amp, ctx->rumble_lo_freq, low_amp, &rumble_data[0x02]);
         switch (ctx->device->product_id) {
