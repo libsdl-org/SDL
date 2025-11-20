@@ -570,15 +570,33 @@ static Uint16 EncodeRumbleLowAmplitude(Uint16 amplitude)
     return lfa[100][1];
 }
 
-static void SetNeutralRumble(SwitchRumbleData_t *pRumble)
+static void SetNeutralRumble(SDL_HIDAPI_Device *device, SwitchRumbleData_t *pRumble)
 {
-    pRumble->rgucData[0] = 0x00;
-    pRumble->rgucData[1] = 0x00;
-    pRumble->rgucData[2] = 0x01;
-    pRumble->rgucData[3] = 0x40;
+    bool bStandardNeutralValue;
+    if (device->vendor_id == USB_VENDOR_NINTENDO &&
+        device->product_id == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+        // The 8BitDo 64 Bluetooth Controller rumbles at startup with the standard neutral value,
+        // so we'll use a 0 amplitude value instead.
+        bStandardNeutralValue = false;
+    } else {
+        // The KingKong2 PRO Controller doesn't initialize correctly with a 0 amplitude value
+        // over Bluetooth, so we'll use the standard value in all other cases.
+        bStandardNeutralValue = true;
+    }
+    if (bStandardNeutralValue) {
+        pRumble->rgucData[0] = 0x00;
+        pRumble->rgucData[1] = 0x01;
+        pRumble->rgucData[2] = 0x40;
+        pRumble->rgucData[3] = 0x40;
+    } else {
+        pRumble->rgucData[0] = 0x00;
+        pRumble->rgucData[1] = 0x00;
+        pRumble->rgucData[2] = 0x01;
+        pRumble->rgucData[3] = 0x40;
+    }
 }
 
-static void EncodeRumble(SwitchRumbleData_t *pRumble, Uint16 usHighFreq, Uint8 ucHighFreqAmp, Uint8 ucLowFreq, Uint16 usLowFreqAmp)
+static void EncodeRumble(SDL_HIDAPI_Device *device, SwitchRumbleData_t *pRumble, Uint16 usHighFreq, Uint8 ucHighFreqAmp, Uint8 ucLowFreq, Uint16 usLowFreqAmp)
 {
     if (ucHighFreqAmp > 0 || usLowFreqAmp > 0) {
         // High-band frequency and low-band amplitude are actually nine-bits each so they
@@ -595,7 +613,7 @@ static void EncodeRumble(SwitchRumbleData_t *pRumble, Uint16 usHighFreq, Uint8 u
                 ucHighFreqAmp, ((usLowFreqAmp >> 8) & 0x80), usLowFreqAmp & 0xFF);
 #endif
     } else {
-        SetNeutralRumble(pRumble);
+        SetNeutralRumble(device, pRumble);
     }
 }
 
@@ -1528,8 +1546,8 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
         // Initialize rumble data, important for reading device info on the MOBAPAD M073
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
+        SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[0]);
+        SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[1]);
 
         BReadDeviceInfo(ctx);
     }
@@ -1583,8 +1601,8 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         ctx->m_nCurrentInputMode = ctx->m_nInitialInputMode;
 
         // Initialize rumble data
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
+        SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[0]);
+        SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[1]);
 
         if (!device->is_bluetooth) {
             if (!BTrySetupUSB(ctx)) {
@@ -1682,11 +1700,11 @@ static bool HIDAPI_DriverSwitch_ActuallyRumbleJoystick(SDL_DriverSwitch_Context 
     const Uint16 k_usLowFreqAmp = EncodeRumbleLowAmplitude(low_frequency_rumble);
 
     if (low_frequency_rumble || high_frequency_rumble) {
-        EncodeRumble(&ctx->m_RumblePacket.rumbleData[0], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
-        EncodeRumble(&ctx->m_RumblePacket.rumbleData[1], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
+        EncodeRumble(ctx->device, &ctx->m_RumblePacket.rumbleData[0], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
+        EncodeRumble(ctx->device, &ctx->m_RumblePacket.rumbleData[1], k_usHighFreq, k_ucHighFreqAmp, k_ucLowFreq, k_usLowFreqAmp);
     } else {
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
-        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
+        SetNeutralRumble(ctx->device, &ctx->m_RumblePacket.rumbleData[0]);
+        SetNeutralRumble(ctx->device, &ctx->m_RumblePacket.rumbleData[1]);
     }
 
     ctx->m_bRumbleActive = (low_frequency_rumble || high_frequency_rumble);
