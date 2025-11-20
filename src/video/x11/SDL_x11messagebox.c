@@ -59,9 +59,9 @@ static void X11_MessageBoxButtonCallback(SDL_ToolkitControlX11 *control, void *d
 
 static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp) {
     int first_line_width;
-     int first_line_height;
+    int first_line_height;
     int second_line_width;
-     int second_line_height;
+    int second_line_height;
     int max_button_width;
     int max_button_height;
     int window_width;

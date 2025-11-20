@@ -412,8 +412,6 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
             }
         }
     }
-    
-    
 }
 
 static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, XSettingsSetting *setting, void *data)
@@ -750,6 +748,8 @@ void X11Toolkit_ShapeTextElements(SDL_ToolkitWindowX11 *data, SDL_ListNode *list
                     SDL_free(cells);                
                     SDL_free(base_tis_str);
                 }
+#else
+                X11Toolkit_GetTextWidthHeight(data, element->str, element->sz, &element->rect.w, &element->rect.h, &element->rect.y, &temp, &element->font_h);
 #endif            
             }
         } else {
