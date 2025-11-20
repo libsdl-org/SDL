@@ -757,6 +757,7 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
         if (!link) {
             link = document.createElement('link');
             link.rel = 'icon';
+            link.type = 'image/png';
             document.head.appendChild(link);
         }
         link.href = dataUrl;
