@@ -164,6 +164,11 @@ int main(int argc, char *argv[])
         quit(1);
     }
 
+    success = SDL_ShowSimpleMessageBox(0,
+                                       "No icon",
+                                       "This is a MessageBox with no icon!",
+                                       NULL);
+
     /* Google says this is Traditional Chinese for "beef with broccoli" */
     success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                        "UTF-8 Simple MessageBox",
