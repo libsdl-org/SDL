@@ -3805,7 +3805,7 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION "SDL_VIDEO_WAYLAND_MODE_EMULATION"
 
 /**
- * A variable controlling how modes with a non-native aspect ratio are
+ * A variable controlling how video modes with a non-native aspect ratio are
  * displayed under Wayland.
  *
  * When this hint is set, the requested scaling will be used when displaying
@@ -3815,9 +3815,8 @@ extern "C" {
  * The variable can be set to the following values:
  *
  * - "aspect" - Video modes will be displayed scaled, in their proper aspect
- *   ratio, with black bars.
+ *   ratio, with black bars. (default)
  * - "stretch" - Video modes will be scaled to fill the entire display.
- *   (default)
  * - "none" - Video modes will be displayed as 1:1 with no scaling.
  *
  * This hint should be set before creating a window.
