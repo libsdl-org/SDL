@@ -1119,8 +1119,7 @@ static bool DSU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 
 static bool DSU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    SDL_Unsupported();
-    return false;
+    return SDL_Unsupported();
 }
 
 static bool DSU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
