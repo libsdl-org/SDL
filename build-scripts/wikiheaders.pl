@@ -2149,7 +2149,7 @@ if ($copy_direction == 1) {  # --copy-to-headers
         opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
         while (readdir(DH)) {
             my $dent = $_;
-            if ($dent =~ /\AREADME\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-".
+            if ($dent =~ /\A(README|INTRO)\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-" or "INTRO-".
                 filecopy("$wikipath/$dent", "$readmepath/$dent", "\n");
             }
         }
@@ -2762,7 +2762,7 @@ __EOF__
             opendir(DH, $readmepath) or die("Can't opendir '$readmepath': $!\n");
             while (my $d = readdir(DH)) {
                 my $dent = $d;
-                if ($dent =~ /\AREADME\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-".
+                if ($dent =~ /\A(README|INTRO)\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-" or "INTRO".
                     filecopy("$readmepath/$dent", "$wikipath/$dent", "\n");
                 }
             }
@@ -2772,7 +2772,7 @@ __EOF__
             opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
             while (my $d = readdir(DH)) {
                 my $dent = $d;
-                if ($dent =~ /\A(README\-.*?)\.md\Z/) {
+                if ($dent =~ /\A((README|INTRO)\-.*?)\.md\Z/) {
                     push @pages, $1;
                 }
             }
