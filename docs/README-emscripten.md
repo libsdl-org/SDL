@@ -344,6 +344,22 @@ all has to live in memory at runtime.
 gives other options and details, and is worth a read.
 
 
+## Customizing index.html
+
+You don't have to use the HTML that Emscripten produces; the above examples
+use `emcc -o index.html`, but you can `-o index.js` instead to just output
+code without an HTML page, and then provide your own. This is desirable for
+shipping products, even though the Emscripten-provided HTML is fine for
+prototyping. Certain things _must_ be in the HTML file or your program will
+not function correctly (or function at all). The specifics are beyond the
+scope of this document, but it's likely best to start with the Emscripten HTML
+and customize it, instead of starting from scratch.
+
+The `<canvas>` element in the HTML _must not_ have a border or padding, or
+things will break in unexpected ways. This can be surprising when customizing
+the page's look. Plan accordingly.
+
+
 ## Debugging
 
 Debugging web apps is a mixed bag. You should compile and link with
