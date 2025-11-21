@@ -100,22 +100,22 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     // Tell the parent we're ready to go!
     SetEvent(data->ready_event);
 
-    while (!data->done) {
-        Uint64 idle_begin = SDL_GetTicksNS();
-        DWORD result = MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT);
+    Uint64 idle_begin = SDL_GetTicksNS();
+    while (!data->done &&
+            // The high-order word of GetQueueStatus() will let us know if there's currently raw input to be processed.
+            // If there isn't, then we'll wait for new data to arrive with MsgWaitForMultipleObjects().
+           ((HIWORD(GetQueueStatus(QS_RAWINPUT)) & QS_RAWINPUT) ||
+            (MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT) == WAIT_OBJECT_0 + 1))) {
+
         Uint64 idle_end = SDL_GetTicksNS();
-        if (result != (WAIT_OBJECT_0 + 1)) {
-            break;
-        }
-
-        // Clear the queue status so MsgWaitForMultipleObjects() will wait again
-        (void)GetQueueStatus(QS_RAWINPUT);
-
         Uint64 idle_time = idle_end - idle_begin;
         Uint64 usb_8khz_interval = SDL_US_TO_NS(125);
         Uint64 poll_start = idle_time < usb_8khz_interval ? _this->internal->last_rawinput_poll : idle_end;
 
         WIN_PollRawInput(_this, poll_start);
+
+        // Reset idle_begin for the next go-around
+        idle_begin = SDL_GetTicksNS();
     }
 
     if (_this->internal->raw_input_fake_pen_id) {
