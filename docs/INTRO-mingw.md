@@ -1,6 +1,6 @@
 # Introduction to SDL with MinGW
 
-Without getting deep into the history, MinGW is a long running project that aims to bring gcc to Windows. That said, there's many distributions, versions, and forks floating around. We recommend installing [MSYS2](https://www.msys2.org/), as it's the easiest way to get a modern toolchain with a package manager to help with dependency management. This would allow you to follow the MSYS2 section below. 
+Without getting deep into the history, MinGW is a long running project that aims to bring gcc to Windows. That said, there's many distributions, versions, and forks floating around. We recommend installing [MSYS2](https://www.msys2.org/), as it's the easiest way to get a modern toolchain with a package manager to help with dependency management. This would allow you to follow the MSYS2 section below.
 
 Otherwise you'll want to follow the "Other Distributions" section below.
 
@@ -89,7 +89,7 @@ This should print out which library directory we'll need to use when compiling, 
 Now we should have everything needed to compile and run our program. You'll need to ensure to replace `<version>` with the version of the release of SDL3 you downloaded, as well as use the `<arch>` we learned in the previous section.
 
 ```sh
-gcc hello.c -o hello.exe -I SDL3-<version>/<arch>/include -L SDL3-<version>/<arch>/lib -lSDL3 -mwindows 
+gcc hello.c -o hello.exe -I SDL3-<version>/<arch>/include -L SDL3-<version>/<arch>/lib -lSDL3 -mwindows
 cp SDL3-<version>/<arch>/bin/SDL3.dll SDL3.dll
 ./hello.exe
 ```
