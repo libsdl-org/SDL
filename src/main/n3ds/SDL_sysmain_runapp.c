@@ -23,11 +23,16 @@
 
 #ifdef SDL_PLATFORM_3DS
 
+#include "../SDL_main_callbacks.h"
+
 #include <3ds.h>
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     int result;
+
+    SDL_CheckDefaultArgcArgv(&argc, &argv);
+
     // init
     osSetSpeedupEnable(true);
     romfsInit();

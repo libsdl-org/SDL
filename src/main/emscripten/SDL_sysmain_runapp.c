@@ -22,6 +22,8 @@
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 
+#include "../SDL_main_callbacks.h"
+
 #include <emscripten/emscripten.h>
 
 EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
@@ -34,6 +36,8 @@ EMSCRIPTEN_KEEPALIVE void force_free(void *ptr) { free(ptr); }
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
+
+    SDL_CheckDefaultArgcArgv(&argc, &argv);
 
     // Move any URL params that start with "SDL_" over to environment
     //  variables, so the hint system can pick them up, etc, much like a user
