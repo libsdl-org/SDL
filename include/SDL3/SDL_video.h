@@ -667,8 +667,8 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  *
  * On Windows:
  *
- * - `SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER`: the monitor handle (HMONITOR)
- *   associated with the display
+ * - `SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER`: the monitor handle
+ *   (HMONITOR) associated with the display
  *
  * \param displayID the instance ID of the display to query.
  * \returns a valid property ID on success or 0 on failure; call
