@@ -169,30 +169,32 @@ for several reasons, not the least of which being that no one likes when a
 random browser tab suddenly starts making noise and the user has to scramble
 to figure out which and silence it.
 
-SDL will allow you to open the audio device for playback in this
-circumstance, and your audio callback will fire, but SDL will throw the audio
-data away until the user interacts with the page. This helps apps that depend
-on the audio callback to make progress, and also keeps audio playback in sync
+SDL will allow you to open the audio device for playback in this circumstance,
+and your audio streams will consume data, but SDL will throw the audio data
+away until the user interacts with the page. This helps apps that depend on
+the audio callback to make progress, and also keeps audio playback in sync
 once the app is finally allowed to make noise.
 
 There are two reasonable ways to deal with the silence at the app level:
 if you are writing some sort of media player thing, where the user expects
 there to be a volume control when you mouseover the canvas, just default
 that control to a muted state; if the user clicks on the control to unmute
-it, on this first click, open the audio device. This allows the media to
+it, on this first click, adjust your app's volume appropriately, and SDL will
+also start actually feeding the data to the browser. This allows the media to
 play at start, and the user can reasonably opt-in to listening.
 
-Many games do not have this sort of UI, and are more rigid about starting
-audio along with everything else at the start of the process. For these, your
-best bet is to write a little Javascript that puts up a "Click here to play!"
-UI, and upon the user clicking, remove that UI and then call the Emscripten
-app's main() function. As far as the application knows, the audio device was
-available to be opened as soon as the program started, and since this magic
-happens in a little Javascript, you don't have to change your C/C++ code at
-all to make it happen.
+Many games do not have this sort of UI. For these, your best bet might be to
+write a little Javascript that puts up a "Click here to play!" UI, and upon
+the user clicking, remove that UI and then call the Emscripten app's main()
+function. As far as the application knows, audio was able to play as soon as
+the program started, and since this magic happens in a little Javascript, you
+don't have to change your C/C++ code at all to make it happen.
 
 Please see the discussion at https://github.com/libsdl-org/SDL/issues/6385
 for some Javascript code to steal for this approach.
+
+But if a game can just do without audio until the user clicks on the page,
+it will still operate correctly, as if the page was merely muted before then.
 
 
 ## Rendering
