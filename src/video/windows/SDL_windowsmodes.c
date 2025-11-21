@@ -582,7 +582,6 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
         if (SDL_wcscmp(internal->DeviceName, info->szDevice) == 0) {
             bool moved = (index != i);
             bool changed_bounds = false;
-            SDL_PropertiesID props = SDL_GetDisplayProperties(_this->displays[i]->id);
 
             if (internal->state != DisplayRemoved) {
                 // We've already enumerated this display, don't move it
@@ -604,8 +603,10 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             }
 
             internal->MonitorHandle = hMonitor;
-            SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, internal->MonitorHandle);
             internal->state = DisplayUnchanged;
+
+            SDL_PropertiesID props = SDL_GetDisplayProperties(_this->displays[i]->id);
+            SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
 
             if (!_this->setting_display_mode) {
                 SDL_VideoDisplay *existing_display = _this->displays[i];
@@ -665,10 +666,11 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
 #endif
     if (SDL_AddVideoDisplay(&display, false)) {
-        SDL_PropertiesID props = SDL_GetDisplayProperties(display.id);
-        SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
         // The mode is owned by the video subsystem
         mode.internal = NULL;
+
+        SDL_PropertiesID props = SDL_GetDisplayProperties(display.id);
+        SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
     } else {
         SDL_free(displaydata);
     }
