@@ -719,38 +719,31 @@ static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window
 
 static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
-    // Icon is already converted to ARGB8888 by SDL_SetWindowIcon
-    SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
+    // Create dynamic memory stream for PNG encoding
+    SDL_IOStream *stream = SDL_IOFromDynamicMem();
+    if (!stream) {
+        return false;
+    }
 
+    // Encode icon to PNG using SDL's native PNG encoder
+    if (!SDL_SavePNG_IO(icon, stream, false)) {
+        SDL_CloseIO(stream);
+        return false;
+    }
+
+    // Get the PNG data from the stream
+    void *png_data = SDL_GetPointerProperty(
+        SDL_GetIOProperties(stream),
+        SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER,
+        NULL
+    );
+    size_t png_size = (size_t)SDL_GetIOSize(stream);
+
+    // Pass PNG data to JavaScript
     MAIN_THREAD_EM_ASM({
-        var w = $0;
-        var h = $1;
-        var pitch = $2;
-        var pixelsPtr = $3;
-
-        var canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        var ctx = canvas.getContext('2d');
-        var imageData = ctx.createImageData(w, h);
-
-        // Copy pixels from SDL surface (ARGB8888) to ImageData (RGBA)
-        // ARGB8888 on little-endian: [B, G, R, A] bytes in memory
-        var src = HEAPU8.subarray(pixelsPtr, pixelsPtr + (h * pitch));
-        for (var y = 0; y < h; y++) {
-            for (var x = 0; x < w; x++) {
-                var si = y * pitch + x * 4;  // source index
-                var di = (y * w + x) * 4;    // destination index
-                imageData.data[di + 0] = src[si + 2];  // R
-                imageData.data[di + 1] = src[si + 1];  // G
-                imageData.data[di + 2] = src[si + 0];  // B
-                imageData.data[di + 3] = src[si + 3];  // A
-            }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-
-        var dataUrl = canvas.toDataURL('image/png');
+        var pngData = HEAPU8.subarray($0, $0 + $1);
+        var blob = new Blob([pngData], {type: 'image/png'});
+        var url = URL.createObjectURL(blob);
 
         // Set as favicon (create link element if it doesn't exist)
         var link = document.querySelector("link[rel~='icon']");
@@ -760,10 +753,16 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
             link.type = 'image/png';
             document.head.appendChild(link);
         }
-        link.href = dataUrl;
 
-    }, icon->w, icon->h, icon->pitch, icon->pixels);
+        // Revoke old URL if it exists to prevent memory leaks
+        if (link.href && link.href.startsWith('blob:')) {
+            URL.revokeObjectURL(link.href);
+        }
 
+        link.href = url;
+    }, png_data, png_size);
+
+    SDL_CloseIO(stream);
     return true;
 }
 
