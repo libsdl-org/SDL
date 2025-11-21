@@ -48,6 +48,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -157,8 +158,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
-    device->SetWindowPosition = Emscripten_SetWindowPosition;*/
+    device->SetWindowIcon = Emscripten_SetWindowIcon;
+    /*device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
     device->SetWindowResizable = Emscripten_SetWindowResizable;
     /*device->ShowWindow = Emscripten_ShowWindow;
@@ -714,6 +715,55 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     emscripten_set_window_title(window->title);
+}
+
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+{
+    // Create dynamic memory stream for PNG encoding
+    SDL_IOStream *stream = SDL_IOFromDynamicMem();
+    if (!stream) {
+        return false;
+    }
+
+    // Encode icon to PNG using SDL's native PNG encoder
+    if (!SDL_SavePNG_IO(icon, stream, false)) {
+        SDL_CloseIO(stream);
+        return false;
+    }
+
+    // Get the PNG data from the stream
+    void *png_data = SDL_GetPointerProperty(
+        SDL_GetIOProperties(stream),
+        SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER,
+        NULL
+    );
+    size_t png_size = (size_t)SDL_GetIOSize(stream);
+
+    // Pass PNG data to JavaScript
+    MAIN_THREAD_EM_ASM({
+        var pngData = HEAPU8.subarray($0, $0 + $1);
+        var blob = new Blob([pngData], {type: 'image/png'});
+        var url = URL.createObjectURL(blob);
+
+        // Set as favicon (create link element if it doesn't exist)
+        var link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            document.head.appendChild(link);
+        }
+
+        // Revoke old URL if it exists to prevent memory leaks
+        if (link.href && link.href.startsWith('blob:')) {
+            URL.revokeObjectURL(link.href);
+        }
+
+        link.href = url;
+    }, png_data, png_size);
+
+    SDL_CloseIO(stream);
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
