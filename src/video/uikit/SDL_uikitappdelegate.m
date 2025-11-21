@@ -29,6 +29,7 @@
 #import "SDL_uikitwindow.h"
 
 #include "../../events/SDL_events_c.h"
+#include "../../main/SDL_main_callbacks.h"
 
 #ifdef main
 #undef main
@@ -41,7 +42,7 @@ static int exit_status;
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
-    int i;
+    SDL_CheckDefaultArgcArgv(&argc, &argv);
 
     // store arguments
     /* Note that we need to be careful about how we allocate/free memory here.
@@ -51,11 +52,11 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
     forward_main = mainFunction;
     forward_argc = argc;
     forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); // This should NOT be SDL_malloc()
-    for (i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
         strcpy(forward_argv[i], argv[i]);
     }
-    forward_argv[i] = NULL;
+    forward_argv[argc] = NULL;
 
     // Give over control to run loop, SDLUIKitDelegate will handle most things from here
     @autoreleasepool {
@@ -71,7 +72,7 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
     }
 
     // free the memory we used to hold copies of argc and argv
-    for (i = 0; i < forward_argc; i++) {
+    for (int i = 0; i < forward_argc; i++) {
         free(forward_argv[i]); // This should NOT be SDL_free()
     }
     free(forward_argv); // This should NOT be SDL_free()

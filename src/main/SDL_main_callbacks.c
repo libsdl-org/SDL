@@ -147,3 +147,13 @@ void SDL_QuitMainCallbacks(SDL_AppResult result)
     SDL_Quit();
 }
 
+void SDL_CheckDefaultArgcArgv(int *argc, char ***argv)
+{
+    if (!argv)
+    {
+        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+        static char *argvdummy[2] = { dummyargv0, NULL };
+        *argc = 1;
+        *argv = argvdummy;
+    }
+}

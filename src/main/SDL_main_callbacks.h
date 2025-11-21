@@ -27,6 +27,10 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func app
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events);
 void SDL_QuitMainCallbacks(SDL_AppResult result);
 
+// (not a callback thing, but convenient to stick this in here.)
+// If *_argv is NULL, update *_argc and *_argv to point at a static array of { "SDL_app", NULL }.
+void SDL_CheckDefaultArgcArgv(int *_argc, char ***_argv);
+
 #endif // SDL_main_callbacks_h_
 
 
