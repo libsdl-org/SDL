@@ -45,8 +45,8 @@
  * connected. A pen leaving proximity (being taken far enough away from the
  * digitizer tablet that it no longer reponds) and then coming back should
  * fire proximity events, but the SDL_PenID should remain consistent.
- * Unplugging the digitizer and reconnecting may cause future input to have
- * a new SDL_PenID, as SDL may not know that this is the same hardware.
+ * Unplugging the digitizer and reconnecting may cause future input to have a
+ * new SDL_PenID, as SDL may not know that this is the same hardware.
  *
  * Please note that various platforms vary wildly in how (and how well) they
  * support pen input. If your pen supports some piece of functionality but SDL
@@ -56,9 +56,9 @@
  * how all USB mice connected to a computer will move the same system cursor.
  * cursor. Other platforms might not support pen buttons, or the distance
  * axis, etc. Very few platforms can even report _what_ functionality the pen
- * supports in the first place, so best practices is to either build UI to
- * let the user configure their pens, or be prepared to handle new
- * functionality for a pen the first time an event is reported.
+ * supports in the first place, so best practices is to either build UI to let
+ * the user configure their pens, or be prepared to handle new functionality
+ * for a pen the first time an event is reported.
  */
 
 #ifndef SDL_pen_h_
@@ -81,12 +81,12 @@ extern "C" {
  *
  * These show up in pen events when SDL sees input from them. They remain
  * consistent as long as SDL can recognize a tool to be the same pen; but if a
- * pen's digitizer table is physically detached from the computer, it might get
- * a new ID when reconnected, as SDL won't know it's the same device.
+ * pen's digitizer table is physically detached from the computer, it might
+ * get a new ID when reconnected, as SDL won't know it's the same device.
  *
- * These IDs are only stable within a single run of a program; the next time
- * a program is run, the pen's ID will likely be different, even if the
- * hardware hasn't been disconnected, etc.
+ * These IDs are only stable within a single run of a program; the next time a
+ * program is run, the pen's ID will likely be different, even if the hardware
+ * hasn't been disconnected, etc.
  *
  * \since This datatype is available since SDL 3.2.0.
  */
