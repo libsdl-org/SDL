@@ -947,7 +947,6 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     TASKDIALOG_BUTTON *pButtons;
     TASKDIALOG_BUTTON *pButton;
     HMODULE hComctl32;
-    HICON hQuestionIcon = NULL;
     TASKDIALOGINDIRECTPROC pTaskDialogIndirect;
     HRESULT hr;
     char *ampescape = NULL;
