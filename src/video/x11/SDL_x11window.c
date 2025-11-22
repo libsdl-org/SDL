@@ -2191,6 +2191,16 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_TermResizeSync(window);
 #endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
 
+#ifdef SDL_VIDEO_OPENGL_EGL
+        // CRITICAL: Destroy EGL surface before destroying the native window
+        // Otherwise the EGL surface remains bound to the native window, causing
+        // "Could not create GLES window surface" error on next window creation
+        if (data->egl_surface != EGL_NO_SURFACE) {
+            SDL_EGL_DestroySurface(_this, data->egl_surface);
+            data->egl_surface = EGL_NO_SURFACE;
+        }
+#endif
+
         if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
             X11_XDestroyWindow(display, data->xwindow);
             X11_XFlush(display);
