@@ -30,119 +30,160 @@ extern "C" {
 #include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
 
-// Pop up an out of memory message, returns to Windows
-static BOOL OutOfMemory(void)
+static int OutOfMemory(void)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
-    return FALSE;
+    return -1;
+}
+
+static int ErrorProcessingCommandLine(void)
+{
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments - aborting", NULL);
+    return -1;
+}
+
+static int CallMainFunction(int caller_argc, char *caller_argv[], SDL_main_func mainFunction)
+{
+    int result;
+
+    // If the provided argv is valid, we pass it to the main function as-is, since it's probably what the user wants.
+    // Otherwise, we take a NULL argv as an instruction for SDL to parse the command line into an argv.
+    // On Windows, when SDL provides the main entry point, argv is always NULL.
+    if (caller_argv && caller_argc >= 0) {
+        result = mainFunction(caller_argc, caller_argv);
+    } else {
+        // We need to be careful about how we allocate/free memory here. We can't use SDL_alloc()/SDL_free()
+        // because the application might have used SDL_SetMemoryFunctions() to change the allocator.
+        LPWSTR *argvw = NULL;
+        char **argv = NULL;
+
+        const LPWSTR command_line = GetCommandLineW();
+
+        // Because of how the Windows command line is structured, we know for sure that the buffer size required to
+        // store all argument strings converted to UTF-8 (with null terminators) is guaranteed to be less than or equal
+        // to the size of the original command line string converted to UTF-8.
+        const int argdata_size = WideCharToMultiByte(CP_UTF8, 0, command_line, -1, NULL, 0, NULL, NULL); // Includes the null terminator
+        if (!argdata_size) {
+            result = ErrorProcessingCommandLine();
+            goto cleanup;
+        }
+
+        int argc;
+        argvw = CommandLineToArgvW(command_line, &argc);
+        if (!argvw || argc < 0) {
+            result = OutOfMemory();
+            goto cleanup;
+        }
+
+        // Allocate argv followed by the argument string buffer as one contiguous allocation.
+        argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv) + argdata_size);
+        if (!argv) {
+            result = OutOfMemory();
+            goto cleanup;
+        }
+        char *argdata = ((char *)argv) + (argc + 1) * sizeof(*argv);
+        int argdata_index = 0;
+
+        for (int i = 0; i < argc; ++i) {
+            const int bytes_written = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argdata + argdata_index, argdata_size - argdata_index, NULL, NULL);
+            if (!bytes_written) {
+                result = ErrorProcessingCommandLine();
+                goto cleanup;
+            }
+            argv[i] = argdata + argdata_index;
+            argdata_index += bytes_written;
+        }
+        argv[argc] = NULL;
+
+        result = mainFunction(argc, argv);
+
+    cleanup:
+        HeapFree(GetProcessHeap(), 0, argv);
+        LocalFree(argvw);
+    }
+
+    return result;
 }
 
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
 extern "C"
-int SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *)
 {
-    LPWSTR *argvw;
-    char **argv;
-    int i, argc, result;
+    int result;
     HRESULT hr;
-    XTaskQueueHandle taskQueue;
-
-    argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (argvw == NULL) {
-        return OutOfMemory();
-    }
-
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
-
-    // Parse it into argv and argc
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    for (i = 0; i < argc; ++i) {
-        const int utf8size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL, NULL);
-        if (!utf8size) {  // uhoh?
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
-        }
-
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, utf8size);  // this size includes the null-terminator character.
-        if (!argv[i]) {
-            return OutOfMemory();
-        }
-
-        if (WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], utf8size, NULL, NULL) == 0) {  // failed? uhoh!
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
-        }
-    }
-    argv[i] = NULL;
-    LocalFree(argvw);
 
     hr = XGameRuntimeInitialize();
+    if (SUCCEEDED(hr)) {
+        XTaskQueueHandle taskQueue;
+        if (SDL_GetGDKTaskQueue(&taskQueue)) {
+            XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
 
-    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue)) {
-        Uint32 titleid = 0;
-        char scidBuffer[64];
-        XblInitArgs xblArgs;
+            // Try to get the TitleID and initialize Xbox Live
+            Uint32 titleId;
+            bool xblInitialized = false;
+            hr = XGameGetXboxTitleId(&titleId);
+            if (SUCCEEDED(hr)) {
+                XblInitArgs xblInitArgs;
+                char scidBuffer[64];
+                SDL_zero(xblInitArgs);
+                xblInitArgs.queue = taskQueue;
+                SDL_snprintf(scidBuffer, 64, "00000000-0000-0000-0000-0000%08X", titleId);
+                xblInitArgs.scid = scidBuffer;
+                hr = XblInitialize(&xblInitArgs);
+                if (SUCCEEDED(hr)) {
+                    xblInitialized = true;
+                } else {
+                    SDL_SetError("[GDK] Unable to call XblInitialize");
+                }
+            } else {
+                SDL_SetError("[GDK] Unable to get TitleID. Will not call XblInitialize. Check MicrosoftGame.config!");
+            }
 
-        XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
+            if (GDK_RegisterChangeNotifications()) {
+                // We are now ready to call the main function.
+                SDL_SetMainReady();
+                result = CallMainFunction(argc, argv, mainFunction);
 
-        // Try to get the title ID and initialize Xbox Live
-        hr = XGameGetXboxTitleId(&titleid);
-        if (SUCCEEDED(hr)) {
-            SDL_zero(xblArgs);
-            xblArgs.queue = taskQueue;
-            SDL_snprintf(scidBuffer, 64, "00000000-0000-0000-0000-0000%08X", titleid);
-            xblArgs.scid = scidBuffer;
-            hr = XblInitialize(&xblArgs);
+                GDK_UnregisterChangeNotifications();
+            } else {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Unable to register change notifications - aborting", NULL);
+                result = -1;
+            }
+
+            // Clean up Xbox Live (synchronously)
+            if (xblInitialized) {
+                XAsyncBlock asyncBlock = { 0 };
+                hr = XblCleanupAsync(&asyncBlock);
+                if (SUCCEEDED(hr)) {
+                    hr = XAsyncGetStatus(&asyncBlock, true);
+                }
+            }
+
+            // Terminate the task queue and dispatch any pending tasks.
+            // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
+            hr = XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
+            while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
+                ;
+            XTaskQueueCloseHandle(taskQueue);
         } else {
-            SDL_SetError("[GDK] Unable to get titleid. Will not call XblInitialize. Check MicrosoftGame.config!");
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not create global task queue - aborting", NULL);
+            result = -1;
         }
-
-        SDL_SetMainReady();
-
-        if (!GDK_RegisterChangeNotifications()) {
-            return -1;
-        }
-
-        // Run the application main() code
-        result = mainFunction(argc, argv);
-
-        GDK_UnregisterChangeNotifications();
-
-        // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
-        // Terminate the task queue and dispatch any pending tasks
-        XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
-        while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
-            ;
-
-        XTaskQueueCloseHandle(taskQueue);
 
         XGameRuntimeUninitialize();
     } else {
 #ifdef SDL_PLATFORM_WINGDK
         if (hr == E_GAMERUNTIME_DLL_NOT_FOUND) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll)", NULL);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll) - aborting", NULL);
         } else {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize Gaming Runtime - aborting", NULL);
         }
 #else
-        SDL_assert_always(0 && "[GDK] Could not initialize - aborting");
+        SDL_assert_always(0 && "[GDK] Could not initialize Gaming Runtime - aborting");
 #endif
         result = -1;
     }
 
-    // Free argv, to avoid memory leak
-    for (i = 0; i < argc; ++i) {
-        HeapFree(GetProcessHeap(), 0, argv[i]);
-    }
-    HeapFree(GetProcessHeap(), 0, argv);
-
     return result;
 }
-

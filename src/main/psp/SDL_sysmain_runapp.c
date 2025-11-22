@@ -71,11 +71,18 @@ int sdl_psp_setup_callbacks(void)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
+    char fallbackargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+    char *fallbackargv[2] = { fallbackargv0, NULL };
     (void)reserved;
+
+    if (!argv || argc < 0) {
+        argc = 1;
+        argv = fallbackargv;
+    }
+
     sdl_psp_setup_callbacks();
 
     SDL_SetMainReady();
-
     return mainFunction(argc, argv);
 }
 

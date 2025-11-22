@@ -846,41 +846,48 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             char **argv;
             bool isstack;
 
-            // Prepare the arguments.
+            // Always use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
+            // https://github.com/love2d/love-android/issues/24
+
             len = (*env)->GetArrayLength(env, array);
-            argv = SDL_small_alloc(char *, 1 + len + 1, &isstack); // !!! FIXME: check for NULL
-            argc = 0;
-            /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
-               https://github.com/love2d/love-android/issues/24
-             */
-            argv[argc++] = SDL_strdup("app_process");
-            for (i = 0; i < len; ++i) {
-                char *arg = NULL;
-                jstring string = (*env)->GetObjectArrayElement(env, array, i);
-                if (string) {
-                    const char *utf = (*env)->GetStringUTFChars(env, string, 0);
-                    if (utf) {
-                        arg = SDL_strdup(utf);
-                        (*env)->ReleaseStringUTFChars(env, string, utf);
+            argv = SDL_small_alloc(char *, 1 + len + 1, &isstack);
+            if (!argv) {
+                // Failed to allocate the argv (out of memory). Use a dummy argv instead.
+                char fallbackargv0[] = { 'a', 'p', 'p', '_', 'p', 'r', 'o', 'c', 'e', 's', 's', '\0' };
+                char *fallbackargv[2] = { fallbackargv0, NULL };
+
+                // Run the application (without arguments).
+                status = SDL_main(1, fallbackargv);
+            } else {
+                argc = 0;
+                argv[argc++] = SDL_strdup("app_process");
+                for (i = 0; i < len; ++i) {
+                    char *arg = NULL;
+                    jstring string = (*env)->GetObjectArrayElement(env, array, i);
+                    if (string) {
+                        const char *utf = (*env)->GetStringUTFChars(env, string, 0);
+                        if (utf) {
+                            arg = SDL_strdup(utf);
+                            (*env)->ReleaseStringUTFChars(env, string, utf);
+                        }
+                        (*env)->DeleteLocalRef(env, string);
                     }
-                    (*env)->DeleteLocalRef(env, string);
+                    if (arg == NULL) {
+                        arg = SDL_strdup("");
+                    }
+                    argv[argc++] = arg;
                 }
-                if (arg == NULL) {
-                    arg = SDL_strdup("");
+                argv[argc] = NULL;
+
+                // Run the application.
+                status = SDL_main(argc, argv);
+
+                // Release the arguments.
+                for (i = 0; i < argc; ++i) {
+                    SDL_free(argv[i]);
                 }
-                argv[argc++] = arg;
+                SDL_small_free(argv, isstack);
             }
-            argv[argc] = NULL;
-
-            // Run the application.
-            status = SDL_main(argc, argv);
-
-            // Release the arguments.
-            for (i = 0; i < argc; ++i) {
-                SDL_free(argv[i]);
-            }
-            SDL_small_free(argv, isstack);
-
         } else {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
         }
