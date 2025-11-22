@@ -36,12 +36,12 @@
 #include <dlfcn.h>
 
 const char *defaultPaths[] = {
-    "@executable_path/../Frameworks/libMoltenVK.dylib",
     "vulkan.framework/vulkan",
     "libvulkan.1.dylib",
     "libvulkan.dylib",
     "MoltenVK.framework/MoltenVK",
-    "libMoltenVK.dylib"
+    "libMoltenVK.dylib",
+    "@executable_path/../Frameworks/libMoltenVK.dylib"
 };
 
 // Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
