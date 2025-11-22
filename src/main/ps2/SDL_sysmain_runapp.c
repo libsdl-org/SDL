@@ -25,6 +25,8 @@
 
 // SDL_RunApp() code for PS2 based on SDL_ps2_main.c, fjtrujy@gmail.com
 
+#include "../SDL_main_callbacks.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -68,6 +70,8 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
 {
     int res;
     (void)reserved;
+
+    SDL_CheckDefaultArgcArgv(&argc, &argv);
 
     prepare_IOP();
     init_drivers();

@@ -38,60 +38,60 @@ static int OutOfMemory(void)
 
 int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char *_argv[], SDL_main_func mainFunction, void * reserved)
 {
-    /* Gets the arguments with GetCommandLine, converts them to argc and argv
-       and calls SDL_main */
+    char **allocated_argv = NULL;
+    char **argv = _argv;
+    int argc = _argc;
 
-    LPWSTR *argvw;
-    char **argv;
-    int i, argc, result;
-
-    (void)_argc; (void)_argv; (void)reserved;
-
-    argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (!argvw) {
-        return OutOfMemory();
-    }
-
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
-
-    // Parse it into argv and argc
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
     if (!argv) {
-        return OutOfMemory();
-    }
-    for (i = 0; i < argc; ++i) {
-        const int utf8size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL, NULL);
-        if (!utf8size) {  // uhoh?
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
-        }
-
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, utf8size);  // this size includes the null-terminator character.
-        if (!argv[i]) {
+        // Get the arguments with GetCommandLine, convert them to argc and argv
+        LPWSTR *argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
+        if (!argvw) {
             return OutOfMemory();
         }
 
-        if (WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], utf8size, NULL, NULL) == 0) {  // failed? uhoh!
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
+        // Note that we need to be careful about how we allocate/free memory here.
+        // If the application calls SDL_SetMemoryFunctions(), we can't rely on
+        // SDL_free() to use the same allocator after SDL_main() returns.
+
+        // Parse it into argv and argc
+        argv = allocated_argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
+        if (!argv) {
+            return OutOfMemory();
         }
+
+        for (int i = 0; i < argc; i++) {
+            const int utf8size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL, NULL);
+            if (!utf8size) {  // uhoh?
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
+                return -1;
+            }
+
+            argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, utf8size);  // this size includes the null-terminator character.
+            if (!argv[i]) {
+                return OutOfMemory();
+            }
+
+            if (WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], utf8size, NULL, NULL) == 0) {  // failed? uhoh!
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
+                return -1;
+            }
+        }
+        argv[argc] = NULL;
+        LocalFree(argvw);
     }
-    argv[i] = NULL;
-    LocalFree(argvw);
 
     SDL_SetMainReady();
 
     // Run the application main() code
-    result = mainFunction(argc, argv);
+    const int result = mainFunction(argc, argv);
 
     // Free argv, to avoid memory leak
-    for (i = 0; i < argc; ++i) {
-        HeapFree(GetProcessHeap(), 0, argv[i]);
+    if (allocated_argv) {
+        for (int i = 0; i < argc; ++i) {
+            HeapFree(GetProcessHeap(), 0, allocated_argv[i]);
+        }
+        HeapFree(GetProcessHeap(), 0, allocated_argv);
     }
-    HeapFree(GetProcessHeap(), 0, argv);
 
     return result;
 }
