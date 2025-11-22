@@ -1011,8 +1011,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_INFORMATION) {
         TaskConfig.pszMainIcon = TD_INFORMATION_ICON;
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_QUESTION) {
-		hQuestionIcon = LoadIcon(NULL, IDI_QUESTION); 
-        TaskConfig.hMainIcon = hQuestionIcon;
+        TaskConfig.hMainIcon = LoadIcon(NULL, IDI_QUESTION);
     } else {
         TaskConfig.pszMainIcon = NULL;
     }
@@ -1063,9 +1062,6 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     SDL_free(ampescape);
     SDL_free(wmessage);
     SDL_free(wtitle);
-    if (hQuestionIcon) {
-        DestroyIcon(hQuestionIcon);
-    }
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         SDL_free((wchar_t *)pButtons[i].pszButtonText);
     }
