@@ -728,7 +728,7 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
         return SDL_SetError("Number of buttons exceeds limit of %d", MAX_BUTTONS);
     }
 
-    switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+    switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_QUESTION)) {
     case SDL_MESSAGEBOX_ERROR:
         icon = (Uint16)(size_t)IDI_ERROR;
         break;
@@ -738,7 +738,10 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
     case SDL_MESSAGEBOX_INFORMATION:
         icon = (Uint16)(size_t)IDI_INFORMATION;
         break;
-    }
+    case SDL_MESSAGEBOX_QUESTION:
+        icon = (Uint16)(size_t)IDI_QUESTION;
+        break;
+   }
 
     /* Jan 25th, 2013 - dant@fleetsa.com
      *
@@ -944,6 +947,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     TASKDIALOG_BUTTON *pButtons;
     TASKDIALOG_BUTTON *pButton;
     HMODULE hComctl32;
+    HICON hQuestionIcon = NULL;
     TASKDIALOGINDIRECTPROC pTaskDialogIndirect;
     HRESULT hr;
     char *ampescape = NULL;
@@ -1006,6 +1010,9 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         TaskConfig.pszMainIcon = TD_WARNING_ICON;
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_INFORMATION) {
         TaskConfig.pszMainIcon = TD_INFORMATION_ICON;
+    } else if (messageboxdata->flags & SDL_MESSAGEBOX_QUESTION) {
+		hQuestionIcon = LoadIcon(NULL, IDI_QUESTION); 
+        TaskConfig.hMainIcon = hQuestionIcon;
     } else {
         TaskConfig.pszMainIcon = NULL;
     }
@@ -1056,6 +1063,9 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     SDL_free(ampescape);
     SDL_free(wmessage);
     SDL_free(wtitle);
+    if (hQuestionIcon) {
+        DestroyIcon(hQuestionIcon);
+    }
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         SDL_free((wchar_t *)pButtons[i].pszButtonText);
     }

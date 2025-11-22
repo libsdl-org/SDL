@@ -63,6 +63,7 @@ typedef Uint32 SDL_MessageBoxFlags;
 #define SDL_MESSAGEBOX_INFORMATION              0x00000040u /**< informational dialog */
 #define SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT    0x00000080u /**< buttons placed left to right */
 #define SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT    0x00000100u /**< buttons placed right to left */
+#define SDL_MESSAGEBOX_QUESTION                 0x00000200u /**< question dialog, since 3.4.0 */
 
 /**
  * SDL_MessageBoxButtonData flags.
