@@ -1576,6 +1576,57 @@ static int SDLCALL surface_testOverflow(void *arg)
     return TEST_COMPLETED;
 }
 
+static int surface_testSetGetSurfaceClipRect(void *args)
+{
+    const struct {
+        SDL_Rect r;
+        bool clipsetval;
+        bool cmpval;
+    } rect_list[] = {
+        { {   0,   0,   0,   0}, false, true},
+        { {   2,   2,   0,   0}, false, true},
+        { {   2,   2,   5,   1}, true,  true},
+        { {   6,   5,  10,   3}, true,  false},
+        { {   0,   0,  10,  10}, true,  true},
+        { {   0,   0, -10,  10}, false, true},
+        { {   0,   0, -10, -10}, false, true},
+        { { -10, -10,  10,  10}, false, false},
+        { {  10, -10,  10,  10}, false, false},
+        { {  10,  10,  10,  10}, true,  false}
+    };
+    SDL_Surface *s;
+    SDL_Rect r;
+    int i;
+    bool b;
+
+    SDLTest_AssertPass("About to call SDL_CreateSurface(15, 15, SDL_PIXELFORMAT_RGBA32)");
+    s = SDL_CreateSurface(15, 15, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(s != NULL, "SDL_CreateSurface returned non-null surface");
+    SDL_zero(r);
+    b = SDL_GetSurfaceClipRect(s, &r);
+    SDLTest_AssertCheck(b, "SDL_GetSurfaceClipRect succeeded (%s)", SDL_GetError());
+    SDLTest_AssertCheck(r.x == 0 && r.y == 0 && r.w == 15 && r.h == 15,
+        "SDL_GetSurfaceClipRect of just-created surface. Got {%d, %d, %d, %d}. (Expected {%d, %d, %d, %d})",
+        r.x, r.y, r.w, r.h, 0, 0, 15, 15);
+
+    for (i = 0; i < SDL_arraysize(rect_list); i++) {
+        const SDL_Rect *r_in = &rect_list[i].r;
+        SDL_Rect r_out;
+
+        SDLTest_AssertPass("About to do SDL_SetClipRect({%d, %d, %d, %d})", r_in->x, r_in->y, r_in->w, r_in->h);
+        b = SDL_SetSurfaceClipRect(s, r_in);
+        SDLTest_AssertCheck(b == rect_list[i].clipsetval, "SDL_SetSurfaceClipRect returned %d (expected %d)", b, rect_list[i].clipsetval);
+        SDL_zero(r_out);
+        SDL_GetSurfaceClipRect(s, &r_out);
+        SDLTest_AssertPass("SDL_GetSurfaceClipRect returned {%d, %d, %d, %d}", r_out.x, r_out.y, r_out.w, r_out.h);
+        b = r_out.x == r_in->x && r_out.y == r_in->y && r_out.w == r_in->w && r_out.h == r_in->h;
+        SDLTest_AssertCheck(b == rect_list[i].cmpval, "Current clipping rect is identical to input clipping rect: %d (expected %d)",
+            b, rect_list[i].cmpval);
+    }
+    SDL_DestroySurface(s);
+    return TEST_COMPLETED;
+};
+
 static int SDLCALL surface_testFlip(void *arg)
 {
     SDL_Surface *surface;
@@ -2147,6 +2198,10 @@ static const SDLTest_TestCaseReference surfaceTestOverflow = {
     surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestSetGetClipRect = {
+    surface_testSetGetSurfaceClipRect, "surface_testSetGetSurfaceClipRect", "Test SDL_(Set|Get)SurfaceClipRect.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestFlip = {
     surface_testFlip, "surface_testFlip", "Test surface flipping.", TEST_ENABLED
 };
@@ -2201,6 +2256,7 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestBlitInvalid,
     &surfaceTestBlitsWithBadCoordinates,
     &surfaceTestOverflow,
+    &surfaceTestSetGetClipRect,
     &surfaceTestFlip,
     &surfaceTestPalette,
     &surfaceTestPalettization,
