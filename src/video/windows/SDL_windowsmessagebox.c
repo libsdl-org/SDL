@@ -1010,6 +1010,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_INFORMATION) {
         TaskConfig.pszMainIcon = TD_INFORMATION_ICON;
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_QUESTION) {
+        TaskConfig.dwFlags |= TDF_USE_HICON_MAIN;
         TaskConfig.hMainIcon = LoadIcon(NULL, IDI_QUESTION);
     } else {
         TaskConfig.pszMainIcon = NULL;
