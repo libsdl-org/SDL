@@ -24,6 +24,9 @@
 
 #include "../../core/windows/SDL_windows.h"
 
+/* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
+  based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
+
 #include <shellapi.h> // CommandLineToArgvW()
 
 static int OutOfMemory(void)
