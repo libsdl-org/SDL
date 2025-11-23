@@ -251,6 +251,9 @@ bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destinati
     CHECK_PARAM(!ValidateStoragePath(path)) {
         return false;
     }
+    CHECK_PARAM(length > 0 && !destination) {
+        return SDL_InvalidParamError("destination");
+    }
 
     if (!storage->iface.read_file) {
         return SDL_Unsupported();
@@ -268,6 +271,9 @@ bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *so
     }
     CHECK_PARAM(!ValidateStoragePath(path)) {
         return false;
+    }
+    CHECK_PARAM(length > 0 && !source) {
+        return SDL_InvalidParamError("source");
     }
 
     if (!storage->iface.write_file) {
