@@ -41,7 +41,7 @@ static int ErrorProcessingCommandLine(void)
     return -1;
 }
 
-int SDL_RunApp(int caller_argc, char *caller_argv[], SDL_main_func mainFunction, void * reserved)
+int MINGW32_FORCEALIGN SDL_RunApp(int caller_argc, char *caller_argv[], SDL_main_func mainFunction, void * reserved)
 {
     int result;
     (void)reserved;
