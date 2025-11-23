@@ -628,6 +628,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
     GLES2_ShaderType vtype, ftype;
     GLES2_ProgramCacheEntry *program;
     GLES2_TextureData *tdata = texture ? (GLES2_TextureData *)texture->internal : NULL;
+    const bool colorswap = (data->drawstate.target && (data->drawstate.target->format == SDL_PIXELFORMAT_BGRA32 || data->drawstate.target->format == SDL_PIXELFORMAT_BGRX32));
     const float *shader_params = NULL;
     int shader_params_len = 0;
 
@@ -640,15 +641,27 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
     case GLES2_IMAGESOURCE_TEXTURE_INDEX8:
         switch (scale_mode) {
         case SDL_SCALEMODE_NEAREST:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_NEAREST;
+            if (colorswap) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_NEAREST_COLORSWAP;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_NEAREST;
+            }
             break;
         case SDL_SCALEMODE_LINEAR:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_LINEAR;
+            if (colorswap) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_LINEAR_COLORSWAP;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_LINEAR;
+            }
             shader_params = tdata->texel_size;
             shader_params_len = 4 * sizeof(float);
             break;
         case SDL_SCALEMODE_PIXELART:
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART;
+            if (colorswap) {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART_COLORSWAP;
+            } else {
+                ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART;
+            }
             shader_params = tdata->texel_size;
             shader_params_len = 4 * sizeof(float);
             break;
