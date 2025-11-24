@@ -26,6 +26,8 @@
 
 #include "../../video/SDL_surface_c.h"
 
+#include <shellapi.h> // CommandLineToArgvW()
+
 #include <objbase.h> // for CoInitialize/CoUninitialize (Win32 only)
 #ifdef HAVE_ROAPI_H
 #include <roapi.h> // For RoInitialize/RoUninitialize (Win32 only)
@@ -648,6 +650,74 @@ int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, 
         dwFlags &= ~WC_ERR_INVALID_CHARS;  // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
     }
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
+}
+
+const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocated)
+{
+    // If the provided argv is valid, we pass it to the main function as-is, since it's probably what the user wants.
+    // Otherwise, we take a NULL argv as an instruction for SDL to parse the command line into an argv.
+    // On Windows, when SDL provides the main entry point, argv is always NULL.
+
+    const char *out_of_mem_str = "Out of memory - aborting";
+    const char *proc_err_str = "Error processing command line arguments - aborting";
+
+    *pallocated = NULL;
+
+    if (*pargv) {
+        return NULL;  // just go with what was provided, no error message.
+    }
+
+    // We need to be careful about how we allocate/free memory here. We can't use SDL_alloc()/SDL_free()
+    // because the application might have used SDL_SetMemoryFunctions() to change the allocator.
+    LPWSTR *argvw = NULL;
+    char **argv = NULL;
+
+    const LPWSTR command_line = GetCommandLineW();
+
+    // Because of how the Windows command line is structured, we know for sure that the buffer size required to
+    // store all argument strings converted to UTF-8 (with null terminators) is guaranteed to be less than or equal
+    // to the size of the original command line string converted to UTF-8.
+    const int argdata_size = WideCharToMultiByte(CP_UTF8, 0, command_line, -1, NULL, 0, NULL, NULL); // Includes the null terminator
+    if (!argdata_size) {
+        return proc_err_str;
+    }
+
+    int argc = -1;
+    argvw = CommandLineToArgvW(command_line, &argc);
+    if (!argvw || argc < 0) {
+        return out_of_mem_str;
+    }
+
+    // Allocate argv followed by the argument string buffer as one contiguous allocation.
+    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv) + argdata_size);
+    if (!argv) {
+        LocalFree(argvw);
+        return out_of_mem_str;
+    }
+
+    char *argdata = ((char *)argv) + (argc + 1) * sizeof(*argv);
+    int argdata_index = 0;
+
+    for (int i = 0; i < argc; ++i) {
+        const int bytes_written = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argdata + argdata_index, argdata_size - argdata_index, NULL, NULL);
+        if (!bytes_written) {
+            HeapFree(GetProcessHeap(), 0, argv);
+            LocalFree(argvw);
+            return proc_err_str;
+        }
+        argv[i] = argdata + argdata_index;
+        argdata_index += bytes_written;
+    }
+
+    argv[argc] = NULL;
+
+    LocalFree(argvw);
+
+    *pargc = argc;
+    *pallocated = argv;
+    *pargv = argv;
+
+    return NULL;  // no error string.
 }
 
 #endif // defined(SDL_PLATFORM_WINDOWS)
