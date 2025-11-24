@@ -55,6 +55,12 @@
 
 #define SDL_IPC_ENVVAR "_SDL_IPC"
 
+#define _STR(VALUE) #VALUE
+
+// Allows you to stringify the expanded value of a
+// macro
+#define STR(MACRO) _STR(MACRO)
+
 struct SDL_IPC {
     int socket;
 };
@@ -209,7 +215,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         //
         // also gives us the option to change fd logic in the future without breaking
         // clients
-        SDL_SetEnvironmentVariable(env, SDL_IPC_ENVVAR, "3", true);
+        SDL_SetEnvironmentVariable(env, SDL_IPC_ENVVAR, STR(SDLIPC_FILENO), true);
     }
 
     // Keep the malloc() before exec() so that an OOM won't run a process at all
