@@ -1143,7 +1143,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
     SDL_Surface *icon;
 
     /* Load the icon surface */
-    icon = SDL_LoadBMP(file);
+    icon = SDL_LoadSurface(file);
     if (!icon) {
         SDL_Log("Couldn't load %s: %s", file, SDL_GetError());
         return NULL;
