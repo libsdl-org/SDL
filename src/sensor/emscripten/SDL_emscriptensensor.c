@@ -45,9 +45,9 @@ static void SDL_EMSCRIPTEN_AccelerometerCallback(const EmscriptenDeviceMotionEve
 
     // Convert from browser specific gravity constant to SDL_STANDARD_GRAVITY.
     total_gravity = 0.0;
-    total_gravity += fabs(event->accelerationIncludingGravityX - event->accelerationX);
-    total_gravity += fabs(event->accelerationIncludingGravityY - event->accelerationY);
-    total_gravity += fabs(event->accelerationIncludingGravityZ - event->accelerationZ);
+    total_gravity += SDL_fabs(event->accelerationIncludingGravityX - event->accelerationX);
+    total_gravity += SDL_fabs(event->accelerationIncludingGravityY - event->accelerationY);
+    total_gravity += SDL_fabs(event->accelerationIncludingGravityZ - event->accelerationZ);
 
     gravity[0] = (event->accelerationIncludingGravityX - event->accelerationX) / total_gravity;
     gravity[1] = (event->accelerationIncludingGravityY - event->accelerationY) / total_gravity;

@@ -53,7 +53,7 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
     forward_argc = argc;
     forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); // This should NOT be SDL_malloc()
     for (int i = 0; i < argc; i++) {
-        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
+        forward_argv[i] = malloc((SDL_strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
         strcpy(forward_argv[i], argv[i]);
     }
     forward_argv[argc] = NULL;
