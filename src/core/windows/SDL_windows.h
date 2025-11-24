@@ -209,6 +209,9 @@ extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 // WideCharToMultiByte, but with some WinXP management.
 extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
+// parse out command lines from OS if argv is NULL, otherwise pass through unchanged. `*pallocated` must be HeapFree'd by caller if not NULL on successful return. Returns NULL on success, error string on problems.
+const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocated);
+
 // Ends C function definitions when using C++
 #ifdef __cplusplus
 }
