@@ -2689,7 +2689,7 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelSwizzleAVX2(SDL_BlitInfo *i
 
 #endif
 
-#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && defined(__aarch64__)
 
 static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
 {
@@ -3117,7 +3117,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 return Blit8888to8888PixelSwizzleSSE41;
             }
 #endif
-#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && defined(__aarch64__)
             return Blit8888to8888PixelSwizzleNEON;
 #endif
         }
