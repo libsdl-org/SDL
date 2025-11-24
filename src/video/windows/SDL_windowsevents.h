@@ -33,6 +33,7 @@ extern LRESULT CALLBACK WIN_DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 extern void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start);
 extern void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check);
 extern void WIN_PumpEvents(SDL_VideoDevice *_this);
+extern void WIN_PumpEventsForHWND(SDL_VideoDevice *_this, HWND hwnd);
 extern void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);
 extern int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 

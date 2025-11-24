@@ -429,7 +429,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     if (!hwnd) {
         return;
     }
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     hdc = GetDC(hwnd);
 
@@ -527,7 +527,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     _this->gl_data->wglDeleteContext(hglrc);
     ReleaseDC(hwnd, hdc);
     DestroyWindow(hwnd);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 }
 
 static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, float *fAttribs)
@@ -542,7 +542,7 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     hwnd =
         CreateWindow(SDL_Appname, SDL_Appname, (WS_POPUP | WS_DISABLED), 0, 0,
                      10, 10, NULL, NULL, SDL_Instance, NULL);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     hdc = GetDC(hwnd);
 
@@ -573,7 +573,7 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     }
     ReleaseDC(hwnd, hdc);
     DestroyWindow(hwnd);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     return pixel_format;
 }

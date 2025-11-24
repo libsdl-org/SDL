@@ -2556,6 +2556,26 @@ void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
 }
 
+// Simplified event pump for using when creating and destroying windows
+void WIN_PumpEventsForHWND(SDL_VideoDevice *_this, HWND hwnd)
+{
+    MSG msg;
+
+    if (g_WindowsEnableMessageLoop) {
+        SDL_processing_messages = true;
+
+        while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
+            WIN_SetMessageTick(msg.time);
+
+            // Always translate the message in case it's a non-SDL window (e.g. with Qt integration)
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        SDL_processing_messages = false;
+    }
+}
+
 void WIN_PumpEvents(SDL_VideoDevice *_this)
 {
     MSG msg;

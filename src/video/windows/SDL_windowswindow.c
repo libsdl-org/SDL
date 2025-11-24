@@ -722,7 +722,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 
         WIN_UpdateDarkModeForHWND(hwnd);
 
-        WIN_PumpEvents(_this);
+        WIN_PumpEventsForHWND(_this, hwnd);
 
         if (!SetupWindowData(_this, window, hwnd, parent)) {
             DestroyWindow(hwnd);
