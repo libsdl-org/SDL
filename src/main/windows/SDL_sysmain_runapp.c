@@ -95,6 +95,7 @@ int MINGW32_FORCEALIGN SDL_RunApp(int caller_argc, char *caller_argv[], SDL_main
         }
         argv[argc] = NULL;
 
+        SDL_SetMainReady();
         result = mainFunction(argc, argv);
 
     cleanup:
