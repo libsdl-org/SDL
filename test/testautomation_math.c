@@ -3051,23 +3051,23 @@ static const SDLTest_TestCaseReference modfTestBase = {
 
 static const SDLTest_TestCaseReference powTestExpInf1 = {
     pow_baseNOneExpInfCases, "pow_baseNOneExpInfCases",
-    "Checks for pow(-1, +/-inf)", TEST_ENABLED
+    "Checks for SDL_pow(-1, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf2 = {
     pow_baseZeroExpNInfCases, "pow_baseZeroExpNInfCases",
-    "Checks for pow(+/-0, -inf)", TEST_ENABLED
+    "Checks for SDL_pow(+/-0, -inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestExpInf3 = {
     pow_expInfCases, "pow_expInfCases",
-    "Checks for pow(x, +/-inf)", TEST_ENABLED
+    "Checks for SDL_pow(x, +/-inf)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf1 = {
     pow_basePInfCases, "pow_basePInfCases",
-    "Checks for pow(inf, x)", TEST_ENABLED
+    "Checks for SDL_pow(inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestBaseInf2 = {
     pow_baseNInfCases, "pow_baseNInfCases",
-    "Checks for pow(-inf, x)", TEST_ENABLED
+    "Checks for SDL_pow(-inf, x)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan1 = {
     pow_badOperationCase, "pow_badOperationCase",
@@ -3075,31 +3075,31 @@ static const SDLTest_TestCaseReference powTestNan1 = {
 };
 static const SDLTest_TestCaseReference powTestNan2 = {
     pow_base1ExpNanCase, "pow_base1ExpNanCase",
-    "Checks for pow(1.0, NAN)", TEST_ENABLED
+    "Checks for SDL_pow(1.0, NAN)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan3 = {
     pow_baseNanExp0Cases, "pow_baseNanExp0Cases",
-    "Checks for pow(NAN, +/-0)", TEST_ENABLED
+    "Checks for SDL_pow(NAN, +/-0)", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestNan4 = {
     pow_nanArgsCases, "pow_nanArgsCases",
-    "Checks for pow(x, y) with either x or y being NAN", TEST_ENABLED
+    "Checks for SDL_pow(x, y) with either x or y being NAN", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero1 = {
     pow_baseNZeroExpOddCases, "pow_baseNZeroExpOddCases",
-    "Checks for pow(-0.0, y), with y an odd integer.", TEST_ENABLED
+    "Checks for SDL_pow(-0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero2 = {
     pow_basePZeroExpOddCases, "pow_basePZeroExpOddCases",
-    "Checks for pow(0.0, y), with y an odd integer.", TEST_ENABLED
+    "Checks for SDL_pow(0.0, y), with y an odd integer.", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero3 = {
     pow_baseNZeroCases, "pow_baseNZeroCases",
-    "Checks for pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+    "Checks for SDL_pow(-0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestZero4 = {
     pow_basePZeroCases, "pow_basePZeroCases",
-    "Checks for pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
+    "Checks for SDL_pow(0.0, y), with y finite and even or non-integer number", TEST_ENABLED
 };
 static const SDLTest_TestCaseReference powTestRegular = {
     pow_regularCases, "pow_regularCases",
