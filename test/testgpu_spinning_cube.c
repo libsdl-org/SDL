@@ -313,12 +313,9 @@ static void RenderSprites(SpriteRenderState *rs, SpriteWindowState *ws)
     const SDL_FRect *positions = ws->positions;
     int i;
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
-    SDL_RenderClear(renderer);
     for (i = 0; i < NUM_SPRITES; ++i) {
         SDL_RenderTexture(renderer, sprite, NULL, &positions[i]);
     }
-    SDL_RenderPresent(renderer);
 }
 
 static void UpdateSpriteOverlay(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
