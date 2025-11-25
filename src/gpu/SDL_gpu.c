@@ -1798,7 +1798,7 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
             }
 
             if (textureHeader->info.layer_count_or_depth > 255) {
-                SDL_assert_release("Cannot bind a depth texture with more than 255 layers!");
+                SDL_assert_release(!"Cannot bind a depth texture with more than 255 layers!");
                 return NULL;
             }
 
