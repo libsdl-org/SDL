@@ -29,7 +29,6 @@ extern HINSTANCE SDL_Instance;
 
 extern LRESULT CALLBACK WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern LRESULT CALLBACK WIN_DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start);
 extern void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check);
 extern void WIN_PumpEvents(SDL_VideoDevice *_this);

@@ -2496,11 +2496,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 }
 
-LRESULT CALLBACK WIN_DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
-}
-
 int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
     if (g_WindowsEnableMessageLoop) {
@@ -2804,7 +2799,7 @@ bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.lpszClassName = SDL_Appname;
     wcex.style = SDL_Appstyle;
-    wcex.lpfnWndProc = WIN_DefWindowProc;
+    wcex.lpfnWndProc = WIN_WindowProc;
     wcex.hInstance = SDL_Instance;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

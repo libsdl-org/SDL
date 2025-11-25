@@ -425,19 +425,22 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     window->internal = data;
 
     // Set up the window proc function
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
 #ifdef GWLP_WNDPROC
-    data->wndproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-    if (data->wndproc == WIN_DefWindowProc) {
-        data->wndproc = NULL;
-        SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WIN_WindowProc);
-    }
+        data->wndproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+        if (data->wndproc != WIN_WindowProc) {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WIN_WindowProc);
+        }
 #else
-    data->wndproc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
-    if (data->wndproc == WIN_DefWindowProc) {
-        data->wndproc = NULL;
-        SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)WIN_WindowProc);
-    }
+        data->wndproc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
+        if (data->wndproc != WIN_WindowProc) {
+            SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)WIN_WindowProc);
+        }
 #endif
+    } else {
+        // We set up our window proc function at window creation.
+        // If someone has set hooks to modify it, leave it alone.
+    }
 
     // Fill in the SDL window with the window state
     {
