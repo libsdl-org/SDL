@@ -2058,6 +2058,7 @@ bool X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool gra
         return SDL_SetError("Invalid window data");
     }
     data->mouse_grabbed = false;
+    data->pending_grab = false;
 
     display = data->videodata->display;
 
@@ -2075,7 +2076,8 @@ bool X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool gra
          * the confinement grab.
          */
         if (data->xinput2_mouse_enabled && SDL_GetMouseState(NULL, NULL)) {
-            X11_XUngrabPointer(display, CurrentTime);
+            data->pending_grab = true;
+            return true;
         }
 
         // Try to grab the mouse

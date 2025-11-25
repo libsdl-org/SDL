@@ -1180,6 +1180,10 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             button -= (8 - SDL_BUTTON_X1);
         }
         SDL_SendMouseButton(timestamp, window, mouseID, button, false);
+
+        if (window->internal->pending_grab) {
+            X11_SetWindowMouseGrab(_this, window, true);
+        }
     }
 }
 
