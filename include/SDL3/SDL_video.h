@@ -1334,7 +1334,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  * These are additional supported properties on iOS, tvOS, and visionOS:
  *
  * - `SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER`: the `(__unsafe_unretained)`
- *   UIWindowScene associated with the window, defaults to the active window scene.
+ *   UIWindowScene associated with the window, defaults to the active window
+ *   scene.
  *
  * These are additional supported properties on Wayland:
  *
