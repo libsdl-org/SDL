@@ -207,7 +207,6 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
 {
     (void)vm;
     (void)reserved;
-    SDL_Unsupported();
-    return -1; // JNI_ERR
+    return 0x00010004; // JNI_VERSION_1_4
 }
 #endif
