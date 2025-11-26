@@ -173,7 +173,10 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
         UIWindow *uiwindow = nil;
         if (@available(iOS 13.0, tvOS 13.0, *)) {
-            UIWindowScene *scene = UIKit_GetActiveWindowScene();
+            UIWindowScene *scene = (__bridge UIWindowScene *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER, NULL);
+            if (!scene) {
+                scene = UIKit_GetActiveWindowScene();
+            }
             if (scene) {
                 uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
             }
