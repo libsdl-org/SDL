@@ -294,13 +294,16 @@ UIWindowScene *UIKit_GetActiveWindowScene(void)
 void UIKit_SetGameControllerInteraction(bool enabled)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
-        UIWindowScene *scene = UIKit_GetActiveWindowScene();
-        if (scene == nil) {
-            return;
-        }
+        NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+        for (UIScene *scene in connectedScenes) {
+            if (![scene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
 
-        for (UIWindow *window in scene.windows) {
-            UIKit_SetViewGameControllerInteraction(window, enabled);
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                UIKit_SetViewGameControllerInteraction(window, enabled);
+            }
         }
     }
 }
