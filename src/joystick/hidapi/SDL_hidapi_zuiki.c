@@ -1,7 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
-  Copyright (C) 2025 Zuiki Inc.
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +28,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
+#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
+#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
+#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define GYRO_TIMESTAMP_STEP_NS (SDL_NS_PER_SECOND / 90) // 陀螺仪数据上报时间间隔
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
@@ -37,6 +40,9 @@
 typedef struct
 {
     Uint8 last_state[USB_PACKET_LENGTH];
+    bool sensors_supported;     // 添加传感器启用状态标志
+    Uint64 sensor_timestamp_ns; // 传感器时间戳（纳秒，累加更新）
+    float sensor_rate;
 } SDL_DriverZUIKI_Context;
 
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -59,6 +65,8 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
     if (vendor_id == USB_VENDOR_ZUIKI) {
         switch (product_id) {
         case USB_PRODUCT_ZUIKI_MASCON_PRO:
+        case USB_PRODUCT_ZUIKI_EVOTOP_AXIS:
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
             return true;
         default:
             break;
@@ -74,9 +82,21 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     device->context = ctx;
-
+    ctx->sensors_supported = false;
+    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS) {
+        ctx->sensors_supported = true;
+        ctx->sensor_rate = 100.0f;
+    }
+    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
+        ctx->sensors_supported = true;
+        ctx->sensor_rate = 50.0f;
+    }
     if (device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO) {
         HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
+    }
+
+    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
+        HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -106,7 +126,10 @@ static bool HIDAPI_DriverZUIKI_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
-
+    if (ctx->sensors_supported) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, ctx->sensor_rate);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, ctx->sensor_rate);
+    }
     return true;
 }
 
@@ -148,6 +171,10 @@ static bool HIDAPI_DriverZUIKI_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
 
 static bool HIDAPI_DriverZUIKI_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
+    SDL_DriverZUIKI_Context *ctx = (SDL_DriverZUIKI_Context *)device->context;
+    if (ctx->sensors_supported) {
+        return true;
+    }
     return SDL_Unsupported();
 }
 
@@ -226,6 +253,135 @@ static void HIDAPI_DriverZUIKI_HandleOldStatePacket(SDL_Joystick *joystick, SDL_
     }
 #undef READ_STICK_AXIS
 
+    if (ctx->sensors_supported) {
+        if (ctx->sensor_timestamp_ns == 0) {
+            ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
+        } else {
+            ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
+        }
+        Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
+        float gyro_values[3];
+        // 调整后（示例：交换 Y 和 Z 轴）
+        gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE;
+        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
+        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        float accel_values[3];
+        accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE;
+        accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE;
+        accel_values[1] = LOAD16(data[18], data[19]) * ACCEL_SCALE;
+#ifdef DEBUG_ZUIKI_PROTOCOL
+        SDL_Log("Gyro raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f rad/s",
+                LOAD16(data[8], data[9]), LOAD16(data[10], data[11]), LOAD16(data[12], data[13]),
+                gyro_values[0], gyro_values[1], gyro_values[2]);
+        SDL_Log("Accel raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f m/s²",
+                LOAD16(data[14], data[15]), LOAD16(data[16], data[17]), LOAD16(data[18], data[19]),
+                accel_values[0], accel_values[1], accel_values[2]);
+#endif
+
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_values, 3);
+    }
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
+static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joystick, SDL_DriverZUIKI_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[2] << 8 | data[1]), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[4] << 8 | data[3]), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[6] << 8 | data[5])), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[8] << 8 | data[7])), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+
+    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[10] << 8 | data[9])), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[12] << 8 | data[11])), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+
+    if (ctx->last_state[13] != data[13]) {
+        Uint8 hat;
+        switch (data[13]) {
+        case 1:
+            hat = SDL_HAT_UP;
+            break;
+        case 2:
+            hat = SDL_HAT_RIGHTUP;
+            break;
+        case 3:
+            hat = SDL_HAT_RIGHT;
+            break;
+        case 4:
+            hat = SDL_HAT_RIGHTDOWN;
+            break;
+        case 5:
+            hat = SDL_HAT_DOWN;
+            break;
+        case 6:
+            hat = SDL_HAT_LEFTDOWN;
+            break;
+        case 7:
+            hat = SDL_HAT_LEFT;
+            break;
+        case 8:
+            hat = SDL_HAT_LEFTUP;
+            break;
+        default:
+            hat = SDL_HAT_CENTERED;
+            break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+    if (ctx->last_state[14] != data[14]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[14] & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[14] & 0x02) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[14] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[14] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[14] & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[14] & 0x80) != 0));
+    }
+
+    if (ctx->last_state[15] != data[15]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data[15] & 0x04) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[15] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[15] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[15] & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[15] & 0x40) != 0));
+    }
+
+    if (ctx->sensors_supported) {
+        // if (ctx->sensor_timestamp_ns == 0) {
+        //     ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
+        // } else {
+        //     ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
+        // }
+        // Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
+        Uint64 sensor_timestamp = timestamp;
+        float gyro_values[3];
+        // 调整后（示例：交换 Y 和 Z 轴）
+        gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE;
+        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
+        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
+        float accel_values[3];
+        accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
+        accel_values[2] = -LOAD16(data[25], data[26]) * ACCEL_SCALE;
+        accel_values[1] = LOAD16(data[27], data[28]) * ACCEL_SCALE;
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_values, 3);
+#ifdef DEBUG_ZUIKI_PROTOCOL
+        SDL_Log("Gyro raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f rad/s",
+                LOAD16(data[17], data[18]), LOAD16(data[19], data[20]), LOAD16(data[21], data[22]),
+                gyro_values[0], gyro_values[1], gyro_values[2]);
+        SDL_Log("Accel raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f m/s²",
+                LOAD16(data[23], data[24]), LOAD16(data[25], data[26]), LOAD16(data[27], data[28]),
+                accel_values[0], accel_values[1], accel_values[2]);
+#endif
+    }
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
@@ -250,7 +406,9 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (size == 8) {
+        if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
+            HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(joystick, ctx, data, size);
+        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO) {
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
