@@ -1167,7 +1167,8 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
         if (action == SDL_ADDEVENT) {
             CHECK_PARAM(!events) {
                 SDL_UnlockMutex(SDL_EventQ.lock);
-                return SDL_InvalidParamError("events");
+                SDL_InvalidParamError("events");
+                return -1;
             }
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
