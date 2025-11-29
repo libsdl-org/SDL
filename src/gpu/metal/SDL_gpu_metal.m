@@ -3919,6 +3919,14 @@ static void METAL_ReleaseWindow(
         }
 
         METAL_Wait(driverData);
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+        if(renderer->useDisplayLink)
+            METAL_INTERNAL_ReleaseDisplayLink(window);
+
+        while(SDL_GetAtomicInt(&windowData->undisplayedFrameCount) != 0) {
+            // spin
+        }
+#endif
         SDL_Metal_DestroyView(windowData->view);
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
             if (windowData->inFlightFences[i] != NULL) {
@@ -3937,10 +3945,6 @@ static void METAL_ReleaseWindow(
             }
         }
         SDL_UnlockMutex(renderer->windowLock);
-#ifdef SDL_DISPLAY_LINK_AVAILABLE
-        if(renderer->useDisplayLink)
-            METAL_INTERNAL_ReleaseDisplayLink(window);
-#endif
         SDL_free(windowData);
 
         SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
