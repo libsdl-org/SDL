@@ -3808,12 +3808,6 @@ static void METAL_INTERNAL_ReleaseDisplayLink(SDL_Window* window) {
     SDL_DestroyCondition(windowData->displayReadyConditional);
 }
 
-static void waitForDisplay2(MetalWindowData* windowData) {
-    SDL_LockMutex(windowData->displayReadyMutex);
-    while(!windowData->displayLinkSignaled)
-        SDL_WaitCondition(windowData->displayReadyConditional, windowData->displayReadyMutex);
-    SDL_UnlockMutex(windowData->displayReadyMutex);
-}
 static void METAL_INTERNAL_WaitForDisplayLink(MetalWindowData* windowData, int maxUndisplayedFrames) {
 
     SDL_LockMutex(windowData->displayReadyMutex);
@@ -3824,8 +3818,8 @@ static void METAL_INTERNAL_WaitForDisplayLink(MetalWindowData* windowData, int m
     // so we can wait for that (display link doesn't know this and still fires at monitor refresh rate)
     // if we don't do this, the four frame queue will persist once the window goes back in focus.
     //
-    // currently the frames in flight implementation is totally broken and instead caps command buffer
-    // count with a busy loop so we can't rely on that, the two could be combined in a future pr
+    // currently the frames in flight implementation is broken and we can't rely on that,
+    // the two could be combined in a future pr
     //
     // has to be guarded by @availble since we don't know how many frames are waiting for presentation
     // before that. it could be tied to the number of active command buffers in those older versions,
@@ -4230,11 +4224,7 @@ static bool METAL_Submit(
             [metalCommandBuffer->handle presentDrawable:windowData->drawable];
             windowData->drawable = nil;
 
-            if(@available(macOS 10.15.4, *)) {
-
-            } else {
-                windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)metalCommandBuffer->fence;
-            }
+            windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)metalCommandBuffer->fence;
 
             (void)SDL_AtomicIncRef(&metalCommandBuffer->fence->referenceCount);
 
