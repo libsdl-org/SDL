@@ -4736,7 +4736,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
         // Remember debug mode
         renderer->debugMode = debugMode;
-        renderer->allowedFramesInFlight = 1;
+        renderer->allowedFramesInFlight = 2;
 
         // Set up colorspace array
         SwapchainCompositionToColorSpace[0] = kCGColorSpaceSRGB;
