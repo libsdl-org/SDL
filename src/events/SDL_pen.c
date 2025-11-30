@@ -505,7 +505,9 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
                     }
                 } else if (pen_touching == 0) {  // send mouse motion (without a pressed button) for pens that aren't touching.
                     // this might cause a little chaos if you have multiple pens hovering at the same time, but this seems unlikely in the real world, and also something you did to yourself.  :)
-                    SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
+                    if (mouse->pen_mouse_events) {
+                        SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
+                    }
                 }
             }
         }
