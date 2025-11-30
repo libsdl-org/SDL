@@ -28,8 +28,7 @@
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-    return mainFunction(argc, argv);
+    return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
 #endif

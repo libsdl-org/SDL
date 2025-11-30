@@ -23,6 +23,7 @@
 #ifdef SDL_PLATFORM_WIN32
 
 #include "../../core/windows/SDL_windows.h"
+#include "../SDL_main_callbacks.h"
 
 /* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
   based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
@@ -37,8 +38,7 @@ int MINGW32_FORCEALIGN SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunc
     if (args_error) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", args_error, NULL);
     } else {
-        SDL_SetMainReady();
-        result = mainFunction(argc, argv);
+        result = SDL_CallMainFunction(argc, argv, mainFunction);
         if (heap_allocated) {
             HeapFree(GetProcessHeap(), 0, heap_allocated);
         }

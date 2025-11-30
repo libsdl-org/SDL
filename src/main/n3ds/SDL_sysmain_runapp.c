@@ -31,14 +31,11 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
 {
     int result;
 
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-
     // init
     osSetSpeedupEnable(true);
     romfsInit();
 
-    SDL_SetMainReady();
-    result = mainFunction(argc, argv);
+    result = SDL_CallMainFunction(argc, argv, mainFunction);
 
     // quit
     romfsExit();
