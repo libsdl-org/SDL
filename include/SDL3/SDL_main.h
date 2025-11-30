@@ -167,12 +167,10 @@
         */
         #define SDL_MAIN_NEEDED
 
-    #elif defined(SDL_PLATFORM_IOS)
-        /* On iOS SDL provides a main function that creates an application delegate
-           and starts the iOS application run loop.
+    #elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+        /* On iOS and tvOS SDL provides a main function that creates an application delegate and starts the application run loop.
 
-           To use it, just #include SDL_main.h in the source file that contains your
-           main() function.
+           To use it, just #include <SDL3/SDL_main.h> in the source file that contains your main() function.
 
            See src/video/uikit/SDL_uikitappdelegate.m for more details.
          */
@@ -225,6 +223,15 @@
         /*
           On N3DS, SDL provides a main function that sets up the screens
           and storage.
+
+          If you provide this yourself, you may define SDL_MAIN_HANDLED
+        */
+        #define SDL_MAIN_AVAILABLE
+
+    #else
+        /*
+          This platform SDL provides a main function that sets up the main
+          thread and calls your main function.
 
           If you provide this yourself, you may define SDL_MAIN_HANDLED
         */
