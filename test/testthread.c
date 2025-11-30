@@ -118,12 +118,6 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    /* Load the SDL library */
-    if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        return 1;
-    }
-
     if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         SDL_Quit();
