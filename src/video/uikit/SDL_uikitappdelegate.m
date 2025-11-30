@@ -42,8 +42,6 @@ static int exit_status;
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-
     // store arguments
     forward_main = mainFunction;
     forward_argc = argc;
@@ -483,7 +481,7 @@ API_AVAILABLE(ios(13.0))
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
 
     SDL_SetiOSEventPump(true);
-    exit_status = forward_main(forward_argc, forward_argv);
+    exit_status = SDL_CallMainFunction(forward_argc, forward_argv, forward_main);
     SDL_SetiOSEventPump(false);
 
     if (launchWindow) {
@@ -553,7 +551,7 @@ API_AVAILABLE(ios(13.0))
 
     // run the user's application, passing argc and argv
     SDL_SetiOSEventPump(true);
-    exit_status = forward_main(forward_argc, forward_argv);
+    exit_status = SDL_CallMainFunction(forward_argc, forward_argv, forward_main);
     SDL_SetiOSEventPump(false);
 
     if (launchWindow) {

@@ -37,8 +37,6 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
 {
     (void)reserved;
 
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-
     // Move any URL params that start with "SDL_" over to environment
     //  variables, so the hint system can pick them up, etc, much like a user
     //  can set them from a shell prompt on a desktop machine. Ignore all
@@ -59,7 +57,7 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
         }
     }, SDL_setenv_unsafe);
 
-    return mainFunction(argc, argv);
+    return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
 #endif

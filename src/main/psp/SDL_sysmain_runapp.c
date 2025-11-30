@@ -74,13 +74,9 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
 {
     (void)reserved;
 
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-
     sdl_psp_setup_callbacks();
 
-    SDL_SetMainReady();
-
-    return mainFunction(argc, argv);
+    return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
 #endif // SDL_PLATFORM_PSP
