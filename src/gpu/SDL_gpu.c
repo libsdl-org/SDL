@@ -318,19 +318,6 @@ static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
-#ifdef SDL_GPU_D3D12
-    &D3D12Driver,
-#endif
-    NULL
-};
-
-// Per-platform backend preferences
-
-#if defined(SDL_PLATFORM_WINDOWS)
-static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_D3D12
     &D3D12Driver,
 #endif
@@ -339,51 +326,6 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
 #endif
     NULL
 };
-#elif defined(SDL_PLATFORM_APPLE)
-static const SDL_GPUBootstrap *preferredBackends[] = {
-#ifdef SDL_GPU_METAL
-    &MetalDriver,
-#endif
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
-    NULL
-};
-#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
-static const SDL_GPUBootstrap *preferredBackends[] = {
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
-#ifdef SDL_GPU_D3D12
-    &D3D12Driver,
-#endif
-    NULL
-};
-#elif defined(SDL_PLATFORM_ANDROID)
-static const SDL_GPUBootstrap *preferredBackends[] = {
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
-    NULL
-};
-#else
-static const SDL_GPUBootstrap *preferredBackends[] = {
-#ifdef SDL_GPU_PRIVATE
-    &PrivateGPUDriver,
-#endif
-#ifdef SDL_GPU_METAL
-    &MetalDriver,
-#endif
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
-#ifdef SDL_GPU_D3D12
-    &D3D12Driver,
-#endif
-    NULL
-};
-#endif // Platform preferred backend defines
-
 #endif // !SDL_GPU_DISABLED
 
 // Internal Utility Functions
@@ -685,9 +627,9 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     }
 
     // Iterate preferred backends and pick the first available one
-    for (i = 0; preferredBackends[i]; i += 1) {
-        if (preferredBackends[i] != NULL && preferredBackends[i]->PrepareDriver(_this, props)) {
-            return preferredBackends[i];
+    for (i = 0; backends[i]; i += 1) {
+        if (backends[i] != NULL && backends[i]->PrepareDriver(_this, props)) {
+            return backends[i];
         }
     }
 
