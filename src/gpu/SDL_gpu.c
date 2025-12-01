@@ -627,7 +627,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     }
 
     for (i = 0; backends[i]; i += 1) {
-        if (backends[i] != NULL && backends[i]->PrepareDriver(_this, props)) {
+        if (backends[i]->PrepareDriver(_this, props)) {
             return backends[i];
         }
     }
