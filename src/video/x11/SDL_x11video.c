@@ -161,6 +161,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->SetWindowAspectRatio = X11_SetWindowAspectRatio;
     device->GetWindowBordersSize = X11_GetWindowBordersSize;
     device->SetWindowOpacity = X11_SetWindowOpacity;
+    device->SetWindowMousePassthrough = X11_SetWindowMousePassthrough;
     device->SetWindowParent = X11_SetWindowParent;
     device->SetWindowModal = X11_SetWindowModal;
     device->ShowWindow = X11_ShowWindow;
