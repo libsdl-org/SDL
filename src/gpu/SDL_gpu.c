@@ -329,7 +329,7 @@ static const SDL_GPUBootstrap *backends[] = {
 
 // Per-platform backend preferences
 
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS)
 static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_D3D12
     &D3D12Driver,
@@ -338,7 +338,7 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &VulkanDriver
 #endif
 };
-#elif SDL_PLATFORM_APPLE
+#elif defined(SDL_PLATFORM_APPLE)
 static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
@@ -347,7 +347,7 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &VulkanDriver
 #endif
 };
-#elif SDL_PLATFORM_UNIX || SDL_PLATFORM_NETBSD || SDL_PLATFORM_OPENBSD
+#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
 static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_VULKAN
     &VulkanDriver,
@@ -356,7 +356,7 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &D3D12Driver
 #endif
 };
-#elif SDL_PLATFORM_ANDROID
+#elif defined(SDL_PLATFORM_ANDROID)
 static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_VULKAN
     &VulkanDriver
@@ -378,6 +378,7 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
 #endif
 };
 #endif // Platform preferred backend defines
+
 #endif // !SDL_GPU_DISABLED
 
 // Internal Utility Functions
