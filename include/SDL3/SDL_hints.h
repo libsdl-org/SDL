@@ -496,17 +496,16 @@ extern "C" {
 /**
  * A variable controlling whether SDL enforces a minimum audio device spec.
  *
- * By default, SDL will require devices to be opened at a minimum spec
- * (at time of writing: 44100Hz, stereo, Sint16 format), so if something
- * lower quality tries to open the device first, it doesn't ruin audio
- * for the next thing that opens a device. For example, if a VoIP library
- * wants Uint8, 8000Hz, mono output, it doesn't force the entire game to
- * this state simply because it got there first.
+ * By default, SDL will require devices to be opened at a minimum spec (at
+ * time of writing: 44100Hz, stereo, Sint16 format), so if something lower
+ * quality tries to open the device first, it doesn't ruin audio for the next
+ * thing that opens a device. For example, if a VoIP library wants Uint8,
+ * 8000Hz, mono output, it doesn't force the entire game to this state simply
+ * because it got there first.
  *
- * However, an app that knows it will definitely be the only thing opening
- * a device, and wants to open it at a lower spec, might be able to avoid
- * some otherwise-unnecessary conversions by bypassing this minimum
- * requirement.
+ * However, an app that knows it will definitely be the only thing opening a
+ * device, and wants to open it at a lower spec, might be able to avoid some
+ * otherwise-unnecessary conversions by bypassing this minimum requirement.
  *
  * Note that even without the minimum enforcement, the system might choose a
  * different format/channels/frequency than requested by the app; this hint
