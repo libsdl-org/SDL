@@ -335,8 +335,9 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &D3D12Driver,
 #endif
 #ifdef SDL_GPU_VULKAN
-    &VulkanDriver
+    &VulkanDriver,
 #endif
+    NULL
 };
 #elif defined(SDL_PLATFORM_APPLE)
 static const SDL_GPUBootstrap *preferredBackends[] = {
@@ -344,8 +345,9 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &MetalDriver,
 #endif
 #ifdef SDL_GPU_VULKAN
-    &VulkanDriver
+    &VulkanDriver,
 #endif
+    NULL
 };
 #elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD)
 static const SDL_GPUBootstrap *preferredBackends[] = {
@@ -353,14 +355,16 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &VulkanDriver,
 #endif
 #ifdef SDL_GPU_D3D12
-    &D3D12Driver
+    &D3D12Driver,
 #endif
+    NULL
 };
 #elif defined(SDL_PLATFORM_ANDROID)
 static const SDL_GPUBootstrap *preferredBackends[] = {
 #ifdef SDL_GPU_VULKAN
-    &VulkanDriver
+    &VulkanDriver,
 #endif
+    NULL
 };
 #else
 static const SDL_GPUBootstrap *preferredBackends[] = {
@@ -374,8 +378,9 @@ static const SDL_GPUBootstrap *preferredBackends[] = {
     &VulkanDriver,
 #endif
 #ifdef SDL_GPU_D3D12
-    &D3D12Driver
+    &D3D12Driver,
 #endif
+    NULL
 };
 #endif // Platform preferred backend defines
 
@@ -681,7 +686,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 
     // Iterate preferred backends and pick the first available one
     for (i = 0; preferredBackends[i]; i += 1) {
-        if (preferredBackends[i]->PrepareDriver(_this, props)) {
+        if (preferredBackends[i] != NULL && preferredBackends[i]->PrepareDriver(_this, props)) {
             return preferredBackends[i];
         }
     }
