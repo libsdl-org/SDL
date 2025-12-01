@@ -105,10 +105,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 + (void)registerUserDefaults
 {
     BOOL momentumScrollSupported = (BOOL)SDL_GetHintBoolean(SDL_HINT_MAC_SCROLL_MOMENTUM, false);
+    BOOL pressAndHoldEnabled = (BOOL)SDL_GetHintBoolean(SDL_HINT_MAC_PRESS_AND_HOLD, true);
 
     NSDictionary *appDefaults = [[NSDictionary alloc] initWithObjectsAndKeys:
                                                           [NSNumber numberWithBool:momentumScrollSupported], @"AppleMomentumScrollSupported",
-                                                          [NSNumber numberWithBool:YES], @"ApplePressAndHoldEnabled",
+                                                          [NSNumber numberWithBool:pressAndHoldEnabled], @"ApplePressAndHoldEnabled",
                                                           [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
                                                           nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
