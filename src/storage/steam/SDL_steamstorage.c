@@ -105,7 +105,7 @@ static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destin
     if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length) {
         result = true;
     } else {
-        SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
+        SDL_SetError("SteamRemoteStorage()->FileRead() failed");
     }
     return result;
 }
@@ -124,7 +124,7 @@ static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void 
     if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length) {
         result = true;
     } else {
-        SDL_SetError("SteamAPI_ISteamRemoteStorage_FileRead() failed");
+        SDL_SetError("SteamRemoteStorage()->FileWrite() failed");
     }
     return result;
 }
@@ -139,7 +139,7 @@ static Uint64 STEAM_GetStorageSpaceRemaining(void *userdata)
         return 0;
     }
     if (!steam->SteamAPI_ISteamRemoteStorage_GetQuota(steamremotestorage, &total, &remaining)) {
-        SDL_SetError("SteamRemoteStorage()->GetQuota failed");
+        SDL_SetError("SteamRemoteStorage()->GetQuota() failed");
         return 0;
     }
     return remaining;
@@ -199,7 +199,7 @@ static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_Prop
         goto steamfail;
     }
     if (!steam->SteamAPI_ISteamRemoteStorage_BeginFileWriteBatch(steamremotestorage)) {
-        SDL_SetError("SteamRemoteStorage()->BeginFileWriteBatch failed");
+        SDL_SetError("SteamRemoteStorage()->BeginFileWriteBatch() failed");
         goto steamfail;
     }
 
