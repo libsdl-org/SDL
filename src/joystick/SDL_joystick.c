@@ -990,6 +990,8 @@ static const char *SDL_UpdateJoystickNameForID(SDL_JoystickID instance_id)
     const char *current_name = NULL;
     const SDL_SteamVirtualGamepadInfo *info;
 
+    SDL_AssertJoysticksLocked();
+
     info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         current_name = info->name;
@@ -1077,6 +1079,8 @@ int SDL_GetJoystickPlayerIndexForID(SDL_JoystickID instance_id)
 static bool SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 {
     // printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);
+
+    SDL_AssertJoysticksLocked();
 
     if (joystick->naxes == 2) {
         // Assume D-pad or thumbstick style axes are centered at 0
@@ -1694,9 +1698,17 @@ int SDL_GetNumJoystickHats(SDL_Joystick *joystick)
  */
 int SDL_GetNumJoystickBalls(SDL_Joystick *joystick)
 {
-    CHECK_JOYSTICK_MAGIC(joystick, -1);
+    int result;
 
-    return joystick->nballs;
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, -1);
+
+        result = joystick->nballs;
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
 }
 
 /*
@@ -2677,6 +2689,8 @@ static void SendSteamHandleUpdateEvents(void)
 {
     SDL_Joystick *joystick;
     const SDL_SteamVirtualGamepadInfo *info;
+
+    SDL_AssertJoysticksLocked();
 
     // Check to see if any Steam handles changed
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
