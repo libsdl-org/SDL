@@ -377,6 +377,8 @@ static const char *SDL_UpdateGamepadNameForID(SDL_JoystickID instance_id)
 {
     const char *current_name = NULL;
 
+    SDL_AssertJoysticksLocked();
+
     GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id, true);
     if (mapping) {
         if (SDL_strcmp(mapping->name, "*") == 0) {
@@ -1894,6 +1896,8 @@ static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
 
 static void SDL_FixupHIDAPIMapping(SDL_Gamepad *gamepad)
 {
+    SDL_AssertJoysticksLocked();
+
     // Check to see if we need fixup
     bool need_fixup = false;
     for (int i = 0; i < gamepad->num_bindings; ++i) {

@@ -108,17 +108,9 @@ bool SDL_InitPen(void)
 
 void SDL_QuitPen(void)
 {
+    SDL_RemoveAllPenDevices(NULL, NULL);
     SDL_DestroyRWLock(pen_device_rwlock);
     pen_device_rwlock = NULL;
-    if (pen_devices) {
-        for (int i = pen_device_count; i--; ) {
-            SDL_free(pen_devices[i].name);
-        }
-        SDL_free(pen_devices);
-        pen_devices = NULL;
-    }
-    pen_device_count = 0;
-    pen_touching = 0;
 }
 
 #if 0 // not a public API at the moment.
@@ -305,12 +297,16 @@ void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handl
     if (pen_device_count > 0) {
         SDL_assert(pen_devices != NULL);
         for (int i = 0; i < pen_device_count; i++) {
-            callback(pen_devices[i].instance_id, pen_devices[i].driverdata, userdata);
+            if (callback) {
+                callback(pen_devices[i].instance_id, pen_devices[i].driverdata, userdata);
+            }
             SDL_free(pen_devices[i].name);
         }
     }
     SDL_free(pen_devices);
     pen_devices = NULL;
+    pen_device_count = 0;
+    pen_touching = 0;
     SDL_UnlockRWLock(pen_device_rwlock);
 }
 

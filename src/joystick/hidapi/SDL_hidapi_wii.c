@@ -512,6 +512,8 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
     bool pluggedIn = !(extensionBatteryByte & 0x04);
     Uint8 batteryLevel = extensionBatteryByte >> 4;
 
+    SDL_AssertJoysticksLocked();
+
     if (pluggedIn) {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
     } else {

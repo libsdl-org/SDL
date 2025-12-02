@@ -1161,6 +1161,8 @@ static SDL_JoystickID LINUX_JoystickGetDeviceInstanceID(int device_index)
 
 static bool allocate_balldata(SDL_Joystick *joystick)
 {
+    SDL_AssertJoysticksLocked();
+
     joystick->hwdata->balls =
         (struct hwdata_ball *)SDL_calloc(joystick->nballs, sizeof(struct hwdata_ball));
     if (joystick->hwdata->balls == NULL) {
@@ -1776,6 +1778,8 @@ static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axi
 
 static void HandleBall(SDL_Joystick *stick, Uint8 ball, int axis, int value)
 {
+    SDL_AssertJoysticksLocked();
+
     stick->hwdata->balls[ball].axis[axis] += value;
 }
 
