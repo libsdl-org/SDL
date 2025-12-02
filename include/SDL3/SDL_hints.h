@@ -2621,8 +2621,8 @@ extern "C" {
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
 /**
- * A variable controlling whether holding down a key will repeat the pressed key
- * or open the accents menu on macOS.
+ * A variable controlling whether holding down a key will repeat the pressed
+ * key or open the accents menu on macOS.
  *
  * The variable can be set to the following values:
  *
