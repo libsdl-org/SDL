@@ -46,6 +46,7 @@ struct SDL_WindowData
 
     Uint32 fullscreen_mode_flags;
     bool fullscreen_resize;
+    bool fullscreen_change_in_progress;
 
     bool has_pointer_lock;
 
