@@ -80,7 +80,7 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
     CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY))
     {
         SDL_InvalidParamError("tray");
-        return NULL;
+        return;
     }
 
     tray->driver->SetTrayIcon(tray, icon);
@@ -91,7 +91,7 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
     CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY))
     {
         SDL_InvalidParamError("tray");
-        return NULL;
+        return;
     }
 
     tray->driver->SetTrayTooltip(tray, tooltip);
