@@ -553,11 +553,12 @@ int main(int argc, char **argv)
 
     SDL_DestroySurface(icon);
     SDL_DestroySurface(icon2);
-
+    
+    /* Uncomment the goto below before merging! */
 #define CHECK(name) \
     if (!name) { \
         SDL_Log("Couldn't create " #name ": %s", SDL_GetError()); \
-        goto clean_all; \
+        /* goto clean_all; */ \
     }
 
     SDL_TrayMenu *menu = SDL_CreateTrayMenu(tray);

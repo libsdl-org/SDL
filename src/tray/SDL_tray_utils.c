@@ -91,3 +91,7 @@ bool SDL_HasActiveTrays(void)
 {
     return (active_trays > 0);
 }
+
+int SDL_GetActiveTrayCount(void) {
+	return active_trays;
+}

@@ -27,7 +27,6 @@
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_x11settings.h"
-#include "SDL_x11toolkit.h"
 #include "xsettings-client.h"
 #ifdef HAVE_FRIBIDI_H
 #include "../../core/unix/SDL_fribidi.h"
