@@ -2621,6 +2621,21 @@ extern "C" {
 #define SDL_HINT_MAC_SCROLL_MOMENTUM "SDL_MAC_SCROLL_MOMENTUM"
 
 /**
+ * A variable controlling whether holding down a key will repeat the pressed
+ * key or open the accents menu on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Holding a key will open the accents menu for that key.
+ * - "1": Holding a key will repeat the pressed key. (default)
+ *
+ * This hint needs to be set before SDL_Init().
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_MAC_PRESS_AND_HOLD "SDL_MAC_PRESS_AND_HOLD"
+
+/**
  * Request SDL_AppIterate() be called at a specific rate.
  *
  * If this is set to a number, it represents Hz, so "60" means try to iterate

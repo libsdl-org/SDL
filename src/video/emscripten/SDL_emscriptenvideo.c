@@ -674,6 +674,17 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     if (window->internal) {
         data = window->internal;
 
+        if (data->fullscreen_change_in_progress) {
+            return SDL_FULLSCREEN_FAILED;;
+        }
+
+        EmscriptenFullscreenChangeEvent fsevent;
+        if (emscripten_get_fullscreen_status(&fsevent) == EMSCRIPTEN_RESULT_SUCCESS) {
+            if ((fullscreen == SDL_FULLSCREEN_OP_ENTER) == fsevent.isFullscreen) {
+                return SDL_FULLSCREEN_SUCCEEDED;  // already there.
+            }
+        }
+
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
             bool is_fullscreen_desktop = !window->fullscreen_exclusive;
@@ -704,8 +715,10 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     }
 
     if (res == EMSCRIPTEN_RESULT_SUCCESS) {
+        data->fullscreen_change_in_progress = true;   // even on success, this might animate to the new state.
         return SDL_FULLSCREEN_SUCCEEDED;
     } else if (res == EMSCRIPTEN_RESULT_DEFERRED) {
+        data->fullscreen_change_in_progress = true;
         return SDL_FULLSCREEN_PENDING;
     } else {
         return SDL_FULLSCREEN_FAILED;

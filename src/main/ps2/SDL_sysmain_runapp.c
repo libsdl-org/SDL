@@ -68,21 +68,17 @@ static void deinit_drivers(void)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
-    int res;
+    int result;
     (void)reserved;
-
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
 
     prepare_IOP();
     init_drivers();
 
-    SDL_SetMainReady();
-
-    res = mainFunction(argc, argv);
+    result = SDL_CallMainFunction(argc, argv, mainFunction);
 
     deinit_drivers();
 
-    return res;
+    return result;
 }
 
 #endif // SDL_PLATFORM_PS2

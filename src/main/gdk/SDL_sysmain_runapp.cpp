@@ -24,6 +24,7 @@ extern "C" {
 #include "../../core/gdk/SDL_gdk.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_main_callbacks.h"
 }
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
@@ -65,14 +66,12 @@ int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved
             SDL_SetError("[GDK] Unable to get titleid. Will not call XblInitialize. Check MicrosoftGame.config!");
         }
 
-        SDL_SetMainReady();
-
         if (!GDK_RegisterChangeNotifications()) {
             return -1;
         }
 
         // Run the application main() code
-        result = mainFunction(argc, argv);
+        result = SDL_CallMainFunction(argc, argv, mainFunction);
 
         GDK_UnregisterChangeNotifications();
 

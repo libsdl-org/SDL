@@ -114,18 +114,18 @@ static bool HIDAPI_DriverSteamHori_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_GAMEPAD_NUM_HORI_BUTTONS;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
-	joystick->nhats = 1;
+    joystick->nhats = 1;
 
-	ctx->wireless = device->product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT;
+    ctx->wireless = device->product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT;
 
-	if (ctx->wireless && device->serial) {
-		joystick->serial = SDL_strdup(device->serial);
-		ctx->serial_needs_init = false;
-	} else if (!ctx->wireless) {
-		// Need to actual read from the device to init the serial
-		HIDAPI_DriverSteamHori_UpdateDevice(device);
-	}
-       
+    if (ctx->wireless && device->serial) {
+        joystick->serial = SDL_strdup(device->serial);
+        ctx->serial_needs_init = false;
+    } else if (!ctx->wireless) {
+        // Need to actual read from the device to init the serial
+        HIDAPI_DriverSteamHori_UpdateDevice(device);
+    }
+
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
 
@@ -275,12 +275,13 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_HORI_FL, ((data[7] & 0x80) != 0));
     }
 
-	if (!ctx->wireless && ctx->serial_needs_init) {
+    if (!ctx->wireless && ctx->serial_needs_init) {
         char serial[18];
-		(void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-								data[38], data[39], data[40], data[41], data[42], data[43]);
+        (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                                data[38], data[39], data[40], data[41], data[42], data[43]);
 
-		joystick->serial = SDL_strdup(serial);
+        SDL_AssertJoysticksLocked();
+        joystick->serial = SDL_strdup(serial);
         ctx->serial_needs_init = false;
     }
 
@@ -320,7 +321,6 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         imu_data[1] = RemapValClamped(-1.0f * LOAD16(data[12], data[13]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
         imu_data[2] = RemapValClamped(-1.0f * LOAD16(data[14], data[15]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
         imu_data[0] = RemapValClamped(-1.0f * LOAD16(data[16], data[17]), INT16_MIN, INT16_MAX, -gyroScale, gyroScale);
-		
 
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, imu_data, 3);
 
@@ -334,8 +334,9 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
     if (ctx->last_state[24] != data[24]) {
         bool bCharging = (data[24] & 0x10) != 0;
         int percent = (data[24] & 0xF) * 10;
-		SDL_PowerState state;
-         if (bCharging) {
+        SDL_PowerState state;
+
+        if (bCharging) {
             state = SDL_POWERSTATE_CHARGING;
         } else if (ctx->wireless) {
              state = SDL_POWERSTATE_ON_BATTERY;

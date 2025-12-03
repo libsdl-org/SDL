@@ -480,6 +480,8 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
 {
     SDL_WindowData *window_data = userData;
 
+    window_data->fullscreen_change_in_progress = false;
+
     if (fullscreenChangeEvent->isFullscreen) {
         SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
         window_data->fullscreen_mode_flags = 0;
