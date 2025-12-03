@@ -29,6 +29,10 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
 
+#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+#import <UIKit/UIKit.h>
+#endif
+
 /*
  * Need to link with:: CoreMedia CoreVideo
  *
@@ -77,6 +81,9 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 @property(nonatomic, retain) AVCaptureSession *session;
 @property(nonatomic, retain) SDLCaptureVideoDataOutputSampleBufferDelegate *delegate;
 @property(nonatomic, assign) CMSampleBufferRef current_sample;
+#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+@property(nonatomic, assign) UIDeviceOrientation last_device_orientation;
+#endif
 @end
 
 @implementation SDLPrivateCameraData
@@ -146,7 +153,7 @@ static bool COREMEDIA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
@@ -219,6 +226,25 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
 
     CVPixelBufferUnlockBaseAddress(image, 0);
 
+    // As of this writing, all known iOS devices provide portrait orientation camera data, so we just need to know how to rotate between that and the current device orientation.
+    // macOS currently assumes you don't ever rotate images because the camera is always positioned right-side up (for now).
+    #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+    UIDeviceOrientation device_orientation = [[UIDevice currentDevice] orientation];
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(device_orientation)) {
+        device_orientation = hidden.last_device_orientation;  // possible the phone is laying flat or something went wrong, just stay with the last known-good orientation.
+    } else {
+        hidden.last_device_orientation = device_orientation;  // update the last known-good orientation for later.
+    }
+
+    switch (device_orientation) {
+        case UIDeviceOrientationPortrait: *rotation = 0; break;
+        case UIDeviceOrientationPortraitUpsideDown: *rotation = 180; break;
+        case UIDeviceOrientationLandscapeRight: *rotation = 90; break;  // !!! FIXME: might be backwards.
+        case UIDeviceOrientationLandscapeLeft: *rotation = 270; break;  // !!! FIXME: might be backwards.
+        default: SDL_assert(!"Unexpected device orientation!"); *rotation = 0; break;
+    }
+    #endif
+
     return result;
 }
 
@@ -231,6 +257,10 @@ static void COREMEDIA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 static void COREMEDIA_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
+        #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+        [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+        #endif
+
         SDLPrivateCameraData *hidden = (SDLPrivateCameraData *) CFBridgingRelease(device->hidden);
         device->hidden = NULL;
 
@@ -358,6 +388,28 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     hidden.session = session;
     hidden.delegate = delegate;
     hidden.current_sample = NULL;
+
+    #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+    // When using a camera, we turn on device orientation tracking. The docs note that this turns on
+    // the device's accelerometer, so I assume this burns power, so we don't leave this running all
+    // the time. These calls nest, so we just need to call the matching `end` message when we close.
+    // You _can_ get an actual events through this mechanism, but we just want to be able to call
+    // -[UIDevice orientation], which will update with real info while notificatons are enabled.
+    UIDevice *uidevice = [UIDevice currentDevice];
+    [uidevice beginGeneratingDeviceOrientationNotifications];
+    hidden.last_device_orientation = uidevice.orientation;
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(hidden.last_device_orientation)) {
+        // accelerometer isn't ready yet or the phone is laying flat or something. Just try to guess from how the UI is oriented at the moment.
+        switch ([UIApplication sharedApplication].statusBarOrientation) {
+            case UIInterfaceOrientationPortrait: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;
+            case UIInterfaceOrientationPortraitUpsideDown: hidden.last_device_orientation = UIDeviceOrientationPortraitUpsideDown; break;
+            case UIInterfaceOrientationLandscapeLeft: hidden.last_device_orientation = UIDeviceOrientationLandscapeRight; break;  // Apple docs say UI and device orientations are reversed in landscape.
+            case UIInterfaceOrientationLandscapeRight: hidden.last_device_orientation = UIDeviceOrientationLandscapeLeft; break;
+            default: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;  // oh well.
+        }
+    }
+    #endif
+
     device->hidden = (struct SDL_PrivateCameraData *)CFBridgingRetain(hidden);
 
     [session startRunning];  // !!! FIXME: docs say this can block while camera warms up and shouldn't be done on main thread. Maybe push through `queue`?

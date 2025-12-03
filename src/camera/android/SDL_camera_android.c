@@ -295,7 +295,7 @@ static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
-static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     media_status_t res;
