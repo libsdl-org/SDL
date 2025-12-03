@@ -33,9 +33,18 @@ int main(int argc, char *argv[])
             SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
             SDL_REVISION);
     int version = SDL_GetVersion();
+    const char *revision = SDL_GetRevision();
     SDL_Log("Runtime version: %d.%d.%d (%s)",
             SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version), SDL_VERSIONNUM_MICRO(version),
-            SDL_GetRevision());
+            revision);
+    /* This is not an API guarantee, but we try to make sure it's true,
+     * so that the version number can be extracted while debugging with:
+     * strings libSDL3.so.0 | grep SDL-
+     */
+    if (SDL_strncmp(revision, "SDL-", 4) != 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Revision should start with SDL-");
+        return 1;
+    }
     SDL_Quit();
     return 0;
 }
