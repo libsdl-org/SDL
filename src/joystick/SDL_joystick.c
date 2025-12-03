@@ -273,6 +273,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x04d9, 0x8009), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04d9, 0xa292), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04d9, 0xa293), // OBINLB USB-HID Keyboard (Anne Pro II)
+    MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
     MAKE_VIDPID(0x1532, 0x0266), // Razer Huntsman V2 Analog, non-functional DInput device
     MAKE_VIDPID(0x1532, 0x0282), // Razer Huntsman Mini Analog, non-functional DInput device
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
@@ -280,7 +281,8 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x31e3, 0x1310), // Wooting 60HE (ARM)
     MAKE_VIDPID(0x3297, 0x1969), // Moonlander MK1 Keyboard
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
-    MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
+    MAKE_VIDPID(0x3434, 0x0353), // Keychron V5 System Control
+    MAKE_VIDPID(0x3434, 0xd030), // Keychron Link
 };
 static SDL_vidpid_list blacklist_devices = {
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES, 0, 0, NULL,
