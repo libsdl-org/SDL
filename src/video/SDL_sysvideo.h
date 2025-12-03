@@ -422,6 +422,7 @@ struct SDL_VideoDevice
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
     bool screen_keyboard_shown;
+    bool is_quitting;
 
     /* * * */
     // Data used by the GL drivers
