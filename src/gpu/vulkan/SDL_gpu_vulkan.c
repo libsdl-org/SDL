@@ -10810,8 +10810,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         VulkanMemoryUsedRegion *currentRegion = allocation->usedRegions[i];
 
         if (currentRegion->isBuffer && !currentRegion->vulkanBuffer->markedForDestroy) {
-            currentRegion->vulkanBuffer->usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
             VulkanBuffer *newBuffer = VULKAN_INTERNAL_CreateBuffer(
                 renderer,
                 currentRegion->vulkanBuffer->size,
