@@ -190,7 +190,7 @@ static bool VITACAMERA_WaitDevice(SDL_Camera *device)
     return true;
 }
 
-static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
 {
     SceCameraRead read = {0};
     read.size = sizeof(SceCameraRead);
