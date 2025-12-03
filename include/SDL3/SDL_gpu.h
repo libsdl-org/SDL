@@ -2946,9 +2946,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUTextureName(
  * Useful for debugging.
  *
  * On Direct3D 12, using SDL_InsertGPUDebugLabel will cause validation errors
- * unless you have WinPixEventRuntime.dll in your PATH.
- * See [here](https://devblogs.microsoft.com/pix/winpixeventruntime/) for
- * instructions on how to obtain it.
+ * unless you have WinPixEventRuntime.dll in your PATH. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
  *
  * \param command_buffer a command buffer.
  * \param text a UTF-8 string constant to insert as the label.
@@ -2969,9 +2969,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGPUDebugLabel(
  * SDL_PopGPUDebugGroup.
  *
  * On Direct3D 12, using SDL_PushGPUDebugGroup will cause validation errors
- * unless you have WinPixEventRuntime.dll in your PATH.
- * See [here](https://devblogs.microsoft.com/pix/winpixeventruntime/) for
- * instructions on how to obtain it.
+ * unless you have WinPixEventRuntime.dll in your PATH. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
  *
  * On some backends (e.g. Metal), pushing a debug group during a
  * render/blit/compute pass will create a group that is scoped to the native
@@ -2993,9 +2993,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUDebugGroup(
  * Ends the most-recently pushed debug group.
  *
  * On Direct3D 12, using SDL_PopGPUDebugGroup will cause validation errors
- * unless you have WinPixEventRuntime.dll in your PATH.
- * See [here](https://devblogs.microsoft.com/pix/winpixeventruntime/) for
- * instructions on how to obtain it.
+ * unless you have WinPixEventRuntime.dll in your PATH. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
  *
  * \param command_buffer a command buffer.
  *
