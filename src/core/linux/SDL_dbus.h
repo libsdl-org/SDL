@@ -38,6 +38,9 @@
 #ifndef DBUS_TYPE_UNIX_FD
 #define DBUS_TYPE_UNIX_FD ((int)'h')
 #endif
+#ifndef DBUS_ERROR_UNKNOWN_PROPERTY
+#define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
+#endif
 
 typedef struct SDL_DBusContext
 {
