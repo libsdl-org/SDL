@@ -26,6 +26,9 @@
 
 void SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent, int data1, int data2)
 {
+    SDL_VideoDevice *_this;
+    bool post_event = true;
+
     if (!display || display->id == 0) {
         return;
     }
@@ -40,8 +43,14 @@ void SDL_SendDisplayEvent(SDL_VideoDisplay *display, SDL_EventType displayevent,
         break;
     }
 
+    // Only post if we are not currently quitting
+    _this = SDL_GetVideoDevice();
+    if (_this == NULL || _this->is_quitting) {
+        post_event = false;
+    }
+
     // Post the event, if desired
-    if (SDL_EventEnabled(displayevent)) {
+    if (post_event && SDL_EventEnabled(displayevent)) {
         SDL_Event event;
         event.type = displayevent;
         event.common.timestamp = 0;
