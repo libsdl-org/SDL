@@ -4036,7 +4036,7 @@ sdl_compile_definitions(
 ##### Tests #####
 
 if(SDL_TEST_LIBRARY)
-  file(GLOB TEST_SOURCES "${SDL3_SOURCE_DIR}/src/test/*.c")
+  file(GLOB TEST_SOURCES "${SDL3_SOURCE_DIR}/src/test/*.c" "${SDL3_SOURCE_DIR}/src/test/*.h")
   target_sources(SDL3_test PRIVATE ${TEST_SOURCES})
   if(APPLE)
     set_target_properties(SDL3_test PROPERTIES

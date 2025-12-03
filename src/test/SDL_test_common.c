@@ -21,15 +21,28 @@
 
 /* Ported from original test/common.c file. */
 #include <SDL3/SDL_test.h>
+#include "SDL_test_internal.h"
 
 #define SDL_MAIN_NOIMPL
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
 
+bool SDLTest_Color = true;
+
+static bool get_environment_bool_variable(const char *name)
+{
+    const char *var_string = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (!var_string || var_string[0] == '\0') {
+        return false;
+    }
+    return true;
+}
+
 static const char *common_usage[] = {
     "[-h | --help]",
     "[--trackmem]",
     "[--randmem]",
+    "[--no-color]",
     "[--info all|video|modes|render|event|event_motion]",
     "[--log all|error|system|audio|video|render|input]",
     NULL
@@ -140,6 +153,10 @@ static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **ar
     }
     if (SDL_strcasecmp(argv[index], "--trackmem") == 0) {
         /* Already handled in SDLTest_CommonCreateState() */
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--no-color") == 0) {
+        SDLTest_Color = false;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--randmem") == 0) {
@@ -685,6 +702,8 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
 {
     int i;
     SDLTest_CommonState *state;
+
+    SDLTest_Color = !get_environment_bool_variable("NO_COLOR");
 
     /* Do this first so we catch all allocations */
     for (i = 1; argv[i]; ++i) {
