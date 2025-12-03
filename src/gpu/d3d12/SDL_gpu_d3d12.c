@@ -90,6 +90,8 @@
 #define D3D12_DLL "d3d12_x.dll"
 #else
 #define D3D12_DLL "d3d12.dll"
+#define USE_PIX_RUNTIME
+#define WINPIXEVENTRUNTIME_DLL "WinPixEventRuntime.dll"
 #endif
 #define DXGI_DLL      "dxgi.dll"
 #define DXGIDEBUG_DLL "dxgidebug.dll"
@@ -130,6 +132,15 @@
 // Function Pointer Signatures
 typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(const GUID *riid, void **ppFactory);
 typedef HRESULT (WINAPI *pfnDXGIGetDebugInterface)(const GUID *riid, void **ppDebug);
+
+#ifdef USE_PIX_RUNTIME
+#define PIX_BEGIN_EVENT_ON_COMMAND_LIST_FUNC "PIXBeginEventOnCommandList"
+#define PIX_END_EVENT_ON_COMMAND_LIST_FUNC "PIXEndEventOnCommandList"
+#define PIX_SET_MARKER_ON_COMMAND_LIST_FUNC "PIXSetMarkerOnCommandList"
+typedef void(WINAPI* pfnBeginEventOnCommandList)(ID3D12GraphicsCommandList* commandList, UINT64 color, _In_ PCSTR formatString);
+typedef void(WINAPI* pfnEndEventOnCommandList)(ID3D12GraphicsCommandList* commandList);
+typedef void(WINAPI* pfnSetMarkerOnCommandList)(ID3D12GraphicsCommandList* commandList, UINT64 color, _In_ PCSTR formatString);
+#endif
 
 // IIDs (from https://www.magnumdb.com/)
 static const IID D3D_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
@@ -844,6 +855,14 @@ typedef struct D3D12PresentData
     Uint32 swapchainImageIndex;
 } D3D12PresentData;
 
+#ifdef USE_PIX_RUNTIME
+typedef struct WinPixEventRuntimeFns {
+    pfnBeginEventOnCommandList pBeginEventOnCommandList;
+    pfnEndEventOnCommandList pEndEventOnCommandList;
+    pfnSetMarkerOnCommandList pSetMarkerOnCommandList;
+} WinPixEventRuntimeFns;
+#endif
+
 struct D3D12Renderer
 {
     // Reference to the parent device
@@ -858,6 +877,10 @@ struct D3D12Renderer
     IDXGIAdapter1 *adapter;
     SDL_SharedObject *dxgi_dll;
     SDL_SharedObject *dxgidebug_dll;
+#endif
+#ifdef USE_PIX_RUNTIME
+    SDL_SharedObject *winpixeventruntime_dll;
+    WinPixEventRuntimeFns winpixeventruntimeFns;
 #endif
     ID3D12Debug *d3d12Debug;
     BOOL supportsTearing;
@@ -1701,6 +1724,12 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
         renderer->dxgidebug_dll = NULL;
     }
 #endif
+#ifdef USE_PIX_RUNTIME
+    if (renderer->winpixeventruntime_dll) {
+        SDL_UnloadObject(renderer->winpixeventruntime_dll);
+        renderer->winpixeventruntime_dll = NULL;
+    }
+#endif
     renderer->pD3D12SerializeRootSignature = NULL;
 
     if (renderer->iconv) {
@@ -2104,8 +2133,9 @@ static void D3D12_SetTextureName(
     }
 }
 
-/* These debug functions are all marked as "for internal usage only"
- * on D3D12... works on renderdoc!
+/* These debug functions now use the PIX runtime where available to avoid validation
+ * layer errors. They still fall back to calling internal functions if WinPixEventRuntime.dll
+ * is not present, but with a warning explaining the problem.
  */
 
 static void D3D12_InsertDebugLabel(
@@ -2113,6 +2143,19 @@ static void D3D12_InsertDebugLabel(
     const char *text)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+#ifdef USE_PIX_RUNTIME
+    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
+    if (fns->pSetMarkerOnCommandList) {
+        fns->pSetMarkerOnCommandList(d3d12CommandBuffer->graphicsCommandList, 0 /*default color*/, text);
+        return;
+    } else {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
+            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
+            "Otherwise, these functions will cause D3D12 validation errors. "
+            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
+    }
+#endif
     WCHAR *wchar_text = WIN_UTF8ToStringW(text);
 
     ID3D12GraphicsCommandList_SetMarker(
@@ -2129,6 +2172,19 @@ static void D3D12_PushDebugGroup(
     const char *name)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+#ifdef USE_PIX_RUNTIME
+    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
+    if (fns->pBeginEventOnCommandList) {
+        fns->pBeginEventOnCommandList(d3d12CommandBuffer->graphicsCommandList, 0 /*default color*/, name);
+        return;
+    } else {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
+            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
+            "Otherwise, these functions will cause D3D12 validation errors. "
+            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
+    }
+#endif
     WCHAR *wchar_text = WIN_UTF8ToStringW(name);
 
     ID3D12GraphicsCommandList_BeginEvent(
@@ -2144,6 +2200,19 @@ static void D3D12_PopDebugGroup(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+#ifdef USE_PIX_RUNTIME
+    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
+    if (fns->pEndEventOnCommandList) {
+        fns->pEndEventOnCommandList(d3d12CommandBuffer->graphicsCommandList);
+        return;
+    } else {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
+            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
+            "Otherwise, these functions will cause D3D12 validation errors. "
+            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
+    }
+#endif
     ID3D12GraphicsCommandList_EndEvent(d3d12CommandBuffer->graphicsCommandList);
 }
 
@@ -8794,6 +8863,30 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     }
 #else
     hasDxgiDebug = true;
+#endif
+
+#ifdef USE_PIX_RUNTIME
+    // Load the PIX runtime DLL so that we can set D3D12 debug events on command lists
+    renderer->winpixeventruntime_dll = SDL_LoadObject(WINPIXEVENTRUNTIME_DLL);
+    WinPixEventRuntimeFns *fns = &renderer->winpixeventruntimeFns;
+    if (renderer->winpixeventruntime_dll) {
+        // Load the specific functions we need from the PIX runtime
+        fns->pBeginEventOnCommandList = (pfnBeginEventOnCommandList)SDL_LoadFunction(
+            renderer->winpixeventruntime_dll,
+            PIX_BEGIN_EVENT_ON_COMMAND_LIST_FUNC);
+        fns->pEndEventOnCommandList = (pfnEndEventOnCommandList)SDL_LoadFunction(
+            renderer->winpixeventruntime_dll,
+            PIX_END_EVENT_ON_COMMAND_LIST_FUNC);
+        fns->pSetMarkerOnCommandList = (pfnSetMarkerOnCommandList)SDL_LoadFunction(
+            renderer->winpixeventruntime_dll,
+            PIX_SET_MARKER_ON_COMMAND_LIST_FUNC);
+    } else {
+        // Not having the PIX runtime is not a critical error itself, but will cause warnings
+        // when using SDL_Push/PopGPUDebugGroup and SDL_InsertGPUDebugLabel.
+        fns->pBeginEventOnCommandList = NULL;
+        fns->pEndEventOnCommandList = NULL;
+        fns->pSetMarkerOnCommandList = NULL;
+    }
 #endif
 
     // Load the CreateDXGIFactory1 function
