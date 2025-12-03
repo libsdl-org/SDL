@@ -18,9 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#include "SDL_internal.h"
 #include "SDL_dbus.h"
 #include "../../stdlib/SDL_vacopy.h"
-#include "SDL_internal.h"
 
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.

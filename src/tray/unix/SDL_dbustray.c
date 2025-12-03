@@ -19,15 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../core/linux/SDL_dbus.h"
 #include "SDL_internal.h"
+#include "../../core/linux/SDL_dbus.h"
 
 #ifdef SDL_USE_LIBDBUS
 
-#include "../../video/SDL_surface_c.h"
+#include <unistd.h>
 #include "../SDL_tray_utils.h"
 #include "SDL_unixtray.h"
-#include <unistd.h>
+#include "../../video/SDL_surface_c.h"
 
 #define SNI_INTERFACE         "org.kde.StatusNotifierItem"
 #define SNI_WATCHER_SERVICE   "org.kde.StatusNotifierWatcher"
