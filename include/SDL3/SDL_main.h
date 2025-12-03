@@ -228,15 +228,6 @@
         */
         #define SDL_MAIN_AVAILABLE
 
-    #else
-        /*
-          This platform SDL provides a main function that sets up the main
-          thread and calls your main function.
-
-          If you provide this yourself, you may define SDL_MAIN_HANDLED
-        */
-        #define SDL_MAIN_AVAILABLE
-
     #endif
 #endif /* SDL_MAIN_HANDLED */
 
