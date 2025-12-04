@@ -214,7 +214,7 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 {
     CHECK_PARAM(!entry)
     {
-        SDL_InvalidParamError("menu");
+        SDL_InvalidParamError("entry");
         return;
     }
     
@@ -233,8 +233,13 @@ void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
-    SDL_InvalidParamError("entry");
-    return NULL;
+    CHECK_PARAM(!entry)
+    {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+    
+    return entry->parent;
 }
 
 SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
