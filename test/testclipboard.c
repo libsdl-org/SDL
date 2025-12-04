@@ -128,41 +128,32 @@ static float PrintPrimarySelectionText(float x, float y)
 static float PrintClipboardImage(float x, float y, const char *mime_type)
 {
     /* We don't actually need to read this data each frame, but this is a simple example */
-    bool isBMP = (SDL_strcmp(mime_type, "image/bmp") == 0);
-    bool isPNG = (SDL_strcmp(mime_type, "image/png") == 0);
-    if (isBMP || isPNG) {
-        size_t size;
-        void *data = SDL_GetClipboardData(mime_type, &size);
-        if (data) {
-            float w = 0.0f, h = 0.0f;
-            bool rendered = false;
-            SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
-            if (stream) {
-                SDL_Surface *surface;
-                if (isBMP) {
-                    surface = SDL_LoadBMP_IO(stream, false);
-                } else {
-                    surface = SDL_LoadPNG_IO(stream, false);
-                }
-                if (surface) {
-                    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-                    if (texture) {
-                        SDL_GetTextureSize(texture, &w, &h);
+    size_t size;
+    void *data = SDL_GetClipboardData(mime_type, &size);
+    if (data) {
+        float w = 0.0f, h = 0.0f;
+        bool rendered = false;
+        SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
+        if (stream) {
+            SDL_Surface *surface = SDL_LoadSurface_IO(stream, false);
+            if (surface) {
+                SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+                if (texture) {
+                    SDL_GetTextureSize(texture, &w, &h);
 
-                        SDL_FRect dst = { x, y, w, h };
-                        rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
-                        SDL_DestroyTexture(texture);
-                    }
-                    SDL_DestroySurface(surface);
+                    SDL_FRect dst = { x, y, w, h };
+                    rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
+                    SDL_DestroyTexture(texture);
                 }
-                SDL_CloseIO(stream);
+                SDL_DestroySurface(surface);
             }
-            if (!rendered) {
-                SDL_RenderDebugText(renderer, x, y, SDL_GetError());
-            }
-            SDL_free(data);
-            return h + 2.0f;
+            SDL_CloseIO(stream);
         }
+        if (!rendered) {
+            SDL_RenderDebugText(renderer, x, y, SDL_GetError());
+        }
+        SDL_free(data);
+        return h + 2.0f;
     }
     return 0.0f;
 }
