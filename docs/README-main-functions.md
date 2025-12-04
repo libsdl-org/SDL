@@ -205,6 +205,13 @@ data, as this pointer will not be provided to your app again.
 The SDL_AppResult value that terminated the app is provided here, in case
 it's useful to know if this was a successful or failing run of the app.
 
+## Implementing main callbacks for other languages
+
+If you're writing language bindings for SDL and want to provide the main
+callback functionality, you should call SDL_EnterAppMainCallbacks() and pass it
+the arguments and callback functions that you want called during the program
+execution. This function will call the init, event, and iterate functions and
+then once the application is done, will call the quit callback and return.
 
 ## Summary and Best Practices
 
