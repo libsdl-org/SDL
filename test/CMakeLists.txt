@@ -406,7 +406,6 @@ add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-intera
 add_sdl_test_executable(testurl SOURCES testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c)
 set_property(TARGET testver PROPERTY C_STANDARD 90)
-set_property(TARGET testver PROPERTY C_EXTENSIONS OFF)
 add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c)
 add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
