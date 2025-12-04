@@ -440,6 +440,8 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
         return 1;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
         return (plane == 0) ? 1 : 2;
+    case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+        return (plane == 0) ? 2 : 4;
     default:
         return 4;
     }
@@ -2708,8 +2710,8 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
         samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
         samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         samplerCreateInfo.mipLodBias = 0.0f;
         samplerCreateInfo.anisotropyEnable = VK_FALSE;
@@ -2911,6 +2913,19 @@ static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImag
     return true;
 }
 
+#ifdef SDL_HAVE_YUV
+static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                   const SDL_Rect *rect,
+                                   const Uint8 *Yplane, int Ypitch,
+                                   const Uint8 *UVplane, int UVpitch);
+
+static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                    const SDL_Rect *rect,
+                                    const Uint8 *Yplane, int Ypitch,
+                                    const Uint8 *Uplane, int Upitch,
+                                    const Uint8 *Vplane, int Vpitch);
+#endif
+
 static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *srcPixels,
                                int srcPitch)
@@ -2922,38 +2937,36 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-    if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainImage.imageLayout)) {
-        return false;
-    }
 #ifdef SDL_HAVE_YUV
     Uint32 numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
-    // Skip to the correct offset into the next texture
-    srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
-    // YUV data
-    if (numPlanes == 3) {
-        for (Uint32 plane = 1; plane < numPlanes; plane++) {
-            if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, plane, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, &textureData->mainImage.imageLayout)) {
-                return false;
-            }
+    if (numPlanes == 2) {
+        // NV12/NV21 data
+        int UVbpp = VULKAN_GetBytesPerPixel(textureData->mainImage.format, 1);
+        int Ypitch = srcPitch;
+        int UVpitch = (srcPitch + (UVbpp - 1)) & ~(UVbpp - 1);
+        const Uint8 *plane0 = (const Uint8 *)srcPixels;
+        const Uint8 *plane1 = plane0 + rect->h * srcPitch;
 
-            // Skip to the correct offset into the next texture
-            srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
-        }
-    }
-    // NV12/NV21 data
-    else if (numPlanes == 2)
-    {
-        if (texture->format == SDL_PIXELFORMAT_P010) {
-            srcPitch = (srcPitch + 3) & ~3;
+        return VULKAN_UpdateTextureNV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch);
+
+    } else if (numPlanes == 3) {
+        // YUV data
+        int Ypitch = srcPitch;
+        int UVpitch = ((Ypitch + 1) / 2);
+        const Uint8 *plane0 = (const Uint8 *)srcPixels;
+        const Uint8 *plane1 = plane0 + rect->h * Ypitch;
+        const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
+
+        if (texture->format == SDL_PIXELFORMAT_YV12) {
+            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
         } else {
-            srcPitch = (srcPitch + 1) & ~1;
-        }
-
-        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, srcPitch, &textureData->mainImage.imageLayout)) {
-            return false;
+            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         }
     }
 #endif
+    if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainImage.imageLayout)) {
+        return false;
+    }
     return true;
 }
 
