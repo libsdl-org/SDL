@@ -126,5 +126,5 @@ int SDL_ListCountEntries(SDL_ListNode **head) {
         l = l->next;
     }
     
-    return 0;
+    return i;
 }
