@@ -849,6 +849,7 @@ static SDL_DBusMenuItem *GetMenuItemById(SDL_ListNode *menu, long id)
         SDL_DBusMenuItem *item;
 
         item = cursor->entry;
+        
         if (item->id == id) {
             return item;
         }
@@ -861,6 +862,7 @@ static SDL_DBusMenuItem *GetMenuItemById(SDL_ListNode *menu, long id)
                 return found;
             }
         }
+        
         cursor = cursor->next;
     }
     return NULL;
@@ -1128,13 +1130,13 @@ static DBusHandlerResult HandleEvent(SDL_DBusContext *ctx, SDL_ListNode *menu, D
     DBusMessage *reply;
     const char *event_id;
     DBusMessageIter args;
-    long id;
+    Uint32 id;
 
     ctx->message_iter_init(msg, &args);
     ctx->message_iter_get_basic(&args, &id);
     ctx->message_iter_next(&args);
     ctx->message_iter_get_basic(&args, &event_id);
-
+    
     if (!SDL_strcmp(event_id, "clicked")) {
         SDL_DBusMenuItem *item;
 

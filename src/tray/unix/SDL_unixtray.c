@@ -47,7 +47,9 @@ void SDL_UpdateTrays(void)
     count = SDL_GetObjects(SDL_OBJECT_TYPE_TRAY, (void **)trays, active_trays);
     SDL_assert(count == active_trays);
     for (i = 0; i < count; i++) {
-        trays[i]->driver->UpdateTray(trays[i]);
+        if (trays[i]) {
+            trays[i]->driver->UpdateTray(trays[i]);
+        }
     }
 
     SDL_free(trays);
@@ -121,23 +123,52 @@ SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 {
-    SDL_InvalidParamError("entry");
-    return NULL;
+    CHECK_PARAM(!entry)
+    {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
+    return entry->parent->parent_tray->driver->CreateTraySubmenu(entry);
 }
 
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
-    return NULL;
+    CHECK_PARAM(!entry)
+    {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+    
+    return entry->parent->parent_tray->driver->GetTraySubmenu(entry);
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
 {
-    SDL_InvalidParamError("menu");
-    return NULL;
+    CHECK_PARAM(!menu)
+    {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+    
+    CHECK_PARAM(!count)
+    {
+        SDL_InvalidParamError("count");
+        return NULL;
+    }
+    
+    return (const SDL_TrayEntry **)menu->parent_tray->driver->GetTrayEntries(menu, count);
 }
 
 void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 {
+    CHECK_PARAM(!entry)
+    {
+        SDL_InvalidParamError("entry");
+        return;
+    }
+
+    entry->parent->parent_tray->driver->RemoveTrayEntry(entry);
 }
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
@@ -181,6 +212,19 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 
 void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)
 {
+    CHECK_PARAM(!entry)
+    {
+        SDL_InvalidParamError("menu");
+        return;
+    }
+    
+    CHECK_PARAM(!callback)
+    {
+        SDL_InvalidParamError("callback");
+        return;
+    }
+    
+    entry->parent->parent_tray->driver->SetTrayEntryCallback(entry, callback, userdata);
 }
 
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)

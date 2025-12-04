@@ -39,6 +39,11 @@ typedef struct SDL_TrayDriver
     void (*SetTrayTooltip)(SDL_Tray *, const char *);
     SDL_TrayMenu *(*CreateTrayMenu)(SDL_Tray *);
     SDL_TrayEntry *(*InsertTrayEntryAt)(SDL_TrayMenu *, int, const char *, SDL_TrayEntryFlags);
+    SDL_TrayMenu *(*CreateTraySubmenu)(SDL_TrayEntry *);
+    SDL_TrayMenu *(*GetTraySubmenu)(SDL_TrayEntry *);
+    SDL_TrayEntry **(*GetTrayEntries)(SDL_TrayMenu *, int *);
+    void (*RemoveTrayEntry)(SDL_TrayEntry *);
+    void (*SetTrayEntryCallback)(SDL_TrayEntry *, SDL_TrayCallback, void *);
 
     void (*DestroyDriver)(struct SDL_TrayDriver *);
 } SDL_TrayDriver;

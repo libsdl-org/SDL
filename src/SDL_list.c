@@ -114,3 +114,17 @@ void SDL_ListClear(SDL_ListNode **head)
         SDL_free(tmp);
     }
 }
+
+int SDL_ListCountEntries(SDL_ListNode **head) {
+    SDL_ListNode *l;
+    int i;
+    
+    i = 0;
+    l = *head;
+    while (l) {
+        i++;    
+        l = l->next;
+    }
+    
+    return 0;
+}

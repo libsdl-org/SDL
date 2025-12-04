@@ -129,6 +129,8 @@ typedef struct SDL_DBusMenuItem
     void *cb_data;
     void (*cb)(struct SDL_DBusMenuItem *, void *);
     SDL_ListNode *sub_menu; /* NULL if no submenu */
+    void *udata;
+    void *udata2;
 
     /* Internal use */
     SDL_DBusContext *dbus;
