@@ -557,7 +557,7 @@ int main(int argc, char **argv)
     }
 
     filename = GetResourceFilename(filename, "testyuv.png");
-    png = SDL_LoadPNG(filename);
+    png = SDL_LoadSurface(filename);
     if (png) {
         original = SDL_ConvertSurface(png, SDL_PIXELFORMAT_RGB24);
         SDL_DestroySurface(png);
