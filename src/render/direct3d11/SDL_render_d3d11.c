@@ -1585,22 +1585,25 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #ifdef SDL_HAVE_YUV
     if (textureData->nv12) {
-        const Uint8 *Yplane = (const Uint8 *)srcPixels;
-        const Uint8 *UVplane = Yplane + rect->h * srcPitch;
+        int UVbpp = SDL_BYTESPERPIXEL(texture->format) * 2;
+        int Ypitch = srcPitch;
+        int UVpitch = (srcPitch + (UVbpp - 1)) & ~(UVbpp - 1);
+        const Uint8 *plane0 = (const Uint8 *)srcPixels;
+        const Uint8 *plane1 = plane0 + rect->h * srcPitch;
 
-        return D3D11_UpdateTextureNV(renderer, texture, rect, Yplane, srcPitch, UVplane, srcPitch);
+        return D3D11_UpdateTextureNV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch);
 
     } else if (textureData->yuv) {
         int Ypitch = srcPitch;
         int UVpitch = ((Ypitch + 1) / 2);
-        const Uint8 *Yplane = (const Uint8 *)srcPixels;
-        const Uint8 *Uplane = Yplane + rect->h * Ypitch;
-        const Uint8 *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;
+        const Uint8 *plane0 = (const Uint8 *)srcPixels;
+        const Uint8 *plane1 = plane0 + rect->h * Ypitch;
+        const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
 
         if (texture->format == SDL_PIXELFORMAT_YV12) {
-            return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Vplane, UVpitch, Uplane, UVpitch);
+            return D3D11_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
         } else {
-            return D3D11_UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, UVpitch, Vplane, UVpitch);
+            return D3D11_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         }
     }
 #endif
@@ -1652,6 +1655,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     HRESULT result;
     D3D11_TEXTURE2D_DESC stagingTextureDesc;
     D3D11_MAPPED_SUBRESOURCE textureMemory;
+    int bpp = SDL_BYTESPERPIXEL(texture->format);
 
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
@@ -1695,7 +1699,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 
     src = Yplane;
     dst = (Uint8 *)textureMemory.pData;
-    length = w;
+    length = w * bpp;
     if (length == (UINT)Ypitch && length == textureMemory.RowPitch) {
         SDL_memcpy(dst, src, (size_t)length * h);
     } else {
@@ -1713,7 +1717,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
     src = UVplane;
-    length = w;
+    length = ((w + 1) / 2) * 2 * bpp;
     h = (h + 1) / 2;
     if (stagingTextureDesc.Format == DXGI_FORMAT_P010) {
         length = (length + 3) & ~3;
