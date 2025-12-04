@@ -518,10 +518,10 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                 force = true;
             }
         }
-
-        if (window_data->fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
+        const bool fill_document = (Emscripten_fill_document_window == window_data->window);
+        if (fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
             double w, h;
-            if (window_data->fill_document) {
+            if (fill_document) {
                 w = (double) uiEvent->windowInnerWidth;
                 h = (double) uiEvent->windowInnerHeight;
             } else {
