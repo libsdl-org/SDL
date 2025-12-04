@@ -161,6 +161,7 @@ extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_
 extern int SDL_DBus_CameraPortalRequestAccess(void);
 
 /* Menu functions */
+extern void SDL_DBus_InitMenuItemInternals(SDL_DBusMenuItem *item);
 extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
 extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
 

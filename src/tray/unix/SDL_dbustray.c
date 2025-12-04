@@ -129,16 +129,19 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
-    key = "ItemIsMenu";
-    bool_value = TRUE;
-    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
-    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
-    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
-    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
-    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
-    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
+    if (menu_dbus) {
+        key = "ItemIsMenu";
+        bool_value = TRUE;
+        driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
+        driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+        driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
+    }
+
     if (menu_dbus) {
         if (menu_dbus->menu_path) {
             key = "Menu";
@@ -236,7 +239,7 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
-    } else if (!SDL_strcmp(property, "ItemIsMenu")) {
+    } else if (!SDL_strcmp(property, "ItemIsMenu") && menu_dbus) {
         bool_value = TRUE;
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
@@ -297,8 +300,8 @@ static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage 
         return HandleGetProp(tray, (SDL_TrayDBus *)tray, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
         return HandleGetAllProps(tray, (SDL_TrayDBus *)tray, driver, msg);
-    } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
-        puts("hello");
+    } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
+        /* Activate */
     }
 
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -513,7 +516,8 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     entry_dbus->item.cb_data = NULL;
     entry_dbus->item.cb = NULL;
     entry_dbus->item.sub_menu = NULL;
-
+	SDL_DBus_InitMenuItemInternals(&entry_dbus->item);
+	
     if (menu_dbus->menu) {
         update = true;
     } else {

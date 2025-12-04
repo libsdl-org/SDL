@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "SDL_dbus.h"
 #include "../../stdlib/SDL_vacopy.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
@@ -1039,11 +1039,34 @@ static DBusHandlerResult HandleGetLayout(SDL_DBusContext *ctx, SDL_ListNode *men
         cursor = menu;
         while (cursor) {
             SDL_DBusMenuItem *item;
-            DBusMessageIter cvariant_iter;
+            DBusMessageIter cvariant_iter, item_struct, item_dict, item_children;
 
             item = cursor->entry;
             ctx->message_iter_open_container(&children_iter, DBUS_TYPE_VARIANT, "(ia{sv}av)", &cvariant_iter);
-            AppendMenuItem(ctx, item, &variant_iter, recursion_depth);
+            ctx->message_iter_open_container(&cvariant_iter, DBUS_TYPE_STRUCT, NULL, &item_struct);
+            ctx->message_iter_append_basic(&item_struct, DBUS_TYPE_INT32, &item->id);
+            ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "{sv}", &item_dict);
+            AppendMenuItemProperties(ctx, item, &item_dict);
+            ctx->message_iter_close_container(&item_struct, &item_dict);
+            ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "v", &item_children);
+            if (item->sub_menu && recursion_depth) {
+                SDL_ListNode *child_cursor;
+
+                child_cursor = item->sub_menu;
+                while (child_cursor) {
+                    SDL_DBusMenuItem *child;
+                    DBusMessageIter child_variant;
+
+                    child = child_cursor->entry;
+                    ctx->message_iter_open_container(&item_children, DBUS_TYPE_VARIANT, "(ia{sv}av)", &child_variant);
+                    AppendMenuItem(ctx, child, &child_variant, recursion_depth - 1);
+                    ctx->message_iter_close_container(&item_children, &child_variant);
+                    child_cursor = child_cursor->next;
+                }
+            }
+            ctx->message_iter_close_container(&item_struct, &item_children);
+            ctx->message_iter_close_container(&cvariant_iter, &item_struct);
+
             ctx->message_iter_close_container(&children_iter, &cvariant_iter);
             cursor = cursor->next;
         }
@@ -1057,11 +1080,34 @@ static DBusHandlerResult HandleGetLayout(SDL_DBusContext *ctx, SDL_ListNode *men
             cursor = parent->sub_menu;
             while (cursor) {
                 SDL_DBusMenuItem *item;
-                DBusMessageIter cvariant_iter;
+                DBusMessageIter cvariant_iter, item_struct, item_dict, item_children;
 
                 item = cursor->entry;
                 ctx->message_iter_open_container(&children_iter, DBUS_TYPE_VARIANT, "(ia{sv}av)", &cvariant_iter);
-                AppendMenuItem(ctx, item, &cvariant_iter, recursion_depth);
+                ctx->message_iter_open_container(&cvariant_iter, DBUS_TYPE_STRUCT, NULL, &item_struct);
+                ctx->message_iter_append_basic(&item_struct, DBUS_TYPE_INT32, &item->id);
+                ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "{sv}", &item_dict);
+                AppendMenuItemProperties(ctx, item, &item_dict);
+                ctx->message_iter_close_container(&item_struct, &item_dict);
+                ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "v", &item_children);
+                if (item->sub_menu && recursion_depth) {
+                    SDL_ListNode *child_cursor;
+
+                    child_cursor = item->sub_menu;
+                    while (child_cursor) {
+                        SDL_DBusMenuItem *child;
+                        DBusMessageIter child_variant;
+
+                        child = child_cursor->entry;
+                        ctx->message_iter_open_container(&item_children, DBUS_TYPE_VARIANT, "(ia{sv}av)", &child_variant);
+                        AppendMenuItem(ctx, child, &child_variant, recursion_depth - 1);
+                        ctx->message_iter_close_container(&item_children, &child_variant);
+                        child_cursor = child_cursor->next;
+                    }
+                }
+                ctx->message_iter_close_container(&item_struct, &item_children);
+                ctx->message_iter_close_container(&cvariant_iter, &item_struct);
+
                 ctx->message_iter_close_container(&children_iter, &cvariant_iter);
 
                 cursor = cursor->next;
@@ -1190,7 +1236,7 @@ static DBusHandlerResult HandleGetProperty(SDL_DBusContext *ctx, SDL_ListNode *m
 
 static DBusHandlerResult HandleGetGroupProperties(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
 {
-#define FILTER_PROPS_SZ 32
+    #define FILTER_PROPS_SZ 32
     DBusMessage *reply;
     DBusMessageIter args, array_iter, prop_iter;
     DBusMessageIter iter, reply_array_iter;
@@ -1323,6 +1369,62 @@ static DBusHandlerResult HandleGetGroupProperties(SDL_DBusContext *ctx, SDL_List
     return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static long GetMaxMenuItemId(SDL_ListNode *menu)
+{
+    SDL_ListNode *cursor;
+    long max_id;
+
+    max_id = 0;
+    cursor = menu;
+    while (cursor) {
+        SDL_DBusMenuItem *item;
+
+        item = cursor->entry;
+        if (item) {
+            if (item->id > max_id) {
+                max_id = item->id;
+            }
+
+            if (item->sub_menu) {
+                long sub_max;
+
+                sub_max = GetMaxMenuItemId(item->sub_menu);
+                if (sub_max > max_id) {
+                    max_id = sub_max;
+                }
+            }
+        }
+        cursor = cursor->next;
+    }
+    return max_id;
+}
+
+static void AssignMenuItemIds(SDL_ListNode *menu, long *next_id)
+{
+    SDL_ListNode *cursor;
+
+    cursor = menu;
+    while (cursor) {
+        SDL_DBusMenuItem *item;
+
+        item = cursor->entry;
+        if (item) {
+            if (!item->id) {
+                item->id = (*next_id)++;
+            }
+            if (item->sub_menu) {
+                AssignMenuItemIds(item->sub_menu, next_id);
+            }
+        }
+        cursor = cursor->next;
+    }
+}
+
+void SDL_DBus_InitMenuItemInternals(SDL_DBusMenuItem *item)
+{
+    item->id = 0;
+}
+
 static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_ListNode *menu;
@@ -1342,7 +1444,7 @@ static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage
         DBusMessage *reply;
         dbus_bool_t need_update;
 
-        need_update = 0;
+        need_update = FALSE;
         reply = ctx->message_new_method_return(msg);
         ctx->message_append_args(reply, DBUS_TYPE_BOOLEAN, &need_update, DBUS_TYPE_INVALID);
         ctx->connection_send(conn, reply, NULL);
@@ -1360,10 +1462,14 @@ static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage
 const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu)
 {
     DBusObjectPathVTable vtable;
+    long next_id;
 
     if (!ctx || !menu) {
         return NULL;
     }
+
+    next_id = 1;
+    AssignMenuItemIds(menu, &next_id);
 
     if (menu->entry) {
         SDL_DBusMenuItem *item;
@@ -1386,10 +1492,14 @@ void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNod
 {
     DBusMessage *signal;
     unsigned long revision;
+    long next_id;
 
     if (!ctx || !menu) {
         return;
     }
+
+    next_id = GetMaxMenuItemId(menu) + 1;
+    AssignMenuItemIds(menu, &next_id);
 
     revision = 0;
     if (menu->entry) {
