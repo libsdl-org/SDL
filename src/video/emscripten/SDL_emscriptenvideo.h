@@ -35,10 +35,11 @@ struct SDL_WindowData
 
     SDL_GLContext gl_context;
 
+    int non_fill_document_width;
+    int non_fill_document_height;
+
     char *canvas_id;
     char *keyboard_element;
-
-    bool fill_document;
 
     float pixel_ratio;
 
@@ -52,6 +53,8 @@ struct SDL_WindowData
 
     bool mouse_focus_loss_pending;
 };
+
+extern SDL_Window *Emscripten_fill_document_window;
 
 bool Emscripten_ShouldSetSwapInterval(int interval);
 
