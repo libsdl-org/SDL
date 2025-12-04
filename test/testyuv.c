@@ -396,7 +396,7 @@ int main(int argc, char **argv)
         { true, 37, 3 },
     };
     char *filename = NULL;
-    SDL_Surface *original;
+    SDL_Surface *original = NULL;
     SDL_Surface *converted;
     SDL_Surface *png;
     SDL_Window *window;
@@ -558,8 +558,10 @@ int main(int argc, char **argv)
 
     filename = GetResourceFilename(filename, "testyuv.png");
     png = SDL_LoadPNG(filename);
-    original = SDL_ConvertSurface(png, SDL_PIXELFORMAT_RGB24);
-    SDL_DestroySurface(png);
+    if (png) {
+        original = SDL_ConvertSurface(png, SDL_PIXELFORMAT_RGB24);
+        SDL_DestroySurface(png);
+    }
     if (!original) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", filename, SDL_GetError());
         return 3;
