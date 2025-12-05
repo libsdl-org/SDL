@@ -613,7 +613,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             } else {
                 SDL_SendPenButton(0, pen->pen, window, button - 1, down);
             }
-        } else {
+        } else if (!pointer_emulated) {
             // Otherwise assume a regular mouse
             SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, xev->event);
             int x_ticks = 0, y_ticks = 0;
@@ -627,12 +627,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
             /* Discard wheel events from "Master" devices to avoid duplicates,
              * as coarse wheel events are stateless and can't be deduplicated.
-             *
-             * If the pointer emulation flag is set on a wheel event, it is being
-             * emulated from a scroll valuator, which will be handled natively.
              */
-            if ((pointer_emulated || xev->deviceid != xev->sourceid) &&
-                X11_IsWheelEvent(button, &x_ticks, &y_ticks)) {
+            if (xev->deviceid != xev->sourceid && X11_IsWheelEvent(button, &x_ticks, &y_ticks)) {
                 break;
             }
 
