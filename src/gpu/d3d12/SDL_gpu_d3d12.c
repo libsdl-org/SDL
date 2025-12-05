@@ -8881,8 +8881,10 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             renderer->winpixeventruntime_dll,
             PIX_SET_MARKER_ON_COMMAND_LIST_FUNC);
     } else {
-        // Not having the PIX runtime is not a critical error itself, but will cause warnings
-        // when using SDL_Push/PopGPUDebugGroup and SDL_InsertGPUDebugLabel.
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
+            "WinPixEventRuntime.dll is not available. "
+            "It is required for SDL_Push/PopGPUDebugGroup and SDL_InsertGPUDebugLabel to function correctly. "
+            "See here for instructions on how to obtain it: https://devblogs.microsoft.com/pix/winpixeventruntime/");
         fns->pBeginEventOnCommandList = NULL;
         fns->pEndEventOnCommandList = NULL;
         fns->pSetMarkerOnCommandList = NULL;
