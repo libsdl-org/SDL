@@ -2945,7 +2945,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUTextureName(
  *
  * Useful for debugging.
  *
- * On Direct3D 12, using SDL_PopGPUDebugGroup requires WinPixEventRuntime.dll
+ * On Direct3D 12, using SDL_InsertGPUDebugLabel requires WinPixEventRuntime.dll
  * to be in your PATH or in the same directory as your executable.
  * See [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
  * for instructions on how to obtain it.
@@ -2968,7 +2968,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGPUDebugLabel(
  * Each call to SDL_PushGPUDebugGroup must have a corresponding call to
  * SDL_PopGPUDebugGroup.
  *
- * On Direct3D 12, using SDL_PopGPUDebugGroup requires WinPixEventRuntime.dll
+ * On Direct3D 12, using SDL_PushGPUDebugGroup requires WinPixEventRuntime.dll
  * to be in your PATH or in the same directory as your executable.
  * See [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
  * for instructions on how to obtain it.
