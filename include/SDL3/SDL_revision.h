@@ -44,8 +44,8 @@
  * clue in debugging forensics and not something the app will parse in any
  * way.
  *
- * SDL_revision.h must be included in your program explicitly if you want access
- * to the SDL_REVISION constant.
+ * SDL_revision.h must be included in your program explicitly if you want
+ * access to the SDL_REVISION constant.
  *
  * \since This macro is available since SDL 3.2.0.
  */
