@@ -581,7 +581,7 @@ static bool run_single_format_test(SDL_Renderer *renderer, SDL_Surface *original
     return result;
 }
 
-static bool run_all_format_test(SDL_Window *window, SDL_Surface *original)
+static bool run_all_format_test(SDL_Window *window, const char *requested_renderer, SDL_Surface *original)
 {
     const SDL_PixelFormat yuv_formats[] = {
         SDL_PIXELFORMAT_YV12,
@@ -615,6 +615,10 @@ static bool run_all_format_test(SDL_Window *window, SDL_Surface *original)
 
     for (int i = 0; i < SDL_GetNumRenderDrivers() && !quit; ++i) {
         const char *renderer_name = SDL_GetRenderDriver(i);
+		if (requested_renderer && SDL_strcmp(renderer_name, requested_renderer) != 0) {
+			continue;
+		}
+
         SDL_Renderer *renderer = SDL_CreateRenderer(window, renderer_name);
         if (!renderer) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create %s renderer: %s", renderer_name, SDL_GetError());
@@ -964,7 +968,7 @@ int main(int argc, char **argv)
     }
 
     if (should_test_all_formats) {
-        if (!run_all_format_test(window, original)) {
+        if (!run_all_format_test(window, renderer_name, original)) {
             result = 5;
         }
     } else {
@@ -974,6 +978,7 @@ int main(int argc, char **argv)
     }
 
 done:
+	SDL_free(filename);
     SDL_DestroySurface(original);
     SDL_DestroyWindow(window);
     SDL_Quit();
