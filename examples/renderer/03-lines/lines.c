@@ -77,7 +77,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         const float size = 30.0f;
         const float x = 320.0f;
         const float y = 95.0f - (size / 2.0f);
-        const float r = (float) ((double)i * (SDL_PI_F / 180.0));
+        const float r = (float) i * (SDL_PI_F / 180.0f);
         SDL_SetRenderDrawColor(renderer, SDL_rand(256), SDL_rand(256), SDL_rand(256), SDL_ALPHA_OPAQUE);
         SDL_RenderLine(renderer, x, y, x + SDL_cosf(r) * size, y + SDL_sinf(r) * size);
     }
