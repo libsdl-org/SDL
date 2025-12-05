@@ -7259,15 +7259,19 @@ static void *stbi__load_gif_main(stbi__context *s, int **delays, int *x, int *y,
             stride = g.w * g.h * 4;
 
             if (out) {
-               out = (stbi_uc*) STBI_REALLOC_SIZED( out, out_size, layers * stride );
-               if (!out)
+               void *tmp = (stbi_uc*) STBI_REALLOC_SIZED( out, out_size, layers * stride );
+               if (!tmp)
                   return stbi__load_gif_main_outofmem(&g, out, delays);
-               out_size = layers * stride;
+               else {
+                   out = (stbi_uc*) tmp;
+                   out_size = layers * stride;
+               }
 
                if (delays) {
-                  *delays = (int*) STBI_REALLOC_SIZED( *delays, delays_size, sizeof(int) * layers );
-                  if (!*delays)
+                  int *new_delays = (int*) STBI_REALLOC_SIZED( *delays, delays_size, sizeof(int) * layers );
+                  if (!new_delays)
                      return stbi__load_gif_main_outofmem(&g, out, delays);
+                  *delays = new_delays;
                   delays_size = layers * sizeof(int);
                }
             } else {
