@@ -162,6 +162,9 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\test\SDL_test_internal.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\..\src\test\SDL_test_assert.c" />
     <ClCompile Include="..\..\src\test\SDL_test_common.c" />
     <ClCompile Include="..\..\src\test\SDL_test_compare.c" />
