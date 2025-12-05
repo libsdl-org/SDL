@@ -1675,6 +1675,35 @@ bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 }
 
+void WIN_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+#else
+    SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
+    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    if (passthrough) {
+        COLORREF key = 0;
+        BYTE alpha = 0;
+        DWORD flags = 0;
+        if (style & WS_EX_LAYERED) {
+            GetLayeredWindowAttributes(hwnd, &key, &alpha, &flags);
+        }
+        style |= (WS_EX_TRANSPARENT | WS_EX_LAYERED);
+        SetWindowLong(hwnd, GWL_EXSTYLE, style);
+        SetLayeredWindowAttributes(hwnd, key, alpha, flags);
+    } else {
+        style &= ~WS_EX_TRANSPARENT;
+
+        if ((style & (WS_EX_LAYERED | LWA_ALPHA)) == WS_EX_LAYERED) {
+            style &= ~WS_EX_LAYERED;
+        }
+        SetWindowLong(hwnd, GWL_EXSTYLE, style);
+    }
+#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+}
+
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 static const char *SDLGetClipboardFormatName(UINT cf, char *text, int len)

@@ -3416,6 +3416,13 @@ bool Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float op
     }
 }
 
+void Cocoa_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough) {
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+        [data.nswindow setIgnoresMouseEvents:passthrough];
+    }
+}
+
 bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     bool result = false;

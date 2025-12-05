@@ -1304,3 +1304,4 @@ SDL_DYNAPI_PROC(SDL_Cursor*,SDL_CreateAnimatedCursor,(SDL_CursorFrameInfo *a,int
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_RotateSurface,(SDL_Surface *a,float b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface_IO,(SDL_IOStream *a,bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface,(const char *a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_SetWindowMousePassthrough,(SDL_Window *a,bool b),(a,b),)

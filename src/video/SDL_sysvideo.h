@@ -284,6 +284,7 @@ struct SDL_VideoDevice
     float (*GetWindowContentScale)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*GetWindowSizeInPixels)(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
     bool (*SetWindowOpacity)(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+    void (*SetWindowMousePassthrough)(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough);
     bool (*SetWindowParent)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
     bool (*SetWindowModal)(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
     void (*ShowWindow)(SDL_VideoDevice *_this, SDL_Window *window);

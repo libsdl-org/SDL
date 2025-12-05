@@ -2961,6 +2961,20 @@ bool Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float 
     return SDL_SetError("wayland: set window opacity failed; compositor lacks support for the required wp_alpha_modifier_v1 protocol");
 }
 
+void Wayland_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+    SDL_VideoData *viddata = _this->internal;
+    SDL_WindowData *data = window->internal;
+
+    if (passthrough) {
+        struct wl_region *region = wl_compositor_create_region(viddata->compositor);
+        wl_surface_set_input_region(data->surface, region);
+        wl_region_destroy(region);
+    } else {
+        wl_surface_set_input_region(data->surface, NULL);
+    }
+}
+
 void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;

@@ -141,6 +141,7 @@ extern void X11_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
 extern void X11_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+extern void X11_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough);
 extern bool X11_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
 extern bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
 extern void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

@@ -1296,3 +1296,4 @@
 #define SDL_RotateSurface SDL_RotateSurface_REAL
 #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
 #define SDL_LoadSurface SDL_LoadSurface_REAL
+#define SDL_SetWindowMousePassthrough SDL_SetWindowMousePassthrough_REAL

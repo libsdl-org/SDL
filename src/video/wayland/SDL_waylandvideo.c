@@ -656,6 +656,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->SetWindowParent = Wayland_SetWindowParent;
     device->SetWindowModal = Wayland_SetWindowModal;
     device->SetWindowOpacity = Wayland_SetWindowOpacity;
+    device->SetWindowMousePassthrough = Wayland_SetWindowMousePassthrough;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->SetWindowIcon = Wayland_SetWindowIcon;
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
