@@ -2133,9 +2133,8 @@ static void D3D12_SetTextureName(
     }
 }
 
-/* These debug functions now use the PIX runtime where available to avoid validation
- * layer errors. They still fall back to calling internal functions if WinPixEventRuntime.dll
- * is not present, but with a warning explaining the problem.
+/* These debug functions now require the PIX runtime under Windows to avoid validation
+ * layer errors. Calling them without the PIX runtime in your path is a no-op.
  */
 
 static void D3D12_InsertDebugLabel(
@@ -2144,18 +2143,12 @@ static void D3D12_InsertDebugLabel(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 #ifdef USE_PIX_RUNTIME
-    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    // Requires PIX runtime under Windows, no-op if DLL unavailable.
     WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
     if (fns->pSetMarkerOnCommandList) {
         fns->pSetMarkerOnCommandList(d3d12CommandBuffer->graphicsCommandList, 0 /*default color*/, text);
-        return;
-    } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
-            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
-            "Otherwise, these functions will cause D3D12 validation errors. "
-            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
     }
-#endif
+#else
     WCHAR *wchar_text = WIN_UTF8ToStringW(text);
 
     ID3D12GraphicsCommandList_SetMarker(
@@ -2165,6 +2158,7 @@ static void D3D12_InsertDebugLabel(
         (UINT)SDL_wcslen(wchar_text) * sizeof(WCHAR));
 
     SDL_free(wchar_text);
+#endif
 }
 
 static void D3D12_PushDebugGroup(
@@ -2173,18 +2167,12 @@ static void D3D12_PushDebugGroup(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 #ifdef USE_PIX_RUNTIME
-    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    // Requires PIX runtime under Windows, no-op if DLL unavailable.
     WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
     if (fns->pBeginEventOnCommandList) {
         fns->pBeginEventOnCommandList(d3d12CommandBuffer->graphicsCommandList, 0 /*default color*/, name);
-        return;
-    } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
-            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
-            "Otherwise, these functions will cause D3D12 validation errors. "
-            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
     }
-#endif
+#else
     WCHAR *wchar_text = WIN_UTF8ToStringW(name);
 
     ID3D12GraphicsCommandList_BeginEvent(
@@ -2194,6 +2182,7 @@ static void D3D12_PushDebugGroup(
         (UINT)SDL_wcslen(wchar_text) * sizeof(WCHAR));
 
     SDL_free(wchar_text);
+#endif
 }
 
 static void D3D12_PopDebugGroup(
@@ -2201,19 +2190,14 @@ static void D3D12_PopDebugGroup(
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 #ifdef USE_PIX_RUNTIME
-    // Prefer using PIX runtime, but fallthrough with a warning if not available.
+    // Requires PIX runtime under Windows, no-op if DLL unavailable.
     WinPixEventRuntimeFns *fns = &d3d12CommandBuffer->renderer->winpixeventruntimeFns;
     if (fns->pEndEventOnCommandList) {
         fns->pEndEventOnCommandList(d3d12CommandBuffer->graphicsCommandList);
-        return;
-    } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
-            "WinPixEventRuntime.dll needs to be in your PATH for debug functions like SDL_Push/PopGPUDebugGroup() and SDL_InsertGPUDebugLabel() to function correctly. "
-            "Otherwise, these functions will cause D3D12 validation errors. "
-            "See https://devblogs.microsoft.com/pix/winpixeventruntime/ for information on obtaining the DLL.");
     }
-#endif
+#else
     ID3D12GraphicsCommandList_EndEvent(d3d12CommandBuffer->graphicsCommandList);
+#endif
 }
 
 // State Creation
