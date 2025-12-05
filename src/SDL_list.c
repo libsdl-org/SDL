@@ -37,6 +37,36 @@ bool SDL_ListAdd(SDL_ListNode **head, void *ent)
     return true;
 }
 
+// Append
+bool SDL_ListAppend(SDL_ListNode **head, void *ent)
+{
+    SDL_ListNode *cursor;
+    SDL_ListNode *node;
+
+    if (!head) {
+        return false;
+    }
+
+    node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
+    if (!node) {
+        return false;
+    }
+    node->entry = ent;
+    node->next = NULL;
+
+    if (*head) {
+        cursor = *head;
+        while (cursor->next) {
+            cursor = cursor->next;
+        }
+        cursor->next = node;
+    } else {
+        *head = node;
+    }
+
+    return true;
+}
+
 // Pop from end as a FIFO (if add with SDL_ListAdd)
 void SDL_ListPop(SDL_ListNode **head, void **ent)
 {
@@ -83,4 +113,18 @@ void SDL_ListClear(SDL_ListNode **head)
         l = l->next;
         SDL_free(tmp);
     }
+}
+
+int SDL_ListCountEntries(SDL_ListNode **head) {
+    SDL_ListNode *l;
+    int i;
+    
+    i = 0;
+    l = *head;
+    while (l) {
+        i++;    
+        l = l->next;
+    }
+    
+    return i;
 }
