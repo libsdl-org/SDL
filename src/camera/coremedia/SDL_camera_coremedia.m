@@ -29,7 +29,15 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
 
+// this is a codepath that tracks iOS device orientation to try to correct
+// video frame rotation, but currently it looks like iOS is doing this work
+// for us, and better. This is disabled for now, so the code lives in revision
+// control before I remove it outright.
 #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+//#define USE_UIKIT_DEVICE_ROTATION
+#endif
+
+#ifdef USE_UIKIT_DEVICE_ROTATION
 #import <UIKit/UIKit.h>
 #endif
 
@@ -81,7 +89,7 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 @property(nonatomic, retain) AVCaptureSession *session;
 @property(nonatomic, retain) SDLCaptureVideoDataOutputSampleBufferDelegate *delegate;
 @property(nonatomic, assign) CMSampleBufferRef current_sample;
-#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+#ifdef USE_UIKIT_DEVICE_ROTATION
 @property(nonatomic, assign) UIDeviceOrientation last_device_orientation;
 #endif
 @end
@@ -226,9 +234,7 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
 
     CVPixelBufferUnlockBaseAddress(image, 0);
 
-    // As of this writing, all known iOS devices provide portrait orientation camera data, so we just need to know how to rotate between that and the current device orientation.
-    // macOS currently assumes you don't ever rotate images because the camera is always positioned right-side up (for now).
-    #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+    #ifdef USE_UIKIT_DEVICE_ROTATION
     UIDeviceOrientation device_orientation = [[UIDevice currentDevice] orientation];
     if (!UIDeviceOrientationIsValidInterfaceOrientation(device_orientation)) {
         device_orientation = hidden.last_device_orientation;  // possible the phone is laying flat or something went wrong, just stay with the last known-good orientation.
@@ -257,7 +263,7 @@ static void COREMEDIA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 static void COREMEDIA_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
-        #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+        #ifdef USE_UIKIT_DEVICE_ROTATION
         [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
         #endif
 
@@ -389,7 +395,7 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     hidden.delegate = delegate;
     hidden.current_sample = NULL;
 
-    #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+    #ifdef USE_UIKIT_DEVICE_ROTATION
     // When using a camera, we turn on device orientation tracking. The docs note that this turns on
     // the device's accelerometer, so I assume this burns power, so we don't leave this running all
     // the time. These calls nest, so we just need to call the matching `end` message when we close.
