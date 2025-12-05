@@ -4,6 +4,10 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_C_STANDARD)
+    set(CMAKE_C_STANDARD 99)
+endif()
+
 set(SDL3_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
