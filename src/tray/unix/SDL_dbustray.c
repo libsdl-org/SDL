@@ -61,6 +61,8 @@ typedef struct SDL_TrayDBus
     SDL_Surface *surface;
     
     SDL_ListNode *free_list;
+    
+    bool break_update;
 } SDL_TrayDBus;
 
 typedef struct SDL_TrayMenuDBus
@@ -150,17 +152,19 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
+    key = "ItemIsMenu";
     menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
     if (menu_dbus) {
-        key = "ItemIsMenu";
         bool_value = TRUE;
-        driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
-        driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
-        driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
-        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
-        driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
-        driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
+    } else {
+        bool_value = FALSE;
     }
+    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
+    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     if (menu_dbus) {
         if (menu_dbus->menu_path) {
@@ -259,8 +263,12 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
-    } else if (!SDL_strcmp(property, "ItemIsMenu") && menu_dbus) {
-        bool_value = TRUE;
+    } else if (!SDL_strcmp(property, "ItemIsMenu")) {
+        if (menu_dbus) {
+            bool_value = TRUE;
+        } else {
+            bool_value = FALSE;
+        }
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
@@ -388,6 +396,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
     }
     tray_dbus->surface = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_ARGB32);
     tray_dbus->free_list = NULL;
+    tray_dbus->break_update = false;
 
     /* connect */
     dbus_driver = (SDL_TrayDriverDBus *)driver;
@@ -455,11 +464,17 @@ void DestroyTray(SDL_Tray *tray)
     driver = (SDL_TrayDriverDBus *)tray->driver;
     tray_dbus = (SDL_TrayDBus *)tray;
 
+    /* destroy connection */
+    driver->dbus->connection_flush(tray_dbus->connection);
+    tray_dbus->break_update = true;
     driver->dbus->connection_close(tray_dbus->connection);
     tray_dbus->connection = NULL;
+
+    /* destroy icon and tooltip */
     SDL_free(tray_dbus->tooltip);
     SDL_DestroySurface(tray_dbus->surface);
-    SDL_free(tray);
+    
+    /* free items to be freed */
     cursor = tray_dbus->free_list;
     while (cursor) {    
         ItemToFree *free_item;
@@ -471,6 +486,9 @@ void DestroyTray(SDL_Tray *tray)
         cursor = cursor->next;
     }
     SDL_ListClear(&tray_dbus->free_list);
+    
+    /* free the tray */
+    SDL_free(tray);
 }
 
 void UpdateTray(SDL_Tray *tray)
@@ -481,8 +499,15 @@ void UpdateTray(SDL_Tray *tray)
     driver = (SDL_TrayDriverDBus *)tray->driver;
     tray_dbus = (SDL_TrayDBus *)tray;
 
+    if (tray_dbus->break_update) {
+        return;
+    }
+    
     driver->dbus->connection_read_write(tray_dbus->connection, 0);
     while (driver->dbus->connection_dispatch(tray_dbus->connection) == DBUS_DISPATCH_DATA_REMAINS) {
+        if (tray_dbus->break_update) {
+            break;
+        }    
         SDL_DelayNS(SDL_US_TO_NS(10));
     }
 }

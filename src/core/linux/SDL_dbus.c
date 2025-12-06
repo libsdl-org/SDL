@@ -1129,6 +1129,7 @@ static DBusHandlerResult HandleEvent(SDL_DBusContext *ctx, SDL_ListNode *menu, D
 {
     DBusMessage *reply;
     const char *event_id;
+    SDL_DBusMenuItem *item;
     DBusMessageIter args;
     Uint32 id;
 
@@ -1137,21 +1138,21 @@ static DBusHandlerResult HandleEvent(SDL_DBusContext *ctx, SDL_ListNode *menu, D
     ctx->message_iter_next(&args);
     ctx->message_iter_get_basic(&args, &event_id);
     
+    item = NULL;
     if (!SDL_strcmp(event_id, "clicked")) {
-        SDL_DBusMenuItem *item;
-
         item = GetMenuItemById(menu, id);
-        if (item) {
-            if (item->cb) {
-                item->cb(item, item->cb_data);
-            }
-        }
     }
 
     reply = ctx->message_new_method_return(msg);
     ctx->connection_send(conn, reply, NULL);
     ctx->message_unref(reply);
-
+        
+    if (item) {
+        if (item->cb) {
+            item->cb(item, item->cb_data);
+        }
+    }
+    
     return DBUS_HANDLER_RESULT_HANDLED;
 }
 

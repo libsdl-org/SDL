@@ -37,7 +37,7 @@ void SDL_RegisterTray(SDL_Tray *tray)
 void SDL_UnregisterTray(SDL_Tray *tray)
 {
     SDL_assert(SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY));
-
+	
     SDL_SetObjectValid(tray, SDL_OBJECT_TYPE_TRAY, false);
 
     --active_trays;

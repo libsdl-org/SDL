@@ -48,7 +48,9 @@ void SDL_UpdateTrays(void)
     SDL_assert(count == active_trays);
     for (i = 0; i < count; i++) {
         if (trays[i]) {
-            trays[i]->driver->UpdateTray(trays[i]);
+            if (SDL_ObjectValid(trays[i], SDL_OBJECT_TYPE_TRAY)) {
+                trays[i]->driver->UpdateTray(trays[i]);
+            }
         }
     }
 
@@ -259,11 +261,9 @@ void SDL_DestroyTray(SDL_Tray *tray)
     if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         return;
     }
-
-    SDL_UnregisterTray(tray);
-
+    
     tray->driver->DestroyTray(tray);
-
+    SDL_UnregisterTray(tray);
     if (!SDL_GetActiveTrayCount()) {
         driver->DestroyDriver(driver);
     }
