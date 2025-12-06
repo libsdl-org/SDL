@@ -376,7 +376,11 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
         default: SDL_assert(!"Unexpected device rotation!"); dev_rotation = 0; break;
     }
 
-    *rotation = dev_rotation - device->hidden->rotation;  // current phone orientation, static camera orientation in relation to phone.
+    if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
+        dev_rotation = -dev_rotation;  // we want to subtract this value, instead of add, if back-facing.
+    }
+
+    *rotation = dev_rotation + device->hidden->rotation;   // current phone orientation, static camera orientation in relation to phone.
 
     return result;
 }
