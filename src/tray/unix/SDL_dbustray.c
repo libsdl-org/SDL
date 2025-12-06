@@ -89,6 +89,7 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     const char *key;
     const char *value;
     const char *empty;
+    dbus_uint32_t uint32_val;
     dbus_bool_t bool_value;
 
     empty = "";
@@ -140,6 +141,14 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
+    key = "WindowId";
+    uint32_val = 0;
+    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &uint32_val);
+    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
     if (menu_dbus) {
@@ -289,6 +298,13 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &tray_dbus->tooltip);
         driver->dbus->message_iter_close_container(&variant_iter, &struct_iter);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "WindowId")) {
+        dbus_uint32_t uint32_val;
+        
+        uint32_val = 0;
+        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &uint32_val);
+        driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else {
         driver->dbus->message_unref(reply);
         reply = driver->dbus->message_new_error(msg, DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
@@ -303,7 +319,8 @@ static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage 
 {
     SDL_Tray *tray;
     SDL_TrayDriverDBus *driver;
-
+    DBusMessage *reply;
+    
     tray = user_data;
     driver = (SDL_TrayDriverDBus *)tray->driver;
 
@@ -311,8 +328,26 @@ static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage 
         return HandleGetProp(tray, (SDL_TrayDBus *)tray, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
         return HandleGetAllProps(tray, (SDL_TrayDBus *)tray, driver, msg);
+    } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
+        reply = driver->dbus->message_new_method_return(msg);
+        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
-        /* Activate */
+        reply = driver->dbus->message_new_method_return(msg);
+        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
+    } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "SecondaryActivate")) {
+        reply = driver->dbus->message_new_method_return(msg);
+        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
+    } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Scroll")) {
+        reply = driver->dbus->message_new_method_return(msg);
+        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
     }
 
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -346,7 +381,11 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
     /* fill */
     tray->menu = NULL;
     tray->driver = driver;
-    tray_dbus->tooltip = SDL_strdup(tooltip);
+    if (tooltip) {
+        tray_dbus->tooltip = SDL_strdup(tooltip);
+    } else {
+        tray_dbus->tooltip = NULL;
+    }
     tray_dbus->surface = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_ARGB32);
     tray_dbus->free_list = NULL;
 
@@ -397,6 +436,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
         CLEANUP2();
         return NULL;
     }
+    object_path = tray_dbus->object_name;
     if (!SDL_DBus_CallVoidMethodOnConnection(tray_dbus->connection, SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "RegisterStatusNotifierItem", DBUS_TYPE_STRING, &object_path, DBUS_TYPE_INVALID)) {
         SDL_SetError("Unable to create tray: unable to register status notifier item!");
         CLEANUP2();
@@ -479,7 +519,12 @@ void SetTrayTooltip(SDL_Tray *tray, const char *text)
     if (tray_dbus->tooltip) {
         SDL_free(tray_dbus->tooltip);
     }
-    tray_dbus->tooltip = SDL_strdup(text);
+    
+    if (text) {
+        tray_dbus->tooltip = SDL_strdup(text);
+    } else {
+        tray_dbus->tooltip = NULL;
+    }
 
     signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewToolTip");
     driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
@@ -591,7 +636,10 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     SDL_ListAppend(&menu_dbus->menu, &entry_dbus->item);
 
     if (update) {
-        SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);
+        SDL_TrayMenuDBus *main_menu_dbus;
+        
+        main_menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
+        SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu);
     } else {
         menu_dbus->menu_path = SDL_DBus_ExportMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);
     }
