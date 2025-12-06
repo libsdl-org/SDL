@@ -80,6 +80,32 @@ static bool STEAM_StorageReady(void *userdata)
     return true;
 }
 
+static char *GetNormalizedStoragePath(const char *path, bool add_separator)
+{
+    if (SDL_strcmp(path, ".") == 0) {
+        path = "";
+    } else {
+        while (*path == '/') {
+            ++path;
+        }
+    }
+
+    size_t pathlen = SDL_strlen(path);
+    while (pathlen > 0 && path[pathlen - 1] == '/') {
+        --pathlen;
+    }
+
+    char *normalized = (char *)SDL_malloc(pathlen + add_separator + 1);
+    if (normalized) {
+        SDL_memcpy(normalized, path, pathlen);
+        if (add_separator) {
+            normalized[pathlen++] = '/';
+        }
+        normalized[pathlen] = '\0';
+    }
+    return normalized;
+}
+
 static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
     bool result = true;
@@ -89,19 +115,11 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
         return SDL_SetError("SteamRemoteStorage unavailable");
     }
 
-    const char *prefix;
-    if (SDL_strcmp(path, ".") == 0) {
-        prefix = "";
-    } else {
-        prefix = path;
-        while (*prefix == '/') {
-            ++prefix;
-        }
+    char *dirname = GetNormalizedStoragePath(path, true);
+    if (!dirname) {
+        return false;
     }
-    size_t prefixlen = SDL_strlen(prefix);
-    while (prefixlen > 0 && prefix[prefixlen - 1] == '/') {
-        --prefixlen;
-    }
+    size_t dirlen = SDL_strlen(dirname);
 
     bool done = false;
     Sint32 count = steam->SteamAPI_ISteamRemoteStorage_GetFileCount(steamremotestorage);
@@ -112,12 +130,12 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
         }
 
         const char *fname;
-        if (prefixlen > 0) {
-            // Make sure the prefix matches
-            if (SDL_strncmp(prefix, file, prefixlen) != 0 || *(file + prefixlen) != '/') {
+        if (dirlen > 1) {
+            // Make sure the directory matches
+            if (SDL_strncmp(dirname, file, dirlen) != 0) {
                 continue;
             }
-            fname = file + prefixlen + 1;
+            fname = file + dirlen;
         } else {
             // Make sure this is a top-level file
             if (SDL_strchr(file, '/') != NULL) {
@@ -126,7 +144,7 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
             fname = file;
         }
 
-        switch (callback(callback_userdata, path, fname)) {
+        switch (callback(callback_userdata, dirname, fname)) {
         case SDL_ENUM_SUCCESS:
             done = true;
             break;
@@ -138,6 +156,8 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
             break;
         }
     }
+    SDL_free(dirname);
+
     return result;
 }
 
