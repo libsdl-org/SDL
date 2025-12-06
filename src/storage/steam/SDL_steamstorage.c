@@ -105,7 +105,7 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
 
     bool done = false;
     Sint32 count = steam->SteamAPI_ISteamRemoteStorage_GetFileCount(steamremotestorage);
-    for (Sint32 i = 0; i < count && !done; ++i) {
+    for (Sint32 i = count; i-- && !done; ) {
         const char *file = steam->SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamremotestorage, i, NULL);
         if (!file) {
             continue;
