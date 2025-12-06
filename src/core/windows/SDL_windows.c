@@ -311,6 +311,11 @@ static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
     WIN_BuildNumber = (os_info.dwBuildNumber & ~0xF0000000);
     return (WIN_BuildNumber >= dwBuildNumber);
 }
+#else
+static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
+{
+    return TRUE;
+}
 #endif
 
 // apply some static variables so we only call into the Win32 API once per process for each check.
