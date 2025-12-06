@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
     bool stdin_to_stdout = false;
     bool read_stdin = false;
     bool stdin_to_stderr = false;
+    bool sdl_ipc = false;
     SDL_IOStream *log_stdin = NULL;
     int exit_code = 0;
 
@@ -60,6 +61,9 @@ int main(int argc, char *argv[]) {
                     }
                     consumed = 2;
                 }
+            } else if (SDL_strcmp(argv[i], "--sdl-ipc") == 0) {
+                sdl_ipc = true;
+                consumed = 1;
             } else if (SDL_strcmp(argv[i], "--exit-code") == 0) {
                 if (i + 1 < argc) {
                     char *endptr = NULL;
@@ -95,6 +99,7 @@ int main(int argc, char *argv[]) {
                 "[--stdout TEXT]",
                 "[--stdin-to-stderr]",
                 "[--stderr TEXT]",
+                "[--sdl-ipc]",
                 "[--exit-code EXIT_CODE]",
                 "[--] [ARG [ARG ...]]",
                 NULL
@@ -172,6 +177,15 @@ int main(int argc, char *argv[]) {
 
     if (log_stdin) {
         SDL_CloseIO(log_stdin);
+    }
+
+    if (sdl_ipc) {
+        SDL_IPC *ipc = SDL_GetParentIPC();
+        if (!ipc) {
+            SDL_Log("SDL IPC was requested but was not opened");
+        } else {
+            puts("SDL IPC opened successfully");
+        }
     }
 
     SDLTest_CommonDestroyState(state);

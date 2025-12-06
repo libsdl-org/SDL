@@ -602,4 +602,16 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     SDL_free(data);
 }
 
+SDL_IPC * SDL_SYS_GetProcessIPC(SDL_Process *process)
+{
+    // TODO: implement this
+    return NULL;
+}
+
+SDL_IPC * SDL_SYS_GetParentIPC(void)
+{
+    // TODO: implement this
+    return NULL;
+}
+
 #endif // SDL_PROCESS_WINDOWS

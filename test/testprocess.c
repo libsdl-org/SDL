@@ -1127,6 +1127,63 @@ failed:
     return TEST_ABORTED;
 }
 
+static int SDLCALL process_testIPC(void *arg)
+{
+    TestProcessData *data = (TestProcessData *)arg;
+    SDL_PropertiesID props;
+    SDL_Process *process = NULL;
+    const char *process_args[] = {
+        data->childprocess_path,
+        "--sdl-ipc",
+        NULL,
+    };
+    char *buffer;
+    size_t total_read;
+    int exit_code;
+
+#ifndef SDL_PLATFORM_UNIX
+    SDLTest_AssertPass("SDL_IPC is currently only implemented for Posix");
+    return TEST_SKIPPED;
+#endif
+
+    props = SDL_CreateProperties();
+    SDLTest_AssertCheck(props != 0, "SDL_CreateProperties()");
+    if (!props) {
+        goto failed;
+    }
+
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, (void*)process_args);
+    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_SDL_IPC, true);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+
+    process = SDL_CreateProcessWithProperties(props);
+    SDLTest_AssertCheck(process != NULL, "SDL_CreateProcessWithProperties()");
+    if (!process) {
+        goto failed;
+    }
+
+    SDL_IPC *ipc = SDL_GetProcessIPC(process);
+    SDLTest_AssertCheck(ipc != NULL, "SDL_GetProcessIPC()");
+
+    buffer = SDL_ReadProcess(process, &total_read, &exit_code);
+    SDLTest_AssertCheck(buffer != NULL, "SDL_ReadProcess()");
+    if (!buffer) {
+        goto failed;
+    }
+    SDLTest_AssertCheck(exit_code == 0, "Exit code should be 0, is %d", exit_code);
+    SDLTest_AssertCheck(!!SDL_strstr(buffer, "SDL IPC opened successfully"), "Check \"SDL IPC opened successfully\" is printed");
+
+    SDL_DestroyProperties(props);
+    SDL_DestroyProcess(process);
+    SDL_free(buffer);
+    return TEST_COMPLETED;
+
+failed:
+    SDL_DestroyProperties(props);
+    SDL_DestroyProcess(process);
+    return TEST_ABORTED;
+}
+
 static const SDLTest_TestCaseReference processTestArguments = {
     process_testArguments, "process_testArguments", "Test passing arguments to child process", TEST_ENABLED
 };
@@ -1187,6 +1244,10 @@ static const SDLTest_TestCaseReference processTestWindowsCmdlinePrecedence = {
     process_testWindowsCmdlinePrecedence, "process_testWindowsCmdlinePrecedence", "Test SDL_PROP_PROCESS_CREATE_CMDLINE_STRING precedence over SDL_PROP_PROCESS_CREATE_ARGS_POINTER", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference processTestIPC = {
+    process_testIPC, "process_testIPC", "Test creating IPC for child processes", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference *processTests[] = {
     &processTestArguments,
     &processTestExitCode,
@@ -1203,6 +1264,7 @@ static const SDLTest_TestCaseReference *processTests[] = {
     &processTestFileRedirection,
     &processTestWindowsCmdline,
     &processTestWindowsCmdlinePrecedence,
+    &processTestIPC,
     NULL
 };
 

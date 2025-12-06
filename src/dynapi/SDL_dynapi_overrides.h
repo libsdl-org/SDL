@@ -1296,3 +1296,5 @@
 #define SDL_RotateSurface SDL_RotateSurface_REAL
 #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
 #define SDL_LoadSurface SDL_LoadSurface_REAL
+#define SDL_GetProcessIPC SDL_GetProcessIPC_REAL
+#define SDL_GetParentIPC SDL_GetParentIPC_REAL
