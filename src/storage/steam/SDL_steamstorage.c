@@ -121,7 +121,7 @@ static bool STEAM_WriteStorageFile(void *userdata, const char *path, const void 
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX write size");
     }
-    if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32) length) == length) {
+    if (steam->SteamAPI_ISteamRemoteStorage_FileWrite(steamremotestorage, path, source, (Sint32)length)) {
         result = true;
     } else {
         SDL_SetError("SteamRemoteStorage()->FileWrite() failed");
