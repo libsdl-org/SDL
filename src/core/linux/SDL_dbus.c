@@ -1447,7 +1447,7 @@ static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage
         DBusMessage *reply;
         dbus_bool_t need_update;
 
-        need_update = FALSE;
+        need_update = TRUE;
         reply = ctx->message_new_method_return(msg);
         ctx->message_append_args(reply, DBUS_TYPE_BOOLEAN, &need_update, DBUS_TYPE_INVALID);
         ctx->connection_send(conn, reply, NULL);
@@ -1457,6 +1457,67 @@ static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage
         return HandleGetGroupProperties(ctx, menu, conn, msg);
     } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "GetProperty")) {
         return HandleGetProperty(ctx, menu, conn, msg);
+    } else if (ctx->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "Get")) {
+        DBusMessage *reply;
+        const char *interface_name;
+        const char *property_name;
+        DBusMessageIter args, iter, variant_iter;
+        dbus_uint32_t version;
+
+        ctx->message_iter_init(msg, &args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &interface_name);
+        ctx->message_iter_next(&args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &property_name);
+
+        if (!SDL_strcmp(interface_name, DBUS_MENU_INTERFACE) && !SDL_strcmp(property_name, "Version")) {
+            reply = ctx->message_new_method_return(msg);
+            ctx->message_iter_init_append(reply, &iter);
+            version = 3;
+            ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+            ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &version);
+            ctx->message_iter_close_container(&iter, &variant_iter);
+            ctx->connection_send(conn, reply, NULL);
+            ctx->message_unref(reply);
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
+    } else if (ctx->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
+        DBusMessage *reply;
+        const char *interface_name;
+        const char *key;
+        DBusMessageIter args, iter, dict_iter, entry_iter, variant_iter;
+        dbus_uint32_t version;
+
+        ctx->message_iter_init(msg, &args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &interface_name);
+
+        if (!SDL_strcmp(interface_name, DBUS_MENU_INTERFACE)) {
+            reply = ctx->message_new_method_return(msg);
+            ctx->message_iter_init_append(reply, &iter);
+            ctx->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter);
+
+            key = "Version";
+            version = 3;
+            ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+            ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+            ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+            ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &version);
+            ctx->message_iter_close_container(&entry_iter, &variant_iter);
+            ctx->message_iter_close_container(&dict_iter, &entry_iter);
+
+            ctx->message_iter_close_container(&iter, &dict_iter);
+            ctx->connection_send(conn, reply, NULL);
+            ctx->message_unref(reply);
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
     }
 
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
