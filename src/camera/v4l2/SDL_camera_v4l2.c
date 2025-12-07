@@ -801,7 +801,7 @@ static void MaybeAddDevice(const char *path)
                 const int stepw = (int) frmsizeenum.stepwise.step_width;
                 const int steph = (int) frmsizeenum.stepwise.step_height;
                 for (int w = minw; w <= maxw; w += stepw) {
-                    for (int h = minh; w <= maxh; w += steph) {
+                    for (int h = minh; h <= maxh; h += steph) {
                         #if DEBUG_CAMERA
                         SDL_Log("CAMERA:     * Has %s size %dx%d", (frmsizeenum.type == V4L2_FRMSIZE_TYPE_STEPWISE) ? "stepwise" : "continuous", w, h);
                         #endif
