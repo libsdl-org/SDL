@@ -812,6 +812,11 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
     // Pass PNG data to JavaScript
     MAIN_THREAD_EM_ASM({
         var pngData = HEAPU8.subarray($0, $0 + $1);
+        if (pngData.buffer instanceof SharedArrayBuffer) {
+            // explicitly create a copy
+            pngData = new Uint8Array(pngData);
+        }
+
         var blob = new Blob([pngData], {type: 'image/png'});
         var url = URL.createObjectURL(blob);
 
