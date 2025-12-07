@@ -137,11 +137,12 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
             }
             fname = file + dirlen;
         } else {
-            // Make sure this is a top-level file
-            if (SDL_strchr(file, '/') != NULL) {
-                continue;
-            }
             fname = file;
+        }
+
+        // Make sure this is a file in the current directory
+        if (SDL_strchr(fname, '/') != NULL) {
+            continue;
         }
 
         switch (callback(callback_userdata, dirname, fname)) {
