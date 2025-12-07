@@ -2198,6 +2198,14 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
             SDL_DestroySurface(convert);
         }
     }
+
+    if (rotated) {
+        if (SDL_HasProperty(surface->props, SDL_PROP_SURFACE_ROTATION_FLOAT)) {
+            const float rotation = (SDL_GetNumberProperty(surface->props, SDL_PROP_SURFACE_ROTATION_FLOAT, 0) - angle);
+            SDL_SetFloatProperty(SDL_GetSurfaceProperties(rotated), SDL_PROP_SURFACE_ROTATION_FLOAT, rotation);
+        }
+    }
+
     return rotated;
 }
 
