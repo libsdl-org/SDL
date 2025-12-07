@@ -296,7 +296,7 @@ static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
-static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
+static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     media_status_t res;
@@ -380,7 +380,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
         dev_rotation = -dev_rotation;  // we want to subtract this value, instead of add, if back-facing.
     }
 
-    *rotation = dev_rotation + device->hidden->rotation;   // current phone orientation, static camera orientation in relation to phone.
+    *rotation = (float) (dev_rotation + device->hidden->rotation);   // current phone orientation, static camera orientation in relation to phone.
 
     return result;
 }

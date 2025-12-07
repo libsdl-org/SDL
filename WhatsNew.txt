@@ -37,7 +37,7 @@ General:
 * Added SDL_FLIP_HORIZONTAL_AND_VERTICAL to flip a surface both horizontally and vertically
 * Added SDL_LoadPNG(), SDL_LoadPNG_IO(), SDL_SavePNG(), and SDL_SavePNG_IO() to load and save PNG images
 * Added SDL_LoadSurface() and SDL_LoadSurface_IO() to detect BMP and PNG formats and load them as surfaces
-* Added SDL_PROP_SURFACE_ROTATION_NUMBER to indicate the rotation needed to display camera images upright
+* Added SDL_PROP_SURFACE_ROTATION_FLOAT to indicate the rotation needed to display camera images upright
 * Added SDL_RotateSurface() to create a rotated copy of a surface
 * SDL_EVENT_WINDOW_EXPOSED now sets data1 to true if it is sent during live resizing
 * Added SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, which is sent when the usable desktop bounds change

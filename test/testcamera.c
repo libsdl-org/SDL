@@ -364,7 +364,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         // device might be rotated to a different one (like an iPhone providing portrait images even if you hold
         // the phone in landscape mode). The rotation is how far to rotate the image clockwise to put it right-side
         // up, for how the user would expect it to be for how they are holding the device.
-        const int rotation = (int) SDL_GetNumberProperty(SDL_GetSurfaceProperties(frame_current), SDL_PROP_SURFACE_ROTATION_NUMBER, 0);
+        const float rotation = SDL_GetFloatProperty(SDL_GetSurfaceProperties(frame_current), SDL_PROP_SURFACE_ROTATION_FLOAT, 0.0f);
         SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
         d.x = ((win_w - texture->w) / 2.0f);
         d.y = ((win_h - texture->h) / 2.0f);
