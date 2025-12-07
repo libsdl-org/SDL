@@ -2199,7 +2199,7 @@ SDL_PixelFormat SDL_GetWindowPixelFormat(SDL_Window *window)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE | SDL_WINDOW_FILL_DOCUMENT)
 
 static SDL_INLINE bool IsAcceptingDragAndDrop(void)
 {
@@ -2556,6 +2556,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->displayID = SDL_GetDisplayForWindow(window);
     window->external_graphics_context = external_graphics_context;
     window->constrain_popup = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, true);
+
+    if (!_this->SetWindowFillDocument) {
+        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;  // not an error, just unsupported here, so remove the flag.
+    }
 
     if (_this->windows) {
         _this->windows->prev = window;
@@ -3908,6 +3912,25 @@ bool SDL_SetWindowFocusable(SDL_Window *window, bool focusable)
         }
         if (!_this->SetWindowFocusable(_this, window, want)) {
             return false;
+        }
+    }
+
+    return true;
+}
+
+bool SDL_SetWindowFillDocument(SDL_Window *window, bool fill)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+
+    const bool want = (fill != false); // normalize the flag.
+    const bool have = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
+    if ((want != have) && (_this->SetWindowFillDocument)) {
+        if (!_this->SetWindowFillDocument(_this, window, want)) {
+            return false;
+        } else if (want) {
+            window->flags |= SDL_WINDOW_FILL_DOCUMENT;
+        } else {
+            window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;
         }
     }
 
