@@ -2361,7 +2361,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
  * When no such structure is provided, SDL will use Vulkan API version 1.0 and
  * a minimal set of features. The requested API version influences how the
  * feature_list is processed by SDL. When requesting API version 1.0, the
- * feature_list is ignored. Only the vulkan_10_phyisical_device_features and
+ * feature_list is ignored. Only the vulkan_10_physical_device_features and
  * the extension lists are used. When requesting API version 1.1, the
  * feature_list is scanned for feature structures introduced in Vulkan 1.1.
  * When requesting Vulkan 1.2 or higher, the feature_list is additionally
