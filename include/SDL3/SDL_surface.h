@@ -241,7 +241,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   left edge of the image, if this surface is being used as a cursor.
  * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
  *   top edge of the image, if this surface is being used as a cursor.
- * - `SDL_PROP_SURFACE_ROTATION_NUMBER`: the number of degrees a surface's
+ * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's
  *   data is meant to be rotated clockwise to make the image right-side up.
  *   Default 0. This is used by the camera API, if a mobile device is oriented
  *   differently than what its camera provides (i.e. - the camera always
@@ -263,7 +263,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
 #define SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING            "SDL.surface.tonemap"
 #define SDL_PROP_SURFACE_HOTSPOT_X_NUMBER                   "SDL.surface.hotspot.x"
 #define SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER                   "SDL.surface.hotspot.y"
-#define SDL_PROP_SURFACE_ROTATION_NUMBER                    "SDL.surface.rotation"
+#define SDL_PROP_SURFACE_ROTATION_FLOAT                     "SDL.surface.rotation"
 
 /**
  * Set the colorspace used by a surface.

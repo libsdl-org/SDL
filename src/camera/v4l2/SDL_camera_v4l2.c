@@ -125,7 +125,7 @@ static bool V4L2_WaitDevice(SDL_Camera *device)
     return false;
 }
 
-static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
+static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     const int fd = device->hidden->fd;
     const io_method io = device->hidden->io;

@@ -157,7 +157,7 @@ static bool COREMEDIA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, int *rotation)
+static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
@@ -243,21 +243,21 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
     // there is probably math for this, but this is easy to slap into a table.
     // rotation = rotations[uiorientation-1][devorientation-1];
     if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
-        static const int back_rotations[4][4] = {
+        static const Uint16 back_rotations[4][4] = {
             {   90,  90,  90,  90 },  // ui portrait
             {  270, 270, 270, 270 },  // ui portait upside down
             {    0,   0,   0,   0 },  // ui landscape left
             {  180, 180, 180, 180 }   // ui landscape right
         };
-        *rotation = back_rotations[ui_orientation - 1][device_orientation - 1];
+        *rotation = (float) back_rotations[ui_orientation - 1][device_orientation - 1];
     } else {
-        static const int front_rotations[4][4] = {
+        static const Uint16 front_rotations[4][4] = {
             {   90,  90, 270, 270 },  // ui portrait
             {  270, 270,  90,  90 },  // ui portait upside down
             {    0,   0, 180, 180 },  // ui landscape left
             {  180, 180,   0,   0 }   // ui landscape right
         };
-        *rotation = front_rotations[ui_orientation - 1][device_orientation - 1];
+        *rotation = (float) front_rotations[ui_orientation - 1][device_orientation - 1];
     }
     #endif
 
