@@ -2497,6 +2497,15 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 }
             }
             break;
+        case SDLK_D:
+            if (withControl) {
+                /* Ctrl-D toggle fill-document */
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    SDL_SetWindowFillDocument(window, !((SDL_GetWindowFlags(window) & SDL_WINDOW_FILL_DOCUMENT) != 0));
+                }
+            }
+            break;
         case SDLK_P:
             if (withAlt) {
                 /* Alt-P cycle through progress states */

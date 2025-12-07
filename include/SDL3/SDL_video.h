@@ -215,6 +215,7 @@ typedef Uint64 SDL_WindowFlags;
 #define SDL_WINDOW_TOOLTIP              SDL_UINT64_C(0x0000000000040000)    /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
 #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
+#define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
 #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
@@ -1370,15 +1371,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING`: the id given to the
  *   canvas element. This should start with a '#' sign
- * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true to make
- *   the canvas element fill the entire document. Resize events will be
- *   generated as the browser window is resized, as that will adjust the
- *   canvas size as well. The canvas will cover anything else on the page,
- *   including any controls provided by Emscripten in its generated HTML file.
- *   Often times this is desirable for a browser-based game, but it means
- *   several things that we expect of an SDL window on other platforms might
- *   not work as expected, such as minimum window sizes and aspect ratios.
- *   Default false.
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: override the
  *   binding element for keyboard inputs for this canvas. The variable can be
  *   one of:
@@ -1453,7 +1445,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN    "SDL.window.create.emscripten.fill_document"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
 
 /**
@@ -1623,9 +1614,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING`: the id the canvas element
  *   will have
- * - `SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true if the canvas is
- *   set to consume the entire browser window, bypassing some SDL window
- *   functionality.
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
  *
@@ -1675,7 +1663,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN            "SDL.window.emscripten.fill_document"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
 
 /**
@@ -1694,6 +1681,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
  * \sa SDL_MinimizeWindow
  * \sa SDL_SetWindowFullscreen
  * \sa SDL_SetWindowMouseGrab
+ * \sa SDL_SetWindowFillDocument
  * \sa SDL_ShowWindow
  */
 extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
@@ -2162,6 +2150,37 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowResizable(SDL_Window *window, bool
  * \sa SDL_GetWindowFlags
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, bool on_top);
+
+/**
+ * Set the window to fill the current document space (Emscripten only).
+ *
+ * This will add or remove the window's `SDL_WINDOW_FILL_DOCUMENT` flag.
+ *
+ * Currently this flag only applies to the Emscripten target.
+ *
+ * When enabled, the canvas element fills the entire document. Resize events
+ * will be generated as the browser window is resized, as that will adjust the
+ * canvas size as well. The canvas will cover anything else on the page,
+ * including any controls provided by Emscripten in its generated HTML file
+ * (in fact, any elements on the page that aren't the canvas will be moved
+ * into a hidden `div` element).
+ *
+ * Often times this is desirable for a browser-based game, but it means
+ * several things that we expect of an SDL window on other platforms might not
+ * work as expected, such as minimum window sizes and aspect ratios.
+ *
+ * \param window the window of which to change the fill-document state.
+ * \param fill true to set the window to fill the document, false to disable.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetWindowFlags
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowFillDocument(SDL_Window *window, bool fill);
 
 /**
  * Show a window.
