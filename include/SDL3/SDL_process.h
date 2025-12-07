@@ -64,6 +64,11 @@ extern "C" {
 typedef struct SDL_Process SDL_Process;
 
 /**
+ * An opaque handle representing an IPC channel.
+ */
+typedef struct SDL_IPC SDL_IPC;
+
+/**
  * Create a new process.
  *
  * The path to the executable is supplied in args[0]. args[1..N] are
@@ -201,6 +206,8 @@ typedef enum SDL_ProcessIO
  *   property is only important if you want to start programs that does
  *   non-standard command-line processing, and in most cases using
  *   `SDL_PROP_PROCESS_CREATE_ARGS_POINTER` is sufficient.
+ * - `SDL_PROP_PROCESS_CREATE_SDL_IPC`: true if the process should create an
+ *   IPC channel for sharing resources.
  *
  * On POSIX platforms, wait() and waitpid(-1, ...) should not be called, and
  * SIGCHLD should not be ignored or handled because those would prevent SDL
@@ -238,6 +245,7 @@ extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_Pr
 #define SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN    "SDL.process.create.stderr_to_stdout"
 #define SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN          "SDL.process.create.background"
 #define SDL_PROP_PROCESS_CREATE_CMDLINE_STRING              "SDL.process.create.cmdline"
+#define SDL_PROP_PROCESS_CREATE_SDL_IPC                     "SDL.process.create.ipc"
 
 /**
  * Get the properties associated with a process.
@@ -256,6 +264,8 @@ extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_Pr
  *   `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER` set to `SDL_PROCESS_STDIO_APP`.
  * - `SDL_PROP_PROCESS_BACKGROUND_BOOLEAN`: true if the process is running in
  *   the background.
+ * - `SDL_PROP_PROCESS_SDL_IPC`: true if the process has an IPC channel for
+ *   SDL shared resources.
  *
  * \param process the process to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -275,6 +285,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Proces
 #define SDL_PROP_PROCESS_STDOUT_POINTER     "SDL.process.stdout"
 #define SDL_PROP_PROCESS_STDERR_POINTER     "SDL.process.stderr"
 #define SDL_PROP_PROCESS_BACKGROUND_BOOLEAN "SDL.process.background"
+#define SDL_PROP_PROCESS_SDL_IPC            "SDL.process.ipc"
 
 /**
  * Read all the output from a process.
@@ -431,6 +442,25 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool bloc
  * \sa SDL_KillProcess
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyProcess(SDL_Process *process);
+
+/**
+ * Returns a pointer to the process IPC, or NULL if the process has no active
+ * IPC.
+ *
+ * \param process The process to retrieve IPC from.
+ * \returns A handle to the IPC for the given process, or NULL if the process
+ * has no active IPC.
+ */
+extern SDL_DECLSPEC SDL_IPC * SDLCALL SDL_GetProcessIPC(SDL_Process *process);
+
+/**
+ * Returns a pointer to the SDL IPC for the parent process, or NULL if the
+ * parent process did not set up SDL IPC.
+ *
+ * \returns A handle to the IPC of an SDL-based parent, or NULL if no IPC
+ * was found.
+ */
+extern SDL_DECLSPEC SDL_IPC * SDLCALL SDL_GetParentIPC(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
