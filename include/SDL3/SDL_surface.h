@@ -241,9 +241,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   left edge of the image, if this surface is being used as a cursor.
  * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
  *   top edge of the image, if this surface is being used as a cursor.
- * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's
- *   data is meant to be rotated clockwise to make the image right-side up.
- *   Default 0. This is used by the camera API, if a mobile device is oriented
+ * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's data
+ *   is meant to be rotated clockwise to make the image right-side up. Default
+ *   0. This is used by the camera API, if a mobile device is oriented
  *   differently than what its camera provides (i.e. - the camera always
  *   provides portrait images but the phone is being held in landscape
  *   orientation). Since SDL 3.4.0.
