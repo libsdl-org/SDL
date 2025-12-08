@@ -130,22 +130,9 @@ static bool xinput2_version_atleast(const int version, const int wantmajor, cons
     return version >= ((wantmajor * 1000) + wantminor);
 }
 
-// !!! FIXME: isn't this just X11_FindWindow?
-static SDL_WindowData *xinput2_get_sdlwindowdata(SDL_VideoData *videodata, Window window)
-{
-    int i;
-    for (i = 0; i < videodata->numwindows; i++) {
-        SDL_WindowData *d = videodata->windowlist[i];
-        if (d->xwindow == window) {
-            return d;
-        }
-    }
-    return NULL;
-}
-
 static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window)
 {
-    const SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, window);
+    const SDL_WindowData *windowdata = X11_FindWindow(videodata, window);
     return windowdata ? windowdata->window : NULL;
 }
 
@@ -519,7 +506,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         // Handle pen proximity enter/leave
         if (proev->what == XIPropertyModified && proev->property == videodata->atoms.pen_atom_wacom_serial_ids) {
             const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
-            SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
+            SDL_WindowData *windowdata = X11_FindWindow(videodata, xev->event);
             X11_NotifyPenProximityChange(_this, windowdata ? windowdata->window : NULL, proev->deviceid);
         }
     } break;
@@ -546,7 +533,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_KeyRelease:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
-        SDL_WindowData *windowdata = X11_FindWindow(_this, xev->event);
+        SDL_WindowData *windowdata = X11_FindWindow(videodata, xev->event);
         XEvent xevent;
 
         if (xev->deviceid != xev->sourceid) {
@@ -615,7 +602,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
         } else if (!pointer_emulated) {
             // Otherwise assume a regular mouse
-            SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, xev->event);
+            SDL_WindowData *windowdata = X11_FindWindow(videodata, xev->event);
             int x_ticks = 0, y_ticks = 0;
 
             // Slave pointer devices don't have button remapping applied automatically, so do it manually.
