@@ -137,7 +137,7 @@ static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-static void xinput2_reset_scrollable_valuators(SDL_VideoData *videodata)
+static void xinput2_reset_scrollable_valuators()
 {
     for (int i = 0; i < scrollable_device_count; ++i) {
         for (int j = 0; j < scrollable_devices[i].scroll_info_count; ++j) {
@@ -630,7 +630,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     case XI_Enter:
-        xinput2_reset_scrollable_valuators(videodata);
+        xinput2_reset_scrollable_valuators();
         break;
 #endif
 
