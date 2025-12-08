@@ -1933,7 +1933,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     // RGBA32 is always supported with OpenGL
     if (bgra_supported) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
     }
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
 
