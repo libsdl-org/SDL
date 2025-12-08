@@ -81,6 +81,34 @@ typedef struct SDL_TrayEntryDBus
     SDL_TrayMenuDBus *sub_menu;
 } SDL_TrayEntryDBus;
 
+static bool IsGNOME(void)
+{
+    const char *desktop;
+    const char *gnome;
+    
+    desktop = SDL_getenv("XDG_CURRENT_DESKTOP");
+    if (desktop) {
+        gnome = SDL_strstr(desktop, "GNOME");
+        while (gnome) {
+            bool valid_start = (gnome == desktop) || (*(gnome - 1) == ':');
+            bool valid_end = (gnome[5] == '\0') || (gnome[5] == ':');
+            
+            if (valid_start && valid_end) {
+                return true;
+            }
+            
+            gnome = SDL_strstr(gnome + 1, "GNOME");
+        }
+    }
+    
+    desktop = SDL_getenv("DESKTOP_SESSION");
+    if (desktop && SDL_strcasestr(desktop, "gnome")) {
+        return true;
+    }
+    
+    return false;
+}
+
 static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, SDL_TrayDriverDBus *driver, DBusMessage *msg)
 {
     SDL_TrayMenuDBus *menu_dbus;
@@ -166,20 +194,25 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
-    key = "Menu";
-    value = "/NO_DBUSMENU";
-    if (menu_dbus) {
-        if (menu_dbus->menu_path) {
-            value = menu_dbus->menu_path;
-        }
+    if (menu_dbus && menu_dbus->menu_path) {
+        key = "Menu";
+        value = menu_dbus->menu_path;
+        driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+        driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+        driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
+    } else if (IsGNOME()) {
+        value = "/NO_DBUSMENU";
+        driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+        driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+        driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
     }
-    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
-    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
-    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
-    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
-    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
-    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
-
+    
     if (tray_dbus->surface) {
         DBusMessageIter pixmap_array_iter, pixmap_struct_iter, pixmap_byte_array_iter;
 
@@ -274,15 +307,17 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Menu")) {
-        value = "/NO_DBUSMENU";
-        if (menu_dbus) {
-            if (menu_dbus->menu_path) {
-                value = menu_dbus->menu_path;
-            }
+        if (menu_dbus && menu_dbus->menu_path) {
+            value = menu_dbus->menu_path;
+            driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+            driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+            driver->dbus->message_iter_close_container(&iter, &variant_iter);
+        } else if (IsGNOME()) {
+            value = "/NO_DBUSMENU";
+            driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+            driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+            driver->dbus->message_iter_close_container(&iter, &variant_iter);
         }
-        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
-        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
-        driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "IconPixmap") && tray_dbus->surface) {
         DBusMessageIter array_iter, struct_iter;
         DBusMessageIter byte_array_iter;
@@ -663,7 +698,14 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     }
     
     SDL_ListAppend(&menu_dbus->menu, &entry_dbus->item);
-
+    
+    if (menu->parent_entry) {
+        SDL_TrayEntryDBus *parent_entry_dbus;
+        
+        parent_entry_dbus = (SDL_TrayEntryDBus *)menu->parent_entry;
+        parent_entry_dbus->item.sub_menu = menu_dbus->menu;
+    }
+    
     if (update) {
         SDL_TrayMenuDBus *main_menu_dbus;
         
