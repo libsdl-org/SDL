@@ -166,18 +166,19 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
+    key = "Menu";
+    value = "/NO_DBUSMENU";
     if (menu_dbus) {
         if (menu_dbus->menu_path) {
-            key = "Menu";
             value = menu_dbus->menu_path;
-            driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
-            driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
-            driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
-            driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
-            driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
-            driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
         }
     }
+    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     if (tray_dbus->surface) {
         DBusMessageIter pixmap_array_iter, pixmap_struct_iter, pixmap_byte_array_iter;
@@ -272,13 +273,16 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
-    } else if (!SDL_strcmp(property, "Menu") && menu_dbus) {
-        if (menu_dbus->menu_path) {
-            value = menu_dbus->menu_path;
-            driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
-            driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
-            driver->dbus->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "Menu")) {
+        value = "/NO_DBUSMENU";
+        if (menu_dbus) {
+            if (menu_dbus->menu_path) {
+                value = menu_dbus->menu_path;
+            }
         }
+        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
+        driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "IconPixmap") && tray_dbus->surface) {
         DBusMessageIter array_iter, struct_iter;
         DBusMessageIter byte_array_iter;
@@ -816,7 +820,7 @@ SDL_TrayDriver *SDL_Tray_CreateDBusDriver(void)
 
                 host_registered = FALSE;
                 SDL_DBus_QueryProperty(SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "IsStatusNotifierHostRegistered", DBUS_TYPE_BOOLEAN, &host_registered);
-                if (watcher_found && host_registered) {
+                if (host_registered) {
                     sni_supported = true;
                 }
             }
