@@ -393,7 +393,7 @@ cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_
 cmake_dependent_option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT} ${SDL_STATIC_AVAILABLE} OFF)
 option(SDL_TEST_LIBRARY   "Build the SDL3_test library" ON)
 
-dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST_LIBRARY OFF)
+dep_option(SDL_TESTS           "Build the test directory" ON SDL_TEST_LIBRARY OFF)
 dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "SDL_INSTALL;NOT SDL_FRAMEWORK" OFF)
 dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
