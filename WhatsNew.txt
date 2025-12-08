@@ -85,7 +85,8 @@ Linux:
 * Added SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER so you can query the wl_output associated with a display
 
 Emscripten:
-* Added SDL_WINDOW_FILL_DOCUMENT flag for SDL_Windows to take up the whole browser window.
+* Added SDL_WINDOW_FILL_DOCUMENT to indicate that windows expand to fill the whole browser window
+* Added SDL_SetWindowFillDocument() to change whether windows expand to fill the whole browser window
 * Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING to allow setting the SDL canvas ID, and SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING to query it on existing windows
 * Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to specify where keyboard input is bound, and SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to query it on existing windows
 
