@@ -87,7 +87,6 @@ Linux:
 Emscripten:
 * Added SDL_WINDOW_FILL_DOCUMENT flag for SDL_Windows to take up the whole browser window.
 * Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING to allow setting the SDL canvas ID, and SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING to query it on existing windows
-* Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN to indicate that the window should fill the document, and SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN to query it on existing windows
 * Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to specify where keyboard input is bound, and SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to query it on existing windows
 
 iOS:
