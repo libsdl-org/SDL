@@ -320,10 +320,37 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
         const float FRAMERATE_EPSILON = 0.01f;
         for (AVFrameRateRange *framerate in format.videoSupportedFrameRateRanges) {
-            if (rate > (framerate.minFrameRate - FRAMERATE_EPSILON) &&
-                rate < (framerate.maxFrameRate + FRAMERATE_EPSILON)) {
-                spec_format = format;
-                break;
+            // Check if the requested rate is within the supported range
+            if (rate >= (framerate.minFrameRate - FRAMERATE_EPSILON) &&
+                rate <= (framerate.maxFrameRate + FRAMERATE_EPSILON)) {
+
+                // Prefer formats with narrower frame rate ranges that are closer to our target
+                // This helps avoid formats that support a wide range (like 10-60 FPS)
+                // when we want a specific rate (like 30 FPS)
+                bool should_select = false;
+                if (spec_format == nil) {
+                    should_select = true;
+                } else {
+                    AVFrameRateRange *current_range = spec_format.videoSupportedFrameRateRanges.firstObject;
+                    float current_range_width = current_range.maxFrameRate - current_range.minFrameRate;
+                    float new_range_width = framerate.maxFrameRate - framerate.minFrameRate;
+
+                    // Prefer formats with narrower ranges, or if ranges are similar, prefer closer to target
+                    if (new_range_width < current_range_width) {
+                        should_select = true;
+                    } else if (SDL_fabsf(new_range_width - current_range_width) < 0.1f) {
+                        // Similar range width, prefer the one closer to our target rate
+                        float current_distance = SDL_fabsf(rate - current_range.minFrameRate);
+                        float new_distance = SDL_fabsf(rate - framerate.minFrameRate);
+                        if (new_distance < current_distance) {
+                            should_select = true;
+                        }
+                    }
+                }
+
+                if (should_select) {
+                    spec_format = format;
+                }
             }
         }
 
@@ -339,6 +366,22 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
 
     avdevice.activeFormat = spec_format;
+
+    // Try to set the frame duration to enforce the requested frame rate
+    const float frameRate = (float)spec->framerate_numerator / spec->framerate_denominator;
+    const CMTime frameDuration = CMTimeMake(1, (int32_t)frameRate);
+
+    // Check if the device supports setting frame duration
+    if ([avdevice respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
+        [avdevice respondsToSelector:@selector(setActiveVideoMaxFrameDuration:)]) {
+        @try {
+            avdevice.activeVideoMinFrameDuration = frameDuration;
+            avdevice.activeVideoMaxFrameDuration = frameDuration;
+        } @catch (NSException *exception) {
+            // Some devices don't support setting frame duration, that's okay
+        }
+    }
+
     [avdevice unlockForConfiguration];
 
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
@@ -393,6 +436,15 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
         return SDL_SetError("Cannot add AVCaptureVideoDataOutput");
     }
     [session addOutput:output];
+
+    // Try to set the frame rate on the connection
+    AVCaptureConnection *connection = [output connectionWithMediaType:AVMediaTypeVideo];
+    if (connection && connection.isVideoMinFrameDurationSupported) {
+        connection.videoMinFrameDuration = frameDuration;
+        if (connection.isVideoMaxFrameDurationSupported) {
+            connection.videoMaxFrameDuration = frameDuration;
+        }
+    }
 
     [session commitConfiguration];
 
