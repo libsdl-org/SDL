@@ -246,14 +246,24 @@ SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 {
-    SDL_InvalidParamError("menu");
-    return NULL;
+    CHECK_PARAM(!menu)
+    {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+    
+    return menu->parent_entry;
 }
 
 SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
 {
-    SDL_InvalidParamError("menu");
-    return NULL;
+    CHECK_PARAM(!menu)
+    {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+    
+    return menu->parent_tray;
 }
 
 void SDL_DestroyTray(SDL_Tray *tray)

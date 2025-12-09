@@ -55,7 +55,7 @@ typedef struct SDL_TrayDBus
     SDL_Tray _parent;
 
     DBusConnection *connection;
-    char *object_name;
+    char *service_name;
 
     char *tooltip;
     SDL_Surface *surface;
@@ -83,26 +83,37 @@ typedef struct SDL_TrayEntryDBus
 
 static bool IsGNOME(void)
 {
-    const char *desktop;
-    const char *gnome;
+    const char *desktop_env;
+    char *desktop;
+    char *token;
+    char *saveptr;
+    bool is_gnome;
     
-    desktop = SDL_getenv("XDG_CURRENT_DESKTOP");
-    if (desktop) {
-        gnome = SDL_strstr(desktop, "GNOME");
-        while (gnome) {
-            bool valid_start = (gnome == desktop) || (*(gnome - 1) == ':');
-            bool valid_end = (gnome[5] == '\0') || (gnome[5] == ':');
-            
-            if (valid_start && valid_end) {
-                return true;
+    desktop_env = SDL_getenv("XDG_CURRENT_DESKTOP");
+    if (desktop_env) {
+        desktop = SDL_strdup(desktop_env);
+        if (!desktop) {
+            return false;
+        }
+        
+        is_gnome = false;
+        token = SDL_strtok_r(desktop, ":", &saveptr);
+        while (token) {
+            if (SDL_strcmp(token, "GNOME") == 0) {
+                is_gnome = true;
+                break;
             }
-            
-            gnome = SDL_strstr(gnome + 1, "GNOME");
+            token = SDL_strtok_r(NULL, ":", &saveptr);
+        }
+        
+        SDL_free(desktop);
+        if (is_gnome) {
+            return true;
         }
     }
     
-    desktop = SDL_getenv("DESKTOP_SESSION");
-    if (desktop && SDL_strcasestr(desktop, "gnome")) {
+    desktop_env = SDL_getenv("DESKTOP_SESSION");
+    if (desktop_env && SDL_strcasestr(desktop_env, "gnome")) {
         return true;
     }
     
@@ -142,7 +153,7 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
     driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
     driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
     driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
-    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->object_name);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->service_name);
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
@@ -282,7 +293,7 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Id")) {
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
-        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->object_name);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->service_name);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Title")) {
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
@@ -406,6 +417,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
     SDL_TrayDBus *tray_dbus;
     SDL_Tray *tray;
     const char *object_path;
+    char *register_name;
     DBusObjectPathVTable vtable;
     DBusError err;
     int status;
@@ -455,8 +467,8 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
 
     /* request name */
     driver->count++;
-    SDL_asprintf(&tray_dbus->object_name, "org.kde.StatusNotifierItem-%d-%d", getpid(), driver->count);
-    status = dbus_driver->dbus->bus_request_name(tray_dbus->connection, tray_dbus->object_name, DBUS_NAME_FLAG_REPLACE_EXISTING, &err);
+    SDL_asprintf(&tray_dbus->service_name, "org.kde.StatusNotifierItem-%d-%d", getpid(), driver->count);
+    status = dbus_driver->dbus->bus_request_name(tray_dbus->connection, tray_dbus->service_name, DBUS_NAME_FLAG_REPLACE_EXISTING, &err);
     if (dbus_driver->dbus->error_is_set(&err)) {
         SDL_SetError("Unable to create tray: %s", err.message);
         dbus_driver->dbus->error_free(&err);
@@ -484,12 +496,16 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
         CLEANUP2();
         return NULL;
     }
-    object_path = tray_dbus->object_name;
+    
+    /* register */
+    SDL_asprintf(&register_name, "%s%s", tray_dbus->service_name, SNI_OBJECT_PATH);
     if (!SDL_DBus_CallVoidMethodOnConnection(tray_dbus->connection, SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "RegisterStatusNotifierItem", DBUS_TYPE_STRING, &object_path, DBUS_TYPE_INVALID)) {
+        SDL_free(register_name);
         SDL_SetError("Unable to create tray: unable to register status notifier item!");
         CLEANUP2();
         return NULL;
     }
+    SDL_free(register_name);
 
     return tray;
 }
