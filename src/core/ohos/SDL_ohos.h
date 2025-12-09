@@ -12,7 +12,7 @@ void OHOS_UnlockPage();
 int OHOS_FetchWidth();
 int OHOS_FetchHeight();
 
-void OHOS_MessageBox(const char* title, const char* message);
+int OHOS_MessageBox(const char* title, const char* message, int ml, int* mapping, int bl, const char * const *buttons);
 const char* OHOS_Locale();
 void OHOS_OpenLink(const char* url);
 bool OHOS_IsBatteryPresent();
@@ -20,6 +20,9 @@ bool OHOS_IsBatteryCharging();
 bool OHOS_IsBatteryCharged();
 int OHOS_GetBatteryPercent();
 void OHOS_SetClipboardText(const char* data);
+char* OHOS_GetStoragePath();
+
+void OHOS_FileDialog(int id, const char* defpath, int allowmany, const char* filter);
 
 bool OHOS_IsScreenKeyboardShown(); 
 void OHOS_StartTextInput();

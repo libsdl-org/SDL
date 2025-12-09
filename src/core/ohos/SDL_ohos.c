@@ -37,7 +37,9 @@ typedef enum
     Int,
     Long,
     Double,
-    String
+    String,
+    IntArray,
+    StringArray
 } napiArgType;
 
 typedef struct
@@ -50,6 +52,16 @@ typedef struct
         long long l;
         double d;
         const char *str;
+        
+        struct {
+            int *ia;
+            int ial;
+        };
+        
+        struct {
+            const char * const *sa;
+            int sal;
+        };
     } data;
 } napiCallbackArg;
 typedef struct
@@ -183,12 +195,28 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
         }
         case String:
         {
-            const char* p = ar->arg[i].data.str; int l = 0;
-            while (*p) {
-                l++;
-                p++;
+            const char* p = ar->arg[i].data.str;
+            napi_create_string_utf8(env, ar->arg[i].data.str, SDL_strlen(p), args + i);
+            break;
+        }
+        case IntArray:
+        {
+            napi_create_array_with_length(env, ar->arg[i].data.ial, args + i);
+            for (int ii = 0; ii < ar->arg[i].data.ial; ii++) {
+                napi_value itt;
+                napi_create_int32(env, ar->arg[i].data.ia[ii], &itt);
+                napi_set_element(env, *(args + i), ii, itt);
             }
-            napi_create_string_utf8(env, ar->arg[i].data.str, l, args + i);
+            break;
+        }
+        case StringArray:
+        {
+            napi_create_array_with_length(env, ar->arg[i].data.sal, args + i);
+            for (int ii = 0; ii < ar->arg[i].data.sal; ii++) {
+                napi_value itt;
+                napi_create_string_utf8(env, ar->arg[i].data.sa[ii], SDL_strlen(ar->arg[i].data.sa[ii]), &itt);
+                napi_set_element(env, *(args + i), ii, itt);
+            }
             break;
         }
         }
@@ -223,6 +251,32 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
     }
     }
     ar->returned = true;
+}
+
+void OHOS_FileDialog(int id, const char* defpath, int allowmany, const char* filter)
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "openFileDialog";
+    data->argCount = 4;
+    data->arg[0].type = Int;
+    data->arg[0].enabled = true;
+    data->arg[0].data.i = id;
+    data->arg[1].type = String;
+    data->arg[1].enabled = true;
+    data->arg[1].data.str = defpath;
+    data->arg[2].type = Int;
+    data->arg[2].enabled = true;
+    data->arg[2].data.i = allowmany;
+    data->arg[3].type = String;
+    data->arg[3].enabled = true;
+    data->arg[3].data.str = filter;
+
+    data->returned = false;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+    while (!data->returned) {}
+    SDL_free((void *)filter);
 }
 
 void OHOS_SetClipboardText(const char* c)
@@ -350,20 +404,38 @@ void OHOS_StopTextInput()
     while (!data->returned) {}
 }
 
-void OHOS_MessageBox(const char* title, const char* message)
+static bool dialogBoxFinished = false;
+static int dialogBoxChoice = -1;
+
+int OHOS_MessageBox(const char* title, const char* message, int ml, int* mapping, int bl, const char * const *buttons)
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
     SDL_memset(data, 0, sizeof(napiCallbackData));
     data->func = "showDialog";
-    data->argCount = 2;
+    data->argCount = 4;
     data->arg[0].type = String;
     data->arg[0].enabled = true;
     data->arg[0].data.str = title;
     data->arg[1].type = String;
     data->arg[1].enabled = true;
     data->arg[1].data.str = message;
+    data->arg[2].type = IntArray;
+    data->arg[2].enabled = true;
+    data->arg[2].data.ia = mapping;
+    data->arg[2].data.ial = ml;
+    data->arg[3].type = StringArray;
+    data->arg[3].enabled = true;
+    data->arg[3].data.sa = buttons;
+    data->arg[3].data.sal = bl;
+    
+    data->type = Int;
 
-    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+    while (!data->returned) {}
+    SDL_free(data);
+    while (!dialogBoxFinished) {}
+    dialogBoxFinished = false;
+    return dialogBoxChoice;
 }
 
 void OHOS_OpenLink(const char* url)
@@ -395,6 +467,24 @@ const char* OHOS_Locale()
     const char* d = data->ret.data.str;
     SDL_free(data);
     return d;
+}
+
+char* OHOS_GetStoragePath()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "getInternalPath";
+    data->argCount = 0;
+    data->type = String;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    const char* d = data->ret.data.str;
+    SDL_free(data);
+    return (char *)d;
 }
 
 static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
@@ -708,6 +798,60 @@ static napi_value sdlTextEditing(napi_env env, napi_callback_info info)
     return result;
 }
 
+void SDL_OHOS_FileSelected(const char* data);
+void SDL_OHOS_ClearSelection();
+void SDL_OHOS_ExecCallback();
+
+static napi_value sdlDialogClearSelection(napi_env env, napi_callback_info info)
+{
+    SDL_OHOS_ClearSelection();
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlDialogExecCallback(napi_env env, napi_callback_info info)
+{
+    SDL_OHOS_ExecCallback();
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlDialogFileSelected(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value args[1] = { NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    
+    size_t stringSize = 0;
+    napi_get_value_string_utf8(env, args[0], NULL, 0, &stringSize);
+    char *value = (char *)SDL_malloc(stringSize + 1);
+    napi_get_value_string_utf8(env, args[0], value, stringSize + 1, &stringSize);
+    
+    SDL_OHOS_FileSelected(value);
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlSendDialogStatus(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value args[1] = { NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    
+    napi_get_value_int32(env, args[0], &dialogBoxChoice);
+    dialogBoxFinished = true;
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
@@ -715,7 +859,11 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
         { "sdlLaunchMain", NULL, sdlLaunchMain, NULL, NULL, NULL, napi_default, NULL }, 
         { "sdlKeyEvent", NULL, sdlKeyEvent, NULL, NULL, NULL, napi_default, NULL },
         { "sdlTextAppend", NULL, sdlTextAppend, NULL, NULL, NULL, napi_default, NULL }, 
-        { "sdlTextEditing", NULL, sdlTextEditing, NULL, NULL, NULL, napi_default, NULL }
+        { "sdlTextEditing", NULL, sdlTextEditing, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlDialogClearSelection", NULL, sdlDialogClearSelection, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlDialogExecCallback", NULL, sdlDialogExecCallback, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlDialogFileSelected", NULL, sdlDialogFileSelected, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlSendDialogStatus", NULL, sdlSendDialogStatus, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 

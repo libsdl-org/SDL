@@ -194,7 +194,7 @@ int main()
             SDL_Log("event type: %d", event.type);
             
             if (event.type == SDL_EVENT_FINGER_DOWN || event.type == SDL_EVENT_FINGER_UP || event.type == SDL_EVENT_FINGER_MOTION) {
-                SDL_Log("%f %f", event.tfinger.x, event.tfinger.y); 
+                SDL_Log("finger %f %f", event.tfinger.x, event.tfinger.y); 
             }
             
             if (event.type == SDL_EVENT_QUIT) {

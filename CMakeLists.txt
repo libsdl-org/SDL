@@ -1636,7 +1636,7 @@ elseif(OHOS)
   # disable warnings from the toolchain
   sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
-  sdl_link_dependency(ohos LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
+  sdl_link_dependency(ohos LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z ohsensor)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
 
   if(SDL_VIDEO)
@@ -1686,6 +1686,21 @@ elseif(OHOS)
   set(SDL_TIMER_UNIX 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
   set(HAVE_SDL_TIMERS TRUE)
+
+  set(SDL_FILESYSTEM_OHOS 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/filesystem/ohos/*.c"
+    "${SDL3_SOURCE_DIR}/src/filesystem/ohos/*.h"
+  )
+  set(HAVE_SDL_FILESYSTEM TRUE)
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_OHOS 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/sensor/ohos/*.c"
+      "${SDL3_SOURCE_DIR}/src/sensor/ohos/*.h"
+    )
+    set(HAVE_SDL_SENSOR TRUE)
+  endif()
 
   set(SDL_PTHREADS 1)
 
@@ -3455,6 +3470,9 @@ if (SDL_DIALOG)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog_utils.c)
   if(ANDROID)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/android/SDL_androiddialog.c)
+    set(HAVE_SDL_DIALOG TRUE)
+  elseif (OHOS)
+    sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/ohos/SDL_ohosdialog.c)
     set(HAVE_SDL_DIALOG TRUE)
   elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_unixdialog.c)

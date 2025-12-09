@@ -119,7 +119,17 @@ bool OHOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID
     length1 = SDL_strlen(messageboxdata->message) + 1;
     char* messagecopy = (char*)SDL_malloc(length1);
     SDL_memcpy(messagecopy, messageboxdata->message, length1);
-    OHOS_MessageBox(titlecopy, messagecopy);
+    
+    int* mapping = (int *)SDL_malloc(sizeof(int) * messageboxdata->numbuttons);
+    const char ** btns = (const char **)SDL_malloc(sizeof(void*) * messageboxdata->numbuttons);
+    
+    for (int i = 0; i < messageboxdata->numbuttons; i++)
+    {
+        mapping[i] = messageboxdata->buttons[i].buttonID;
+        btns[i] = messageboxdata->buttons[i].text;
+    }
+    
+    *buttonID = OHOS_MessageBox(titlecopy, messagecopy, messageboxdata->numbuttons, mapping, messageboxdata->numbuttons, btns);
     return true;
 }
 VideoBootStrap OHOS_bootstrap = {
