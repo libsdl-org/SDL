@@ -61,10 +61,10 @@ typedef struct SDL_PenInfo
 // Backend calls this when a new pen device is hotplugged, plus once for each pen already connected at startup.
 // Note that name and info are copied but currently unused; this is placeholder for a potentially more robust API later.
 // Both are allowed to be NULL.
-extern SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle);
+extern SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *window, const SDL_PenInfo *info, void *handle, bool in_proximity);
 
 // Backend calls this when an existing pen device is disconnected during runtime. They must free their own stuff separately.
-extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
+extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_Window *window, SDL_PenID instance_id);
 
 // Backend can call this to remove all pens, probably during shutdown, with a callback to let them free their own handle.
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
@@ -80,6 +80,9 @@ extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window 
 
 // Backend calls this when a pen's button changes, to generate events and update state.
 extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down);
+
+// Backend calls this when a pen's button changes, to generate events and update state.
+extern void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool in);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);

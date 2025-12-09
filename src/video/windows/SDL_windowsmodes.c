@@ -605,6 +605,9 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             internal->MonitorHandle = hMonitor;
             internal->state = DisplayUnchanged;
 
+            SDL_PropertiesID props = SDL_GetDisplayProperties(_this->displays[i]->id);
+            SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
+
             if (!_this->setting_display_mode) {
                 SDL_VideoDisplay *existing_display = _this->displays[i];
                 SDL_Rect bounds;
@@ -662,9 +665,13 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 #ifdef HAVE_DXGI1_6_H
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
 #endif
-    if (SDL_AddVideoDisplay(&display, false)) {
+    SDL_DisplayID displayID = SDL_AddVideoDisplay(&display, false);
+    if (displayID) {
         // The mode is owned by the video subsystem
         mode.internal = NULL;
+
+        SDL_PropertiesID props = SDL_GetDisplayProperties(displayID);
+        SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
     } else {
         SDL_free(displaydata);
     }

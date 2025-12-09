@@ -451,7 +451,7 @@ typedef enum SDL_PackedLayout
  * expressions with side-effects here.
  *
  * \param format an SDL_PixelFormat to check.
- * \returns true if the format is 10-bit, false otherwise.
+ * \returns true if the format is a floating point, false otherwise.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *

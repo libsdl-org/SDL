@@ -265,7 +265,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
             SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
         }
     }
-    SDL_SetRenderClipRect(renderer, 0);
+    SDL_SetRenderClipRect(renderer, NULL);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDebugText(renderer, 0, 0, debug_string);
     SDL_RenderPresent(renderer);

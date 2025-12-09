@@ -27,6 +27,10 @@
 #include "../usb_ids.h"
 #include "../../events/SDL_events_c.h"
 
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+#include "../../video/uikit/SDL_uikitvideo.h"
+#endif
+
 #include "SDL_mfijoystick_c.h"
 
 
@@ -300,13 +304,13 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
      * struct, and ARC doesn't work with structs. */
     device->controller = (__bridge GCController *)CFBridgingRetain(controller);
 
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
-        if (controller.productCategory) {
-            name = controller.productCategory.UTF8String;
-        }
+    if (controller.vendorName) {
+        name = controller.vendorName.UTF8String;
     } else {
-        if (controller.vendorName) {
-            name = controller.vendorName.UTF8String;
+        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+            if (controller.productCategory) {
+                name = controller.productCategory.UTF8String;
+            }
         }
     }
 
@@ -790,6 +794,10 @@ static bool IOS_JoystickInit(void)
                                                SDL_UnlockJoysticks();
                                              }];
 #endif // SDL_JOYSTICK_MFI
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+        UIKit_SetGameControllerInteraction(true);
+#endif
     }
 
     return true;
@@ -1581,6 +1589,10 @@ static void IOS_JoystickQuit(void)
         while (deviceList != NULL) {
             IOS_RemoveJoystickDevice(deviceList);
         }
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+        UIKit_SetGameControllerInteraction(false);
+#endif
     }
 
     numjoysticks = 0;

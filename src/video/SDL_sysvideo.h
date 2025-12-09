@@ -312,6 +312,7 @@ struct SDL_VideoDevice
     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
     bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
+    bool (*SetWindowFillDocument)(SDL_VideoDevice *_this, SDL_Window *window, bool fill);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
@@ -422,6 +423,7 @@ struct SDL_VideoDevice
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
     bool screen_keyboard_shown;
+    bool is_quitting;
 
     /* * * */
     // Data used by the GL drivers

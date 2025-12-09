@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     }
 
     if (image_file) {
-        shape = SDL_strstr(image_file, ".png") ? SDL_LoadPNG(image_file) : SDL_LoadBMP(image_file);
+        shape = SDL_LoadSurface(image_file);
         if (!shape) {
             SDL_Log("Couldn't load %s: %s", image_file, SDL_GetError());
             goto quit;

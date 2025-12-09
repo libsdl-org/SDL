@@ -270,7 +270,8 @@ bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 #endif
 
 #ifdef SDL_PLATFORM_VISIONOS
-bool UIKit_AddDisplay(bool send_event){
+bool UIKit_AddDisplay(bool send_event)
+{
     CGSize size = CGSizeMake(SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT);
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
@@ -278,9 +279,9 @@ bool UIKit_AddDisplay(bool send_event){
     SDL_zero(mode);
     mode.w = (int)size.width;
     mode.h = (int)size.height;
-    mode.pixel_density = 1;
+    mode.pixel_density = 2;
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = 60.0f;
+    mode.refresh_rate = 90.0f;
 
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 

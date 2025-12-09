@@ -10,5 +10,7 @@
 // This allows you to set DEVELOPMENT_TEAM for all targets, for example.
 #include? "build.xcconfig"
 
+INFOPLIST_FILE = test-Info.plist
+
 CONFIG_FRAMEWORK_LDFLAGS = -lSDL3_test
 

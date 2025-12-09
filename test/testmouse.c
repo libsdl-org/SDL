@@ -345,6 +345,11 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    while (active) {
+        Object *next = active->next;
+        SDL_free(active);
+        active = next;
+    }
     SDL_DestroyRenderer(loop_data.renderer);
     SDL_DestroyWindow(window);
 

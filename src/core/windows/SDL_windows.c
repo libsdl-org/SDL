@@ -26,6 +26,8 @@
 
 #include "../../video/SDL_surface_c.h"
 
+#include <shellapi.h> // CommandLineToArgvW()
+
 #include <objbase.h> // for CoInitialize/CoUninitialize (Win32 only)
 #ifdef HAVE_ROAPI_H
 #include <roapi.h> // For RoInitialize/RoUninitialize (Win32 only)
@@ -284,6 +286,36 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 
     return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
+
+static DWORD WIN_BuildNumber = 0;
+static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
+{
+    if (WIN_BuildNumber != 0) {
+        return (WIN_BuildNumber >= dwBuildNumber);
+    }
+
+    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+    if (!ntdll) {
+        return false;
+    }
+    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
+    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
+    NT_OSVERSIONINFOW os_info;
+    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
+    os_info.dwBuildNumber = 0;
+    if (RtlGetVersionFunc) {
+        RtlGetVersionFunc(&os_info);
+    }
+    FreeLibrary(ntdll);
+
+    WIN_BuildNumber = (os_info.dwBuildNumber & ~0xF0000000);
+    return (WIN_BuildNumber >= dwBuildNumber);
+}
+#else
+static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
+{
+    return TRUE;
+}
 #endif
 
 // apply some static variables so we only call into the Win32 API once per process for each check.
@@ -299,6 +331,24 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
         } \
         return result;
 #endif
+
+BOOL WIN_IsWine(void)
+{
+    static bool checked;
+    static bool is_wine;
+
+    if (!checked) {
+        HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+        if (ntdll) {
+            if (GetProcAddress(ntdll, "wine_get_version") != NULL) {
+                is_wine = true;
+            }
+            FreeLibrary(ntdll);
+        }
+        checked = true;
+    }
+    return is_wine;
+}
 
 // this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
 //  so there's no "OrGreater" as that would always be TRUE. The other functions are here to
@@ -322,6 +372,11 @@ BOOL WIN_IsWindows7OrGreater(void)
 BOOL WIN_IsWindows8OrGreater(void)
 {
     CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0));
+}
+
+BOOL WIN_IsWindows11OrGreater(void)
+{
+    return IsWindowsBuildVersionAtLeast(22000);
 }
 
 #undef CHECKWINVER
@@ -441,21 +496,7 @@ bool WIN_WindowRectValid(const RECT *rect)
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
-    if (!ntdll) {
-        return;
-    }
-    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
-    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
-    NT_OSVERSIONINFOW os_info;
-    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
-    os_info.dwBuildNumber = 0;
-    if (RtlGetVersionFunc) {
-        RtlGetVersionFunc(&os_info);
-    }
-    FreeLibrary(ntdll);
-    os_info.dwBuildNumber &= ~0xF0000000;
-    if (os_info.dwBuildNumber < 17763) {
+    if (!IsWindowsBuildVersionAtLeast(17763)) {
         // Too old to support dark mode
         return;
     }
@@ -466,7 +507,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
     ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
     AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
-    if (os_info.dwBuildNumber < 18362) {
+    if (!IsWindowsBuildVersionAtLeast(18362)) {
         AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc) {
             AllowDarkModeForAppFunc(true);
@@ -491,7 +532,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
         value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     }
     FreeLibrary(uxtheme);
-    if (os_info.dwBuildNumber < 18362) {
+    if (!IsWindowsBuildVersionAtLeast(18362)) {
         SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
     } else {
         HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
@@ -614,6 +655,74 @@ int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, 
         dwFlags &= ~WC_ERR_INVALID_CHARS;  // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
     }
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
+}
+
+const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocated)
+{
+    // If the provided argv is valid, we pass it to the main function as-is, since it's probably what the user wants.
+    // Otherwise, we take a NULL argv as an instruction for SDL to parse the command line into an argv.
+    // On Windows, when SDL provides the main entry point, argv is always NULL.
+
+    const char *out_of_mem_str = "Out of memory - aborting";
+    const char *proc_err_str = "Error processing command line arguments - aborting";
+
+    *pallocated = NULL;
+
+    if (*pargv) {
+        return NULL;  // just go with what was provided, no error message.
+    }
+
+    // We need to be careful about how we allocate/free memory here. We can't use SDL_alloc()/SDL_free()
+    // because the application might have used SDL_SetMemoryFunctions() to change the allocator.
+    LPWSTR *argvw = NULL;
+    char **argv = NULL;
+
+    const LPWSTR command_line = GetCommandLineW();
+
+    // Because of how the Windows command line is structured, we know for sure that the buffer size required to
+    // store all argument strings converted to UTF-8 (with null terminators) is guaranteed to be less than or equal
+    // to the size of the original command line string converted to UTF-8.
+    const int argdata_size = WideCharToMultiByte(CP_UTF8, 0, command_line, -1, NULL, 0, NULL, NULL); // Includes the null terminator
+    if (!argdata_size) {
+        return proc_err_str;
+    }
+
+    int argc = -1;
+    argvw = CommandLineToArgvW(command_line, &argc);
+    if (!argvw || argc < 0) {
+        return out_of_mem_str;
+    }
+
+    // Allocate argv followed by the argument string buffer as one contiguous allocation.
+    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv) + argdata_size);
+    if (!argv) {
+        LocalFree(argvw);
+        return out_of_mem_str;
+    }
+
+    char *argdata = ((char *)argv) + (argc + 1) * sizeof(*argv);
+    int argdata_index = 0;
+
+    for (int i = 0; i < argc; ++i) {
+        const int bytes_written = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argdata + argdata_index, argdata_size - argdata_index, NULL, NULL);
+        if (!bytes_written) {
+            HeapFree(GetProcessHeap(), 0, argv);
+            LocalFree(argvw);
+            return proc_err_str;
+        }
+        argv[i] = argdata + argdata_index;
+        argdata_index += bytes_written;
+    }
+
+    argv[argc] = NULL;
+
+    LocalFree(argvw);
+
+    *pargc = argc;
+    *pallocated = argv;
+    *pargv = argv;
+
+    return NULL;  // no error string.
 }
 
 #endif // defined(SDL_PLATFORM_WINDOWS)

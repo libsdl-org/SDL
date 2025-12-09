@@ -91,7 +91,7 @@ bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
         : "cc", "memory");
     return result == 0;
 
-#elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
+#elif (defined(__GNUC__) || defined(__TINYC__)) && (defined(__i386__) || defined(__x86_64__))
     int result;
     __asm__ __volatile__(
         "lock ; xchgl %0, (%1)\n"

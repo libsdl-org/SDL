@@ -25,6 +25,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../../SDL_hints_c.h"
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
@@ -48,10 +49,13 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
+static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window *window, bool fill);
+
+SDL_Window *Emscripten_fill_document_window = NULL;
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
-
 
 // Emscripten driver bootstrap functions
 
@@ -157,8 +161,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
-    device->SetWindowPosition = Emscripten_SetWindowPosition;*/
+    device->SetWindowIcon = Emscripten_SetWindowIcon;
+    /*device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
     device->SetWindowResizable = Emscripten_SetWindowResizable;
     /*device->ShowWindow = Emscripten_ShowWindow;
@@ -171,6 +175,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
+    device->SetWindowFillDocument = Emscripten_SetWindowFillDocument;
 
     device->CreateWindowFramebuffer = Emscripten_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
@@ -455,65 +460,31 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
     SDL_SetWindowFullscreen(window, true);
 }
 
-static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window *window, bool fill)
 {
-    SDL_WindowData *wdata;
-    double scaled_w, scaled_h;
-    double css_w, css_h;
-    const char *selector;
+    SDL_WindowData *wdata = window->internal;
 
-    // Allocate window internal data
-    wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
-    if (!wdata) {
-        return false;
-    }
-
-    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
-    if (!selector || !*selector) {
-        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
-    }
-    wdata->canvas_id = SDL_strdup(selector);
-
-    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!selector || !*selector) {
-        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, "#window");
-    }
-    wdata->keyboard_element = SDL_strdup(selector);
-
-    if (SDL_GetHint(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT)) {
-        wdata->fill_document = SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT, false);
-    } else {
-        wdata->fill_document = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, false);
-    }
-
-    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-        wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
-    } else {
-        wdata->pixel_ratio = 1.0f;
-    }
-
-    scaled_w = SDL_floor(window->w * wdata->pixel_ratio);
-    scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
-
-    // set a fake size to check if there is any CSS sizing the canvas
-    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
-    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
-
-    wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
-    if (wdata->external_size) {
-        wdata->fill_document = false;  // can't be resizable if something else is controlling it.
+    if (fill && Emscripten_fill_document_window && (Emscripten_fill_document_window != window)) {
+        return SDL_SetError("Only one fill-document window allowed at a time.");
     }
 
     // fill_document takes up the entire page and resizes as the browser window resizes.
-    if (wdata->fill_document) {
+    if (fill) {
+        Emscripten_fill_document_window = window;
+
         const int w = MAIN_THREAD_EM_ASM_INT({ return window.innerWidth; });
         const int h = MAIN_THREAD_EM_ASM_INT({ return window.innerHeight; });
+        const double scaled_w = w * wdata->pixel_ratio;
+        const double scaled_h = h * wdata->pixel_ratio;
 
-        scaled_w = w * wdata->pixel_ratio;
-        scaled_h = h * wdata->pixel_ratio;
+        wdata->non_fill_document_width = window->w;
+        wdata->non_fill_document_height = window->h;
 
         MAIN_THREAD_EM_ASM({
             var canvas = document.querySelector(UTF8ToString($0));
+            canvas.SDL3_original_position = canvas.style.position;
+            canvas.SDL3_original_top = canvas.style.top;
+            canvas.SDL3_original_left = canvas.style.left;
 
             // hide everything on the page that isn't the canvas.
             var div = document.createElement('div');
@@ -546,6 +517,33 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         window->w = window->h = 0;
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
     } else {
+        const bool transitioning = (Emscripten_fill_document_window == window);
+        if (transitioning) {
+            MAIN_THREAD_EM_ASM({
+                // if we had previously hidden everything behind a fill_document window, put it back.
+                var div = document.getElementById('SDL3_fill_document_background_elements');
+                if (div) {
+                    if (div.SDL3_canvas_nextsib) {
+                        div.SDL3_canvas_parent.insertBefore(div.SDL3_canvas, div.SDL3_canvas_nextsib);
+                    } else {
+                        div.SDL3_canvas_parent.appendChild(div.SDL3_canvas);
+                    }
+                    while (div.firstChild) {
+                        document.body.insertBefore(div.firstChild, div);
+                    }
+                    div.SDL3_canvas.style.position = div.SDL3_canvas.SDL3_original_position;
+                    div.SDL3_canvas.style.top = div.SDL3_canvas.SDL3_original_top;
+                    div.SDL3_canvas.style.left = div.SDL3_canvas.SDL3_original_left;
+                    div.remove();
+                }
+            });
+            Emscripten_fill_document_window = NULL;
+        }
+
+        window->w = wdata->non_fill_document_width;
+        window->h = wdata->non_fill_document_height;
+        const double scaled_w = SDL_floor(window->w * wdata->pixel_ratio);
+        const double scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
         emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
         // if the size is not being controlled by css, we need to scale down for hidpi
@@ -553,12 +551,69 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
             // scale canvas down
             emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
         }
+
+        if (transitioning) {
+            window->w = window->h = 0;
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, wdata->non_fill_document_width, wdata->non_fill_document_height);
+        }
+    }
+
+    return true;
+}
+
+static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
+{
+    SDL_WindowData *wdata;
+    double css_w, css_h;
+    const char *selector;
+
+    bool fill_document = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
+    if (fill_document && Emscripten_fill_document_window) {
+        fill_document = false;  // only one allowed at a time.
+        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;   // !!! FIXME: should this fail instead?
+    }
+
+    // Allocate window internal data
+    wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
+    if (!wdata) {
+        return false;
+    }
+
+    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
+    if (!selector || !*selector) {
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
+    }
+    wdata->canvas_id = SDL_strdup(selector);
+
+    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    if (!selector || !*selector) {
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, "#window");
+    }
+    wdata->keyboard_element = SDL_strdup(selector);
+
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+        wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
+    } else {
+        wdata->pixel_ratio = 1.0f;
+    }
+
+    // set a fake size to check if there is any CSS sizing the canvas
+    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
+    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
+
+    wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
+    if (wdata->external_size) {
+        fill_document = false;  // can't be resizable if something else is controlling it.
     }
 
     wdata->window = window;
 
     // Setup driver data for this window
     window->internal = wdata;
+
+    wdata->non_fill_document_width = window->w;
+    wdata->non_fill_document_height = window->h;
+    Emscripten_SetWindowFillDocument(_this, window, fill_document);
 
     // One window, it always has focus
     SDL_SetMouseFocus(window);
@@ -576,7 +631,6 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     // Ensure various things are added to the window's properties
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
-    SDL_SetBooleanProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, wdata->fill_document);
 
     // Window has been successfully created
     return true;
@@ -591,7 +645,7 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     if (window->internal) {
         SDL_WindowData *data = window->internal;
-        if (data->fill_document) {
+        if (window == Emscripten_fill_document_window) {
             return;  // canvas size is being dictated by the browser window size, refuse request.
         }
 
@@ -624,6 +678,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
 
+    Emscripten_SetWindowFillDocument(_this, window, false);
+
     if (window->internal) {
         data = window->internal;
 
@@ -645,23 +701,6 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     MAIN_THREAD_EM_ASM({
         // just ignore clicks on the fullscreen button while there's no SDL window.
         Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {};
-
-        // if we had previously hidden everything behind a fill_document window, put it back.
-        var div = document.getElementById('SDL3_fill_document_background_elements');
-        if (div) {
-            if (div.SDL3_canvas_nextsib) {
-                div.SDL3_canvas_parent.insertBefore(div.SDL3_canvas, div.SDL3_canvas_nextsib);
-            } else {
-                div.SDL3_canvas_parent.appendChild(div.SDL3_canvas);
-            }
-            while (div.firstChild) {
-                document.body.insertBefore(div.firstChild, div);
-            }
-            div.SDL3_canvas.style.position = undefined;
-            div.SDL3_canvas.style.top = undefined;
-            div.SDL3_canvas.style.left = undefined;
-            div.remove();
-        }
     });
 }
 
@@ -672,6 +711,17 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 
     if (window->internal) {
         data = window->internal;
+
+        if (data->fullscreen_change_in_progress) {
+            return SDL_FULLSCREEN_FAILED;;
+        }
+
+        EmscriptenFullscreenChangeEvent fsevent;
+        if (emscripten_get_fullscreen_status(&fsevent) == EMSCRIPTEN_RESULT_SUCCESS) {
+            if ((fullscreen == SDL_FULLSCREEN_OP_ENTER) == fsevent.isFullscreen) {
+                return SDL_FULLSCREEN_SUCCEEDED;  // already there.
+            }
+        }
 
         if (fullscreen) {
             EmscriptenFullscreenStrategy strategy;
@@ -703,8 +753,10 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     }
 
     if (res == EMSCRIPTEN_RESULT_SUCCESS) {
+        data->fullscreen_change_in_progress = true;   // even on success, this might animate to the new state.
         return SDL_FULLSCREEN_SUCCEEDED;
     } else if (res == EMSCRIPTEN_RESULT_DEFERRED) {
+        data->fullscreen_change_in_progress = true;
         return SDL_FULLSCREEN_PENDING;
     } else {
         return SDL_FULLSCREEN_FAILED;
@@ -714,6 +766,60 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     emscripten_set_window_title(window->title);
+}
+
+static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+{
+    // Create dynamic memory stream for PNG encoding
+    SDL_IOStream *stream = SDL_IOFromDynamicMem();
+    if (!stream) {
+        return false;
+    }
+
+    // Encode icon to PNG using SDL's native PNG encoder
+    if (!SDL_SavePNG_IO(icon, stream, false)) {
+        SDL_CloseIO(stream);
+        return false;
+    }
+
+    // Get the PNG data from the stream
+    void *png_data = SDL_GetPointerProperty(
+        SDL_GetIOProperties(stream),
+        SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER,
+        NULL
+    );
+    size_t png_size = (size_t)SDL_GetIOSize(stream);
+
+    // Pass PNG data to JavaScript
+    MAIN_THREAD_EM_ASM({
+        var pngData = HEAPU8.subarray($0, $0 + $1);
+        if (pngData.buffer instanceof SharedArrayBuffer) {
+            // explicitly create a copy
+            pngData = new Uint8Array(pngData);
+        }
+
+        var blob = new Blob([pngData], {type: 'image/png'});
+        var url = URL.createObjectURL(blob);
+
+        // Set as favicon (create link element if it doesn't exist)
+        var link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            document.head.appendChild(link);
+        }
+
+        // Revoke old URL if it exists to prevent memory leaks
+        if (link.href && link.href.startsWith('blob:')) {
+            URL.revokeObjectURL(link.href);
+        }
+
+        link.href = url;
+    }, png_data, png_size);
+
+    SDL_CloseIO(stream);
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

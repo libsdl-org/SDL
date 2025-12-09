@@ -27,6 +27,7 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func app
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events);
 void SDL_QuitMainCallbacks(SDL_AppResult result);
 
+// Check args and call the main function
+extern int SDL_CallMainFunction(int argc, char *argv[], SDL_main_func mainFunction);
+
 #endif // SDL_main_callbacks_h_
-
-

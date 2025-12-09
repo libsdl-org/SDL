@@ -203,10 +203,10 @@ typedef Uint32 SDL_MouseButtonFlags;
  * \sa SDL_SetRelativeMouseTransform
  */
 typedef void (SDLCALL *SDL_MouseMotionTransformCallback)(
-    void *userdata, 
-    Uint64 timestamp, 
-    SDL_Window *window, 
-    SDL_MouseID mouseID, 
+    void *userdata,
+    Uint64 timestamp,
+    SDL_Window *window,
+    SDL_MouseID mouseID,
     float *x, float *y
 );
 

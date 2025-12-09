@@ -112,8 +112,6 @@ ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
 endif
 
-LOCAL_STATIC_LIBRARIES := cpufeatures
-
 include $(BUILD_SHARED_LIBRARY)
 
 
@@ -145,4 +143,3 @@ LOCAL_EXPORT_LDLIBS :=
 
 include $(BUILD_STATIC_LIBRARY)
 
-$(call import-module,android/cpufeatures)

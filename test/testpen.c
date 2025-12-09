@@ -25,6 +25,7 @@ typedef struct Pen
     Uint32 buttons;
     bool eraser;
     bool touching;
+    bool in_proximity;
     struct Pen *next;
 } Pen;
 
@@ -107,44 +108,49 @@ static Pen *FindPen(SDL_PenID which)
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     Pen *pen = NULL;
+    Pen *i = NULL;
 
     switch (event->type) {
-        case SDL_EVENT_PEN_PROXIMITY_IN: {
-            pen = (Pen *) SDL_calloc(1, sizeof (*pen));
-            if (!pen) {
-                SDL_Log("Out of memory!");
-                return SDL_APP_FAILURE;
+        case SDL_EVENT_PEN_PROXIMITY_IN:
+            SDL_Log("Pen %" SDL_PRIu32 " enters proximity!", event->pproximity.which);
+
+            for (i = pens.next; i != NULL; i = i->next) {
+                if (i->pen == event->pproximity.which) {
+                    pen = i;
+                    break;
+                }
             }
 
-            SDL_Log("Pen %" SDL_PRIu32 " enters proximity!", event->pproximity.which);
-            pen->pen = event->pproximity.which;
-            pen->r = (Uint8) SDL_rand(256);
-            pen->g = (Uint8) SDL_rand(256);
-            pen->b = (Uint8) SDL_rand(256);
-            pen->x = 320.0f;
-            pen->y = 240.0f;
-            pen->next = pens.next;
-            pens.next = pen;
+            if (!pen) {
+                SDL_Log("This is the first time we've seen this pen.");
+                pen = (Pen *) SDL_calloc(1, sizeof (*pen));
+                if (!pen) {
+                    SDL_Log("Out of memory!");
+                    return SDL_APP_FAILURE;
+                }
 
+                pen->pen = event->pproximity.which;
+                pen->r = (Uint8) SDL_rand(256);
+                pen->g = (Uint8) SDL_rand(256);
+                pen->b = (Uint8) SDL_rand(256);
+                pen->x = 320.0f;
+                pen->y = 240.0f;
+                pen->next = pens.next;
+                pens.next = pen;
+            }
+
+            pen->in_proximity = true;
             return SDL_APP_CONTINUE;
-        }
 
-        case SDL_EVENT_PEN_PROXIMITY_OUT: {
-            Pen *prev = &pens;
-            Pen *i;
-
+        case SDL_EVENT_PEN_PROXIMITY_OUT:
             SDL_Log("Pen %" SDL_PRIu32 " leaves proximity!", event->pproximity.which);
             for (i = pens.next; i != NULL; i = i->next) {
                 if (i->pen == event->pproximity.which) {
-                    prev->next = i->next;
-                    SDL_free(i);
+                    i->in_proximity = false;
                     break;
                 }
-                prev = i;
             }
-
             return SDL_APP_CONTINUE;
-        }
 
         case SDL_EVENT_PEN_DOWN:
             /*SDL_Log("Pen %" SDL_PRIu32 " down!", event->ptouch.which);*/
@@ -219,6 +225,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 static void DrawOnePen(Pen *pen, int num)
 {
     int i;
+
+    if (!pen->in_proximity) {
+        return;
+    }
 
     /* draw button presses for this pen. A square for each in the pen's color, offset down the screen so they don't overlap. */
     SDL_SetRenderDrawColor(renderer, pen->r, pen->g, pen->b, 255);

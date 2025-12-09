@@ -150,7 +150,7 @@ static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
     return wxh * SDL_BYTESPERPIXEL(fmt);
 }
 
-static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     const SDL_CameraSpec *spec = &device->actual_spec;
 
@@ -832,9 +832,10 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     SDL_Surface *output_surface = NULL;
     SurfaceList *slist = NULL;
     Uint64 timestampNS = 0;
+    float rotation = 0.0f;
 
     // AcquireFrame SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
-    const SDL_CameraFrameResult rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS);
+    const SDL_CameraFrameResult rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS, &rotation);
 
     if (rc == SDL_CAMERA_FRAME_READY) {  // new frame acquired!
         #if DEBUG_CAMERA
@@ -927,6 +928,8 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
         // we either released these already after we copied the data, or the pointer was migrated to output_surface.
         acquired->pixels = NULL;
         acquired->pitch = 0;
+
+        SDL_SetFloatProperty(SDL_GetSurfaceProperties(output_surface), SDL_PROP_SURFACE_ROTATION_FLOAT, rotation);
 
         // make the filled output surface available to the app.
         SDL_LockMutex(device->lock);
@@ -1093,7 +1096,6 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
     // that.
 
     SDL_zerop(closest);
-    SDL_assert(((Uint32) SDL_PIXELFORMAT_UNKNOWN) == 0);  // since we SDL_zerop'd to this value.
 
     if (device->num_specs == 0) {  // device listed no specs! You get whatever you want!
         if (spec) {

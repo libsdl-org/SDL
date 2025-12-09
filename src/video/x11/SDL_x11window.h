@@ -118,6 +118,7 @@ struct SDL_WindowData
     bool was_shown;
     bool emit_size_move_after_property_notify;
     SDL_HitTestResult hit_test_result;
+    bool pending_grab;
 
     XPoint xim_spot;
     char *preedit_text;

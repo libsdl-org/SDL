@@ -39,7 +39,7 @@ static SDL_Mouse SDL_mouse;
 static int SDL_mouse_count;
 static SDL_MouseID *SDL_mice;
 static SDL_HashTable *SDL_mouse_names;
-static bool SDL_mouse_quitting;
+static bool SDL_mouse_initialized;
 
 // for mapping mouse events to touch
 static bool track_mouse_down = false;
@@ -250,6 +250,8 @@ bool SDL_PreInitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    SDL_mouse_initialized = true;
+
     SDL_zerop(mouse);
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
@@ -401,7 +403,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID)
         }
     }
 
-    if (!SDL_mouse_quitting) {
+    if (SDL_mouse_initialized) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_MOUSE_REMOVED;
@@ -846,38 +848,40 @@ static SDL_MouseInputSource *GetMouseInputSource(SDL_Mouse *mouse, SDL_MouseID m
     SDL_MouseInputSource *source, *match = NULL, *sources;
     int i;
 
-    for (i = 0; i < mouse->num_sources; ++i) {
-        source = &mouse->sources[i];
-        if (source->mouseID == mouseID) {
-            match = source;
-            break;
-        }
-    }
-
-    if (!down && (!match || !(match->buttonstate & SDL_BUTTON_MASK(button)))) {
-        /* This might be a button release from a transition between mouse messages and raw input.
-         * See if there's another mouse source that already has that button down and use that.
-         */
+    if (SDL_mouse_initialized) {
         for (i = 0; i < mouse->num_sources; ++i) {
             source = &mouse->sources[i];
-            if ((source->buttonstate & SDL_BUTTON_MASK(button))) {
+            if (source->mouseID == mouseID) {
                 match = source;
                 break;
             }
         }
-    }
-    if (match) {
-        return match;
-    }
 
-    sources = (SDL_MouseInputSource *)SDL_realloc(mouse->sources, (mouse->num_sources + 1) * sizeof(*mouse->sources));
-    if (sources) {
-        mouse->sources = sources;
-        ++mouse->num_sources;
-        source = &sources[mouse->num_sources - 1];
-        SDL_zerop(source);
-        source->mouseID = mouseID;
-        return source;
+        if (!down && (!match || !(match->buttonstate & SDL_BUTTON_MASK(button)))) {
+            /* This might be a button release from a transition between mouse messages and raw input.
+             * See if there's another mouse source that already has that button down and use that.
+             */
+            for (i = 0; i < mouse->num_sources; ++i) {
+                source = &mouse->sources[i];
+                if ((source->buttonstate & SDL_BUTTON_MASK(button))) {
+                    match = source;
+                    break;
+                }
+            }
+        }
+        if (match) {
+            return match;
+        }
+
+        sources = (SDL_MouseInputSource *)SDL_realloc(mouse->sources, (mouse->num_sources + 1) * sizeof(*mouse->sources));
+        if (sources) {
+            mouse->sources = sources;
+            ++mouse->num_sources;
+            source = &sources[mouse->num_sources - 1];
+            SDL_zerop(source);
+            source->mouseID = mouseID;
+            return source;
+        }
     }
     return NULL;
 }
@@ -1080,7 +1084,7 @@ void SDL_QuitMouse(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    SDL_mouse_quitting = true;
+    SDL_mouse_initialized = false;
 
     if (mouse->added_mouse_touch_device) {
         SDL_DelTouch(SDL_MOUSE_TOUCHID);
@@ -1181,8 +1185,6 @@ void SDL_QuitMouse(void)
         mouse->internal = NULL;
     }
     SDL_zerop(mouse);
-
-    SDL_mouse_quitting = false;
 }
 
 bool SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)
@@ -1369,10 +1371,11 @@ bool SDL_SetRelativeMouseMode(bool enabled)
     }
 
     // Set the relative mode
-    if (!mouse->SetRelativeMouseMode || !mouse->SetRelativeMouseMode(enabled)) {
-        if (enabled) {
-            return SDL_SetError("No relative mode implementation available");
-        }
+    if (!mouse->SetRelativeMouseMode) {
+        return SDL_Unsupported();
+    }
+    if (!mouse->SetRelativeMouseMode(enabled)) {
+        return false;
     }
     mouse->relative_mode = enabled;
 
@@ -1414,15 +1417,16 @@ bool SDL_GetRelativeMouseMode(void)
     return mouse->relative_mode;
 }
 
-void SDL_UpdateRelativeMouseMode(void)
+bool SDL_UpdateRelativeMouseMode(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *focus = SDL_GetKeyboardFocus();
     bool relative_mode = (focus && (focus->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE));
 
-    if (relative_mode != mouse->relative_mode) {
-        SDL_SetRelativeMouseMode(relative_mode);
+    if (relative_mode == mouse->relative_mode) {
+        return true;
     }
+    return SDL_SetRelativeMouseMode(relative_mode);
 }
 
 bool SDL_UpdateMouseCapture(bool force_release)

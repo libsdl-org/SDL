@@ -31,9 +31,7 @@
 
 char *SDL_SYS_GetBasePath(void)
 {
-    // The current working directory is / on Android
-    SDL_Unsupported();
-    return NULL;
+    return SDL_strdup("./");
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

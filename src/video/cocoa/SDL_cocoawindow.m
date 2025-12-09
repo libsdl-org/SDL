@@ -1242,6 +1242,12 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     w = (int)rect.size.width;
     h = (int)rect.size.height;
 
+    _data.viewport = [_data.sdlContentView bounds];
+    if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+        // This gives us the correct viewport for a Retina-enabled view.
+        _data.viewport = [_data.sdlContentView convertRectToBacking:_data.viewport];
+    }
+
     ScheduleContextUpdates(_data);
 
     /* The OS can resize the window automatically if the display density
@@ -2274,6 +2280,12 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
         data.nscontexts = [[NSMutableArray alloc] init];
         data.sdlContentView = nsview;
 
+        data.viewport = [data.sdlContentView bounds];
+        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+            // This gives us the correct viewport for a Retina-enabled view.
+            data.viewport = [data.sdlContentView convertRectToBacking:data.viewport];
+        }
+
         // Create an event listener for the window
         data.listener = [[SDL3Cocoa_WindowListener alloc] init];
 
@@ -2703,16 +2715,9 @@ void Cocoa_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
 {
     @autoreleasepool {
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->internal;
-        NSView *contentView = windata.sdlContentView;
-        NSRect viewport = [contentView bounds];
 
-        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-            // This gives us the correct viewport for a Retina-enabled view.
-            viewport = [contentView convertRectToBacking:viewport];
-        }
-
-        *w = (int)viewport.size.width;
-        *h = (int)viewport.size.height;
+        *w = (int)windata.viewport.size.width;
+        *h = (int)windata.viewport.size.height;
     }
 }
 

@@ -252,7 +252,7 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
             }
         }
 
-        if ((task->type == SDL_ASYNCIO_TASK_CLOSE) && task->flush) {
+        if (task && (task->type == SDL_ASYNCIO_TASK_CLOSE) && task->flush) {
             task->flush = false;
             task = NULL;  // don't return this one, it's a linked task, so it'll arrive in a later CQE.
         }

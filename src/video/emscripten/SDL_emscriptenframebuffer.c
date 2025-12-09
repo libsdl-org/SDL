@@ -67,7 +67,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
     // Send the data to the display
 
     /* *INDENT-OFF* */ // clang-format off
-    MAIN_THREAD_EM_ASM({
+    int updated = MAIN_THREAD_EM_ASM_INT({
         var w = $0;
         var h = $1;
         var pixels = $2;
@@ -79,6 +79,9 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         var SDL3 = Module['SDL3'];
         if (SDL3.ctxCanvas !== canvas) {
             SDL3.ctx = Browser.createContext(canvas, false, true);
+            if (!SDL3.ctx) {
+                return false;
+            }
             SDL3.ctxCanvas = canvas;
         }
         if (SDL3.w !== w || SDL3.h !== h || SDL3.imageCtx !== SDL3.ctx) {
@@ -98,8 +101,13 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         data32.set(HEAP32.subarray(src, src + data32.length));
 
         SDL3.ctx.putImageData(SDL3.image, 0, 0);
+        return true;
     }, surface->w, surface->h, surface->pixels, data->canvas_id);
     /* *INDENT-ON* */ // clang-format on
+
+    if (!updated) {
+        return SDL_SetError("Couldn't create context for canvas update");
+    }
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         // give back control to browser for screen refresh

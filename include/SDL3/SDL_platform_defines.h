@@ -195,7 +195,7 @@
 #if TARGET_OS_VISION
 
 /**
- * A preprocessor macro that is only defined if compiling for VisionOS.
+ * A preprocessor macro that is only defined if compiling for visionOS.
  *
  * \since This macro is available since SDL 3.2.0.
  *
@@ -207,7 +207,7 @@
 #if TARGET_OS_IPHONE
 
 /**
- * A preprocessor macro that is only defined if compiling for iOS.
+ * A preprocessor macro that is only defined if compiling for iOS or visionOS.
  *
  * \since This macro is available since SDL 3.2.0.
  *

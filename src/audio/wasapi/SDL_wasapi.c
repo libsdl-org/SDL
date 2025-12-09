@@ -62,6 +62,7 @@ static const IID SDL_IID_IAudioClient3 = { 0x7ed4ee07, 0x8e67, 0x4cd4, { 0x8c, 0
 #endif //
 
 static bool immdevice_initialized = false;
+static bool supports_recording_on_playback_devices = false;
 
 // WASAPI is _really_ particular about various things happening on the same thread, for COM and such,
 //  so we proxy various stuff to a single background thread to manage.
@@ -329,7 +330,7 @@ typedef struct
 static bool mgmtthrtask_DetectDevices(void *userdata)
 {
     mgmtthrtask_DetectDevicesData *data = (mgmtthrtask_DetectDevicesData *)userdata;
-    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording, SDL_AUDIO_F32);
+    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording, SDL_AUDIO_F32, supports_recording_on_playback_devices);
     return true;
 }
 
@@ -346,7 +347,7 @@ static void WASAPI_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDe
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device)
 {
     // don't block in here; IMMDevice's own thread needs to return or everything will deadlock.
-    if (device && device->hidden && SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1)) {
+    if (device && (!device->hidden || SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1))) {
         SDL_AudioDeviceDisconnected(device); // this proxies the work to the main thread now, so no point in proxying to the management thread.
     }
 }
@@ -445,6 +446,8 @@ static bool mgmtthrtask_ActivateDevice(void *userdata)
         device->hidden->client = NULL;
         return false; // This is already set by SDL_IMMDevice_Get
     }
+
+    device->hidden->isplayback = !SDL_IMMDevice_GetIsCapture(immdevice);
 
     // this is _not_ async in standard win32, yay!
     HRESULT ret = IMMDevice_Activate(immdevice, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&device->hidden->client);
@@ -725,6 +728,10 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
 
     newspec.freq = waveformat->nSamplesPerSec;
 
+    if (device->recording && device->hidden->isplayback) {
+        streamflags |= AUDCLNT_STREAMFLAGS_LOOPBACK;
+    }
+
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
 
     int new_sample_frames = 0;
@@ -739,6 +746,9 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
         SDL_zero(audioProps);
         audioProps.cbSize = sizeof(audioProps);
 
+// Setting AudioCategory_GameChat breaks audio on several devices, including Behringer U-PHORIA UM2 and RODE NT-USB Mini.
+// We'll disable this for now until we understand more about what's happening.
+#if 0
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
         if (hint && *hint) {
             if (SDL_strcasecmp(hint, "Communications") == 0) {
@@ -754,6 +764,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
                 audioProps.eCategory = AudioCategory_Media;
             }
         }
+#endif
 
         if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
             audioProps.Options = AUDCLNT_STREAMOPTIONS_RAW;
@@ -974,6 +985,7 @@ static bool WASAPI_Init(SDL_AudioDriverImpl *impl)
     impl->FreeDeviceHandle = WASAPI_FreeDeviceHandle;
 
     impl->HasRecordingSupport = true;
+    supports_recording_on_playback_devices = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, false);
 
     return true;
 }

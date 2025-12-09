@@ -270,7 +270,7 @@ static SDL_Cursor *X11_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int num
         x11_cursor = X11_CreatePixmapCursor(frames[0].surface, hot_x, hot_y);
     }
 
-    return X11_CreateCursorAndData(x11_cursor);;
+    return X11_CreateCursorAndData(x11_cursor);
 }
 
 static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)

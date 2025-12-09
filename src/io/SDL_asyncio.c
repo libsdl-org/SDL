@@ -219,7 +219,8 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
     outcome->userdata = task->app_userdata;
 
     // Take the completed task out of the SDL_AsyncIO that created it.
-    SDL_LockMutex(asyncio->lock);
+    SDL_Mutex *lock = asyncio->lock;
+    SDL_LockMutex(lock);
     LINKED_LIST_UNLINK(task, asyncio);
     // see if it's time to queue a pending close request (close requested and no other pending tasks)
     SDL_AsyncIOTask *closing = asyncio->closing;
@@ -232,7 +233,7 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
             SDL_AddAtomicInt(&closing->queue->tasks_inflight, -1);
         }
     }
-    SDL_UnlockMutex(task->asyncio->lock);
+    SDL_UnlockMutex(lock);
 
     // was this the result of a closing task? Finally destroy the asyncio.
     bool retval = true;

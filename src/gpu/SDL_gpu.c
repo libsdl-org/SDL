@@ -318,11 +318,11 @@ static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
-#ifdef SDL_GPU_VULKAN
-    &VulkanDriver,
-#endif
 #ifdef SDL_GPU_D3D12
     &D3D12Driver,
+#endif
+#ifdef SDL_GPU_VULKAN
+    &VulkanDriver,
 #endif
     NULL
 };
@@ -1798,7 +1798,7 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
             }
 
             if (textureHeader->info.layer_count_or_depth > 255) {
-                SDL_assert_release("Cannot bind a depth texture with more than 255 layers!");
+                SDL_assert_release(!"Cannot bind a depth texture with more than 255 layers!");
                 return NULL;
             }
 

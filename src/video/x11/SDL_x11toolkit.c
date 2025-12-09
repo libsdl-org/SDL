@@ -42,6 +42,35 @@
 #define SDL_SET_LOCALE 1
 #define SDL_GRAB 1
 
+typedef enum SDL_ToolkitTextTypeX11
+{
+    SDL_TOOLKIT_TEXT_TYPE_X11_GENERIC,
+    SDL_TOOLKIT_TEXT_TYPE_X11_THAI
+} SDL_ToolkitTextTypeX11;
+
+#ifdef HAVE_LIBTHAI_H
+typedef struct SDL_ToolkitThaiOverlayX11
+{
+    bool top;
+    char *str;
+    size_t sz;
+    SDL_Rect rect;
+} SDL_ToolkitThaiOverlayX11;
+#endif
+
+typedef struct SDL_ToolkitTextElementX11
+{
+    SDL_ToolkitTextTypeX11 type;
+    char *str;
+    size_t sz;
+    SDL_Rect rect;
+    int font_h;
+    void (*str_free)(void *);
+#ifdef HAVE_LIBTHAI_H
+    SDL_ListNode *thai_overlays;
+#endif
+} SDL_ToolkitTextElementX11;
+
 typedef struct SDL_ToolkitIconControlX11
 {
     SDL_ToolkitControlX11 parent;
@@ -75,25 +104,28 @@ typedef struct SDL_ToolkitButtonControlX11
     const SDL_MessageBoxButtonData *data;
 
     /* Text */
+    SDL_ListNode *text;
     SDL_Rect text_rect;
-    int text_a;
-    int text_d;
-    int str_sz;
-#ifdef HAVE_FRIBIDI_H
-    char *text;
-    bool free_text;
-#endif
-
+    
     /* Callback */
     void *cb_data;
     void (*cb)(struct SDL_ToolkitControlX11 *, void *);
 } SDL_ToolkitButtonControlX11;
 
+typedef struct SDL_ToolkitLabelControlLineX11
+{
+    SDL_ListNode *text;
+    SDL_Rect rect;
+#ifdef HAVE_FRIBIDI_H
+    FriBidiParType par;
+#endif
+} SDL_ToolkitLabelControlLineX11;
+
 typedef struct SDL_ToolkitLabelControlX11
 {
     SDL_ToolkitControlX11 parent;
 
-    char **lines;
+ /*   char **lines;
     int *y;
     size_t *szs;
     size_t sz;
@@ -102,7 +134,9 @@ typedef struct SDL_ToolkitLabelControlX11
     int *w;
     bool *free_lines;
     FriBidiParType *par_types;
-#endif
+#endif*/
+    SDL_ToolkitLabelControlLineX11 *lines;
+    size_t sz;
 } SDL_ToolkitLabelControlX11;
 
 typedef struct SDL_ToolkitMenuBarControlX11
@@ -212,14 +246,16 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     XDestroyImage(data->image);
                     data->image = NULL;
                     data->shm = false;
+                    return;
                 }
 
                 data->shm_info.readOnly = False;
-                data->shm_info.shmaddr = data->image->data = (char *)shmat(data->shm_info.shmid, 0, 0);
+                data->shm_info.shmaddr = data->image->data = (char *)shmat(data->shm_info.shmid, NULL, 0);
                 if (((signed char *)data->shm_info.shmaddr) == (signed char *)-1) {
                     XDestroyImage(data->image);
                     data->shm = false;
                     data->image = NULL;
+                    return;
                 }
 
                 g_shm_error = False;
@@ -230,9 +266,10 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                 if (g_shm_error) {
                     XDestroyImage(data->image);
                     shmdt(data->shm_info.shmaddr);
-                    shmctl(data->shm_info.shmid, IPC_RMID, 0);
+                    shmctl(data->shm_info.shmid, IPC_RMID, NULL);
                     data->image = NULL;
                     data->shm = false;
+                    return;
                 }
 
                 if (data->shm_pixmap) {
@@ -245,7 +282,7 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
                     }
                 }
 
-                shmctl(data->shm_info.shmid, IPC_RMID, 0);
+                shmctl(data->shm_info.shmid, IPC_RMID, NULL);
             } else {
                 data->shm = false;
             }
@@ -255,7 +292,9 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
 }
 
 static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
-{
+{    
+    window->thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_NONE;
+    window->thai_font = SDL_TOOLKIT_THAI_FONT_X11_CELL;
 #ifdef X_HAVE_UTF8_STRING
     window->utf8 = true;
     window->font_set = NULL;
@@ -298,9 +337,56 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         if (!window->font_set) {
             goto load_font_traditional;
         } else {
+            XFontStruct **font_structs;
+            char **font_names;
+            int font_sz;
+            int i;
+            
 #ifdef HAVE_FRIBIDI_H
             window->do_shaping = !X11_XContextDependentDrawing(window->font_set);
 #endif
+            /* TODO: What to do the XFontSet happens to have more than one Thai font? */
+            font_sz = X11_XFontsOfFontSet(window->font_set, &font_structs, &font_names);
+            for (i = 0; i < font_sz; i++) {
+                SDL_ToolkitThaiEncodingX11 thai_encoding;
+                
+                thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_NONE;
+                if (SDL_strstr(font_names[i], "tis620-0")) {
+                    thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_TIS;
+                } else if (SDL_strstr(font_names[i], "tis620-1")) {
+                    thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_TIS_MAC;
+                } else if (SDL_strstr(font_names[i], "tis620-2")) {
+                    thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_TIS_WIN;
+                } else if (SDL_strstr(font_names[i], "iso8859-11")) {
+                    thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_8859;
+                } else if (SDL_strstr(font_names[i], "iso10646-1")) {
+                    thai_encoding = SDL_TOOLKIT_THAI_ENCODING_X11_UNICODE;
+                }
+                                                
+                /* TODO: Set encoding to none if the font does not actually have any Thai codepoints */
+                if (thai_encoding != SDL_TOOLKIT_THAI_ENCODING_X11_NONE) {
+                    XFontStruct *font_struct;
+
+                    /* We have to load the font again because the font_struct supplied by FontsOfFontSet does not have the per_char member set */
+                    font_struct = X11_XLoadQueryFont(window->display, font_names[i]);
+                    if (font_struct) {
+                        if (font_struct->per_char) {
+                            int glyphs_sz;
+                            int j;
+
+                            glyphs_sz = (font_struct->max_char_or_byte2 - font_struct->min_char_or_byte2 + 1) * (font_struct->max_byte1 - font_struct->min_byte1 + 1);
+                            for (j = 0; j < glyphs_sz; j++) {
+                                if (font_struct->per_char[j].lbearing < 0) {
+                                    window->thai_font = SDL_TOOLKIT_THAI_FONT_X11_OFFSET;
+                                }
+                            }
+                        }
+                        X11_XFreeFont(window->display, font_struct);
+                    }
+                }
+                
+                window->thai_encoding = thai_encoding;
+            } 
         }
     } else
 #endif
@@ -442,16 +528,18 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
     }
 }
 
-static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent)
+static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent, int *font_height)
 {
     XCharStruct text_structure;
     int font_direction, font_ascent, font_descent;
-    X11_XTextExtents(font, str, nbytes,
-                     &font_direction, &font_ascent, &font_descent,
-                     &text_structure);
+    
+    X11_XTextExtents(font, str, nbytes, &font_direction, &font_ascent, &font_descent, &text_structure);
     *pwidth = text_structure.width;
     *pheight = text_structure.ascent + text_structure.descent;
     *ascent = text_structure.ascent;
+    if (font_height) {
+       *font_height = font_ascent + font_descent;
+    }
 }
 
 static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent, int *descent, int *font_height)
@@ -491,6 +579,335 @@ static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char
     }
 }
 
+#ifdef HAVE_FRIBIDI_H
+SDL_ListNode *X11Toolkit_MakeTextElements(SDL_ToolkitWindowX11 *data, char *txt, size_t sz, FriBidiParType *par)
+#else
+SDL_ListNode *X11Toolkit_MakeTextElements(SDL_ToolkitWindowX11 *data, char *txt, size_t sz)
+#endif
+{
+    SDL_ListNode *list;
+    char *str;
+    char *buffer;
+    Uint32 cp;
+    bool thai;
+    bool free_txt;
+    
+    free_txt = false;
+    list = NULL;
+    thai = 0;
+    str = txt;
+    buffer = SDL_malloc(1);
+    buffer[0] = 0;
+    
+#ifdef HAVE_FRIBIDI_H
+    if (par) {
+        *par = FRIBIDI_PAR_LTR;
+    }
+    if (data->fribidi) {
+        char *fstr;
+                
+        fstr = SDL_FriBidi_Process(data->fribidi, str, sz, data->do_shaping, par);
+        if (fstr) {
+            txt = fstr;
+            str = fstr;
+            sz = SDL_strlen(str);
+            free_txt = true;
+        } 
+    }
+#endif        
+
+    while (1) {
+        char *new;
+        char utf8[5];
+        size_t csz;
+        bool cond;
+
+        SDL_memset(utf8, 0, 5);
+        cp = SDL_StepUTF8((const char **)&str, &sz);
+        cond = (0xe00 <= cp && cp <= 0xe7f) ? true : false;
+        if (cp == 0 || cond == (thai ? false : true)) {
+            SDL_ToolkitTextElementX11 *element;
+            
+            element = SDL_malloc(sizeof(SDL_ToolkitTextElementX11));
+            if (thai) {
+                element->type = SDL_TOOLKIT_TEXT_TYPE_X11_THAI;
+            } else {
+                element->type = SDL_TOOLKIT_TEXT_TYPE_X11_GENERIC;
+            }
+            element->str = SDL_strdup(buffer);
+            element->sz = SDL_strlen(buffer);
+            element->str_free = SDL_free;
+            
+            SDL_ListAdd(&list, element);
+            
+            SDL_free(buffer);
+            buffer = SDL_malloc(1);
+            buffer[0] = 0;
+            thai = thai ? false : true;
+        }
+
+        if (!cp) {
+            break;
+        }
+        
+        SDL_UCS4ToUTF8(cp, utf8);
+        csz = SDL_strlen(buffer) + SDL_strlen(utf8) + 1;
+        new = SDL_malloc(csz);
+        SDL_strlcpy(new, buffer, csz);
+        SDL_strlcat(new, utf8, csz);
+        SDL_free(buffer);
+        buffer = new;
+    }
+
+    SDL_free(buffer);
+    if (free_txt) {
+        SDL_free(txt);
+    }
+    return list;
+}
+
+void X11Toolkit_ShapeTextElements(SDL_ToolkitWindowX11 *data, SDL_ListNode *list)
+{
+    SDL_ListNode *cursor;
+    SDL_ToolkitTextElementX11 *prev;
+    int temp;
+    
+    /* Shape and calculate bounding box */
+    cursor = list;
+    while (cursor) {
+        SDL_ToolkitTextElementX11 *element;
+        
+        element = cursor->entry;
+#ifdef HAVE_LIBTHAI_H
+        element->thai_overlays = NULL;
+#endif
+        if (element->type == SDL_TOOLKIT_TEXT_TYPE_X11_THAI) {
+            if (data->thai_font == SDL_TOOLKIT_THAI_FONT_X11_OFFSET) {
+                X11Toolkit_GetTextWidthHeight(data, element->str, element->sz, &element->rect.w, &element->rect.h, &element->rect.y, &temp, NULL);
+            } else {
+#ifdef HAVE_LIBTHAI_H
+                if (data->th) {
+                    struct thcell_t *cells;
+                    char *tis_str;
+                    char *base_tis_str;
+                    size_t cells_sz;
+                    size_t base_tis_str_sz;
+                    size_t tis_str_sz;
+                                                    
+                    tis_str = SDL_iconv_string("TIS-620", "UTF-8", element->str, element->sz);
+                    cells_sz = tis_str_sz = SDL_strlen(tis_str);
+                    
+                    cells = SDL_calloc(cells_sz, sizeof(struct thcell_t));
+                    data->th->make_cells((const thchar_t *)tis_str, tis_str_sz, cells, &cells_sz, 0);
+
+                    base_tis_str_sz = cells_sz;
+                    base_tis_str = SDL_malloc(base_tis_str_sz + 1);
+                    for (temp = 0; temp < cells_sz; temp++) {
+                        base_tis_str[temp] = cells[temp].base;
+                        
+                        if (cells[temp].hilo) {
+                            SDL_ToolkitThaiOverlayX11 *overlay;
+                            char *pre;
+                            int temp2;
+                            
+                            overlay = SDL_malloc(sizeof(SDL_ToolkitThaiOverlayX11));
+                            pre = SDL_iconv_string("UTF-8", "TIS-620", base_tis_str, temp);
+                            overlay->str = SDL_iconv_string("UTF-8", "TIS-620", (const char *)&cells[temp].hilo, 1);
+                            overlay->sz = SDL_strlen(overlay->str);
+                            overlay->top = false;
+                            X11Toolkit_GetTextWidthHeight(data, pre, SDL_strlen(pre), &overlay->rect.x, &temp2, &temp2, &temp2, NULL);
+                            X11Toolkit_GetTextWidthHeight(data, overlay->str, overlay->sz, &overlay->rect.w, &overlay->rect.h, &overlay->rect.y, &temp2, NULL);
+                            SDL_ListAdd(&element->thai_overlays, overlay);
+                            SDL_free(pre);
+                        }
+                        
+                        if (cells[temp].top) {
+                            SDL_ToolkitThaiOverlayX11 *overlay;
+                            char *pre;
+                            int temp2;
+                            
+                            overlay = SDL_malloc(sizeof(SDL_ToolkitThaiOverlayX11));
+                            pre = SDL_iconv_string("UTF-8", "TIS-620", base_tis_str, temp);
+                            overlay->str = SDL_iconv_string("UTF-8", "TIS-620", (const char *)&cells[temp].top, 1);
+                            overlay->sz = SDL_strlen(overlay->str);
+                            overlay->top = true;
+                            X11Toolkit_GetTextWidthHeight(data, pre, SDL_strlen(pre), &overlay->rect.x, &temp2, &temp2, &temp2, NULL);
+                            X11Toolkit_GetTextWidthHeight(data, overlay->str, overlay->sz, &overlay->rect.w, &overlay->rect.h, &overlay->rect.y, &temp2, NULL);
+                            SDL_ListAdd(&element->thai_overlays, overlay);
+                            SDL_free(pre);
+                        }
+                    }
+                    base_tis_str[base_tis_str_sz] = '\0';
+                    
+                    element->str_free(element->str);
+                    element->str = SDL_iconv_string("UTF-8", "TIS-620", base_tis_str, base_tis_str_sz);
+                    element->sz = SDL_strlen(element->str);
+                    X11Toolkit_GetTextWidthHeight(data, element->str, element->sz, &element->rect.w, &element->rect.h, &element->rect.y, &temp, &element->font_h);
+
+                    SDL_free(tis_str);
+                    SDL_free(cells);                
+                    SDL_free(base_tis_str);
+                }
+#else
+                X11Toolkit_GetTextWidthHeight(data, element->str, element->sz, &element->rect.w, &element->rect.h, &element->rect.y, &temp, &element->font_h);
+#endif            
+            }
+        } else {
+            X11Toolkit_GetTextWidthHeight(data, element->str, element->sz, &element->rect.w, &element->rect.h, &element->rect.y, &temp, &element->font_h);
+        }
+        
+        cursor = cursor->next;
+    }
+    
+    /* Add offsets */
+    prev = NULL;
+    cursor = list;
+    while (cursor) {
+        SDL_ToolkitTextElementX11 *element;
+        
+        element = cursor->entry;        
+        if (prev) {
+            element->rect.x = prev->rect.x + prev->rect.w;
+        } else {
+            element->rect.x = 0;
+        }
+        
+        prev = element;
+        cursor = cursor->next;
+    }
+}
+
+
+void X11Toolkit_DrawTextElements(SDL_ToolkitWindowX11 *data, SDL_ListNode *list, int x, int y)
+{
+    SDL_ListNode *cursor;
+    
+    cursor = list;
+    
+    while (cursor) {
+        SDL_ToolkitTextElementX11 *element;
+        
+        element = cursor->entry;
+        if (element->type == SDL_TOOLKIT_TEXT_TYPE_X11_THAI) {
+            if (data->thai_font == SDL_TOOLKIT_THAI_FONT_X11_OFFSET) {
+#ifdef X_HAVE_UTF8_STRING
+                if (data->utf8) {
+                    X11_Xutf8DrawString(data->display, data->drawable, data->font_set, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+                } else
+#endif
+                {
+                    X11_XDrawString(data->display, data->drawable, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+                }
+            } else {    
+#ifdef HAVE_LIBTHAI_H
+                SDL_ListNode *overlay_cursor;
+                    
+                /* Draw the base string */
+#ifdef X_HAVE_UTF8_STRING
+                if (data->utf8) {
+                    X11_Xutf8DrawString(data->display, data->drawable, data->font_set, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+                } else
+#endif
+                {
+                    X11_XDrawString(data->display, data->drawable, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+                }                        
+                
+                /* Draw overlays */
+                overlay_cursor = element->thai_overlays;
+                while (overlay_cursor) {
+                    SDL_ToolkitThaiOverlayX11 *overlay;
+                    
+                    overlay = overlay_cursor->entry;
+#ifdef X_HAVE_UTF8_STRING
+                    if (data->utf8) {
+                        X11_Xutf8DrawString(data->display, data->drawable, data->font_set, data->ctx, x + element->rect.x + overlay->rect.x, y + overlay->rect.y, overlay->str, overlay->sz);
+                    } else
+#endif
+                    {
+                        X11_XDrawString(data->display, data->drawable, data->ctx, x + element->rect.x + overlay->rect.x, y + element->rect.y + overlay->rect.y, overlay->str, overlay->sz);
+                    }                        
+                            
+                    overlay_cursor = overlay_cursor->next;
+                }
+#endif                
+            }
+        } else {
+#ifdef X_HAVE_UTF8_STRING
+            if (data->utf8) {
+                X11_Xutf8DrawString(data->display, data->drawable, data->font_set, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+            } else
+#endif
+            {
+                X11_XDrawString(data->display, data->drawable, data->ctx, x + element->rect.x, y + element->rect.y, element->str, element->sz);
+            }
+        }
+        
+        cursor = cursor->next;
+    }
+}
+
+int X11Toolkit_GetTextElementsRect(SDL_ListNode *list, SDL_Rect *out)
+{
+    SDL_ListNode *cursor;
+    int ret;
+    
+    ret = 0;
+    out->x = out->y = 0;
+    out->w = out->h = 0;
+    cursor = list;
+    while (cursor) {
+        SDL_ToolkitTextElementX11 *element;
+        
+        element = cursor->entry;
+        
+        out->w += element->rect.w;
+        out->h = SDL_max(out->h, element->rect.h);
+        ret = SDL_max(ret, element->font_h);
+        
+        cursor = cursor->next;
+    }
+    
+    return ret;
+}
+
+void X11Toolkit_FreeTextElementsListContents(SDL_ListNode *list)
+{
+    SDL_ListNode *cursor;
+    
+    cursor = list;
+    while (cursor) {
+        SDL_ToolkitTextElementX11 *element;
+#ifdef HAVE_LIBTHAI_H
+        SDL_ListNode *overlay_cursor;
+#endif
+
+        element = cursor->entry;
+        
+        if (element->str_free) {
+            element->str_free(element->str);
+        }
+        
+#ifdef HAVE_LIBTHAI_H        
+        overlay_cursor = element->thai_overlays;
+        while (overlay_cursor) {
+            SDL_ToolkitThaiOverlayX11 *overlay;
+                    
+            overlay = overlay_cursor->entry;
+            SDL_free(overlay->str);
+            SDL_free(overlay);
+            overlay_cursor = overlay_cursor->next;
+        }
+        SDL_ListClear(&element->thai_overlays);
+#endif
+        
+        SDL_free(element);
+        
+        cursor = cursor->next;
+    }
+}
+
+#define X11Toolkit_FreeTextElements(x) X11Toolkit_FreeTextElementsListContents(x); SDL_ListClear(&x)
+ 
 static bool X11Toolkit_ShouldFlipUI(void) 
 {
     SDL_Locale **current_locales;
@@ -741,6 +1158,10 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     window->fribidi = SDL_FriBidi_Create();
 #endif
 
+#ifdef HAVE_LIBTHAI_H
+    window->th = SDL_LibThai_Create();
+#endif
+    
     /* Interface direction */
     window->flip_interface = X11Toolkit_ShouldFlipUI();
     
@@ -1463,7 +1884,7 @@ static void X11Toolkit_CalculateIconControl(SDL_ToolkitControlX11 *base_control)
     int icon_wh;
 
     control = (SDL_ToolkitIconControlX11 *)base_control;
-    X11Toolkit_GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &control->icon_char_h, &control->icon_char_a);
+    X11Toolkit_GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &control->icon_char_h, &control->icon_char_a, NULL);
     base_control->rect.w = icon_char_w;
     base_control->rect.h = control->icon_char_h;
     icon_wh = SDL_max(icon_char_w, control->icon_char_h) + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
@@ -1629,30 +2050,22 @@ bool X11Toolkit_NotifyControlOfSizeChange(SDL_ToolkitControlX11 *control) {
 
 static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitButtonControlX11 *button_control;
-    int text_d;
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
-    X11Toolkit_GetTextWidthHeight(control->window, button_control->data->text, button_control->str_sz, &button_control->text_rect.w, &button_control->text_rect.h, &button_control->text_a, &text_d, NULL);
+    X11Toolkit_GetTextElementsRect(button_control->text, &button_control->text_rect);
     if (control->do_size) {
         control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.w;
         control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.h;
     }
     button_control->text_rect.x = (control->rect.w - button_control->text_rect.w)/2;
-    button_control->text_rect.y = button_control->text_a + (control->rect.h - button_control->text_rect.h)/2;
+    button_control->text_rect.y = (control->rect.h - button_control->text_rect.h)/2;
 }
 
 
 static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitButtonControlX11 *button_control;
-    char *text;
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
-
-#ifdef HAVE_FRIBIDI_H
-    text = button_control->text;
-#else
-    text = (char *)button_control->data->text;
-#endif
 
     X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     /* Draw bevel */
@@ -1735,20 +2148,8 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
             }
         }
 
-        X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
-#ifdef X_HAVE_UTF8_STRING
-        if (control->window->utf8) {
-            X11_Xutf8DrawString(control->window->display, control->window->drawable, control->window->font_set, control->window->ctx,
-                                control->rect.x + button_control->text_rect.x,
-                                control->rect.y + button_control->text_rect.y,
-                                text, button_control->str_sz);
-        } else
-#endif
-        {
-            X11_XDrawString(control->window->display, control->window->drawable, control->window->ctx,
-                            control->rect.x + button_control->text_rect.x, control->rect.y + button_control->text_rect.y,
-                            text, button_control->str_sz);
-        }
+    X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
+    X11Toolkit_DrawTextElements(control->window, button_control->text, control->rect.x + button_control->text_rect.x, control->rect.y + button_control->text_rect.y);
 }
 
 static void X11Toolkit_OnButtonControlStateChange(SDL_ToolkitControlX11 *control) {
@@ -1761,21 +2162,18 @@ static void X11Toolkit_OnButtonControlStateChange(SDL_ToolkitControlX11 *control
 }
 
 static void X11Toolkit_DestroyButtonControl(SDL_ToolkitControlX11 *control) {
-#ifdef HAVE_FRIBIDI_H
     SDL_ToolkitButtonControlX11 *button_control;
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
-    if (button_control->free_text) {
-        SDL_free(button_control->text);
-    }
-#endif
+
+    X11Toolkit_FreeTextElements(button_control->text);
+    
     SDL_free(control);
 }
 
 SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *window, const SDL_MessageBoxButtonData *data) {
     SDL_ToolkitButtonControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
-    int text_d;
 
     control = (SDL_ToolkitButtonControlX11 *)SDL_malloc(sizeof(SDL_ToolkitButtonControlX11));
     base_control = (SDL_ToolkitControlX11 *)control;
@@ -1802,30 +2200,19 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
         base_control->is_default_enter = true;
         base_control->selected = true;
     }
-    base_control->do_size = false;
-    control->data = data;
-    control->str_sz = SDL_strlen(control->data->text);
-#ifdef HAVE_FRIBIDI_H
-    if (base_control->window->fribidi) {
-        control->text = SDL_FriBidi_Process(base_control->window->fribidi, (char *)control->data->text, control->str_sz, base_control->window->do_shaping, NULL);
-        if (control->text) {
-            control->free_text = true;
-            control->str_sz = SDL_strlen(control->text);
-        } else {
-            control->text = (char *)control->data->text;
-            control->free_text = false;
-        }
-    } else {
-        control->text = (char *)control->data->text;
-        control->free_text = false;
-    }
-#endif
     control->cb = NULL;
-    X11Toolkit_GetTextWidthHeight(base_control->window, control->data->text, control->str_sz, &control->text_rect.w, &control->text_rect.h, &control->text_a, &text_d, NULL);
-    base_control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.w;
-    base_control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.h;
-    control->text_rect.x = control->text_rect.y = 0;
+    control->data = data;
+#ifdef HAVE_FRIBIDI_H
+    control->text = X11Toolkit_MakeTextElements(base_control->window, (char *)control->data->text, SDL_strlen(control->data->text), NULL);
+#else 
+    control->text = X11Toolkit_MakeTextElements(base_control->window, (char *)control->data->text, SDL_strlen(control->data->text));
+#endif
+    X11Toolkit_ShapeTextElements(base_control->window, control->text);
+    
+    base_control->do_size = true;
     X11Toolkit_CalculateButtonControl(base_control);
+    base_control->do_size = false;
+
     X11Toolkit_AddControlToWindow(window, base_control);
     return base_control;
 }
@@ -1933,6 +2320,10 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     SDL_FriBidi_Destroy(data->fribidi);
 #endif
 
+#ifdef HAVE_LIBTHAI_H
+    SDL_LibThai_Destroy(data->th);
+#endif
+
     SDL_free(data);
 }
 
@@ -1950,143 +2341,112 @@ static int X11Toolkit_CountLinesOfText(const char *text)
 static void X11Toolkit_DrawLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitLabelControlX11 *label_control;
     int i;
-    int x;
 
     label_control = (SDL_ToolkitLabelControlX11 *)control;
     X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     for (i = 0; i < label_control->sz; i++) {
-        x = control->rect.x;
-#ifdef HAVE_FRIBIDI_H
-        if (control->window->fribidi) {
-            x += label_control->x[i];
-        }
-#endif
-#ifdef X_HAVE_UTF8_STRING
-        if (control->window->utf8) {
-            X11_Xutf8DrawString(control->window->display, control->window->drawable, control->window->font_set, control->window->ctx,
-                                x, control->rect.y + label_control->y[i],
-                                label_control->lines[i], label_control->szs[i]);
-        } else
-#endif
-        {
-            X11_XDrawString(control->window->display, control->window->drawable, control->window->ctx,
-                                x, control->rect.y + label_control->y[i],
-                                label_control->lines[i], label_control->szs[i]);
-        }
+        X11Toolkit_DrawTextElements(control->window, label_control->lines[i].text, control->rect.x + label_control->lines[i].rect.x, control->rect.y + label_control->lines[i].rect.y);
     }
 }
 
 static void X11Toolkit_DestroyLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitLabelControlX11 *label_control;
+    int i;
 
     label_control = (SDL_ToolkitLabelControlX11 *)control;
-#ifdef HAVE_FRIBIDI_H
-    if (control->window->fribidi) {
-        int i;
-
-        for (i = 0; i < label_control->sz; i++) {
-            if (label_control->free_lines[i]) {
-                SDL_free(label_control->lines[i]);
-            }
-        }
-        SDL_free(label_control->x);
-        SDL_free(label_control->free_lines);
-        SDL_free(label_control->w);
-        SDL_free(label_control->par_types);
+    for (i = 0; i < label_control->sz; i++) {
+        X11Toolkit_FreeTextElements(label_control->lines[i].text);
     }
-#endif
     SDL_free(label_control->lines);
-    SDL_free(label_control->szs);
-    SDL_free(label_control->y);
     SDL_free(label_control);
 }
 
 static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control) {
     SDL_ToolkitLabelControlX11 *control;
-    int last_h;
-    int ascent;
-    int descent;
-    int font_h;
-    int w;
-    int h;
     int i;
-#ifdef HAVE_FRIBIDI_H
-    FriBidiParType first_ndn_dir;
-    int last_ndn;
-#endif
 
-    last_h = 0;
     control = (SDL_ToolkitLabelControlX11 *)base_control;
-    for (i = 0; i < control->sz; i++) {
-        X11Toolkit_GetTextWidthHeight(base_control->window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent, &font_h);
-        base_control->rect.w = SDL_max(base_control->rect.w, w);
-
-        if (i > 0) {
-            control->y[i] = font_h + control->y[i-1];
-        } else {
-            control->y[i] = ascent;
-        }
-
-        last_h = h;
+    
+    if (base_control->do_size) {
+        base_control->rect.w = 0;
+        base_control->rect.h = 0;
     }
-    base_control->rect.h = control->y[control->sz -1] + last_h;
+    
+    for (i = 0; i < control->sz; i++) {
+        int font_h;
+        
+        font_h = X11Toolkit_GetTextElementsRect(control->lines[i].text, &control->lines[i].rect);
+        
+        if (base_control->do_size) {
+            base_control->rect.w = SDL_max(base_control->rect.w, control->lines[i].rect.w);
+        }
+        
+        if (i > 0) {
+            control->lines[i].rect.y = font_h + control->lines[i - 1].rect.y;
+        } else {
+            control->lines[i].rect.y = 0;
+        }
+    }
 
 #ifdef HAVE_FRIBIDI_H
     if (base_control->window->fribidi) {
+        FriBidiParType first_ndn_dir;
+        int last_ndn;
+    
         first_ndn_dir = FRIBIDI_PAR_LTR;
         for (i = 0; i < control->sz; i++) {
-            if (control->par_types[i] != FRIBIDI_PAR_ON) {
-                first_ndn_dir = control->par_types[i];
+            if (control->lines[i].par != FRIBIDI_PAR_ON) {
+                first_ndn_dir = control->lines[i].par;
             }
         }
 
         last_ndn = -1;
         for (i = 0; i < control->sz; i++) {
-            switch (control->par_types[i]) {
+            switch (control->lines[i].par) {
                 case FRIBIDI_PAR_LTR:
-                    control->x[i] = 0;
+                    control->lines[i].rect.x = 0;
                     last_ndn = i;
                     break;
                 case FRIBIDI_PAR_RTL:
-                    control->x[i] = base_control->rect.w - control->w[i];
+                    control->lines[i].rect.x = base_control->rect.w - control->lines[i].rect.w;
                     last_ndn = i;
                     break;
                 default:
                     if (last_ndn != -1) {
-                        if (control->par_types[last_ndn] == FRIBIDI_PAR_RTL) {
-                            control->x[i] = base_control->rect.w - control->w[i];
+                        if (control->lines[last_ndn].par == FRIBIDI_PAR_RTL) {
+                            control->lines[i].rect.x = base_control->rect.w - control->lines[i].rect.w;
                         } else {
-                            control->x[i] = 0;
+                            control->lines[i].rect.x = 0;
                         }
                     } else {
                         if (first_ndn_dir == FRIBIDI_PAR_RTL) {
-                            control->x[i] = base_control->rect.w - control->w[i];
+                            control->lines[i].rect.x = base_control->rect.w - control->lines[i].rect.w;
                         } else {
-                            control->x[i] = 0;
+                            control->lines[i].rect.x = 0;
                         }
                     }
             }
         }
     }
 #endif
+    
+    if (base_control->do_size && control->sz) {
+        base_control->rect.h = control->lines[control->sz - 1].rect.y + control->lines[control->sz - 1].rect.h;
+    }
 }
 
 SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8) {
     SDL_ToolkitLabelControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
-#ifdef HAVE_FRIBIDI_H
-    FriBidiParType first_ndn_dir;
-    int last_ndn;
-#endif
-    int font_h;
-    int last_h;
-    int ascent;
-    int descent;
     int i;
-
+    
     if (!utf8) {
         return NULL;
     }
+ 
+    if (!SDL_strcmp(utf8, "")) {
+        return NULL;
+    }   
     control = (SDL_ToolkitLabelControlX11 *)SDL_malloc(sizeof(SDL_ToolkitLabelControlX11));
     base_control = (SDL_ToolkitControlX11 *)control;
     if (!control) {
@@ -2106,113 +2466,46 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     base_control->rect.h = 0;
     base_control->is_default_enter = false;
     base_control->is_default_esc = false;
+    
     control->sz = X11Toolkit_CountLinesOfText(utf8);
-    control->lines = (char **)SDL_malloc(sizeof(char *) * control->sz);
-    control->y = (int *)SDL_calloc(control->sz, sizeof(int));
-    control->szs = (size_t *)SDL_calloc(control->sz, sizeof(size_t));
-#ifdef HAVE_FRIBIDI_H
-    if (base_control->window->fribidi) {
-        control->x = (int *)SDL_calloc(control->sz, sizeof(int));
-        control->free_lines = (bool *)SDL_calloc(control->sz, sizeof(bool));
-        control->par_types = (FriBidiParType *)SDL_calloc(control->sz, sizeof(FriBidiParType));
-        control->w = (int *)SDL_calloc(control->sz, sizeof(int));
-    }
-#endif
-    last_h = 0;
+    control->lines = SDL_calloc(control->sz, sizeof(SDL_ToolkitLabelControlLineX11));
     for (i = 0; i < control->sz; i++) {
         const char *lf = SDL_strchr(utf8, '\n');
         const int length = lf ? (lf - utf8) : SDL_strlen(utf8);
-        int w;
-        int h;
-
-#ifdef HAVE_FRIBIDI_H
-        if (base_control->window->fribidi) {
-            control->lines[i] = SDL_FriBidi_Process(base_control->window->fribidi, utf8, length, base_control->window->do_shaping, &control->par_types[i]);
-            control->szs[i] = SDL_strlen(control->lines[i]);
-            control->free_lines[i] = true;
-        } else
-#endif
-        {
-            control->lines[i] = utf8;
-            control->szs[i] = length;
-#ifdef HAVE_FRIBIDI_H
-            control->free_lines[i] = false;
-#endif
-        }
-        X11Toolkit_GetTextWidthHeight(window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent, &font_h);
-#ifdef HAVE_FRIBIDI_H
-        if (base_control->window->fribidi) {
-            control->w[i] = w;
-        }
-#endif
-        base_control->rect.w = SDL_max(base_control->rect.w, w);
-
-        if (lf && (lf > control->lines[i]) && (lf[-1] == '\r')) {
-            control->szs[i]--;
+        int sz;
+        
+        sz = length;
+        if (lf && (lf > utf8) && (lf[-1] == '\r')) {
+            sz--;
         }
 
-        if (i > 0) {
-            control->y[i] = font_h + control->y[i-1];
-        } else {
-            control->y[i] = ascent;
-        }
-        last_h = h;
+#ifdef HAVE_FRIBIDI_H
+        control->lines[i].text = X11Toolkit_MakeTextElements(base_control->window, (char *)utf8, sz, &control->lines[i].par);
+#else 
+        control->lines[i].text = X11Toolkit_MakeTextElements(base_control->window, (char *)utf8, sz);
+#endif
+        X11Toolkit_ShapeTextElements(base_control->window, control->lines[i].text);
+
         utf8 += length + 1;
-
         if (!lf) {
             break;
         }
     }
-    base_control->rect.h = control->y[control->sz -1] + last_h;
-#ifdef HAVE_FRIBIDI_H
-    if (base_control->window->fribidi) {
-        first_ndn_dir = FRIBIDI_PAR_LTR;
-        for (i = 0; i < control->sz; i++) {
-            if (control->par_types[i] != FRIBIDI_PAR_ON) {
-                first_ndn_dir = control->par_types[i];
-            }
-        }
 
-        last_ndn = -1;
-        for (i = 0; i < control->sz; i++) {
-            switch (control->par_types[i]) {
-                case FRIBIDI_PAR_LTR:
-                    control->x[i] = 0;
-                    last_ndn = i;
-                    break;
-                case FRIBIDI_PAR_RTL:
-                    control->x[i] = base_control->rect.w - control->w[i];
-                    last_ndn = i;
-                    break;
-                default:
-                    if (last_ndn != -1) {
-                        if (control->par_types[last_ndn] == FRIBIDI_PAR_RTL) {
-                            control->x[i] = base_control->rect.w - control->w[i];
-                        } else {
-                            control->x[i] = 0;
-                        }
-                    } else {
-                        if (first_ndn_dir == FRIBIDI_PAR_RTL) {
-                            control->x[i] = base_control->rect.w - control->w[i];
-                        } else {
-                            control->x[i] = 0;
-                        }
-                    }
-            }
-        }
-    }
-#endif
-
+    base_control->do_size = true;
+    X11Toolkit_CalculateLabelControl(base_control);
+    base_control->do_size = false;
     X11Toolkit_AddControlToWindow(window, base_control);
 
     return base_control;
 }
 
-int X11Toolkit_GetIconControlCharY(SDL_ToolkitControlX11 *control) {
-    SDL_ToolkitIconControlX11 *icon_control;
+int X11Toolkit_GetLabelControlFirstLineHeight(SDL_ToolkitControlX11 *control) {
+    SDL_ToolkitLabelControlX11 *label_control;
 
-    icon_control = (SDL_ToolkitIconControlX11 *)control;
-    return icon_control->icon_char_y - icon_control->icon_char_a + icon_control->icon_char_h/4;
+    label_control = (SDL_ToolkitLabelControlX11 *)control;
+
+    return label_control->lines[0].rect.h;
 }
 
 void X11Toolkit_SignalWindowClose(SDL_ToolkitWindowX11 *data) {

@@ -515,7 +515,7 @@ static void SDL_InitDynamicAPILocked(void)
     const DWORD rc = GetEnvironmentVariableA(SDL_DYNAMIC_API_ENVVAR, envbuf, (DWORD) sizeof (envbuf));
     char *libname = ((rc != 0) && (rc < sizeof (envbuf))) ? envbuf : NULL;
 #else
-    char *libname = getenv(SDL_DYNAMIC_API_ENVVAR);
+    char *libname = getenv(SDL_DYNAMIC_API_ENVVAR); // This should NOT be SDL_getenv()
 #endif
 
     SDL_DYNAPI_ENTRYFN entry = NULL; // funcs from here by default.

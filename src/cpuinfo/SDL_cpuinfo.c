@@ -29,7 +29,11 @@
 
 // CPU feature detection for SDL
 
-#if defined(HAVE_SYSCONF) || defined(HAVE_GETPAGESIZE)
+#if defined(HAVE_GETPAGESIZE) && !defined(SDL_PLATFORM_WINDOWS)
+#define USE_GETPAGESIZE
+#endif
+
+#if defined(HAVE_SYSCONF) || defined(USE_GETPAGESIZE)
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYSCTLBYNAME
@@ -72,11 +76,7 @@
 #include <sys/param.h>
 #endif
 
-#if defined(SDL_PLATFORM_ANDROID) && defined(__arm__) && !defined(HAVE_GETAUXVAL)
-#include <cpu-features.h>
-#endif
-
-#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO)
+#if defined(HAVE_GETAUXVAL) || defined(HAVE_ELF_AUX_INFO) || defined(SDL_PLATFORM_ANDROID)
 #include <sys/auxv.h>
 #endif
 
@@ -488,22 +488,10 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_GETAUXVAL)
+#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
-#elif defined(SDL_PLATFORM_ANDROID)
-    // Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo
-    {
-        AndroidCpuFamily cpu_family = android_getCpuFamily();
-        if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
-            uint64_t cpu_features = android_getCpuFeatures();
-            if (cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) {
-                return 1;
-            }
-        }
-        return 0;
-    }
 #elif defined(SDL_PLATFORM_RISCOS)
     // Use the VFPSupport_Features SWI to access the MVFR registers
     {
@@ -1252,7 +1240,7 @@ int SDL_GetSystemPageSize(void)
             }
         }
 #endif
-#ifdef HAVE_GETPAGESIZE
+#ifdef USE_GETPAGESIZE
         if (SDL_SystemPageSize <= 0) {
             SDL_SystemPageSize = getpagesize();
         }

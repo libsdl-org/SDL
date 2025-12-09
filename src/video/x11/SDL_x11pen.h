@@ -67,6 +67,9 @@ extern void X11_RemovePenByDeviceID(int deviceid);
 // Map X11 device ID to pen ID.
 extern X11_PenHandle *X11_FindPenByDeviceID(int deviceid);
 
+// Notify that the pen has entered/left proximity
+extern void X11_NotifyPenProximityChange(SDL_VideoDevice *_this, SDL_Window *window, int deviceid);
+
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
 #endif // SDL_x11pen_h_

@@ -167,12 +167,10 @@
         */
         #define SDL_MAIN_NEEDED
 
-    #elif defined(SDL_PLATFORM_IOS)
-        /* On iOS SDL provides a main function that creates an application delegate
-           and starts the iOS application run loop.
+    #elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+        /* On iOS and tvOS SDL provides a main function that creates an application delegate and starts the application run loop.
 
-           To use it, just #include SDL_main.h in the source file that contains your
-           main() function.
+           To use it, just #include <SDL3/SDL_main.h> in the source file that contains your main() function.
 
            See src/video/uikit/SDL_uikitappdelegate.m for more details.
          */
@@ -554,6 +552,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  * You can use this if you want to use your own main() implementation without
  * using SDL_main (like when using SDL_MAIN_HANDLED). When using this, you do
  * *not* need SDL_SetMainReady().
+ *
+ * If `argv` is NULL, SDL will provide command line arguments, either by
+ * querying the OS for them if possible, or supplying a filler array if not.
  *
  * \param argc the argc parameter from the application's main() function, or 0
  *             if the platform's main-equivalent has no argc.
