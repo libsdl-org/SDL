@@ -1216,6 +1216,83 @@ static int SDLCALL surface_testBlitBlendMul(void *arg)
 }
 
 /**
+ * Tests blitting bitmaps
+ */
+static int SDLCALL surface_testBlitBitmap(void *arg)
+{
+    const SDL_PixelFormat formats[] = {
+        SDL_PIXELFORMAT_INDEX1LSB,
+        SDL_PIXELFORMAT_INDEX1MSB,
+        SDL_PIXELFORMAT_INDEX2LSB,
+        SDL_PIXELFORMAT_INDEX2MSB,
+        SDL_PIXELFORMAT_INDEX4LSB,
+        SDL_PIXELFORMAT_INDEX4MSB
+    };
+    Uint8 pixel;
+    int i, j;
+    bool result;
+    SDL_Surface *dst = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
+    SDL_Color colors[] = {
+        { 0x00, 0x00, 0x00, 0xFF },
+        { 0xFF, 0xFF, 0xFF, 0xFF }
+    };
+    SDL_Palette *palette;
+    Uint32 value, expected = 0xFFFFFFFF;
+
+    palette = SDL_CreatePalette(SDL_arraysize(colors));
+    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette() != NULL, result = %p", palette);
+
+    result = SDL_SetPaletteColors(palette, colors, 0, SDL_arraysize(colors));
+    SDLTest_AssertCheck(result, "SDL_SetPaletteColors, result = %s", result ? "true" : "false");
+
+    for (i = 0; i < SDL_arraysize(formats); ++i) {
+        SDL_PixelFormat format = formats[i];
+        int bpp = SDL_BITSPERPIXEL(format);
+        int width = (8 / bpp);
+
+        if (SDL_PIXELORDER(format) == SDL_BITMAPORDER_1234) {
+            switch (bpp) {
+            case 1:
+                pixel = 0x80;
+                break;
+            case 2:
+                pixel = 0x40;
+                break;
+            case 4:
+                pixel = 0x10;
+                break;
+            default:
+                SDL_assert(!"Unexpected bpp");
+                break;
+            }
+        } else {
+            pixel = 0x01;
+        }
+        for (j = 0; j < width; ++j) {
+            SDL_Rect rect = { j, 0, 1, 1 };
+            SDL_Surface *src = SDL_CreateSurfaceFrom(width, 1, format, &pixel, 1);
+            SDL_SetSurfacePalette(src, palette);
+            *(Uint32 *)dst->pixels = 0;
+            result = SDL_BlitSurface(src, &rect, dst, NULL);
+            SDLTest_AssertCheck(result, "SDL_BlitSurface(%s pixel %d), result = %s", SDL_GetPixelFormatName(format), j, result ? "true" : "false");
+            value = *(Uint32 *)dst->pixels;
+            SDLTest_AssertCheck(value == expected, "Expected value == 0x%" SDL_PRIx32 ", actually = 0x%" SDL_PRIx32, expected, value);
+            SDL_DestroySurface(src);
+
+            if (SDL_PIXELORDER(format) == SDL_BITMAPORDER_1234) {
+                pixel >>= bpp;
+            } else {
+                pixel <<= bpp;
+            }
+        }
+    }
+    SDL_DestroyPalette(palette);
+    SDL_DestroySurface(dst);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests blitting invalid surfaces.
  */
 static int SDLCALL surface_testBlitInvalid(void *arg)
@@ -1230,14 +1307,14 @@ static int SDLCALL surface_testBlitInvalid(void *arg)
     SDLTest_AssertCheck(invalid->pixels == NULL, "Check surface pixels are NULL");
 
     result = SDL_BlitSurface(invalid, NULL, valid, NULL);
-    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(invalid, NULL, valid, NULL), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(invalid, NULL, valid, NULL), result = %s", result ? "true" : "false");
     result = SDL_BlitSurface(valid, NULL, invalid, NULL);
-    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(valid, NULL, invalid, NULL), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(valid, NULL, invalid, NULL), result = %s", result ? "true" : "false");
 
     result = SDL_BlitSurfaceScaled(invalid, NULL, valid, NULL, SDL_SCALEMODE_NEAREST);
-    SDLTest_AssertCheck(result == false, "SDL_BlitSurfaceScaled(invalid, NULL, valid, NULL, SDL_SCALEMODE_NEAREST), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurfaceScaled(invalid, NULL, valid, NULL, SDL_SCALEMODE_NEAREST), result = %s", result ? "true" : "false");
     result = SDL_BlitSurfaceScaled(valid, NULL, invalid, NULL, SDL_SCALEMODE_NEAREST);
-    SDLTest_AssertCheck(result == false, "SDL_BlitSurfaceScaled(valid, NULL, invalid, NULL, SDL_SCALEMODE_NEAREST), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurfaceScaled(valid, NULL, invalid, NULL, SDL_SCALEMODE_NEAREST), result = %s", result ? "true" : "false");
 
     SDL_DestroySurface(valid);
     SDL_DestroySurface(invalid);
@@ -1498,6 +1575,57 @@ static int SDLCALL surface_testOverflow(void *arg)
 
     return TEST_COMPLETED;
 }
+
+static int surface_testSetGetSurfaceClipRect(void *args)
+{
+    const struct {
+        SDL_Rect r;
+        bool clipsetval;
+        bool cmpval;
+    } rect_list[] = {
+        { {   0,   0,   0,   0}, false, true},
+        { {   2,   2,   0,   0}, false, true},
+        { {   2,   2,   5,   1}, true,  true},
+        { {   6,   5,  10,   3}, true,  false},
+        { {   0,   0,  10,  10}, true,  true},
+        { {   0,   0, -10,  10}, false, true},
+        { {   0,   0, -10, -10}, false, true},
+        { { -10, -10,  10,  10}, false, false},
+        { {  10, -10,  10,  10}, false, false},
+        { {  10,  10,  10,  10}, true,  false}
+    };
+    SDL_Surface *s;
+    SDL_Rect r;
+    int i;
+    bool b;
+
+    SDLTest_AssertPass("About to call SDL_CreateSurface(15, 15, SDL_PIXELFORMAT_RGBA32)");
+    s = SDL_CreateSurface(15, 15, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(s != NULL, "SDL_CreateSurface returned non-null surface");
+    SDL_zero(r);
+    b = SDL_GetSurfaceClipRect(s, &r);
+    SDLTest_AssertCheck(b, "SDL_GetSurfaceClipRect succeeded (%s)", SDL_GetError());
+    SDLTest_AssertCheck(r.x == 0 && r.y == 0 && r.w == 15 && r.h == 15,
+        "SDL_GetSurfaceClipRect of just-created surface. Got {%d, %d, %d, %d}. (Expected {%d, %d, %d, %d})",
+        r.x, r.y, r.w, r.h, 0, 0, 15, 15);
+
+    for (i = 0; i < SDL_arraysize(rect_list); i++) {
+        const SDL_Rect *r_in = &rect_list[i].r;
+        SDL_Rect r_out;
+
+        SDLTest_AssertPass("About to do SDL_SetClipRect({%d, %d, %d, %d})", r_in->x, r_in->y, r_in->w, r_in->h);
+        b = SDL_SetSurfaceClipRect(s, r_in);
+        SDLTest_AssertCheck(b == rect_list[i].clipsetval, "SDL_SetSurfaceClipRect returned %d (expected %d)", b, rect_list[i].clipsetval);
+        SDL_zero(r_out);
+        SDL_GetSurfaceClipRect(s, &r_out);
+        SDLTest_AssertPass("SDL_GetSurfaceClipRect returned {%d, %d, %d, %d}", r_out.x, r_out.y, r_out.w, r_out.h);
+        b = r_out.x == r_in->x && r_out.y == r_in->y && r_out.w == r_in->w && r_out.h == r_in->h;
+        SDLTest_AssertCheck(b == rect_list[i].cmpval, "Current clipping rect is identical to input clipping rect: %d (expected %d)",
+            b, rect_list[i].cmpval);
+    }
+    SDL_DestroySurface(s);
+    return TEST_COMPLETED;
+};
 
 static int SDLCALL surface_testFlip(void *arg)
 {
@@ -2054,6 +2182,10 @@ static const SDLTest_TestCaseReference surfaceTestBlitBlendMul = {
     surface_testBlitBlendMul, "surface_testBlitBlendMul", "Tests blitting routines with mul blending mode.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestBlitBitmap = {
+    surface_testBlitBitmap, "surface_testBlitBitmap", "Tests blitting routines with bitmap surfaces.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestBlitInvalid = {
     surface_testBlitInvalid, "surface_testBlitInvalid", "Tests blitting routines with invalid surfaces.", TEST_ENABLED
 };
@@ -2064,6 +2196,10 @@ static const SDLTest_TestCaseReference surfaceTestBlitsWithBadCoordinates = {
 
 static const SDLTest_TestCaseReference surfaceTestOverflow = {
     surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestSetGetClipRect = {
+    surface_testSetGetSurfaceClipRect, "surface_testSetGetSurfaceClipRect", "Test SDL_(Set|Get)SurfaceClipRect.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestFlip = {
@@ -2116,9 +2252,11 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestBlitBlendAddPremultiplied,
     &surfaceTestBlitBlendMod,
     &surfaceTestBlitBlendMul,
+    &surfaceTestBlitBitmap,
     &surfaceTestBlitInvalid,
     &surfaceTestBlitsWithBadCoordinates,
     &surfaceTestOverflow,
+    &surfaceTestSetGetClipRect,
     &surfaceTestFlip,
     &surfaceTestPalette,
     &surfaceTestPalettization,

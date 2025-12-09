@@ -52,7 +52,7 @@ Window GetWindow(SDL_VideoDevice *_this)
         XSetWindowAttributes xattr;
         data->clipboard_window = X11_XCreateWindow(dpy, parent, -10, -10, 1, 1, 0,
                                                    CopyFromParent, InputOnly,
-                                                   CopyFromParent, 0, &xattr);
+                                                   NULL, 0, &xattr);
 
         X11_XSelectInput(dpy, data->clipboard_window, PropertyChangeMask);
         X11_XFlush(data->display);
@@ -248,7 +248,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
                 if (incr_success == false) {
                     SDL_free(data);
-                    data = 0;
+                    data = NULL;
                     *length = 0;
                 }
             }

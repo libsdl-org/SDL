@@ -240,7 +240,7 @@ static bool InitSpriteOverlay(SpriteRenderState *rs, SDL_Window *window)
     return true;
 }
 
-static void UpdateRenderTarget(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
+static bool UpdateRenderTarget(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
 {
     SDL_Renderer *renderer = rs->renderer;
     SDL_Texture *target = ws->target;
@@ -249,18 +249,20 @@ static void UpdateRenderTarget(SpriteRenderState *rs, SpriteWindowState *ws, int
         if (target) {
             SDL_DestroyTexture(target);
             ws->target = NULL;
+            ws->texture = NULL;
         }
 
         target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_TARGET, w, h);
         if (!target) {
             SDL_Log("Couldn't create render target: %s", SDL_GetError());
-            return;
+            return false;
         }
         SDL_SetRenderTarget(renderer, target);
 
         ws->target = target;
         ws->texture = (SDL_GPUTexture *)SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER, NULL);
     }
+    return true;
 }
 
 static void UpdateSprites(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
@@ -313,19 +315,18 @@ static void RenderSprites(SpriteRenderState *rs, SpriteWindowState *ws)
     const SDL_FRect *positions = ws->positions;
     int i;
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
-    SDL_RenderClear(renderer);
     for (i = 0; i < NUM_SPRITES; ++i) {
         SDL_RenderTexture(renderer, sprite, NULL, &positions[i]);
     }
-    SDL_RenderPresent(renderer);
 }
 
 static void UpdateSpriteOverlay(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
 {
     SDL_Renderer *renderer = rs->renderer;
 
-    UpdateRenderTarget(rs, ws, w, h);
+    if (!UpdateRenderTarget(rs, ws, w, h)) {
+        return;
+    }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
     SDL_RenderClear(renderer);
@@ -343,6 +344,11 @@ static void UpdateSpriteOverlay(SpriteRenderState *rs, SpriteWindowState *ws, in
 static void RenderSpriteOverlay(SDL_GPURenderPass *pass, SpriteRenderState *rs, SpriteWindowState *ws)
 {
     SDL_GPUTextureSamplerBinding binding;
+
+    if (!ws->texture) {
+        /* Failed to create a texture, nothing to do */
+        return;
+    }
 
     SDL_zero(binding);
     binding.texture = ws->texture;

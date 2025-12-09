@@ -60,7 +60,6 @@ static const char *GetAppName(void)
     if (exe_name) {
         return exe_name;
     }
-
     return "SDL_App";
 }
 
@@ -244,7 +243,7 @@ static bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, 
             DBusMessageIter args, array, sub;
             dbus->message_iter_init_append(msg, &args);
             dbus->message_iter_open_container(&args, DBUS_TYPE_ARRAY, "(ss)", &array);
-            dbus->message_iter_open_container(&array, DBUS_TYPE_STRUCT, 0, &sub);
+            dbus->message_iter_open_container(&array, DBUS_TYPE_STRUCT, NULL, &sub);
             dbus->message_iter_append_basic(&sub, DBUS_TYPE_STRING, &program);
             dbus->message_iter_append_basic(&sub, DBUS_TYPE_STRING, &appname);
             dbus->message_iter_close_container(&array, &sub);

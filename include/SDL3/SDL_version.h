@@ -62,7 +62,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MICRO_VERSION   3
+#define SDL_MICRO_VERSION   5
 
 /**
  * This macro turns the version numbers into a numeric value.
@@ -153,7 +153,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
  *
  * This value is the revision of the code you are linking against and may be
  * different from the code you are compiling with, which is found in the
- * constant SDL_REVISION.
+ * constant SDL_REVISION if you explicitly include SDL_revision.h
  *
  * The revision is an arbitrary string (a hash value) uniquely identifying the
  * exact revision of the SDL library in use, and is only useful in comparing

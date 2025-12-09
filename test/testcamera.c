@@ -360,12 +360,17 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             texture_updated = true;
         }
 
+        // the image might be coming from a mobile device that provides images in only one orientation, but the
+        // device might be rotated to a different one (like an iPhone providing portrait images even if you hold
+        // the phone in landscape mode). The rotation is how far to rotate the image clockwise to put it right-side
+        // up, for how the user would expect it to be for how they are holding the device.
+        const float rotation = SDL_GetFloatProperty(SDL_GetSurfaceProperties(frame_current), SDL_PROP_SURFACE_ROTATION_FLOAT, 0.0f);
         SDL_GetRenderOutputSize(renderer, &win_w, &win_h);
         d.x = ((win_w - texture->w) / 2.0f);
         d.y = ((win_h - texture->h) / 2.0f);
         d.w = (float)texture->w;
         d.h = (float)texture->h;
-        SDL_RenderTexture(renderer, texture, NULL, &d);
+        SDL_RenderTextureRotated(renderer, texture, NULL, &d, rotation, NULL, SDL_FLIP_NONE);
     }
 
     /* !!! FIXME: Render a "flip" icon if front_camera and back_camera are both != 0. */

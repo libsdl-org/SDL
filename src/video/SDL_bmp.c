@@ -177,6 +177,26 @@ static void CorrectAlphaChannel(SDL_Surface *surface)
     }
 }
 
+bool SDL_IsBMP(SDL_IOStream *src)
+{
+    Sint64 start;
+    Uint8 magic[2];
+    bool is_BMP;
+
+    is_BMP = false;
+    start = SDL_TellIO(src);
+    if (start >= 0) {
+        if (SDL_ReadIO(src, magic, sizeof(magic)) == sizeof(magic)) {
+            if (magic[0] == 'B' && magic[1] == 'M') {
+                is_BMP = true;
+            }
+        }
+        SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    }
+
+    return is_BMP;
+}
+
 SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 {
     bool was_error = true;
@@ -195,7 +215,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
     bool correctAlpha = false;
 
     // The Win32 BMP file header (14 bytes)
-    char magic[2];
+    // char magic[2];
     // Uint32 bfSize;
     // Uint16 bfReserved1;
     // Uint16 bfReserved2;
@@ -227,14 +247,12 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         goto done;
     }
     SDL_ClearError();
-    if (SDL_ReadIO(src, magic, 2) != 2) {
-        goto done;
-    }
-    if (SDL_strncmp(magic, "BM", 2) != 0) {
+    if (!SDL_IsBMP(src)) {
         SDL_SetError("File is not a Windows BMP file");
         goto done;
     }
-    if (!SDL_ReadU32LE(src, NULL /* bfSize */) ||
+    if (!SDL_ReadU16LE(src, NULL /* magic (already checked) */) ||
+        !SDL_ReadU32LE(src, NULL /* bfSize */) ||
         !SDL_ReadU16LE(src, NULL /* bfReserved1 */) ||
         !SDL_ReadU16LE(src, NULL /* bfReserved2 */) ||
         !SDL_ReadU32LE(src, &bfOffBits)) {

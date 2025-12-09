@@ -167,7 +167,20 @@ static const char GLES2_Fragment_TexturePalette_Nearest[] =
 "\n"
 "void main()\n"
 "{\n"
-"    gl_FragColor = SamplePaletteNearest(v_texCoord);\n"
+"    mediump vec4 color = SamplePaletteNearest(v_texCoord);\n"
+"    gl_FragColor = color;\n"
+"    gl_FragColor *= v_color;\n"
+"}\n"
+;
+
+static const char GLES2_Fragment_TexturePalette_Nearest_Colorswap[] =
+    PALETTE_SHADER_PROLOGUE
+    PALETTE_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    mediump vec4 color = SamplePaletteNearest(v_texCoord);\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, color.a);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -178,7 +191,20 @@ static const char GLES2_Fragment_TexturePalette_Linear[] =
 "\n"
 "void main()\n"
 "{\n"
-"    gl_FragColor = SamplePaletteLinear(v_texCoord);\n"
+"    mediump vec4 color = SamplePaletteLinear(v_texCoord);\n"
+"    gl_FragColor = color;\n"
+"    gl_FragColor *= v_color;\n"
+"}\n"
+;
+
+static const char GLES2_Fragment_TexturePalette_Linear_Colorswap[] =
+    PALETTE_SHADER_PROLOGUE
+    PALETTE_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    mediump vec4 color = SamplePaletteLinear(v_texCoord);\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, color.a);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -191,10 +217,28 @@ static const char GLES2_Fragment_TexturePalette_PixelArt[] =
 "void main()\n"
 "{\n"
 #ifdef OPENGLES_300
-"    gl_FragColor = SamplePaletteLinear(GetPixelArtUV(v_texCoord));\n"
+"    mediump vec4 color = SamplePaletteLinear(GetPixelArtUV(v_texCoord));\n"
 #else
-"    gl_FragColor = SamplePaletteNearest(v_texCoord);\n"
+"    mediump vec4 color = SamplePaletteNearest(v_texCoord);\n"
 #endif
+"    gl_FragColor = color;\n"
+"    gl_FragColor *= v_color;\n"
+"}\n"
+;
+
+static const char GLES2_Fragment_TexturePalette_PixelArt_Colorswap[] =
+    PALETTE_SHADER_PROLOGUE
+    PALETTE_SHADER_FUNCTIONS
+    PIXELART_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+#ifdef OPENGLES_300
+"    mediump vec4 color = SamplePaletteLinear(GetPixelArtUV(v_texCoord));\n"
+#else
+"    mediump vec4 color = SamplePaletteNearest(v_texCoord);\n"
+#endif
+"    gl_FragColor = vec4(color.b, color.g, color.r, color.a);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -206,10 +250,7 @@ static const char GLES2_Fragment_TextureRGB[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = texture2D(u_texture, v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.r = color.b;\n"
-"    gl_FragColor.b = color.r;\n"
-"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, 1.0);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -222,10 +263,7 @@ static const char GLES2_Fragment_TextureRGB_PixelArt[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = GetPixelArtSample(v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.r = color.b;\n"
-"    gl_FragColor.b = color.r;\n"
-"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, 1.0);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -237,8 +275,7 @@ static const char GLES2_Fragment_TextureBGR[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = texture2D(u_texture, v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor = vec4(color.r, color.g, color.b, 1.0);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -251,8 +288,7 @@ static const char GLES2_Fragment_TextureBGR_PixelArt[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = GetPixelArtSample(v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor = vec4(color.r, color.g, color.b, 1.0);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -264,9 +300,7 @@ static const char GLES2_Fragment_TextureARGB[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = texture2D(u_texture, v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.r = color.b;\n"
-"    gl_FragColor.b = color.r;\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, color.a);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -279,9 +313,7 @@ static const char GLES2_Fragment_TextureARGB_PixelArt[] =
 "void main()\n"
 "{\n"
 "    mediump vec4 color = GetPixelArtSample(v_texCoord);\n"
-"    gl_FragColor = color;\n"
-"    gl_FragColor.r = color.b;\n"
-"    gl_FragColor.b = color.r;\n"
+"    gl_FragColor = vec4(color.b, color.g, color.r, color.a);\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -524,6 +556,12 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TexturePalette_Linear;
     case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART:
         return GLES2_Fragment_TexturePalette_PixelArt;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_NEAREST_COLORSWAP:
+        return GLES2_Fragment_TexturePalette_Nearest_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_LINEAR_COLORSWAP:
+        return GLES2_Fragment_TexturePalette_Linear_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART_COLORSWAP:
+        return GLES2_Fragment_TexturePalette_PixelArt_Colorswap;
     case GLES2_SHADER_FRAGMENT_TEXTURE_RGB:
         return GLES2_Fragment_TextureRGB;
     case GLES2_SHADER_FRAGMENT_TEXTURE_RGB_PIXELART:

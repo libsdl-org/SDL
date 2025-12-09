@@ -51,6 +51,9 @@ VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceImageFormatProperties)
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties)
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties)
 
+// Vulkan 1.1 (Needed for opt-in feature checks)
+VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2)
+
 // VK_KHR_get_physical_device_properties2, needed for KHR_driver_properties
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)
 

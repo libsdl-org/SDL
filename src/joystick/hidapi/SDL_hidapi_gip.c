@@ -2686,6 +2686,8 @@ static GIP_Attachment * HIDAPI_DriverGIP_FindAttachment(SDL_HIDAPI_Device *devic
     GIP_Device *ctx = (GIP_Device *)device->context;
     int i;
 
+    SDL_AssertJoysticksLocked();
+
     for (i = 0; i < MAX_ATTACHMENTS; i++) {
         if (ctx->attachments[i] && ctx->attachments[i]->joystick == joystick->instance_id) {
             return ctx->attachments[i];

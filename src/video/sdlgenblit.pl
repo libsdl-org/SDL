@@ -593,7 +593,7 @@ __EOF__
     posy = incy / 2;
 
     while (info->dst_h--) {
-        $format_type{$src} *src = 0;
+        $format_type{$src} *src = NULL;
         $format_type{$dst} *dst = ($format_type{$dst} *)info->dst;
         int n = info->dst_w;
         posx = incx / 2;

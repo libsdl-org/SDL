@@ -307,6 +307,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     SDL_RegisterTray(tray);
     SDL_Gtk_ExitContext(gtk);
+    SDL_free(sdl_dir);
 
     return tray;
 

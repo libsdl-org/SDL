@@ -398,7 +398,7 @@ static int get_plane_id(SDL_VideoDevice *_this, unsigned int crtc_id, uint32_t p
                 drmModePropertyPtr p = KMSDRM_drmModeGetProperty(viddata->drm_fd,
                     props->props[j]);
 
-                if ((strcmp(p->name, "type") == 0) && (props->prop_values[j] == plane_type)) {
+                if ((SDL_strcmp(p->name, "type") == 0) && (props->prop_values[j] == plane_type)) {
                     /* found our plane, use that: */
                     found = 1;
                 }

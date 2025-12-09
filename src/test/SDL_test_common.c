@@ -1143,7 +1143,7 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
     SDL_Surface *icon;
 
     /* Load the icon surface */
-    icon = SDL_LoadBMP(file);
+    icon = SDL_LoadSurface(file);
     if (!icon) {
         SDL_Log("Couldn't load %s: %s", file, SDL_GetError());
         return NULL;
@@ -2494,6 +2494,15 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
                     SDL_FlashWindow(window, SDL_FLASH_BRIEFLY);
+                }
+            }
+            break;
+        case SDLK_D:
+            if (withControl) {
+                /* Ctrl-D toggle fill-document */
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    SDL_SetWindowFillDocument(window, !((SDL_GetWindowFlags(window) & SDL_WINDOW_FILL_DOCUMENT) != 0));
                 }
             }
             break;

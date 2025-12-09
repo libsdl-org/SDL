@@ -447,6 +447,9 @@ int main(int argc, char *argv[])
 {
     int i;
 
+    /* This is not necessary for text input handling, we just
+     * want to verify that input works with raw keyboard enabled.
+     */
     SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
 
     /* Initialize test framework */

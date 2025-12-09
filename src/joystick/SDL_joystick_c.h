@@ -144,6 +144,9 @@ extern bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
 // Function to return whether a joystick is a Steam Deck
 extern bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
 
+// Function to return whether a joystick is a Steam Triton
+extern bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id);
+
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 

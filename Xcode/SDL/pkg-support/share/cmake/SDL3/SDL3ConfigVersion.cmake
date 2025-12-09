@@ -16,6 +16,7 @@ set(_sdl3_version_h "${_sdl3_framework}/Headers/SDL_version.h")                 
 
 if(NOT EXISTS "${_sdl3_version_h}")
     message(AUTHOR_WARNING "Cannot not find ${_sdl3_framework}. This script is meant to be placed in share/cmake/SDL3, next to SDL3.xcframework")
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
     return()
 endif()
 
@@ -36,6 +37,7 @@ if(_sdl_major_re AND _sdl_minor_re AND _sdl_micro_re)
     set(PACKAGE_VERSION "${_sdl_major}.${_sdl_minor}.${_sdl_micro}")
 else()
     message(AUTHOR_WARNING "Could not extract version from SDL_version.h.")
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
     return()
 endif()
 

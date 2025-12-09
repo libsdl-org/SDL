@@ -111,7 +111,7 @@ static const char *cross[] = {
 
 static SDL_Surface *load_image_file(const char *file)
 {
-    SDL_Surface *surface = SDL_strstr(file, ".png") ? SDL_LoadPNG(file) : SDL_LoadBMP(file);
+    SDL_Surface *surface = SDL_LoadSurface(file);
     if (surface) {
         if (SDL_GetSurfacePalette(surface)) {
             const Uint8 bpp = SDL_BITSPERPIXEL(surface->format);

@@ -97,6 +97,8 @@ typedef Uint32 SDL_WindowID;
  * uninitialized will either return the user provided value, if one was set
  * prior to initialization, or NULL. See docs/README-wayland.md for more
  * information.
+ *
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
@@ -213,6 +215,7 @@ typedef Uint64 SDL_WindowFlags;
 #define SDL_WINDOW_TOOLTIP              SDL_UINT64_C(0x0000000000040000)    /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
 #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
+#define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
 #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
@@ -488,7 +491,7 @@ typedef enum SDL_GLAttr
     SDL_GL_CONTEXT_FLAGS,               /**< some combination of 0 or more of elements of the SDL_GLContextFlag enumeration; defaults to 0. */
     SDL_GL_CONTEXT_PROFILE_MASK,        /**< type of GL context (Core, Compatibility, ES). See SDL_GLProfile; default value depends on platform. */
     SDL_GL_SHARE_WITH_CURRENT_CONTEXT,  /**< OpenGL context sharing; defaults to 0. */
-    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB capable visual; defaults to 0. */
+    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB-capable visual if 1. Defaults to -1 ("don't care"). This is a request; GL drivers might not comply! */
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR,    /**< sets context the release behavior. See SDL_GLContextReleaseFlag; defaults to FLUSH. */
     SDL_GL_CONTEXT_RESET_NOTIFICATION,  /**< set context reset notification. See SDL_GLContextResetNotification; defaults to NO_NOTIFICATION. */
     SDL_GL_CONTEXT_NO_ERROR,
@@ -663,6 +666,11 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  * - `SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER`: the wl_output associated
  *   with the display
  *
+ * On Windows:
+ *
+ * - `SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER`: the monitor handle
+ *   (HMONITOR) associated with the display
+ *
  * \param displayID the instance ID of the display to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -676,6 +684,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
 #define SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN             "SDL.display.HDR_enabled"
 #define SDL_PROP_DISPLAY_KMSDRM_PANEL_ORIENTATION_NUMBER "SDL.display.KMSDRM.panel_orientation"
 #define SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER       "SDL.display.wayland.wl_output"
+#define SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER        "SDL.display.windows.hmonitor"
 
 /**
  * Get the name of a display in UTF-8 encoding.
@@ -1323,6 +1332,12 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  * - `SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER`: the `(__unsafe_unretained)`
  *   NSView associated with the window, defaults to `[window contentView]`
  *
+ * These are additional supported properties on iOS, tvOS, and visionOS:
+ *
+ * - `SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER`: the `(__unsafe_unretained)`
+ *   UIWindowScene associated with the window, defaults to the active window
+ *   scene.
+ *
  * These are additional supported properties on Wayland:
  *
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN` - true if
@@ -1356,15 +1371,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING`: the id given to the
  *   canvas element. This should start with a '#' sign
- * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true to make
- *   the canvas element fill the entire document. Resize events will be
- *   generated as the browser window is resized, as that will adjust the
- *   canvas size as well. The canvas will cover anything else on the page,
- *   including any controls provided by Emscripten in its generated HTML file.
- *   Often times this is desirable for a browser-based game, but it means
- *   several things that we expect of an SDL window on other platforms might
- *   not work as expected, such as minimum window sizes and aspect ratios.
- *   Default false.
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: override the
  *   binding element for keyboard inputs for this canvas. The variable can be
  *   one of:
@@ -1431,6 +1437,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_Y_NUMBER                            "SDL.window.create.y"
 #define SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER                "SDL.window.create.cocoa.window"
 #define SDL_PROP_WINDOW_CREATE_COCOA_VIEW_POINTER                  "SDL.window.create.cocoa.view"
+#define SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER                 "SDL.window.create.uikit.windowscene"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "SDL.window.create.wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
@@ -1438,7 +1445,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN    "SDL.window.create.emscripten.fill_document"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
 
 /**
@@ -1608,9 +1614,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING`: the id the canvas element
  *   will have
- * - `SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true if the canvas is
- *   set to consume the entire browser window, bypassing some SDL window
- *   functionality.
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
  *
@@ -1660,7 +1663,6 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN            "SDL.window.emscripten.fill_document"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
 
 /**
@@ -1679,6 +1681,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
  * \sa SDL_MinimizeWindow
  * \sa SDL_SetWindowFullscreen
  * \sa SDL_SetWindowMouseGrab
+ * \sa SDL_SetWindowFillDocument
  * \sa SDL_ShowWindow
  */
 extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
@@ -1866,6 +1869,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowSize(SDL_Window *window, int w, in
  * \sa SDL_GetRenderOutputSize
  * \sa SDL_GetWindowSizeInPixels
  * \sa SDL_SetWindowSize
+ * \sa SDL_EVENT_WINDOW_RESIZED
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, int *h);
 
@@ -2146,6 +2150,37 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowResizable(SDL_Window *window, bool
  * \sa SDL_GetWindowFlags
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, bool on_top);
+
+/**
+ * Set the window to fill the current document space (Emscripten only).
+ *
+ * This will add or remove the window's `SDL_WINDOW_FILL_DOCUMENT` flag.
+ *
+ * Currently this flag only applies to the Emscripten target.
+ *
+ * When enabled, the canvas element fills the entire document. Resize events
+ * will be generated as the browser window is resized, as that will adjust the
+ * canvas size as well. The canvas will cover anything else on the page,
+ * including any controls provided by Emscripten in its generated HTML file
+ * (in fact, any elements on the page that aren't the canvas will be moved
+ * into a hidden `div` element).
+ *
+ * Often times this is desirable for a browser-based game, but it means
+ * several things that we expect of an SDL window on other platforms might not
+ * work as expected, such as minimum window sizes and aspect ratios.
+ *
+ * \param window the window of which to change the fill-document state.
+ * \param fill true to set the window to fill the document, false to disable.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetWindowFlags
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowFillDocument(SDL_Window *window, bool fill);
 
 /**
  * Show a window.

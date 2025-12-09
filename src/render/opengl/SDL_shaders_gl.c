@@ -59,7 +59,7 @@ struct GL_ShaderContext
     bool GL_ARB_texture_rectangle_supported;
 
     GL_ShaderData shaders[NUM_SHADERS];
-    const float *shader_params[NUM_SHADERS];
+    float *shader_params[NUM_SHADERS];
 };
 
 /* *INDENT-OFF* */ // clang-format off
@@ -703,7 +703,22 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
 
     ctx->glUseProgramObjectARB(program);
 
-    if (shader_params && shader_params != ctx->shader_params[shader]) {
+    int shader_params_len = 0;
+    if (shader == SHADER_PALETTE_LINEAR ||
+        shader == SHADER_PALETTE_PIXELART ||
+        shader == SHADER_RGB_PIXELART ||
+        shader == SHADER_RGBA_PIXELART) {
+        shader_params_len = 4 * sizeof(float);
+#ifdef SDL_HAVE_YUV
+    } else if (shader >= SHADER_YUV) {
+        shader_params_len = 16 * sizeof(float);
+#endif
+    }
+    SDL_assert(!shader_params || shader_params_len > 0);
+
+    if (shader_params &&
+        (!ctx->shader_params[shader] ||
+         SDL_memcmp(shader_params, ctx->shader_params[shader], shader_params_len) != 0)) {
         if (shader == SHADER_PALETTE_LINEAR ||
             shader == SHADER_PALETTE_PIXELART ||
             shader == SHADER_RGB_PIXELART ||
@@ -736,7 +751,12 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
         }
 #endif // SDL_HAVE_YUV
 
-        ctx->shader_params[shader] = shader_params;
+        if (!ctx->shader_params[shader]) {
+            ctx->shader_params[shader] = (float *)SDL_malloc(shader_params_len);
+        }
+        if (ctx->shader_params[shader]) {
+            SDL_memcpy(ctx->shader_params[shader], shader_params, shader_params_len);
+        }
     }
 }
 
@@ -746,6 +766,7 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
 
     for (i = 0; i < NUM_SHADERS; ++i) {
         DestroyShaderProgram(ctx, &ctx->shaders[i]);
+        SDL_free(ctx->shader_params[i]);
     }
     SDL_free(ctx);
 }

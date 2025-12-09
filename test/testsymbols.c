@@ -15,6 +15,7 @@
 #define SDL_DISABLE_ANALYZE_MACROS
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_vulkan.h>
 
 #if !defined(SDL_PLATFORM_ANDROID)
@@ -58,14 +59,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetDirect3D9AdapterIndex(void);
 #endif
 
 #if !defined(SDL_PLATFORM_WINDOWS)
-extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void);
-#endif
-
 extern SDL_DECLSPEC void SDLCALL SDL_RegisterApp(void);
 extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
-extern SDL_DECLSPEC void SDLCALL SDL_EnterAppMainCallbacks(void);
-extern SDL_DECLSPEC void SDLCALL SDL_RunApp(void);
-extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
+extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void);
+#endif
 
 extern SDL_DECLSPEC void SDLCALL JNI_OnLoad(void);
 

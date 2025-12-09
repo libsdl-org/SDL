@@ -23,17 +23,19 @@
 
 #ifdef SDL_PLATFORM_3DS
 
+#include "../SDL_main_callbacks.h"
+
 #include <3ds.h>
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     int result;
+
     // init
     osSetSpeedupEnable(true);
     romfsInit();
 
-    SDL_SetMainReady();
-    result = mainFunction(argc, argv);
+    result = SDL_CallMainFunction(argc, argv, mainFunction);
 
     // quit
     romfsExit();

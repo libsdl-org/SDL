@@ -1187,7 +1187,7 @@ void SDL_DitherPalette(SDL_Palette *palette)
 /*
  * Match an RGB value to a particular palette index
  */
-Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+static Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     // Do colorspace distance matching
     unsigned int smallest;
@@ -1217,16 +1217,18 @@ Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
 {
     Uint8 color_index = 0;
-    const void *value;
-    if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
-        color_index = (Uint8)(uintptr_t)value;
-    } else {
-        Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
-        Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
-        Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
-        Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
-        color_index = SDL_FindColor(pal, r, g, b, a);
-        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+    if (pal) {
+        const void *value;
+        if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
+            color_index = (Uint8)(uintptr_t)value;
+        } else {
+            Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
+            Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
+            Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
+            Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
+            color_index = SDL_FindColor(pal, r, g, b, a);
+            SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+        }
     }
     return color_index;
 }
@@ -1441,24 +1443,31 @@ void SDL_GetRGBA(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const 
     }
 }
 
+bool SDL_IsSamePalette(const SDL_Palette *src, const SDL_Palette *dst)
+{
+    if (src->ncolors <= dst->ncolors) {
+        // If an identical palette, no need to map
+        if (src == dst ||
+            (SDL_memcmp(src->colors, dst->colors,
+                        src->ncolors * sizeof(SDL_Color)) == 0)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Map from Palette to Palette
 static Uint8 *Map1to1(const SDL_Palette *src, const SDL_Palette *dst, int *identical)
 {
     Uint8 *map;
     int i;
 
-    if (identical) {
-        if (src->ncolors <= dst->ncolors) {
-            // If an identical palette, no need to map
-            if (src == dst ||
-                (SDL_memcmp(src->colors, dst->colors,
-                            src->ncolors * sizeof(SDL_Color)) == 0)) {
-                *identical = 1;
-                return NULL;
-            }
-        }
-        *identical = 0;
+    if (SDL_IsSamePalette(src, dst)) {
+        *identical = 1;
+        return NULL;
     }
+    *identical = 0;
+
     map = (Uint8 *)SDL_calloc(256, sizeof(Uint8));
     if (!map) {
         return NULL;
@@ -1553,7 +1562,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     map = &src->map;
 #ifdef SDL_HAVE_RLE
     if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(src, true);
+        SDL_UnRLESurface(src);
     }
 #endif
     SDL_InvalidateMap(map);

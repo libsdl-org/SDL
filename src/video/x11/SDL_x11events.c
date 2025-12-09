@@ -1011,13 +1011,10 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
     return result;
 }
 
-SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window)
+SDL_WindowData *X11_FindWindow(SDL_VideoData *videodata, Window window)
 {
-    const SDL_VideoData *videodata = _this->internal;
-    int i;
-
     if (videodata && videodata->windowlist) {
-        for (i = 0; i < videodata->numwindows; ++i) {
+        for (int i = 0; i < videodata->numwindows; ++i) {
             if ((videodata->windowlist[i] != NULL) &&
                 (videodata->windowlist[i]->xwindow == window)) {
                 return videodata->windowlist[i];
@@ -1180,6 +1177,10 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             button -= (8 - SDL_BUTTON_X1);
         }
         SDL_SendMouseButton(timestamp, window, mouseID, button, false);
+
+        if (window->internal->pending_grab) {
+            X11_SetWindowMouseGrab(_this, window, true);
+        }
     }
 }
 
@@ -1337,7 +1338,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     // xsettings internally filters events for the windows it watches
     X11_HandleXsettingsEvent(_this, xevent);
 
-    data = X11_FindWindow(_this, xevent->xany.window);
+    data = X11_FindWindow(videodata, xevent->xany.window);
 
     if (!data) {
         // The window for KeymapNotify, etc events is 0

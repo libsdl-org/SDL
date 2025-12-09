@@ -1550,6 +1550,11 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     bool set_position = false;
     XEvent event;
 
+    // If the window was previously shown, pump events to avoid possible positioning issues.
+    if (data->was_shown) {
+        X11_PumpEvents(_this);
+    }
+
     if (SDL_WINDOW_IS_POPUP(window)) {
         // Update the position in case the parent moved while we were hidden
         X11_ConstrainPopup(window, true);
@@ -1592,14 +1597,12 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (set_position) {
-        // Apply the window position, accounting for offsets due to the borders appearing.
-        const int tx = data->pending_position ? window->pending.x : window->x;
-        const int ty = data->pending_position ? window->pending.y : window->y;
+        // Apply the window position, accounting for offsets due to the borders appearing, but only when initially mapping.
+        const int tx = (data->pending_position ? window->pending.x : window->x) - (data->was_shown ? 0 : data->border_left);
+        const int ty = (data->pending_position ? window->pending.y : window->y) - (data->was_shown ? 0 : data->border_top);
         int x, y;
 
-        SDL_RelativeToGlobalForWindow(window,
-                                      tx - data->border_left, ty - data->border_top,
-                                      &x, &y);
+        SDL_RelativeToGlobalForWindow(window, tx, ty, &x, &y);
 
         data->pending_position = false;
         X11_XMoveWindow(display, data->xwindow, x, y);
@@ -2055,6 +2058,7 @@ bool X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool gra
         return SDL_SetError("Invalid window data");
     }
     data->mouse_grabbed = false;
+    data->pending_grab = false;
 
     display = data->videodata->display;
 
@@ -2072,7 +2076,8 @@ bool X11_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool gra
          * the confinement grab.
          */
         if (data->xinput2_mouse_enabled && SDL_GetMouseState(NULL, NULL)) {
-            X11_XUngrabPointer(display, CurrentTime);
+            data->pending_grab = true;
+            return true;
         }
 
         // Try to grab the mouse

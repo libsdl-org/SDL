@@ -425,21 +425,22 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     window->internal = data;
 
     // Set up the window proc function
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
 #ifdef GWLP_WNDPROC
-    data->wndproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
-    if (data->wndproc == WIN_WindowProc) {
-        data->wndproc = NULL;
-    } else {
-        SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WIN_WindowProc);
-    }
+        data->wndproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+        if (data->wndproc != WIN_WindowProc) {
+            SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)WIN_WindowProc);
+        }
 #else
-    data->wndproc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
-    if (data->wndproc == WIN_WindowProc) {
-        data->wndproc = NULL;
-    } else {
-        SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)WIN_WindowProc);
-    }
+        data->wndproc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
+        if (data->wndproc != WIN_WindowProc) {
+            SetWindowLong(hwnd, GWL_WNDPROC, (LONG_PTR)WIN_WindowProc);
+        }
 #endif
+    } else {
+        // We set up our window proc function at window creation.
+        // If someone has set hooks to modify it, leave it alone.
+    }
 
     // Fill in the SDL window with the window state
     {
@@ -584,7 +585,6 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
 
     if (data) {
-
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (data->drop_target) {
             WIN_AcceptDragAndDrop(window, false);
@@ -592,6 +592,9 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_free(data->ICMFileName);
         if (data->keyboard_hook) {
             UnhookWindowsHookEx(data->keyboard_hook);
+        }
+        if (data->hicon) {
+            DestroyIcon(data->hicon);
         }
         ReleaseDC(data->hwnd, data->hdc);
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
@@ -724,7 +727,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 
         WIN_UpdateDarkModeForHWND(hwnd);
 
-        WIN_PumpEvents(_this);
+        WIN_PumpEventsForHWND(_this, hwnd);
 
         if (!SetupWindowData(_this, window, hwnd, parent)) {
             DestroyWindow(hwnd);
@@ -839,7 +842,8 @@ void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    HWND hwnd = window->internal->hwnd;
+    SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
     HICON hicon = NULL;
     BYTE *icon_bmp;
     int icon_len, mask_len, row_len, y;
@@ -890,8 +894,13 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     SDL_small_free(icon_bmp, isstack);
 
     if (!hicon) {
-        result = SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
+        return SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
     }
+
+    if (data->hicon) {
+        DestroyIcon(data->hicon);
+    }
+    data->hicon = hicon;
 
     // Set the icon for the window
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
@@ -1364,6 +1373,12 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
 
     if (enterMaximized) {
         WIN_MaximizeWindow(_this, window);
+    }
+
+    if (!fullscreen && data && data->hicon) {
+        // Reset the icon for the window when returning from fullscreen mode
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, 0);
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)data->hicon);
     }
 
 #ifdef HIGHDPI_DEBUG

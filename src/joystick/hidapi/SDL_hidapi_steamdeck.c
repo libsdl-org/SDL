@@ -74,7 +74,7 @@ typedef enum
 typedef struct
 {
     Uint32 update_rate_us;
-    Uint32 sensor_timestamp_us;
+    Uint64 sensor_timestamp_ns;
     Uint64 last_button_state;
     Uint8 watchdog_counter;
 } SDL_DriverSteamDeck_Context;
@@ -222,17 +222,17 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY,
                          -pInReport->payload.deckState.sRightStickY);
 
-    ctx->sensor_timestamp_us += ctx->update_rate_us;
+    ctx->sensor_timestamp_ns += SDL_US_TO_NS(ctx->update_rate_us);
 
     values[0] = (pInReport->payload.deckState.sGyroX / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
     values[1] = (pInReport->payload.deckState.sGyroZ / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
     values[2] = (-pInReport->payload.deckState.sGyroY / 32768.0f) * (2000.0f * (SDL_PI_F / 180.0f));
-    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp_us, values, 3);
+    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->sensor_timestamp_ns, values, 3);
 
     values[0] = (pInReport->payload.deckState.sAccelX / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
     values[1] = (pInReport->payload.deckState.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
     values[2] = (-pInReport->payload.deckState.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
-    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp_us, values, 3);
+    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp_ns, values, 3);
 
     SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
             pInReport->payload.deckState.sPressurePadLeft > 0,

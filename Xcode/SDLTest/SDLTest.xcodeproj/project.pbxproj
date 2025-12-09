@@ -1991,7 +1991,6 @@
 			dependencies = (
 			);
 			name = testatomic;
-			productName = testalpha;
 			productReference = 0017958C10741F7900F5D044 /* testatomic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2008,7 +2007,6 @@
 			dependencies = (
 			);
 			name = testaudioinfo;
-			productName = testalpha;
 			productReference = 001795AD107421BF00F5D044 /* testaudioinfo.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2025,7 +2023,6 @@
 			dependencies = (
 			);
 			name = testgl;
-			productName = testalpha;
 			productReference = 0017972110742F3200F5D044 /* testgl.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2042,7 +2039,6 @@
 			dependencies = (
 			);
 			name = testhaptic;
-			productName = testalpha;
 			productReference = 00179748107430D600F5D044 /* testhaptic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2059,7 +2055,6 @@
 			dependencies = (
 			);
 			name = testdraw;
-			productName = testalpha;
 			productReference = 0017976E107431B300F5D044 /* testdraw.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2077,7 +2072,6 @@
 			dependencies = (
 			);
 			name = testime;
-			productName = testalpha;
 			productReference = 0017978E107432AE00F5D044 /* testime.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2094,7 +2088,6 @@
 			dependencies = (
 			);
 			name = testintersections;
-			productName = testalpha;
 			productReference = 001797AE1074334C00F5D044 /* testintersections.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2111,7 +2104,6 @@
 			dependencies = (
 			);
 			name = testloadso;
-			productName = testalpha;
 			productReference = 001797D0107433C600F5D044 /* testloadso.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2129,7 +2121,6 @@
 			dependencies = (
 			);
 			name = testmultiaudio;
-			productName = testalpha;
 			productReference = 001798121074355200F5D044 /* testmultiaudio.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2147,7 +2138,6 @@
 			dependencies = (
 			);
 			name = testnative;
-			productName = testalpha;
 			productReference = 001798941074392D00F5D044 /* testnative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2164,7 +2154,6 @@
 			dependencies = (
 			);
 			name = testpower;
-			productName = testalpha;
 			productReference = 001798B5107439DF00F5D044 /* testpower.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2181,7 +2170,6 @@
 			dependencies = (
 			);
 			name = testresample;
-			productName = testalpha;
 			productReference = 001798F210743BEC00F5D044 /* testresample.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2199,7 +2187,6 @@
 			dependencies = (
 			);
 			name = testsprite;
-			productName = testalpha;
 			productReference = 0017991610743F1000F5D044 /* testsprite.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2216,7 +2203,6 @@
 			dependencies = (
 			);
 			name = testwm;
-			productName = testalpha;
 			productReference = 0017993810743FB700F5D044 /* testwm.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2233,7 +2219,6 @@
 			dependencies = (
 			);
 			name = testfile;
-			productName = testalpha;
 			productReference = 002F341209CA1BFF00EBEB88 /* testfile.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2251,7 +2236,6 @@
 			dependencies = (
 			);
 			name = testiconv;
-			productName = testalpha;
 			productReference = 002F343109CA1F0300EBEB88 /* testiconv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2269,7 +2253,6 @@
 			dependencies = (
 			);
 			name = testoverlay;
-			productName = testalpha;
 			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2286,7 +2269,6 @@
 			dependencies = (
 			);
 			name = testplatform;
-			productName = testalpha;
 			productReference = 002F346A09CA204F00EBEB88 /* testplatform.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2509,7 +2491,6 @@
 			dependencies = (
 			);
 			name = testdrawchessboard;
-			productName = testalpha;
 			productReference = DB0F48EC17CA51E5008798C5 /* testdrawchessboard.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2526,7 +2507,6 @@
 			dependencies = (
 			);
 			name = testfilesystem;
-			productName = testalpha;
 			productReference = DB0F490117CA5212008798C5 /* testfilesystem.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2560,7 +2540,6 @@
 			dependencies = (
 			);
 			name = testmessage;
-			productName = testalpha;
 			productReference = DB166DD516A1D36A00A1396C /* testmessage.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2577,7 +2556,6 @@
 			dependencies = (
 			);
 			name = testrelative;
-			productName = testalpha;
 			productReference = DB166DEE16A1D50C00A1396C /* testrelative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2595,7 +2573,6 @@
 			dependencies = (
 			);
 			name = testrendercopyex;
-			productName = testalpha;
 			productReference = DB166E0516A1D57C00A1396C /* testrendercopyex.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2613,7 +2590,6 @@
 			dependencies = (
 			);
 			name = testrendertarget;
-			productName = testalpha;
 			productReference = DB166E1C16A1D5AD00A1396C /* testrendertarget.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2630,7 +2606,6 @@
 			dependencies = (
 			);
 			name = testrumble;
-			productName = testalpha;
 			productReference = DB166E3816A1D64D00A1396C /* testrumble.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2648,7 +2623,6 @@
 			dependencies = (
 			);
 			name = testscale;
-			productName = testalpha;
 			productReference = DB166E5216A1D69000A1396C /* testscale.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2717,7 +2691,6 @@
 			dependencies = (
 			);
 			name = testhotplug;
-			productName = testalpha;
 			productReference = DB89957E18A19ABA0092407C /* testhotplug.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2734,7 +2707,6 @@
 			dependencies = (
 			);
 			name = testautomation;
-			productName = testalpha;
 			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2751,7 +2723,6 @@
 			dependencies = (
 			);
 			name = testcamera;
-			productName = testalpha;
 			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2768,7 +2739,6 @@
 			dependencies = (
 			);
 			name = testpen;
-			productName = testalpha;
 			productReference = F3B7FD6A2D73FC630086D1D0 /* testpen.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2803,7 +2773,6 @@
 			dependencies = (
 			);
 			name = testyuv;
-			productName = testalpha;
 			productReference = F3DB65E92E9DA90000568044 /* testyuv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -4045,7 +4014,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = ../../include;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4056,7 +4025,8 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Debug;
 		};
@@ -4219,7 +4189,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = ../../include;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4229,7 +4199,8 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Release;
 		};
@@ -4726,6 +4697,25 @@
 			};
 			name = Release;
 		};
+		F37E49E22EB5250B00E508F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F37E49E32EB5250B00E508F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		F3B7FD682D73FC630086D1D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5213,8 +5203,8 @@
 		F3DB65E62E9DA90000568044 /* Build configuration list for PBXNativeTarget "testyuv" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				F3DB65E72E9DA90000568044 /* Debug */,
-				F3DB65E82E9DA90000568044 /* Release */,
+				F37E49E22EB5250B00E508F7 /* Debug */,
+				F37E49E32EB5250B00E508F7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

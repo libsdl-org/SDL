@@ -88,6 +88,7 @@ typedef struct SDL_GtkContext
 		void (*main_context_push_thread_default)(GMainContext *context);
 		void (*main_context_pop_thread_default)(GMainContext *context);
 		GMainContext *(*main_context_new)(void);
+		void (*main_context_unref)(GMainContext *context);
 		gboolean (*main_context_acquire)(GMainContext *context);
 		gboolean (*main_context_iteration)(GMainContext *context, gboolean may_block);
 	} g;

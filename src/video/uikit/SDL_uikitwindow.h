@@ -28,6 +28,7 @@
 
 extern bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+extern void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);

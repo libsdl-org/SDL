@@ -53,32 +53,6 @@
 
 @end
 
-@interface SDL_uikitwindow : UIWindow
-
-- (void)layoutSubviews;
-
-@end
-
-@implementation SDL_uikitwindow
-
-- (void)layoutSubviews
-{
-#ifndef SDL_PLATFORM_VISIONOS
-    // Workaround to fix window orientation issues in iOS 8.
-    /* As of July 1 2019, I haven't been able to reproduce any orientation
-     * issues with this disabled on iOS 12. The issue this is meant to fix might
-     * only happen on iOS 8, or it might have been fixed another way with other
-     * code... This code prevents split view (iOS 9+) from working on iPads, so
-     * we want to avoid using it if possible. */
-    if (!UIKit_IsSystemVersionAtLeast(9.0)) {
-        self.frame = self.screen.bounds;
-    }
-#endif
-    [super layoutSubviews];
-}
-
-@end
-
 static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -197,13 +171,24 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         }
 #endif // !SDL_PLATFORM_TVOS
 
-        // ignore the size user requested, and make a fullscreen window
-        // !!! FIXME: can we have a smaller view?
+        UIWindow *uiwindow = nil;
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            UIWindowScene *scene = (__bridge UIWindowScene *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER, NULL);
+            if (!scene) {
+                scene = UIKit_GetActiveWindowScene();
+            }
+            if (scene) {
+                uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
+            }
+        }
+        if (!uiwindow) {
+            // ignore the size user requested, and make a fullscreen window
 #ifdef SDL_PLATFORM_VISIONOS
-        UIWindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:CGRectMake(window->x, window->y, window->w, window->h)];
+            uiwindow = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT)];
 #else
-        UIWindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
+            uiwindow = [[UIWindow alloc] initWithFrame:data.uiscreen.bounds];
 #endif
+        }
 
         // put the window on an external display if appropriate.
 #ifndef SDL_PLATFORM_VISIONOS
@@ -215,6 +200,10 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if (!SetupWindowData(_this, window, uiwindow, true)) {
             return false;
         }
+
+#ifdef SDL_PLATFORM_VISIONOS
+        SDL_SetWindowSize(window, window->w, window->h);
+#endif
     }
 
     return true;
@@ -226,6 +215,21 @@ void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         data.viewcontroller.title = @(window->title);
     }
+}
+
+void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    @autoreleasepool {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+        UIWindowScene *scene = data.uiwindow.windowScene;
+        CGSize size = { window->pending.w, window->pending.h };
+        UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
+        [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+            // Request failed, no worries
+        }];
+    }
+#endif
 }
 
 void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)

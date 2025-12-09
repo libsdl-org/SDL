@@ -13,6 +13,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include "testutils.h"
 
@@ -36,6 +37,7 @@ typedef struct
     float padding;
 } MSDFShaderUniforms;
 
+static SDLTest_CommonState *state = NULL;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *font_texture = NULL;
@@ -244,6 +246,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_SetAppMetadata(description, "1.0", "com.example.testgpurender_msdf");
 
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        return SDL_APP_FAILURE;
+    }
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return SDL_APP_FAILURE;
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -314,5 +324,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     /* SDL will clean up the window/renderer for us. */
     QuitGPURenderState();
+    SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 }
 

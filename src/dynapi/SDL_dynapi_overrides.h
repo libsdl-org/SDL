@@ -1294,3 +1294,6 @@
 #define SDL_GetPenDeviceType SDL_GetPenDeviceType_REAL
 #define SDL_CreateAnimatedCursor SDL_CreateAnimatedCursor_REAL
 #define SDL_RotateSurface SDL_RotateSurface_REAL
+#define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
+#define SDL_LoadSurface SDL_LoadSurface_REAL
+#define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL

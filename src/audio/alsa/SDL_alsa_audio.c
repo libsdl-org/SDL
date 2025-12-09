@@ -484,8 +484,6 @@ static void ALSA_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
         if (device->hidden->pcm) {
-            // Wait for the submitted audio to drain. ALSA_snd_pcm_drop() can hang, so don't use that.
-            SDL_Delay(((device->sample_frames * 1000) / device->spec.freq) * 2);
             ALSA_snd_pcm_close(device->hidden->pcm);
         }
         SDL_free(device->hidden->mixbuf);

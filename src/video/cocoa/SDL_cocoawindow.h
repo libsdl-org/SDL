@@ -141,6 +141,7 @@ typedef enum
 @property(nonatomic) SDL_Window *window;
 @property(nonatomic) NSWindow *nswindow;
 @property(nonatomic) NSView *sdlContentView;
+@property(nonatomic) NSRect viewport;
 @property(nonatomic) NSMutableArray *nscontexts;
 @property(nonatomic) BOOL in_blocking_transition;
 @property(nonatomic) BOOL fullscreen_space_requested;

@@ -23,15 +23,7 @@
 #ifndef SDL_touch_c_h_
 #define SDL_touch_c_h_
 
-typedef struct SDL_Touch
-{
-    SDL_TouchID id;
-    SDL_TouchDeviceType type;
-    int num_fingers;
-    int max_fingers;
-    SDL_Finger **fingers;
-    char *name;
-} SDL_Touch;
+typedef struct SDL_Touch SDL_Touch;
 
 // Initialize the touch subsystem
 extern bool SDL_InitTouch(void);

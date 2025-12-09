@@ -36,19 +36,24 @@
 @end
 
 #ifdef SDL_PLATFORM_VISIONOS
-CGRect UIKit_ComputeViewFrame(SDL_Window *window);
+extern CGRect UIKit_ComputeViewFrame(SDL_Window *window);
 #else
-CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
+extern CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 #endif
+
+extern API_AVAILABLE(ios(13.0)) UIWindowScene *UIKit_GetActiveWindowScene(void);
+
+extern void UIKit_SetGameControllerInteraction(bool enabled);
+extern void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled);
 
 #endif // __OBJC__
 
-bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
+extern bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
 
-void UIKit_ForceUpdateHomeIndicator(void);
+extern void UIKit_ForceUpdateHomeIndicator(void);
 
-bool UIKit_IsSystemVersionAtLeast(double version);
+extern bool UIKit_IsSystemVersionAtLeast(double version);
 
-SDL_SystemTheme UIKit_GetSystemTheme(void);
+extern SDL_SystemTheme UIKit_GetSystemTheme(void);
 
 #endif // SDL_uikitvideo_h_

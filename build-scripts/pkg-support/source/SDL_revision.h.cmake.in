@@ -33,9 +33,9 @@
 #cmakedefine SDL_VENDOR_INFO "@SDL_VENDOR_INFO@"
 
 #if defined(SDL_VENDOR_INFO)
-#define SDL_REVISION "@<@PROJECT_REVISION@>@ (" SDL_VENDOR_INFO ")"
+#define SDL_REVISION "SDL-@<@PROJECT_REVISION@>@ (" SDL_VENDOR_INFO ")"
 #else
-#define SDL_REVISION "@<@PROJECT_REVISION@>@"
+#define SDL_REVISION "SDL-@<@PROJECT_REVISION@>@"
 #endif
 
 #endif /* SDL_revision_h_ */

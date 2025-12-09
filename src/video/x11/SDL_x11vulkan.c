@@ -120,7 +120,7 @@ bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     if (hasXlibSurfaceExtension) {
         videoData->vulkan_xlib_xcb_library = NULL;
     } else if (!hasXCBSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME " extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else {
         const char *libX11XCBLibraryName = SDL_GetHint(SDL_HINT_X11_XCB_LIBRARY);

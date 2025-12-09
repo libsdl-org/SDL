@@ -491,6 +491,22 @@ NSWindow *Cocoa_GetMouseFocus()
     return Cocoa_MouseFocus;
 }
 
+static void Cocoa_ReconcileButtonState(NSEvent *event)
+{
+    // Send mouse up events for any buttons that are no longer pressed
+    Uint32 buttons = SDL_GetMouseState(NULL, NULL);
+    if (buttons && ![NSEvent pressedMouseButtons]) {
+        Uint8 button = SDL_BUTTON_LEFT;
+        while (buttons) {
+            if (buttons & 0x01) {
+                SDL_SendMouseButton(Cocoa_GetEventTimestamp([event timestamp]), SDL_GetMouseFocus(), SDL_GLOBAL_MOUSE_ID, button, false);
+            }
+            ++button;
+            buttons >>= 1;
+        }
+    }
+}
+
 void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
@@ -515,6 +531,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     } else {
         if ([event window] != NULL) {
             Cocoa_MouseFocus = [event window];
+            Cocoa_ReconcileButtonState(event);
         }
     }
 

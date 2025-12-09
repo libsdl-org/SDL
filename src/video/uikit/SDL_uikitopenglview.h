@@ -39,7 +39,7 @@
                         aBits:(int)aBits
                     depthBits:(int)depthBits
                   stencilBits:(int)stencilBits
-                         sRGB:(BOOL)sRGB
+                         sRGB:(int)sRGB
                  multisamples:(int)multisamples
                       context:(EAGLContext *)glcontext;
 
