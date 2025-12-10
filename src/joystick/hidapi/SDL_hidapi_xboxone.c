@@ -26,6 +26,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_report_descriptor.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
 
@@ -33,7 +34,9 @@
 // #define DEBUG_JOYSTICK
 
 // Define this if you want to log all packets from the controller
-// #define DEBUG_XBOX_PROTOCOL
+#if 0
+#define DEBUG_XBOX_PROTOCOL
+#endif
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #define XBOX_ONE_DRIVER_ACTIVE  1
@@ -134,6 +137,8 @@ typedef struct
     bool has_unmapped_state;
     bool has_trigger_rumble;
     bool has_share_button;
+    bool has_separate_back_button;
+    bool has_separate_guide_button;
     Uint8 last_paddle_state;
     Uint8 low_frequency_rumble;
     Uint8 high_frequency_rumble;
@@ -142,6 +147,7 @@ typedef struct
     SDL_XboxOneRumbleState rumble_state;
     Uint64 rumble_time;
     bool rumble_pending;
+    SDL_ReportDescriptor *descriptor;
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint8 *chunk_buffer;
     Uint32 chunk_length;
@@ -375,6 +381,32 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
+    Uint8 descriptor[1024];
+    int descriptor_len = SDL_hid_get_report_descriptor(device->dev, descriptor, sizeof(descriptor));
+    if (descriptor_len > 0) {
+        HIDAPI_DumpPacket("Xbox One report descriptor: size = %d", descriptor, descriptor_len);
+
+        ctx->descriptor = SDL_ParseReportDescriptor(descriptor, descriptor_len);
+        if (ctx->descriptor) {
+            if (!SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_X) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_Y) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_Z) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_RZ) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_SIMULATION, USB_USAGE_SIMULATION_BRAKE) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_SIMULATION, USB_USAGE_SIMULATION_ACCELERATOR) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_BUTTON, 1) ||
+                !SDL_DescriptorHasUsage(ctx->descriptor, USB_USAGEPAGE_BUTTON, 15)) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Xbox report descriptor missing expected usages, ignoring");
+                SDL_DestroyDescriptor(ctx->descriptor);
+                ctx->descriptor = NULL;
+            }
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't parse Xbox report descriptor: %s", SDL_GetError());
+        }
+    } else {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Xbox report descriptor not available");
+    }
+
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;
     ctx->start_time = SDL_GetTicks();
@@ -581,6 +613,260 @@ static bool HIDAPI_DriverXboxOne_SendJoystickEffect(SDL_HIDAPI_Device *device, S
 static bool HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
+}
+
+static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, unsigned int flags)
+{
+    bool on_usb = (((flags & 0x0C) >> 2) == 0);
+    SDL_PowerState state;
+    int percent = 0;
+
+    // Mapped percentage value from:
+    // https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/reference/input/gameinput/interfaces/igameinputdevice/methods/igameinputdevice_getbatterystate
+    switch (flags & 0x03) {
+    case 0:
+        percent = 10;
+        break;
+    case 1:
+        percent = 40;
+        break;
+    case 2:
+        percent = 70;
+        break;
+    case 3:
+        percent = 100;
+        break;
+    }
+    if (on_usb) {
+        state = SDL_POWERSTATE_CHARGING;
+    } else {
+        state = SDL_POWERSTATE_ON_BATTERY;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
+}
+
+static bool HIDAPI_DriverXboxOne_HandleDescriptorReport(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
+{
+    const SDL_ReportDescriptor *descriptor = ctx->descriptor;
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    // Skip the report ID
+    const Uint8 report_id = *data;
+    ++data;
+    --size;
+
+    for (int i = 0; i < descriptor->field_count; ++i) {
+        DescriptorInputField *field = &descriptor->fields[i];
+        if (field->report_id != report_id) {
+            continue;
+        }
+
+        unsigned int value;
+        if (!SDL_ReadReportData(data, size, field->bit_offset, field->bit_size, &value)) {
+            continue;
+        }
+
+        switch (field->usage) {
+        case MAKE_USAGE(USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_X):
+        {
+            Sint16 axis = (Sint16)((int)value - 0x8000);
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_Y):
+        {
+            Sint16 axis = (Sint16)((int)value - 0x8000);
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_Z):
+        {
+            Sint16 axis = (Sint16)((int)value - 0x8000);
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_RZ):
+        {
+            Sint16 axis = (Sint16)((int)value - 0x8000);
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_SIMULATION, USB_USAGE_SIMULATION_BRAKE):
+        {
+            Sint16 axis = (Sint16)(((int)value * 64) - 32768);
+            if (axis == 32704) {
+                axis = 32767;
+            }
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_SIMULATION, USB_USAGE_SIMULATION_ACCELERATOR):
+        {
+            Sint16 axis = (Sint16)(((int)value * 64) - 32768);
+            if (axis == 32704) {
+                axis = 32767;
+            }
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_HAT):
+        {
+            Uint8 hat;
+
+            switch (value) {
+            case 1:
+                hat = SDL_HAT_UP;
+                break;
+            case 2:
+                hat = SDL_HAT_RIGHTUP;
+                break;
+            case 3:
+                hat = SDL_HAT_RIGHT;
+                break;
+            case 4:
+                hat = SDL_HAT_RIGHTDOWN;
+                break;
+            case 5:
+                hat = SDL_HAT_DOWN;
+                break;
+            case 6:
+                hat = SDL_HAT_LEFTDOWN;
+                break;
+            case 7:
+                hat = SDL_HAT_LEFT;
+                break;
+            case 8:
+                hat = SDL_HAT_LEFTUP;
+                break;
+            default:
+                hat = SDL_HAT_CENTERED;
+                break;
+            }
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 1):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 2):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 3):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 4):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 5):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 6):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 7):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 8):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 9):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 10):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 11):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 12):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 13):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 14):
+        case MAKE_USAGE(USB_USAGEPAGE_BUTTON, 15):
+        {
+            static const SDL_GamepadButton button_map[] = {
+                // 0x0001
+                SDL_GAMEPAD_BUTTON_SOUTH,
+                // 0x0002
+                SDL_GAMEPAD_BUTTON_EAST,
+                // 0x0004
+                SDL_GAMEPAD_BUTTON_INVALID,
+                // 0x0008
+                SDL_GAMEPAD_BUTTON_WEST,
+                // 0x0010
+                SDL_GAMEPAD_BUTTON_NORTH,
+                // 0x0020
+                SDL_GAMEPAD_BUTTON_INVALID,
+                // 0x0040
+                SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+                // 0x0080
+                SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+                // 0x0100
+                SDL_GAMEPAD_BUTTON_INVALID,
+                // 0x0200
+                SDL_GAMEPAD_BUTTON_INVALID,
+                // 0x0400
+                SDL_GAMEPAD_BUTTON_BACK,
+                // 0x0800
+                SDL_GAMEPAD_BUTTON_START,
+                // 0x1000
+                SDL_GAMEPAD_BUTTON_GUIDE,
+                // 0x2000
+                SDL_GAMEPAD_BUTTON_LEFT_STICK,
+                // 0x4000
+                SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+            };
+
+            int button_index = (field->usage - MAKE_USAGE(USB_USAGEPAGE_BUTTON, 1));
+            SDL_GamepadButton button = button_map[button_index];
+            if (button == SDL_GAMEPAD_BUTTON_INVALID) {
+                break;
+            }
+            if (button == SDL_GAMEPAD_BUTTON_BACK && ctx->has_separate_back_button) {
+                break;
+            }
+            if (button == SDL_GAMEPAD_BUTTON_GUIDE && ctx->has_separate_guide_button) {
+                break;
+            }
+
+            bool pressed = (value != 0);
+            SDL_SendJoystickButton(timestamp, joystick, button, pressed);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_CONSUMER, USB_USAGE_CONSUMER_AC_BACK):
+        {
+            bool pressed = (value != 0);
+            if (pressed) {
+                ctx->has_separate_back_button = true;
+            }
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, pressed);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_CONSUMER, USB_USAGE_CONSUMER_AC_HOME):
+        {
+            bool pressed = (value != 0);
+            if (pressed) {
+                ctx->has_separate_guide_button = true;
+            }
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, pressed);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_CONSUMER, USB_USAGE_CONSUMER_RECORD):
+        {
+            if (ctx->has_share_button) {
+                bool pressed = (value != 0);
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_XBOX_SHARE_BUTTON, pressed);
+            }
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_CONSUMER, USB_USAGE_CONSUMER_ORDER_MOVIE):
+        {
+            // This value is the currently selected profile
+            ctx->has_unmapped_state = (value == 0);
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_CONSUMER, USB_USAGE_CONSUMER_ASSIGN_SELECTION):
+        {
+            if (ctx->has_paddles) {
+                if (!ctx->has_unmapped_state) {
+                    value = 0;
+                }
+
+                Uint8 button = (Uint8)(SDL_GAMEPAD_BUTTON_XBOX_SHARE_BUTTON + ctx->has_share_button); // Next available button
+                SDL_SendJoystickButton(timestamp, joystick, button++, ((value & 0x1) != 0));
+                SDL_SendJoystickButton(timestamp, joystick, button++, ((value & 0x2) != 0));
+                SDL_SendJoystickButton(timestamp, joystick, button++, ((value & 0x4) != 0));
+                SDL_SendJoystickButton(timestamp, joystick, button++, ((value & 0x8) != 0));
+            }
+            break;
+        }
+        case MAKE_USAGE(USB_USAGEPAGE_DEVICE_CONTROLS, USB_USAGE_DEVICE_CONTROLS_BATTERY_STRENGTH):
+        {
+            HIDAPI_DriverXboxOne_HandleBatteryState(joystick, value);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return true;
 }
 
 /*
@@ -1066,33 +1352,7 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleGuidePacket(SDL_Joystick *joysti
 
 static void HIDAPI_DriverXboxOneBluetooth_HandleBatteryPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, const Uint8 *data, int size)
 {
-    Uint8 flags = data[1];
-    bool on_usb = (((flags & 0x0C) >> 2) == 0);
-    SDL_PowerState state;
-    int percent = 0;
-
-    // Mapped percentage value from:
-    // https://learn.microsoft.com/en-us/gaming/gdk/_content/gc/reference/input/gameinput/interfaces/igameinputdevice/methods/igameinputdevice_getbatterystate
-    switch (flags & 0x03) {
-    case 0:
-        percent = 10;
-        break;
-    case 1:
-        percent = 40;
-        break;
-    case 2:
-        percent = 70;
-        break;
-    case 3:
-        percent = 100;
-        break;
-    }
-    if (on_usb) {
-        state = SDL_POWERSTATE_CHARGING;
-    } else {
-        state = SDL_POWERSTATE_ON_BATTERY;
-    }
-    SDL_SendJoystickPowerInfo(joystick, state, percent);
+    HIDAPI_DriverXboxOne_HandleBatteryState(joystick, data[1]);
 }
 
 static void HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_DriverXboxOne_Context *ctx, const Uint8 *data, int size)
@@ -1588,7 +1848,12 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_XBOX_PROTOCOL
         HIDAPI_DumpPacket("Xbox One packet: size = %d", data, size);
 #endif
-        if (device->is_bluetooth) {
+        if (ctx->descriptor) {
+            if (!joystick) {
+                break;
+            }
+            HIDAPI_DriverXboxOne_HandleDescriptorReport(joystick, ctx, data, size);
+        } else if (device->is_bluetooth) {
             switch (data[0]) {
             case 0x01:
                 if (!joystick) {
@@ -1646,6 +1911,8 @@ static void HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 static void HIDAPI_DriverXboxOne_FreeDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    SDL_DestroyDescriptor(ctx->descriptor);
 
     HIDAPI_GIP_DestroyChunkBuffer(ctx);
 }
