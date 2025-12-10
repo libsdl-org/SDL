@@ -2693,12 +2693,16 @@ extern "C" {
 #define SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"
 
 /**
- * A variable setting whether we should scale cursors by the current display scale.
+ * A variable setting whether we should scale cursors by the current display
+ * scale.
  *
  * The variable can be set to the following values:
  *
- * - "0": Cursors will not change size based on the display content scale. (default)
- * - "1": Cursors will automatically match the display content scale (e.g. a 2x sized cursor will be used when the window is on a monitor with 200% scale). This is currently implemented on Windows and Wayland.
+ * - "0": Cursors will not change size based on the display content scale.
+ *   (default)
+ * - "1": Cursors will automatically match the display content scale (e.g. a
+ *   2x sized cursor will be used when the window is on a monitor with 200%
+ *   scale). This is currently implemented on Windows and Wayland.
  *
  * This hint needs to be set before creating cursors.
  *
