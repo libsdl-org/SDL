@@ -675,6 +675,9 @@
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h">
       <Filter>joystick\hidapi</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_report_descriptor.h">
+      <Filter>joystick\hidapi</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>joystick\windows</Filter>
     </ClInclude>
@@ -1303,6 +1306,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_report_descriptor.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
