@@ -81,45 +81,6 @@ typedef struct SDL_TrayEntryDBus
     SDL_TrayMenuDBus *sub_menu;
 } SDL_TrayEntryDBus;
 
-static bool IsGNOME(void)
-{
-    const char *desktop_env;
-    char *desktop;
-    char *token;
-    char *saveptr;
-    bool is_gnome;
-    
-    desktop_env = SDL_getenv("XDG_CURRENT_DESKTOP");
-    if (desktop_env) {
-        desktop = SDL_strdup(desktop_env);
-        if (!desktop) {
-            return false;
-        }
-        
-        is_gnome = false;
-        token = SDL_strtok_r(desktop, ":", &saveptr);
-        while (token) {
-            if (SDL_strcmp(token, "GNOME") == 0) {
-                is_gnome = true;
-                break;
-            }
-            token = SDL_strtok_r(NULL, ":", &saveptr);
-        }
-        
-        SDL_free(desktop);
-        if (is_gnome) {
-            return true;
-        }
-    }
-    
-    desktop_env = SDL_getenv("DESKTOP_SESSION");
-    if (desktop_env && SDL_strcasestr(desktop_env, "gnome")) {
-        return true;
-    }
-    
-    return false;
-}
-
 static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, SDL_TrayDriverDBus *driver, DBusMessage *msg)
 {
     SDL_TrayMenuDBus *menu_dbus;
@@ -193,7 +154,7 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
 
     key = "ItemIsMenu";
     menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
-    if (menu_dbus) {
+    if (menu_dbus && menu_dbus->menu_path) {
         bool_value = TRUE;
     } else {
         bool_value = FALSE;
@@ -214,7 +175,7 @@ static DBusHandlerResult HandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_db
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
         driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
         driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
-    } else if (IsGNOME()) {
+    } else {
         value = "/NO_DBUSMENU";
         driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
         driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
@@ -309,7 +270,7 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "ItemIsMenu")) {
-        if (menu_dbus) {
+        if (menu_dbus && menu_dbus->menu_path) {
             bool_value = TRUE;
         } else {
             bool_value = FALSE;
@@ -323,7 +284,7 @@ static DBusHandlerResult HandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, 
             driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
             driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
             driver->dbus->message_iter_close_container(&iter, &variant_iter);
-        } else if (IsGNOME()) {
+        } else {
             value = "/NO_DBUSMENU";
             driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "o", &variant_iter);
             driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_OBJECT_PATH, &value);
@@ -729,6 +690,64 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu);
     } else {
         menu_dbus->menu_path = SDL_DBus_ExportMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);
+        
+        if (menu_dbus->menu_path) {
+            DBusMessage *signal;
+            
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewMenu");
+            if (signal) {
+                driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+                driver->dbus->connection_flush(tray_dbus->connection);
+                driver->dbus->message_unref(signal);
+            }
+            
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, "org.freedesktop.DBus.Properties", "PropertiesChanged");
+            if (signal) {
+                DBusMessageIter iter, dict, ientry, value;
+                const char *iface;
+                const char *prop;
+                const char *path;
+                dbus_bool_t bool_val;
+
+                iface = SNI_INTERFACE;
+                prop = "Menu";
+                path = menu_dbus->menu_path;
+                bool_val = TRUE;
+                driver->dbus->message_iter_init_append(signal, &iter);
+                driver->dbus->message_iter_append_basic(&iter, DBUS_TYPE_STRING, &iface);
+                driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &dict);
+                driver->dbus->message_iter_open_container(&dict, DBUS_TYPE_DICT_ENTRY, NULL, &ientry);
+                driver->dbus->message_iter_append_basic(&ientry, DBUS_TYPE_STRING, &prop);
+                driver->dbus->message_iter_open_container(&ientry, DBUS_TYPE_VARIANT, "o", &value);
+                driver->dbus->message_iter_append_basic(&value, DBUS_TYPE_OBJECT_PATH, &path);
+                driver->dbus->message_iter_close_container(&ientry, &value);
+                driver->dbus->message_iter_close_container(&dict, &ientry);
+                prop = "ItemIsMenu";
+                driver->dbus->message_iter_open_container(&dict, DBUS_TYPE_DICT_ENTRY, NULL, &ientry);
+                driver->dbus->message_iter_append_basic(&ientry, DBUS_TYPE_STRING, &prop);
+                driver->dbus->message_iter_open_container(&ientry, DBUS_TYPE_VARIANT, "b", &value);
+                driver->dbus->message_iter_append_basic(&value, DBUS_TYPE_BOOLEAN, &bool_val);
+                driver->dbus->message_iter_close_container(&ientry, &value);
+                driver->dbus->message_iter_close_container(&dict, &ientry);
+                driver->dbus->message_iter_close_container(&iter, &dict);
+                driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "s", &dict);
+                driver->dbus->message_iter_close_container(&iter, &dict);
+                driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+                driver->dbus->connection_flush(tray_dbus->connection);
+                driver->dbus->message_unref(signal);
+            }
+            
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewStatus");
+            if (signal) {
+                const char *status_val;
+                
+                status_val = "Active";
+                driver->dbus->message_append_args(signal, DBUS_TYPE_STRING, &status_val, DBUS_TYPE_INVALID);
+                driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+                driver->dbus->connection_flush(tray_dbus->connection);
+                driver->dbus->message_unref(signal);
+            }
+        }
     }
 
     return entry;
