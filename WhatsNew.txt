@@ -7,6 +7,7 @@ This is a list of major changes in SDL's version history.
 
 General:
 * Added SDL_CreateAnimatedCursor() to create animated color cursors
+* Added SDL_HINT_MOUSE_DPI_SCALE_CURSORS to automatically scale cursors based on the display scale
 * Added SDL_SetWindowProgressState(), SDL_SetWindowProgressValue(), SDL_GetWindowProgressState(), and SDL_GetWindowProgressValue() to show progress in the window's taskbar icon on Windows and Linux
 * Added GPU device creation properties to enable the GPU API on older hardware if you're not using these features:
   - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN

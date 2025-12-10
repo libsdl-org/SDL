@@ -1025,6 +1025,21 @@ typedef struct Wayland_PointerObject
     bool is_pointer;
 } Wayland_PointerObject;
 
+static float Wayland_GetCursorScale(SDL_WindowData *focus)
+{
+    SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+
+    if (!SDL_GetHintBoolean(SDL_HINT_MOUSE_DPI_SCALE_CURSORS, false)) {
+        return 1.0f;
+    }
+
+    // If viewports aren't available, the scale is always 1.0.
+    if (viddata->viewporter && focus) {
+        return (float)focus->scale_factor;
+    }
+    return 1.0f;
+}
+
 static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wayland_PointerObject *obj, SDL_WindowData *focus, Uint32 serial, SDL_Cursor *cursor)
 {
     SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
@@ -1079,16 +1094,14 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
                 return;
             }
 
-            // If viewports aren't available, the scale is always 1.0.
-            state->scale = viddata->viewporter && focus ? focus->scale_factor : 1.0;
+            state->scale = Wayland_GetCursorScale(focus);
             if (!Wayland_GetSystemCursor(cursor_data, state, &dst_width, &hot_x, &hot_y)) {
                 return;
             }
 
             dst_height = dst_width;
         } else {
-            // If viewports aren't available, the scale is always 1.0.
-            state->scale = viddata->viewporter && focus ? focus->scale_factor : 1.0;
+            state->scale = Wayland_GetCursorScale(focus);
             dst_width = cursor_data->cursor_data.custom.width;
             dst_height = cursor_data->cursor_data.custom.height;
             hot_x = cursor_data->cursor_data.custom.hot_x;
