@@ -374,9 +374,9 @@ If you try debugging in Firefox and it doesn't work well for no apparent
 reason, try Chrome, and vice-versa. These tools are still relatively new,
 and improving all the time.
 
-SDL_Log() (or even plain old printf) will write to the Javascript console,
-and honestly I find printf-style debugging to be easier than setting up a build
-for proper debugging, so use whatever tools work best for you.
+SDL_Log() (or printf) will write to the Javascript console,
+so printf-style debugging can be easier than setting up a build
+for proper debugging. Use whatever tools work best for you.
 
 
 ## Questions?
