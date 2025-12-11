@@ -3235,22 +3235,8 @@ static void Wayland_SeatCreateTextInput(SDL_WaylandSeat *seat)
     }
 }
 
-void Wayland_DisplayCreateTextInputManager(SDL_VideoData *d, uint32_t id)
+void Wayland_DisplayInitTextInputManager(SDL_VideoData *d, uint32_t id)
 {
-#ifdef HAVE_FCITX
-    const char *im_module = SDL_getenv("SDL_IM_MODULE");
-    if (im_module && SDL_strcmp(im_module, "fcitx") == 0) {
-        /* Override the Wayland text-input protocol when Fcitx is enabled, like how GTK_IM_MODULE does.
-         *
-         * The Fcitx wiki discourages enabling it under Wayland via SDL_IM_MODULE, so its presence must
-         * be intentional, and this workaround is needed for fixing key repeat detection.
-         */
-        return;
-    }
-#endif
-
-    d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
-
     SDL_WaylandSeat *seat;
     wl_list_for_each(seat, &d->seat_list, link) {
         Wayland_SeatCreateTextInput(seat);
