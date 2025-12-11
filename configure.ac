@@ -359,7 +359,17 @@ dnl Checks for library functions.
         AC_DEFINE(HAVE_MPROTECT, 1, [ ])
         ],[]),
     )
-    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction sigtimedwait setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll memfd_create posix_fallocate _Exit)
+
+    case "$host" in
+    *-*-msdosdjgpp*)
+        AC_MSG_NOTICE(skipping unfinished fseeko64 in DJGPP)
+        ;;
+    *)
+        AC_CHECK_FUNCS(fseeko64)
+        ;;
+    esac
+
+    AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv bsearch qsort abs bcopy memset memcmp memcpy memmove wcslen wcslcpy wcslcat _wcsdup wcsdup wcsstr wcscmp wcsncmp wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp strlen strlcpy strlcat _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r itoa _ltoa _uitoa _ultoa strtod strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr vsscanf vsnprintf fopen64 fseeko sigaction sigtimedwait setjmp nanosleep sysconf sysctlbyname getauxval elf_aux_info poll memfd_create posix_fallocate _Exit)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
     AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf exp expf fabs fabsf floor floorf trunc truncf fmod fmodf log logf log10 log10f lround lroundf pow powf round roundf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
@@ -664,8 +674,8 @@ if test x$enable_assembly = xyes; then
 
 dnl Check for various instruction support
     AC_ARG_ENABLE(mmx,
-[AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [default=yes]])],
-                  , enable_mmx=yes)
+[AS_HELP_STRING([--enable-mmx], [use MMX assembly routines [[default=maybe]]])],
+                  , enable_mmx=$default_ssemath)
     if test x$enable_mmx = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_mmx=no
@@ -698,8 +708,8 @@ dnl Check for various instruction support
     fi
 
     AC_ARG_ENABLE(3dnow,
-[AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [default=no]])],
-                  , enable_3dnow=no)
+[AS_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [[default=maybe]]])],
+                  , enable_3dnow=$default_ssemath)
     if test x$enable_3dnow = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_3dnow=no
@@ -727,8 +737,8 @@ dnl Check for various instruction support
     fi
 
     AC_ARG_ENABLE(sse,
-[AS_HELP_STRING([--enable-sse], [use SSE assembly routines [default=yes]])],
-                  , enable_sse=yes)
+[AS_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=maybe]]])],
+                  , enable_sse=$default_ssemath)
     if test x$enable_sse = xyes; then
         save_CFLAGS="$CFLAGS"
         have_gcc_sse=no
@@ -2508,6 +2518,17 @@ CheckQNXAudio()
     fi
 }
 
+dnl Set up the SVGA video driver if enabled
+CheckSVGAVideo()
+{
+    if test x$enable_video = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_SVGA, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/video/svga/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} svga"
+    fi
+}
+
 dnl Check to see if OpenGL support is desired
 AC_ARG_ENABLE(video-opengl,
 [AS_HELP_STRING([--enable-video-opengl], [include OpenGL support [default=yes]])],
@@ -3694,6 +3715,17 @@ CheckClockGettime()
     fi
 }
 
+dnl Check for uclock()
+CheckUCLOCK()
+{
+    AC_ARG_ENABLE(uclock,
+AS_HELP_STRING([--enable-uclock], [use uclock() for performance counter on DOS [[default=yes]]]),
+                  , enable_uclock=yes)
+    if test x$enable_uclock = xyes; then
+        AC_CHECK_FUNCS(uclock)
+    fi
+}
+
 dnl Check for a valid linux/version.h
 CheckLinuxVersion()
 {
@@ -4672,6 +4704,27 @@ dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
             SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
             have_joystick=yes
         fi
+        ;;
+    *-*-msdosdjgpp*)
+        ARCH=dos
+        CheckVisibilityHidden
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckSVGAVideo
+        CheckDLOPEN
+        CheckUCLOCK
+
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_DOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/dos/*.c"
+            have_timers=yes
+        fi
+
+        # Set up files for shared DOS utilities and event handling
+        SOURCES="$SOURCES $srcdir/src/core/dos/*.c"
         ;;
     *)
         AC_MSG_ERROR([

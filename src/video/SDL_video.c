@@ -143,6 +143,9 @@ static VideoBootStrap *bootstrap[] = {
     &OS2DIVE_bootstrap,
     &OS2VMAN_bootstrap,
 #endif
+#ifdef SDL_VIDEO_DRIVER_SVGA
+    &SVGA_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
 #endif
@@ -2702,7 +2705,7 @@ static SDL_bool ShouldAttemptTextureFramebuffer(void)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 #endif
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__MSDOS__)
         attempt_texture_framebuffer = SDL_FALSE;
 #endif
     }
