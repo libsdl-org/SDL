@@ -107,5 +107,6 @@ extern SDL_SensorDriver SDL_DUMMY_SensorDriver;
 extern SDL_SensorDriver SDL_VITA_SensorDriver;
 extern SDL_SensorDriver SDL_N3DS_SensorDriver;
 extern SDL_SensorDriver SDL_EMSCRIPTEN_SensorDriver;
+extern SDL_SensorDriver SDL_OHOS_SensorDriver;
 
 #endif // SDL_syssensor_h_
