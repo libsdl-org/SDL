@@ -348,11 +348,13 @@ static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage 
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
         return HandleGetAllProps(tray, (SDL_TrayDBus *)tray, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
-        reply = driver->dbus->message_new_method_return(msg);
+        printf("ContextMenu: %p\n", tray);
+		reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
+        printf("Activate: %p\n", tray);
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
         driver->dbus->message_unref(reply);
@@ -459,14 +461,13 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
     }
     
     /* register */
-    SDL_asprintf(&register_name, "%s%s", tray_dbus->service_name, SNI_OBJECT_PATH);
-    if (!SDL_DBus_CallVoidMethodOnConnection(tray_dbus->connection, SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "RegisterStatusNotifierItem", DBUS_TYPE_STRING, &object_path, DBUS_TYPE_INVALID)) {
+    register_name = tray_dbus->service_name;
+    if (!SDL_DBus_CallVoidMethodOnConnection(tray_dbus->connection, SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "RegisterStatusNotifierItem", DBUS_TYPE_STRING, &register_name, DBUS_TYPE_INVALID)) {
         SDL_free(register_name);
         SDL_SetError("Unable to create tray: unable to register status notifier item!");
         CLEANUP2();
         return NULL;
     }
-    SDL_free(register_name);
 
     return tray;
 }
@@ -690,16 +691,9 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu);
     } else {
         menu_dbus->menu_path = SDL_DBus_ExportMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);
-        
+               
         if (menu_dbus->menu_path) {
             DBusMessage *signal;
-            
-            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewMenu");
-            if (signal) {
-                driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
-                driver->dbus->connection_flush(tray_dbus->connection);
-                driver->dbus->message_unref(signal);
-            }
             
             signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, "org.freedesktop.DBus.Properties", "PropertiesChanged");
             if (signal) {
@@ -736,13 +730,9 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
                 driver->dbus->connection_flush(tray_dbus->connection);
                 driver->dbus->message_unref(signal);
             }
-            
-            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewStatus");
+             
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewMenu");
             if (signal) {
-                const char *status_val;
-                
-                status_val = "Active";
-                driver->dbus->message_append_args(signal, DBUS_TYPE_STRING, &status_val, DBUS_TYPE_INVALID);
                 driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
                 driver->dbus->connection_flush(tray_dbus->connection);
                 driver->dbus->message_unref(signal);
