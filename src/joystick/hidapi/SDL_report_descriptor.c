@@ -87,16 +87,16 @@ typedef enum
 
 typedef struct
 {
-    unsigned int usage_page;
-    unsigned int report_size;
-    unsigned int report_count;
-    unsigned int report_id;
+    Uint32 usage_page;
+    Uint32 report_size;
+    Uint32 report_count;
+    Uint32 report_id;
 } DescriptorGlobalState;
 
 typedef struct
 {
-    unsigned int usage_minimum;
-    unsigned int usage_maximum;
+    Uint32 usage_minimum;
+    Uint32 usage_maximum;
     int usage_maxcount;
     int usage_count;
     Uint32 *usages;
@@ -137,7 +137,7 @@ static void DebugDescriptor(DescriptorContext *ctx, const char *fmt, ...)
 #endif // DEBUG_DESCRIPTOR
 }
 
-static void DebugMainTag(DescriptorContext *ctx, const char *tag, unsigned int flags)
+static void DebugMainTag(DescriptorContext *ctx, const char *tag, Uint32 flags)
 {
 #ifdef DEBUG_DESCRIPTOR
     char message[1024] = { 0 };
@@ -196,13 +196,13 @@ static void DebugMainTag(DescriptorContext *ctx, const char *tag, unsigned int f
 #endif // DEBUG_DESCRIPTOR
 }
 
-static unsigned int ReadValue(const Uint8 *data, int size)
+static Uint32 ReadValue(const Uint8 *data, int size)
 {
-    unsigned int value = 0;
+    Uint32 value = 0;
 
     int shift = 0;
     while (size--) {
-        value |= ((unsigned int)*data++) << shift;
+        value |= ((Uint32)(*data++)) << shift;
         shift += 8;
     }
     return value;
@@ -215,7 +215,7 @@ static void ResetLocalState(DescriptorContext *ctx)
     ctx->local.usage_count = 0;
 }
 
-static bool AddUsage(DescriptorContext *ctx, unsigned int usage)
+static bool AddUsage(DescriptorContext *ctx, Uint32 usage)
 {
     if (ctx->local.usage_count == ctx->local.usage_maxcount) {
         int usage_maxcount = ctx->local.usage_maxcount + 4;
@@ -234,7 +234,7 @@ static bool AddUsage(DescriptorContext *ctx, unsigned int usage)
     return true;
 }
 
-static bool AddInputField(DescriptorContext *ctx, unsigned int usage, int bit_size)
+static bool AddInputField(DescriptorContext *ctx, Uint32 usage, int bit_size)
 {
     if (ctx->field_count == ctx->field_maxcount) {
         int field_maxcount = ctx->field_maxcount + 4;
@@ -258,7 +258,7 @@ static bool AddInputField(DescriptorContext *ctx, unsigned int usage, int bit_si
 
 static bool AddInputFields(DescriptorContext *ctx)
 {
-    unsigned int usage = 0;
+    Uint32 usage = 0;
 
     if (ctx->global.report_count == 0 || ctx->global.report_size == 0) {
         return true;
@@ -275,7 +275,7 @@ static bool AddInputFields(DescriptorContext *ctx)
     }
 
     int usage_index = 0;
-    for (unsigned int i = 0; i < ctx->global.report_count; ++i) {
+    for (Uint32 i = 0; i < ctx->global.report_count; ++i) {
         if (usage_index < ctx->local.usage_count) {
             usage = ctx->local.usages[usage_index];
             if (usage_index < (ctx->local.usage_count - 1)) {
@@ -296,7 +296,7 @@ static bool AddInputFields(DescriptorContext *ctx)
 
 static bool ParseMainItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
 {
-    unsigned int flags;
+    Uint32 flags;
 
     switch (tag) {
     case MainTagInput:
@@ -359,7 +359,7 @@ static bool ParseMainItem(DescriptorContext *ctx, int tag, int size, const Uint8
 
 static bool ParseGlobalItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
 {
-    unsigned int value;
+    Uint32 value;
 
     switch (tag) {
     case GlobalTagUsagePage:
@@ -416,7 +416,7 @@ static bool ParseGlobalItem(DescriptorContext *ctx, int tag, int size, const Uin
 
 static bool ParseLocalItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
 {
-    unsigned int value;
+    Uint32 value;
 
     switch (tag) {
     case LocalTagUsage:
@@ -551,7 +551,7 @@ void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor)
     }
 }
 
-bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_size, unsigned int *value)
+bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_size, Uint32 *value)
 {
     int offset = (bit_offset / 8);
     if (offset >= size) {
