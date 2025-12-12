@@ -148,7 +148,7 @@ typedef struct
     Uint64 rumble_time;
     bool rumble_pending;
     SDL_ReportDescriptor *descriptor;
-    unsigned int last_buttons;
+    Uint32 last_buttons;
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint8 *chunk_buffer;
     Uint32 chunk_length;
@@ -396,7 +396,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
             for (int i = 0; i < field_count; ++i) {
                 DescriptorInputField *field = &fields[i];
                 if (field->usage == MAKE_USAGE(USB_USAGEPAGE_BUTTON, 1)) {
-                    unsigned int expected_usage = field->usage;
+                    Uint32 expected_usage = field->usage;
                     int expected_offset = field->bit_offset;
                     for (int j = i; j < field_count; ++j) {
                         DescriptorInputField *other = &fields[j];
@@ -640,7 +640,7 @@ static bool HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
     return SDL_Unsupported();
 }
 
-static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, unsigned int flags)
+static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, Uint32 flags)
 {
     bool on_usb = (((flags & 0x0C) >> 2) == 0);
     SDL_PowerState state;
@@ -670,13 +670,13 @@ static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, unsi
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
-static void HandleDescriptorAxis(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadAxis axis, unsigned int value)
+static void HandleDescriptorAxis(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadAxis axis, Uint32 value)
 {
     Sint16 axis_value = (Sint16)((int)value - 0x8000);
     SDL_SendJoystickAxis(timestamp, joystick, axis, axis_value);
 }
 
-static void HandleDescriptorTrigger(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadAxis axis, unsigned int value)
+static void HandleDescriptorTrigger(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadAxis axis, Uint32 value)
 {
     Sint16 axis_value = (Sint16)(((int)value * 64) - 32768);
     if (axis_value == 32704) {
@@ -701,7 +701,7 @@ static bool HIDAPI_DriverXboxOne_HandleDescriptorReport(SDL_Joystick *joystick, 
             continue;
         }
 
-        unsigned int value;
+        Uint32 value;
         if (!SDL_ReadReportData(data, size, field->bit_offset, field->bit_size, &value)) {
             continue;
         }
