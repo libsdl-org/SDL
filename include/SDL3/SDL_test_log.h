@@ -43,6 +43,14 @@ extern "C" {
 #endif
 
 /**
+ * Prints given message with a timestamp in the TEST category and given priority.
+ *
+ * \param priority Priority of the message
+ * \param fmt Message to be logged
+ */
+void SDLCALL SDLTest_LogMessage(SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, ...);
+
+/**
  * Prints given message with a timestamp in the TEST category and INFO priority.
  *
  * \param fmt Message to be logged
