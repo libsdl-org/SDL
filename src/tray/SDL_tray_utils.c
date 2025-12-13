@@ -37,7 +37,7 @@ void SDL_RegisterTray(SDL_Tray *tray)
 void SDL_UnregisterTray(SDL_Tray *tray)
 {
     SDL_assert(SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY));
-
+	
     SDL_SetObjectValid(tray, SDL_OBJECT_TYPE_TRAY, false);
 
     --active_trays;
@@ -90,4 +90,8 @@ void SDL_CleanupTrays(void)
 bool SDL_HasActiveTrays(void)
 {
     return (active_trays > 0);
+}
+
+int SDL_GetActiveTrayCount(void) {
+	return active_trays;
 }
