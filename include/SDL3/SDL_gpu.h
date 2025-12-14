@@ -3722,7 +3722,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ.
  *
  * Be sure your shader is set up according to the requirements documented in
- * SDL_CreateGPUShader().
+ * [SDL_CreateGPUComputePipeline](SDL_CreateGPUComputePipeline#remarks)().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute storage buffer slot to begin binding from.
@@ -3731,7 +3731,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *compute_pass,
