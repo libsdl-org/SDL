@@ -3961,9 +3961,15 @@ void SDL_LoadVIDPIDList(SDL_vidpid_list *list)
 
     if (list->included_hint_name) {
         included_list = SDL_GetHint(list->included_hint_name);
+        if (!included_list) {
+            included_list = SDL_getenv_unsafe(list->included_hint_name);
+        }
     }
     if (list->excluded_hint_name) {
         excluded_list = SDL_GetHint(list->excluded_hint_name);
+        if (!excluded_list) {
+            excluded_list = SDL_getenv_unsafe(list->excluded_hint_name);
+        }
     }
     SDL_LoadVIDPIDListFromHints(list, included_list, excluded_list);
 }

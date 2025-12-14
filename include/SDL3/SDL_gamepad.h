@@ -48,6 +48,9 @@
  * SDL_INIT_GAMEPAD flag. This causes SDL to scan the system for gamepads, and
  * load appropriate drivers.
  *
+ * If you're using SDL gamepad support in a Steam game, you must call
+ * SteamAPI_InitEx() before calling SDL_Init().
+ *
  * If you would like to receive gamepad updates while the application is in
  * the background, you should set the following hint before calling
  * SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
