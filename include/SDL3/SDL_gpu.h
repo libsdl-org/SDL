@@ -3674,7 +3674,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  * Be sure your shader is set up according to the requirements documented in
  * SDL_CreateGPUComputePipeline().
  *
- *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute sampler slot to begin binding from.
  * \param texture_sampler_bindings an array of texture-sampler binding
