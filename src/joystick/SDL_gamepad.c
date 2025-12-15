@@ -2619,7 +2619,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
             } else {
                 const char *hint_value = SDL_GetHint(hint);
                 if (!hint_value) {
-                    hint_value = SDL_getenv_unsafe(hint_value);
+                    hint_value = SDL_getenv_unsafe(hint);
                 }
                 value = SDL_GetStringBoolean(hint_value, default_value);
                 if (negate) {
