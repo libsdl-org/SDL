@@ -4736,13 +4736,13 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         sizeof(VulkanTextureContainer) * windowData->imageCount);
 
     if (!windowData->textureContainers) { // OOM
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
         renderer->vkDestroySwapchainKHR(
             renderer->logicalDevice,
             windowData->swapchain,
+            NULL);
+        renderer->vkDestroySurfaceKHR(
+            renderer->instance,
+            windowData->surface,
             NULL);
         windowData->surface = VK_NULL_HANDLE;
         windowData->swapchain = VK_NULL_HANDLE;
@@ -4802,13 +4802,13 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             windowData->format,
             windowData->swapchainSwizzle,
             &windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0])) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
+                NULL);
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
                 NULL);
             windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
@@ -4830,13 +4830,13 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->imageAvailableSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
+                NULL);
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
                 NULL);
             windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
@@ -4856,13 +4856,13 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->renderFinishedSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
+                NULL);
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
                 NULL);
             windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
