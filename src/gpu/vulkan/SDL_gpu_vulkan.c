@@ -3235,14 +3235,6 @@ static void VULKAN_INTERNAL_DestroySwapchain(
             NULL);
         windowData->swapchain = VK_NULL_HANDLE;
     }
-
-    if (windowData->surface) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
-    }
 }
 
 static void VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(
@@ -4521,33 +4513,11 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
 
     windowData->frameCounter = 0;
 
-    // We dont have to create surface again on recreate swapchain
-    if (windowData->surface == VK_NULL_HANDLE) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_assert(_this && _this->Vulkan_CreateSurface);
-
-        // Each swapchain must have its own surface.
-        if (!_this->Vulkan_CreateSurface(
-                _this,
-                windowData->window,
-                renderer->instance,
-                NULL, // FIXME: VAllocationCallbacks
-                &windowData->surface)) {
-            return false;
-        }
-    }
-    SDL_assert(windowData->surface);
-
     if (!VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
             renderer->physicalDevice,
             windowData->surface,
             &swapchainSupportDetails)) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
         return false;
     }
 
@@ -4580,12 +4550,6 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         swapchainSupportDetails.presentModesLength);
 
     if (!hasValidSwapchainComposition || !hasValidPresentMode) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
-
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
         }
@@ -4606,11 +4570,6 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     // NVIDIA + Win32 can return 0 extent when the window is minimized. Try again!
     if (swapchainSupportDetails.capabilities.currentExtent.width == 0 ||
         swapchainSupportDetails.capabilities.currentExtent.height == 0) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
         if (swapchainSupportDetails.formatsLength > 0) {
             SDL_free(swapchainSupportDetails.formats);
         }
@@ -4716,11 +4675,6 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     }
 
     if (vulkanResult != VK_SUCCESS) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
         windowData->swapchain = VK_NULL_HANDLE;
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSwapchainKHR, false);
     }
@@ -4736,15 +4690,10 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         sizeof(VulkanTextureContainer) * windowData->imageCount);
 
     if (!windowData->textureContainers) { // OOM
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
         renderer->vkDestroySwapchainKHR(
             renderer->logicalDevice,
             windowData->swapchain,
             NULL);
-        windowData->surface = VK_NULL_HANDLE;
         windowData->swapchain = VK_NULL_HANDLE;
         return false;
     }
@@ -4802,15 +4751,10 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             windowData->format,
             windowData->swapchainSwizzle,
             &windowData->textureContainers[i].activeTexture->subresources[0].renderTargetViews[0])) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
                 NULL);
-            windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
             return false;
         }
@@ -4830,15 +4774,10 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->imageAvailableSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
                 NULL);
-            windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false);
         }
@@ -4856,15 +4795,10 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->renderFinishedSemaphore[i]);
 
         if (vulkanResult != VK_SUCCESS) {
-            renderer->vkDestroySurfaceKHR(
-                renderer->instance,
-                windowData->surface,
-                NULL);
             renderer->vkDestroySwapchainKHR(
                 renderer->logicalDevice,
                 windowData->swapchain,
                 NULL);
-            windowData->surface = VK_NULL_HANDLE;
             windowData->swapchain = VK_NULL_HANDLE;
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false);
         }
@@ -9843,6 +9777,33 @@ static bool VULKAN_ClaimWindow(
         windowData->swapchainCreateHeight = h;
 #endif
 
+        SDL_VideoDevice *videoDevice = SDL_GetVideoDevice();
+        if (!videoDevice)
+        {
+            SDL_SetError("No video device found!");
+            SDL_free(windowData);
+            return false;
+        }
+
+        if (!videoDevice->Vulkan_CreateSurface)
+        {
+            SDL_SetError("Video device does not have Vulkan_CreateSurface implemented!");
+            SDL_free(windowData);
+            return false;
+        }
+
+        // Each window must have its own surface.
+        if (!videoDevice->Vulkan_CreateSurface(
+                videoDevice,
+                windowData->window,
+                renderer->instance,
+                NULL, // FIXME: VAllocationCallbacks
+                &windowData->surface)) {
+            SDL_SetError("Failed to create Vulkan surface!");
+            SDL_free(windowData);
+            return false;
+        }
+
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
         if (createSwapchainResult == 1) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -9866,6 +9827,11 @@ static bool VULKAN_ClaimWindow(
             windowData->needsSwapchainRecreate = true;
             return true;
         } else {
+            // Failed to create swapchain, destroy surface and free data
+            renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
+                NULL);
             SDL_free(windowData);
             return false;
         }
@@ -9900,6 +9866,11 @@ static void VULKAN_ReleaseWindow(
         (VulkanRenderer *)driverData,
         windowData);
 
+    renderer->vkDestroySurfaceKHR(
+        renderer->instance,
+        windowData->surface,
+        NULL);
+    windowData->surface = VK_NULL_HANDLE;
 
     SDL_LockMutex(renderer->windowLock);
     for (i = 0; i < renderer->claimedWindowCount; i += 1) {
