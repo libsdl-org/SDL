@@ -358,7 +358,9 @@ int main(int argc, char *argv[])
         }
 
         while (SDL_WaitEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_UP) {
+            if (event.type == SDL_EVENT_QUIT ||
+                event.type == SDL_EVENT_KEY_UP ||
+                event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 break;
             }
         }
