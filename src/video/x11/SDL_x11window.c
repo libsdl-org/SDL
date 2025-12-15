@@ -1453,8 +1453,8 @@ bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
 
 void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered)
 {
-    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? true : false;
-    const bool visible = (!(window->flags & SDL_WINDOW_HIDDEN)) ? true : false;
+    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0;
+    const bool visible = !(window->flags & SDL_WINDOW_HIDDEN) && !window->is_hiding;
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
