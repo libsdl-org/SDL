@@ -45,7 +45,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     // trim down to a single path separator at the end, in case the caller added one or more.
     pathwithseplen--;
-    while ((pathwithseplen >= 0) && (pathwithsep[pathwithseplen] == '/')) {
+    while ((pathwithseplen > 0) && (pathwithsep[pathwithseplen] == '/')) {
         pathwithsep[pathwithseplen--] = '\0';
     }
 

@@ -53,7 +53,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
         // trim down to a single path separator at the end, in case the caller added one or more.
         patternlen--;
-        while ((patternlen >= 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
+        while ((patternlen > 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
             pattern[patternlen--] ='\0';
         }
         pattern[++patternlen] = '\\';
