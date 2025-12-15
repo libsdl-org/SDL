@@ -1706,16 +1706,25 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
     frog_preferred_metadata_handler
 };
 
-static void handle_surface_feedback_preferred_changed(void *data,
-                                                      struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
-                                                      uint32_t identity)
+
+static void handle_surface_feedback_preferred_changed2(void *data,
+                                                       struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                                       uint32_t identity_hi, uint32_t identity_lo)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     Wayland_GetColorInfoForWindow(wind, false);
 }
 
+static void handle_surface_feedback_preferred_changed(void *data,
+                                                      struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                                      uint32_t identity)
+{
+    handle_surface_feedback_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
 static const struct wp_color_management_surface_feedback_v1_listener color_management_surface_feedback_listener = {
-    handle_surface_feedback_preferred_changed
+    handle_surface_feedback_preferred_changed,
+    handle_surface_feedback_preferred_changed2
 };
 
 static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)

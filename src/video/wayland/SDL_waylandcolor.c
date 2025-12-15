@@ -236,9 +236,9 @@ static void image_description_handle_failed(void *data,
     }
 }
 
-static void image_description_handle_ready(void *data,
-                                           struct wp_image_description_v1 *wp_image_description_v1,
-                                           uint32_t identity)
+static void image_description_handle_ready2(void *data,
+                                            struct wp_image_description_v1 *wp_image_description_v1,
+                                            uint32_t identity_hi, uint32_t identity_lo)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
 
@@ -263,9 +263,17 @@ static void image_description_handle_ready(void *data,
     }
 }
 
+static void image_description_handle_ready(void *data,
+                                           struct wp_image_description_v1 *wp_image_description_v1,
+                                           uint32_t identity)
+{
+    image_description_handle_ready2(data, wp_image_description_v1, 0, identity);
+}
+
 static const struct wp_image_description_v1_listener image_description_listener = {
     image_description_handle_failed,
-    image_description_handle_ready
+    image_description_handle_ready,
+    image_description_handle_ready2
 };
 
 void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event_processing)
