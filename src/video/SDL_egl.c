@@ -1144,6 +1144,8 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
         }
     }
 
+    SDL_GL_SetSwapInterval(0);  // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
+
     return (SDL_GLContext)egl_context;
 }
 
