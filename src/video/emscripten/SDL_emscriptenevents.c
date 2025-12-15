@@ -497,10 +497,21 @@ static EM_BOOL Emscripten_HandleFullscreenChange(int eventType, const Emscripten
 static EM_BOOL Emscripten_HandleFullscreenChangeGlobal(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_VideoDevice *device = userData;
-    SDL_Window *window = Emscripten_GetFocusedWindow(device);
+    SDL_Window *window = NULL;
+    for (window = device->windows; window != NULL; window = window->next) {
+        const char *canvas_id = window->internal->canvas_id;
+        if (*canvas_id == '#') {
+            canvas_id++;
+        }
+        if (SDL_strcmp(fullscreenChangeEvent->id, canvas_id) == 0) {
+            break;  // this is the window.
+        }
+    }
+
     if (window) {
         return Emscripten_HandleFullscreenChange(eventType, fullscreenChangeEvent, window->internal);
     }
+
     return EM_FALSE;
 }
 
