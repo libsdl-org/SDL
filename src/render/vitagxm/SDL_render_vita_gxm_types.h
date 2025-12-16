@@ -105,7 +105,6 @@ typedef struct
 {
     SDL_Rect viewport;
     bool viewport_dirty;
-    bool viewport_is_set;
     SDL_Texture *texture;
     SDL_Texture *target;
     SDL_FColor color;
