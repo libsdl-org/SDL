@@ -1495,7 +1495,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *game
  * Get the current state of a gamepad sensor.
  *
  * The number of values and interpretation of the data is sensor dependent.
- * See SDL_sensor.h for the details for each type of sensor.
+ * See the remarks in SDL_SensorType for details for each type of sensor.
  *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
