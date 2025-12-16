@@ -12259,10 +12259,10 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     if (features->usesCustomVulkanOptions && minor > 0) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = features->desiredVulkan10DeviceFeatures;
-        featureList.pNext = minor > 1 ? &features->desiredVulkan11DeviceFeatures : (void *)deviceCreateInfo.pNext;
+        featureList.pNext = minor > 1 ? &features->desiredVulkan11DeviceFeatures : NULL;
         features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
-        features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : (void *)deviceCreateInfo.pNext;
-        features->desiredVulkan13DeviceFeatures.pNext = (void *)deviceCreateInfo.pNext;
+        features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
+        features->desiredVulkan13DeviceFeatures.pNext = NULL;
         deviceCreateInfo.pEnabledFeatures = NULL;
         deviceCreateInfo.pNext = &featureList;
     } else {
