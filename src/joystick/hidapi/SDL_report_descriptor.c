@@ -460,7 +460,7 @@ static bool ParseLocalItem(DescriptorContext *ctx, int tag, int size, const Uint
     return true;
 }
 
-bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, int descriptor_size)
+static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, int descriptor_size)
 {
     SDL_zerop(ctx);
 
