@@ -741,9 +741,10 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
 
     // Release fence infrastructure
     for (Uint32 i = 0; i < renderer->availableFenceCount; i += 1) {
-        SDL_DestroyMutex(renderer->availableFences[i]->mutex);
-        SDL_DestroyCondition(renderer->availableFences[i]->condition);
-        SDL_free(renderer->availableFences[i]);
+        MetalFence *fence = (MetalFence *)renderer->availableFences[i];
+        SDL_DestroyMutex(fence->mutex);
+        SDL_DestroyCondition(fence->condition);
+        SDL_free(fence);
     }
     SDL_free(renderer->availableFences);
 
