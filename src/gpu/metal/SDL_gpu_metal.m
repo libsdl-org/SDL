@@ -3603,7 +3603,7 @@ static bool METAL_WaitForFences(
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
                     MetalFence *fence = (MetalFence *)fences[i];
-                    if (METAL_INTERNAL_FenceComplete(fence) {
+                    if (METAL_INTERNAL_FenceComplete(fence)) {
                         waiting = 0;
                         break;
                     }
