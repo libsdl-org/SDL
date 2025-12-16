@@ -3569,7 +3569,8 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 }
 
 // Fences
-static bool METAL_INTERNAL_FenceOpen(MetalFence *fence) {
+static bool METAL_INTERNAL_FenceOpen(MetalFence *fence)
+{
     bool complete;
     SDL_LockMutex(fence->mutex);
     complete = fence->complete;
@@ -3589,7 +3590,8 @@ static bool METAL_WaitForFences(
 
         if (waitAll) {
             for (Uint32 i = 0; i < numFences; i += 1) {
-                SDL_LockMutex(((MetalFence *)fences[i])->mutex);
+                MetalFence *fence = (MetalFence *)fences[i];
+                SDL_LockMutex(fence->mutex);
                 while(!((MetalFence *)fences[i])->complete) {
                     SDL_WaitCondition(((MetalFence *)fences[i])->condition, ((MetalFence *)fences[i])->mutex);
                 }
@@ -3599,7 +3601,7 @@ static bool METAL_WaitForFences(
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    if(METAL_INTERNAL_FenceOpen((MetalFence *)fences[i])) {
+                    if (METAL_INTERNAL_FenceOpen((MetalFence *)fences[i])) {
                         waiting = 0;
                         break;
                     }
@@ -3618,7 +3620,8 @@ static bool METAL_QueryFence(
     SDL_GPURenderer *driverData,
     SDL_GPUFence *fence)
 {
-    return METAL_INTERNAL_FenceOpen(((MetalFence *)fence));
+    MetalFence *metalFence = (MetalFence *)fence;
+    return METAL_INTERNAL_FenceOpen(metalFence);
 }
 
 // Window and Swapchain Management
