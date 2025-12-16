@@ -3592,16 +3592,17 @@ static bool METAL_WaitForFences(
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
                 SDL_LockMutex(fence->mutex);
-                while(!((MetalFence *)fences[i])->complete) {
-                    SDL_WaitCondition(((MetalFence *)fences[i])->condition, ((MetalFence *)fences[i])->mutex);
+                while(!fence->complete) {
+                    SDL_WaitCondition(fence->condition, fence->mutex);
                 }
-                SDL_UnlockMutex(((MetalFence *)fences[i])->mutex);
+                SDL_UnlockMutex(fence->mutex);
             }
         } else {
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    if (METAL_INTERNAL_FenceComplete((MetalFence *)fences[i])) {
+                    MetalFence *fence = (MetalFence *)fences[i];
+                    if (METAL_INTERNAL_FenceComplete(fence) {
                         waiting = 0;
                         break;
                     }
