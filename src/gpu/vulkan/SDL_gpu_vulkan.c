@@ -12254,13 +12254,15 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
     VkPhysicalDeviceFeatures2 featureList;
-    if (features->usesCustomVulkanOptions) {
+    int minor = VK_VERSION_MINOR(features->desiredApiVersion);
+
+    if (features->usesCustomVulkanOptions && minor > 0) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = features->desiredVulkan10DeviceFeatures;
-        featureList.pNext = &features->desiredVulkan11DeviceFeatures;
+        featureList.pNext = minor > 1 ? &features->desiredVulkan11DeviceFeatures : NULL;
         features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
-        features->desiredVulkan12DeviceFeatures.pNext = &features->desiredVulkan13DeviceFeatures;
-        features->desiredVulkan13DeviceFeatures.pNext = (void *)deviceCreateInfo.pNext;
+        features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
+        features->desiredVulkan13DeviceFeatures.pNext = NULL;
         deviceCreateInfo.pEnabledFeatures = NULL;
         deviceCreateInfo.pNext = &featureList;
     } else {
