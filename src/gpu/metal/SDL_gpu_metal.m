@@ -3569,7 +3569,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 }
 
 // Fences
-static bool METAL_INTERNAL_FenceOpen(MetalFence *fence)
+static bool METAL_INTERNAL_FenceComplete(MetalFence *fence)
 {
     bool complete;
     SDL_LockMutex(fence->mutex);
@@ -3601,7 +3601,7 @@ static bool METAL_WaitForFences(
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    if (METAL_INTERNAL_FenceOpen((MetalFence *)fences[i])) {
+                    if (METAL_INTERNAL_FenceComplete((MetalFence *)fences[i])) {
                         waiting = 0;
                         break;
                     }
@@ -3621,7 +3621,7 @@ static bool METAL_QueryFence(
     SDL_GPUFence *fence)
 {
     MetalFence *metalFence = (MetalFence *)fence;
-    return METAL_INTERNAL_FenceOpen(metalFence);
+    return METAL_INTERNAL_FenceComplete(metalFence);
 }
 
 // Window and Swapchain Management
@@ -4073,10 +4073,11 @@ static bool METAL_Submit(
 
         // Notify the fence when the command buffer has completed
         [metalCommandBuffer->handle addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-            SDL_LockMutex(metalCommandBuffer->fence->mutex);
-            metalCommandBuffer->fence->complete = true;
-            SDL_SignalCondition(metalCommandBuffer->fence->condition);
-            SDL_UnlockMutex(metalCommandBuffer->fence->mutex);
+            MetalFence *metalFence = (MetalFence *)metalCommandBuffer->fence;
+            SDL_LockMutex(metalFence->mutex);
+            metalFence->complete = true;
+            SDL_SignalCondition(metalFence->condition);
+            SDL_UnlockMutex(metalFence->mutex);
         }];
 
         // Submit the command buffer
@@ -4096,7 +4097,7 @@ static bool METAL_Submit(
 
         // Check if we can perform any cleanups
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
-            if (METAL_INTERNAL_FenceOpen(renderer->submittedCommandBuffers[i]->fence)) {
+            if (METAL_INTERNAL_FenceComplete(renderer->submittedCommandBuffers[i]->fence)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
                     renderer->submittedCommandBuffers[i],
