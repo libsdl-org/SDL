@@ -210,12 +210,15 @@ Calling SDL_RenderPresent (or SDL_GL_SwapWindow) will not actually
 present anything on the screen until your return from your mainloop
 function.
 
-Note that on other platforms, SDL will default to vsync _off_ in the 2D render
-API. Since changing this will affect how the mainloop runs, the 2D render API
-will only change vsync settings if explicitly requested by the app, either
-with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, or calling
-SDL_SetRenderVSync(). Otherwise it will default to whatever the Emscripten
-mainloop is set to use via emscripten_set_main_loop().
+Note that SDL attempts to default to vsync _off_ on all platforms. You almost
+certainly do _not_ want this in Emscripten, however, as it will affect the
+efficiency of the mainloop. If using OpenGL directly, you should call
+SDL_GL_SetSwapInterval(1) sometime near startup; if using the 2D render API,
+either create the renderer with with the property
+SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER set to 1, or call
+SDL_SetRenderVSync(renderer, 1). If you don't explicitly set vsync, you'll get
+a higher (but perhaps unstable) framerate, and use more power, but it will
+still work. Choosing a vsync of 1 will use requestAnimationFrame if possible.
 
 If you're using the SDL main callbacks, the mainloop defaults to using
 requestAnimationFrame (effectively vsync), because it calls
