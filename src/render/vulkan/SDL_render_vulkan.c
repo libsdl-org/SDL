@@ -2954,7 +2954,7 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     Uint32 numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
     if (numPlanes == 2) {
         // NV12/NV21 data
-        int UVbpp = VULKAN_GetBytesPerPixel(textureData->mainImage.format, 1);
+        int UVbpp = (int)VULKAN_GetBytesPerPixel(textureData->mainImage.format, 1);
         int Ypitch = srcPitch;
         int UVpitch = (srcPitch + (UVbpp - 1)) & ~(UVbpp - 1);
         const Uint8 *plane0 = (const Uint8 *)srcPixels;
