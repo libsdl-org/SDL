@@ -48,7 +48,7 @@
  * by default to SDLK_0...SDLK_9 on AZERTY layouts.
  *
  * Keys with the `SDLK_EXTENDED_MASK` bit set do not map to a scancode or
- * unicode code point.
+ * Unicode code point.
  *
  * Many common keycodes are listed below, but this list is not exhaustive.
  *
