@@ -65,7 +65,8 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
     if (vendor_id == USB_VENDOR_ZUIKI) {
         switch (product_id) {
         case USB_PRODUCT_ZUIKI_MASCON_PRO:
-        case USB_PRODUCT_ZUIKI_EVOTOP_AXIS:
+        case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
         case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
             return true;
         default:
@@ -83,7 +84,11 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
     ctx->sensors_supported = false;
-    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS) {
+    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT) {
+        ctx->sensors_supported = true;
+        ctx->sensor_rate = 100.0f;
+    }
+    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
         ctx->sensors_supported = true;
         ctx->sensor_rate = 100.0f;
     }
@@ -408,11 +413,10 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
             HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(joystick, ctx, data, size);
-        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO) {
+        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
-
     if (size < 0) {
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);

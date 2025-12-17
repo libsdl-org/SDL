@@ -172,8 +172,9 @@
 #define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10df
 #define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10dd
 #define USB_PRODUCT_BONZIRICHANNEL_FIREBIRD               0x10e0 
-#define USB_PRODUCT_ZUIKI_MASCON_PRO                      0x0022
-#define USB_PRODUCT_ZUIKI_EVOTOP_AXIS                     0X0018
+#define USB_PRODUCT_ZUIKI_MASCON_PRO                      0x0006
+#define USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT               0X001c
+#define USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT                0X001d
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_BT                    0X0017
 #define USB_PRODUCT_VOIDGAMING_PS4FIREBIRD                0x10e5
 
