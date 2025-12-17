@@ -87,9 +87,6 @@ typedef struct DSU_ControllerSlot {
     /* Timing */
     Uint64 last_packet_time;
     Uint32 packet_number;
-
-    /* State change flags for deferred notifications */
-    bool pending_add;
 } DSU_ControllerSlot;
 
 typedef struct DSU_Context_t {
