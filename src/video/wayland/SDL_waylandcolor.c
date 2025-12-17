@@ -110,6 +110,15 @@ static void image_description_info_handle_done(void *data,
         case WAYLAND_COLOR_OBJECT_TYPE_DISPLAY:
         {
             SDL_copyp(&state->display_data->HDR, &state->HDR);
+
+            if (state->display_data->display) {
+                SDL_VideoDisplay *disp = SDL_GetVideoDisplay(state->display_data->display);
+                if (disp) {
+                    SDL_SetDisplayHDRProperties(disp, &state->HDR);
+                }
+            } else {
+                SDL_copyp(&state->display_data->placeholder.HDR, &state->HDR);
+            }
         } break;
     }
 }
