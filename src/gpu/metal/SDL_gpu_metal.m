@@ -3602,8 +3602,7 @@ static bool METAL_WaitForFences(
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    MetalFence *fence = (MetalFence *)fences[i];
-                    if (METAL_INTERNAL_FenceComplete(fence)) {
+                    if (METAL_INTERNAL_FenceComplete((MetalFence *)fences[i])) {
                         waiting = 0;
                         break;
                     }
@@ -4152,7 +4151,7 @@ static bool METAL_Wait(
          * Sort of equivalent to vkDeviceWaitIdle.
          */
         for (Uint32 i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-            METAL_WaitForFences(renderer, true, (SDL_GPUFence **)&renderer->submittedCommandBuffers[i]->fence, 1);
+            METAL_WaitForFences(driverData, true, (SDL_GPUFence **)&renderer->submittedCommandBuffers[i]->fence, 1);
         }
 
         SDL_LockMutex(renderer->submitLock);
