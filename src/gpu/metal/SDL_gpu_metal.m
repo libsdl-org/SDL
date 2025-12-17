@@ -3835,7 +3835,7 @@ static bool METAL_WaitForSwapchain(
 
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
             if (!METAL_WaitForFences(
-                (SDL_GPURenderer *)driverData,
+                driverData,
                 true,
                 &windowData->inFlightFences[windowData->frameCounter],
                 1)) {
@@ -4152,7 +4152,7 @@ static bool METAL_Wait(
          * Sort of equivalent to vkDeviceWaitIdle.
          */
         for (Uint32 i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-            METAL_WaitForFences((SDL_GPURenderer *)renderer, true, (SDL_GPUFence **)&renderer->submittedCommandBuffers[i]->fence, 1);
+            METAL_WaitForFences(renderer, true, (SDL_GPUFence **)&renderer->submittedCommandBuffers[i]->fence, 1);
         }
 
         SDL_LockMutex(renderer->submitLock);
