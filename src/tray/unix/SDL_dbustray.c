@@ -34,6 +34,7 @@
 #define SNI_WATCHER_PATH      "/StatusNotifierWatcher"
 #define SNI_WATCHER_INTERFACE "org.kde.StatusNotifierWatcher"
 #define SNI_OBJECT_PATH       "/StatusNotifierItem"
+static const char *sni_introspect = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\r\n<node>\r\n  <interface name=\"org.kde.StatusNotifierItem\">\r\n\r\n    <property name=\"Category\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Id\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Title\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Status\" type=\"s\" access=\"read\"/>\r\n    <property name=\"WindowId\" type=\"i\" access=\"read\"/>\r\n\r\n    <!-- An additional path to add to the theme search path to find the icons specified above. -->\r\n    <property name=\"IconThemePath\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Menu\" type=\"o\" access=\"read\"/>\r\n    <property name=\"ItemIsMenu\" type=\"b\" access=\"read\"/>\r\n\r\n\r\n    <!-- main icon -->\r\n    <!-- names are preferred over pixmaps -->\r\n    <property name=\"IconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <!--struct containing width, height and image data-->\r\n    <property name=\"IconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n    <property name=\"OverlayIconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <property name=\"OverlayIconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n\r\n    <!-- Requesting attention icon -->\r\n    <property name=\"AttentionIconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <!--same definition as image-->\r\n    <property name=\"AttentionIconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n    <property name=\"AttentionMovieName\" type=\"s\" access=\"read\"/>\r\n\r\n\r\n\r\n    <!-- tooltip data -->\r\n\r\n    <!--(iiay) is an image-->\r\n    <property name=\"ToolTip\" type=\"(sa(iiay)ss)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusToolTipStruct\"/>\r\n    </property>\r\n\r\n    <method name=\"ProvideXdgActivationToken\">\r\n        <arg name=\"token\" type=\"s\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <!-- interaction: the systemtray wants the application to do something -->\r\n    <method name=\"ContextMenu\">\r\n        <!-- we\'re passing the coordinates of the icon, so the app knows where to put the popup window -->\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"Activate\">\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"SecondaryActivate\">\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"Scroll\">\r\n      <arg name=\"delta\" type=\"i\" direction=\"in\"/>\r\n      <arg name=\"orientation\" type=\"s\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <!-- Signals: the client wants to change something in the status-->\r\n    <signal name=\"NewTitle\">\r\n    </signal>\r\n\r\n    <signal name=\"NewIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewAttentionIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewOverlayIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewMenu\">\r\n    </signal>\r\n\r\n    <signal name=\"NewToolTip\">\r\n    </signal>\r\n\r\n    <signal name=\"NewStatus\">\r\n      <arg name=\"status\" type=\"s\"/>\r\n    </signal>\r\n\r\n  </interface>\r\n</node>";
 
 /* TODO: Destroy all menus and entires on destroy tray */
 
@@ -347,6 +348,12 @@ static DBusHandlerResult MessageHandler(DBusConnection *connection, DBusMessage 
         return HandleGetProp(tray, (SDL_TrayDBus *)tray, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
         return HandleGetAllProps(tray, (SDL_TrayDBus *)tray, driver, msg);
+    } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
+        reply = driver->dbus->message_new_method_return(msg);
+        driver->dbus->message_append_args(reply, DBUS_TYPE_STRING, &sni_introspect, DBUS_TYPE_INVALID);
+        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
         printf("ContextMenu: %p\n", tray);
 		reply = driver->dbus->message_new_method_return(msg);
@@ -463,7 +470,6 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_Surface *icon, const char *tool
     /* register */
     register_name = tray_dbus->service_name;
     if (!SDL_DBus_CallVoidMethodOnConnection(tray_dbus->connection, SNI_WATCHER_SERVICE, SNI_WATCHER_PATH, SNI_WATCHER_INTERFACE, "RegisterStatusNotifierItem", DBUS_TYPE_STRING, &register_name, DBUS_TYPE_INVALID)) {
-        SDL_free(register_name);
         SDL_SetError("Unable to create tray: unable to register status notifier item!");
         CLEANUP2();
         return NULL;
