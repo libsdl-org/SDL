@@ -1056,8 +1056,6 @@ static void display_handle_done(void *data,
         AddEmulatedModes(internal, native_mode.w, native_mode.h);
     }
 
-    SDL_SetDisplayHDRProperties(dpy, &internal->HDR);
-
     if (internal->display == 0) {
         // First time getting display info, initialize the VideoDisplay
         if (internal->physical_width_mm >= internal->physical_height_mm) {
@@ -1070,6 +1068,9 @@ static void display_handle_done(void *data,
 
         // During initialization, the displays will be added after enumeration is complete.
         if (!video->initializing) {
+            if (video->wp_color_manager_v1) {
+                Wayland_GetColorInfoForOutput(internal, false);
+            }
             internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
             SDL_free(internal->placeholder.name);
             SDL_zero(internal->placeholder);
@@ -1119,7 +1120,6 @@ static void handle_output_image_description_changed(void *data,
                                                     struct wp_color_management_output_v1 *wp_color_management_output_v1)
 {
     SDL_DisplayData *display = (SDL_DisplayData *)data;
-    // wl_display.done is called after this event, so the display HDR status will be updated there.
     Wayland_GetColorInfoForOutput(display, false);
 }
 
@@ -1159,7 +1159,11 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     if (data->videodata->wp_color_manager_v1) {
         data->wp_color_management_output = wp_color_manager_v1_get_output(data->videodata->wp_color_manager_v1, output);
         wp_color_management_output_v1_add_listener(data->wp_color_management_output, &wp_color_management_output_listener, data);
-        Wayland_GetColorInfoForOutput(data, true);
+
+        // If not initializing, this will be queried synchronously in wl_output.done.
+        if (d->initializing) {
+            Wayland_GetColorInfoForOutput(data, true);
+        }
     }
     return true;
 }
