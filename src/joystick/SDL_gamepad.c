@@ -1258,6 +1258,10 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             if (guid.data[15] >= SDL_FLYDIGI_VADER2) {
                 // Vader series of controllers have C/Z buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
+                if (guid.data[15] == SDL_FLYDIGI_VADER5_PRO) {
+                    // Vader 5 has additional shoulder macro buttons and a circle button
+                    SDL_strlcat(mapping_string, "misc4:b17,misc5:b18,misc6:b19", sizeof(mapping_string));
+                }
             } else if (guid.data[15] == SDL_FLYDIGI_APEX5) {
                 // Apex 5 has additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
