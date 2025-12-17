@@ -3593,7 +3593,7 @@ static bool METAL_WaitForFences(
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
                 SDL_LockMutex(fence->mutex);
-                while(!fence->complete) {
+                while (!fence->complete) {
                     SDL_WaitCondition(fence->condition, fence->mutex);
                 }
                 SDL_UnlockMutex(fence->mutex);
