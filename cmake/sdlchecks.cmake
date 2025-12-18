@@ -963,7 +963,7 @@ macro(CheckPTHREAD)
       # the android libc provides built-in support for pthreads, so no
       # additional linking or compile flags are necessary
     elseif(LINUX)
-      set(PTHREAD_CFLAGS "-D_REENTRANT")
+      set(PTHREAD_CFLAGS "-D_REENTRANT -pthread")
       set(PTHREAD_LDFLAGS "-pthread")
     elseif(BSDI)
       set(PTHREAD_CFLAGS "-D_REENTRANT -D_THREAD_SAFE")
