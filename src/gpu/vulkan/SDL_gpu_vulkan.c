@@ -668,6 +668,9 @@ typedef struct WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     bool needsSwapchainRecreate;
+#ifdef SDL_PLATFORM_ANDROID
+    bool needsSurfaceRecreate;
+#endif
     Uint32 swapchainCreateWidth;
     Uint32 swapchainCreateHeight;
 
@@ -9662,6 +9665,7 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
     if (e->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
         data = VULKAN_INTERNAL_FetchWindowData(w);
         data->needsSwapchainRecreate = true;
+        data->needsSurfaceRecreate = true;
     }
 #endif
 
@@ -9803,6 +9807,10 @@ static bool VULKAN_ClaimWindow(
             SDL_free(windowData);
             return false;
         }
+
+#ifdef SDL_PLATFORM_ANDROID
+        windowData->needsSurfaceRecreate = false;
+#endif
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
         if (createSwapchainResult == 1) {
@@ -9976,6 +9984,24 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
         // Edge case, texture is filled in with NULL but not an error
         return true;
     }
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (windowData->needsSurfaceRecreate) {
+        SDL_VideoDevice *videoDevice = SDL_GetVideoDevice();
+        SDL_assert(videoDevice);
+        SDL_assert(videoDevice->Vulkan_CreateSurface);
+        if (!videoDevice->Vulkan_CreateSurface(
+                videoDevice,
+                windowData->window,
+                renderer->instance,
+                NULL, // FIXME: VAllocationCallbacks
+                &windowData->surface)) {
+            SET_STRING_ERROR_AND_RETURN("Failed to recreate Vulkan surface!", false);
+        }
+
+        windowData->needsSurfaceRecreate = false;
+    }
+#endif
 
     // If window data marked as needing swapchain recreate, try to recreate
     if (windowData->needsSwapchainRecreate) {
