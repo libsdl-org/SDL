@@ -9807,8 +9807,6 @@ static bool VULKAN_ClaimWindow(
             return false;
         }
 
-        windowData->needsSurfaceRecreate = false;
-
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
         if (createSwapchainResult == 1) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -10016,9 +10014,9 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             return true;
         }
 
-#ifdef SDL_PLATFORM_ANDROID
+        // Unset this flag until after the swapchain has been recreated to let VULKAN_INTERNAL_CreateSwapchain()
+        // know whether it needs to pass the old swapchain or not.
         windowData->needsSurfaceRecreate = false;
-#endif
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
