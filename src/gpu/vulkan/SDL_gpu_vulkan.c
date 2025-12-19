@@ -668,9 +668,7 @@ typedef struct WindowData
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     bool needsSwapchainRecreate;
-#ifdef SDL_PLATFORM_ANDROID
     bool needsSurfaceRecreate;
-#endif
     Uint32 swapchainCreateWidth;
     Uint32 swapchainCreateHeight;
 
@@ -4659,12 +4657,8 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlag;
     swapchainCreateInfo.presentMode = SDLToVK_PresentMode[windowData->presentMode];
     swapchainCreateInfo.clipped = VK_TRUE;
-#ifdef SDL_PLATFORM_ANDROID
     // The old swapchain could belong to a surface that no longer exists due to app switching.
     swapchainCreateInfo.oldSwapchain = windowData->needsSurfaceRecreate ? NULL : windowData->swapchain;
-#else
-    swapchainCreateInfo.oldSwapchain = windowData->swapchain;
-#endif
     vulkanResult = renderer->vkCreateSwapchainKHR(
         renderer->logicalDevice,
         &swapchainCreateInfo,
@@ -9813,9 +9807,7 @@ static bool VULKAN_ClaimWindow(
             return false;
         }
 
-#ifdef SDL_PLATFORM_ANDROID
         windowData->needsSurfaceRecreate = false;
-#endif
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
         if (createSwapchainResult == 1) {
@@ -9990,11 +9982,14 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
         return true;
     }
 
-#ifdef SDL_PLATFORM_ANDROID
     if (windowData->needsSurfaceRecreate) {
         SDL_VideoDevice *videoDevice = SDL_GetVideoDevice();
         SDL_assert(videoDevice);
         SDL_assert(videoDevice->Vulkan_CreateSurface);
+        renderer->vkDestroySurfaceKHR(
+                renderer->instance,
+                windowData->surface,
+                NULL);
         if (!videoDevice->Vulkan_CreateSurface(
                 videoDevice,
                 windowData->window,
@@ -10004,7 +9999,6 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             SET_STRING_ERROR_AND_RETURN("Failed to recreate Vulkan surface!", false);
         }
     }
-#endif
 
     // If window data marked as needing swapchain recreate, try to recreate
     if (windowData->needsSwapchainRecreate) {
