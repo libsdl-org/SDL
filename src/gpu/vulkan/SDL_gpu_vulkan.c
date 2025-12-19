@@ -4658,7 +4658,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.presentMode = SDLToVK_PresentMode[windowData->presentMode];
     swapchainCreateInfo.clipped = VK_TRUE;
     // The old swapchain could belong to a surface that no longer exists due to app switching.
-    swapchainCreateInfo.oldSwapchain = windowData->needsSurfaceRecreate ? NULL : windowData->swapchain;
+    swapchainCreateInfo.oldSwapchain = windowData->needsSurfaceRecreate ? (VkSwapchainKHR)0 : windowData->swapchain;
     vulkanResult = renderer->vkCreateSwapchainKHR(
         renderer->logicalDevice,
         &swapchainCreateInfo,
