@@ -4659,7 +4659,12 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlag;
     swapchainCreateInfo.presentMode = SDLToVK_PresentMode[windowData->presentMode];
     swapchainCreateInfo.clipped = VK_TRUE;
+#ifdef SDL_PLATFORM_ANDROID
+    // The old swapchain could belong to a surface that no longer exists due to app switching.
+    swapchainCreateInfo.oldSwapchain = windowData->needsSurfaceRecreate ? NULL : windowData->swapchain;
+#else
     swapchainCreateInfo.oldSwapchain = windowData->swapchain;
+#endif
     vulkanResult = renderer->vkCreateSwapchainKHR(
         renderer->logicalDevice,
         &swapchainCreateInfo,
@@ -9998,8 +10003,6 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
                 &windowData->surface)) {
             SET_STRING_ERROR_AND_RETURN("Failed to recreate Vulkan surface!", false);
         }
-
-        windowData->needsSurfaceRecreate = false;
     }
 #endif
 
@@ -10018,6 +10021,10 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             }
             return true;
         }
+
+#ifdef SDL_PLATFORM_ANDROID
+        windowData->needsSurfaceRecreate = false;
+#endif
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
