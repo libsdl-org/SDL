@@ -621,24 +621,41 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     char **paths = NULL;
+    char *path = NULL;
     int i, numpaths = 0;
 
-    if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
-                                                         DBUS_TYPE_INVALID,
-                                                         DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+    if (!dbus) {
         return false; // try a different approach than UPower.
     }
 
-    result = true;                  // Clearly we can use this interface.
-    *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
-    *seconds = -1;
-    *percent = -1;
+    if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "GetDisplayDevice", DBUS_TYPE_INVALID, DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
+        result = true;                  // Clearly we can use this interface.
+        *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
+        *seconds = -1;
+        *percent = -1;
 
-    for (i = 0; i < numpaths; i++) {
-        check_upower_device(dbus->system_conn, paths[i], state, seconds, percent);
+        // Make a copy of the path before making more dbus calls
+        path = SDL_strdup(path);
+        if (!path) {
+            // Out of memory, try to do something else
+            return false;
+        }
+        check_upower_device(dbus->system_conn, path, state, seconds, percent);
+        SDL_free(path);
+
+    } else if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices", DBUS_TYPE_INVALID, DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+        result = true;                  // Clearly we can use this interface.
+        *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
+        *seconds = -1;
+        *percent = -1;
+
+        for (i = 0; i < numpaths; i++) {
+            check_upower_device(dbus->system_conn, paths[i], state, seconds, percent);
+        }
+
+        dbus->free_string_array(paths);
     }
 
-    dbus->free_string_array(paths);
 #endif // SDL_USE_LIBDBUS
 
     return result;
