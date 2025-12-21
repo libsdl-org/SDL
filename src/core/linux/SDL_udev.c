@@ -81,6 +81,9 @@ static bool SDL_UDEV_load_syms(void)
     if (!SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x)) \
         return false
 
+#define SDL_UDEV_SYM_OPTIONAL(x)                                 \
+    SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x);
+
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
     SDL_UDEV_SYM(udev_device_get_driver);
@@ -98,6 +101,7 @@ static bool SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_enumerate_scan_devices);
     SDL_UDEV_SYM(udev_enumerate_unref);
     SDL_UDEV_SYM(udev_list_entry_get_name);
+    SDL_UDEV_SYM(udev_list_entry_get_value);
     SDL_UDEV_SYM(udev_list_entry_get_next);
     SDL_UDEV_SYM(udev_monitor_enable_receiving);
     SDL_UDEV_SYM(udev_monitor_filter_add_match_subsystem_devtype);
@@ -110,10 +114,9 @@ static bool SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_device_new_from_devnum);
     SDL_UDEV_SYM(udev_device_get_devnum);
 
-    SDL_UDEV_SYM(udev_hwdb_new);
-    SDL_UDEV_SYM(udev_hwdb_unref);
-    SDL_UDEV_SYM(udev_hwdb_get_properties_list_entry);
-    SDL_UDEV_SYM(udev_list_entry_get_value);
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_new);
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_unref);
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_get_properties_list_entry);
 
 #undef SDL_UDEV_SYM
 

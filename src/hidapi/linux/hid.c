@@ -916,7 +916,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 					root = cur_dev;
 				}
 				tmp->next = NULL;
-			
+
 				hid_free_enumeration(tmp);
 			} else {
 				prev_dev = cur_dev;
@@ -1071,7 +1071,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		tmp = create_device_info_for_device(raw_dev);
 
 		if (tmp) {
-			if (!tmp->manufacturer_string) {
+			if (!tmp->manufacturer_string && udev_hwdb_new) {
 				key = "ID_VENDOR_FROM_DATABASE";
 
 				if ((hwdb = udev_hwdb_new(udev)) != NULL) {

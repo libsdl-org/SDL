@@ -72,6 +72,7 @@ typedef struct SDL_UDEV_Symbols
     int (*udev_enumerate_scan_devices)(struct udev_enumerate *);
     void (*udev_enumerate_unref)(struct udev_enumerate *);
     const char *(*udev_list_entry_get_name)(struct udev_list_entry *);
+    const char *(*udev_list_entry_get_value)(struct udev_list_entry *);
     struct udev_list_entry *(*udev_list_entry_get_next)(struct udev_list_entry *);
     int (*udev_monitor_enable_receiving)(struct udev_monitor *);
     int (*udev_monitor_filter_add_match_subsystem_devtype)(struct udev_monitor *, const char *, const char *);
@@ -87,7 +88,6 @@ typedef struct SDL_UDEV_Symbols
     struct udev_hwdb *(*udev_hwdb_new)(struct udev *udev);
     struct udev_hwdb *(*udev_hwdb_unref)(struct udev_hwdb *hwdb);
     struct udev_list_entry *(*udev_hwdb_get_properties_list_entry)(struct udev_hwdb *hwdb, const char *modalias, unsigned flags);
-    const char *(*udev_list_entry_get_value)(struct udev_list_entry *list_entry);
 
 } SDL_UDEV_Symbols;
 
