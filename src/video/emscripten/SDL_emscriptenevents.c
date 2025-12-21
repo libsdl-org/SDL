@@ -520,15 +520,6 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
     SDL_WindowData *window_data = userData;
 
     if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-        bool force = false;
-
-        // update pixel ratio
-        if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-            if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
-                window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
-                force = true;
-            }
-        }
         const bool fill_document = (Emscripten_fill_document_window == window_data->window);
         if (fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
             double w, h;
@@ -550,12 +541,6 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
             // set_canvas_size unsets this
             if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
                 emscripten_set_element_css_size(window_data->canvas_id, w, h);
-            }
-
-            if (force) {
-                // force the event to trigger, so pixel ratio changes can be handled
-                window_data->window->w = 0;
-                window_data->window->h = 0;
             }
 
             SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
