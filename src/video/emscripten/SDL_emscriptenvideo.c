@@ -558,8 +558,8 @@ static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window 
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
-    double css_w, css_h;
     const char *selector;
+    const bool fill_document = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
 
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
