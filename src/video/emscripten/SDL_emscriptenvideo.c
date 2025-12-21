@@ -661,11 +661,6 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         Emscripten_UnregisterEventHandlers(data);
 
-        // We can't destroy the canvas, so resize it to zero instead
-        emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
-        if (data->pixel_ratio != 1.0f) {
-            emscripten_set_element_css_size(data->canvas_id, 1, 1);
-        }
         SDL_free(data->canvas_id);
 
         SDL_free(data->keyboard_element);
