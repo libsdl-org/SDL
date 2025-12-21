@@ -4667,6 +4667,16 @@ void SDL_VideoQuit(void)
     while (_this->windows) {
         SDL_DestroyWindow(_this->windows);
     }
+
+    if (_this->gl_config.driver_loaded && _this->GL_UnloadLibrary) {
+        _this->GL_UnloadLibrary(_this);
+        _this->gl_config.driver_loaded = 0;
+    }
+    if (_this->vulkan_config.loader_loaded && _this->Vulkan_UnloadLibrary) {
+        _this->Vulkan_UnloadLibrary(_this);
+        _this->vulkan_config.loader_loaded = 0;
+    }
+
     _this->VideoQuit(_this);
 
     for (i = _this->num_displays; i--; ) {
