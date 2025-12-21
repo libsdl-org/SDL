@@ -9660,14 +9660,6 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
         data->swapchainCreateHeight = e->window.data2;
     }
 
-#ifdef SDL_PLATFORM_ANDROID
-    if (e->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
-        data = VULKAN_INTERNAL_FetchWindowData(w);
-        data->needsSwapchainRecreate = true;
-        data->needsSurfaceRecreate = true;
-    }
-#endif
-
     return true;
 }
 
@@ -10720,6 +10712,11 @@ static bool VULKAN_Submit(
             if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
                 presentData->windowData->needsSwapchainRecreate = true;
             }
+        } else if (presentResult == VK_ERROR_SURFACE_LOST_KHR) {
+            // Android can destroy the surface at any time when the app goes into the background,
+            // even after successfully acquiring a swapchain texture and before presenting it.
+            presentData->windowData->needsSwapchainRecreate = true;
+            presentData->windowData->needsSurfaceRecreate = true;
         } else {
             if (presentResult != VK_SUCCESS) {
                 VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
