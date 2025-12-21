@@ -83,6 +83,12 @@ typedef struct SDL_UDEV_Symbols
     void (*udev_unref)(struct udev *);
     struct udev_device *(*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
     dev_t (*udev_device_get_devnum)(struct udev_device *udev_device);
+
+    struct udev_hwdb *(*udev_hwdb_new)(struct udev *udev);
+    struct udev_hwdb *(*udev_hwdb_unref)(struct udev_hwdb *hwdb);
+    struct udev_list_entry *(*udev_hwdb_get_properties_list_entry)(struct udev_hwdb *hwdb, const char *modalias, unsigned flags);
+    const char *(*udev_list_entry_get_value)(struct udev_list_entry *list_entry);
+
 } SDL_UDEV_Symbols;
 
 typedef struct SDL_UDEV_PrivateData
