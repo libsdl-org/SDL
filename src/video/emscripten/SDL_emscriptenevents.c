@@ -526,6 +526,8 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
             if (fill_document) {
                 w = (double) uiEvent->windowInnerWidth;
                 h = (double) uiEvent->windowInnerHeight;
+
+                emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
             } else {
                 SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
                 w = window_data->window->w;
@@ -535,8 +537,6 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
                     emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
                 }
             }
-
-            emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
 
             // set_canvas_size unsets this
             if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
