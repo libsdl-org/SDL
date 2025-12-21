@@ -529,18 +529,11 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
 
                 emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
             } else {
-                SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
-                w = window_data->window->w;
-                h = window_data->window->h;
-                // this will only work if the canvas size is set through css
-                if (window_data->external_size) {
-                    emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
-                }
-            }
+                int cw, ch;
+                emscripten_get_canvas_element_size(window_data->canvas_id, &cw, &ch);
 
-            // set_canvas_size unsets this
-            if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
-                emscripten_set_element_css_size(window_data->canvas_id, w, h);
+                w = (double) cw / window_data->pixel_ratio;
+                h = (double) ch / window_data->pixel_ratio;
             }
 
             SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));

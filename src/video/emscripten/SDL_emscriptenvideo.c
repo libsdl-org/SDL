@@ -546,12 +546,6 @@ static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window 
         const double scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
         emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
-        // if the size is not being controlled by css, we need to scale down for hidpi
-        if (!wdata->external_size && (wdata->pixel_ratio != 1.0f)) {
-            // scale canvas down
-            emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
-        }
-
         if (transitioning) {
             window->w = window->h = 0;
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, wdata->non_fill_document_width, wdata->non_fill_document_height);
@@ -597,15 +591,6 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         wdata->pixel_ratio = 1.0f;
     }
 
-    // set a fake size to check if there is any CSS sizing the canvas
-    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
-    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
-
-    wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
-    if (wdata->external_size) {
-        fill_document = false;  // can't be resizable if something else is controlling it.
-    }
-
     wdata->window = window;
 
     // Setup driver data for this window
@@ -649,16 +634,7 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             return;  // canvas size is being dictated by the browser window size, refuse request.
         }
 
-        // update pixel ratio
-        if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-            data->pixel_ratio = emscripten_get_device_pixel_ratio();
-        }
         emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->pending.w * data->pixel_ratio), SDL_lroundf(window->pending.h * data->pixel_ratio));
-
-        // scale canvas down
-        if (!data->external_size && data->pixel_ratio != 1.0f) {
-            emscripten_set_element_css_size(data->canvas_id, window->pending.w, window->pending.h);
-        }
 
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->pending.w, window->pending.h);
     }
