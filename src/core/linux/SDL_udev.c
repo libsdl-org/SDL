@@ -109,6 +109,12 @@ static bool SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_unref);
     SDL_UDEV_SYM(udev_device_new_from_devnum);
     SDL_UDEV_SYM(udev_device_get_devnum);
+
+    SDL_UDEV_SYM(udev_hwdb_new);
+    SDL_UDEV_SYM(udev_hwdb_unref);
+    SDL_UDEV_SYM(udev_hwdb_get_properties_list_entry);
+    SDL_UDEV_SYM(udev_list_entry_get_value);
+
 #undef SDL_UDEV_SYM
 
     return true;
