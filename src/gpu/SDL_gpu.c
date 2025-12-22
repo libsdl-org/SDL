@@ -988,6 +988,22 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
             SDL_assert_release(!"Compute pipeline write-only buffer count cannot be higher than 8!");
             return NULL;
         }
+        if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+            SDL_assert_release(!"Compute pipeline sampler count cannot be higher than 16!");
+            return NULL;
+        }
+        if (createinfo->num_readonly_storage_textures > MAX_STORAGE_TEXTURES_PER_STAGE) {
+            SDL_assert_release(!"Compute pipeline readonly storage texture count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_readonly_storage_buffers > MAX_STORAGE_BUFFERS_PER_STAGE) {
+            SDL_assert_release(!"Compute pipeline readonly storage buffer count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_uniform_buffers > MAX_UNIFORM_BUFFERS_PER_STAGE) {
+            SDL_assert_release(!"Compute pipeline uniform buffer count cannot be higher than 4!");
+            return NULL;
+        }
         if (createinfo->threadcount_x == 0 ||
             createinfo->threadcount_y == 0 ||
             createinfo->threadcount_z == 0) {
@@ -1177,6 +1193,22 @@ SDL_GPUShader *SDL_CreateGPUShader(
         }
         if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
+            return NULL;
+        }
+        if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+            SDL_assert_release(!"Shader sampler count cannot be higher than 16!");
+            return NULL;
+        }
+        if (createinfo->num_storage_textures > MAX_STORAGE_TEXTURES_PER_STAGE) {
+            SDL_assert_release(!"Shader storage texture count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_storage_buffers > MAX_STORAGE_BUFFERS_PER_STAGE) {
+            SDL_assert_release(!"Shader storage buffer count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_uniform_buffers > MAX_UNIFORM_BUFFERS_PER_STAGE) {
+            SDL_assert_release(!"Shader uniform buffer count cannot be higher than 4!");
             return NULL;
         }
     }
