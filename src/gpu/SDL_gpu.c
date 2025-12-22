@@ -1650,6 +1650,10 @@ void SDL_PushGPUVertexUniformData(
         SDL_InvalidParamError("data");
         return;
     }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER
@@ -1676,6 +1680,10 @@ void SDL_PushGPUFragmentUniformData(
         SDL_InvalidParamError("data");
         return;
     }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER
@@ -1700,6 +1708,10 @@ void SDL_PushGPUComputeUniformData(
     }
     CHECK_PARAM(data == NULL) {
         SDL_InvalidParamError("data");
+        return;
+    }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
         return;
     }
 
@@ -2008,6 +2020,10 @@ void SDL_BindGPUVertexSamplers(
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2043,6 +2059,10 @@ void SDL_BindGPUVertexStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2074,6 +2094,10 @@ void SDL_BindGPUVertexStorageBuffers(
         SDL_InvalidParamError("storage_buffers");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2102,6 +2126,10 @@ void SDL_BindGPUFragmentSamplers(
     }
     CHECK_PARAM(texture_sampler_bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("texture_sampler_bindings");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
         return;
     }
 
@@ -2138,6 +2166,10 @@ void SDL_BindGPUFragmentStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2167,6 +2199,10 @@ void SDL_BindGPUFragmentStorageBuffers(
     }
     CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
 
@@ -2453,6 +2489,10 @@ void SDL_BindGPUComputeSamplers(
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
+        return;
+    }
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
@@ -2483,6 +2523,10 @@ void SDL_BindGPUComputeStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
@@ -2511,6 +2555,10 @@ void SDL_BindGPUComputeStorageBuffers(
     }
     CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
 
