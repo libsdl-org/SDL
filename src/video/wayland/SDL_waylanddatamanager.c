@@ -34,6 +34,8 @@
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylanddatamanager.h"
+
+#include "SDL_waylandevents_c.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 
 /* FIXME: This is arbitrary, but we want this to be less than a frame because
@@ -524,7 +526,7 @@ bool Wayland_data_device_clear_selection(SDL_WaylandDataDevice *data_device)
     if (!data_device || !data_device->data_device) {
         result = SDL_SetError("Invalid Data Device");
     } else if (data_device->selection_source) {
-        wl_data_device_set_selection(data_device->data_device, NULL, 0);
+        wl_data_device_set_selection(data_device->data_device, NULL, data_device->video_data->input->last_implicit_grab_serial);
         Wayland_data_source_destroy(data_device->selection_source);
         data_device->selection_source = NULL;
     }
@@ -539,7 +541,7 @@ bool Wayland_primary_selection_device_clear_selection(SDL_WaylandPrimarySelectio
         result = SDL_SetError("Invalid Primary Selection Device");
     } else if (primary_selection_device->selection_source) {
         zwp_primary_selection_device_v1_set_selection(primary_selection_device->primary_selection_device,
-                                                      NULL, 0);
+                                                      NULL, primary_selection_device->video_data->input->last_implicit_grab_serial);
         Wayland_primary_selection_source_destroy(primary_selection_device->selection_source);
         primary_selection_device->selection_source = NULL;
     }
