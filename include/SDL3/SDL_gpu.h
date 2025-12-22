@@ -3903,6 +3903,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
  * This copy occurs on the GPU timeline. You may assume the copy has finished
  * in subsequent commands.
  *
+ * This function does not support depth or depth-stencil textures. For those,
+ * you must manually manage multiple depth textures.
+ *
  * \param copy_pass a copy pass handle.
  * \param source a source texture region.
  * \param destination a destination texture region.
