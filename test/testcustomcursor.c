@@ -304,7 +304,12 @@ static SDL_Cursor *init_animated_cursor(const char *image[], bool oneshot)
         frame_count = 6;
     }
 
-    return SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+    SDL_Cursor *cursor = SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+
+    SDL_DestroySurface(surface);
+    SDL_DestroySurface(invsurface);
+
+    return cursor;
 }
 
 static SDLTest_CommonState *state;
