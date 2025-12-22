@@ -989,6 +989,7 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
             return NULL;
         }
         if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(max_size, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
             SDL_assert_release(!"Compute pipeline sampler count cannot be higher than 16!");
             return NULL;
         }
