@@ -36,6 +36,8 @@ Fedora 35, all available features enabled:
 
 Fedora 39+ can also add `liburing-devel` to that command line.
 
+Fedora 40+ needs `zlib-ng-compat-static` to be added to that command line.
+
 NOTES:
 - The sndio audio target is unavailable on Fedora (but probably not what you
   should want to use anyhow).
