@@ -276,6 +276,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_JACK 1
 #cmakedefine SDL_AUDIO_DRIVER_JACK_DYNAMIC @SDL_AUDIO_DRIVER_JACK_DYNAMIC@
 #cmakedefine SDL_AUDIO_DRIVER_NETBSD 1
+#cmakedefine SDL_VIDEO_DRIVER_OHOS 1
 #cmakedefine SDL_AUDIO_DRIVER_OSS 1
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE 1
 #cmakedefine SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC @SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC@
@@ -341,6 +342,7 @@
 
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID 1
+#cmakedefine SDL_SENSOR_OHOS 1
 #cmakedefine SDL_SENSOR_COREMOTION 1
 #cmakedefine SDL_SENSOR_WINDOWS 1
 #cmakedefine SDL_SENSOR_DUMMY 1
@@ -405,6 +407,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_N3DS 1
 #cmakedefine SDL_VIDEO_DRIVER_NGAGE 1
 #cmakedefine SDL_VIDEO_DRIVER_OFFSCREEN 1
+#cmakedefine SDL_VIDEO_DRIVER_OHOS 1
 #cmakedefine SDL_VIDEO_DRIVER_PS2 1
 #cmakedefine SDL_VIDEO_DRIVER_PSP 1
 #cmakedefine SDL_VIDEO_DRIVER_RISCOS 1
@@ -491,6 +494,7 @@
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
+#cmakedefine SDL_POWER_OHOS 1
 #cmakedefine SDL_POWER_LINUX 1
 #cmakedefine SDL_POWER_WINDOWS 1
 #cmakedefine SDL_POWER_MACOSX 1
@@ -506,6 +510,7 @@
 
 /* Enable system filesystem support */
 #cmakedefine SDL_FILESYSTEM_ANDROID 1
+#cmakedefine SDL_FILESYSTEM_OHOS 1
 #cmakedefine SDL_FILESYSTEM_HAIKU 1
 #cmakedefine SDL_FILESYSTEM_COCOA 1
 #cmakedefine SDL_FILESYSTEM_DUMMY 1
