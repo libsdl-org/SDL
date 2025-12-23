@@ -991,7 +991,7 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
             return NULL;
         }
         if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
-            SDL_COMPILE_TIME_ASSERT(compute_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
+            SDL_COMPILE_TIME_ASSERT(compute_texture_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
             SDL_assert_release(!"Compute pipeline sampler count cannot be higher than 16!");
             return NULL;
         }
@@ -1204,7 +1204,7 @@ SDL_GPUShader *SDL_CreateGPUShader(
             return NULL;
         }
         if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
-            SDL_COMPILE_TIME_ASSERT(shader_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
+            SDL_COMPILE_TIME_ASSERT(shader_texture_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
             SDL_assert_release(!"Shader sampler count cannot be higher than 16!");
             return NULL;
         }
