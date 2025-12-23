@@ -307,6 +307,15 @@ int main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }    
+    
+    success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_QUESTION,
+                                       "Question icon",
+                                       "This is a MessageBox with a question icon.",
+                                       NULL);
+    if (!success) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
+        quit(1);
+    }  
           
     button_messagebox(NULL);
 

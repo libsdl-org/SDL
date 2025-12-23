@@ -97,12 +97,15 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
      * We need to handle it gracefully, otherwise no message box will be shown.
      */
     argv[argc++] = zenity_major > 3 || (zenity_major == 3 && zenity_minor >= 90) ? "--icon" : "--icon-name";
-    switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+    switch (messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_QUESTION)) {
     case SDL_MESSAGEBOX_ERROR:
         argv[argc++] = "dialog-error";
         break;
     case SDL_MESSAGEBOX_WARNING:
         argv[argc++] = "dialog-warning";
+        break;
+    case SDL_MESSAGEBOX_QUESTION:
+        argv[argc++] = "dialog-question";
         break;
     case SDL_MESSAGEBOX_INFORMATION:
     default:
