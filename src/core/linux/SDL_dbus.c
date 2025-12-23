@@ -18,9 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "SDL_internal.h"
-#include "SDL_dbus.h"
 #include "../../stdlib/SDL_vacopy.h"
+#include "SDL_dbus.h"
 
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
@@ -31,21 +32,25 @@ static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;
 
+#define DBUS_MENU_INTERFACE   "com.canonical.dbusmenu"
+#define DBUS_MENU_OBJECT_PATH "/Menu"
+
+static const char *menu_introspect= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<!--\r\nA library to allow applications to provide simple indications of\r\ninformation to be displayed to users of the application through the\r\ninterface shell.\r\n\r\nCopyright 2009 Canonical Ltd.\r\n\r\nAuthors:\r\n    Ted Gould <ted@canonical.com>\r\n    Aurélien Gâteau <aurelien.gateau@canonical.com>\r\n\r\nThis program is free software: you can redistribute it and/or modify it \r\nunder the terms of either or both of the following licenses:\r\n\r\n1) the GNU Lesser General Public License version 3, as published by the \r\nFree Software Foundation; and/or\r\n2) the GNU Lesser General Public License version 2.1, as published by \r\nthe Free Software Foundation.\r\n\r\nThis program is distributed in the hope that it will be useful, but \r\nWITHOUT ANY WARRANTY; without even the implied warranties of \r\nMERCHANTABILITY, SATISFACTORY QUALITY or FITNESS FOR A PARTICULAR \r\nPURPOSE.  See the applicable version of the GNU Lesser General Public \r\nLicense for more details.\r\n\r\nYou should have received a copy of both the GNU Lesser General Public \r\nLicense version 3 and version 2.1 along with this program.  If not, see \r\n<http://www.gnu.org/licenses/>\r\n-->\r\n<node name=\"/\" xmlns:dox=\"http://www.canonical.com/dbus/dox.dtd\">\r\n    <dox:d><![CDATA[\r\n    @mainpage\r\n\r\n    The goal of DBusMenu is to expose menus on DBus.\r\n    \r\n    Main interface is documented here: @ref com::canonical::dbusmenu\r\n    ]]></dox:d>\r\n\t<interface name=\"com.canonical.dbusmenu\">\r\n\t\t<dox:d><![CDATA[\r\n\t\tA DBus interface to expose menus on DBus.\r\n\r\n\t\tMenu items are represented with a unique numeric id and a dictionary of\r\n\t\tproperties.\r\n\r\n\t\tTo reduce the amount of DBus traffic, a property should only be returned\r\n\t\tif its value is not the default value.\r\n\r\n\t\tAvailable properties are:\r\n\r\n\t\t<table>\r\n\t\t<tr>\r\n\t\t\t<th>Name</th>\r\n\t\t\t<th>Type</th>\r\n\t\t\t<th>Description</th>\r\n\t\t\t<th>Default Value</th>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>type</td>\r\n\t\t\t<td>String</td>\r\n\t\t\t<td>Can be one of:\r\n\t\t\t- \"standard\": an item which can be clicked to trigger an action or\r\n\t\t\t  show another menu\r\n\t\t\t- \"separator\": a separator\r\n\r\n\t\t\tVendor specific types can be added by prefixing them with\r\n\t\t\t\"x-<vendor>-\".\r\n\t\t\t</td>\r\n\t\t\t<td>\"standard\"</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>label</td>\r\n\t\t\t<td>string</td>\r\n\t\t\t<td>Text of the item, except that:\r\n\t\t\t-# two consecutive underscore characters \"__\" are displayed as a\r\n\t\t\tsingle underscore,\r\n\t\t\t-# any remaining underscore characters are not displayed at all,\r\n\t\t\t-# the first of those remaining underscore characters (unless it is\r\n\t\t\tthe last character in the string) indicates that the following\r\n\t\t\tcharacter is the access key.\r\n\t\t\t</td>\r\n\t\t\t<td>\"\"</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>enabled</td>\r\n\t\t\t<td>boolean</td>\r\n\t\t\t<td>Whether the item can be activated or not.</td>\r\n\t\t\t<td>true</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>visible</td>\r\n\t\t\t<td>boolean</td>\r\n\t\t\t<td>True if the item is visible in the menu.</td>\r\n\t\t\t<td>true</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>icon-name</td>\r\n\t\t\t<td>string</td>\r\n\t\t\t<td>Icon name of the item, following the freedesktop.org icon spec.</td>\r\n\t\t\t<td>\"\"</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>icon-data</td>\r\n\t\t\t<td>binary</td>\r\n\t\t\t<td>PNG data of the icon.</td>\r\n\t\t\t<td>Empty</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>shortcut</td>\r\n\t\t\t<td>array of arrays of strings</td>\r\n\t\t\t<td>The shortcut of the item. Each array represents the key press\r\n\t\t\tin the list of keypresses. Each list of strings contains a list of\r\n\t\t\tmodifiers and then the key that is used. The modifier strings\r\n\t\t\tallowed are: \"Control\", \"Alt\", \"Shift\" and \"Super\".\r\n\r\n\t\t\t- A simple shortcut like Ctrl+S is represented as:\r\n\t\t\t  [[\"Control\", \"S\"]]\r\n\t\t\t- A complex shortcut like Ctrl+Q, Alt+X is represented as:\r\n\t\t\t  [[\"Control\", \"Q\"], [\"Alt\", \"X\"]]</td>\r\n\t\t\t<td>Empty</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>toggle-type</td>\r\n\t\t\t<td>string</td>\r\n\t\t\t<td>\r\n\t\t\tIf the item can be toggled, this property should be set to:\r\n\t\t\t- \"checkmark\": Item is an independent togglable item\r\n\t\t\t- \"radio\": Item is part of a group where only one item can be\r\n\t\t\t  toggled at a time\r\n\t\t\t- \"\": Item cannot be toggled\r\n\t\t\t</td>\r\n\t\t\t<td>\"\"</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>toggle-state</td>\r\n\t\t\t<td>int</td>\r\n\t\t\t<td>\r\n\t\t\tDescribe the current state of a \"togglable\" item. Can be one of:\r\n\t\t\t- 0 = off\r\n\t\t\t- 1 = on\r\n\t\t\t- anything else = indeterminate\r\n\r\n\t\t\tNote:\r\n\t\t\tThe implementation does not itself handle ensuring that only one\r\n\t\t\titem in a radio group is set to \"on\", or that a group does not have\r\n\t\t\t\"on\" and \"indeterminate\" items simultaneously; maintaining this\r\n\t\t\tpolicy is up to the toolkit wrappers.\r\n\t\t\t</td>\r\n\t\t\t<td>-1</td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td>children-display</td>\r\n\t\t\t<td>string</td>\r\n\t\t\t<td>\r\n\t\t\tIf the menu item has children this property should be set to\r\n\t\t\t\"submenu\".\r\n\t\t\t</td>\r\n\t\t\t<td>\"\"</td>\r\n\t\t</tr>\r\n\t\t</table>\r\n\r\n\t\tVendor specific properties can be added by prefixing them with\r\n\t\t\"x-<vendor>-\".\r\n\t\t]]></dox:d>\r\n\r\n<!-- Properties -->\r\n\t\t<property name=\"Version\" type=\"u\" access=\"read\">\r\n\t\t\t<dox:d>\r\n\t\t\tProvides the version of the DBusmenu API that this API is\r\n\t\t\timplementing.\r\n\t\t\t</dox:d>\r\n\t\t</property>\r\n\r\n        <property name=\"Status\" type=\"s\" access=\"read\">\r\n            <dox:d>\r\n            Tells if the menus are in a normal state or they believe that they\r\n            could use some attention.  Cases for showing them would be if help\r\n            were referring to them or they accessors were being highlighted.\r\n            This property can have two values: \"normal\" in almost all cases and\r\n            \"notice\" when they should have a higher priority to be shown.\r\n            </dox:d>\r\n        </property>\r\n\r\n<!-- Functions -->\r\n\r\n\t\t<method name=\"GetLayout\">\r\n\t\t\t<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out1\" value=\"DBusMenuLayoutItem\"/>\r\n\t\t\t<dox:d>\r\n\t\t\t  Provides the layout and propertiers that are attached to the entries\r\n\t\t\t  that are in the layout.  It only gives the items that are children\r\n\t\t\t  of the item that is specified in @a parentId.  It will return all of the\r\n\t\t\t  properties or specific ones depending of the value in @a propertyNames.\r\n\r\n\t\t\t  The format is recursive, where the second \'v\' is in the same format\r\n\t\t\t  as the original \'a(ia{sv}av)\'.  Its content depends on the value\r\n\t\t\t  of @a recursionDepth.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"i\" name=\"parentId\" direction=\"in\">\r\n\t\t\t\t<dox:d>The ID of the parent node for the layout.  For\r\n\t\t\t\tgrabbing the layout from the root node use zero.</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"i\" name=\"recursionDepth\" direction=\"in\">\r\n\t\t\t\t<dox:d>\r\n\t\t\t\t  The amount of levels of recursion to use.  This affects the\r\n\t\t\t\t  content of the second variant array.\r\n\t\t\t\t  - -1: deliver all the items under the @a parentId.\r\n\t\t\t\t  - 0: no recursion, the array will be empty.\r\n\t\t\t\t  - n: array will contains items up to \'n\' level depth.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"as\" name=\"propertyNames\" direction=\"in\" >\r\n\t\t\t\t<dox:d>\r\n\t\t\t\t\tThe list of item properties we are\r\n\t\t\t\t\tinterested in.  If there are no entries in the list all of\r\n\t\t\t\t\tthe properties will be sent.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"u\" name=\"revision\" direction=\"out\">\r\n\t\t\t\t<dox:d>The revision number of the layout.  For matching\r\n\t\t\t\twith layoutUpdated signals.</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"(ia{sv}av)\" name=\"layout\" direction=\"out\">\r\n\t\t\t\t<dox:d>The layout, as a recursive structure.</dox:d>\r\n\t\t\t</arg>\r\n\t\t</method>\r\n\r\n\t\t<method name=\"GetGroupProperties\">\r\n\t\t\t<annotation name=\"com.trolltech.QtDBus.QtTypeName.In0\" value=\"QList&lt;int&gt;\"/>\r\n\t\t\t<annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"DBusMenuItemList\"/>\r\n\t\t\t<dox:d>\r\n\t\t\tReturns the list of items which are children of @a parentId.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"ai\" name=\"ids\" direction=\"in\" >\r\n\t\t\t\t<dox:d>\r\n\t\t\t\t\tA list of ids that we should be finding the properties\r\n\t\t\t\t\ton.  If the list is empty, all menu items should be sent.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"as\" name=\"propertyNames\" direction=\"in\" >\r\n\t\t\t\t<dox:d>\r\n\t\t\t\t\tThe list of item properties we are\r\n\t\t\t\t\tinterested in.  If there are no entries in the list all of\r\n\t\t\t\t\tthe properties will be sent.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"a(ia{sv})\" name=\"properties\" direction=\"out\" >\r\n\t\t\t\t<dox:d>\r\n\t\t\t\t\tAn array of property values.\r\n\t\t\t\t\tAn item in this area is represented as a struct following\r\n\t\t\t\t\tthis format:\r\n\t\t\t\t\t@li id unsigned the item id\r\n\t\t\t\t\t@li properties map(string => variant) the requested item properties\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t</method>\r\n\r\n\t\t<method name=\"GetProperty\">\r\n\t\t\t<dox:d>\r\n\t\t\t  Get a signal property on a single item.  This is not useful if you\'re\r\n\t\t\t  going to implement this interface, it should only be used if you\'re\r\n\t\t\t  debugging via a commandline tool.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"i\" name=\"id\" direction=\"in\">\r\n\t\t\t\t<dox:d>the id of the item which received the event</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"s\" name=\"name\" direction=\"in\">\r\n\t\t\t\t<dox:d>the name of the property to get</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"v\" name=\"value\" direction=\"out\">\r\n\t\t\t\t<dox:d>the value of the property</dox:d>\r\n\t\t\t</arg>\r\n\t\t</method>\r\n\r\n\t\t<method name=\"Event\">\r\n\t\t\t<dox:d><![CDATA[\r\n\t\t\tThis is called by the applet to notify the application an event happened on a\r\n\t\t\tmenu item.\r\n\r\n\t\t\t@a type can be one of the following:\r\n\r\n\t\t\t@li \"clicked\"\r\n\t\t\t@li \"hovered\"\r\n\r\n\t\t\tVendor specific events can be added by prefixing them with \"x-<vendor>-\"\r\n\t\t\t]]></dox:d>\r\n\t\t\t<arg type=\"i\" name=\"id\" direction=\"in\" >\r\n\t\t\t\t<dox:d>the id of the item which received the event</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"s\" name=\"eventId\" direction=\"in\" >\r\n\t\t\t\t<dox:d>the type of event</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"v\" name=\"data\" direction=\"in\" >\r\n\t\t\t\t<dox:d>event-specific data</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"u\" name=\"timestamp\" direction=\"in\" >\r\n\t\t\t\t<dox:d>The time that the event occured if available or the time the message was sent if not</dox:d>\r\n\t\t\t</arg>\r\n\t\t</method>\r\n\r\n\t\t<method name=\"AboutToShow\">\r\n\t\t\t<dox:d>\r\n\t\t\tThis is called by the applet to notify the application that it is about\r\n\t\t\tto show the menu under the specified item.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"i\" name=\"id\" direction=\"in\">\r\n\t\t\t\t<dox:d>\r\n\t\t\t\tWhich menu item represents the parent of the item about to be shown.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"b\" name=\"needUpdate\" direction=\"out\">\r\n\t\t\t\t<dox:d>\r\n\t\t\t\tWhether this AboutToShow event should result in the menu being updated.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t</method>\r\n\r\n<!-- Signals -->\r\n\t\t<signal name=\"ItemsPropertiesUpdated\">\r\n\t\t\t<annotation name=\"com.trolltech.QtDBus.QtTypeName.In0\" value=\"DBusMenuItemList\"/>\r\n\t\t\t<annotation name=\"com.trolltech.QtDBus.QtTypeName.In1\" value=\"DBusMenuItemKeysList\"/>\r\n\t\t\t<dox:d>\r\n\t\t\tTriggered when there are lots of property updates across many items\r\n\t\t\tso they all get grouped into a single dbus message.  The format is\r\n\t\t\tthe ID of the item with a hashtable of names and values for those\r\n\t\t\tproperties.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"a(ia{sv})\" name=\"updatedProps\" direction=\"out\" />\r\n\t\t\t<arg type=\"a(ias)\" name=\"removedProps\" direction=\"out\" />\r\n\t\t</signal>\r\n\r\n\t\t<signal name=\"LayoutUpdated\">\r\n\t\t\t<dox:d>\r\n\t\t\tTriggered by the application to notify display of a layout update, up to\r\n\t\t\trevision\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"u\" name=\"revision\" direction=\"out\" >\r\n\t\t\t\t<dox:d>The revision of the layout that we\'re currently on</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"i\" name=\"parent\" direction=\"out\" >\r\n\t\t\t\t<dox:d>\r\n\t\t\t\tIf the layout update is only of a subtree, this is the\r\n\t\t\t\tparent item for the entries that have changed.  It is zero if\r\n\t\t\t\tthe whole layout should be considered invalid.\r\n\t\t\t\t</dox:d>\r\n\t\t\t</arg>\r\n\t\t</signal>\r\n\t\t<signal name=\"ItemActivationRequested\">\r\n\t\t\t<dox:d>\r\n\t\t\t  The server is requesting that all clients displaying this\r\n\t\t\t  menu open it to the user.  This would be for things like\r\n\t\t\t  hotkeys that when the user presses them the menu should\r\n\t\t\t  open and display itself to the user.\r\n\t\t\t</dox:d>\r\n\t\t\t<arg type=\"i\" name=\"id\" direction=\"out\" >\r\n\t\t\t\t<dox:d>ID of the menu that should be activated</dox:d>\r\n\t\t\t</arg>\r\n\t\t\t<arg type=\"u\" name=\"timestamp\" direction=\"out\" >\r\n\t\t\t\t<dox:d>The time that the event occured</dox:d>\r\n\t\t\t</arg>\r\n\t\t</signal>\r\n\r\n<!-- End of interesting stuff -->\r\n\r\n\t</interface>\r\n</node>";
+
 SDL_ELF_NOTE_DLOPEN(
     "core-libdbus",
     "Support for D-Bus IPC",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_DRIVER_DBUS_DYNAMIC
-);
+    SDL_DRIVER_DBUS_DYNAMIC);
 
 static bool LoadDBUSSyms(void)
 {
-#define SDL_DBUS_SYM2_OPTIONAL(TYPE, x, y)                   \
+#define SDL_DBUS_SYM2_OPTIONAL(TYPE, x, y) \
     dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y)
 
 #define SDL_DBUS_SYM2(TYPE, x, y)                            \
     if (!(dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y))) \
-        return false
+    return false
 
 #define SDL_DBUS_SYM_OPTIONAL(TYPE, x) \
     SDL_DBUS_SYM2_OPTIONAL(TYPE, x, dbus_##x)
@@ -53,48 +58,54 @@ static bool LoadDBUSSyms(void)
 #define SDL_DBUS_SYM(TYPE, x) \
     SDL_DBUS_SYM2(TYPE, x, dbus_##x)
 
-    SDL_DBUS_SYM(DBusConnection *(*)(DBusBusType, DBusError *), bus_get_private);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusError *), bus_register);
+    SDL_DBUS_SYM(DBusConnection * (*)(DBusBusType, DBusError *), bus_get_private);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusError *), bus_register);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_add_match);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_remove_match);
     SDL_DBUS_SYM(const char *(*)(DBusConnection *), bus_get_unique_name);
-    SDL_DBUS_SYM(DBusConnection *(*)(const char *, DBusError *), connection_open_private);
+    SDL_DBUS_SYM(int (*)(DBusConnection *, const char *, unsigned int, DBusError *), bus_request_name);
+    SDL_DBUS_SYM(DBusConnection * (*)(const char *, DBusError *), connection_open_private);
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction), connection_add_filter);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *), connection_remove_filter);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, const char *, const DBusObjectPathVTable *, void *, DBusError *), connection_try_register_object_path);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusMessage *, dbus_uint32_t *), connection_send);
-    SDL_DBUS_SYM(DBusMessage *(*)(DBusConnection *, DBusMessage *, int, DBusError *), connection_send_with_reply_and_block);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *), connection_get_is_connected);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction), connection_add_filter);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusHandleMessageFunction, void *), connection_remove_filter);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, const char *, const DBusObjectPathVTable *, void *, DBusError *), connection_try_register_object_path);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusMessage *, dbus_uint32_t *), connection_send);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusConnection *, DBusMessage *, int, DBusError *), connection_send_with_reply_and_block);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_close);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_ref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_unref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_flush);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write_dispatch);
-    SDL_DBUS_SYM(DBusDispatchStatus (*)(DBusConnection *), connection_dispatch);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_signal);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
-    SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *, const char *), message_new_method_call);
-    SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *), message_new_signal);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, ...), message_append_args);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, va_list), message_append_args_valist);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, int), connection_read_write);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, int), connection_read_write_dispatch);
+    SDL_DBUS_SYM(DBusDispatchStatus(*)(DBusConnection *), connection_dispatch);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *, const char *), message_is_signal);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *, const char *), message_is_method_call);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *), message_has_path);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusMessage *, const char *, const char *), message_new_error);
+    SDL_DBUS_SYM(DBusMessage * (*)(const char *, const char *, const char *, const char *), message_new_method_call);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusMessage *), message_new_method_return);
+    SDL_DBUS_SYM(DBusMessage * (*)(const char *, const char *, const char *), message_new_signal);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, int, ...), message_append_args);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, int, va_list), message_append_args_valist);
     SDL_DBUS_SYM(void (*)(DBusMessage *, DBusMessageIter *), message_iter_init_append);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const char *, DBusMessageIter *), message_iter_open_container);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const void *), message_iter_append_basic);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, DBusMessageIter *), message_iter_close_container);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusError *, int, ...), message_get_args);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusError *, int, va_list), message_get_args_valist);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusMessageIter *), message_iter_init);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *), message_iter_next);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const char *, DBusMessageIter *), message_iter_open_container);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const void *), message_iter_append_basic);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const void *, int), message_iter_append_fixed_array);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, DBusMessageIter *), message_iter_close_container);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusError *, int, ...), message_get_args);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusError *, int, va_list), message_get_args_valist);
+    SDL_DBUS_SYM(void (*)(DBusMessageIter *, void *, int *), message_iter_get_fixed_array);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusMessageIter *), message_iter_init);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *), message_iter_next);
     SDL_DBUS_SYM(void (*)(DBusMessageIter *, void *), message_iter_get_basic);
     SDL_DBUS_SYM(int (*)(DBusMessageIter *), message_iter_get_arg_type);
     SDL_DBUS_SYM(void (*)(DBusMessageIter *, DBusMessageIter *), message_iter_recurse);
     SDL_DBUS_SYM(void (*)(DBusMessage *), message_unref);
-    SDL_DBUS_SYM(dbus_bool_t (*)(void), threads_init_default);
+    SDL_DBUS_SYM(dbus_bool_t(*)(void), threads_init_default);
     SDL_DBUS_SYM(void (*)(DBusError *), error_init);
-    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *), error_is_set);
-    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *, const char *), error_has_name);
+    SDL_DBUS_SYM(dbus_bool_t(*)(const DBusError *), error_is_set);
+    SDL_DBUS_SYM(dbus_bool_t(*)(const DBusError *, const char *), error_has_name);
     SDL_DBUS_SYM(void (*)(DBusError *), error_free);
     SDL_DBUS_SYM(char *(*)(void), get_local_machine_id);
     SDL_DBUS_SYM_OPTIONAL(char *(*)(DBusError *), try_get_local_machine_id);
@@ -439,12 +450,12 @@ failed:
 
 static bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
 {
-   const char *keys[1];
-   const char *values[1];
+    const char *keys[1];
+    const char *values[1];
 
-   keys[0] = key;
-   values[0] = value;
-   return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
+    keys[0] = key;
+    values[0] = value;
+    return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
@@ -622,7 +633,7 @@ char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *path_count)
      * The spec doesn't define any entries yet so it's empty. */
     dbus.message_iter_init_append(msg, &iter);
     if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
-        !dbus.message_iter_close_container(&iter,  &iterDict)) {
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
         SDL_OutOfMemory();
         dbus.message_unref(msg);
         goto failed;
@@ -666,10 +677,10 @@ static DBusHandlerResult SDL_DBus_CameraPortalMessageHandler(DBusConnection *con
 
     if (dbus.message_is_signal(msg, "org.freedesktop.DBus", "NameOwnerChanged")) {
         if (!dbus.message_get_args(msg, data->err,
-                DBUS_TYPE_STRING, &name,
-                DBUS_TYPE_STRING, &old,
-                DBUS_TYPE_STRING, &new,
-                DBUS_TYPE_INVALID)) {
+                                   DBUS_TYPE_STRING, &name,
+                                   DBUS_TYPE_STRING, &old,
+                                   DBUS_TYPE_STRING, &new,
+                                   DBUS_TYPE_INVALID)) {
             data->done = true;
             return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
         }
@@ -829,6 +840,759 @@ failed:
     }
 
     return -1;
+}
+
+static SDL_DBusMenuItem *GetMenuItemById(SDL_ListNode *menu, long id)
+{
+    SDL_ListNode *cursor;
+
+    cursor = menu;
+    while (cursor) {
+        SDL_DBusMenuItem *item;
+
+        item = cursor->entry;
+        
+        if (item->id == id) {
+            return item;
+        }
+
+        if (item->sub_menu) {
+            SDL_DBusMenuItem *found;
+
+            found = GetMenuItemById(item->sub_menu, id);
+            if (found) {
+                return found;
+            }
+        }
+        
+        cursor = cursor->next;
+    }
+    return NULL;
+}
+
+static void AppendMenuItemProperties(SDL_DBusContext *ctx, SDL_DBusMenuItem *item, DBusMessageIter *dict_iter)
+{
+    DBusMessageIter entry_iter;
+    DBusMessageIter variant_iter;
+    const char *key;
+    const char *value;
+    dbus_bool_t value_bool;
+
+    if (item->utf8) {
+        key = "label";
+        ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &item->utf8);
+        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+        ctx->message_iter_close_container(dict_iter, &entry_iter);
+    }
+
+    key = "type";
+    if (item->type == SDL_DBUS_MENU_ITEM_TYPE_SEPERATOR) {
+        value = "separator";
+    } else {
+        value = "standard";
+    }
+    ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+    ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
+    ctx->message_iter_close_container(&entry_iter, &variant_iter);
+    ctx->message_iter_close_container(dict_iter, &entry_iter);
+
+    key = "enabled";
+    value_bool = !(item->flags & SDL_DBUS_MENU_ITEM_FLAGS_DISABLED);
+    ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+    ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &value_bool);
+    ctx->message_iter_close_container(&entry_iter, &variant_iter);
+    ctx->message_iter_close_container(dict_iter, &entry_iter);
+
+    key = "visible";
+    value_bool = TRUE;
+    ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+    ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &value_bool);
+    ctx->message_iter_close_container(&entry_iter, &variant_iter);
+    ctx->message_iter_close_container(dict_iter, &entry_iter);
+
+    if (item->type == SDL_DBUS_MENU_ITEM_TYPE_CHECKBOX) {
+        int value_int;
+
+        key = "toggle-type";
+        value = "checkmark";
+        ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
+        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+        ctx->message_iter_close_container(dict_iter, &entry_iter);
+
+        key = "toggle-state";
+        value_int = (item->flags & SDL_DBUS_MENU_ITEM_FLAGS_CHECKED) ? 1 : 0;
+        ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "i", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_INT32, &value_int);
+        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+        ctx->message_iter_close_container(dict_iter, &entry_iter);
+    }
+
+    if (item->sub_menu) {
+        key = "children-display";
+        value = "submenu";
+        ctx->message_iter_open_container(dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
+        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+        ctx->message_iter_close_container(dict_iter, &entry_iter);
+    }
+}
+
+static void AppendMenuItem(SDL_DBusContext *ctx, SDL_DBusMenuItem *item, DBusMessageIter *array_iter, int depth)
+{
+    DBusMessageIter struct_iter, dict_iter, children_iter;
+
+    ctx->message_iter_open_container(array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter);
+    ctx->message_iter_append_basic(&struct_iter, DBUS_TYPE_INT32, &item->id);
+    ctx->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter);
+    AppendMenuItemProperties(ctx, item, &dict_iter);
+    ctx->message_iter_close_container(&struct_iter, &dict_iter);
+    ctx->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "v", &children_iter);
+    if (item->sub_menu && depth > 0) {
+        SDL_ListNode *cursor;
+
+        cursor = item->sub_menu;
+        while (cursor) {
+            SDL_DBusMenuItem *child;
+            DBusMessageIter variant_iter;
+
+            child = cursor->entry;
+            ctx->message_iter_open_container(&children_iter, DBUS_TYPE_VARIANT, "(ia{sv}av)", &variant_iter);
+            AppendMenuItem(ctx, child, &variant_iter, depth - 1);
+            ctx->message_iter_close_container(&children_iter, &variant_iter);
+            cursor = cursor->next;
+        }
+    }
+    ctx->message_iter_close_container(&struct_iter, &children_iter);
+    ctx->message_iter_close_container(array_iter, &struct_iter);
+}
+
+static DBusHandlerResult HandleGetLayout(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
+{
+    DBusMessage *reply;
+    DBusMessageIter reply_iter, struct_iter, dict_iter, children_iter;
+    DBusMessageIter entry_iter, variant_iter;
+    DBusMessageIter args;
+    const char *key;
+    const char *val;
+    long parent_id;
+    long recursion_depth;
+    long root_id;
+    unsigned long revision;
+
+    ctx->message_iter_init(msg, &args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_INT32) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    ctx->message_iter_get_basic(&args, &parent_id);
+    ctx->message_iter_next(&args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_INT32) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    ctx->message_iter_get_basic(&args, &recursion_depth);
+    if (recursion_depth == -1) {
+        recursion_depth = 100;
+    }
+
+    reply = ctx->message_new_method_return(msg);
+    ctx->message_iter_init_append(reply, &reply_iter);
+
+    revision = 0;
+    if (menu) {
+        if (menu->entry) {
+            revision = ((SDL_DBusMenuItem *)menu->entry)->revision;
+        }
+    }
+    ctx->message_iter_append_basic(&reply_iter, DBUS_TYPE_UINT32, &revision);
+
+    ctx->message_iter_open_container(&reply_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter);
+
+    root_id = 0;
+    ctx->message_iter_append_basic(&struct_iter, DBUS_TYPE_INT32, &root_id);
+
+    key = "children-display";
+    val = "submenu";
+    ctx->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter);
+    ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+    ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+    ctx->message_iter_close_container(&entry_iter, &variant_iter);
+    ctx->message_iter_close_container(&dict_iter, &entry_iter);
+    ctx->message_iter_close_container(&struct_iter, &dict_iter);
+
+    ctx->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "v", &children_iter);
+    if (!parent_id && menu) {
+        SDL_ListNode *cursor;
+
+        cursor = menu;
+        while (cursor) {
+            SDL_DBusMenuItem *item;
+            DBusMessageIter cvariant_iter, item_struct, item_dict, item_children;
+
+            item = cursor->entry;
+            ctx->message_iter_open_container(&children_iter, DBUS_TYPE_VARIANT, "(ia{sv}av)", &cvariant_iter);
+            ctx->message_iter_open_container(&cvariant_iter, DBUS_TYPE_STRUCT, NULL, &item_struct);
+            ctx->message_iter_append_basic(&item_struct, DBUS_TYPE_INT32, &item->id);
+            ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "{sv}", &item_dict);
+            AppendMenuItemProperties(ctx, item, &item_dict);
+            ctx->message_iter_close_container(&item_struct, &item_dict);
+            ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "v", &item_children);
+            if (item->sub_menu && recursion_depth) {
+                SDL_ListNode *child_cursor;
+
+                child_cursor = item->sub_menu;
+                while (child_cursor) {
+                    SDL_DBusMenuItem *child;
+                    DBusMessageIter child_variant;
+
+                    child = child_cursor->entry;
+                    ctx->message_iter_open_container(&item_children, DBUS_TYPE_VARIANT, "(ia{sv}av)", &child_variant);
+                    AppendMenuItem(ctx, child, &child_variant, recursion_depth - 1);
+                    ctx->message_iter_close_container(&item_children, &child_variant);
+                    child_cursor = child_cursor->next;
+                }
+            }
+            ctx->message_iter_close_container(&item_struct, &item_children);
+            ctx->message_iter_close_container(&cvariant_iter, &item_struct);
+
+            ctx->message_iter_close_container(&children_iter, &cvariant_iter);
+            cursor = cursor->next;
+        }
+    } else if (parent_id) {
+        SDL_DBusMenuItem *parent;
+
+        parent = GetMenuItemById(menu, parent_id);
+        if (parent && parent->sub_menu) {
+            SDL_ListNode *cursor;
+
+            cursor = parent->sub_menu;
+            while (cursor) {
+                SDL_DBusMenuItem *item;
+                DBusMessageIter cvariant_iter, item_struct, item_dict, item_children;
+
+                item = cursor->entry;
+                ctx->message_iter_open_container(&children_iter, DBUS_TYPE_VARIANT, "(ia{sv}av)", &cvariant_iter);
+                ctx->message_iter_open_container(&cvariant_iter, DBUS_TYPE_STRUCT, NULL, &item_struct);
+                ctx->message_iter_append_basic(&item_struct, DBUS_TYPE_INT32, &item->id);
+                ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "{sv}", &item_dict);
+                AppendMenuItemProperties(ctx, item, &item_dict);
+                ctx->message_iter_close_container(&item_struct, &item_dict);
+                ctx->message_iter_open_container(&item_struct, DBUS_TYPE_ARRAY, "v", &item_children);
+                if (item->sub_menu && recursion_depth) {
+                    SDL_ListNode *child_cursor;
+
+                    child_cursor = item->sub_menu;
+                    while (child_cursor) {
+                        SDL_DBusMenuItem *child;
+                        DBusMessageIter child_variant;
+
+                        child = child_cursor->entry;
+                        ctx->message_iter_open_container(&item_children, DBUS_TYPE_VARIANT, "(ia{sv}av)", &child_variant);
+                        AppendMenuItem(ctx, child, &child_variant, recursion_depth - 1);
+                        ctx->message_iter_close_container(&item_children, &child_variant);
+                        child_cursor = child_cursor->next;
+                    }
+                }
+                ctx->message_iter_close_container(&item_struct, &item_children);
+                ctx->message_iter_close_container(&cvariant_iter, &item_struct);
+
+                ctx->message_iter_close_container(&children_iter, &cvariant_iter);
+
+                cursor = cursor->next;
+            }
+        }
+    }
+    ctx->message_iter_close_container(&struct_iter, &children_iter);
+    ctx->message_iter_close_container(&reply_iter, &struct_iter);
+
+    ctx->connection_send(conn, reply, NULL);
+    ctx->message_unref(reply);
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult HandleEvent(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
+{
+    DBusMessage *reply;
+    const char *event_id;
+    SDL_DBusMenuItem *item;
+    DBusMessageIter args;
+    Uint32 id;
+
+    ctx->message_iter_init(msg, &args);
+    ctx->message_iter_get_basic(&args, &id);
+    ctx->message_iter_next(&args);
+    ctx->message_iter_get_basic(&args, &event_id);
+    
+    item = NULL;
+    if (!SDL_strcmp(event_id, "clicked")) {
+        item = GetMenuItemById(menu, id);
+    }
+
+    reply = ctx->message_new_method_return(msg);
+    ctx->connection_send(conn, reply, NULL);
+    ctx->message_unref(reply);
+        
+    if (item) {
+        if (item->cb) {
+            item->cb(item, item->cb_data);
+        }
+    }
+    
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult HandleGetProperty(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
+{
+    DBusMessage *reply;
+    SDL_DBusMenuItem *item;
+    const char *property;
+    const char *val;
+    DBusMessageIter args;
+    DBusMessageIter iter, variant_iter;
+    long id;
+    int int_val;
+    dbus_bool_t bool_val;
+
+    ctx->message_iter_init(msg, &args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_INT32) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    ctx->message_iter_get_basic(&args, &id);
+    ctx->message_iter_next(&args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    ctx->message_iter_get_basic(&args, &property);
+
+    item = GetMenuItemById(menu, id);
+    if (!item) {
+        DBusMessage *error;
+
+        error = ctx->message_new_error(msg, "com.canonical.dbusmenu.Error", "Item not found");
+        ctx->connection_send(conn, error, NULL);
+        ctx->message_unref(error);
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    reply = ctx->message_new_method_return(msg);
+    ctx->message_iter_init_append(reply, &iter);
+    if (!SDL_strcmp(property, "label")) {
+        val = item->utf8 ? item->utf8 : "";
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "enabled")) {
+        bool_val = !(item->flags & SDL_DBUS_MENU_ITEM_FLAGS_DISABLED);
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "visible")) {
+        bool_val = 1;
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "type")) {
+        if (item->type == SDL_DBUS_MENU_ITEM_TYPE_SEPERATOR) {
+            val = "separator";
+        } else {
+            val = "standard";
+        }
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "toggle-state")) {
+        int_val = (item->flags & SDL_DBUS_MENU_ITEM_FLAGS_CHECKED) ? 1 : 0;
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "i", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_INT32, &int_val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "children-display")) {
+        val = item->sub_menu ? "submenu" : "";
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    } else {
+        val = "";
+        ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+        ctx->message_iter_close_container(&iter, &variant_iter);
+    }
+
+    ctx->connection_send(conn, reply, NULL);
+    ctx->message_unref(reply);
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static DBusHandlerResult HandleGetGroupProperties(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
+{
+    #define FILTER_PROPS_SZ 32
+    DBusMessage *reply;
+    DBusMessageIter args, array_iter, prop_iter;
+    DBusMessageIter iter, reply_array_iter;
+    const char *filter_props[FILTER_PROPS_SZ];
+    long *ids;
+    int ids_sz;
+    int filter_sz;
+    int i;
+    int j;
+
+    ids_sz = 0;
+    ctx->message_iter_init(msg, &args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_ARRAY) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    ctx->message_iter_recurse(&args, &array_iter);
+    if (ctx->message_iter_get_arg_type(&array_iter) == DBUS_TYPE_INT32) {
+        ctx->message_iter_get_fixed_array(&array_iter, &ids, &ids_sz);
+    }
+
+    ctx->message_iter_next(&args);
+    if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_ARRAY) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    ctx->message_iter_recurse(&args, &prop_iter);
+    filter_sz = 0;
+    while (ctx->message_iter_get_arg_type(&prop_iter) == DBUS_TYPE_STRING) {
+        if (filter_sz < FILTER_PROPS_SZ) {
+            ctx->message_iter_get_basic(&prop_iter, &filter_props[filter_sz]);
+            filter_sz++;
+        }
+        ctx->message_iter_next(&prop_iter);
+    }
+
+    reply = ctx->message_new_method_return(msg);
+    ctx->message_iter_init_append(reply, &iter);
+    ctx->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(ia{sv})", &reply_array_iter);
+
+    for (i = 0; i < ids_sz; i++) {
+        SDL_DBusMenuItem *item;
+
+        item = GetMenuItemById(menu, ids[i]);
+        if (item) {
+            DBusMessageIter struct_iter, dict_iter;
+
+            ctx->message_iter_open_container(&reply_array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter);
+            ctx->message_iter_append_basic(&struct_iter, DBUS_TYPE_INT32, &ids[i]);
+            ctx->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter);
+
+            if (filter_sz == 0) {
+                AppendMenuItemProperties(ctx, item, &dict_iter);
+            } else {
+                for (j = 0; j < filter_sz; j++) {
+                    DBusMessageIter entry_iter, variant_iter;
+                    const char *prop;
+                    const char *val;
+                    int int_val;
+                    dbus_bool_t bool_val;
+
+                    prop = filter_props[j];
+                    if (!SDL_strcmp(prop, "label") && item->utf8) {
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &item->utf8);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "type")) {
+                        val = (item->type == SDL_DBUS_MENU_ITEM_TYPE_SEPERATOR) ? "separator" : "standard";
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "enabled")) {
+                        bool_val = !(item->flags & SDL_DBUS_MENU_ITEM_FLAGS_DISABLED);
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "visible")) {
+                        bool_val = 1;
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "b", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_BOOLEAN, &bool_val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "toggle-type") && item->type == SDL_DBUS_MENU_ITEM_TYPE_CHECKBOX) {
+                        val = "checkmark";
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "toggle-state")) {
+                        int_val = (item->flags & SDL_DBUS_MENU_ITEM_FLAGS_CHECKED) ? 1 : 0;
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "i", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_INT32, &int_val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    } else if (!SDL_strcmp(prop, "children-display") && item->sub_menu) {
+                        val = "submenu";
+                        ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+                        ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &prop);
+                        ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+                        ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &val);
+                        ctx->message_iter_close_container(&entry_iter, &variant_iter);
+                        ctx->message_iter_close_container(&dict_iter, &entry_iter);
+                    }
+                }
+            }
+
+            ctx->message_iter_close_container(&struct_iter, &dict_iter);
+            ctx->message_iter_close_container(&reply_array_iter, &struct_iter);
+        }
+    }
+
+    ctx->message_iter_close_container(&iter, &reply_array_iter);
+    ctx->connection_send(conn, reply, NULL);
+    ctx->message_unref(reply);
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+static long GetMaxMenuItemId(SDL_ListNode *menu)
+{
+    SDL_ListNode *cursor;
+    long max_id;
+
+    max_id = 0;
+    cursor = menu;
+    while (cursor) {
+        SDL_DBusMenuItem *item;
+
+        item = cursor->entry;
+        if (item) {
+            if (item->id > max_id) {
+                max_id = item->id;
+            }
+
+            if (item->sub_menu) {
+                long sub_max;
+
+                sub_max = GetMaxMenuItemId(item->sub_menu);
+                if (sub_max > max_id) {
+                    max_id = sub_max;
+                }
+            }
+        }
+        cursor = cursor->next;
+    }
+    return max_id;
+}
+
+static void AssignMenuItemIds(SDL_ListNode *menu, long *next_id)
+{
+    SDL_ListNode *cursor;
+
+    cursor = menu;
+    while (cursor) {
+        SDL_DBusMenuItem *item;
+
+        item = cursor->entry;
+        if (item) {
+            if (!item->id) {
+                item->id = (*next_id)++;
+            }
+            if (item->sub_menu) {
+                AssignMenuItemIds(item->sub_menu, next_id);
+            }
+        }
+        cursor = cursor->next;
+    }
+}
+
+void SDL_DBus_InitMenuItemInternals(SDL_DBusMenuItem *item)
+{
+    item->id = 0;
+}
+
+static DBusHandlerResult DBusMenuMessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
+{
+    SDL_ListNode *menu;
+    SDL_DBusContext *ctx;
+
+    menu = user_data;
+    if (!menu || !menu->entry) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    ctx = ((SDL_DBusMenuItem *)menu->entry)->dbus;
+    if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "GetLayout")) {
+        return HandleGetLayout(ctx, menu, conn, msg);
+    } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "Event")) {
+        return HandleEvent(ctx, menu, conn, msg);
+    } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "AboutToShow")) {
+        DBusMessage *reply;
+        dbus_bool_t need_update;
+
+        need_update = TRUE;
+        reply = ctx->message_new_method_return(msg);
+        ctx->message_append_args(reply, DBUS_TYPE_BOOLEAN, &need_update, DBUS_TYPE_INVALID);
+        ctx->connection_send(conn, reply, NULL);
+        ctx->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
+    } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "GetGroupProperties")) {
+        return HandleGetGroupProperties(ctx, menu, conn, msg);
+    } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "GetProperty")) {
+        return HandleGetProperty(ctx, menu, conn, msg);
+    } else if (ctx->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "Get")) {
+        DBusMessage *reply;
+        const char *interface_name;
+        const char *property_name;
+        DBusMessageIter args, iter, variant_iter;
+        dbus_uint32_t version;
+
+        ctx->message_iter_init(msg, &args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &interface_name);
+        ctx->message_iter_next(&args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &property_name);
+
+        if (!SDL_strcmp(interface_name, DBUS_MENU_INTERFACE) && !SDL_strcmp(property_name, "Version")) {
+            reply = ctx->message_new_method_return(msg);
+            ctx->message_iter_init_append(reply, &iter);
+            version = 3;
+            ctx->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+            ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &version);
+            ctx->message_iter_close_container(&iter, &variant_iter);
+            ctx->connection_send(conn, reply, NULL);
+            ctx->message_unref(reply);
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
+    } else if (ctx->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
+        DBusMessage *reply;
+        const char *interface_name;
+        const char *key;
+        DBusMessageIter args, iter, dict_iter, entry_iter, variant_iter;
+        dbus_uint32_t version;
+
+        ctx->message_iter_init(msg, &args);
+        if (ctx->message_iter_get_arg_type(&args) != DBUS_TYPE_STRING) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        ctx->message_iter_get_basic(&args, &interface_name);
+
+        if (!SDL_strcmp(interface_name, DBUS_MENU_INTERFACE)) {
+            reply = ctx->message_new_method_return(msg);
+            ctx->message_iter_init_append(reply, &iter);
+            ctx->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter);
+
+            key = "Version";
+            version = 3;
+            ctx->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+            ctx->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+            ctx->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
+            ctx->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &version);
+            ctx->message_iter_close_container(&entry_iter, &variant_iter);
+            ctx->message_iter_close_container(&dict_iter, &entry_iter);
+
+            ctx->message_iter_close_container(&iter, &dict_iter);
+            ctx->connection_send(conn, reply, NULL);
+            ctx->message_unref(reply);
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
+    } else if (ctx->message_is_method_call(msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
+        DBusMessage *reply;
+        
+        reply = ctx->message_new_method_return(msg);
+        ctx->message_append_args(reply, DBUS_TYPE_STRING, &menu_introspect, DBUS_TYPE_INVALID);
+        ctx->connection_send(conn, reply, NULL);
+        ctx->message_unref(reply);
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu)
+{
+    DBusObjectPathVTable vtable;
+    long next_id;
+
+    if (!ctx || !menu) {
+        return NULL;
+    }
+
+    next_id = 1;
+    AssignMenuItemIds(menu, &next_id);
+
+    if (menu->entry) {
+        SDL_DBusMenuItem *item;
+
+        item = menu->entry;
+        item->dbus = ctx;
+        item->revision++;
+    }
+
+    vtable.message_function = DBusMenuMessageFilter;
+    vtable.unregister_function = NULL;
+    if (!ctx->connection_try_register_object_path(conn, DBUS_MENU_OBJECT_PATH, &vtable, menu, NULL)) {
+        return NULL;
+    }
+
+    return DBUS_MENU_OBJECT_PATH;
+}
+
+void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu)
+{
+    DBusMessage *signal;
+    unsigned long revision;
+    long next_id;
+
+    if (!ctx || !menu) {
+        return;
+    }
+
+    next_id = GetMaxMenuItemId(menu) + 1;
+    AssignMenuItemIds(menu, &next_id);
+
+    revision = 0;
+    if (menu->entry) {
+        SDL_DBusMenuItem *item;
+
+        item = menu->entry;
+        item->revision++;
+        revision = item->revision;
+    }
+
+    signal = ctx->message_new_signal(DBUS_MENU_OBJECT_PATH, DBUS_MENU_INTERFACE, "LayoutUpdated");
+    if (signal) {
+        long parent;
+
+        parent = 0;
+        ctx->message_append_args(signal, DBUS_TYPE_UINT32, &revision, DBUS_TYPE_INT32, &parent, DBUS_TYPE_INVALID);
+        ctx->connection_send(conn, signal, NULL);
+        ctx->message_unref(signal);
+    }
 }
 
 #endif
