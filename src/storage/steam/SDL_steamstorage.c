@@ -38,7 +38,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for Steam user storage",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_DRIVER_STEAMAPI_DYNAMIC
-);
+)
 
 // !!! FIXME: Async API can use SteamRemoteStorage_ReadFileAsync
 // !!! FIXME: Async API can use SteamRemoteStorage_WriteFileAsync

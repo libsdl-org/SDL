@@ -47,7 +47,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for Vulkan on KMSDRM",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_VULKAN
-);
+)
 
 bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {

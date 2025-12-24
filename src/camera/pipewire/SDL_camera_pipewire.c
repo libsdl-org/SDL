@@ -114,7 +114,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for camera through libpipewire",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
-);
+)
 
 static const char *pipewire_library = SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC;
 static SDL_SharedObject *pipewire_handle = NULL;

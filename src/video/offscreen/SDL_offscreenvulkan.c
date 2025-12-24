@@ -47,7 +47,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for offscreen Vulkan",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     "libvulkan.so.1"
-);
+)
 
 #if defined( SDL_PLATFORM_APPLE )
 #include <dlfcn.h>

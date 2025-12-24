@@ -55,7 +55,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libjack",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_JACK_DYNAMIC
-);
+)
 
 static const char *jack_library = SDL_AUDIO_DRIVER_JACK_DYNAMIC;
 static SDL_SharedObject *jack_handle = NULL;

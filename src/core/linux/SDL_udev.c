@@ -51,7 +51,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for events through libudev",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_UDEV_DLNOTE_LIBS
-);
+)
 
 static SDL_UDEV_PrivateData *_this = NULL;
 

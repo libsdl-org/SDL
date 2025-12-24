@@ -14,7 +14,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for loading PNG images using libpng",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     PNG_SHARED_LIBRARY
-);
+)
 
 typedef int png_sig_cmp_fn(const unsigned char *sig, size_t start, size_t num_to_check);
 

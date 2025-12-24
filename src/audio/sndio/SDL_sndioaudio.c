@@ -113,7 +113,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libsndio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
-);
+)
 
 static void UnloadSNDIOLibrary(void)
 {

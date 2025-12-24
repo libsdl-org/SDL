@@ -30,7 +30,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Thai language support",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_LIBTHAI_DYNAMIC
-);
+)
 #endif
 
 
