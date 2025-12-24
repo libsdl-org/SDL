@@ -198,7 +198,8 @@
  * );
  * ```
  *
- * This macro is not available for compilers that do not support variadic macro's.
+ * This macro is not available for compilers that do not support variadic
+ * macro's.
  *
  * \since This macro is available since SDL 3.4.0.
  *
