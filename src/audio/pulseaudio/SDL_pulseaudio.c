@@ -138,7 +138,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libpulseaudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
-);
+)
 
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
 static SDL_SharedObject *pulseaudio_handle = NULL;

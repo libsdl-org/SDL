@@ -41,7 +41,7 @@
  *     "Support for video through SDL",
  *     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
  *     "libSDL-1.2.so.0", "libSDL-2.0.so.0", "libSDL3.so.0"
- *   );
+ *   )
  *   int main(int argc, char *argv[]) {
  *     return argc + argv[0][1];
  *   }
@@ -183,8 +183,10 @@
  *     "Support for loading PNG images using libpng (required for APNG)",
  *     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
  *     "libpng12.so.0"
- * );
+ * )
  * ```
+ *
+ * A trailing semicolon is not needed.
  *
  * Or if you support multiple versions of a library, you can list them:
  *
@@ -195,7 +197,7 @@
  *     "Create windows through SDL video backend",
  *     SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
  *     "libSDL-1.2.so.0", "libSDL2-2.0.so.0", "libSDL3.so.0"
- * );
+ * )
  * ```
  *
  * This macro is not available for compilers that do not support variadic
@@ -213,7 +215,7 @@
         "\",\"description\":\"" description                      \
         "\",\"priority\":\"" priority                            \
         "\",\"soname\":" SDL_DLNOTE_JSON_ARRAY(__VA_ARGS__) "}]",   \
-        SDL_DLNOTE_UNIQUE_NAME)
+        SDL_DLNOTE_UNIQUE_NAME);
 
 #elif defined(__GNUC__) && __GNUC__ < 3
 

@@ -30,7 +30,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for joysticks through libusb",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_LIBUSB_DYNAMIC
-);
+)
 #endif
 
 static SDL_AtomicInt SDL_libusb_refcount;

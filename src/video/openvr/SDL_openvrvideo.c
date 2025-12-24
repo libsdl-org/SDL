@@ -64,7 +64,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for OpenVR video",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_OPENVR_DRIVER_DYNAMIC
-);
+)
 
 #define MARKER_ID 0
 #define MARKER_STR "vr-marker,frame_end,type,application"

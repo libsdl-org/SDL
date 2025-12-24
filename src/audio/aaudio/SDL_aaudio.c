@@ -58,7 +58,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through AAudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     LIB_AAUDIO_SO
-);
+)
 
 typedef struct AAUDIO_Data
 {

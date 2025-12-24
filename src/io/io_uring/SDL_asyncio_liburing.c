@@ -53,7 +53,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for async IO through liburing",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_DRIVER_LIBURING_DYNAMIC
-);
+)
 
 #define SDL_LIBURING_FUNCS \
     SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \

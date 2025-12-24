@@ -36,7 +36,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for D-Bus IPC",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_DRIVER_DBUS_DYNAMIC
-);
+)
 
 static bool LoadDBUSSyms(void)
 {
