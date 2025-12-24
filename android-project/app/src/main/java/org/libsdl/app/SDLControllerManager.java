@@ -6,6 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import android.content.Context;
+import android.hardware.lights.Light;
+import android.hardware.lights.LightsRequest;
+import android.hardware.lights.LightsManager;
+import android.hardware.lights.LightState;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -25,7 +30,7 @@ public class SDLControllerManager
     static native void nativeAddJoystick(int device_id, String name, String desc,
                                                 int vendor_id, int product_id,
                                                 int button_mask,
-                                                int naxes, int axis_mask, int nhats, boolean can_rumble);
+                                                int naxes, int axis_mask, int nhats, boolean can_rumble, boolean has_rgb_led);
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
@@ -67,6 +72,13 @@ public class SDLControllerManager
      */
     static void pollInputDevices() {
         mJoystickHandler.pollInputDevices();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static void joystickSetLED(int device_id, int red, int green, int blue) {
+        mJoystickHandler.setLED(device_id, red, green, blue);
     }
 
     /**
@@ -139,6 +151,8 @@ class SDLJoystickHandler {
         String desc;
         ArrayList<InputDevice.MotionRange> axes;
         ArrayList<InputDevice.MotionRange> hats;
+        ArrayList<Light> lights;
+        LightsManager.LightsSession lightsSession;
     }
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
@@ -211,6 +225,7 @@ class SDLJoystickHandler {
                     joystick.desc = getJoystickDescriptor(joystickDevice);
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
                     joystick.hats = new ArrayList<InputDevice.MotionRange>();
+                    joystick.lights = new ArrayList<Light>();
 
                     List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
                     Collections.sort(ranges, new RangeComparator());
@@ -225,18 +240,30 @@ class SDLJoystickHandler {
                     }
 
                     boolean can_rumble = false;
+                    boolean has_rgb_led = false;
                     if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
-                        VibratorManager manager = joystickDevice.getVibratorManager();
-                        int[] vibrators = manager.getVibratorIds();
+                        VibratorManager vibratorManager = joystickDevice.getVibratorManager();
+                        int[] vibrators = vibratorManager.getVibratorIds();
                         if (vibrators.length > 0) {
                             can_rumble = true;
+                        }
+                        LightsManager lightsManager = joystickDevice.getLightsManager();
+                        List<Light> lights = lightsManager.getLights();
+                        for (Light light : lights) {
+                            if (light.hasRgbControl()) {
+                                joystick.lights.add(light);
+                            }
+                        }
+                        if (!joystick.lights.isEmpty()) {
+                            joystick.lightsSession = lightsManager.openSession();
+                            has_rgb_led = true;
                         }
                     }
 
                     mJoysticks.add(joystick);
                     SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc,
                             getVendorId(joystickDevice), getProductId(joystickDevice),
-                            getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble);
+                            getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led);
                 }
             }
         }
@@ -262,6 +289,16 @@ class SDLJoystickHandler {
                 SDLControllerManager.nativeRemoveJoystick(device_id);
                 for (int i = 0; i < mJoysticks.size(); i++) {
                     if (mJoysticks.get(i).device_id == device_id) {
+                        if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
+                            if (mJoysticks.get(i).lightsSession != null) {
+                                try {
+                                    mJoysticks.get(i).lightsSession.close();
+                                } catch (Exception e) {
+                                    // Session may already be unregistered when device disconnects
+                                }
+                                mJoysticks.get(i).lightsSession = null;
+                            }
+                        }
                         mJoysticks.remove(i);
                         break;
                     }
@@ -452,6 +489,24 @@ class SDLJoystickHandler {
             }
         }
         return button_mask;
+    }
+
+    void setLED(int device_id, int red, int green, int blue) {
+        if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
+            return;
+        }
+        SDLJoystick joystick = getJoystick(device_id);
+        if (joystick == null || joystick.lights.isEmpty()) {
+            return;
+        }
+        LightsRequest.Builder lightsRequest = new LightsRequest.Builder();
+        LightState lightState = new LightState.Builder().setColor(Color.rgb(red, green, blue)).build();
+        for (Light light : joystick.lights) {
+            if (light.hasRgbControl()) {
+                lightsRequest.addLight(light, lightState);
+            }
+        }
+        joystick.lightsSession.requestLights(lightsRequest.build());
     }
 }
 
