@@ -3543,10 +3543,10 @@ extern "C" {
  * naming convention can vary depending on the environment, but it is usually
  * a connector name (e.g. 'DP-1', 'DP-2', 'HDMI-A-1', etc...).
  *
- * On Wayland desktops, the connector names associated with displays
- * can be found in the `name` property of the info output from
- * `wayland-info -i wl_output`. On X11 desktops, the `xrandr` utility can be
- * used to retrieve the connector names associated with displays.
+ * On Wayland desktops, the connector names associated with displays can be
+ * found in the `name` property of the info output from `wayland-info -i
+ * wl_output`. On X11 desktops, the `xrandr` utility can be used to retrieve
+ * the connector names associated with displays.
  *
  * This hint is currently supported on the following drivers:
  *
