@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/unix/SDL_gtk.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -1380,6 +1381,19 @@ static bool should_use_libdecor(SDL_VideoData *data, bool ignore_xdg)
 
     return true;
 }
+
+static void LibdecorNew(SDL_VideoData *data)
+{
+    data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+}
+
+// Called in another thread, but the UI thread is blocked in SDL_WaitThread
+// during that time, so it should be OK to dereference data without locks
+static int SDLCALL LibdecorNewInThread(void *data)
+{
+    LibdecorNew((SDL_VideoData *)data);
+    return 0;
+}
 #endif
 
 bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
@@ -1389,7 +1403,18 @@ bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
         return true; // Already loaded!
     }
     if (should_use_libdecor(data, ignore_xdg)) {
-        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+        if (SDL_CanUseGtk()) {
+            LibdecorNew(data);
+        } else {
+            // Intentionally initialize libdecor in a non-main thread
+            // so that it will not use its GTK plugin, but instead will
+            // fall back to the Cairo or dummy plugin
+            SDL_Thread *thread = SDL_CreateThread(LibdecorNewInThread, "SDL_LibdecorNew", (void *)data);
+            // Note that the other thread now "owns" data until we have
+            // waited for it, so don't touch data here
+            SDL_WaitThread(thread, NULL);
+        }
+
         return data->shell.libdecor != NULL;
     }
 #endif
