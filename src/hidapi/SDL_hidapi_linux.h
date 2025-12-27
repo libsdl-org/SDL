@@ -39,6 +39,11 @@ static const SDL_UDEV_Symbols *udev_ctx = NULL;
 #define udev_new                                      udev_ctx->udev_new
 #define udev_unref                                    udev_ctx->udev_unref
 
+#define udev_hwdb_new                                 udev_ctx->udev_hwdb_new 
+#define udev_hwdb_unref                               udev_ctx->udev_hwdb_unref
+#define udev_hwdb_get_properties_list_entry           udev_ctx->udev_hwdb_get_properties_list_entry
+#define udev_list_entry_get_value                     udev_ctx->udev_list_entry_get_value
+
 #undef HIDAPI_H__
 #define HIDAPI_ALLOW_BUILD_WORKAROUND_KERNEL_2_6_39
 #include "linux/hid.c"
