@@ -269,17 +269,12 @@ static bool HIDAPI_DriverPSMove_UpdateDevice(SDL_HIDAPI_Device *device)
                 // Invalid data packet, ignore
                 break;
             }
-            switch (ctx->model) {
-            case Model_ZCM1:
+            if (ctx->model == Model_ZCM1) {
                 memcpy(&(ctx->input.zcm1), data, sizeof(ctx->input.zcm1));
-                break;
-            case Model_ZCM2:
+            } else {
                 memcpy(&(ctx->input.zcm2), data, sizeof(ctx->input.zcm2));
-                break;
-            default:
-                break;
             }
-            HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx, data, size);
+            HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx, size);
             if (!ctx->effects_updated) {
                 HIDAPI_DriverPSMove_UpdateEffects(device);
                 ctx->effects_updated = true;
@@ -308,7 +303,6 @@ static bool HIDAPI_DriverPSMove_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     ctx->joystick = joystick;
     ctx->effects_updated = false;
     ctx->leds.rumble = 0;
-    SDL_zeroa(&ctx->last_state);
 
     // Initialize the joystick capabilities
     joystick->nbuttons = 9;
