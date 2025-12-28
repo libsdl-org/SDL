@@ -270,9 +270,9 @@ static bool HIDAPI_DriverPSMove_UpdateDevice(SDL_HIDAPI_Device *device)
                 break;
             }
             if (ctx->model == Model_ZCM1) {
-                memcpy(&(ctx->input.zcm1), data, sizeof(ctx->input.zcm1));
+                SDL_memcpy(&(ctx->input.zcm1), data, sizeof(ctx->input.zcm1));
             } else {
-                memcpy(&(ctx->input.zcm2), data, sizeof(ctx->input.zcm2));
+                SDL_memcpy(&(ctx->input.zcm2), data, sizeof(ctx->input.zcm2));
             }
             HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx, size);
             if (!ctx->effects_updated) {
