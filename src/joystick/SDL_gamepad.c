@@ -1209,6 +1209,10 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_SF30_PRO_BT)) {
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+    } else if (vendor == USB_VENDOR_SONY &&
+               (product == USB_PRODUCT_SONY_PSMOVE ||
+                product == USB_PRODUCT_SONY_PSMOVE_V2)) {
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,guide:b5,misc1:b7,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
 
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
@@ -1452,6 +1456,7 @@ static const char *map_StringForGamepadType[] = {
     "xboxone",
     "ps3",
     "ps4",
+    "psmove",
     "ps5",
     "switchpro",
     "joyconleft",

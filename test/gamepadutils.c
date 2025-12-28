@@ -3478,6 +3478,8 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "PS4";
     case SDL_GAMEPAD_TYPE_PS5:
         return "PS5";
+    case SDL_GAMEPAD_TYPE_PSMOVE:
+        return "PSMove";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
         return "Nintendo Switch";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:

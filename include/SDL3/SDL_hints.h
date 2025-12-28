@@ -1675,6 +1675,23 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"
 
 /**
+ * A variable controlling whether the HIDAPI driver for PSMove controllers should
+ * be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PSMOVE "SDL_JOYSTICK_HIDAPI_PSMOVE"
+
+/**
  * A variable controlling whether the HIDAPI driver for NVIDIA SHIELD
  * controllers should be used.
  *

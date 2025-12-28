@@ -98,6 +98,10 @@ EControllerType GuessControllerType( int nVID, int nPID )
 		{
 			return k_eControllerType_PS5Controller;
 		}
+		if ( SDL_strncasecmp( pszOverride, "PSMove", 6 ) == 0 )
+		{
+			return k_eControllerType_PSMoveController;
+		}
 		if ( SDL_strncasecmp( pszOverride, "SwitchPro", 9 ) == 0 )
 		{
 			return k_eControllerType_SwitchProController;
