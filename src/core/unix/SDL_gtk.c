@@ -81,9 +81,18 @@ static bool IsGtkInit()
     return libgdk != NULL && libgtk != NULL;
 }
 
-static bool InitGtk(void)
+bool SDL_CanUseGtk(void)
 {
     if (!SDL_GetHintBoolean("SDL_ENABLE_GTK", true)) {
+        return false;
+    }
+
+    return true;
+}
+
+static bool InitGtk(void)
+{
+    if (!SDL_CanUseGtk()) {
         return false;
     }
 
