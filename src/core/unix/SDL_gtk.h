@@ -116,6 +116,7 @@ typedef struct SDL_GtkContext
 	} gtk;
 } SDL_GtkContext;
 
+extern bool SDL_CanUseGtk(void);
 extern bool SDL_Gtk_Init(void);
 extern void SDL_Gtk_Quit(void);
 extern SDL_GtkContext *SDL_Gtk_EnterContext(void);
