@@ -201,6 +201,8 @@
 #cmakedefine HAVE_ELF_AUX_INFO 1
 #cmakedefine HAVE_PPOLL 1
 #cmakedefine HAVE__EXIT 1
+#cmakedefine HAVE_GETRESUID 1
+#cmakedefine HAVE_GETRESGID 1
 
 #endif /* HAVE_LIBC */
 
