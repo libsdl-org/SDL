@@ -877,11 +877,6 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
             seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
         }
     }
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_LEFT, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_RIGHT, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_MIDDLE, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X1, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X2, false);
 
     /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
      * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
