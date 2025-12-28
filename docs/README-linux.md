@@ -8,6 +8,7 @@ system does not have the XRandR libraries installed, it will be disabled
 at runtime, and you won't get a missing library error, at least with the
 default configuration parameters.
 
+SDL is [not designed to be used in setuid or setgid executables](README-platforms.md#setuid).
 
 Build Dependencies
 --------------------------------------------------------------------------------
