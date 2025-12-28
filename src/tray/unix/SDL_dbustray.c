@@ -701,6 +701,8 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         if (menu_dbus->menu_path) {
             DBusMessage *signal;
             
+            driver->dbus->connection_flush(tray_dbus->connection);
+            
             signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, "org.freedesktop.DBus.Properties", "PropertiesChanged");
             if (signal) {
                 DBusMessageIter iter, dict, ientry, value;
