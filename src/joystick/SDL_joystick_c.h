@@ -105,6 +105,9 @@ extern bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id);
 
+// Function to return whether a joystick is a PSMove controller
+extern bool SDL_IsJoystickPSMove(Uint16 vendor_id, Uint16 product_id);
+
 // Function to return whether a joystick is a Nintendo Switch Pro controller
 extern bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
