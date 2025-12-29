@@ -195,7 +195,7 @@ psmove_decode_16bit(Uint8 a, Uint8 b)
 static inline int
 psmove_decode_16bit_twos_complement(Uint8 a, Uint8 b)
 {
-    Uint16 value = LOAD16(a & 0xFF, b & 0xFF);
+    Sint16 value = LOAD16(a & 0xFF, b & 0xFF);
     return (value & 0x8000) ? (-(~value & 0xFFFF) + 1) : value;
 }
 
