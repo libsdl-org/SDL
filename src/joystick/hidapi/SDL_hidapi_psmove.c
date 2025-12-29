@@ -60,13 +60,13 @@ typedef struct
     Uint8 aX[2];    /* 1st frame */
     Uint8 aY[2];
     Uint8 aZ[2];
-    Uint8 aX2[2]; /* 2nd frame */
+    Uint8 aX2[2]; /* 2nd half-frame */
     Uint8 aY2[2];
     Uint8 aZ2[2];
-    Uint8 gX[2]; /* 1st frame */
+    Uint8 gX[2]; /* 1st half-frame */
     Uint8 gY[2];
     Uint8 gZ[2];
-    Uint8 gX2[2]; /* 2nd frame */
+    Uint8 gX2[2]; /* 2nd half-frame */
     Uint8 gY2[2];
     Uint8 gZ2[2];
     Uint8 temphigh;       /* temperature (bits 12-5) */
@@ -192,7 +192,7 @@ static bool HIDAPI_DriverPSMove_UpdateEffects(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverPSMove_SendJoystickEffect(device, ctx->joystick, &(ctx->leds), sizeof(ctx->leds));
 }
 
-static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPSMove_Context *ctx, Uint8 *data, int size)
+static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPSMove_Context *ctx)
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
@@ -274,7 +274,7 @@ static bool HIDAPI_DriverPSMove_UpdateDevice(SDL_HIDAPI_Device *device)
             } else {
                 SDL_memcpy(&(ctx->input.zcm2), data, sizeof(ctx->input.zcm2));
             }
-            HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx, size);
+            HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx);
             if (!ctx->effects_updated) {
                 HIDAPI_DriverPSMove_UpdateEffects(device);
                 ctx->effects_updated = true;
