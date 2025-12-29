@@ -502,9 +502,6 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         case SDL_GAMEPAD_TYPE_PS5:
             name = SDL_strdup("DualSense Wireless Controller");
             break;
-        case SDL_GAMEPAD_TYPE_PSMOVE:
-            name = SDL_strdup("PSMove Controller");
-            break;
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
             break;

@@ -1456,7 +1456,6 @@ static const char *map_StringForGamepadType[] = {
     "xboxone",
     "ps3",
     "ps4",
-    "psmove",
     "ps5",
     "switchpro",
     "joyconleft",
