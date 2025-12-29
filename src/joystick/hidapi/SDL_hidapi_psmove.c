@@ -24,11 +24,12 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapi_rumble.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_PSMOVE
 
+#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 #define PSMOVE_ACCEL_SCALE       (SDL_STANDARD_GRAVITY / 8192.0f)
 #define PSMOVE_GYRO_SCALE        (SDL_PI_F / 180.0f / 16.4f)
 #define PSMOVE_BUFFER_SIZE       9
@@ -190,21 +191,16 @@ static bool HIDAPI_DriverPSMove_UpdateEffects(SDL_HIDAPI_Device *device)
 static inline int
 psmove_decode_16bit(Uint8 a, Uint8 b)
 {
-    unsigned char low = a & 0xFF;
-    unsigned char high = b & 0xFF;
-    return (low | (high << 8)) - 0x8000;
+    return LOAD16(a & 0xFF, b & 0xFF) - 0x8000;
 }
 
 static inline int
 psmove_decode_16bit_twos_complement(Uint8 a, Uint8 b)
 {
-    unsigned char low = a & 0xFF;
-    unsigned char high = b & 0xFF;
-    int value = (low | (high << 8));
+    Uint16 value = LOAD16(a & 0xFF, b & 0xFF);
     return (value & 0x8000) ? (-(~value & 0xFFFF) + 1) : value;
 }
 
-static const float radians_to_degrees = 180.0f / SDL_PI_F;
 static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPSMove_Context *ctx)
 {
     Sint16 axis;
