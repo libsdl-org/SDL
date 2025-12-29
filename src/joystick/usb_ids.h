@@ -146,7 +146,6 @@
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
 #define USB_PRODUCT_SONY_PSMOVE                           0x03d5
 #define USB_PRODUCT_SONY_PSMOVE_V2                        0x0c5e
-#define USB_PRODUCT_SONY_PSMOVE_NAVI                      0x042f
 #define USB_PRODUCT_STEALTH_ULTRA_WIRED                   0x7073
 #define USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER            0x0575
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e

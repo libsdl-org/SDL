@@ -26,7 +26,6 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x046d, 0xcad1 ), k_eControllerType_PS3Controller, NULL },	// Logitech Chillstream
 	//{ MAKE_CONTROLLER_ID( 0x046d, 0xc24f ), k_eControllerType_PS3Controller, NULL },	// Logitech G29 (PS3)
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0268 ), k_eControllerType_PS3Controller, NULL },	// Sony PS3 Controller
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x042f ), k_eControllerType_PS3Controller, NULL },	// Sony PSMove Navigation Controller
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2013 ), k_eControllerType_PS3Controller, NULL },	// JC-U4113SBK
 	{ MAKE_CONTROLLER_ID( 0x05b8, 0x1004 ), k_eControllerType_PS3Controller, NULL },	// From SDL
