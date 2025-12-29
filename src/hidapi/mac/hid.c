@@ -136,6 +136,7 @@ struct hid_device_list_node
 static 	IOHIDManagerRef hid_mgr = 0x0;
 static int is_macos_10_10_or_greater = 0;
 static 	struct hid_device_list_node *device_list = 0x0;
+static pthread_mutex_t device_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static hid_device *new_hid_device(void)
 {
@@ -184,9 +185,12 @@ static void free_hid_device(hid_device *dev)
 		CFRelease(dev->source);
 	free(dev->input_report_buf);
 
+	pthread_mutex_lock(&device_list_mutex);
 	if (device_list) {
 		if (device_list->dev == dev) {
+			struct hid_device_list_node *old_head = device_list;
 			device_list = device_list->next;
+			free(old_head);
 		}
 		else {
 			struct hid_device_list_node *node = device_list;
@@ -202,6 +206,7 @@ static void free_hid_device(hid_device *dev)
 			}
 		}
 	}
+	pthread_mutex_unlock(&device_list_mutex);
 	
 	/* Clean up the thread objects */
 	pthread_barrier_destroy(&dev->shutdown_barrier);
@@ -389,16 +394,20 @@ static void hid_device_removal_callback(void *context, IOReturn result,
 	// hid_device's so that the one being removed can be checked against
 	// the list to see if it really hasn't been closed yet and needs to
 	// be dealt with here.
+	pthread_mutex_lock(&device_list_mutex);
 	struct hid_device_list_node *node = device_list;
 	while (node) {
 		if (node->dev->device_handle == hid_ref) {
 			node->dev->disconnected = 1;
-			CFRunLoopStop(node->dev->run_loop);
+			if (node->dev->run_loop) {
+				CFRunLoopStop(node->dev->run_loop);
+			}
 			break;
 		}
 
 		node = node->next;
 	}
+	pthread_mutex_unlock(&device_list_mutex);
 }
 
 static CFDictionaryRef
@@ -766,8 +775,10 @@ static void *read_thread(void *param)
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), dev->source, dev->run_loop_mode);
 	
 	/* Store off the Run Loop so it can be stopped from hid_close()
-	 and on device disconnection. */
+	 and on device disconnection. Retain it so it remains valid even
+	 after this thread exits. */
 	dev->run_loop = CFRunLoopGetCurrent();
+	CFRetain(dev->run_loop);
 	
 	/* Notify the main thread that the read thread is up and running. */
 	pthread_barrier_wait(&dev->barrier);
@@ -851,6 +862,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				
 				free(device_array);
 				CFRelease(device_set);
+				
+				/* Retain the device handle to prevent it from being deallocated
+				   while we're still using it. This fixes crashes when Bluetooth
+				   controllers disconnect unexpectedly. */
+				CFRetain(os_dev);
 				dev->device_handle = os_dev;
 				
 				/* Create the buffers for receiving data */
@@ -871,8 +887,11 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 
 				node = (struct hid_device_list_node *)calloc(1, sizeof(struct hid_device_list_node));
 				node->dev = dev;
+				
+				pthread_mutex_lock(&device_list_mutex);
 				node->next = device_list;
 				device_list = node;
+				pthread_mutex_unlock(&device_list_mutex);
 
 				/* Start the read thread */
 				pthread_create(&dev->thread, NULL, read_thread, dev);
@@ -1143,23 +1162,28 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	if (!dev)
 		return;
 	
-   /* Disconnect the report callback before close.
-      See comment below.
-   */
-   if (is_macos_10_10_or_greater || !dev->disconnected) {
+	/* Signal the thread to shut down. */
+	dev->shutdown_thread = 1;
+	
+	/* Unregister the HID callbacks BEFORE stopping the thread, while the
+	   run_loop is still valid. We retained the device_handle, so it's safe
+	   to use even if the physical device has been disconnected. */
+	if (dev->device_handle && dev->run_loop) {
+		/* Disconnect the report callback before close. */
 		IOHIDDeviceRegisterInputReportCallback(
-											   dev->device_handle, dev->input_report_buf, dev->max_input_report_len,
-											   NULL, dev);
+			dev->device_handle, dev->input_report_buf, dev->max_input_report_len,
+			NULL, dev);
 		IOHIDDeviceUnscheduleFromRunLoop(dev->device_handle, dev->run_loop, dev->run_loop_mode);
 		IOHIDDeviceScheduleWithRunLoop(dev->device_handle, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 	}
 	
-	/* Cause read_thread() to stop. */
-	dev->shutdown_thread = 1;
-	
 	/* Wake up the run thread's event loop so that the thread can exit. */
-	CFRunLoopSourceSignal(dev->source);
-	CFRunLoopWakeUp(dev->run_loop);
+	if (dev->source) {
+		CFRunLoopSourceSignal(dev->source);
+	}
+	if (dev->run_loop) {
+		CFRunLoopWakeUp(dev->run_loop);
+	}
 	
 	/* Notify the read thread that it can shut down now. */
 	pthread_barrier_wait(&dev->shutdown_barrier);
@@ -1167,17 +1191,23 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	/* Wait for read_thread() to end. */
 	pthread_join(dev->thread, NULL);
 	
-	/* Close the OS handle to the device, but only if it's not
-	 been unplugged. If it's been unplugged, then calling
-      IOHIDDeviceClose() will crash.
-
-      UPD: The crash part was true in/until some version of macOS.
-      Starting with macOS 10.15, there is an opposite effect in some environments:
-      crash happenes if IOHIDDeviceClose() is not called.
-      Not leaking a resource in all tested environments.
-   */
-   if (is_macos_10_10_or_greater || !dev->disconnected) {
-		IOHIDDeviceClose(dev->device_handle, kIOHIDOptionsTypeNone);
+	/* Now close and release the device handle. */
+	if (dev->device_handle) {
+		/* Close the OS handle to the device. Since we CFRetain'd it, this is safe
+		   even if the physical device has been disconnected. */
+		if (is_macos_10_10_or_greater || !dev->disconnected) {
+			IOHIDDeviceClose(dev->device_handle, kIOHIDOptionsTypeNone);
+		}
+		
+		/* Release our retain on the device handle. */
+		CFRelease(dev->device_handle);
+		dev->device_handle = NULL;
+	}
+	
+	/* Release our retain on the run_loop. */
+	if (dev->run_loop) {
+		CFRelease(dev->run_loop);
+		dev->run_loop = NULL;
 	}
 	
 	/* Clear out the queue of received reports. */
