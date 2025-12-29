@@ -142,13 +142,7 @@ static bool HIDAPI_DriverPSMove_IsEnabled(void)
 
 static bool HIDAPI_DriverPSMove_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_PSMOVE) {
-        return true;
-    }
-    if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_PSMOVE_V2) {
-        return true;
-    }
-    return false;
+    return SDL_IsJoystickPSMove(vendor_id, product_id);
 }
 
 static bool HIDAPI_DriverPSMove_InitDevice(SDL_HIDAPI_Device *device)
