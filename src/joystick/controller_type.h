@@ -25,7 +25,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Purpose: Steam Controller models
+// Purpose: Steam Controller models 
 // WARNING: DO NOT RENUMBER EXISTING VALUES - STORED IN A DATABASE
 //-----------------------------------------------------------------------------
 typedef enum
