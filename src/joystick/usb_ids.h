@@ -176,7 +176,6 @@
 #define USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT               0X001c
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT                0X001d
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_BT                    0X0017
-#define USB_PRODUCT_ZUIKI_EVOTOP_PC_BT_GYRO               0X001e
 #define USB_PRODUCT_VOIDGAMING_PS4FIREBIRD                0x10e5
 
 // USB usage pages
