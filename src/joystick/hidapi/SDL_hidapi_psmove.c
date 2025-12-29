@@ -187,6 +187,24 @@ static bool HIDAPI_DriverPSMove_UpdateEffects(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverPSMove_SendJoystickEffect(device, ctx->joystick, &(ctx->leds), sizeof(ctx->leds));
 }
 
+static inline int
+psmove_decode_16bit(Uint8 a, Uint8 b)
+{
+    unsigned char low = a & 0xFF;
+    unsigned char high = b & 0xFF;
+    return (low | (high << 8)) - 0x8000;
+}
+
+static inline int
+psmove_decode_16bit_twos_complement(Uint8 a, Uint8 b)
+{
+    unsigned char low = a & 0xFF;
+    unsigned char high = b & 0xFF;
+    int value = (low | (high << 8));
+    return (value & 0x8000) ? (-(~value & 0xFFFF) + 1) : value;
+}
+
+static const float radians_to_degrees = 180.0f / SDL_PI_F;
 static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverPSMove_Context *ctx)
 {
     Sint16 axis;
@@ -220,34 +238,24 @@ static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
        float sensor_data[3];
         if(ctx->model == Model_ZCM1) {
-            sensor_data[0] = (float)(((ctx->input.common.aX[0] + ctx->input.common.aX2[0]) +
-                   ((ctx->input.common.aX[1] + ctx->input.common.aX2[1]) << 8)) / 2 - 0x8000);
-
-            sensor_data[1] = -(float)(((ctx->input.common.aY[0] + ctx->input.common.aY2[0]) +
-                   ((ctx->input.common.aY[1] + ctx->input.common.aY2[1]) << 8)) / 2 - 0x8000);
-
-            sensor_data[2] = -(float)(((ctx->input.common.aZ[0] + ctx->input.common.aZ2[0]) +
-                   ((ctx->input.common.aZ[1] + ctx->input.common.aZ2[1]) << 8)) / 2 - 0x8000);
+            sensor_data[0] = (float)psmove_decode_16bit(ctx->input.common.aX2[0], ctx->input.common.aX2[1]);
+            sensor_data[1] = (float)psmove_decode_16bit(ctx->input.common.aY2[0], ctx->input.common.aY2[1]);
+            sensor_data[2] = (float)psmove_decode_16bit(ctx->input.common.aZ2[0], ctx->input.common.aZ2[1]);
         } else {
-            sensor_data[0] = (float)(Sint16)(ctx->input.common.aX[0] + (ctx->input.common.aX[1] << 8));
-            sensor_data[1] = (float)(Sint16)((ctx->input.common.aY[0] + (ctx->input.common.aY[1] << 8)));
-            sensor_data[2] = (float)(Sint16)((ctx->input.common.aZ[0] + (ctx->input.common.aZ[1] << 8)));
+            sensor_data[0] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.aX[0], ctx->input.common.aX[1]);
+            sensor_data[1] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.aY[0], ctx->input.common.aY[1]);
+            sensor_data[2] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.aZ[0], ctx->input.common.aZ[1]);
         }
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
 
         if(ctx->model == Model_ZCM1) {
-            sensor_data[0] = (float)(((ctx->input.common.gX[0] + ctx->input.common.gX2[0]) +
-                   ((ctx->input.common.gX[1] + ctx->input.common.gX2[1]) << 8)) / 2 - 0x8000);
-
-            sensor_data[1] = (float)(((ctx->input.common.gY[0] + ctx->input.common.gY2[0]) +
-                   ((ctx->input.common.gY[1] + ctx->input.common.gY2[1]) << 8)) / 2 - 0x8000);
-
-            sensor_data[2] = (float)(((ctx->input.common.gZ[0] + ctx->input.common.gZ2[0]) +
-                   ((ctx->input.common.gZ[1] + ctx->input.common.gZ2[1]) << 8)) / 2 - 0x8000);
+            sensor_data[0] = (float)psmove_decode_16bit(ctx->input.common.gX2[0], ctx->input.common.gX2[1]);
+            sensor_data[1] = (float)psmove_decode_16bit(ctx->input.common.gY2[0], ctx->input.common.gY2[1]);
+            sensor_data[2] = (float)psmove_decode_16bit(ctx->input.common.gZ2[0], ctx->input.common.gZ2[1]);
         } else {
-            sensor_data[0] = (float)(Sint16)(ctx->input.common.gX[0] + (ctx->input.common.gX[1] << 8));
-            sensor_data[1] = (float)(Sint16)(ctx->input.common.gY[0] + (ctx->input.common.gY[1] << 8));
-            sensor_data[2] = (float)(Sint16)(ctx->input.common.gZ[0] + (ctx->input.common.gZ[1] << 8));
+            sensor_data[0] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.gX[0], ctx->input.common.gX[1]);
+            sensor_data[1] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.gY[0], ctx->input.common.gY[1]);
+            sensor_data[2] = (float)psmove_decode_16bit_twos_complement(ctx->input.common.gZ[0], ctx->input.common.gZ[1]);
         }
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
