@@ -1713,7 +1713,6 @@ static bool GLES2_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
     if (!GL_CheckError("glGenTexures()", renderer)) {
         return false;
     }
-    data->glActiveTexture(GL_TEXTURE1);
     data->glBindTexture(GL_TEXTURE_2D, palettedata->texture);
     data->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     if (!GL_CheckError("glTexImage2D()", renderer)) {
