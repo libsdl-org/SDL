@@ -279,9 +279,10 @@ static bool HIDAPI_DriverPSMove_UpdateDevice(SDL_HIDAPI_Device *device)
                 HIDAPI_DriverPSMove_UpdateEffects(device);
                 ctx->effects_updated = true;
             }
+            break;
         default:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown PS3 packet: 0x%.2x", data[0]);
+            SDL_Log("Unknown PSMove packet: 0x%.2x", data[0]);
 #endif
             break;
         }
