@@ -3029,11 +3029,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
     // Calculate the size of the buffer pool.
     size_t pool_size = 0;
     for (int i = 0; i < image_count; ++i) {
-        // Ignore non-square images; if we got here, we know that at least the base image is square.
-        if (images[i]->w != images[i]->h) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "wayland: icon width and height must be equal, got %ix%i for image level %i; icon will be scaled", images[i]->w, images[i]->h, i);
-        }
-
+        // Images must be square. Non-square images will be centered.
         const int size = SDL_max(images[i]->w, images[i]->h);
         pool_size += size * size * 4;
     }
@@ -3066,25 +3062,10 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
             }
         }
 
-        if (surface->w != surface->h) {
-            SDL_Surface *scaled_surface = SDL_ScaleSurface(surface, level_size, level_size, SDL_SCALEMODE_LINEAR);
-
-            // Clean up the temporary conversion surface.
-            if (surface != images[i]) {
-                SDL_DestroySurface(surface);
-            }
-            surface = scaled_surface;
-
-            if (!surface) {
-                SDL_SetError("wayland: failed to scale the non-square icon image to the required size");
-                goto failure_cleanup;
-            }
-        }
-
         void *buffer_mem;
-        struct wl_buffer *buffer = Wayland_AllocBufferFromPool(shm_pool, surface->w, surface->h, &buffer_mem);
+        struct wl_buffer *buffer = Wayland_AllocBufferFromPool(shm_pool, level_size, level_size, &buffer_mem);
         if (!buffer) {
-            // Clean up the temporary scaled or conversion surface.
+            // Clean up the temporary conversion surface.
             if (surface != images[i]) {
                 SDL_DestroySurface(surface);
             }
@@ -3094,8 +3075,17 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
         wind->icon_buffers[wind->icon_buffer_count++] = buffer;
 
+        // Center non-square images.
+        if (surface->w < level_size) {
+            SDL_memset(buffer_mem, 0, level_size * level_size * 4);
+            buffer_mem = (Uint8 *)buffer_mem + (((level_size - surface->w) / 2) * 4);
+        } else if (surface->h < level_size) {
+            SDL_memset(buffer_mem, 0, level_size * level_size * 4);
+            buffer_mem = (Uint8 *)buffer_mem + (((level_size - surface->h) / 2) * (level_size * 4));
+        }
+
         SDL_PremultiplyAlpha(surface->w, surface->h, surface->format, surface->pixels, surface->pitch,
-                             SDL_PIXELFORMAT_ARGB8888, buffer_mem, surface->w * 4, true);
+                             SDL_PIXELFORMAT_ARGB8888, buffer_mem, level_size * 4, true);
 
         xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, buffer, scale);
 
