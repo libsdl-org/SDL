@@ -211,14 +211,14 @@ static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
     if (ctx->last_state.common.buttons3 != ctx->input.common.buttons3) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((ctx->input.common.buttons3 & 0x01) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((ctx->input.common.buttons3 & 0x08) != 0)); // Meant to be MISC1, but that's mapped to a buttonid too high
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((ctx->input.common.buttons3 & 0x08) != 0));
     }
 
     if (ctx->model == Model_ZCM1)
         axis = (((ctx->input.common.trigger + ctx->input.common.trigger2) / 2) * 257) - 32768;
     else
         axis = (ctx->input.common.trigger * 257) - 32768;
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 
 // TODO: I don't know how to properly implement this
 //
@@ -306,8 +306,8 @@ static bool HIDAPI_DriverPSMove_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     ctx->leds.rumble = 0;
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = 9;
-    joystick->naxes = 6;
+    joystick->nbuttons = 8;
+    joystick->naxes = 1;
     joystick->nhats = 0;
 
 #if 0

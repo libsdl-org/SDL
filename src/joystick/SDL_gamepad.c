@@ -1212,7 +1212,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     } else if (vendor == USB_VENDOR_SONY &&
                (product == USB_PRODUCT_SONY_PSMOVE ||
                 product == USB_PRODUCT_SONY_PSMOVE_V2)) {
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,guide:b5,misc1:b7,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,guide:b5,misc1:b7,righttrigger:a0,start:b6,x:b2,y:b3,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
 
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
