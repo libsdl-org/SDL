@@ -24,14 +24,14 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_PSMOVE
 
-#define PSMOVE_ACCEL_SCALE (SDL_STANDARD_GRAVITY / 8192.0f)
-#define PSMOVE_GYRO_SCALE (SDL_PI_F / 180.0f / 16.4f)
-#define PSMOVE_BUFFER_SIZE 9
+#define PSMOVE_ACCEL_SCALE       (SDL_STANDARD_GRAVITY / 8192.0f)
+#define PSMOVE_GYRO_SCALE        (SDL_PI_F / 180.0f / 16.4f)
+#define PSMOVE_BUFFER_SIZE       9
 #define PSMOVE_EXT_DATA_BUF_SIZE 5
 
 typedef struct
@@ -233,11 +233,10 @@ static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         axis = (ctx->input.common.trigger * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 
-    if(ctx->report_sensors)
-    {
+    if (ctx->report_sensors) {
 
-       float sensor_data[3];
-        if(ctx->model == Model_ZCM1) {
+        float sensor_data[3];
+        if (ctx->model == Model_ZCM1) {
             sensor_data[0] = (float)psmove_decode_16bit(ctx->input.common.aX2[0], ctx->input.common.aX2[1]);
             sensor_data[1] = (float)psmove_decode_16bit(ctx->input.common.aY2[0], ctx->input.common.aY2[1]);
             sensor_data[2] = (float)psmove_decode_16bit(ctx->input.common.aZ2[0], ctx->input.common.aZ2[1]);
@@ -248,7 +247,7 @@ static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         }
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
 
-        if(ctx->model == Model_ZCM1) {
+        if (ctx->model == Model_ZCM1) {
             sensor_data[0] = (float)psmove_decode_16bit(ctx->input.common.gX2[0], ctx->input.common.gX2[1]);
             sensor_data[1] = (float)psmove_decode_16bit(ctx->input.common.gY2[0], ctx->input.common.gY2[1]);
             sensor_data[2] = (float)psmove_decode_16bit(ctx->input.common.gZ2[0], ctx->input.common.gZ2[1]);
