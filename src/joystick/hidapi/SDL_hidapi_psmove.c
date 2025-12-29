@@ -30,8 +30,6 @@
 #ifdef SDL_JOYSTICK_HIDAPI_PSMOVE
 
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define PSMOVE_ACCEL_SCALE       (SDL_STANDARD_GRAVITY / 8192.0f)
-#define PSMOVE_GYRO_SCALE        (SDL_PI_F / 180.0f / 16.4f)
 #define PSMOVE_BUFFER_SIZE       9
 #define PSMOVE_EXT_DATA_BUF_SIZE 5
 
