@@ -29,7 +29,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_PSMOVE
 
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define PSMOVE_ACCEL_SCALE (SDL_STANDARD_GRAVITY / 8192.0f)
+#define PSMOVE_GYRO_SCALE (SDL_PI_F / 180.0f / 16.4f)
 #define PSMOVE_BUFFER_SIZE 9
 #define PSMOVE_EXT_DATA_BUF_SIZE 5
 
@@ -119,10 +120,10 @@ typedef struct
     PSMove_Model_Type model;
     PSMove_Data_LEDs leds;
     PSMove_Data_Input input;
+    PSMove_Data_Input last_state;
 
     bool report_sensors;
     bool effects_updated;
-    PSMove_Data_Input last_state;
 } SDL_DriverPSMove_Context;
 
 static void HIDAPI_DriverPSMove_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -214,25 +215,42 @@ static void HIDAPI_DriverPSMove_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         axis = (ctx->input.common.trigger * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 
-// TODO: I don't know how to properly implement this
-//
-#if 0
     if(ctx->report_sensors)
     {
 
        float sensor_data[3];
+        if(ctx->model == Model_ZCM1) {
+            sensor_data[0] = (((ctx->input.common.aX[0] + ctx->input.common.aX2[0]) +
+                   ((ctx->input.common.aX[1] + ctx->input.common.aX2[1]) << 8)) / 2 - 0x8000);
 
-        sensor_data[0] = LOAD16(ctx->input.common.aX[0], ctx->input.common.aX[1]);
-        sensor_data[1] = LOAD16(ctx->input.common.aY[0], ctx->input.common.aY[1]);
-        sensor_data[2] = LOAD16(ctx->input.common.aZ[0], ctx->input.common.aZ[1]);
+            sensor_data[1] = -(((ctx->input.common.aY[0] + ctx->input.common.aY2[0]) +
+                   ((ctx->input.common.aY[1] + ctx->input.common.aY2[1]) << 8)) / 2 - 0x8000);
+
+            sensor_data[2] = -(((ctx->input.common.aZ[0] + ctx->input.common.aZ2[0]) +
+                   ((ctx->input.common.aZ[1] + ctx->input.common.aZ2[1]) << 8)) / 2 - 0x8000);
+        } else {
+            sensor_data[0] = (Sint16)(ctx->input.common.aX[0] + (ctx->input.common.aX[1] << 8));
+            sensor_data[1] = (Sint16)((ctx->input.common.aY[0] + (ctx->input.common.aY[1] << 8)));
+            sensor_data[2] = (Sint16)((ctx->input.common.aZ[0] + (ctx->input.common.aZ[1] << 8)));
+        }
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
 
-        sensor_data[0] = LOAD16(ctx->input.common.aX[0], ctx->input.common.gX[1]);
-        sensor_data[1] = LOAD16(ctx->input.common.aY[0], ctx->input.common.gY[1]);
-        sensor_data[2] = LOAD16(ctx->input.common.aZ[0], ctx->input.common.gZ[1]);
+        if(ctx->model == Model_ZCM1) {
+            sensor_data[0] = (((ctx->input.common.gX[0] + ctx->input.common.gX2[0]) +
+                   ((ctx->input.common.gX[1] + ctx->input.common.gX2[1]) << 8)) / 2 - 0x8000);
+
+            sensor_data[1] = (((ctx->input.common.gY[0] + ctx->input.common.gY2[0]) +
+                   ((ctx->input.common.gY[1] + ctx->input.common.gY2[1]) << 8)) / 2 - 0x8000);
+
+            sensor_data[2] = (((ctx->input.common.gZ[0] + ctx->input.common.gZ2[0]) +
+                   ((ctx->input.common.gZ[1] + ctx->input.common.gZ2[1]) << 8)) / 2 - 0x8000);
+        } else {
+            sensor_data[0] = (Sint16)(ctx->input.common.gX[0] + (ctx->input.common.gX[1] << 8));
+            sensor_data[1] = (Sint16)(ctx->input.common.gY[0] + (ctx->input.common.gY[1] << 8));
+            sensor_data[2] = (Sint16)(ctx->input.common.gZ[0] + (ctx->input.common.gZ[1] << 8));
+        }
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
-#endif
     SDL_memcpy(&ctx->last_state, &ctx->input, sizeof(ctx->last_state));
 }
 
@@ -304,10 +322,8 @@ static bool HIDAPI_DriverPSMove_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     joystick->naxes = 1;
     joystick->nhats = 0;
 
-#if 0
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 100.0f);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
-#endif
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 75.0f);
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 75.0f);
 
     return true;
 }
