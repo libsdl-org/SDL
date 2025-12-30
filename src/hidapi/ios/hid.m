@@ -999,7 +999,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
         }
 
         /* See if there are any devices we should skip in enumeration */
-        if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, device.pid, 0, 0)) {
+        if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, device.pid, 0, 0, false)) {
             continue;
         }
 
