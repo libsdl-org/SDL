@@ -246,6 +246,22 @@ You are free to modify your Cocoa app with generally no consequence
 to SDL. You cannot, however, easily change the SDL window itself.
 Functionality may be added in the future to help this.
 
+
+## Raw Mouse Input
+
+On macOS 11.0 (Big Sur) and later, SDL uses the Game Controller framework's
+GCMouse API to provide raw, unaccelerated mouse input in relative mode. This
+is ideal for games and applications requiring precise 1:1 mouse movement.
+
+On older macOS versions, SDL falls back to NSEvent-based mouse input, which
+includes system mouse acceleration.
+
+To use accelerated (system-scaled) mouse movement on macOS 11.0+, set the hint:
+
+```c
+SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE, "1");
+```
+
 # Bug reports
 
 Bugs are tracked at [the GitHub issue tracker](https://github.com/libsdl-org/SDL/issues/).
