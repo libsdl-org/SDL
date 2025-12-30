@@ -836,7 +836,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_JoystickSupported(SDL_Joystick *joystic
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return false;
     }
-    for (int i = 0;i < sizeof(supported_device_ids) / sizeof(Uint32);i++) {
+    for (int i = 0;i < SDL_arraysize(supported_device_ids);i++) {
         if (supported_device_ids[i] == product_id) {
             return true;
         }
