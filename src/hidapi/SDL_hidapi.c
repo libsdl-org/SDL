@@ -540,8 +540,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 // Platform HIDAPI Implementation
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE) \
-        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
+#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB) \
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -1049,8 +1049,14 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb)
 {
+#ifdef HAVE_LIBUSB
+    if (libusb && use_libusb_whitelist && !IsInWhitelist(vendor_id, product_id)) {
+        return true;
+    }
+#endif
+
     // See if there are any devices we should skip in enumeration
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
@@ -1290,34 +1296,6 @@ static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_devi
 }
 #endif // HAVE_LIBUSB || HAVE_PLATFORM_BACKEND
 
-#ifdef HAVE_LIBUSB
-static void RemoveNonWhitelistedDevicesFromEnumeration(struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
-{
-    struct hid_device_info *last = NULL, *curr, *next;
-
-    for (curr = *devs; curr; curr = next) {
-        next = curr->next;
-
-        if (!IsInWhitelist(curr->vendor_id, curr->product_id)) {
-#ifdef DEBUG_HIDAPI
-            SDL_Log("Device was not in libusb whitelist, skipping: %ls %ls 0x%.4hx/0x%.4hx/%d",
-                    curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
-#endif
-            if (last) {
-                last->next = next;
-            } else {
-                *devs = next;
-            }
-
-            curr->next = NULL;
-            free_device_info(curr);
-            continue;
-        }
-        last = curr;
-    }
-}
-#endif // HAVE_LIBUSB
-
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
     struct hid_device_info *driver_devs = NULL;
@@ -1338,10 +1316,6 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #ifdef HAVE_LIBUSB
     if (libusb_ctx) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-
-        if (use_libusb_whitelist) {
-            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs, LIBUSB_hid_free_enumeration);
-        }
     }
 #endif // HAVE_LIBUSB
 

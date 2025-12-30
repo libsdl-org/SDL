@@ -906,7 +906,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 
 		cur_dev = root;
 		while (cur_dev) {
-			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage)) {
+			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage, false)) {
 				struct hid_device_info *tmp = cur_dev;
 
 				cur_dev = tmp->next;
