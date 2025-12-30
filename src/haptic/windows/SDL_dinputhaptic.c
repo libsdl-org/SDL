@@ -946,7 +946,7 @@ err_effectdone:
     return false;
 }
 
-BOOL DIGetDirectionUpdateFlag(DIEFFECT* before, DIEFFECT* after)
+BOOL DIGetDirectionUpdateFlag(DIEFFECT *before, DIEFFECT *after)
 {
     if (before->cAxes != after->cAxes) {
         return true;
@@ -958,11 +958,11 @@ BOOL DIGetDirectionUpdateFlag(DIEFFECT* before, DIEFFECT* after)
     if (before->rglDirection == NULL) {
         return true;
     }
-
     return SDL_memcmp(before->rglDirection, after->rglDirection, sizeof(LONG) * before->cAxes) != 0;
 }
 
-BOOL DIGetEnvelopeUpdateFlag(DIEFFECT* before, DIEFFECT* after) {
+BOOL DIGetEnvelopeUpdateFlag(DIEFFECT* before, DIEFFECT* after)
+{
     if (before->lpEnvelope == NULL && after->lpEnvelope == NULL) {
         return false;
     }
@@ -973,7 +973,7 @@ BOOL DIGetEnvelopeUpdateFlag(DIEFFECT* before, DIEFFECT* after) {
     return SDL_memcmp(before->lpEnvelope, after->lpEnvelope, sizeof(DIENVELOPE)) != 0;
 }
 
-BOOL DIGetTypeSpecificParamsUpdateFlag(DIEFFECT* before, DIEFFECT* after)
+BOOL DIGetTypeSpecificParamsUpdateFlag(DIEFFECT *before, DIEFFECT *after)
 {
     // Shouldn't happen since this implies an effect's type somehow changed, but need to check to avoid an out-of-bounds memcmp
     if (before->cbTypeSpecificParams != after->cbTypeSpecificParams) {
