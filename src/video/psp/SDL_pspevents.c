@@ -88,7 +88,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
     changed = old_keys ^ keys;
     old_keys = keys;
     if (changed) {
-        for (i = 0; i < sizeof(keymap_psp) / sizeof(keymap_psp[0]); i++) {
+        for (i = 0; i < SDL_arraysize(keymap_psp); i++) {
             if (changed & keymap_psp[i].id) {
                 bool down = ((keys & keymap_psp[i].id) != 0);
                 SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keymap_psp[i].id, keymap_psp[i].scancode, down);

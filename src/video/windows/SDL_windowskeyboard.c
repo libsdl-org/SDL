@@ -606,7 +606,7 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     char szTemp[256];
     HKL hkl = 0;
     DWORD dwLang = 0;
-    SDL_assert(uIndex < sizeof(dwRet) / sizeof(dwRet[0]));
+    SDL_assert(uIndex < SDL_arraysize(dwRet));
 
     hkl = videodata->ime_hkl;
     if (hklprev == hkl) {

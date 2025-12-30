@@ -263,12 +263,12 @@ static bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return false;
     }
-    for (i = 0;i < sizeof(supported_device_ids) / sizeof(Uint32);i++) {
+    for (i = 0;i < SDL_arraysize(supported_device_ids);i++) {
         if (supported_device_ids[i] == product_id) {
             break;
         }
     }
-    if (i == sizeof(supported_device_ids) / sizeof(Uint32)) {
+    if (i == SDL_arraysize(supported_device_ids)) {
         return false;
     }
     Uint16 real_id = HIDAPI_DriverLg4ff_IdentifyWheel(product_id, version);
