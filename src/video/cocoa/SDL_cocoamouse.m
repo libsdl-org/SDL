@@ -263,7 +263,6 @@ static bool cocoa_gcmouse_relative_mode = false;
 static bool cocoa_has_gcmouse = false;
 static SDL_MouseWheelDirection cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
 
-// Reads system preference for natural scrolling direction.
 static void Cocoa_UpdateGCMouseScrollDirection(void)
 {
     Boolean keyExistsAndHasValidFormat = NO;
@@ -282,14 +281,12 @@ static void Cocoa_UpdateGCMouseScrollDirection(void)
     }
 }
 
-// Sets relative mode for GCMouse input path.
 static bool Cocoa_SetGCMouseRelativeMode(bool enabled)
 {
     cocoa_gcmouse_relative_mode = enabled;
     return true;
 }
 
-// Handles button state changes from GCMouse.
 static void Cocoa_OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button,
                                          BOOL pressed)
 {
@@ -298,7 +295,6 @@ static void Cocoa_OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button,
                         pressed);
 }
 
-// Called when a GCMouse is connected. Sets up input handlers.
 static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
     API_AVAILABLE(macos(11.0))
 {
@@ -425,19 +421,16 @@ void Cocoa_InitGCMouse(void)
     }
 }
 
-// Returns whether GCMouse relative mode is active.
 bool Cocoa_GCMouseRelativeMode(void)
 {
     return cocoa_gcmouse_relative_mode;
 }
 
-// Returns whether any GCMouse device is connected.
 bool Cocoa_HasGCMouse(void)
 {
     return cocoa_has_gcmouse;
 }
 
-// Cleans up GCMouse support. Called during video shutdown.
 void Cocoa_QuitGCMouse(void)
 {
     @autoreleasepool {
@@ -850,6 +843,11 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
+    // GCMouse handles scroll events directly, skip NSEvent path to avoid duplicates
+    if (Cocoa_HasGCMouse()) {
+        return;
+    }
+
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
