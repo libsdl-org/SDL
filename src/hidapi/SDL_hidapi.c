@@ -32,6 +32,7 @@
 
 #include "SDL_hidapi_c.h"
 #include "../joystick/usb_ids.h"
+#include "../joystick/SDL_joystick_c.h"
 #include "../SDL_hints_c.h"
 
 // Initial type declarations
@@ -875,6 +876,7 @@ static bool IsInWhitelist(Uint16 vendor, Uint16 product)
 #endif // HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
 
 static bool use_libusb_whitelist = SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
+static bool use_libusb_gamecube = true;
 
 // Shared HIDAPI Implementation
 
@@ -1052,8 +1054,14 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
 bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb)
 {
 #ifdef HAVE_LIBUSB
-    if (libusb && use_libusb_whitelist && !IsInWhitelist(vendor_id, product_id)) {
-        return true;
+    if (libusb) {
+        if (use_libusb_whitelist && !IsInWhitelist(vendor_id, product_id)) {
+            return true;
+        }
+        if (!use_libusb_gamecube &&
+            vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
+            return true;
+        }
     }
 #endif
 
@@ -1132,6 +1140,7 @@ int SDL_hid_init(void)
 
     use_libusb_whitelist = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_WHITELIST,
                                               SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
+    use_libusb_gamecube = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_GAMECUBE, true);
 #ifdef HAVE_LIBUSB
     if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB, true)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,

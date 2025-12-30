@@ -1084,6 +1084,21 @@ extern "C" {
  */
 #define SDL_HINT_HIDAPI_LIBUSB "SDL_HIDAPI_LIBUSB"
 
+
+/**
+ * A variable to control whether HIDAPI uses libusb for GameCube adapters.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI will not use libusb for GameCube adapters.
+ * - "1": HIDAPI will use libusb for GameCube adapters if available. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_HIDAPI_LIBUSB_GAMECUBE "SDL_HIDAPI_LIBUSB_GAMECUBE"
+
 /**
  * A variable to control whether HIDAPI uses libusb only for whitelisted
  * devices.
