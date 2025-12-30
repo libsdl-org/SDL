@@ -171,7 +171,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             }
         }
         return (SDL3.audioContext !== undefined);
-    }, device->recording);
+    });
 
     if (!result) {
         return SDL_SetError("Web Audio API is not available!");
