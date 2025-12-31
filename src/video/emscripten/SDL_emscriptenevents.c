@@ -651,6 +651,7 @@ typedef struct Emscripten_PointerEvent
     int pointerid;
     int button;
     int buttons;
+    int down;
     float movementX;
     float movementY;
     float targetX;
@@ -665,14 +666,14 @@ typedef struct Emscripten_PointerEvent
 static void Emscripten_HandleMouseButton(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
     Uint8 sdl_button;
-    bool down;
+    const bool down = (event->down != 0);
     switch (event->button) {
-        #define CHECK_MOUSE_BUTTON(jsbutton, downflag, sdlbutton) case jsbutton: down = (event->buttons & downflag) != 0; ; sdl_button = SDL_BUTTON_##sdlbutton; break
-        CHECK_MOUSE_BUTTON(0, 1, LEFT);
-        CHECK_MOUSE_BUTTON(1, 4, MIDDLE);
-        CHECK_MOUSE_BUTTON(2, 2, RIGHT);
-        CHECK_MOUSE_BUTTON(3, 8, X1);
-        CHECK_MOUSE_BUTTON(4, 16, X2);
+        #define CHECK_MOUSE_BUTTON(jsbutton, sdlbutton) case jsbutton: sdl_button = SDL_BUTTON_##sdlbutton; break
+        CHECK_MOUSE_BUTTON(0, LEFT);
+        CHECK_MOUSE_BUTTON(1, MIDDLE);
+        CHECK_MOUSE_BUTTON(2, RIGHT);
+        CHECK_MOUSE_BUTTON(3, X1);
+        CHECK_MOUSE_BUTTON(4, X2);
         #undef CHECK_MOUSE_BUTTON
         default: sdl_button = 0; break;
     }
@@ -985,6 +986,7 @@ static void Emscripten_prep_pointer_event_callbacks(void)
                     HEAP32[idx++] = event.pointerId;
                     HEAP32[idx++] = (typeof(event.button) !== "undefined") ? event.button : -1;
                     HEAP32[idx++] = event.buttons;
+                    HEAP32[idx++] = (event.type == "pointerdown") ? 1 : 0;
                     HEAPF32[idx++] = event.movementX;
                     HEAPF32[idx++] = event.movementY;
                     HEAPF32[idx++] = event.clientX - left;
