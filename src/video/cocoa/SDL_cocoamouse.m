@@ -259,7 +259,8 @@ static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 // GCMouse support for raw (unaccelerated) mouse input on macOS 11.0+
 static id cocoa_mouse_connect_observer = nil;
 static id cocoa_mouse_disconnect_observer = nil;
-static bool cocoa_gcmouse_relative_mode = false;
+// Atomic for thread-safe access during high-frequency mouse input
+static SDL_AtomicInt cocoa_gcmouse_relative_mode;
 static bool cocoa_has_gcmouse = false;
 static SDL_MouseWheelDirection cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
 
@@ -283,7 +284,7 @@ static void Cocoa_UpdateGCMouseScrollDirection(void)
 
 static bool Cocoa_SetGCMouseRelativeMode(bool enabled)
 {
-    cocoa_gcmouse_relative_mode = enabled;
+    SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, enabled ? 1 : 0);
     return true;
 }
 
@@ -423,7 +424,7 @@ void Cocoa_InitGCMouse(void)
 
 bool Cocoa_GCMouseRelativeMode(void)
 {
-    return cocoa_gcmouse_relative_mode;
+    return SDL_GetAtomicInt(&cocoa_gcmouse_relative_mode) != 0;
 }
 
 bool Cocoa_HasGCMouse(void)
@@ -457,7 +458,7 @@ void Cocoa_QuitGCMouse(void)
 
             SDL_GetMouse()->SetRelativeMouseMode = NULL;
             cocoa_has_gcmouse = false;
-            cocoa_gcmouse_relative_mode = false;
+            SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 0);
         }
     }
 }
