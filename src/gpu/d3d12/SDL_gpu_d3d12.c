@@ -23,6 +23,7 @@
 
 #ifdef SDL_GPU_D3D12
 
+#include "../../events/SDL_windowevents_c.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
@@ -7097,7 +7098,7 @@ static bool D3D12_ClaimWindow(
             renderer->claimedWindowCount += 1;
             SDL_UnlockMutex(renderer->windowLock);
 
-            SDL_AddEventWatch(D3D12_INTERNAL_OnWindowResize, window);
+            SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, D3D12_INTERNAL_OnWindowResize, window);
 
             return true;
         } else {
@@ -7145,7 +7146,7 @@ static void D3D12_ReleaseWindow(
 
     SDL_free(windowData);
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
-    SDL_RemoveEventWatch(D3D12_INTERNAL_OnWindowResize, window);
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, D3D12_INTERNAL_OnWindowResize, window);
 }
 
 static bool D3D12_SetSwapchainParameters(
