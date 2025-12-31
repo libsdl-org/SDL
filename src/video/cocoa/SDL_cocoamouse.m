@@ -304,6 +304,13 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
     SDL_AddMouse(mouseID, NULL);
     cocoa_has_gcmouse = true;
 
+    // Sync with SDL's current relative mode state (may have been set before
+    // GCMouse connected)
+    SDL_Mouse *sdl_mouse = SDL_GetMouse();
+    if (sdl_mouse && sdl_mouse->relative_mode) {
+        SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 1);
+    }
+
     mouse.mouseInput.leftButton.pressedChangedHandler =
         ^(GCControllerButtonInput *button, float value, BOOL pressed) {
             Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
@@ -413,11 +420,6 @@ void Cocoa_InitGCMouse(void)
             for (GCMouse *mouse in [GCMouse mice]) {
                 Cocoa_OnGCMouseConnected(mouse);
             }
-
-            // Override relative mouse mode handler if we have GCMouse
-            if (cocoa_has_gcmouse) {
-                SDL_GetMouse()->SetRelativeMouseMode = Cocoa_SetGCMouseRelativeMode;
-            }
         }
     }
 }
@@ -456,7 +458,6 @@ void Cocoa_QuitGCMouse(void)
                 Cocoa_OnGCMouseDisconnected(mouse);
             }
 
-            SDL_GetMouse()->SetRelativeMouseMode = NULL;
             cocoa_has_gcmouse = false;
             SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 0);
         }
