@@ -337,6 +337,11 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
     mouse.mouseInput.mouseMovedHandler =
         ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
             if (Cocoa_GCMouseRelativeMode()) {
+                // Skip raw input if user wants system-scaled (accelerated) deltas
+                SDL_Mouse *sdl_mouse = SDL_GetMouse();
+                if (sdl_mouse && sdl_mouse->enable_relative_system_scale) {
+                    return;
+                }
                 Uint64 timestamp = SDL_GetTicksNS();
                 SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID,
                                     true, deltaX, -deltaY);
