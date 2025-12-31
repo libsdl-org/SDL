@@ -1216,34 +1216,29 @@ void X11_GetBorderValues(SDL_WindowData *data)
 
 void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent)
 {
-    if (xevent->x != data->last_xconfigure.x ||
-        xevent->y != data->last_xconfigure.y) {
-        if (!data->size_move_event_flags) {
-            SDL_Window *w;
-            int x = xevent->x;
-            int y = xevent->y;
+    if (!data->size_move_event_flags) {
+        int x = xevent->x;
+        int y = xevent->y;
 
+        if (xevent->x != data->last_xconfigure.x ||
+            xevent->y != data->last_xconfigure.y) {
             data->pending_operation &= ~X11_PENDING_OP_MOVE;
-            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+        }
+        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
 
-            for (w = data->window->first_child; w; w = w->next_sibling) {
-                // Don't update hidden child popup windows, their relative position doesn't change
-                if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
-                    X11_UpdateWindowPosition(w, true);
-                }
+        for (SDL_Window *w = data->window->first_child; w; w = w->next_sibling) {
+            // Don't update hidden child popup windows, their relative position doesn't change
+            if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
+                X11_UpdateWindowPosition(w, true);
             }
         }
-    }
 
-    if (xevent->width != data->last_xconfigure.width ||
-        xevent->height != data->last_xconfigure.height) {
-        if (!data->size_move_event_flags) {
+        if (xevent->width != data->last_xconfigure.width ||
+            xevent->height != data->last_xconfigure.height) {
             data->pending_operation &= ~X11_PENDING_OP_RESIZE;
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
-                                xevent->width,
-                                xevent->height);
         }
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, xevent->width, xevent->height);
     }
 
     SDL_copyp(&data->last_xconfigure, xevent);
