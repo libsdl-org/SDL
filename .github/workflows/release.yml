@@ -102,9 +102,8 @@ jobs:
       - name: 'Verify SDL_REVISION contains SDL-'
         run: |
           set -e
-          if test "x$(strings /tmp/build/libSDL3.so.0 | grep SDL- | wc -l)" != x1; then
+          if test "x$(strings /tmp/build/libSDL3.so.0 | grep SDL- | grep -v SDL-tray | wc -l)" != x1; then
             echo "SDL- string not found: must be present in SDL_REVISION"
-            strings /tmp/build/libSDL3.so.0 | grep SDL-
             exit 1
           fi
 
