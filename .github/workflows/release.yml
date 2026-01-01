@@ -104,6 +104,7 @@ jobs:
           set -e
           if test "x$(strings /tmp/build/libSDL3.so.0 | grep SDL- | wc -l)" != x1; then
             echo "SDL- string not found: must be present in SDL_REVISION"
+            strings /tmp/build/libSDL3.so.0 | grep SDL-
             exit 1
           fi
 
