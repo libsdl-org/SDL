@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -3902,6 +3902,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
  *
  * This copy occurs on the GPU timeline. You may assume the copy has finished
  * in subsequent commands.
+ *
+ * This function does not support copying between depth and color textures.
+ * For those, copy the texture to a buffer and then to the destination
+ * texture.
  *
  * \param copy_pass a copy pass handle.
  * \param source a source texture region.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,13 +51,11 @@ static void OFFSCREEN_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
-static bool OFFSCREEN_Available(const char *enable_hint)
+static bool OFFSCREEN_Available(const char *drivername)
 {
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
-    if (hint) {
-        if (SDL_strcmp(hint, enable_hint) == 0) {
-            return true;
-        }
+    if (hint && SDL_strstr(hint, drivername) != NULL) {
+        return true;
     }
     return false;
 }

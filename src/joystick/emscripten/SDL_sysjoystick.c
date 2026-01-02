@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -583,8 +583,8 @@ static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequen
         gamepad['vibrationActuator']['playEffect']('dual-rumble', {
             'startDelay': 0,
             'duration': 3000,
-            'weakMagnitude': $1 / 0xFFFF,
-            'strongMagnitude': $2 / 0xFFFF,
+            'weakMagnitude': $2 / 0xFFFF,
+            'strongMagnitude': $1 / 0xFFFF,
         });
         return 1;
         }, item->index, low_frequency_rumble, high_frequency_rumble);

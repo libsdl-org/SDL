@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -482,13 +482,13 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_SHIELD_PROTOCOL
         HIDAPI_DumpPacket("NVIDIA SHIELD packet: size = %d", data, size);
 #endif
+        if (!joystick) {
+            continue;
+        }
 
         // Byte 0 is HID report ID
         switch (data[0]) {
         case k_ShieldReportIdControllerState:
-            if (!joystick) {
-                break;
-            }
             if (size == 16) {
                 HIDAPI_DriverShield_HandleStatePacketV103(joystick, ctx, data, size);
             } else {
@@ -496,9 +496,6 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             break;
         case k_ShieldReportIdControllerTouch:
-            if (!joystick) {
-                break;
-            }
             HIDAPI_DriverShield_HandleTouchPacketV103(joystick, ctx, data, size);
             break;
         case k_ShieldReportIdCommandResponse:

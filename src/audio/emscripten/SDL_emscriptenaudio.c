@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -155,8 +155,12 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             Module['SDL3'] = {};
         }
         var SDL3 = Module['SDL3'];
-        SDL3.audio_playback = {};
-        SDL3.audio_recording = {};
+        if (typeof(SDL3.audio_playback) === 'undefined') {
+            SDL3.audio_playback = {};
+        }
+        if (typeof(SDL3.audio_recording) === 'undefined') {
+            SDL3.audio_recording = {};
+        }
 
         if (!SDL3.audioContext) {
             if (typeof(AudioContext) !== 'undefined') {
@@ -171,7 +175,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             }
         }
         return (SDL3.audioContext !== undefined);
-    }, device->recording);
+    });
 
     if (!result) {
         return SDL_SetError("Web Audio API is not available!");

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -871,12 +871,12 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
 
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     seat->pointer.focus = NULL;
-    seat->pointer.buttons_pressed = 0;
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_LEFT, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_RIGHT, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_MIDDLE, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X1, false);
-    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X2, false);
+    for (int i = 0; seat->pointer.buttons_pressed; ++i) {
+        if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
+            SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
+            seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
+        }
+    }
 
     /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
      * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
@@ -992,14 +992,9 @@ static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
     case BTN_RIGHT:
         sdl_button = SDL_BUTTON_RIGHT;
         break;
-    case BTN_SIDE:
-        sdl_button = SDL_BUTTON_X1;
-        break;
-    case BTN_EXTRA:
-        sdl_button = SDL_BUTTON_X2;
-        break;
     default:
-        return;
+        sdl_button = SDL_BUTTON_X1 + (button - BTN_SIDE);
+        break;
     }
 
     if (window) {

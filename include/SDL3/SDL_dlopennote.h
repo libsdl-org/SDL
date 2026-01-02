@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,21 +32,23 @@
  * this CMake snippet to check for support:
  *
  * ```cmake
- *  set(CHECK_ELF_DLNOTES_SRC [==[
- *  #ifndef __ELF__
- *    ELF DL notes is only supported on ELF platforms
- *  #endif
- *  __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
- *    struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
- *  } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\\"a\\":{\\"a\\":\\"1\\",\\"b\\":\\"2\\"}]" };
- *  int main(int argc, char *argv[]) {
- *    return argc + dlnote.hdr.a;
- *  }
- *  ]==])
- *  check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
- *  if(NOT COMPILER_SUPPORTS_ELFNOTES)
- *    set(SDL_DISABLE_DLOPEN_NOTES TRUE)
- *  endif()
+ * include(CheckCSourceCompiles)
+ * find_package(SDL3 REQUIRED CONFIG COMPONENTS Headers)
+ * list(APPEND CMAKE_REQUIRED_LIBRARIES SDL3::Headers)
+ * check_c_source_compiles([==[
+ *   #include <SDL3/SDL_dlopennote.h>
+ *   SDL_ELF_NOTE_DLOPEN("sdl-video",
+ *     "Support for video through SDL",
+ *     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+ *     "libSDL-1.2.so.0", "libSDL-2.0.so.0", "libSDL3.so.0"
+ *   )
+ *   int main(int argc, char *argv[]) {
+ *     return argc + argv[0][1];
+ *   }
+ * ]==] COMPILER_SUPPORTS_SDL_ELF_NOTE_DLOPEN)
+ * if(NOT COMPILER_SUPPORTS_SDL_ELF_NOTE_DLOPEN)
+ *   add_compile_definitions(-DSDL_DISABLE_DLOPEN_NOTE)
+ * endif()
  * ```
  */
 
@@ -141,36 +143,37 @@
 #define SDL_ELF_NOTE_INTERNAL(json, variable_name) \
     SDL_ELF_NOTE_INTERNAL2(json, variable_name)
 
-#define SDL_SONAME_ARRAY1(N1) "[\"" N1 "\"]"
-#define SDL_SONAME_ARRAY2(N1,N2) "[\"" N1 "\",\"" N2 "\"]"
-#define SDL_SONAME_ARRAY3(N1,N2,N3) "[\"" N1 "\",\"" N2 "\",\"" N3 "\"]"
-#define SDL_SONAME_ARRAY4(N1,N2,N3,N4) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\"]"
-#define SDL_SONAME_ARRAY5(N1,N2,N3,N4,N5) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\"]"
-#define SDL_SONAME_ARRAY6(N1,N2,N3,N4,N5,N6) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\"]"
-#define SDL_SONAME_ARRAY7(N1,N2,N3,N4,N5,N6,N7) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\",\"" N7 "\"]"
-#define SDL_SONAME_ARRAY8(N1,N2,N3,N4,N5,N6,N7,N8) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\",\"" N7 "\",\"" N8 "\"]"
-#define SDL_SONAME_ARRAY_GET(N1,N2,N3,N4,N5,N6,N7,N8,NAME,...) NAME
-#define SDL_SONAME_ARRAY(...) \
-    SDL_SONAME_ARRAY_GET(__VA_ARGS__, \
-         SDL_SONAME_ARRAY8, \
-         SDL_SONAME_ARRAY7, \
-         SDL_SONAME_ARRAY6, \
-         SDL_SONAME_ARRAY5, \
-         SDL_SONAME_ARRAY4, \
-         SDL_SONAME_ARRAY3, \
-         SDL_SONAME_ARRAY2, \
-         SDL_SONAME_ARRAY1 \
+#define SDL_DLNOTE_JSON_ARRAY1(N1) "[\"" N1 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY2(N1,N2) "[\"" N1 "\",\"" N2 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY3(N1,N2,N3) "[\"" N1 "\",\"" N2 "\",\"" N3 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY4(N1,N2,N3,N4) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY5(N1,N2,N3,N4,N5) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY6(N1,N2,N3,N4,N5,N6) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY7(N1,N2,N3,N4,N5,N6,N7) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\",\"" N7 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY8(N1,N2,N3,N4,N5,N6,N7,N8) "[\"" N1 "\",\"" N2 "\",\"" N3 "\",\"" N4 "\",\"" N5 "\",\"" N6 "\",\"" N7 "\",\"" N8 "\"]"
+#define SDL_DLNOTE_JSON_ARRAY_GET(N1,N2,N3,N4,N5,N6,N7,N8,NAME,...) NAME
+#define SDL_DLNOTE_JSON_ARRAY(...) \
+    SDL_DLNOTE_JSON_ARRAY_GET(     \
+         __VA_ARGS__,           \
+         SDL_DLNOTE_JSON_ARRAY8,   \
+         SDL_DLNOTE_JSON_ARRAY7,   \
+         SDL_DLNOTE_JSON_ARRAY6,   \
+         SDL_DLNOTE_JSON_ARRAY5,   \
+         SDL_DLNOTE_JSON_ARRAY4,   \
+         SDL_DLNOTE_JSON_ARRAY3,   \
+         SDL_DLNOTE_JSON_ARRAY2,   \
+         SDL_DLNOTE_JSON_ARRAY1    \
     )(__VA_ARGS__)
 
 /* Create "unique" variable name using __LINE__,
- * so creating elf notes on the same line is not supported
+ * so creating multiple elf notes on the same line is not supported
  */
-#define SDL_ELF_NOTE_JOIN2(A,B) A##B
-#define SDL_ELF_NOTE_JOIN(A,B) SDL_ELF_NOTE_JOIN2(A,B)
-#define SDL_ELF_NOTE_UNIQUE_NAME SDL_ELF_NOTE_JOIN(s_SDL_dlopen_note_, __LINE__)
+#define SDL_DLNOTE_JOIN2(A,B) A##B
+#define SDL_DLNOTE_JOIN(A,B) SDL_DLNOTE_JOIN2(A,B)
+#define SDL_DLNOTE_UNIQUE_NAME SDL_DLNOTE_JOIN(s_SDL_dlopen_note_, __LINE__)
 
 /**
- * Note that your application has dynamic shared library dependencies.
+ * Add a note that your application has dynamic shared library dependencies.
  *
  * You can do this by adding the following to the global scope:
  *
@@ -180,8 +183,10 @@
  *     "Support for loading PNG images using libpng (required for APNG)",
  *     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
  *     "libpng12.so.0"
- * );
+ * )
  * ```
+ *
+ * A trailing semicolon is not needed.
  *
  * Or if you support multiple versions of a library, you can list them:
  *
@@ -192,8 +197,11 @@
  *     "Create windows through SDL video backend",
  *     SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
  *     "libSDL-1.2.so.0", "libSDL2-2.0.so.0", "libSDL3.so.0"
- * );
+ * )
  * ```
+ *
+ * This macro is not available for compilers that do not support variadic
+ * macro's.
  *
  * \since This macro is available since SDL 3.4.0.
  *
@@ -206,8 +214,8 @@
         "[{\"feature\":\"" feature                               \
         "\",\"description\":\"" description                      \
         "\",\"priority\":\"" priority                            \
-        "\",\"soname\":" SDL_SONAME_ARRAY(__VA_ARGS__) "}]",     \
-        SDL_ELF_NOTE_UNIQUE_NAME)
+        "\",\"soname\":" SDL_DLNOTE_JSON_ARRAY(__VA_ARGS__) "}]",   \
+        SDL_DLNOTE_UNIQUE_NAME);
 
 #elif defined(__GNUC__) && __GNUC__ < 3
 
@@ -216,7 +224,6 @@
 #elif defined(_MSC_VER) && _MSC_VER < 1400
 
 /* Variadic macros are not supported */
-#define SDL_ELF_NOTE_DLOPEN
 
 #else
 

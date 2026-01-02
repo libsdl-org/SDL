@@ -64,7 +64,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for OpenVR video",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_OPENVR_DRIVER_DYNAMIC
-);
+)
 
 #define MARKER_ID 0
 #define MARKER_STR "vr-marker,frame_end,type,application"
@@ -505,7 +505,7 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
         return SDL_SetError("Failed to get action set handle");
     }
 
-    videodata->input_action_handles_buttons_count = sizeof(k_pchBooleanActionPaths) / sizeof(k_pchBooleanActionPaths[0]);
+    videodata->input_action_handles_buttons_count = SDL_arraysize(k_pchBooleanActionPaths);
     videodata->input_action_handles_buttons = SDL_malloc(videodata->input_action_handles_buttons_count * sizeof(VRActionHandle_t));
 
     for (int i = 0; i < videodata->input_action_handles_buttons_count; i++)
@@ -518,7 +518,7 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
         }
     }
 
-    videodata->input_action_handles_axes_count = sizeof(k_pchAnalogActionPaths) / sizeof(k_pchAnalogActionPaths[0]);
+    videodata->input_action_handles_axes_count = SDL_arraysize(k_pchAnalogActionPaths);
     videodata->input_action_handles_axes = SDL_malloc(videodata->input_action_handles_axes_count * sizeof(VRActionHandle_t));
 
     for (int i = 0; i < videodata->input_action_handles_axes_count; i++)

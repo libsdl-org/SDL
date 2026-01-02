@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,11 +61,18 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         if (event->key.key == SDLK_ESCAPE) {
             return SDL_APP_SUCCESS;
         }
-        if (event->key.key == SDLK_C && event->key.mod & SDL_KMOD_CTRL) {
-            SDL_SetClipboardData(ClipboardDataCallback, NULL, NULL, mime_types, SDL_arraysize(mime_types));
-            break;
-        } else if (event->key.key == SDLK_P && event->key.mod & SDL_KMOD_CTRL) {
-            SDL_SetPrimarySelectionText("SDL Primary Selection Text!");
+        if (event->key.key == SDLK_C) {
+            if (event->key.mod & SDL_KMOD_CTRL) {
+                SDL_SetClipboardData(ClipboardDataCallback, NULL, NULL, mime_types, SDL_arraysize(mime_types));
+            } else if (event->key.mod & SDL_KMOD_ALT) {
+                SDL_ClearClipboardData();
+            }
+        } else if (event->key.key == SDLK_P) {
+            if (event->key.mod & SDL_KMOD_CTRL) {
+                SDL_SetPrimarySelectionText("SDL Primary Selection Text!");
+            } else if (event->key.mod & SDL_KMOD_ALT) {
+                SDL_SetPrimarySelectionText(NULL);
+            }
         }
         break;
 
@@ -188,9 +195,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     float x = 4.0f;
     float y = 4.0f;
-    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+C to copy content to the clipboard");
+    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+C to copy content to the clipboard (Alt+C to clear)");
     y += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * 2;
-    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+P to set the primary selection text");
+    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+P to set the primary selection text (Alt+P to clear)");
     y += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * 2;
     SDL_RenderDebugText(renderer, x, y, "Clipboard contents:");
     x += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * 2;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC
-);
+)
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
 SDL_ELF_NOTE_DLOPEN(
@@ -51,7 +51,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT NULL
 #endif
@@ -62,7 +62,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR NULL
 #endif
@@ -73,7 +73,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 NULL
 #endif
@@ -84,7 +84,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES NULL
 #endif
@@ -95,7 +95,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR NULL
 #endif
@@ -106,7 +106,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS NULL
 #endif
@@ -117,7 +117,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
-);
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST NULL
 #endif

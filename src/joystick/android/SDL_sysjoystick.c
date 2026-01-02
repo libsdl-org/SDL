@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -305,7 +305,7 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
     return false;
 }
 
-void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble)
+void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble, bool has_rgb_led)
 {
     SDL_joylist_item *item;
     SDL_GUID guid;
@@ -380,6 +380,7 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     item->naxes = naxes;
     item->nhats = nhats;
     item->can_rumble = can_rumble;
+    item->has_rgb_led = has_rgb_led;
     item->device_instance = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
@@ -581,6 +582,10 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
+    if (item->has_rgb_led) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
+    }
+
     return true;
 }
 
@@ -607,7 +612,15 @@ static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_r
 
 static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item) {
+        return SDL_SetError("SetLED failed, device disconnected");
+    }
+    if (!item->has_rgb_led) {
+        return SDL_Unsupported();
+    }
+    Android_JNI_JoystickSetLED(item->device_id, red, green, blue);
+    return true;
 }
 
 static bool ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
