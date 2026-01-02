@@ -69,6 +69,7 @@
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLControllerManager {
     void pollInputDevices();
+    void joystickSetLED(int, int, int, int);
     void pollHapticDevices();
     void hapticRun(int, float, int);
     void hapticRumble(int, float, float, int);
