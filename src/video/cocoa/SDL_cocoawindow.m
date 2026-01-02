@@ -507,7 +507,8 @@ static NSScreen *ScreenForRect(const NSRect *rect)
 
 static void ConvertNSRect(NSRect *r)
 {
-    r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)SDL_GetVideoDevice()->internal;
+    r->origin.y = videodata.mainDisplayHeight - r->origin.y - r->size.height;
 }
 
 static void ScheduleContextUpdates(SDL_CocoaWindowData *data)
@@ -2249,12 +2250,13 @@ static void Cocoa_UpdateMouseFocus()
                                   }
                                   *stop = YES;
                                   if (sdlwindow) {
+                                      SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)vid->internal;
                                       int wx, wy;
                                       SDL_RelativeToGlobalForWindow(sdlwindow, sdlwindow->x, sdlwindow->y, &wx, &wy);
 
                                       // Calculate the cursor coordinates relative to the window.
                                       const float dx = mouseLocation.x - wx;
-                                      const float dy = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - mouseLocation.y) - wy;
+                                      const float dy = (videodata.mainDisplayHeight - mouseLocation.y) - wy;
                                       SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, false, dx, dy);
                                   }
                               }
