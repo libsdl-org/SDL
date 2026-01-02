@@ -409,9 +409,11 @@ static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
     SDL_MouseButtonFlags result = 0;
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)device->internal;
 
     *x = cocoaLocation.x;
-    *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
+    *y = (videodata.mainDisplayHeight - cocoaLocation.y);
 
     result |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
     result |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
@@ -600,8 +602,9 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     deltaY = [event deltaY];
 
     if (seenWarp) {
+        SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->internal;
         deltaX += (lastMoveX - data->lastWarpX);
-        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - data->lastWarpY);
+        deltaY += ((videodata.mainDisplayHeight - lastMoveY) - data->lastWarpY);
 
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
