@@ -62,6 +62,7 @@ typedef enum
 @property(nonatomic) IOPMAssertionID screensaver_assertion;
 @property(nonatomic) SDL_Mutex *swaplock;
 @property(nonatomic) OptionAsAlt option_as_alt;
+@property(nonatomic) CGFloat mainDisplayHeight;
 @end
 
 // Utility functions
