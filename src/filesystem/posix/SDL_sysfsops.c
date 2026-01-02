@@ -377,6 +377,10 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         }
         rc = stat(apath, &statbuf);
         SDL_free(apath);
+
+        if (rc < 0) {
+            rc = stat(path, &statbuf);
+        }
     }
 #else
     rc = stat(path, &statbuf);
