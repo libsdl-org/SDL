@@ -5922,7 +5922,10 @@ static void D3D12_UploadToTexture(
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
     Uint32 pixelsPerRow = source->pixels_per_row;
+    Uint32 blockWidth;
+    Uint32 blockSize;
     Uint32 rowPitch;
+    Uint32 blockHeight;
     Uint32 alignedRowPitch;
     Uint32 rowsPerSlice = source->rows_per_layer;
     Uint32 bytesPerSlice;
@@ -5956,15 +5959,18 @@ static void D3D12_UploadToTexture(
         pixelsPerRow = destination->w;
     }
 
-    rowPitch = BytesPerRow(pixelsPerRow, textureContainer->header.info.format);
-
     if (rowsPerSlice == 0) {
         rowsPerSlice = destination->h;
     }
 
+    blockWidth = Texture_GetBlockWidth(textureContainer->header.info.format);
+    blockSize = SDL_GPUTextureFormatTexelBlockSize(textureContainer->header.info.format);
+    rowPitch = (pixelsPerRow + (blockWidth - 1)) / blockWidth * blockSize;
+    blockHeight = (rowsPerSlice + (blockWidth - 1)) / blockWidth;
+
     bytesPerSlice = rowsPerSlice * rowPitch;
 
-    alignedRowPitch = BytesPerRow(destination->w, textureContainer->header.info.format);
+    alignedRowPitch = (destination->w + (blockWidth - 1)) / blockWidth * blockSize;
     alignedRowPitch = D3D12_INTERNAL_Align(alignedRowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
     needsRealignment = rowsPerSlice != destination->h || rowPitch != alignedRowPitch;
     needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
@@ -5983,7 +5989,7 @@ static void D3D12_UploadToTexture(
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
             0,
-            alignedRowPitch * destination->h * destination->d,
+            alignedRowPitch * blockHeight * destination->d,
             D3D12_BUFFER_TYPE_UPLOAD,
             NULL);
 
@@ -5994,21 +6000,13 @@ static void D3D12_UploadToTexture(
         sourceLocation.pResource = temporaryBuffer->handle;
 
         for (Uint32 sliceIndex = 0; sliceIndex < destination->d; sliceIndex += 1) {
-            // copy row count minus one to avoid overread
-            for (Uint32 rowIndex = 0; rowIndex < destination->h - 1; rowIndex += 1) {
-
+            for (Uint32 rowIndex = 0; rowIndex < blockHeight; rowIndex += 1) {
                 SDL_memcpy(
                     temporaryBuffer->mapPointer + (sliceIndex * alignedBytesPerSlice) + (rowIndex * alignedRowPitch),
                     transferBufferContainer->activeBuffer->mapPointer + source->offset + (sliceIndex * bytesPerSlice) + (rowIndex * rowPitch),
-                    alignedRowPitch);
+                    rowPitch);
 
             }
-            Uint32 offset = source->offset + (sliceIndex * bytesPerSlice) + ((destination->h - 1) * rowPitch);
-
-            SDL_memcpy(
-                temporaryBuffer->mapPointer + (sliceIndex * alignedBytesPerSlice) + ((destination->h - 1) * alignedRowPitch),
-                transferBufferContainer->activeBuffer->mapPointer + offset,
-                SDL_min(alignedRowPitch, transferBufferContainer->size - offset));
 
             sourceLocation.PlacedFootprint.Footprint.Width = destination->w;
             sourceLocation.PlacedFootprint.Footprint.Height = destination->h;
@@ -6037,7 +6035,7 @@ static void D3D12_UploadToTexture(
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
             0,
-            alignedRowPitch * destination->h * destination->d,
+            alignedRowPitch * blockHeight * destination->d,
             D3D12_BUFFER_TYPE_UPLOAD,
             NULL);
 
@@ -6048,7 +6046,7 @@ static void D3D12_UploadToTexture(
         SDL_memcpy(
             temporaryBuffer->mapPointer,
             transferBufferContainer->activeBuffer->mapPointer + source->offset,
-            alignedRowPitch * destination->h * destination->d);
+            alignedRowPitch * blockHeight * destination->d);
 
         sourceLocation.pResource = temporaryBuffer->handle;
         sourceLocation.PlacedFootprint.Offset = 0;
