@@ -310,7 +310,8 @@ void UIKit_SetGameControllerInteraction(bool enabled)
 
 void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled)
 {
-#ifndef SDL_PLATFORM_TVOS
+#if defined(SDL_PLATFORM_VISIONOS) || \
+       (defined(SDL_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000)
     if (@available(iOS 18.0, visionOS 2.0, *)) {
         if (enabled) {
             GCEventInteraction *interaction = [[GCEventInteraction alloc] init];
