@@ -1648,6 +1648,84 @@ if(ANDROID)
     target_link_options(SDL3-static INTERFACE "-Wl,-u,JNI_OnLoad")
   endif()
 
+if(TARGET SDL3-shared)
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,common-page-size=16384")
+endif()
+
+elseif(OHOS)
+  # disable warnings from the toolchain
+  sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
+
+  sdl_link_dependency(ohos LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z ohsensor)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_OHOS 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ohos/*.c")
+    set(HAVE_SDL_VIDEO TRUE)
+    set(HAVE_VULKAN ON)
+    set(SDL_VIDEO_VULKAN ON)
+    set(SDL_VIDEO_RENDER_VULKAN 1)
+    set(HAVE_RENDER_VULKAN TRUE)
+
+    if(SDL_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      sdl_link_dependency(opengles LIBS GLESv2)
+    endif()
+  endif()
+
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/misc/ohos/*.c"
+  )
+  set(HAVE_SDL_MISC TRUE)
+
+  if(SDL_POWER)
+    set(SDL_POWER_OHOS 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/power/ohos/*.c"
+      "${SDL3_SOURCE_DIR}/src/power/ohos/*.h"
+    )
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ohos/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  set(SDL_FILESYSTEM_OHOS 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/filesystem/ohos/*.c"
+    "${SDL3_SOURCE_DIR}/src/filesystem/ohos/*.h"
+  )
+  set(HAVE_SDL_FILESYSTEM TRUE)
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_OHOS 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/sensor/ohos/*.c"
+      "${SDL3_SOURCE_DIR}/src/sensor/ohos/*.h"
+    )
+    set(HAVE_SDL_SENSOR TRUE)
+  endif()
+
+  set(SDL_PTHREADS 1)
+
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
@@ -3414,6 +3492,9 @@ if (SDL_DIALOG)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog_utils.c)
   if(ANDROID)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/android/SDL_androiddialog.c)
+    set(HAVE_SDL_DIALOG TRUE)
+  elseif (OHOS)
+    sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/ohos/SDL_ohosdialog.c)
     set(HAVE_SDL_DIALOG TRUE)
   elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_unixdialog.c)
