@@ -28,7 +28,7 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALING_FACTOR 1.0f
+#define GYRO_SCALING_FACTOR 0.05f
 #define ACCEL_SCALING_FACTOR 1.0f
 
 #define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
@@ -421,7 +421,9 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
             HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(joystick, ctx, data, size);
-        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
+        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT
+            || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO
+            || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
