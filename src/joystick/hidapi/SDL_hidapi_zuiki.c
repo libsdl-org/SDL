@@ -28,8 +28,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
-#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
+#define GYRO_SCALE   (2048.0f / INT16_MAX * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
+#define ACCEL_SCALE  (4.0f / INT16_MAX * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 #define GYRO_TIMESTAMP_STEP_NS (SDL_NS_PER_SECOND / 90) // 陀螺仪数据上报时间间隔
 // Define this if you want to log all packets from the controller
@@ -294,14 +294,14 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
     axis = (Sint16)HIDAPI_RemapVal((float)(data[4] << 8 | data[3]), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
-    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[6] << 8 | data[5])), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[6] << 8 | data[5]), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[8] << 8 | data[7])), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[8] << 8 | data[7]), 0x0000, 0xffff, SDL_MIN_SINT16, SDL_MAX_SINT16);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
-    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[10] << 8 | data[9])), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[10] << 8 | data[9]), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
-    axis = (Sint16)HIDAPI_RemapVal((float)((int)(data[12] << 8 | data[11])), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
+    axis = (Sint16)HIDAPI_RemapVal((float)(data[12] << 8 | data[11]), 0x0000, 0x03ff, SDL_MIN_SINT16, SDL_MAX_SINT16);
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
 
     if (ctx->last_state[13] != data[13]) {
