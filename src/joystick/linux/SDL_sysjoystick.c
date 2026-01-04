@@ -1925,7 +1925,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick : Re-read Gyro (axis %d) val= %f", i, data[i]);
+                SDL_Log("Joystick : Re-read Gyro (axis %d) val= %f", i, values[i]);
 #endif
             }
         }
@@ -1939,7 +1939,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick : Re-read Accelerometer (axis %d) val= %f", i, data[i]);
+                SDL_Log("Joystick : Re-read Accelerometer (axis %d) val= %f", i, values[i]);
 #endif
             }
         }
