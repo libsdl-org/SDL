@@ -63,6 +63,9 @@ struct joystick_hwdata
     bool has_accelerometer;
     bool has_gyro;
 
+    // Use EV_BTN instead of EV_KEY
+    bool ev_btn;
+
     // Support for the classic joystick interface
     bool classic;
     Uint16 *key_pam;
