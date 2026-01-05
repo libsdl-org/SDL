@@ -110,8 +110,17 @@ static void HIDAPI_DriverLg4ff_UnregisterHints(SDL_HintCallback callback, void *
 
 static bool HIDAPI_DriverLg4ff_IsEnabled(void)
 {
-    bool enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LG4FF,
-                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    /*
+     * hid.dll simply cannot send 7 bytes reports unlike other platforms
+     * it enforces full length repots of 17 from the device's descriptor, which does not work on the device
+     * this breaks ffb and led control, so we disable this by default
+     */
+    static bool hint_default = false;
+    #else
+    bool hint_default = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT);
+    #endif
+    bool enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LG4FF, hint_default);
 
     return enabled;
 }
