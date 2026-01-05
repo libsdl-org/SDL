@@ -53,14 +53,18 @@
 #include <libdecor.h>
 #endif
 
+// Per the spec, Wayland mouse and stylus buttons are defined as Linux event codes.
 #ifdef SDL_INPUT_LINUXEV
 #include <linux/input.h>
 #else
-#define BTN_LEFT   (0x110)
-#define BTN_RIGHT  (0x111)
-#define BTN_MIDDLE (0x112)
-#define BTN_SIDE   (0x113)
-#define BTN_EXTRA  (0x114)
+#define BTN_LEFT    (0x110)
+#define BTN_RIGHT   (0x111)
+#define BTN_MIDDLE  (0x112)
+#define BTN_SIDE    (0x113)
+#define BTN_EXTRA   (0x114)
+#define BTN_STYLUS  (0x14b)
+#define BTN_STYLUS2 (0x14c)
+#define BTN_STYLUS3 (0x149)
 #endif
 #include "../../events/SDL_keysym_to_scancode_c.h"
 #include "../../events/imKStoUCS.h"
@@ -3381,14 +3385,13 @@ static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *too
     int sdlbutton;
 
     switch (button) {
-    // see %{_includedir}/linux/input-event-codes.h
-    case 0x14b: // BTN_STYLUS
+    case BTN_STYLUS:
         sdlbutton = 1;
         break;
-    case 0x14c: // BTN_STYLUS2
+    case BTN_STYLUS2:
         sdlbutton = 2;
         break;
-    case 0x149: // BTN_STYLUS3
+    case BTN_STYLUS3:
         sdlbutton = 3;
         break;
     default:
