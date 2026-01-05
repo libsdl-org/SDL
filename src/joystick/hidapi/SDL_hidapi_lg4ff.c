@@ -116,7 +116,7 @@ static bool HIDAPI_DriverLg4ff_IsEnabled(void)
      * it enforces full length repots of 17 from the device's descriptor, which does not work on the device
      * this breaks ffb and led control, so we disable this by default
      */
-    static bool hint_default = false;
+    bool hint_default = false;
     #else
     bool hint_default = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT);
     #endif
