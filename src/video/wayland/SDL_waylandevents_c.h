@@ -205,7 +205,9 @@ typedef struct SDL_WaylandSeat
             bool have_absolute;
             bool have_relative;
             bool have_axis;
-            bool have_enter;
+
+            Uint32 buttons_pressed;
+            Uint32 buttons_released;
 
             struct
             {
@@ -231,6 +233,9 @@ typedef struct SDL_WaylandSeat
 
                 SDL_MouseWheelDirection direction;
             } axis;
+
+            SDL_WindowData *enter_window;
+            SDL_WindowData *leave_window;
 
             // Event timestamp in nanoseconds
             Uint64 timestamp_ns;

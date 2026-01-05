@@ -780,23 +780,33 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
                                   uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
 
-    seat->pointer.pending_frame.have_absolute = true;
     seat->pointer.pending_frame.absolute.sx = sx;
     seat->pointer.pending_frame.absolute.sy = sy;
 
-    /* The relative pointer timestamp is higher resolution than the default millisecond timestamp,
-     * but lower than the highres timestamp. Use the best timer available for this frame, but still
-     * process the pending millisecond timestamp to update the offset value for other events.
-     */
-    const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
-    if (!seat->pointer.pending_frame.have_relative || seat->pointer.timestamps) {
-        seat->pointer.pending_frame.timestamp_ns = timestamp;
-    }
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) >= WL_POINTER_FRAME_SINCE_VERSION) {
+        seat->pointer.pending_frame.have_absolute = true;
 
-    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+        /* The relative pointer timestamp is higher resolution than the default millisecond timestamp,
+         * but lower than the highres timestamp. Use the best timer available for this frame,
+         */
+        if (!seat->pointer.pending_frame.have_relative || seat->pointer.timestamps) {
+            seat->pointer.pending_frame.timestamp_ns = timestamp;
+        }
+    } else {
+        seat->pointer.pending_frame.timestamp_ns = timestamp;
         pointer_dispatch_absolute_motion(seat);
     }
+}
+
+static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
+{
+    SDL_WindowData *window = seat->pointer.pending_frame.enter_window;
+
+    seat->pointer.focus = window;
+    ++window->pointer_focus_count;
+    SDL_SetMouseFocus(window->sdlwindow);
 }
 
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
@@ -815,30 +825,21 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
     }
 
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    seat->pointer.focus = window;
+    seat->pointer.pending_frame.enter_window = window;
     seat->pointer.enter_serial = serial;
-    ++window->pointer_focus_count;
-    SDL_SetMouseFocus(window->sdlwindow);
 
     /* In the case of e.g. a pointer confine warp, we may receive an enter
      * event with no following motion event, but with the new coordinates
      * as part of the enter event.
-     *
-     * If another event with a real timestamp is part of this frame, use it.
-     * Otherwise, set it to 0 to use the current system timer.
      */
-    if (!seat->pointer.pending_frame.have_absolute &&
-        !seat->pointer.pending_frame.have_relative &&
-        !seat->pointer.pending_frame.have_axis) {
-        seat->pointer.pending_frame.timestamp_ns = 0;
-    }
     seat->pointer.pending_frame.absolute.sx = sx_w;
     seat->pointer.pending_frame.absolute.sy = sy_w;
 
-    seat->pointer.pending_frame.have_absolute = true;
-    seat->pointer.pending_frame.have_enter = true;
-
-    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) >= WL_POINTER_FRAME_SINCE_VERSION) {
+        seat->pointer.pending_frame.have_absolute = true;
+    } else {
+        seat->pointer.pending_frame.timestamp_ns = 0;
+        pointer_dispatch_enter(seat);
         pointer_dispatch_absolute_motion(seat);
 
         // Update the pointer grab state.
@@ -856,6 +857,33 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
     }
 }
 
+static void pointer_dispatch_leave(SDL_WaylandSeat *seat)
+{
+    SDL_WindowData *window = seat->pointer.pending_frame.leave_window;
+
+    if (window) {
+        // Clear the capture flag and raise all buttons
+        window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+
+        seat->pointer.focus = NULL;
+        for (Uint8 i = 1; seat->pointer.buttons_pressed; ++i) {
+            if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
+                SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
+                seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
+            }
+        }
+
+        /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
+         * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
+         */
+        SDL_Window *mouse_focus = SDL_GetMouseFocus();
+        const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
+        if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
+            SDL_SetMouseFocus(NULL);
+        }
+    }
+}
+
 static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
                                  uint32_t serial, struct wl_surface *surface)
 {
@@ -870,29 +898,13 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
         return;
     }
 
-    // Clear the capture flag and raise all buttons
-    window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    seat->pointer.focus = NULL;
-    for (int i = 1; seat->pointer.buttons_pressed; ++i) {
-        if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
-            SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
-            seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
-        }
+    seat->pointer.pending_frame.leave_window = window;
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION && window == seat->pointer.focus) {
+        pointer_dispatch_leave(seat);
+        Wayland_SeatUpdatePointerGrab(seat);
+        Wayland_SeatUpdatePointerCursor(seat);
     }
-
-    /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
-     * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
-     */
-    SDL_Window *mouse_focus = SDL_GetMouseFocus();
-    const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
-    if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
-        SDL_SetMouseFocus(NULL);
-    }
-
-    Wayland_SeatUpdatePointerGrab(seat);
-    Wayland_SeatUpdatePointerCursor(seat);
 }
 
 static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
@@ -978,47 +990,26 @@ static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
     return false;
 }
 
-static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
-                                         Uint64 nsTimestamp, uint32_t button, uint32_t state_w)
+static void pointer_dispatch_button(SDL_WaylandSeat *seat, Uint8 sdl_button, bool down)
 {
     SDL_WindowData *window = seat->pointer.focus;
-    enum wl_pointer_button_state state = state_w;
-    Uint8 sdl_button;
-    const bool down = (state != 0);
-
-    switch (button) {
-    case BTN_LEFT:
-        sdl_button = SDL_BUTTON_LEFT;
-        break;
-    case BTN_MIDDLE:
-        sdl_button = SDL_BUTTON_MIDDLE;
-        break;
-    case BTN_RIGHT:
-        sdl_button = SDL_BUTTON_RIGHT;
-        break;
-    default:
-        sdl_button = SDL_BUTTON_X1 + (button - BTN_SIDE);
-        break;
-    }
 
     if (window) {
         bool ignore_click = false;
 
-        if (state) {
-            Wayland_UpdateImplicitGrabSerial(seat, serial);
+        if (down) {
             seat->pointer.buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
         } else {
-            seat->pointer.buttons_pressed &= ~(SDL_BUTTON_MASK(sdl_button));
+            seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(sdl_button);
         }
 
-        if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat, serial)) {
+        if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat, seat->last_implicit_grab_serial)) {
             return; // don't pass this event on to app.
         }
 
         // Possibly ignore this click if it was to gain focus.
         if (window->last_focus_event_time_ns) {
-            if (state == WL_POINTER_BUTTON_STATE_PRESSED &&
-                (SDL_GetTicksNS() - window->last_focus_event_time_ns) < WAYLAND_FOCUS_CLICK_TIMEOUT_NS) {
+            if (down && (SDL_GetTicksNS() - window->last_focus_event_time_ns) < WAYLAND_FOCUS_CLICK_TIMEOUT_NS) {
                 ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false);
             }
 
@@ -1041,7 +1032,7 @@ static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
         }
 
         if (!ignore_click) {
-            SDL_SendMouseButton(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, sdl_button, down);
+            SDL_SendMouseButton(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, sdl_button, down);
         }
     }
 }
@@ -1050,7 +1041,38 @@ static void pointer_handle_button(void *data, struct wl_pointer *pointer, uint32
                                   uint32_t time, uint32_t button, uint32_t state_w)
 {
     SDL_WaylandSeat *seat = data;
-    pointer_handle_button_common(seat, serial, Wayland_GetPointerTimestamp(seat, time), button, state_w);
+    Uint8 sdl_button;
+
+    switch (button) {
+    case BTN_LEFT:
+        sdl_button = SDL_BUTTON_LEFT;
+        break;
+    case BTN_MIDDLE:
+        sdl_button = SDL_BUTTON_MIDDLE;
+        break;
+    case BTN_RIGHT:
+        sdl_button = SDL_BUTTON_RIGHT;
+        break;
+    default:
+        sdl_button = SDL_BUTTON_X1 + (button - BTN_SIDE);
+        break;
+    }
+
+    if (state_w) {
+        Wayland_UpdateImplicitGrabSerial(seat, serial);
+    }
+
+    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);;
+
+    if (wl_seat_get_version(seat->wl_seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
+        if (state_w) {
+            seat->pointer.pending_frame.buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
+        } else {
+            seat->pointer.pending_frame.buttons_released |= SDL_BUTTON_MASK(sdl_button);
+        }
+    } else {
+        pointer_dispatch_button(seat, sdl_button, state_w != 0);
+    }
 }
 
 static void pointer_handle_axis_common_v1(SDL_WaylandSeat *seat,
@@ -1251,10 +1273,18 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 {
     SDL_WaylandSeat *seat = data;
 
+    if (seat->pointer.pending_frame.enter_window) {
+        if (seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+            // Leaving the previous surface before entering a new surface.
+            pointer_dispatch_leave(seat);
+        }
+        pointer_dispatch_enter(seat);
+    }
+
     if (seat->pointer.pending_frame.have_absolute) {
         pointer_dispatch_absolute_motion(seat);
 
-        if (seat->pointer.pending_frame.have_enter) {
+        if (seat->pointer.pending_frame.enter_window) {
             // Update the pointer grab state.
             Wayland_SeatUpdatePointerGrab(seat);
 
@@ -1274,8 +1304,26 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
         pointer_dispatch_relative_motion(seat);
     }
 
+    for (Uint8 i = 1; seat->pointer.pending_frame.buttons_pressed || seat->pointer.pending_frame.buttons_released; ++i) {
+        const Uint32 mask = SDL_BUTTON_MASK(i);
+        if (seat->pointer.pending_frame.buttons_pressed & mask) {
+            pointer_dispatch_button(seat, i, true);
+            seat->pointer.pending_frame.buttons_pressed &= ~mask;
+        }
+        if (seat->pointer.pending_frame.buttons_released & mask) {
+            pointer_dispatch_button(seat, i, false);
+            seat->pointer.pending_frame.buttons_released &= ~mask;
+        }
+    }
+
     if (seat->pointer.pending_frame.have_axis) {
         pointer_dispatch_axis(seat);
+    }
+
+    if (seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+        pointer_dispatch_leave(seat);
+        Wayland_SeatUpdatePointerGrab(seat);
+        Wayland_SeatUpdatePointerCursor(seat);
     }
 
     SDL_zero(seat->pointer.pending_frame);
@@ -1297,7 +1345,6 @@ static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
                                          uint32_t axis, int32_t discrete)
 {
     SDL_WaylandSeat *seat = data;
-
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
 }
 
@@ -1305,7 +1352,6 @@ static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
                                          uint32_t axis, int32_t value120)
 {
     SDL_WaylandSeat *seat = data;
-
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
 }
 
@@ -1335,14 +1381,15 @@ static void relative_pointer_handle_relative_motion(void *data,
     SDL_WaylandSeat *seat = data;
 
     // Relative pointer event times are in microsecond granularity.
-    seat->pointer.pending_frame.have_relative = true;
     seat->pointer.pending_frame.relative.dx = dx;
     seat->pointer.pending_frame.relative.dy = dy;
     seat->pointer.pending_frame.relative.dx_unaccel = dx_unaccel;
     seat->pointer.pending_frame.relative.dy_unaccel = dy_unaccel;
     seat->pointer.pending_frame.timestamp_ns = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
-    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) >= WL_POINTER_FRAME_SINCE_VERSION) {
+        seat->pointer.pending_frame.have_relative = true;
+    } else {
         pointer_dispatch_relative_motion(seat);
     }
 }
