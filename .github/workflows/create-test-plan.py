@@ -57,6 +57,7 @@ class SdlPlatform(Enum):
     NetBSD = "netbsd"
     OpenBSD = "openbsd"
     NGage = "ngage"
+    Harmony = "harmony"
 
 
 class Msys2Platform(Enum):
@@ -100,6 +101,7 @@ class JobSpec:
     clang_cl: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
+    harmony_arch: Optional[str] = None
     more_hard_deps: bool = False
 
 
@@ -148,6 +150,9 @@ JOB_SPECS = {
     "openbsd": JobSpec(name="OpenBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.OpenBSD,     artifact="SDL-openbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
+    "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
+    "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
+    "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
 }
 
 
@@ -805,6 +810,17 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.setup_gage_sdk_path = "C:/ngagesdk"
             job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
             job.test_pkg_config = False
+        case SdlPlatform.Harmony:
+            job.cmake_arguments.extend((
+                f"-DOHOS_ARCH={spec.harmony_arch}",
+                "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
+                "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=1"
+            ))
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
+            job.run_tests = False
+            job.test_pkg_config = False
+            job.werror = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
