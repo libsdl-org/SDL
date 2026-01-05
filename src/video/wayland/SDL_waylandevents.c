@@ -1191,19 +1191,21 @@ static void pointer_handle_axis_relative_direction(void *data, struct wl_pointer
 static void pointer_dispatch_relative_motion(SDL_WaylandSeat *seat)
 {
     SDL_WindowData *window = seat->pointer.focus;
-    SDL_Mouse *mouse = SDL_GetMouse();
 
-    double dx;
-    double dy;
-    if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
-        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx_unaccel);
-        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy_unaccel);
-    } else {
-        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx) * window->pointer_scale.x;
-        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy) * window->pointer_scale.y;
+    if (window) {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        double dx;
+        double dy;
+        if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
+            dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx_unaccel);
+            dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy_unaccel);
+        } else {
+            dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx) * window->pointer_scale.x;
+            dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy) * window->pointer_scale.y;
+        }
+
+        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
     }
-
-    SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
 }
 
 static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
