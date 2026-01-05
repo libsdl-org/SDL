@@ -871,7 +871,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
 
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     seat->pointer.focus = NULL;
-    for (int i = 0; seat->pointer.buttons_pressed; ++i) {
+    for (int i = 1; seat->pointer.buttons_pressed; ++i) {
         if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
             SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
             seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(i);
