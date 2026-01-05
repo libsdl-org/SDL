@@ -73,6 +73,7 @@ struct SDL_VideoData
         Atom WM_TAKE_FOCUS;
         Atom WM_NAME;
         Atom WM_TRANSIENT_FOR;
+        Atom WM_STATE;
         Atom _NET_WM_STATE;
         Atom _NET_WM_STATE_HIDDEN;
         Atom _NET_WM_STATE_FOCUSED;
