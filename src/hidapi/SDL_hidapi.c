@@ -737,37 +737,39 @@ static SDL_LibUSBContext *libusb_ctx;
 struct LIBUSB_hid_device_;
 typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 
-#define free_hid_device              LIBUSB_free_hid_device
-#define hid_close                    LIBUSB_hid_close
-#define hid_device                   LIBUSB_hid_device
-#define hid_device_                  LIBUSB_hid_device_
-#define hid_enumerate                LIBUSB_hid_enumerate
-#define hid_error                    LIBUSB_hid_error
-#define hid_exit                     LIBUSB_hid_exit
-#define hid_free_enumeration         LIBUSB_hid_free_enumeration
-#define hid_get_device_info          LIBUSB_hid_get_device_info
-#define hid_get_feature_report       LIBUSB_hid_get_feature_report
-#define hid_get_indexed_string       LIBUSB_hid_get_indexed_string
-#define hid_get_input_report         LIBUSB_hid_get_input_report
-#define hid_get_manufacturer_string  LIBUSB_hid_get_manufacturer_string
-#define hid_get_product_string       LIBUSB_hid_get_product_string
-#define hid_get_report_descriptor    LIBUSB_hid_get_report_descriptor
-#define hid_get_serial_number_string LIBUSB_hid_get_serial_number_string
-#define hid_init                     LIBUSB_hid_init
-#define hid_open                     LIBUSB_hid_open
-#define hid_open_path                LIBUSB_hid_open_path
-#define hid_read                     LIBUSB_hid_read
-#define hid_read_timeout             LIBUSB_hid_read_timeout
-#define hid_send_feature_report      LIBUSB_hid_send_feature_report
-#define hid_set_nonblocking          LIBUSB_hid_set_nonblocking
-#define hid_write                    LIBUSB_hid_write
-#define hid_version                  LIBUSB_hid_version
-#define hid_version_str              LIBUSB_hid_version_str
-#define input_report                 LIBUSB_input_report
-#define make_path                    LIBUSB_make_path
-#define new_hid_device               LIBUSB_new_hid_device
-#define read_thread                  LIBUSB_read_thread
-#define return_data                  LIBUSB_return_data
+#define free_hid_device                 LIBUSB_free_hid_device
+#define get_usb_code_for_current_locale LIBUSB_get_usb_code_for_current_locale
+#define hid_close                       LIBUSB_hid_close
+#define hid_device                      LIBUSB_hid_device
+#define hid_device_                     LIBUSB_hid_device_
+#define hid_enumerate                   LIBUSB_hid_enumerate
+#define hid_error                       LIBUSB_hid_error
+#define hid_exit                        LIBUSB_hid_exit
+#define hid_free_enumeration            LIBUSB_hid_free_enumeration
+#define hid_get_device_info             LIBUSB_hid_get_device_info
+#define hid_get_feature_report          LIBUSB_hid_get_feature_report
+#define hid_get_indexed_string          LIBUSB_hid_get_indexed_string
+#define hid_get_input_report            LIBUSB_hid_get_input_report
+#define hid_get_manufacturer_string     LIBUSB_hid_get_manufacturer_string
+#define hid_get_product_string          LIBUSB_hid_get_product_string
+#define hid_get_report_descriptor       LIBUSB_hid_get_report_descriptor
+#define hid_get_serial_number_string    LIBUSB_hid_get_serial_number_string
+#define hid_init                        LIBUSB_hid_init
+#define hid_open                        LIBUSB_hid_open
+#define hid_open_path                   LIBUSB_hid_open_path
+#define hid_read                        LIBUSB_hid_read
+#define hid_read_timeout                LIBUSB_hid_read_timeout
+#define hid_send_feature_report         LIBUSB_hid_send_feature_report
+#define hid_set_nonblocking             LIBUSB_hid_set_nonblocking
+#define hid_write                       LIBUSB_hid_write
+#define hid_libusb_wrap_sys_device      LIBUSB_hid_libusb_wrap_sys_device
+#define hid_version                     LIBUSB_hid_version
+#define hid_version_str                 LIBUSB_hid_version_str
+#define input_report                    LIBUSB_input_report
+#define make_path                       LIBUSB_make_path
+#define new_hid_device                  LIBUSB_new_hid_device
+#define read_thread                     LIBUSB_read_thread
+#define return_data                     LIBUSB_return_data
 
 #include "SDL_hidapi_libusb.h"
 
