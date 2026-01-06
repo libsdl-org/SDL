@@ -2109,6 +2109,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     } else if (state == 1) { // NormalState
                         if (data->window->flags & SDL_WINDOW_MINIMIZED) {
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
                         }
                     }
                 }
