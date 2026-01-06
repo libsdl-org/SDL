@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+// These functions conflict when linking both SDL and hidapi statically
+#define hid_libusb_wrap_sys_device      SDL_hid_libusb_wrap_sys_device
+#define get_usb_code_for_current_locale SDL_get_usb_code_for_current_locale
 
 /* Return true if the HIDAPI should ignore a device during enumeration */
 extern bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb);
