@@ -457,7 +457,7 @@ macro(CheckX11)
               #include <X11/Xproto.h>
               #include <X11/extensions/XInput2.h>
               int event_type = XI_GesturePinchBegin;
-              XITouchClassInfo *t;
+              XIGesturePinchEvent *t;
               Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
                 return (Status)0;
               }
