@@ -720,6 +720,22 @@ extern "C" {
 #define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
+ * A variable that controls whether SDL will detect individual mice and keyboards, and send SDL_EVENT_MOUSE_ADDED, SDL_EVENT_MOUSE_REMOVED, SDL_EVENT_KEYBOARD_ADDED, and SDL_EVENT_KEYBOARD_REMOVED events.
+ *
+ * This does not affect mouse and keyboard input from the OS, just whether SDL knows about individual devices.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Do not detect mice and keyboards.
+ * - "1": Detect mice and keyboards at runtime. (default)
+ *
+ * This hint must be set before initializing the video subsystem.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_DETECT_MICE_AND_KEYBOARDS "SDL_DETECT_MICE_AND_KEYBOARDS"
+
+/**
  * Set the level of checking for invalid parameters passed to SDL functions.
  *
  * The variable can be set to the following values:

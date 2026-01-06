@@ -119,6 +119,10 @@ static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
 
 void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 {
+    if (!SDL_ShouldDetectMiceAndKeyboards()) {
+        return;
+    }
+
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index >= 0) {
         // We already know about this keyboard

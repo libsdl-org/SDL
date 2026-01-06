@@ -618,4 +618,6 @@ extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
 extern void SDL_SendScreenKeyboardShown(void);
 extern void SDL_SendScreenKeyboardHidden(void);
 
+extern bool SDL_ShouldDetectMiceAndKeyboards(void);
+
 #endif // SDL_sysvideo_h_

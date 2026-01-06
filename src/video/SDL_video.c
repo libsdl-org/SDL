@@ -193,6 +193,13 @@ static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window);
 static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window);
 
+static bool SDL_detect_mice_and_keyboards = true;
+
+bool SDL_ShouldDetectMiceAndKeyboards(void)
+{
+    return SDL_detect_mice_and_keyboards;
+}
+
 // Convenience functions for reading driver flags
 static bool SDL_ModeSwitchingEmulated(SDL_VideoDevice *_this)
 {
@@ -625,6 +632,8 @@ bool SDL_VideoInit(const char *driver_name)
     }
 
     SDL_InitTicks();
+
+    SDL_detect_mice_and_keyboards = SDL_GetHintBoolean(SDL_HINT_DETECT_MICE_AND_KEYBOARDS, true);
 
     // Start the event loop
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {

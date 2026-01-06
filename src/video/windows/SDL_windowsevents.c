@@ -2722,7 +2722,8 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         }
     }
 
-    if (!_this->internal->gameinput_context) {
+    if (SDL_ShouldDetectMiceAndKeyboards() &&
+        !_this->internal->gameinput_context) {
         WIN_CheckKeyboardAndMouseHotplug(_this, false);
     }
 

@@ -348,6 +348,10 @@ static int SDL_GetMouseIndex(SDL_MouseID mouseID)
 
 void SDL_AddMouse(SDL_MouseID mouseID, const char *name)
 {
+    if (!SDL_ShouldDetectMiceAndKeyboards()) {
+        return;
+    }
+
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index >= 0) {
         // We already know about this mouse
