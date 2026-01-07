@@ -31,7 +31,6 @@
 struct SDL_Mutex
 {
     pthread_mutex_t id;
-    pthread_mutexattr_t attr;
 #ifdef FAKE_RECURSIVE_MUTEX
     int recursive;
     pthread_t owner;
