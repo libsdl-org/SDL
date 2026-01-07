@@ -583,6 +583,8 @@ struct SDL_VideoData
 
     bool cleared;
 
+    bool detect_device_hotplug;
+
     BYTE *rawinput;
     UINT rawinput_offset;
     UINT rawinput_size;
