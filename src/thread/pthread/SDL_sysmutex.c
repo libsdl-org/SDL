@@ -46,6 +46,7 @@ SDL_Mutex *SDL_CreateMutex(void)
             SDL_free(mutex);
             mutex = NULL;
         }
+	    pthread_mutexattr_destroy(&attr);
     }
     return mutex;
 }
