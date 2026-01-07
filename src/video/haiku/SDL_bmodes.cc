@@ -244,17 +244,17 @@ void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
     uint32 count, i;
     
     /* Get graphics-hardware supported modes */
-    bscreen.GetModeList(&bmodes, &count);
-    bscreen.GetMode(&this_bmode);
-    
-    for (i = 0; i < count; ++i) {
-        // FIXME: Apparently there are errors with colorspace changes
-        if (bmodes[i].space == this_bmode.space) {
-            _BDisplayModeToSdlDisplayMode(&bmodes[i], &mode);
-            SDL_AddDisplayMode(display, &mode);
+    if (bscreen.GetModeList(&bmodes, &count) == B_OK && bscreen.GetMode(&this_bmode) == B_OK)
+    {
+        for (i = 0; i < count; ++i) {
+            // FIXME: Apparently there are errors with colorspace changes
+            if (bmodes[i].space == this_bmode.space) {
+                _BDisplayModeToSdlDisplayMode(&bmodes[i], &mode);
+                SDL_AddDisplayMode(display, &mode);
+            }
         }
+        free(bmodes); /* This should not be SDL_free() */
     }
-    free(bmodes); /* This should not be SDL_free() */
 }
 
 
