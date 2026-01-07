@@ -631,6 +631,8 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
         return false;
     }
 
+    _this->internal->detect_device_hotplug = SDL_GetHintBoolean("SDL_WINDOWS_DETECT_DEVICE_HOTPLUG", true);
+
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
     WIN_InitDeviceNotification();

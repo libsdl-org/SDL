@@ -984,6 +984,10 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
+    if (!_this->internal->detect_device_hotplug) {
+        return;
+    }
+
     // Check to see if anything has changed
     static Uint64 s_last_device_change;
     Uint64 last_device_change = WIN_GetLastDeviceNotification();
