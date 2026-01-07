@@ -28,21 +28,22 @@
 SDL_Mutex *SDL_CreateMutex(void)
 {
     SDL_Mutex *mutex;
-    pthread_mutexattr_t attr;
 
     // Allocate the structure
     mutex = (SDL_Mutex *)SDL_calloc(1, sizeof(*mutex));
     if (mutex) {
-        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_init(&mutex->attr);
 #ifdef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutexattr_settype(&mutex->attr, PTHREAD_MUTEX_RECURSIVE);
 #elif defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
-        pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+        pthread_mutexattr_setkind_np(&mutex->attr, PTHREAD_MUTEX_RECURSIVE_NP)\
+;
 #else
         // No extra attributes necessary
 #endif
-        if (pthread_mutex_init(&mutex->id, &attr) != 0) {
+        if (pthread_mutex_init(&mutex->id, &mutex->attr) != 0) {
             SDL_SetError("pthread_mutex_init() failed");
+            pthread_mutexattr_destroy(&mutex->attr);
             SDL_free(mutex);
             mutex = NULL;
         }
@@ -53,6 +54,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
+        pthread_mutexattr_destroy(&mutex->attr);
         pthread_mutex_destroy(&mutex->id);
         SDL_free(mutex);
     }
