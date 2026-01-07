@@ -294,6 +294,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
         return DXGI_FORMAT_P010;
     case SDL_PIXELFORMAT_RGB565:
         return DXGI_FORMAT_B5G6R5_UNORM;
+    case SDL_PIXELFORMAT_ARGB1555:
+        return DXGI_FORMAT_B5G5R5A1_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
     }
@@ -2991,9 +2993,10 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         return false;
     }
 
-    // DXGI_FORMAT_B5G6R5_UNORM is supported since Direct3D 11.1 on Windows 8 and later
+    // DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM is supported since Direct3D 11.1 on Windows 8 and later
     if (data->featureLevel >= D3D_FEATURE_LEVEL_11_1 && WIN_IsWindows8OrGreater()) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB1555);
     }
 
     return true;
