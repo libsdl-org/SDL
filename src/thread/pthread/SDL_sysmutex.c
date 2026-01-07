@@ -37,8 +37,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 #ifdef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 #elif defined(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
-        pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP)\
-;
+        pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
 #else
         // No extra attributes necessary
 #endif
