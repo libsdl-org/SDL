@@ -244,10 +244,8 @@ void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
     uint32 count, i;
     
     /* Get graphics-hardware supported modes */
-    if (bscreen.GetModeList(&bmodes, &count) == B_OK)
-    {
-        if (bscreen.GetMode(&this_bmode) == B_OK)
-        {
+    if (bscreen.GetModeList(&bmodes, &count) == B_OK) {
+        if (bscreen.GetMode(&this_bmode) == B_OK) {
             for (i = 0; i < count; ++i) {
                 // FIXME: Apparently there are errors with colorspace changes
                 if (bmodes[i].space == this_bmode.space) {
