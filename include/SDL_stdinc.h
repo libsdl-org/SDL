@@ -428,7 +428,7 @@ SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-#if !defined(__VITA__) && !defined(__3DS__)
+#if !defined(__VITA__) && !defined(__3DS__) && !defined(PLAYDATE)
 /* TODO: include/SDL_stdinc.h:422: error: size of array 'SDL_dummy_enum' is negative */
 typedef enum
 {
