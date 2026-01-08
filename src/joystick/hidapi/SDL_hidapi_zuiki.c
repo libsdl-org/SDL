@@ -82,7 +82,6 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
 static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
 {
     Uint8 data[USB_PACKET_LENGTH * 2];
-    int size;
     SDL_DriverZUIKI_Context *ctx = (SDL_DriverZUIKI_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
@@ -90,8 +89,11 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
     ctx->sensors_supported = false;
 
-    // First, read a data frame to determine if it supports the sensor
-    size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 16);
+    // Force reading of reported data once for device initialization
+    int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
+    while (!size) {
+        size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
+    }
 
     switch (device->product_id) {
         case USB_PRODUCT_ZUIKI_MASCON_PRO:
