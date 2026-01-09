@@ -1,4 +1,4 @@
-
+.github/PULL_REQUEST_TEMPLATE.md
 # Simple DirectMedia Layer (SDL) Version 2.0
 
 https://www.libsdl.org/
@@ -15,3 +15,4 @@ with README.md
 Enjoy!
 
 Sam Lantinga (slouken@libsdl.org)
+
