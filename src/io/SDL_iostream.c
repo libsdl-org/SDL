@@ -72,6 +72,10 @@ typedef struct IOStreamWindowsData
     size_t left;
     void *write_data;
     size_t write_pos;
+<<<<<<< Updated upstream
+=======
+    bool writable;
+>>>>>>> Stashed changes
     bool append;
     bool autoclose;
 } IOStreamWindowsData;
@@ -321,6 +325,14 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
     size_t remaining = size;
     size_t total_written = 0;
 
+<<<<<<< Updated upstream
+=======
+    if (!iodata->writable) {
+        *status = SDL_IO_STATUS_READONLY;
+        return 0;
+    }
+
+>>>>>>> Stashed changes
     // Invalidate read-ahead buffer if it has data
     if (iodata->left) {
         if (!SetFilePointer(iodata->h, -(LONG)iodata->left,
@@ -441,6 +453,9 @@ SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
     iface.close = windows_file_close;
 
     iodata->h = handle;
+    iodata->writable = (SDL_strchr(mode, 'w') != NULL) ||
+                       (SDL_strchr(mode, 'a') != NULL) ||
+                       (SDL_strchr(mode, '+') != NULL);
     iodata->append = (SDL_strchr(mode, 'a') != NULL);
     iodata->autoclose = autoclose;
 
