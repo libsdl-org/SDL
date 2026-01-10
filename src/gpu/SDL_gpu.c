@@ -21,11 +21,10 @@
 #include "SDL_internal.h"
 #include "SDL_sysgpu.h"
 
-// FIXME: This could probably use SDL_ObjectValid
-#define CHECK_DEVICE_MAGIC(device, retval)  \
-    CHECK_PARAM(device == NULL) {           \
-        SDL_SetError("Invalid GPU device"); \
-        return retval;                      \
+#define CHECK_DEVICE_MAGIC(device, retval)                              \
+    CHECK_PARAM(!SDL_ObjectValid(device, SDL_OBJECT_TYPE_GPU_DEVICE)) { \
+        SDL_SetError("Invalid GPU device");                             \
+        return retval;                                                  \
     }
 
 #define CHECK_COMMAND_BUFFER                                        \
@@ -737,6 +736,7 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
             if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true)) {
                 result->validate_feature_anisotropy_disabled = true;
             }
+            SDL_SetObjectValid(result, SDL_OBJECT_TYPE_GPU_DEVICE, true);
         }
     }
     return result;
@@ -750,6 +750,7 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
     device->DestroyDevice(device);
+    SDL_SetObjectValid(device, SDL_OBJECT_TYPE_GPU_DEVICE, false);
 }
 
 int SDL_GetNumGPUDrivers(void)
