@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2025 BlackBerry Limited
+  Copyright (C) 2026 BlackBerry Limited
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,12 @@ typedef struct SDL_MouseData
     int      x_prev;
     int      y_prev;
 } SDL_MouseData;
+
+extern screen_context_t * getContext();
+extern screen_event_t * getEvent();
+
+extern int * getScreenFormat();
+extern SDL_PixelFormat * getPixelFormat();
 
 extern void handleKeyboardEvent(screen_event_t event);
 extern void handleJoystickEvent(screen_event_t event);

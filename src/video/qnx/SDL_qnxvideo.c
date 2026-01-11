@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2025 BlackBerry Limited
+  Copyright (C) 2026 BlackBerry Limited
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,13 +25,22 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "SDL_qnx.h"
-#include "SDL_qnxscreenconsts.h"
 
 #include <errno.h>
 
-screen_context_t context;
-screen_event_t   event;
+static screen_context_t context;
+static screen_event_t   event;
 static bool video_initialized = false;
+
+screen_context_t * getContext()
+{
+    return &context;
+}
+
+screen_event_t * getEvent()
+{
+    return &event;
+}
 
 /**
  * Initializes the QNX video plugin.
@@ -44,11 +53,15 @@ static bool videoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoDisplay display;
     SDL_DisplayMode  display_mode;
+
     int size[2];
     int index, index2;
     int display_count, display_mode_count, active;
-    screen_display_t *screen_display;
+
+    screen_display_t      *screen_display;
     screen_display_mode_t *screen_display_mode;
+
+    SDL_PixelFormat *pixel_format = getPixelFormat();
 
     if (video_initialized) {
         return true;
@@ -96,7 +109,7 @@ static bool videoInit(SDL_VideoDevice *_this)
             display_mode.w = size[0];
             display_mode.h = size[1];
             display_mode.refresh_rate = 60;
-            display_mode.format = pixel_format;
+            display_mode.format = *pixel_format;
             display_mode.internal = NULL;
 
             // Added to current_mode when the display is added.
@@ -130,7 +143,7 @@ static bool videoInit(SDL_VideoDevice *_this)
                 display_mode.w = screen_display_mode[index2].width;
                 display_mode.h = screen_display_mode[index2].height;
                 display_mode.refresh_rate = screen_display_mode[index2].refresh;
-                display_mode.format = pixel_format;
+                display_mode.format = *pixel_format;
 
                 if (!SDL_AddFullscreenDisplayMode(_this->displays[_this->num_displays-1], &display_mode)) {
                     break;
@@ -184,6 +197,9 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     int             usage;
     int             has_focus_i;
 
+    int             *screen_format = getScreenFormat();
+    SDL_PixelFormat *pixel_format = getPixelFormat();
+
     impl = SDL_calloc(1, sizeof(*impl));
     if (!impl) {
         return false;
@@ -226,8 +242,8 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
             return false;
         }
     } else {
-        screen_format = format;
-        pixel_format = screenToPixelFormat(screen_format);
+        *screen_format = format;
+        *pixel_format = screenToPixelFormat(*screen_format);
 
         numbufs = 1;
     }
@@ -238,7 +254,7 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     if (display) {
         if (display->current_mode) {
             SDL_copyp(&mode, display->current_mode);
-            mode.format = pixel_format;
+            mode.format = *pixel_format;
             display->desktop_mode = mode;
             SDL_SetCurrentDisplayMode(display, &mode);
         }
@@ -291,8 +307,9 @@ static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
                         void ** pixels, int *pitch)
 {
     int             buffer_count;
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
+    SDL_WindowData  *impl = (SDL_WindowData *)window->internal;
     screen_buffer_t *buffer;
+    SDL_PixelFormat *pixel_format = getPixelFormat();
 
     if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_BUFFER_COUNT,
                                       &buffer_count) < 0) {
@@ -317,7 +334,7 @@ static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
         return false;
     }
 
-    *format = pixel_format;
+    *format = *pixel_format;
     return true;
 }
 

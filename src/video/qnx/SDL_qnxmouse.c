@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2025 BlackBerry Limited
+  Copyright (C) 2026 BlackBerry Limited
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,6 @@
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_qnx.h"
-#include "SDL_qnxscreenconsts.h"
 #include "../../events/SDL_mouse_c.h"
 
 #include <errno.h>
@@ -35,6 +34,7 @@ static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_Cursor          *cursor;
     SDL_CursorData      *impl;
     screen_session_t    session;
+    screen_context_t    *context = getContext();
 
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
@@ -45,7 +45,7 @@ static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
         }
         impl->realized_shape = SCREEN_CURSOR_SHAPE_ARROW;
 
-        screen_create_session_type(&session, context, SCREEN_EVENT_POINTER);
+        screen_create_session_type(&session, *context, SCREEN_EVENT_POINTER);
         screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &impl->realized_shape);
 
         impl->session = session;
@@ -63,7 +63,8 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
     SDL_Cursor          *cursor;
     SDL_CursorData      *impl;
     screen_session_t    session;
-    int shape;
+    screen_context_t    *context = getContext();
+    int                 shape;
 
     switch(id)
     {
@@ -92,7 +93,7 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
         }
         impl->realized_shape = shape;
 
-        screen_create_session_type(&session, context, SCREEN_EVENT_POINTER);
+        screen_create_session_type(&session, *context, SCREEN_EVENT_POINTER);
         screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &shape);
 
         impl->session = session;

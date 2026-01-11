@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2025 BlackBerry Limited
+  Copyright (C) 2026 BlackBerry Limited
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,12 +21,11 @@
 
 #include "../../SDL_internal.h"
 #include "SDL_qnx.h"
-#include "SDL_qnxscreenconsts.h"
 
 static EGLDisplay   egl_disp;
 
-int                 screen_format = SCREEN_FORMAT_RGBX8888;
-SDL_PixelFormat     pixel_format = SDL_PIXELFORMAT_RGBX8888;
+static int                 screen_format = SCREEN_FORMAT_RGBX8888;
+static SDL_PixelFormat     pixel_format = SDL_PIXELFORMAT_RGBX8888;
 
 struct DummyConfig
 {
@@ -36,6 +35,16 @@ struct DummyConfig
     int alpha_size;
     int native_id;
 };
+
+int * getScreenFormat()
+{
+    return &screen_format;
+}
+
+SDL_PixelFormat * getPixelFormat()
+{
+    return &pixel_format;
+}
 
 static struct DummyConfig getDummyConfigFromScreenSettings(int format)
 {
