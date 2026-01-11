@@ -1297,3 +1297,4 @@
 #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
 #define SDL_LoadSurface SDL_LoadSurface_REAL
 #define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL
+#define SDL_CreateTemporaryProperties SDL_CreateTemporaryProperties_REAL
