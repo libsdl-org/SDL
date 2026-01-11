@@ -25,8 +25,8 @@
 extern bool RAWINPUT_IsEnabled(void);
 
 // Registers for input events
-extern int RAWINPUT_RegisterNotifications(HWND hWnd);
-extern int RAWINPUT_UnregisterNotifications(void);
+extern bool RAWINPUT_RegisterNotifications(HWND hWnd);
+extern bool RAWINPUT_UnregisterNotifications(void);
 
 // Returns 0 if message was handled
 extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
