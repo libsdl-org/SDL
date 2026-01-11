@@ -475,4 +475,14 @@
 #undef __3DS__
 #endif
 
+#ifdef __QNX__
+
+/**
+ * A preprocessor macro that is only defined if compiling for QNX.
+ *
+ * \since This macro is available since SDL 3.2.28.
+ */
+#define SDL_PLATFORM_QNX 1
+#endif
+
 #endif /* SDL_platform_defines_h_ */
