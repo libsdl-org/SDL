@@ -2407,7 +2407,9 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat)
 
     // Make sure focus is removed from a surface before the pointer is destroyed.
     if (seat->pointer.focus) {
-        pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, seat->pointer.focus->surface);
+        seat->pointer.pending_frame.leave_window = seat->pointer.focus;
+        pointer_dispatch_leave(seat);
+        seat->pointer.pending_frame.leave_window = NULL;
     }
 
     SDL_RemoveMouse(seat->pointer.sdl_id);
@@ -3675,7 +3677,11 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
         }
 
         if (seat->pointer.focus == window) {
-            pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, window->surface);
+            seat->pointer.pending_frame.leave_window = seat->pointer.focus;
+            pointer_dispatch_leave(seat);
+            Wayland_SeatUpdatePointerGrab(seat);
+            Wayland_SeatUpdatePointerCursor(seat);
+            seat->pointer.pending_frame.leave_window = NULL;
         }
 
         // Need the safe loop variant here as cancelling a touch point removes it from the list.
