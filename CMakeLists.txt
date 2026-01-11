@@ -1793,7 +1793,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           "${SDL3_SOURCE_DIR}/src/audio/netbsd/*.h"
         )
         set(HAVE_SDL_AUDIO TRUE)
-    elseif(QNX)
+    elseif(QNX STREQUAL 710)
         set(SDL_AUDIO_DRIVER_QNX 1)
         sdl_glob_sources(
           "${SDL3_SOURCE_DIR}/src/audio/qnx/*.c"
