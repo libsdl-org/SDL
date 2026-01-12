@@ -97,6 +97,14 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 {
     if (s_bShouldHandleEventsInSDLApplication) {
         Cocoa_DispatchEvent(theEvent);
+
+        // Avoid double-dispatching mouse and keyboard events. They are already handled in Cocoa_DispatchEvent.
+        // Other event types should still go through AppKit's normal handling.
+        NSEventType type = [theEvent type];
+        if ((type >= NSEventTypeLeftMouseDown && type <= NSEventTypeMouseExited) ||
+            (type >= NSEventTypeKeyDown && type <= NSEventTypeFlagsChanged)) {
+            return;
+        }
     }
 
     [super sendEvent:theEvent];
