@@ -914,6 +914,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     device->usage = info->usage;
     device->is_bluetooth = (info->bus_type == SDL_HID_API_BUS_BLUETOOTH);
     device->dev_lock = SDL_CreateMutex();
+    device->read_finished = SDL_CreateSemaphore(0);
 
     // Need the device name before getting the driver to know whether to ignore this device
     {
@@ -1011,6 +1012,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
             SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, false);
             SDL_DestroyMutex(device->dev_lock);
+            SDL_DestroySemaphore(device->read_finished);
             SDL_free(device->manufacturer_string);
             SDL_free(device->product_string);
             SDL_free(device->serial);
@@ -1441,6 +1443,7 @@ void HIDAPI_UpdateDevices(void)
 
                     device->updating = false;
                     SDL_UnlockMutex(device->dev_lock);
+                    SDL_SignalSemaphore(device->read_finished);
                     SDL_SetAtomicInt(&device->read_requested, 0);
                 }
             }

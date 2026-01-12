@@ -71,10 +71,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         if (request) {
             // don't starve reads
             if (SDL_GetAtomicInt(&request->device->read_requested)) {
-                SDL_SignalSemaphore(ctx->request_sem);
-                SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
-                SDL_Delay(1); // backoff
-                continue;
+                SDL_WaitSemaphore(request->device->read_finished);
             }
 
             if (request == ctx->requests_head) {
