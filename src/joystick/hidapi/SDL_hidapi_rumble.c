@@ -69,13 +69,6 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         SDL_LockMutex(SDL_HIDAPI_rumble_lock);
         request = ctx->requests_tail;
         if (request) {
-            // don't starve reads
-            if (SDL_GetAtomicInt(&request->device->read_requested)) {
-                SDL_SetAtomicInt(&request->device->write_waiting, 1);
-                SDL_WaitSemaphore(request->device->read_finished);
-                SDL_SetAtomicInt(&request->device->write_waiting, 0);
-            }
-
             if (request == ctx->requests_head) {
                 ctx->requests_head = NULL;
             }
@@ -84,6 +77,13 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
 
         if (request) {
+            // don't starve reads
+            if (SDL_GetAtomicInt(&request->device->read_requested)) {
+                SDL_SetAtomicInt(&request->device->write_waiting, 1);
+                SDL_WaitSemaphore(request->device->read_finished);
+                SDL_SetAtomicInt(&request->device->write_waiting, 0);
+            }
+            
             SDL_LockMutex(request->device->dev_lock);
             if (request->device->dev) {
 #ifdef DEBUG_RUMBLE
