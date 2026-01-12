@@ -277,7 +277,7 @@
 #define SDL_PLATFORM_OSF 1
 #endif
 
-#ifdef __QNXNTO__
+#if defined(__QNXNTO__) || defined(__QNX__)
 
 /**
  * A preprocessor macro that is only defined if compiling for QNX Neutrino.
@@ -473,16 +473,6 @@
 #define SDL_PLATFORM_3DS 1
 
 #undef __3DS__
-#endif
-
-#ifdef __QNX__
-
-/**
- * A preprocessor macro that is only defined if compiling for QNX.
- *
- * \since This macro is available since SDL 3.2.28.
- */
-#define SDL_PLATFORM_QNX 1
 #endif
 
 #endif /* SDL_platform_defines_h_ */
