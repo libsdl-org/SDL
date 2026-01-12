@@ -56,7 +56,6 @@ extern int * getScreenFormat();
 extern SDL_PixelFormat * getPixelFormat();
 
 extern void handleKeyboardEvent(screen_event_t event);
-extern void handleJoystickEvent(screen_event_t event);
 extern void handlePointerEvent(screen_event_t event);
 
 extern SDL_PixelFormat screenToPixelFormat(int screen_format);
