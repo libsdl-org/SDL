@@ -86,8 +86,6 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
 
         if (request) {
-            // don't starve reads
-            if (SDL_GetAtomicInt(&request->device->read_requested)) {
             if (SDL_GetAtomicInt(&request->device->failed_reads) > 0) {
                 ctx->next_delay += BACKOFF_RESET_NS;
                 SDL_SetAtomicInt(&request->device->write_waiting, 1);
