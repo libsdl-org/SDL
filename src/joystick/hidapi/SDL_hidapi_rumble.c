@@ -71,7 +71,9 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         if (request) {
             // don't starve reads
             if (SDL_GetAtomicInt(&request->device->read_requested)) {
+                SDL_SetAtomicInt(&request->device->write_waiting, 1);
                 SDL_WaitSemaphore(request->device->read_finished);
+                SDL_SetAtomicInt(&request->device->write_waiting, 0);
             }
 
             if (request == ctx->requests_head) {
