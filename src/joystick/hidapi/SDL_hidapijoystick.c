@@ -1433,9 +1433,6 @@ void HIDAPI_UpdateDevices(void)
                 continue;
             }
             if (device->driver) {
-                // signal to rumble thread we need the mutex
-                SDL_SetAtomicInt(&device->read_requested, 1);
-
                 if (SDL_TryLockMutex(device->dev_lock)) {
                     device->updating = true;
 
