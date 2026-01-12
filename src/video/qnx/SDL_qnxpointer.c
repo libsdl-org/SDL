@@ -72,12 +72,11 @@ void handlePointerEvent(screen_event_t event)
         && (pos[0] < (window->x + window->w))
         && (pos[1] < (window->y + window->h))) {
         // Capture movement
-        // Scale from position relative to display to position relative to window.
+        // Adjust from position relative to display to position relative to
+        // window.
         x_win = pos[0] - window->x;
         y_win = pos[1] - window->y;
 
-        // SDL wants us to track the relative position of the mouse separately
-        // from its internals for some reason...
         if (mouse->relative_mode) {
             SDL_SendMouseMotion(timestamp, window, SDL_DEFAULT_MOUSE_ID, true, x_win - mouse_data->x_prev, y_win - mouse_data->y_prev);
         } else {
