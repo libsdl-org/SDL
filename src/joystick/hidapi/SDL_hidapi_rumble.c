@@ -28,6 +28,11 @@
 #include "SDL_hidapi_rumble.h"
 #include "../../thread/SDL_systhread.h"
 
+// How much to back off the rumble thread when a read fails
+#define BACKOFF_AMOUNT_NS (400 * SDL_NS_PER_US)
+// How much to reduce the backoff before each write
+#define BACKOFF_RESET_NS  (1 * SDL_NS_PER_US)
+
 typedef struct SDL_HIDAPI_RumbleRequest
 {
     SDL_HIDAPI_Device *device;
@@ -47,6 +52,7 @@ typedef struct SDL_HIDAPI_RumbleContext
     SDL_Semaphore *request_sem;
     SDL_HIDAPI_RumbleRequest *requests_head;
     SDL_HIDAPI_RumbleRequest *requests_tail;
+    Uint64 next_delay;
 } SDL_HIDAPI_RumbleContext;
 
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
@@ -66,6 +72,9 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 
         SDL_WaitSemaphore(ctx->request_sem);
 
+        SDL_DelayPrecise(ctx->next_delay);
+        ctx->next_delay -= BACKOFF_RESET_NS;
+
         SDL_LockMutex(SDL_HIDAPI_rumble_lock);
         request = ctx->requests_tail;
         if (request) {
@@ -79,6 +88,8 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         if (request) {
             // don't starve reads
             if (SDL_GetAtomicInt(&request->device->read_requested)) {
+            if (SDL_GetAtomicInt(&request->device->failed_reads) > 0) {
+                ctx->next_delay += BACKOFF_RESET_NS;
                 SDL_SetAtomicInt(&request->device->write_waiting, 1);
                 SDL_WaitSemaphore(request->device->read_finished);
                 SDL_SetAtomicInt(&request->device->write_waiting, 0);

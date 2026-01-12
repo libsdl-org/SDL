@@ -1443,10 +1443,12 @@ void HIDAPI_UpdateDevices(void)
 
                     device->updating = false;
                     SDL_UnlockMutex(device->dev_lock);
-                    SDL_SetAtomicInt(&device->read_requested, 0);
+                    SDL_SetAtomicInt(&device->failed_reads, 0);
                     if (SDL_GetAtomicInt(&device->write_waiting)) {
                         SDL_SignalSemaphore(device->read_finished);
                     }
+                } else {
+                    SDL_AddAtomicInt(&device->failed_reads, 1);
                 }
             }
         }
