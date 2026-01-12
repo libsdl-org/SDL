@@ -109,6 +109,10 @@ static bool videoInit(SDL_VideoDevice *_this)
             display_mode.w = size[0];
             display_mode.h = size[1];
             display_mode.refresh_rate = 60;
+            // FIXME: Get screen format from the SCREEN_PROPERTY_FORMATS API
+            //        instead with a heuristic to determine which is preferred.
+            //        This should eliminate the need for a global tracking this
+            //        in SDL_qnxgl.c
             display_mode.format = *pixel_format;
             display_mode.internal = NULL;
 
