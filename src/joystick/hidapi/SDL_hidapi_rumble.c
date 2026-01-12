@@ -89,10 +89,10 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
             if (SDL_GetAtomicInt(&request->device->failed_reads) > 0) {
                 ctx->next_delay += BACKOFF_RESET_NS;
                 SDL_SetAtomicInt(&request->device->write_waiting, 1);
-                SDL_WaitSemaphore(request->device->read_finished);
+                SDL_WaitSemaphoreTimeout(request->device->read_finished, 1000);
                 SDL_SetAtomicInt(&request->device->write_waiting, 0);
             }
-            
+
             SDL_LockMutex(request->device->dev_lock);
             if (request->device->dev) {
 #ifdef DEBUG_RUMBLE

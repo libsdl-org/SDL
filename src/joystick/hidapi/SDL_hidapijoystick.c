@@ -1002,6 +1002,10 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             // Make sure the rumble thread is done with this device
+            if (SDL_GetAtomicInt(&device->write_waiting)) {
+                SDL_SignalSemaphore(device->read_finished);
+                SDL_Delay(10);
+            }
             while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
