@@ -40,7 +40,7 @@ static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
     if (cursor) {
         impl = SDL_calloc(1, sizeof(SDL_CursorData));;
         if (impl == NULL) {
-            free(cursor);
+            SDL_free(cursor);
             SDL_OutOfMemory();
         }
         impl->realized_shape = SCREEN_CURSOR_SHAPE_ARROW;
@@ -88,7 +88,7 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
     if (cursor) {
         impl = SDL_calloc(1, sizeof(SDL_CursorData));;
         if (impl == NULL) {
-            free(cursor);
+            SDL_free(cursor);
             SDL_OutOfMemory();
         }
         impl->realized_shape = shape;

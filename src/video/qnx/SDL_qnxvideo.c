@@ -80,7 +80,7 @@ static bool videoInit(SDL_VideoDevice *_this)
         return false;
     }
 
-    screen_display = calloc(display_count, sizeof(screen_display_t));
+    screen_display = SDL_calloc(display_count, sizeof(screen_display_t));
     if (screen_display == NULL) {
         return false;
     }
@@ -93,13 +93,13 @@ static bool videoInit(SDL_VideoDevice *_this)
     for (index = 0; index < display_count; index++) {
         active = 0;
         if (screen_get_display_property_iv(screen_display[index], SCREEN_PROPERTY_ATTACHED, &active) < 0) {
-            free(screen_display);
+            SDL_free(screen_display);
             return false;
         }
 
         if (active) {
             if (screen_get_display_property_iv(screen_display[index], SCREEN_PROPERTY_SIZE, size) < 0) {
-                free(screen_display);
+                SDL_free(screen_display);
                 return false;
             }
 
@@ -116,25 +116,25 @@ static bool videoInit(SDL_VideoDevice *_this)
             display.desktop_mode = display_mode;
 
             if (!SDL_AddVideoDisplay(&display, false)) {
-                free(screen_display);
+                SDL_free(screen_display);
                 return false;
             }
 
             /* create SDL display imodes based on display mode info from the display */
             if (screen_get_display_property_iv(screen_display[index], SCREEN_PROPERTY_MODE_COUNT, &display_mode_count) < 0) {
-                free(screen_display);
+                SDL_free(screen_display);
                 return false;
             }
 
-            screen_display_mode = calloc(display_mode_count, sizeof(screen_display_mode_t));
+            screen_display_mode = SDL_calloc(display_mode_count, sizeof(screen_display_mode_t));
             if (screen_display_mode == NULL) {
-                free(screen_display);
+                SDL_free(screen_display);
                 return SDL_OutOfMemory();
             }
 
             if(screen_get_display_modes(screen_display[index], display_mode_count, screen_display_mode) < 0) {
-                free(screen_display);
-                free(screen_display_mode);
+                SDL_free(screen_display);
+                SDL_free(screen_display_mode);
                 return false;
             }
 
@@ -150,7 +150,7 @@ static bool videoInit(SDL_VideoDevice *_this)
                 }
             }
 
-            free(screen_display_mode);
+            SDL_free(screen_display_mode);
         }
     }
 
@@ -162,7 +162,7 @@ static bool videoInit(SDL_VideoDevice *_this)
 
     video_initialized = true;
 
-    free(screen_display);
+    SDL_free(screen_display);
 
     return true;
 }
@@ -315,7 +315,7 @@ static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
                                       &buffer_count) < 0) {
         return false;
     }
-    buffer = calloc(buffer_count, sizeof(screen_buffer_t));
+    buffer = SDL_calloc(buffer_count, sizeof(screen_buffer_t));
 
     // Get a pointer to the buffer's memory.
     if (screen_get_window_property_pv(impl->window, SCREEN_PROPERTY_BUFFERS,
@@ -357,7 +357,7 @@ static bool updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
                                       &buffer_count) < 0) {
         return false;
     }
-    buffer = calloc(buffer_count, sizeof(screen_buffer_t));
+    buffer = SDL_calloc(buffer_count, sizeof(screen_buffer_t));
 
     if (screen_get_window_property_pv(impl->window, SCREEN_PROPERTY_BUFFERS,
                                       buffer) < 0) {
@@ -365,7 +365,7 @@ static bool updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
     }
 
     if(numrects>0){
-        rects_int = calloc(4*numrects, sizeof(int));
+        rects_int = SDL_calloc(4*numrects, sizeof(int));
 
         for(int i = 0; i < numrects; i++){
             rects_int[4*i]   = rects[i].x;
@@ -511,7 +511,7 @@ static void destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 /**
  * Frees the plugin object created by createDevice().
- * @param   device  Plugin object to free
+ * @param   device  Plugin object to SDL_free
  */
 static void deleteDevice(SDL_VideoDevice *device)
 {
