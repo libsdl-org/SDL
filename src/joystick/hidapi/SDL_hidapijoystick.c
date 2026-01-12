@@ -72,7 +72,7 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
     &SDL_HIDAPI_DriverSteamTriton,
-#endif 
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
     &SDL_HIDAPI_DriverNintendoClassic,
     &SDL_HIDAPI_DriverJoyCons,
@@ -1431,11 +1431,17 @@ void HIDAPI_UpdateDevices(void)
                 continue;
             }
             if (device->driver) {
+                // signal to rumble thread we need the mutex
+                SDL_SetAtomicInt(&device->read_requested, 1);
+
                 if (SDL_TryLockMutex(device->dev_lock)) {
                     device->updating = true;
+
                     device->driver->UpdateDevice(device);
+
                     device->updating = false;
                     SDL_UnlockMutex(device->dev_lock);
+                    SDL_SetAtomicInt(&device->read_requested, 0);
                 }
             }
         }

@@ -69,6 +69,14 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         SDL_LockMutex(SDL_HIDAPI_rumble_lock);
         request = ctx->requests_tail;
         if (request) {
+            // don't starve reads
+            if (SDL_GetAtomicInt(&request->device->read_requested)) {
+                SDL_SignalSemaphore(ctx->request_sem);
+                SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
+                SDL_Delay(1); // backoff
+                continue;
+            }
+
             if (request == ctx->requests_head) {
                 ctx->requests_head = NULL;
             }
@@ -92,7 +100,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
             SDL_free(request);
 
             // Make sure we're not starving report reads when there's lots of rumble
-            SDL_Delay(10);
+            SDL_Delay(5);
         }
     }
     return 0;
