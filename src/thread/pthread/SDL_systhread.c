@@ -252,7 +252,12 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
     } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+#if defined(__QNX__)
+        /* io_snd complains aboit a client thread having priority >= 49 */
+        sched.sched_priority = 48;
+#else
         sched.sched_priority = sched_get_priority_max(policy);
+#endif
     } else {
         int min_priority = sched_get_priority_min(policy);
         int max_priority = sched_get_priority_max(policy);
