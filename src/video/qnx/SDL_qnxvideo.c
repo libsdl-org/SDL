@@ -515,7 +515,7 @@ static void destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 /**
  * Frees the plugin object created by createDevice().
- * @param   device  Plugin object to SDL_free
+ * @param   device  Plugin object to free
  */
 static void deleteDevice(SDL_VideoDevice *device)
 {

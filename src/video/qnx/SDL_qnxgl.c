@@ -129,7 +129,6 @@ static EGLConfig chooseConfig(struct DummyConfig dummyConfig, EGLConfig* egl_con
            continue;
         }
 
-
         eglGetConfigAttrib(egl_disp, egl_configs[ii], EGL_ALPHA_SIZE, &val);
         if (val != dummyConfig.alpha_size) {
             continue;
@@ -180,7 +179,7 @@ static int chooseFormat(EGLConfig egl_conf)
     }
 }
 
-// All indeces not already assigned will be zero'd to SDL_PIXELFORMAT_UNKNOWN.
+// All indices not already assigned will be zero'd to SDL_PIXELFORMAT_UNKNOWN.
 //
 // TODO: Move this stuff into a different file...
 static const SDL_PixelFormat _format_map[] = {

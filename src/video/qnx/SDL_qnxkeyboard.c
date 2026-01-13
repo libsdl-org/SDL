@@ -179,8 +179,7 @@ void handleKeyboardEvent(screen_event_t event)
         return;
     }
 
-    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_CAP,
-                                     &cap) < 0) {
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_KEY_CAP, &cap) < 0) {
         return;
     }
 
