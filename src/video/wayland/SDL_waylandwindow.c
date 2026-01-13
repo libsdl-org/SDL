@@ -752,6 +752,9 @@ static void handle_xdg_surface_configure(void *data, struct xdg_surface *xdg, ui
         xdg_surface_ack_configure(xdg, serial);
     } else {
         wind->pending_config_ack = true;
+
+        // Send an exposure event so that clients doing deferred updates will trigger a frame callback and make guaranteed forward progress when resizing.
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
