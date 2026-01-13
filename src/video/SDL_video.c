@@ -69,12 +69,6 @@
 #include <3ds.h>
 #endif
 
-#ifdef SDL_PLATFORM_LINUX
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
-
 #ifndef GL_RGBA_FLOAT_MODE_ARB
 #define GL_RGBA_FLOAT_MODE_ARB 0x8820
 #endif /* GL_RGBA_FLOAT_MODE_ARB */
@@ -220,6 +214,11 @@ static bool SDL_SendsDisplayChanges(SDL_VideoDevice *_this)
 static bool SDL_DriverSendsHDRChanges(SDL_VideoDevice *_this)
 {
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES);
+}
+
+static bool SDL_DriverHasSlowFramebuffer(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER);
 }
 
 // Hint to treat all window ops as synchronous
@@ -3579,11 +3578,11 @@ bool SDL_SyncWindow(SDL_Window *window)
 static bool ShouldAttemptTextureFramebuffer(void)
 {
     const char *hint;
-    bool attempt_texture_framebuffer = true;
+    bool attempt_texture_framebuffer;
 
-    // The dummy driver never has GPU support, of course.
-    if (_this->is_dummy) {
-        return false;
+    // If the driver doesn't support window framebuffers, always use the render API.
+    if (!_this->CreateWindowFramebuffer) {
+        return true;
     }
 
     // See if there's a hint override
@@ -3595,24 +3594,11 @@ static bool ShouldAttemptTextureFramebuffer(void)
             attempt_texture_framebuffer = true;
         }
     } else {
-        // Check for platform specific defaults
-#ifdef SDL_PLATFORM_LINUX
-        // On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer.
-        if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "x11") == 0)) {
-            struct stat sb;
-            if ((stat("/proc/sys/fs/binfmt_misc/WSLInterop", &sb) == 0) || (stat("/run/WSL", &sb) == 0)) { // if either of these exist, we're on WSL.
-                attempt_texture_framebuffer = false;
-            }
-        }
-#endif
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) // GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?)
-        if (_this->CreateWindowFramebuffer && (SDL_strcmp(_this->name, "windows") == 0)) {
+        if (SDL_DriverHasSlowFramebuffer(_this)) {
+            attempt_texture_framebuffer = true;
+        } else {
             attempt_texture_framebuffer = false;
         }
-#endif
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-        attempt_texture_framebuffer = false;
-#endif
     }
     return attempt_texture_framebuffer;
 }
