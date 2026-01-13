@@ -24,6 +24,11 @@ static const char *mime_types[] = {
     "image/png",
 };
 
+static const char *supported_image_mime_types[] = {
+    "image/bmp",
+    "image/png",
+};
+
 static const void *ClipboardDataCallback(void *userdata, const char *mime_type, size_t *size)
 {
     if (SDL_strcmp(mime_type, "text/plain") == 0) {
@@ -78,9 +83,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
     case SDL_EVENT_CLIPBOARD_UPDATE:
         if (event->clipboard.num_mime_types > 0) {
-            int i;
             SDL_Log("Clipboard updated:");
-            for (i = 0; event->clipboard.mime_types[i]; ++i) {
+            for (int i = 0; event->clipboard.mime_types[i]; ++i) {
                 SDL_Log("    %s", event->clipboard.mime_types[i]);
             }
         } else {
@@ -132,46 +136,66 @@ static float PrintPrimarySelectionText(float x, float y)
     return 0.0f;
 }
 
+static bool IsImageMIMETypeSupported(const char *mime_type)
+{
+    for (int i = 0; i < SDL_arraysize(supported_image_mime_types); ++i) {
+        if (SDL_strcmp(mime_type, supported_image_mime_types[i]) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static float PrintClipboardImage(float x, float y, const char *mime_type)
 {
-    /* We don't actually need to read this data each frame, but this is a simple example */
-    size_t size;
-    void *data = SDL_GetClipboardData(mime_type, &size);
-    if (data) {
-        float w = 0.0f, h = 0.0f;
-        bool rendered = false;
-        SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
-        if (stream) {
-            SDL_Surface *surface = SDL_LoadSurface_IO(stream, false);
-            if (surface) {
-                SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-                if (texture) {
-                    SDL_GetTextureSize(texture, &w, &h);
+    float h = 0.0f;
 
-                    SDL_FRect dst = { x, y, w, h };
-                    rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
-                    SDL_DestroyTexture(texture);
+    /* We don't actually need to read this data each frame, but this is a simple example */
+    if (IsImageMIMETypeSupported(mime_type)) {
+        size_t size;
+        void *data = SDL_GetClipboardData(mime_type, &size);
+        if (data) {
+            float w = 0.0f;
+            bool rendered = false;
+            SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
+            if (stream) {
+                SDL_Surface *surface = SDL_LoadSurface_IO(stream, false);
+                if (surface) {
+                    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+                    if (texture) {
+                        SDL_GetTextureSize(texture, &w, &h);
+
+                        SDL_FRect dst = { x, y, w, h };
+                        rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
+                        SDL_DestroyTexture(texture);
+                    }
+                    SDL_DestroySurface(surface);
                 }
-                SDL_DestroySurface(surface);
+                SDL_CloseIO(stream);
             }
-            SDL_CloseIO(stream);
+            if (!rendered) {
+                SDL_RenderDebugText(renderer, x, y, SDL_GetError());
+                h += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
+            }
+            SDL_free(data);
+        } else {
+            SDL_RenderDebugText(renderer, x, y, "No data returned");
+            h += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
         }
-        if (!rendered) {
-            SDL_RenderDebugText(renderer, x, y, SDL_GetError());
-        }
-        SDL_free(data);
-        return h + 2.0f;
+    } else {
+        SDL_RenderDebugText(renderer, x, y, "Unsupported MIME type");
+        h += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
     }
-    return 0.0f;
+
+    return h + 2.0f;
 }
 
 static float PrintClipboardContents(float x, float y)
 {
     char **clipboard_mime_types = SDL_GetClipboardMimeTypes(NULL);
     if (clipboard_mime_types) {
-        int i;
-
-        for (i = 0; clipboard_mime_types[i]; ++i) {
+        for (int i = 0; clipboard_mime_types[i]; ++i) {
             const char *mime_type = clipboard_mime_types[i];
             SDL_RenderDebugText(renderer, x, y, mime_type);
             y += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2;
@@ -184,7 +208,7 @@ static float PrintClipboardContents(float x, float y)
         SDL_free(clipboard_mime_types);
     }
 
-    return y;
+    return y + 2.0f;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
