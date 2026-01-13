@@ -140,7 +140,8 @@ extern void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelection
 // Wayland Data / Primary Selection Offer - (Receiving)
 extern void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
                                         const char *mime_type,
-                                        size_t *length);
+                                        size_t *length,
+                                        bool extended_timeout);
 extern void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *offer,
                                                      const char *mime_type,
                                                      size_t *length);
