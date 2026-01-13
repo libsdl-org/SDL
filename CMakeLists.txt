@@ -1294,22 +1294,25 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.h"
 )
 
-# Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
 file(GLOB SDL_UCLIBC_SOURCES "${SDL3_SOURCE_DIR}/src/libm/*.c")
-add_library(SDL_uclibc STATIC "${SDL_UCLIBC_SOURCES}")
-target_compile_definitions(SDL_uclibc PRIVATE USING_GENERATED_CONFIG_H)
-target_include_directories(SDL_uclibc PRIVATE "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/build_config")
-target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/src")
-target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/include")
-SDL_AddCommonCompilerFlags(SDL_uclibc)
-target_compile_definitions(SDL_uclibc PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
-sdl_sources(STATIC "$<TARGET_OBJECTS:SDL_uclibc>")
-set_property(TARGET SDL_uclibc PROPERTY UNITY_BUILD OFF)
 if(TARGET SDL3-shared)
+  # Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
+  add_library(SDL_uclibc STATIC ${SDL_UCLIBC_SOURCES})
+  set_property(TARGET SDL_uclibc PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+  target_compile_definitions(SDL_uclibc PRIVATE USING_GENERATED_CONFIG_H)
+  target_include_directories(SDL_uclibc PRIVATE "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/build_config")
+  target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/src")
+  target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/include")
+  SDL_AddCommonCompilerFlags(SDL_uclibc)
+  target_compile_definitions(SDL_uclibc PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+  set_property(TARGET SDL_uclibc PROPERTY UNITY_BUILD OFF)
   target_link_libraries(SDL3-shared PRIVATE SDL_uclibc)
+  if(HAVE_GCC_FVISIBILITY)
+    set_property(TARGET SDL_uclibc PROPERTY C_VISIBILITY_PRESET "hidden")
+  endif()
 endif()
-if(HAVE_GCC_FVISIBILITY)
-  set_property(TARGET SDL_uclibc PROPERTY C_VISIBILITY_PRESET "hidden")
+if(TARGET SDL3-static)
+  target_sources(SDL3-static PRIVATE ${SDL_UCLIBC_SOURCES})
 endif()
 
 # Enable/disable various subsystems of the SDL library
