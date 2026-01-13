@@ -2953,8 +2953,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         bool drop_handled = false;
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                      FILE_PORTAL_MIME, &length);
+            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, FILE_PORTAL_MIME, &length, false);
             if (buffer) {
                 SDL_DBusContext *dbus = SDL_DBus_GetContext();
                 if (dbus) {
@@ -2980,7 +2979,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length);
+            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length, false);
             if (data_device->has_mime_file) {
                 if (buffer) {
                     char *saveptr = NULL;
