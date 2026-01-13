@@ -107,6 +107,9 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
 
     device->free = HAIKU_DeleteDevice;
 
+    // TODO: Is this needed?
+    device->device_caps = VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
+
     return device;
 }
 

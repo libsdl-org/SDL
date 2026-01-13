@@ -100,7 +100,6 @@ static SDL_VideoDevice *DUMMY_InternalCreateDevice(const char *enable_hint)
     if (!device) {
         return NULL;
     }
-    device->is_dummy = true;
 
     // Set the function pointers
     device->VideoInit = DUMMY_VideoInit;

@@ -644,6 +644,9 @@ static SDL_VideoDevice *createDevice(void)
 
     device->free = deleteDevice;
 
+    // TODO: Is this needed?
+    device->device_caps = VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
+
     return device;
 }
 
