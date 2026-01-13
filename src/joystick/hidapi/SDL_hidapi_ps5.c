@@ -515,8 +515,9 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             ctx->touchpad_supported = true;
             ctx->use_alternate_report = true;
         } else if (device->vendor_id == USB_VENDOR_RAZER &&
-                   device->product_id == USB_PRODUCT_RAZER_KITSUNE) {
-            // The Razer Kitsune doesn't respond to the detection protocol, but has a touchpad
+                   (device->product_id == USB_PRODUCT_RAZER_KITSUNE ||
+                    device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO)) {
+            // The Razer Kitsune and Raiju don't respond to the detection protocol, but have a touchpad
             joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
             ctx->touchpad_supported = true;
             ctx->use_alternate_report = true;
