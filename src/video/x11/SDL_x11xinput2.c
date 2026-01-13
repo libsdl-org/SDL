@@ -658,6 +658,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            // We may receive motion event before proximity event, so add this as a workaround to keep event order sane
+            SDL_SendPenProximity(0, pen->pen, window, true);
             SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
             float axes[SDL_PEN_AXIS_COUNT];
