@@ -26,7 +26,6 @@
 #include "../../events/SDL_windowevents_c.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
-#include "../SDL_sysgpu.h"
 
 #ifdef HAVE_GPU_OPENXR
 #include <openxr/openxr.h>
@@ -36,6 +35,8 @@
 #include <openxr/openxr_platform.h>
 #include "../xr/SDL_openxrdyn.h"
 #endif
+
+#include "../SDL_sysgpu.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE
