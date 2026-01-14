@@ -2643,7 +2643,8 @@ void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->internal;
         NSWindow *nswindow = windata.nswindow;
 
-        if ([windata.listener isInFullscreenSpaceTransition]) {
+        if ([windata.listener isInFullscreenSpace] ||
+            [windata.listener isInFullscreenSpaceTransition]) {
             windata.pending_size = YES;
             return;
         }
