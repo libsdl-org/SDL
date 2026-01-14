@@ -31,7 +31,7 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-static bool AddN3DSDisplay(gfxScreen_t screen);
+static bool AddN3DSDisplay(gfxScreen_t screen, gfx3dSide_t side);
 
 static bool N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);
@@ -44,6 +44,7 @@ static void N3DS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 struct SDL_DisplayData
 {
     gfxScreen_t screen;
+    gfx3dSide_t side;
 };
 
 struct SDL_DisplayModeData
@@ -127,8 +128,9 @@ static bool N3DS_VideoInit(SDL_VideoDevice *_this)
     gfxInit(GSP_RGBA8_OES, GSP_RGBA8_OES, false);
     hidInit();
 
-    internal->top_display = AddN3DSDisplay(GFX_TOP);
-    internal->touch_display = AddN3DSDisplay(GFX_BOTTOM);
+    internal->top_left_display = AddN3DSDisplay(GFX_TOP, GFX_LEFT);
+    internal->top_right_display = AddN3DSDisplay(GFX_TOP, GFX_RIGHT);
+    internal->touch_display = AddN3DSDisplay(GFX_BOTTOM, GFX_LEFT); // Bottom screen is always left
 
     N3DS_InitTouch();
     N3DS_SwkbInit();
@@ -136,7 +138,7 @@ static bool N3DS_VideoInit(SDL_VideoDevice *_this)
     return true;
 }
 
-static bool AddN3DSDisplay(gfxScreen_t screen)
+static bool AddN3DSDisplay(gfxScreen_t screen, gfx3dSide_t side)
 {
     SDL_DisplayMode mode;
     SDL_DisplayModeData *modedata;
@@ -150,6 +152,7 @@ static bool AddN3DSDisplay(gfxScreen_t screen)
     SDL_zero(display);
 
     display_driver_data->screen = screen;
+    display_driver_data->side = side;
 
     modedata = SDL_malloc(sizeof(SDL_DisplayModeData));
     if (!modedata) {
@@ -163,7 +166,7 @@ static bool AddN3DSDisplay(gfxScreen_t screen)
     mode.internal = modedata;
     modedata->fmt = GSP_RGBA8_OES;
 
-    display.name = (screen == GFX_TOP) ? "N3DS top screen" : "N3DS bottom screen";
+    display.name = (screen == GFX_BOTTOM) ? "N3DS bottom screen" : (side == GFX_LEFT) ? "N3DS top screen" : "N3DS right screen";
     display.desktop_mode = mode;
     display.internal = display_driver_data;
 
@@ -228,7 +231,12 @@ static bool N3DS_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *disp
     }
 
     rect->x = 0;
-    rect->y = (driver_data->screen == GFX_TOP) ? 0 : GSP_SCREEN_WIDTH;
+    rect->y = 0;
+    if(driver_data->screen == GFX_BOTTOM)
+        rect->y = GSP_SCREEN_WIDTH;
+    if(driver_data->screen == GFX_TOP && driver_data->side == GFX_RIGHT)
+        rect->y = GSP_SCREEN_WIDTH * 2;
+
     rect->w = display->current_mode->w;
     rect->h = display->current_mode->h;
     return true;
@@ -243,6 +251,7 @@ static bool N3DS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Pr
     }
     display_data = SDL_GetDisplayDriverDataForWindow(window);
     window_data->screen = display_data->screen;
+    window_data->side = display_data->side;
     window->internal = window_data;
     SDL_SetKeyboardFocus(window);
     return true;
