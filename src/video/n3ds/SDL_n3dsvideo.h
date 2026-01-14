@@ -29,8 +29,8 @@
 
 struct SDL_VideoData
 {
-    int top_display;
-    int touch_display;
+    SDL_DisplayID top_display;
+    SDL_DisplayID touch_display;
 };
 
 struct SDL_WindowData
