@@ -29,6 +29,8 @@
 #define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.dylib"
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
+#elif defined(SDL_PLATFORM_ANDROID)
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so"
 #else
 #define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1,libopenxr_loader.so"
 #endif
