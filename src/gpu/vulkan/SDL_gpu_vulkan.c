@@ -12631,7 +12631,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     XrInstancePfns *instancePfns = NULL;
     XrInstance xrInstance = XR_NULL_HANDLE;
     XrSystemId xrSystemId = XR_NULL_HANDLE;
-    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
 
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
@@ -12652,7 +12652,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         if ((xrResult = xrCreateInstance(&(XrInstanceCreateInfo){
                  .type = XR_TYPE_INSTANCE_CREATE_INFO,
                  .applicationInfo = {
-                     .apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION, XR_API_VERSION_1_0),
+                     .apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER, XR_API_VERSION_1_0),
                      .applicationName = "SDL",
                  },
                  .enabledExtensionCount = 1,
@@ -12675,7 +12675,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
         if ((xrResult = instancePfns->xrGetSystem(xrInstance, &(XrSystemGetInfo){
                                                                   .type = XR_TYPE_SYSTEM_GET_INFO,
-                                                                  .formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY),
+                                                                  .formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY),
                                                               },
                  &xrSystemId)) != XR_SUCCESS) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
@@ -13017,9 +13017,9 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->minimumVkVersion = VK_API_VERSION_1_0;
 
 #ifdef HAVE_GPU_OPENXR
-    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
-    XrInstance *xrInstance = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT, NULL);
-    XrSystemId *xrSystemId = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT, NULL);
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
+    XrInstance *xrInstance = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER, NULL);
+    XrSystemId *xrSystemId = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER, NULL);
 
     if (xr) {
         XrExtensionProperties gpuExtension;

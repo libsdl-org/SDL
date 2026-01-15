@@ -608,7 +608,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     }
 
 #ifndef HAVE_GPU_OPENXR
-    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false)) {
         SDL_SetError("OpenXR is not enabled in this build of SDL");
         return NULL;
     }

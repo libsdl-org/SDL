@@ -8659,7 +8659,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
 #ifdef HAVE_GPU_OPENXR
     // Check for OpenXR support if requested
-    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to load OpenXR");
@@ -9343,9 +9343,9 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     }
 
 #ifdef HAVE_GPU_OPENXR
-    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
-    XrInstance *xrInstance = (XrInstance *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT, NULL);
-    XrSystemId *xrSystemId = (XrSystemId *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT, NULL);
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
+    XrInstance *xrInstance = (XrInstance *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER, NULL);
+    XrSystemId *xrSystemId = (XrSystemId *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER, NULL);
     D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 
     if (xr) {
