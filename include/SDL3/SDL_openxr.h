@@ -109,8 +109,6 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
  * \sa SDL_CreateGPUXRSession
  * \sa SDL_DestroyGPUXRSwapchain
  */
-
-/* TODO: figure out then document what usageFlags are actually possible to be supported by SDL_gpu */
 extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSwapchain(
     SDL_GPUDevice *device,
     XrSession session,
