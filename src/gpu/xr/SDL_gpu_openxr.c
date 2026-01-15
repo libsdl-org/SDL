@@ -95,7 +95,7 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, "SDL Application");
     Uint32 applicationVersion = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 0);
 
-    SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.applicationName, applicationName, XR_MAX_APPLICATION_NAME_SIZE); // TODO: let the user specify this
+    SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.applicationName, applicationName, XR_MAX_APPLICATION_NAME_SIZE);
     xrInstanceCreateInfo.applicationInfo.applicationVersion = applicationVersion;
 
     const char *engineName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME_STRING, "SDLGPU");
