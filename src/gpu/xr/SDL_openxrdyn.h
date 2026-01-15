@@ -27,6 +27,11 @@
 #include "openxr/openxr.h"
 #include "openxr/openxr_platform.h"
 
+/* Compatibility: XR_API_VERSION_1_0 was added in OpenXR 1.1.x */
+#ifndef XR_API_VERSION_1_0
+#define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
+#endif
+
 #define SDL_OPENXR_CHECK_VERSION(x, y, z)                       \
     (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) > x ||                                \
      (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) == x && XR_VERSION_MINOR(XR_CURRENT_API_VERSION) > y) || \
