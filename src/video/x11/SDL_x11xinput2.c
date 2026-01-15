@@ -81,6 +81,8 @@ static SDL_XInput2ScrollableDevice *scrollable_devices;
 static int scrollable_device_count;
 #endif
 
+static bool ensure_pen_proximity;
+
 static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -230,6 +232,8 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     if (!SDL_GetHintBoolean("SDL_VIDEO_X11_XINPUT2", true)) {
         return false;
     }
+
+    ensure_pen_proximity = SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_ENSURE_PEN_PROXIMITY, true);
 
     /*
      * Initialize XInput 2
@@ -658,8 +662,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
-            // We may receive motion event before proximity event, so add this as a workaround to keep event order sane
-            SDL_SendPenProximity(0, pen->pen, window, true);
+
+            if (ensure_pen_proximity)
+                SDL_SendPenProximity(0, pen->pen, window, true);
+
             SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
             float axes[SDL_PEN_AXIS_COUNT];
