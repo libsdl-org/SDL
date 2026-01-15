@@ -59,7 +59,7 @@ static void *OPENXR_GetSym(const char *fnname, bool *failed)
 }
 
 // Define all the function pointers and wrappers...
-#define SDL_OPENXR_SYM(name)     PFN_##name OPENXR_##name = NULL;
+#define SDL_OPENXR_SYM(name) PFN_##name OPENXR_##name = NULL;
 #include "SDL_openxrsym.h"
 
 static int openxr_load_refcount = 0;
@@ -88,7 +88,7 @@ bool SDL_OpenXR_LoadLibrary(void)
         const char *paths_hint = SDL_GetHint(SDL_HINT_OPENXR_SONAMES);
 
         // If no hint was specified, use the default
-        if(!paths_hint)
+        if (!paths_hint)
             paths_hint = openxr_loader.libnames;
 
         // dupe for strtok
@@ -100,7 +100,7 @@ bool SDL_OpenXR_LoadLibrary(void)
         while (path) {
             openxr_loader.lib = SDL_LoadObject(path);
             // if we found the lib, break out
-            if(openxr_loader.lib) {
+            if (openxr_loader.lib) {
                 break;
             }
 
@@ -116,7 +116,7 @@ bool SDL_OpenXR_LoadLibrary(void)
 
         bool failed = false;
 
-#define SDL_OPENXR_SYM(name)     OPENXR_##name = (PFN_##name)OPENXR_GetSym(#name, &failed);
+#define SDL_OPENXR_SYM(name) OPENXR_##name = (PFN_##name)OPENXR_GetSym(#name, &failed);
 #include "SDL_openxrsym.h"
 
         if (failed) {
@@ -129,8 +129,9 @@ bool SDL_OpenXR_LoadLibrary(void)
     return result;
 }
 
-PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void) {
-    if(xrGetInstanceProcAddr == NULL) {
+PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void)
+{
+    if (xrGetInstanceProcAddr == NULL) {
         SDL_SetError("The OpenXR loader has not been loaded");
     }
 
@@ -143,11 +144,11 @@ XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
 
     XrInstancePfns *pfns = SDL_calloc(1, sizeof(XrInstancePfns));
 
-#define SDL_OPENXR_INSTANCE_SYM(name) \
+#define SDL_OPENXR_INSTANCE_SYM(name)                                                   \
     result = xrGetInstanceProcAddr(instance, #name, (PFN_xrVoidFunction *)&pfns->name); \
-    if(result != XR_SUCCESS) { \
-        SDL_free(pfns); \
-        return NULL; \
+    if (result != XR_SUCCESS) {                                                         \
+        SDL_free(pfns);                                                                 \
+        return NULL;                                                                    \
     }
 #include "SDL_openxrsym.h"
 
@@ -156,7 +157,7 @@ XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
 
 #else
 
-bool SDL_OpenXR_LoadLibrary(void) 
+bool SDL_OpenXR_LoadLibrary(void)
 {
     SDL_SetError("OpenXR is not enabled in this build of SDL");
     return false;

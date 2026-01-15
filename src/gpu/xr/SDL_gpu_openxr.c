@@ -30,11 +30,11 @@
 bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
 {
     Uint32 apiLayerCount;
-    if(XR_FAILED(xrEnumerateApiLayerProperties(0, &apiLayerCount, NULL))) {
+    if (XR_FAILED(xrEnumerateApiLayerProperties(0, &apiLayerCount, NULL))) {
         return false;
     }
 
-    if(apiLayerCount <= 0) {
+    if (apiLayerCount <= 0) {
         return false;
     }
 
@@ -59,12 +59,12 @@ bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
 }
 
 XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
-    bool debugMode, 
-    XrExtensionProperties gpuExtension, 
-    SDL_PropertiesID props, 
-    XrInstance *instance, 
+    bool debugMode,
+    XrExtensionProperties gpuExtension,
+    SDL_PropertiesID props,
+    XrInstance *instance,
     XrSystemId *systemId,
-    XrInstancePfns **xr) 
+    XrInstancePfns **xr)
 {
     XrResult xrResult;
 
@@ -104,7 +104,7 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.engineName, engineName, XR_MAX_APPLICATION_NAME_SIZE);
     xrInstanceCreateInfo.applicationInfo.engineVersion = engineVersion;
 
-    if((xrResult = xrCreateInstance(&xrInstanceCreateInfo, instance)) != XR_SUCCESS) {
+    if ((xrResult = xrCreateInstance(&xrInstanceCreateInfo, instance)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
         SDL_stack_free(apiLayerNames);
         SDL_stack_free(extensionNames);
@@ -117,15 +117,15 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     *xr = SDL_OPENXR_LoadInstanceSymbols(*instance);
     if (!*xr) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to load required OpenXR instance symbols");
-        /* NOTE: we can't actually destroy the created OpenXR instance here, 
+        /* NOTE: we can't actually destroy the created OpenXR instance here,
                 as we only get that function pointer by loading the instance symbols...
                 let's just hope that doesn't happen. */
         return false;
     }
 
-    XrSystemGetInfo systemGetInfo = {XR_TYPE_SYSTEM_GET_INFO};
+    XrSystemGetInfo systemGetInfo = { XR_TYPE_SYSTEM_GET_INFO };
     systemGetInfo.formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY);
-    if((xrResult = (*xr)->xrGetSystem(*instance, &systemGetInfo, systemId)) != XR_SUCCESS) {
+    if ((xrResult = (*xr)->xrGetSystem(*instance, &systemGetInfo, systemId)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
         (*xr)->xrDestroyInstance(*instance);
         SDL_free(*xr);
