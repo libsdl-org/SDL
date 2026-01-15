@@ -387,7 +387,7 @@ set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
-dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" ON SDL_GPU OFF)
+dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" OFF SDL_GPU OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
