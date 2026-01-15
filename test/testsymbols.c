@@ -66,16 +66,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void);
 
 extern SDL_DECLSPEC void SDLCALL JNI_OnLoad(void);
 
-#ifndef SDL_GPU_OPENXR
-extern SDL_DECLSPEC void SDLCALL SDL_CreateGPUXRSession(void);
-extern SDL_DECLSPEC void SDLCALL SDL_CreateGPUXRSwapchain(void);
-extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPUXRSwapchain(void);
-extern SDL_DECLSPEC void SDLCALL SDL_OpenXR_LoadLibrary(void);
-extern SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void);
-extern SDL_DECLSPEC void SDLCALL SDL_OpenXR_GetXrGetInstanceProcAddr(void);
-#else
 #include <SDL3/SDL_openxr.h>
-#endif
 
 const static struct {
     const char *name;
