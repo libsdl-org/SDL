@@ -22,9 +22,9 @@
 #include "SDL_openxrdyn.h"
 
 XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
-    bool debugMode, 
-    XrExtensionProperties gpuExtension, 
-    SDL_PropertiesID props, 
-    XrInstance *instance, 
+    bool debugMode,
+    XrExtensionProperties gpuExtension,
+    SDL_PropertiesID props,
+    XrInstance *instance,
     XrSystemId *systemId,
     XrInstancePfns **xr);

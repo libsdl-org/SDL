@@ -32,8 +32,8 @@
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
 #endif
 
-#define SDL_OPENXR_CHECK_VERSION(x, y, z)                       \
-    (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) > x ||                                \
+#define SDL_OPENXR_CHECK_VERSION(x, y, z)                                                               \
+    (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) > x ||                                                    \
      (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) == x && XR_VERSION_MINOR(XR_CURRENT_API_VERSION) > y) || \
      (XR_VERSION_MAJOR(XR_CURRENT_API_VERSION) == x && XR_VERSION_MINOR(XR_CURRENT_API_VERSION) == y && XR_VERSION_PATCH(XR_CURRENT_API_VERSION) >= z))
 
@@ -41,7 +41,8 @@
 extern "C" {
 #endif
 
-typedef struct XrInstancePfns {
+typedef struct XrInstancePfns
+{
 #define SDL_OPENXR_INSTANCE_SYM(name) \
     PFN_##name name;
 #include "SDL_openxrsym.h"
@@ -50,14 +51,14 @@ typedef struct XrInstancePfns {
 extern XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance);
 
 /* Define the function pointers */
-#define SDL_OPENXR_SYM(name)        \
+#define SDL_OPENXR_SYM(name) \
     extern PFN_##name OPENXR_##name;
 #include "SDL_openxrsym.h"
 
-#define xrGetInstanceProcAddr OPENXR_xrGetInstanceProcAddr
-#define xrEnumerateApiLayerProperties OPENXR_xrEnumerateApiLayerProperties
+#define xrGetInstanceProcAddr                  OPENXR_xrGetInstanceProcAddr
+#define xrEnumerateApiLayerProperties          OPENXR_xrEnumerateApiLayerProperties
 #define xrEnumerateInstanceExtensionProperties OPENXR_xrEnumerateInstanceExtensionProperties
-#define xrCreateInstance OPENXR_xrCreateInstance
+#define xrCreateInstance                       OPENXR_xrCreateInstance
 
 #ifdef __cplusplus
 }
