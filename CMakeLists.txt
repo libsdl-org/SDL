@@ -936,7 +936,17 @@ if(SDL_ASSEMBLY)
       cmake_pop_check_state()
 
       if(CPU_SUPPORTS_LSX AND HAVE_LSXINTRIN_H)
-        list(APPEND EXTRA_CFLAGS "-mlsx")
+        set_property(SOURCE
+            "${SDL2_SOURCE_DIR}/src/video/yuv2rgb/yuv_rgb_lsx.c"
+            "${SDL2_SOURCE_DIR}/src/video/SDL_blit_A.c"
+            "${SDL2_SOURCE_DIR}/src/video/SDL_fillrect.c"
+            APPEND PROPERTY COMPILE_OPTIONS "-mlsx")
+
+        set_property(SOURCE
+            "${SDL2_SOURCE_DIR}/src/video/yuv2rgb/yuv_rgb_lsx.c"
+            "${SDL2_SOURCE_DIR}/src/video/SDL_blit_A.c"
+            "${SDL2_SOURCE_DIR}/src/video/SDL_fillrect.c"
+            PROPERTY SKIP_PRECOMPILE_HEADERS 1)
         set(HAVE_LSX TRUE)
       endif()
     endif()
