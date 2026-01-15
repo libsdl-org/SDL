@@ -289,7 +289,7 @@ typedef unsigned int uintptr_t;
 #endif
 #define SDL_GPU_D3D12 1
 #define SDL_GPU_VULKAN 1
-#define HAVE_GPU_OPENXR 1
+/* #define HAVE_GPU_OPENXR 1 */  /* Requires OpenXR SDK - enable manually if available */
 #define SDL_VIDEO_RENDER_GPU 1
 
 /* Enable system power support */
