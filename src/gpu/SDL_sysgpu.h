@@ -24,6 +24,8 @@
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
 
+#include <SDL3/SDL_openxr.h>
+
 // GraphicsDevice Limits
 
 #define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
@@ -669,6 +671,11 @@ struct SDL_GPUDevice
 
     void (*DestroyDevice)(SDL_GPUDevice *device);
 
+    XrResult (*DestroyXRSwapchain)(
+        SDL_GPURenderer *device,
+        XrSwapchain swapchain,
+        SDL_GPUTexture **swapchainImages);
+
     SDL_PropertiesID (*GetDeviceProperties)(SDL_GPUDevice *device);
 
     // State Creation
@@ -704,6 +711,19 @@ struct SDL_GPUDevice
         SDL_GPUTransferBufferUsage usage,
         Uint32 size,
         const char *debugName);
+
+    XrResult (*CreateXRSession)(
+        SDL_GPURenderer *driverData,
+        const XrSessionCreateInfo *createinfo,
+        XrSession *session);
+
+    XrResult (*CreateXRSwapchain)(
+        SDL_GPURenderer *driverData,
+        XrSession session,
+        const XrSwapchainCreateInfo *createinfo,
+        SDL_GPUTextureFormat *textureFormat,
+        XrSwapchain *swapchain,
+        SDL_GPUTexture ***textures);
 
     // Debug Naming
 
@@ -1105,6 +1125,7 @@ struct SDL_GPUDevice
     result->func = name##_##func;
 #define ASSIGN_DRIVER(name)                                 \
     ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
+    ASSIGN_DRIVER_FUNC(DestroyXRSwapchain, name)            \
     ASSIGN_DRIVER_FUNC(GetDeviceProperties, name)      \
     ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
     ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
@@ -1113,6 +1134,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
     ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(CreateXRSession, name)               \
+    ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)             \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
     ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \

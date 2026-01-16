@@ -29,6 +29,17 @@
 #define VK_NO_PROTOTYPES
 #include "../../video/khronos/vulkan/vulkan.h"
 
+#ifdef HAVE_GPU_OPENXR
+#include <openxr/openxr.h>
+
+/* Needed for the OpenXR vulkan extension structures */
+#define XR_USE_GRAPHICS_API_VULKAN 1
+#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxrdyn.h"
+
+#include "../xr/SDL_gpu_openxr.h"
+#endif
+
 #include <SDL3/SDL_vulkan.h>
 
 #include "../SDL_sysgpu.h"
@@ -12430,6 +12441,54 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     SDL_Vulkan_UnloadLibrary();
 
     return result;
+}
+
+static XrResult VULKAN_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR swapchain destruction */
+    SDL_SetError("VULKAN_DestroyXRSwapchain not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static XrResult VULKAN_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR swapchain creation */
+    SDL_SetError("VULKAN_CreateXRSwapchain not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static XrResult VULKAN_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR session creation */
+    SDL_SetError("VULKAN_CreateXRSession not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
 }
 
 static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
