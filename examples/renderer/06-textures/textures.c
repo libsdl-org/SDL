@@ -40,14 +40,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* Textures are pixel data that we upload to the video hardware for fast drawing. Lots of 2D
        engines refer to these as "sprites." We'll do a static texture (upload once, draw many
-       times) with data from a bitmap file. */
+       times) with data from a png file. */
 
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
        Load a .png into a surface, move it to a texture from there. */
     SDL_asprintf(&png_path, "%ssample.png", SDL_GetBasePath());  /* allocate a string of the full file path */
     surface = SDL_LoadPNG(png_path);
     if (!surface) {
-        SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
+        SDL_Log("Couldn't load png: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
