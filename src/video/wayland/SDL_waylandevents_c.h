@@ -189,7 +189,6 @@ typedef struct SDL_WaylandSeat
         struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
 
         SDL_WindowData *focus;
-        SDL_CursorData *current_cursor;
 
         // According to the spec, a seat can only have one active gesture of any type at a time.
         SDL_WindowData *gesture_focus;
