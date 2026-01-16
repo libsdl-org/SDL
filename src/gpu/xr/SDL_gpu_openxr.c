@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,66 +26,37 @@
 #include "SDL_gpu_openxr.h"
 
 #ifdef SDL_PLATFORM_ANDROID
-#define XR_USE_PLATFORM_ANDROID
-#include "openxr/openxr_platform.h"
-#include "../../../core/android/SDL_android.h"
+#include "../../core/android/SDL_android.h"
 #endif
 
 #define VALIDATION_LAYER_API_NAME "XR_APILAYER_LUNARG_core_validation"
 
+/* On Android, the OpenXR loader is initialized by SDL_OpenXR_LoadLibrary() in SDL_openxrdyn.c
+ * which must be called before this. That function handles the complex initialization using
+ * direct SDL_LoadFunction calls to avoid issues with xrGetInstanceProcAddr from runtime
+ * negotiation not supporting pre-instance calls. This stub is kept for API compatibility. */
 #ifdef SDL_PLATFORM_ANDROID
 static bool SDL_OPENXR_INTERNAL_InitializeAndroidLoader(void)
 {
-    PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR = NULL;
-
-    // Get the function pointer - this can be called before instance creation
-    if (XR_FAILED(xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR",
-                                        (PFN_xrVoidFunction *)&xrInitializeLoaderKHR))) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get xrInitializeLoaderKHR");
+    /* The loader should already be initialized by SDL_OpenXR_LoadLibrary().
+     * We just verify that xrGetInstanceProcAddr is available. */
+    if (xrGetInstanceProcAddr == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "xrGetInstanceProcAddr is NULL - SDL_OpenXR_LoadLibrary was not called first");
         return false;
     }
-
-    if (!xrInitializeLoaderKHR) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "xrInitializeLoaderKHR is NULL");
-        return false;
-    }
-
-    // Get JNI environment and extract JavaVM
-    JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
-    if (!env) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get Android JNI environment");
-        return false;
-    }
-
-    JavaVM *vm = NULL;
-    if ((*env)->GetJavaVM(env, &vm) != 0) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get JavaVM");
-        return false;
-    }
-
-    void *activity = SDL_GetAndroidActivity();
-    if (!activity) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get Android activity");
-        return false;
-    }
-
-    XrLoaderInitInfoAndroidKHR loaderInitInfo = { XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR };
-    loaderInitInfo.applicationVM = vm;
-    loaderInitInfo.applicationContext = activity;
-
-    XrResult result = xrInitializeLoaderKHR((const XrLoaderInitInfoBaseHeaderKHR *)&loaderInitInfo);
-    if (XR_FAILED(result)) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "xrInitializeLoaderKHR failed with result %d", (int)result);
-        return false;
-    }
-
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Android OpenXR loader initialized successfully");
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Android OpenXR loader verified (was initialized by SDL_OpenXR_LoadLibrary)");
     return true;
 }
 #endif /* SDL_PLATFORM_ANDROID */
 
 bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
 {
+#ifdef SDL_PLATFORM_ANDROID
+    /* On Android/Quest, the xrGetInstanceProcAddr obtained through runtime negotiation
+     * crashes when used for pre-instance global functions. Skip validation layer check. */
+    return false;
+#endif
+
     Uint32 apiLayerCount;
     if (XR_FAILED(xrEnumerateApiLayerProperties(0, &apiLayerCount, NULL))) {
         return false;
