@@ -99,6 +99,9 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     bool have_attr_uv = false;
 
     switch (params->vert_shader) {
+    case VERT_SHADER_TRI_COLOR:
+        have_attr_uv = true;
+        break;
     case VERT_SHADER_TRI_TEXTURE:
         have_attr_uv = true;
         break;
