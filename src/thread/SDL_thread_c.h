@@ -67,11 +67,18 @@ extern void SDL_RunThread(SDL_Thread *thread);
 typedef struct
 {
     int limit;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4200) // Flexible array members (C99)
+#endif
     struct
     {
         void *data;
         void(SDLCALL *destructor)(void *);
-    } array[1];
+    } array[];
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 } SDL_TLSData;
 
 // This is how many TLS entries we allocate at once
