@@ -31,7 +31,6 @@
 #define ACTION_CANCEL 3
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP   6
-#define ACTION_HOVER_ENTER  9
 #define ACTION_HOVER_EXIT   10
 
 void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_type, int button, int action, float x, float y, float p)
@@ -59,9 +58,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         }
     }
 
-    if (action == ACTION_HOVER_ENTER)
-        SDL_SendPenProximity(0, pen, window, true);
-
+    SDL_SendPenProximity(0, pen, window, true);
     SDL_SendPenMotion(0, pen, window, x, y);
     SDL_SendPenAxis(0, pen, window, SDL_PEN_AXIS_PRESSURE, p);
     // TODO: add more axis
