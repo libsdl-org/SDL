@@ -897,7 +897,7 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
     // Stop any frame callbacks and detach buffers associated with the cursor being destroyed.
     wl_list_for_each (seat, &video_data->seat_list, link)
     {
-        if (seat->pointer.current_cursor == d) {
+        if (seat->pointer.cursor_state.current_cursor == d) {
             Wayland_CursorStateDestroyFrameCallback(&seat->pointer.cursor_state);
 
             // Custom cursor buffers are about to be destroyed, so ensure they are detached.
@@ -905,7 +905,21 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
                 wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
             }
 
-            seat->pointer.current_cursor = NULL;
+            seat->pointer.cursor_state.current_cursor = NULL;
+        }
+
+        SDL_WaylandPenTool *tool;
+        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+            Wayland_CursorStateDestroyFrameCallback(&tool->cursor_state);
+
+            if (tool->cursor_state.current_cursor == d) {
+                // Custom cursor buffers are about to be destroyed, so ensure they are detached.
+                if (!d->is_system_cursor && tool->cursor_state.surface) {
+                    wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
+                }
+
+                tool->cursor_state.current_cursor = NULL;
+            }
         }
     }
 
