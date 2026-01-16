@@ -2354,6 +2354,20 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN         "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE                                    "SDL.gpu.device.create.xr.enable"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT                              "SDL.gpu.device.create.xr.instance_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT                             "SDL.gpu.device.create.xr.system_id_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION                                   "SDL.gpu.device.create.xr.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR                               "SDL.gpu.device.create.xr.form_factor"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT                           "SDL.gpu.device.create.xr.extensions.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES                           "SDL.gpu.device.create.xr.extensions.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT                               "SDL.gpu.device.create.xr.layers.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES                               "SDL.gpu.device.create.xr.layers.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME                          "SDL.gpu.device.create.xr.application.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION                       "SDL.gpu.device.create.xr.application.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME                               "SDL.gpu.device.create.xr.engine.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION                            "SDL.gpu.device.create.xr.engine.version"
+
 
 /**
  * A structure specifying additional options when using Vulkan.

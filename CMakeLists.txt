@@ -387,6 +387,7 @@ set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
+dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" ON SDL_GPU OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
@@ -1259,6 +1260,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/filesystem/*.h"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
   "${SDL3_SOURCE_DIR}/src/gpu/*.h"
+  "${SDL3_SOURCE_DIR}/src/gpu/xr/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/xr/*.h"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.h"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
@@ -3536,6 +3539,9 @@ if(SDL_GPU)
   if(SDL_RENDER_GPU AND HAVE_SDL_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
     set(HAVE_RENDER_GPU TRUE)
+  endif()
+  if(SDL_GPU_OPENXR)
+    set(HAVE_GPU_OPENXR 1)
   endif()
 endif()
 

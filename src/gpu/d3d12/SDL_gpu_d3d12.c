@@ -28,6 +28,15 @@
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
 
+#ifdef HAVE_GPU_OPENXR
+#include <openxr/openxr.h>
+
+/* Needed for the OpenXR D3D12 extension structures */
+#define XR_USE_GRAPHICS_API_D3D12 1
+#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxrdyn.h"
+#endif
+
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE
 #endif
@@ -8808,6 +8817,54 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
     ID3D12InfoQueue1_Release(infoQueue);
 }
 #endif
+
+static XrResult D3D12_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR swapchain destruction */
+    SDL_SetError("D3D12_DestroyXRSwapchain not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static XrResult D3D12_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR swapchain creation */
+    SDL_SetError("D3D12_CreateXRSwapchain not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static XrResult D3D12_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+#ifdef HAVE_GPU_OPENXR
+    /* TODO: Implement full XR session creation */
+    SDL_SetError("D3D12_CreateXRSession not fully implemented");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
 
 static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
