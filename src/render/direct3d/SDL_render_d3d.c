@@ -198,15 +198,25 @@ static bool D3D_SetError(const char *prefix, HRESULT result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
+static const struct {
+    Uint32 sdl;
+    D3DFORMAT d3d;
+} d3d_format_map[] = {
+    { SDL_PIXELFORMAT_ARGB8888,     D3DFMT_A8R8G8B8      },
+    { SDL_PIXELFORMAT_XRGB8888,     D3DFMT_X8R8G8B8      },
+    { SDL_PIXELFORMAT_ABGR8888,     D3DFMT_A8B8G8R8      },
+    { SDL_PIXELFORMAT_XBGR8888,     D3DFMT_X8B8G8R8      },
+    { SDL_PIXELFORMAT_ARGB2101010,  D3DFMT_A2R10G10B10   },
+    { SDL_PIXELFORMAT_RGB565,       D3DFMT_R5G6B5        },
+    { SDL_PIXELFORMAT_ARGB1555,     D3DFMT_A1R5G5B5      },
+    { SDL_PIXELFORMAT_XRGB1555,     D3DFMT_X1R5G5B5      },
+    { SDL_PIXELFORMAT_ARGB4444,     D3DFMT_A4R4G4B4      },
+    { SDL_PIXELFORMAT_XRGB4444,     D3DFMT_X4R4G4B4      }
+};
+
 static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGB565:
-        return D3DFMT_R5G6B5;
-    case SDL_PIXELFORMAT_XRGB8888:
-        return D3DFMT_X8R8G8B8;
-    case SDL_PIXELFORMAT_ARGB8888:
-        return D3DFMT_A8R8G8B8;
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -214,22 +224,23 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
     case SDL_PIXELFORMAT_NV21:
         return D3DFMT_L8;
     default:
+        for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+            if (d3d_format_map[i].sdl == format) {
+                return d3d_format_map[i].d3d;
+            }
+        }
         return D3DFMT_UNKNOWN;
     }
 }
 
 static SDL_PixelFormat D3DFMTToPixelFormat(D3DFORMAT format)
 {
-    switch (format) {
-    case D3DFMT_R5G6B5:
-        return SDL_PIXELFORMAT_RGB565;
-    case D3DFMT_X8R8G8B8:
-        return SDL_PIXELFORMAT_XRGB8888;
-    case D3DFMT_A8R8G8B8:
-        return SDL_PIXELFORMAT_ARGB8888;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
+    for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+        if (d3d_format_map[i].d3d == format) {
+            return d3d_format_map[i].sdl;
+        }
     }
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static void D3D_InitRenderState(D3D_RenderData *data)
@@ -1815,6 +1826,7 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     D3D_RenderData *data;
     HRESULT result;
     HWND hwnd;
+    D3DDISPLAYMODE displayMode;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
@@ -1873,7 +1885,6 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     D3D_InvalidateCachedState(renderer);
 
     renderer->name = D3D_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
@@ -1957,6 +1968,20 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     // Store the default render target
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
     data->currentRenderTarget = NULL;
+
+    // Detect the supported texture formats
+    IDirect3D9_GetAdapterDisplayMode(data->d3d, data->adapter, &displayMode);
+    for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+        if (SUCCEEDED(IDirect3D9_CheckDeviceFormat(data->d3d,
+                                                   data->adapter,
+                                                   D3DDEVTYPE_HAL,
+                                                   displayMode.Format,
+                                                   0,
+                                                   D3DRTYPE_TEXTURE,
+                                                   d3d_format_map[i].d3d))) {
+            SDL_AddSupportedTextureFormat(renderer, d3d_format_map[i].sdl);
+        }
+    }
 
     // Set up parameters for rendering
     D3D_InitRenderState(data);
