@@ -73,7 +73,10 @@ typedef struct SDL_WaylandCursorState
 
     Uint64 last_frame_callback_time_ms;
     Uint32 current_frame_time_ms;
+
+    // 0 or greater if a buffer is attached, -1 if in the reset state.
     int current_frame;
+
     SDL_HitTestResult hit_test_result;
 } SDL_WaylandCursorState;
 
