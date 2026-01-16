@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,9 @@
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
 #elif defined(SDL_PLATFORM_ANDROID)
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so"
+/* On Android/Quest, use the system's OpenXR forwardloader from the VrDriver apex.
+ * Try the short name first (uses linker search path), then the full path. */
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_forwardloader.so,/apex/com.meta.xr/priv-app/VrDriver/VrDriver.apk!/lib/arm64-v8a/libopenxr_forwardloader.so"
 #else
 #define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1,libopenxr_loader.so"
 #endif
@@ -66,27 +68,199 @@ static void *OPENXR_GetSym(const char *fnname, bool *failed)
 
 static int openxr_load_refcount = 0;
 
-void SDL_OpenXR_UnloadLibrary(void)
+#ifdef SDL_PLATFORM_ANDROID
+#include <jni.h>
+#include "openxr/openxr_platform.h"
+#include "openxr/openxr_loader_negotiation.h"
+
+/* On Android, we need to initialize the loader and negotiate the runtime interface */
+static bool openxr_android_loader_initialized = false;
+
+static bool OPENXR_InitializeAndroidLoader(void)
 {
+    XrResult result;
+    PFN_xrInitializeLoaderKHR initializeLoader = NULL;
+    JNIEnv *env = NULL;
+    JavaVM *vm = NULL;
+    jobject activity = NULL;
+    
+    if (openxr_android_loader_initialized) {
+        return true;
+    }
+
+    /* First, get xrGetInstanceProcAddr directly from the loader library.
+     * This is the function that Meta's samples use to bootstrap everything. */
+    PFN_xrGetInstanceProcAddr loaderGetProcAddr = 
+        (PFN_xrGetInstanceProcAddr)SDL_LoadFunction(openxr_loader.lib, "xrGetInstanceProcAddr");
+    
+    SDL_Log("SDL/OpenXR: xrGetInstanceProcAddr from loader: %p", (void*)loaderGetProcAddr);
+    
+    /* Get xrInitializeLoaderKHR - either via xrGetInstanceProcAddr or direct export */
+    if (loaderGetProcAddr) {
+        result = loaderGetProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)&initializeLoader);
+        if (XR_FAILED(result) || initializeLoader == NULL) {
+            SDL_Log("SDL/OpenXR: xrGetInstanceProcAddr didn't return xrInitializeLoaderKHR, trying direct load...");
+            initializeLoader = NULL;
+        }
+    }
+    
+    if (initializeLoader == NULL) {
+        initializeLoader = (PFN_xrInitializeLoaderKHR)SDL_LoadFunction(openxr_loader.lib, "xrInitializeLoaderKHR");
+    }
+    
+    if (!initializeLoader) {
+        SDL_SetError("Failed to get xrInitializeLoaderKHR");
+        return false;
+    }
+    
+    SDL_Log("SDL/OpenXR: Got xrInitializeLoaderKHR: %p", (void*)initializeLoader);
+
+    /* Get Android environment info from SDL */
+    env = (JNIEnv *)SDL_GetAndroidJNIEnv();
+    if (!env) {
+        SDL_SetError("Failed to get Android JNI environment");
+        return false;
+    }
+
+    if ((*env)->GetJavaVM(env, &vm) != 0) {
+        SDL_SetError("Failed to get JavaVM from JNIEnv");
+        return false;
+    }
+
+    activity = (jobject)SDL_GetAndroidActivity();
+    if (!activity) {
+        SDL_SetError("Failed to get Android activity");
+        return false;
+    }
+
+    XrLoaderInitInfoAndroidKHR loaderInitInfo = {
+        .type = XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR,
+        .next = NULL,
+        .applicationVM = vm,
+        .applicationContext = activity
+    };
+
+    result = initializeLoader((XrLoaderInitInfoBaseHeaderKHR *)&loaderInitInfo);
+    if (XR_FAILED(result)) {
+        SDL_SetError("xrInitializeLoaderKHR failed with result %d", (int)result);
+        return false;
+    }
+    
+    SDL_Log("SDL/OpenXR: xrInitializeLoaderKHR succeeded");
+
+    /* If we got xrGetInstanceProcAddr directly from the loader, use that.
+     * This is the standard approach used by Meta's samples. */
+    if (loaderGetProcAddr != NULL) {
+        OPENXR_xrGetInstanceProcAddr = loaderGetProcAddr;
+        xrGetInstanceProcAddr = loaderGetProcAddr;
+        SDL_Log("SDL/OpenXR: Using loader's xrGetInstanceProcAddr: %p", (void*)loaderGetProcAddr);
+        openxr_android_loader_initialized = true;
+        return true;
+    }
+
+    /* Fall back to runtime negotiation to get xrGetInstanceProcAddr */
+    SDL_Log("SDL/OpenXR: Falling back to runtime negotiation...");
+    
+    /* Now negotiate the runtime interface to get xrGetInstanceProcAddr */
+    PFN_xrNegotiateLoaderRuntimeInterface negotiateFunc = 
+        (PFN_xrNegotiateLoaderRuntimeInterface)SDL_LoadFunction(openxr_loader.lib, "xrNegotiateLoaderRuntimeInterface");
+    
+    if (!negotiateFunc) {
+        SDL_SetError("Failed to get xrNegotiateLoaderRuntimeInterface");
+        return false;
+    }
+
+    XrNegotiateLoaderInfo loaderInfo = {
+        .structType = XR_LOADER_INTERFACE_STRUCT_LOADER_INFO,
+        .structVersion = XR_LOADER_INFO_STRUCT_VERSION,
+        .structSize = sizeof(XrNegotiateLoaderInfo),
+        .minInterfaceVersion = 1,
+        .maxInterfaceVersion = XR_CURRENT_LOADER_RUNTIME_VERSION,
+        .minApiVersion = XR_MAKE_VERSION(1, 0, 0),
+        .maxApiVersion = XR_MAKE_VERSION(1, 1, 0xFF)
+    };
+
+    XrNegotiateRuntimeRequest runtimeRequest = {
+        .structType = XR_LOADER_INTERFACE_STRUCT_RUNTIME_REQUEST,
+        .structVersion = XR_RUNTIME_INFO_STRUCT_VERSION,
+        .structSize = sizeof(XrNegotiateRuntimeRequest),
+        .runtimeInterfaceVersion = 0,
+        .runtimeApiVersion = 0,
+        .getInstanceProcAddr = NULL
+    };
+
+    result = negotiateFunc(&loaderInfo, &runtimeRequest);
+    if (XR_FAILED(result)) {
+        SDL_SetError("xrNegotiateLoaderRuntimeInterface failed with result %d", (int)result);
+        return false;
+    }
+
+    if (runtimeRequest.getInstanceProcAddr == NULL) {
+        SDL_SetError("Runtime did not provide xrGetInstanceProcAddr");
+        return false;
+    }
+
+    /* Store the xrGetInstanceProcAddr function */
+    OPENXR_xrGetInstanceProcAddr = runtimeRequest.getInstanceProcAddr;
+    xrGetInstanceProcAddr = runtimeRequest.getInstanceProcAddr;
+
+    openxr_android_loader_initialized = true;
+    return true;
+}
+#endif /* SDL_PLATFORM_ANDROID */
+
+SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void)
+{
+    SDL_Log("SDL/OpenXR: UnloadLibrary called, current refcount=%d", openxr_load_refcount);
     // Don't actually unload if more than one module is using the libs...
     if (openxr_load_refcount > 0) {
         if (--openxr_load_refcount == 0) {
-            // set all the function pointers to NULL.
+            SDL_Log("SDL/OpenXR: Refcount reached 0, unloading library");
+
+#ifdef SDL_PLATFORM_ANDROID
+            /* On Android/Quest, don't actually unload the library or reset the loader state.
+             * The Quest OpenXR runtime doesn't support being re-initialized after teardown.
+             * xrInitializeLoaderKHR and xrNegotiateLoaderRuntimeInterface must only be called once.
+             * We keep the library loaded and the loader initialized. 
+             * 
+             * IMPORTANT: We also keep xrGetInstanceProcAddr intact so we can reload other
+             * function pointers on the next LoadLibrary call. Only NULL out the other symbols. */
+            SDL_Log("SDL/OpenXR: Android - keeping library loaded and loader initialized");
+            
+            // Only NULL out non-essential function pointers, keep xrGetInstanceProcAddr
+#define SDL_OPENXR_SYM(name) \
+    if (SDL_strcmp(#name, "xrGetInstanceProcAddr") != 0) { \
+        OPENXR_##name = NULL; \
+    }
+#include "SDL_openxrsym.h"
+#else
+            // On non-Android, NULL everything and unload
 #define SDL_OPENXR_SYM(name) OPENXR_##name = NULL;
 #include "SDL_openxrsym.h"
 
             SDL_UnloadObject(openxr_loader.lib);
+            openxr_loader.lib = NULL;
+#endif
+        } else {
+            SDL_Log("SDL/OpenXR: Refcount is now %d, not unloading", openxr_load_refcount);
         }
     }
 }
 
 // returns non-zero if all needed symbols were loaded.
-bool SDL_OpenXR_LoadLibrary(void)
+SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void)
 {
     bool result = true;
 
+    SDL_Log("SDL/OpenXR: LoadLibrary called, current refcount=%d, lib=%p", openxr_load_refcount, (void*)openxr_loader.lib);
+
     // deal with multiple modules (gpu, openxr, etc) needing these symbols...
     if (openxr_load_refcount++ == 0) {
+#ifdef SDL_PLATFORM_ANDROID
+        /* On Android, the library may already be loaded if this is a reload after
+         * unload (we don't actually unload on Android to preserve runtime state) */
+        if (openxr_loader.lib == NULL) {
+#endif
         const char *paths_hint = SDL_GetHint(SDL_HINT_OPENXR_SONAMES);
 
         // If no hint was specified, use the default
@@ -112,26 +286,99 @@ bool SDL_OpenXR_LoadLibrary(void)
         SDL_free(paths);
 
         if (!openxr_loader.lib) {
+            SDL_SetError("Failed loading OpenXR library from: %s", paths_hint);
             openxr_load_refcount--;
             return false;
         }
+#ifdef SDL_PLATFORM_ANDROID
+        } else {
+            SDL_Log("SDL/OpenXR: Library already loaded (Android reload), skipping SDL_LoadObject");
+        }
+#endif
+
+#ifdef SDL_PLATFORM_ANDROID
+        /* On Android, we need to initialize the loader before other functions work.
+         * OPENXR_InitializeAndroidLoader() will return early if already initialized. */
+        if (!OPENXR_InitializeAndroidLoader()) {
+            SDL_UnloadObject(openxr_loader.lib);
+            openxr_loader.lib = NULL;
+            openxr_load_refcount--;
+            return false;
+        }
+#endif
 
         bool failed = false;
 
+#ifdef SDL_PLATFORM_ANDROID
+        /* On Android with Meta's forwardloader, we need special handling.
+         * After calling xrInitializeLoaderKHR, the global functions should be available
+         * either as direct exports from the forwardloader or via xrGetInstanceProcAddr(NULL, ...).
+         * 
+         * Try getting functions directly from the forwardloader first since they'll go
+         * through the proper forwarding path. */
+        XrResult xrResult;
+        
+        SDL_Log("SDL/OpenXR: Loading global functions...");
+        
+        /* First try to get functions directly from the forwardloader library */
+        OPENXR_xrEnumerateApiLayerProperties = (PFN_xrEnumerateApiLayerProperties)SDL_LoadFunction(openxr_loader.lib, "xrEnumerateApiLayerProperties");
+        OPENXR_xrCreateInstance = (PFN_xrCreateInstance)SDL_LoadFunction(openxr_loader.lib, "xrCreateInstance");
+        OPENXR_xrEnumerateInstanceExtensionProperties = (PFN_xrEnumerateInstanceExtensionProperties)SDL_LoadFunction(openxr_loader.lib, "xrEnumerateInstanceExtensionProperties");
+        
+        SDL_Log("SDL/OpenXR: Direct symbols - xrEnumerateApiLayerProperties=%p, xrCreateInstance=%p, xrEnumerateInstanceExtensionProperties=%p",
+                (void*)OPENXR_xrEnumerateApiLayerProperties, 
+                (void*)OPENXR_xrCreateInstance,
+                (void*)OPENXR_xrEnumerateInstanceExtensionProperties);
+        
+        /* If direct loading failed, fall back to xrGetInstanceProcAddr(NULL, ...) */
+        if (OPENXR_xrEnumerateApiLayerProperties == NULL) {
+            xrResult = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrEnumerateApiLayerProperties", (PFN_xrVoidFunction*)&OPENXR_xrEnumerateApiLayerProperties);
+            if (XR_FAILED(xrResult) || OPENXR_xrEnumerateApiLayerProperties == NULL) {
+                SDL_Log("SDL/OpenXR: Failed to get xrEnumerateApiLayerProperties via xrGetInstanceProcAddr");
+                failed = true;
+            }
+        }
+        
+        if (OPENXR_xrCreateInstance == NULL) {
+            xrResult = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrCreateInstance", (PFN_xrVoidFunction*)&OPENXR_xrCreateInstance);
+            if (XR_FAILED(xrResult) || OPENXR_xrCreateInstance == NULL) {
+                SDL_Log("SDL/OpenXR: Failed to get xrCreateInstance via xrGetInstanceProcAddr");
+                failed = true;
+            }
+        }
+        
+        if (OPENXR_xrEnumerateInstanceExtensionProperties == NULL) {
+            xrResult = xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrEnumerateInstanceExtensionProperties", (PFN_xrVoidFunction*)&OPENXR_xrEnumerateInstanceExtensionProperties);
+            if (XR_FAILED(xrResult) || OPENXR_xrEnumerateInstanceExtensionProperties == NULL) {
+                SDL_Log("SDL/OpenXR: Failed to get xrEnumerateInstanceExtensionProperties via xrGetInstanceProcAddr");
+                failed = true;
+            }
+        }
+        
+        SDL_Log("SDL/OpenXR: Final symbols - xrEnumerateApiLayerProperties=%p, xrCreateInstance=%p, xrEnumerateInstanceExtensionProperties=%p",
+                (void*)OPENXR_xrEnumerateApiLayerProperties, 
+                (void*)OPENXR_xrCreateInstance,
+                (void*)OPENXR_xrEnumerateInstanceExtensionProperties);
+        
+        SDL_Log("SDL/OpenXR: Global functions loading %s", failed ? "FAILED" : "succeeded");
+#else
 #define SDL_OPENXR_SYM(name) OPENXR_##name = (PFN_##name)OPENXR_GetSym(#name, &failed);
 #include "SDL_openxrsym.h"
+#endif
 
         if (failed) {
             // in case something got loaded...
             SDL_OpenXR_UnloadLibrary();
             result = false;
         }
+    } else {
+        SDL_Log("SDL/OpenXR: Library already loaded (refcount=%d), skipping", openxr_load_refcount);
     }
 
     return result;
 }
 
-PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void)
+SDL_DECLSPEC PFN_xrGetInstanceProcAddr SDLCALL SDL_OpenXR_GetXrGetInstanceProcAddr(void)
 {
     if (xrGetInstanceProcAddr == NULL) {
         SDL_SetError("The OpenXR loader has not been loaded");
@@ -159,18 +406,18 @@ XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
 
 #else
 
-bool SDL_OpenXR_LoadLibrary(void)
+SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void)
 {
     SDL_SetError("OpenXR is not enabled in this build of SDL");
     return false;
 }
 
-void SDL_OpenXR_UnloadLibrary(void)
+SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void)
 {
     SDL_SetError("OpenXR is not enabled in this build of SDL");
 }
 
-PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void)
+SDL_DECLSPEC PFN_xrGetInstanceProcAddr SDLCALL SDL_OpenXR_GetXrGetInstanceProcAddr(void)
 {
     SDL_SetError("OpenXR is not enabled in this build of SDL");
 

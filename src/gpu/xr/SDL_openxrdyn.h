@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,12 @@
 #define SDL_openxrdyn_h_
 
 #include "SDL_internal.h"
+
+/* Define platform-specific OpenXR macros BEFORE including openxr headers */
+#ifdef SDL_PLATFORM_ANDROID
+#include <jni.h>
+#define XR_USE_PLATFORM_ANDROID
+#endif
 
 #include "openxr/openxr.h"
 #include "openxr/openxr_platform.h"
