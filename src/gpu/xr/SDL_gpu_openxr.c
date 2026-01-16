@@ -76,7 +76,7 @@ bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
     for (Uint32 i = 0; i < apiLayerCount; i++) {
         XrApiLayerProperties apiLayer = apiLayerProperties[i];
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "api layer available: %s", apiLayer.layerName);
-        if (strcmp(apiLayer.layerName, VALIDATION_LAYER_API_NAME) == 0) {
+        if (SDL_strcmp(apiLayer.layerName, VALIDATION_LAYER_API_NAME) == 0) {
             found = true;
             break;
         }
