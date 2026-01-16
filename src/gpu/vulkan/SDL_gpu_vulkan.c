@@ -12553,6 +12553,18 @@ static bool VULKAN_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *f
     Uint32 extension_count;
     Uint32 i;
 
+#ifdef SDL_PLATFORM_ANDROID
+    /* On Android/Quest, the OpenXR runtime crashes when xrEnumerateInstanceExtensionProperties
+     * is called with a data buffer using the xrGetInstanceProcAddr obtained through
+     * xrNegotiateLoaderRuntimeInterface. The Quest runtime definitely supports
+     * XR_KHR_vulkan_enable2, so we can hardcode that it's available. */
+    SDL_memset(found_extension, 0, sizeof(*found_extension));
+    found_extension->type = XR_TYPE_EXTENSION_PROPERTIES;
+    SDL_strlcpy(found_extension->extensionName, XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME, sizeof(found_extension->extensionName));
+    found_extension->extensionVersion = 2;
+    return true;
+#endif
+
     result = xrEnumerateInstanceExtensionProperties(NULL, 0, &extension_count, NULL);
     if (result != XR_SUCCESS)
         return false;
@@ -12632,6 +12644,17 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     XrInstance xrInstance = XR_NULL_HANDLE;
     XrSystemId xrSystemId = XR_NULL_HANDLE;
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
+
+#ifdef SDL_PLATFORM_ANDROID
+    /* On Android/Quest, don't test XR in PrepareDriver. The Quest OpenXR runtime
+     * can't handle having its instance created and destroyed during preparation
+     * and then recreated during device creation. Just return true for XR mode
+     * and let CreateDevice do the real work. */
+    if (xr) {
+        SDL_Vulkan_UnloadLibrary();
+        return true;
+    }
+#endif
 
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {

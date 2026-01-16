@@ -30,9 +30,17 @@
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
 #elif defined(SDL_PLATFORM_ANDROID)
-/* On Android/Quest, use the system's OpenXR forwardloader from the VrDriver apex.
- * Try the short name first (uses linker search path), then the full path. */
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_forwardloader.so,/apex/com.meta.xr/priv-app/VrDriver/VrDriver.apk!/lib/arm64-v8a/libopenxr_forwardloader.so"
+/* On Android, use the Khronos OpenXR loader (libopenxr_loader.so) which properly
+ * exports xrGetInstanceProcAddr. This is bundled via the Gradle dependency:
+ *   implementation 'org.khronos.openxr:openxr_loader_for_android:X.Y.Z'
+ * 
+ * The Khronos loader handles runtime discovery internally via the Android broker
+ * pattern and properly supports all pre-instance global functions.
+ * 
+ * Note: Do NOT use Meta's forwardloader (libopenxr_forwardloader.so) - it doesn't
+ * export xrGetInstanceProcAddr directly and the function obtained via runtime
+ * negotiation crashes on pre-instance calls (e.g., xrEnumerateApiLayerProperties). */
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so"
 #else
 #define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1,libopenxr_loader.so"
 #endif
@@ -71,15 +79,15 @@ static int openxr_load_refcount = 0;
 #ifdef SDL_PLATFORM_ANDROID
 #include <jni.h>
 #include "openxr/openxr_platform.h"
-#include "openxr/openxr_loader_negotiation.h"
 
-/* On Android, we need to initialize the loader and negotiate the runtime interface */
+/* On Android, we need to initialize the loader with JNI context before use */
 static bool openxr_android_loader_initialized = false;
 
 static bool OPENXR_InitializeAndroidLoader(void)
 {
     XrResult result;
     PFN_xrInitializeLoaderKHR initializeLoader = NULL;
+    PFN_xrGetInstanceProcAddr loaderGetProcAddr = NULL;
     JNIEnv *env = NULL;
     JavaVM *vm = NULL;
     jobject activity = NULL;
@@ -88,28 +96,23 @@ static bool OPENXR_InitializeAndroidLoader(void)
         return true;
     }
 
-    /* First, get xrGetInstanceProcAddr directly from the loader library.
-     * This is the function that Meta's samples use to bootstrap everything. */
-    PFN_xrGetInstanceProcAddr loaderGetProcAddr = 
-        (PFN_xrGetInstanceProcAddr)SDL_LoadFunction(openxr_loader.lib, "xrGetInstanceProcAddr");
+    /* The Khronos OpenXR loader (libopenxr_loader.so) properly exports xrGetInstanceProcAddr.
+     * Get it directly from the library - this is the standard approach. */
+    loaderGetProcAddr = (PFN_xrGetInstanceProcAddr)SDL_LoadFunction(openxr_loader.lib, "xrGetInstanceProcAddr");
     
-    SDL_Log("SDL/OpenXR: xrGetInstanceProcAddr from loader: %p", (void*)loaderGetProcAddr);
-    
-    /* Get xrInitializeLoaderKHR - either via xrGetInstanceProcAddr or direct export */
-    if (loaderGetProcAddr) {
-        result = loaderGetProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)&initializeLoader);
-        if (XR_FAILED(result) || initializeLoader == NULL) {
-            SDL_Log("SDL/OpenXR: xrGetInstanceProcAddr didn't return xrInitializeLoaderKHR, trying direct load...");
-            initializeLoader = NULL;
-        }
+    if (loaderGetProcAddr == NULL) {
+        SDL_SetError("Failed to get xrGetInstanceProcAddr from OpenXR loader. "
+                     "Make sure you're using the Khronos loader (libopenxr_loader.so), "
+                     "not Meta's forwardloader.");
+        return false;
     }
     
-    if (initializeLoader == NULL) {
-        initializeLoader = (PFN_xrInitializeLoaderKHR)SDL_LoadFunction(openxr_loader.lib, "xrInitializeLoaderKHR");
-    }
+    SDL_Log("SDL/OpenXR: Got xrGetInstanceProcAddr from loader: %p", (void*)loaderGetProcAddr);
     
-    if (!initializeLoader) {
-        SDL_SetError("Failed to get xrInitializeLoaderKHR");
+    /* Get xrInitializeLoaderKHR via xrGetInstanceProcAddr */
+    result = loaderGetProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)&initializeLoader);
+    if (XR_FAILED(result) || initializeLoader == NULL) {
+        SDL_SetError("Failed to get xrInitializeLoaderKHR (result: %d)", (int)result);
         return false;
     }
     
@@ -148,62 +151,11 @@ static bool OPENXR_InitializeAndroidLoader(void)
     
     SDL_Log("SDL/OpenXR: xrInitializeLoaderKHR succeeded");
 
-    /* If we got xrGetInstanceProcAddr directly from the loader, use that.
-     * This is the standard approach used by Meta's samples. */
-    if (loaderGetProcAddr != NULL) {
-        OPENXR_xrGetInstanceProcAddr = loaderGetProcAddr;
-        xrGetInstanceProcAddr = loaderGetProcAddr;
-        SDL_Log("SDL/OpenXR: Using loader's xrGetInstanceProcAddr: %p", (void*)loaderGetProcAddr);
-        openxr_android_loader_initialized = true;
-        return true;
-    }
-
-    /* Fall back to runtime negotiation to get xrGetInstanceProcAddr */
-    SDL_Log("SDL/OpenXR: Falling back to runtime negotiation...");
+    /* Store the xrGetInstanceProcAddr function - this one properly handles
+     * all pre-instance calls (unlike Meta's forwardloader runtime negotiation) */
+    OPENXR_xrGetInstanceProcAddr = loaderGetProcAddr;
+    xrGetInstanceProcAddr = loaderGetProcAddr;
     
-    /* Now negotiate the runtime interface to get xrGetInstanceProcAddr */
-    PFN_xrNegotiateLoaderRuntimeInterface negotiateFunc = 
-        (PFN_xrNegotiateLoaderRuntimeInterface)SDL_LoadFunction(openxr_loader.lib, "xrNegotiateLoaderRuntimeInterface");
-    
-    if (!negotiateFunc) {
-        SDL_SetError("Failed to get xrNegotiateLoaderRuntimeInterface");
-        return false;
-    }
-
-    XrNegotiateLoaderInfo loaderInfo = {
-        .structType = XR_LOADER_INTERFACE_STRUCT_LOADER_INFO,
-        .structVersion = XR_LOADER_INFO_STRUCT_VERSION,
-        .structSize = sizeof(XrNegotiateLoaderInfo),
-        .minInterfaceVersion = 1,
-        .maxInterfaceVersion = XR_CURRENT_LOADER_RUNTIME_VERSION,
-        .minApiVersion = XR_MAKE_VERSION(1, 0, 0),
-        .maxApiVersion = XR_MAKE_VERSION(1, 1, 0xFF)
-    };
-
-    XrNegotiateRuntimeRequest runtimeRequest = {
-        .structType = XR_LOADER_INTERFACE_STRUCT_RUNTIME_REQUEST,
-        .structVersion = XR_RUNTIME_INFO_STRUCT_VERSION,
-        .structSize = sizeof(XrNegotiateRuntimeRequest),
-        .runtimeInterfaceVersion = 0,
-        .runtimeApiVersion = 0,
-        .getInstanceProcAddr = NULL
-    };
-
-    result = negotiateFunc(&loaderInfo, &runtimeRequest);
-    if (XR_FAILED(result)) {
-        SDL_SetError("xrNegotiateLoaderRuntimeInterface failed with result %d", (int)result);
-        return false;
-    }
-
-    if (runtimeRequest.getInstanceProcAddr == NULL) {
-        SDL_SetError("Runtime did not provide xrGetInstanceProcAddr");
-        return false;
-    }
-
-    /* Store the xrGetInstanceProcAddr function */
-    OPENXR_xrGetInstanceProcAddr = runtimeRequest.getInstanceProcAddr;
-    xrGetInstanceProcAddr = runtimeRequest.getInstanceProcAddr;
-
     openxr_android_loader_initialized = true;
     return true;
 }
