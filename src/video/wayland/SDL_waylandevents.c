@@ -1274,7 +1274,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_WaylandSeat *seat = data;
 
     if (seat->pointer.pending_frame.enter_window) {
-        if (seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+        if (seat->pointer.focus && seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
             // Leaving the previous surface before entering a new surface.
             pointer_dispatch_leave(seat);
         }
@@ -1320,7 +1320,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
         pointer_dispatch_axis(seat);
     }
 
-    if (seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
+    if (seat->pointer.focus && seat->pointer.pending_frame.leave_window == seat->pointer.focus) {
         pointer_dispatch_leave(seat);
         Wayland_SeatUpdatePointerGrab(seat);
         Wayland_SeatUpdatePointerCursor(seat);
