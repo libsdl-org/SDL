@@ -910,9 +910,9 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
 
         SDL_WaylandPenTool *tool;
         wl_list_for_each (tool, &seat->tablet.tool_list, link) {
-            Wayland_CursorStateDestroyFrameCallback(&tool->cursor_state);
-
             if (tool->cursor_state.current_cursor == d) {
+                Wayland_CursorStateDestroyFrameCallback(&tool->cursor_state);
+
                 // Custom cursor buffers are about to be destroyed, so ensure they are detached.
                 if (!d->is_system_cursor && tool->cursor_state.surface) {
                     wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
