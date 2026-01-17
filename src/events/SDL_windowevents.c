@@ -228,6 +228,9 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         post_event = false;
     }
 
+    // The window might be destroyed in an event handler, so cache the topmost status first.
+    const bool window_is_topmost = !window->parent;
+
     // Post the event, if desired
     SDL_Event event;
     event.type = windowevent;
@@ -301,7 +304,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         }
     }
 
-    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !SDL_HasActiveTrays()) {
+    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && window_is_topmost && !SDL_HasActiveTrays()) {
         int count = window ? 0 : 1;
         for (SDL_Window *n = _this->windows; n; n = n->next) {
             if (!n->parent && !(n->flags & SDL_WINDOW_HIDDEN)) {
