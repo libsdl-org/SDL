@@ -12553,18 +12553,6 @@ static bool VULKAN_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *f
     Uint32 extension_count;
     Uint32 i;
 
-#ifdef SDL_PLATFORM_ANDROID
-    /* On Android/Quest, the OpenXR runtime crashes when xrEnumerateInstanceExtensionProperties
-     * is called with a data buffer using the xrGetInstanceProcAddr obtained through
-     * xrNegotiateLoaderRuntimeInterface. The Quest runtime definitely supports
-     * XR_KHR_vulkan_enable2, so we can hardcode that it's available. */
-    SDL_memset(found_extension, 0, sizeof(*found_extension));
-    found_extension->type = XR_TYPE_EXTENSION_PROPERTIES;
-    SDL_strlcpy(found_extension->extensionName, XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME, sizeof(found_extension->extensionName));
-    found_extension->extensionVersion = 2;
-    return true;
-#endif
-
     result = xrEnumerateInstanceExtensionProperties(NULL, 0, &extension_count, NULL);
     if (result != XR_SUCCESS)
         return false;
