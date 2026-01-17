@@ -46,6 +46,7 @@ endif()
 
 include(CheckLibraryExists)
 include(CheckIncludeFile)
+include(CheckIncludeFiles)
 include(CheckLanguage)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
