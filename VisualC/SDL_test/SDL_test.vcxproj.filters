@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\test\SDL_test_internal.h" />
+    <ClCompile Include="..\..\src\test\SDL_test_assert.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_common.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_compare.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_crc32.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_font.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_fuzzer.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_harness.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_log.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_md5.c" />
+    <ClCompile Include="..\..\src\test\SDL_test_memory.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="API Headers">
+      <UniqueIdentifier>{7a277aa4-b043-46fe-bea1-f24da5d5ec5d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\SDL3\SDL_test.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_assert.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_common.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_compare.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_crc32.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_font.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_fuzzer.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_log.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
