@@ -807,6 +807,22 @@ static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
     seat->pointer.focus = window;
     ++window->pointer_focus_count;
     SDL_SetMouseFocus(window->sdlwindow);
+
+    // Send the initial position.
+    pointer_dispatch_absolute_motion(seat);
+
+    // Update the pointer grab state.
+    Wayland_SeatUpdatePointerGrab(seat);
+
+    /* If the cursor was changed while our window didn't have pointer
+     * focus, we might need to trigger another call to
+     * wl_pointer_set_cursor() for the new cursor to be displayed.
+     *
+     * This will also update the cursor if a second pointer entered a
+     * window that already has focus, as the focus change sequence
+     * won't be run.
+     */
+    Wayland_SeatUpdatePointerCursor(seat);
 }
 
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
@@ -835,25 +851,10 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
     seat->pointer.pending_frame.absolute.sx = sx_w;
     seat->pointer.pending_frame.absolute.sy = sy_w;
 
-    if (wl_pointer_get_version(seat->pointer.wl_pointer) >= WL_POINTER_FRAME_SINCE_VERSION) {
-        seat->pointer.pending_frame.have_absolute = true;
-    } else {
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+        // Dispatching an enter event generates an absolute motion event, for which there is no timestamp.
         seat->pointer.pending_frame.timestamp_ns = 0;
         pointer_dispatch_enter(seat);
-        pointer_dispatch_absolute_motion(seat);
-
-        // Update the pointer grab state.
-        Wayland_SeatUpdatePointerGrab(seat);
-
-        /* If the cursor was changed while our window didn't have pointer
-         * focus, we might need to trigger another call to
-         * wl_pointer_set_cursor() for the new cursor to be displayed.
-         *
-         * This will also update the cursor if a second pointer entered a
-         * window that already has focus, as the focus change sequence
-         * won't be run.
-         */
-        Wayland_SeatUpdatePointerCursor(seat);
     }
 }
 
@@ -1283,21 +1284,6 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 
     if (seat->pointer.pending_frame.have_absolute) {
         pointer_dispatch_absolute_motion(seat);
-
-        if (seat->pointer.pending_frame.enter_window) {
-            // Update the pointer grab state.
-            Wayland_SeatUpdatePointerGrab(seat);
-
-            /* If the cursor was changed while our window didn't have pointer
-             * focus, we might need to trigger another call to
-             * wl_pointer_set_cursor() for the new cursor to be displayed.
-             *
-             * This will also update the cursor if a second pointer entered a
-             * window that already has focus, as the focus change sequence
-             * won't be run.
-             */
-            Wayland_SeatUpdatePointerCursor(seat);
-        }
     }
 
     if (seat->pointer.pending_frame.have_relative) {
