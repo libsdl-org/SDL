@@ -78,7 +78,7 @@ static int openxr_load_refcount = 0;
 
 #ifdef SDL_PLATFORM_ANDROID
 #include <jni.h>
-#include "openxr/openxr_platform.h"
+#include "../../video/khronos/openxr/openxr_platform.h"
 
 /* On Android, we need to initialize the loader with JNI context before use */
 static bool openxr_android_loader_initialized = false;

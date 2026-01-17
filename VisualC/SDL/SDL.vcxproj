@@ -371,6 +371,7 @@
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h" />
     <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h" />
     <ClInclude Include="..\..\src\io\SDL_asyncio_c.h" />
     <ClInclude Include="..\..\src\io\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
