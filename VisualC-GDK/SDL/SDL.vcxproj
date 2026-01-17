@@ -932,6 +932,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />

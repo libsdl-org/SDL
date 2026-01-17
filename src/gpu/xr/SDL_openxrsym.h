@@ -21,7 +21,7 @@
 
 /* *INDENT-OFF* */ // clang-format off
 
-#include "openxr/openxr.h"
+#include "../../video/khronos/openxr/openxr.h"
 
 #ifndef SDL_OPENXR_SYM
 #define SDL_OPENXR_SYM(name)

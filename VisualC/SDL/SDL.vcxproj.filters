@@ -987,6 +987,9 @@
     <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />

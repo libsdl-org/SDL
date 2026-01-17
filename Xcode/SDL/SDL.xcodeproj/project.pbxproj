@@ -369,6 +369,7 @@
 		E4F257982C81903800FCEAFC /* SDL_gpu_openxr.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */; };
 		E4F257992C81903800FCEAFC /* SDL_openxrdyn.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */; };
 		E4F2579A2C81903800FCEAFC /* SDL_gpu_openxr_c.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */; };
+		E4F2579B2C81903800FCEAFC /* SDL_openxr_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */; };
 		E4F7981A2AD8D84800669F54 /* SDL_core_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */; };
 		E4F7981C2AD8D85500669F54 /* SDL_dynapi_unsupported.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */; };
 		E4F7981E2AD8D86A00669F54 /* SDL_render_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */; };
@@ -943,6 +944,7 @@
 		E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gpu_openxr.c; sourceTree = "<group>"; };
 		E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_openxrdyn.c; sourceTree = "<group>"; };
 		E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gpu_openxr_c.h; sourceTree = "<group>"; };
+		E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_openxr_internal.h; sourceTree = "<group>"; };
 		E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_core_unsupported.c; sourceTree = "<group>"; };
 		E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_unsupported.h; sourceTree = "<group>"; };
 		E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_unsupported.c; sourceTree = "<group>"; };
@@ -2366,6 +2368,7 @@
 				E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */,
 				E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */,
 				E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */,
+				E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */,
 			);
 			path = xr;
 			sourceTree = "<group>";

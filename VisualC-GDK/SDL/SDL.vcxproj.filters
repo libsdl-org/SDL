@@ -54,6 +54,7 @@
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
     <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c" />
     <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h" />
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />

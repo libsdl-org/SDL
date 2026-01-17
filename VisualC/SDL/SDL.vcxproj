@@ -476,6 +476,7 @@
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h" />
     <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h" />
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_windows.h" />
     <ClInclude Include="..\..\src\hidapi\windows\hidapi_cfgmgr32.h" />
     <ClInclude Include="..\..\src\hidapi\windows\hidapi_descriptor_reconstruct.h" />
