@@ -3980,6 +3980,28 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
+ * A variable controlling whether SDL should try sending a pen proximity-in
+ * event before a motion event.
+ *
+ * X11 Wacom driver may not report proximity promptly, so you may receive a
+ * motion event before a proximity event. Setting this hint will ensure you
+ * receive a proximity-in event before a motion event.
+ *
+ * Note that non-Wacom tablets may not send proximity events. In that case,
+ * you may want to unset this hint and dismiss proximity events.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Don't try sending a proximity-in event.
+ * - "1": Try sending a proximity-in event. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.4.1.
+ */
+#define SDL_HINT_VIDEO_X11_ENSURE_PEN_PROXIMITY "SDL_VIDEO_X11_ENSURE_PEN_PROXIMITY"
+
+/**
  * A variable controlling whether SDL should call XSelectInput() to enable
  * input events on X11 windows wrapped by SDL windows.
  *
