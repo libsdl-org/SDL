@@ -153,6 +153,19 @@ typedef struct GPU_TextureData
 #endif
 } GPU_TextureData;
 
+// TODO: Sort this list based on what the GPU driver prefers?
+static const SDL_PixelFormat supported_formats[] = {
+    SDL_PIXELFORMAT_BGRA32, // SDL_PIXELFORMAT_ARGB8888 on little endian systems
+    SDL_PIXELFORMAT_RGBA32,
+    SDL_PIXELFORMAT_BGRX32,
+    SDL_PIXELFORMAT_RGBX32,
+    SDL_PIXELFORMAT_ABGR2101010,
+    SDL_PIXELFORMAT_RGBA64_FLOAT,
+    SDL_PIXELFORMAT_RGB565,
+    SDL_PIXELFORMAT_ARGB1555,
+    SDL_PIXELFORMAT_ARGB4444
+};
+
 static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
@@ -1792,12 +1805,14 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         }
     }
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    for (int i = 0; i < SDL_arraysize(supported_formats); i++) {
+        if (SDL_GPUTextureSupportsFormat(data->device,
+                                         SDL_GetGPUTextureFormatFromPixelFormat(supported_formats[i]),
+                                         SDL_GPU_TEXTURETYPE_2D,
+                                         SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_AddSupportedTextureFormat(renderer, supported_formats[i]);
+        }
+    }
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
