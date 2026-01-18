@@ -240,49 +240,35 @@ static const GUID SDL_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe
 
 static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, int bpp, int x, int y, int w, int h, const void *pixels, int pitch);
 
+static const struct {
+    Uint32 sdl;
+    DXGI_FORMAT unorm;
+    DXGI_FORMAT srgb;
+} dxgi_format_map[] = {
+    { SDL_PIXELFORMAT_ARGB8888,     DXGI_FORMAT_B8G8R8A8_UNORM,     DXGI_FORMAT_B8G8R8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR8888,     DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_XRGB8888,     DXGI_FORMAT_B8G8R8X8_UNORM,     DXGI_FORMAT_B8G8R8X8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR2101010,  DXGI_FORMAT_R10G10B10A2_UNORM,  DXGI_FORMAT_R10G10B10A2_UNORM   },
+    { SDL_PIXELFORMAT_RGBA64_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT  },
+    { SDL_PIXELFORMAT_RGB565,       DXGI_FORMAT_B5G6R5_UNORM,       DXGI_FORMAT_B5G6R5_UNORM        },
+    { SDL_PIXELFORMAT_ARGB1555,     DXGI_FORMAT_B5G5R5A1_UNORM,     DXGI_FORMAT_B5G5R5A1_UNORM      },
+    { SDL_PIXELFORMAT_ARGB4444,     DXGI_FORMAT_B4G4R4A4_UNORM,     DXGI_FORMAT_B4G4R4A4_UNORM      }
+};
+
 SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
-    switch (dxgiFormat) {
-    case DXGI_FORMAT_B8G8R8A8_UNORM:
-    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_ARGB8888;
-    case DXGI_FORMAT_R8G8B8A8_UNORM:
-    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_ABGR8888;
-    case DXGI_FORMAT_B8G8R8X8_UNORM:
-    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_XRGB8888;
-    case DXGI_FORMAT_R10G10B10A2_UNORM:
-        return SDL_PIXELFORMAT_ABGR2101010;
-    case DXGI_FORMAT_R16G16B16A16_FLOAT:
-        return SDL_PIXELFORMAT_RGBA64_FLOAT;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
+    for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+        if (dxgi_format_map[i].unorm == dxgiFormat ||
+            dxgi_format_map[i].srgb == dxgiFormat) {
+            return dxgi_format_map[i].sdl;
+        }
     }
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGBA64_FLOAT:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case SDL_PIXELFORMAT_ABGR2101010:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case SDL_PIXELFORMAT_ARGB8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_ABGR8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case SDL_PIXELFORMAT_XRGB8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -292,11 +278,16 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
         return DXGI_FORMAT_NV12;
     case SDL_PIXELFORMAT_P010:
         return DXGI_FORMAT_P010;
-    case SDL_PIXELFORMAT_RGB565:
-        return DXGI_FORMAT_B5G6R5_UNORM;
-    case SDL_PIXELFORMAT_ARGB1555:
-        return DXGI_FORMAT_B5G5R5A1_UNORM;
     default:
+        for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+            if (dxgi_format_map[i].sdl == format) {
+                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                    return dxgi_format_map[i].srgb;
+                } else {
+                    return dxgi_format_map[i].unorm;
+                }
+            }
+        }
         return DXGI_FORMAT_UNKNOWN;
     }
 }
@@ -304,25 +295,6 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
 static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGBA64_FLOAT:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case SDL_PIXELFORMAT_ABGR2101010:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_ABGR8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:  // For the Y texture
@@ -331,7 +303,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
     case SDL_PIXELFORMAT_P010:  // For the Y texture
         return DXGI_FORMAT_R16_UNORM;
     default:
-        return DXGI_FORMAT_UNKNOWN;
+        return SDLPixelFormatToDXGITextureFormat(format, colorspace);
     }
 }
 
@@ -2964,17 +2936,6 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     D3D11_InvalidateCachedState(renderer);
 
     renderer->name = D3D11_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
     data->swapChainFlags = 0;
     data->syncInterval = 0;
@@ -2993,11 +2954,32 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         return false;
     }
 
-    // DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM is supported since Direct3D 11.1 on Windows 8 and later
-    if (data->featureLevel >= D3D_FEATURE_LEVEL_11_1 && WIN_IsWindows8OrGreater()) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB1555);
+    for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+        UINT unorm, srgb;
+
+        if (FAILED(ID3D11Device_CheckFormatSupport(data->d3dDevice,
+                                                   dxgi_format_map[i].unorm,
+                                                   &unorm))) {
+            continue;
+        }
+
+        if (FAILED(ID3D11Device_CheckFormatSupport(data->d3dDevice,
+                                                   dxgi_format_map[i].srgb,
+                                                   &srgb))) {
+            continue;
+        }
+
+        if ((unorm & D3D11_FORMAT_SUPPORT_TEXTURE2D) &&
+            (srgb  & D3D11_FORMAT_SUPPORT_TEXTURE2D)) {
+            SDL_AddSupportedTextureFormat(renderer, dxgi_format_map[i].sdl);
+        }
     }
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
     return true;
 }
