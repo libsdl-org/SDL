@@ -7,6 +7,10 @@
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\asyncio\01-load-bitmaps\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\asyncio\01-load-bitmaps\load-bitmaps.c" />
+    <Content Include="$(SolutionDir)\..\test\sample.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)\..\test\gamepad_front.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)\..\test\speaker.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)\..\test\icon2x.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

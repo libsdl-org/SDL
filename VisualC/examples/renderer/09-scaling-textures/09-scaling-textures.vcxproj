@@ -7,6 +7,7 @@
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\09-scaling-textures\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\renderer\09-scaling-textures\scaling-textures.c" />
+    <Content Include="$(SolutionDir)\..\test\sample.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
