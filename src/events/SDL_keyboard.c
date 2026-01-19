@@ -179,7 +179,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
     int i;
     SDL_KeyboardID *keyboards;
 
-    keyboards = (SDL_JoystickID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
+    keyboards = (SDL_KeyboardID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (keyboards) {
         if (count) {
             *count = SDL_keyboard_count;
