@@ -52,6 +52,7 @@ screen_event_t * getEvent()
 static bool videoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoDisplay     display;
+    SDL_DisplayData      *display_data;
     SDL_DisplayMode      display_mode;
     SDL_DisplayModeData  *display_mode_data;
 
@@ -97,20 +98,33 @@ static bool videoInit(SDL_VideoDevice *_this)
         }
 
         if (active) {
+            display_data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
+            if (display_data == NULL) {
+                SDL_free(screen_display);
+                return false;
+            }
+            SDL_zerop(display_data);
+
             if (screen_get_display_property_iv(screen_display[index], SCREEN_PROPERTY_SIZE, size) < 0) {
                 SDL_free(screen_display);
+                SDL_free(display_data);
                 return false;
             }
 
             display_mode_data = (SDL_DisplayModeData *)SDL_calloc(1, sizeof(SDL_DisplayModeData));
             if (display_mode_data == NULL) {
                 SDL_free(screen_display);
+                SDL_free(display_data);
                 return false;
             }
             SDL_zerop(display_mode_data);
 
             SDL_zero(display);
             SDL_zero(display_mode);
+
+            display_data->screen_display = screen_display[index];
+            display.internal = (void *)display_data;
+
             display_mode.w = size[0];
             display_mode.h = size[1];
             display_mode.refresh_rate = 60;
@@ -130,6 +144,7 @@ static bool videoInit(SDL_VideoDevice *_this)
             if (!SDL_AddVideoDisplay(&display, false)) {
                 SDL_free(screen_display);
                 SDL_free(display_mode_data);
+                SDL_free(display_data);
                 return false;
             }
         }
@@ -177,8 +192,6 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     int             format;
     int             usage;
     int             has_focus_i;
-
-    screen_display_t screen_display;
 
     impl = SDL_calloc(1, sizeof(*impl));
     if (!impl) {
@@ -244,20 +257,8 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     display_mode_data->screen_format = format;
 
     display_data = display->internal;
-    if (display_data == NULL) {
-        display_data = (SDL_DisplayData *)SDL_calloc(1, sizeof(SDL_DisplayData));
-        SDL_zerop(display_data);
-    }
-
-    if (display_data->screen_display == NULL) {
-        // Find out which display we were assigned and track it in the SDL_VideoDisplay
-        if (screen_get_window_property_pv(impl->window, SCREEN_PROPERTY_DISPLAY,
-                                          (void **)&screen_display) < 0) {
-            goto fail;
-        }
-        display_data->screen_display = screen_display;
-        display->internal = (void *)display_data;
-    }
+    // Initialized in videoInit()
+    SDL_assert(display_data != NULL);
 
     // Set pixel format.
     if (screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_FORMAT,
