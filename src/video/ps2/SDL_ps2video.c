@@ -69,7 +69,7 @@ static bool PS2_VideoInit(SDL_VideoDevice *_this)
 
     SDL_zero(mode);
     mode.w = 640;
-    mode.h = 480;
+    mode.h = 448;
     mode.refresh_rate = 60.0f;
 
     // 32 bpp for default
