@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2017 BlackBerry Limited
+  Copyright (C) 2026 BlackBerry Limited
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,23 +26,62 @@
 #include <screen/screen.h>
 #include <EGL/egl.h>
 
-typedef struct
+typedef struct SDL_DisplayData
+{
+    screen_display_t screen_display;
+} SDL_DisplayData;
+
+typedef struct SDL_DisplayModeData
+{
+    int                   screen_format;
+    screen_display_mode_t screen_display_mode;
+} SDL_DisplayModeData;
+
+typedef struct SDL_WindowData
 {
     screen_window_t window;
     EGLSurface      surface;
     EGLConfig       conf;
-} window_impl_t;
+    SDL_GLContext   context;
+    int             resize;
+    bool            has_focus;
+} SDL_WindowData;
+
+typedef struct SDL_CursorData
+{
+    screen_session_t session;
+    int              realized_shape;
+    int              is_visible;
+} SDL_CursorData;
+
+typedef struct SDL_MouseData
+{
+    int      x_prev;
+    int      y_prev;
+} SDL_MouseData;
+
+extern screen_context_t * getContext();
+extern screen_event_t * getEvent();
 
 extern void handleKeyboardEvent(screen_event_t event);
+extern void handlePointerEvent(screen_event_t event);
 
-extern bool glGetConfig(EGLConfig *pconf, int *pformat);
+extern bool glInitConfig(SDL_WindowData *impl, int *pformat);
 extern bool glLoadLibrary(SDL_VideoDevice *_this, const char *name);
 extern SDL_FunctionPointer glGetProcAddress(SDL_VideoDevice *_this, const char *proc);
 extern SDL_GLContext glCreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool glSetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern bool glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool glMakeCurrent(SDL_VideoDevice *_this, SDL_Window * window, SDL_GLContext context);
-extern void glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
+extern bool glDeleteContext(SDL_VideoDevice *_this, SDL_GLContext context);
 extern void glUnloadLibrary(SDL_VideoDevice *_this);
+
+extern SDL_PixelFormat screenToPixelFormat(int screen_format);
+extern bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool setDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+
+extern void initMouse(SDL_VideoDevice *_this);
+extern void quitMouse(SDL_VideoDevice *_this);
 
 #endif
