@@ -422,7 +422,7 @@ SDL_MouseID *SDL_GetMice(int *count)
     int i;
     SDL_MouseID *mice;
 
-    mice = (SDL_JoystickID *)SDL_malloc((SDL_mouse_count + 1) * sizeof(*mice));
+    mice = (SDL_MouseID *)SDL_malloc((SDL_mouse_count + 1) * sizeof(*mice));
     if (mice) {
         if (count) {
             *count = SDL_mouse_count;
