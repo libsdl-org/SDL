@@ -7,6 +7,7 @@
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\input\03-gamepad-polling\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\input\03-gamepad-polling\gamepad-polling.c" />
+    <Content Include="$(SolutionDir)\..\test\gamepad_front.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
