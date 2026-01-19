@@ -1141,7 +1141,7 @@ macro(CheckUSBHID)
   string(APPEND CMAKE_REQUIRED_FLAGS " ${USB_CFLAGS}")
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${USB_LIBS})
   check_c_source_compiles("
-       #include <sys/types.h>
+        #include <stdint.h>
         #if defined(HAVE_USB_H)
         #include <usb.h>
         #endif
@@ -1167,7 +1167,7 @@ macro(CheckUSBHID)
         }" HAVE_USBHID)
   if(HAVE_USBHID)
     check_c_source_compiles("
-          #include <sys/types.h>
+          #include <stdint.h>
           #if defined(HAVE_USB_H)
           #include <usb.h>
           #endif
@@ -1195,7 +1195,7 @@ macro(CheckUSBHID)
     endif()
 
     check_c_source_compiles("
-          #include <sys/types.h>
+          #include <stdint.h>
           #if defined(HAVE_USB_H)
           #include <usb.h>
           #endif
