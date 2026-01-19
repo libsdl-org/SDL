@@ -1004,6 +1004,12 @@
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
@@ -1654,6 +1660,12 @@
       <Filter>gpu</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c">
       <Filter>gpu</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\process\SDL_process.c" />
