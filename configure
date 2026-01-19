@@ -28093,7 +28093,7 @@ printf %s "checking for usbhid... " >&6; }
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                  #include <sys/types.h>
+                  #include <stdint.h>
                   #if defined(HAVE_USB_H)
                   #include <usb.h>
                   #endif
@@ -28139,7 +28139,7 @@ printf %s "checking for ucr_data member of usb_ctl_report... " >&6; }
                     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                      #include <sys/types.h>
+                      #include <stdint.h>
                       #if defined(HAVE_USB_H)
                       #include <usb.h>
                       #endif
@@ -28186,7 +28186,7 @@ printf %s "checking for new usbhid API... " >&6; }
                     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-                      #include <sys/types.h>
+                      #include <stdint.h>
                       #if defined(HAVE_USB_H)
                       #include <usb.h>
                       #endif
@@ -32870,5 +32870,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
 
