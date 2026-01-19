@@ -51,7 +51,8 @@ bool SDL_TryLockSpinlock(SDL_SpinLock *lock)
     return __sync_lock_test_and_set(lock, 1) == 0;
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
-    return _InterlockedExchange_acq(lock, 1) == 0;
+    SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
+    return _InterlockedExchange_acq((long *)lock, 1) == 0;
 
 #elif defined(_MSC_VER)
     SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
@@ -167,7 +168,8 @@ void SDL_UnlockSpinlock(SDL_SpinLock *lock)
     __sync_lock_release(lock);
 
 #elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
-    _InterlockedExchange_rel(lock, 0);
+    SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
+    _InterlockedExchange_rel((long *)lock, 0);
 
 #elif defined(_MSC_VER)
     _ReadWriteBarrier();
