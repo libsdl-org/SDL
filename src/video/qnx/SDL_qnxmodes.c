@@ -105,9 +105,8 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         display_mode_data->screen_format = screen_display_modes[index].format;
         display_mode_data->screen_display_mode = screen_display_modes[index];
 
-        if (!SDL_AddFullscreenDisplayMode(display, &display_mode)) {
-            break;
-        }
+        // This op can fail if the mode already exists.
+        SDL_AddFullscreenDisplayMode(display, &display_mode);
     }
 
     SDL_free(screen_display_modes);
