@@ -28,9 +28,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALING_FACTOR 0.05f
-#define ACCEL_SCALING_FACTOR 1.0f
-
 #define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
 #define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
@@ -277,13 +274,13 @@ static void HIDAPI_DriverZUIKI_HandleOldStatePacket(SDL_Joystick *joystick, SDL_
         Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
         float gyro_values[3];
         // 调整后（示例：交换 Y 和 Z 轴）
-        gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE * GYRO_SCALING_FACTOR;
-        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE * GYRO_SCALING_FACTOR; // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE * GYRO_SCALING_FACTOR; // 原 Y 轴改为 Z 轴
+        gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE;
+        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE; // 原 Z 轴改为 Y 轴
+        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
         float accel_values[3];
-        accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
-        accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
-        accel_values[1] = LOAD16(data[18], data[19]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
+        accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE;
+        accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE;
+        accel_values[1] = LOAD16(data[18], data[19]) * ACCEL_SCALE;
 #ifdef DEBUG_ZUIKI_PROTOCOL
         SDL_Log("Gyro raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f rad/s",
                 LOAD16(data[8], data[9]), LOAD16(data[10], data[11]), LOAD16(data[12], data[13]),
@@ -379,14 +376,14 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
         Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
         // 调整后（示例：交换 Y 和 Z 轴）
-        gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE * GYRO_SCALING_FACTOR;
-        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE * GYRO_SCALING_FACTOR;  // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE * GYRO_SCALING_FACTOR; // 原 Y 轴改为 Z 轴
+        gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE;
+        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
+        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
         float accel_values[3];
-        accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
-        accel_values[2] = -LOAD16(data[25], data[26]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
-        accel_values[1] = LOAD16(data[27], data[28]) * ACCEL_SCALE * ACCEL_SCALING_FACTOR;
+        accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
+        accel_values[2] = -LOAD16(data[25], data[26]) * ACCEL_SCALE;
+        accel_values[1] = LOAD16(data[27], data[28]) * ACCEL_SCALE;
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_values, 3);
 #ifdef DEBUG_ZUIKI_PROTOCOL
         SDL_Log("Gyro raw: %d, %d, %d -> scaled: %.2f, %.2f, %.2f rad/s",
