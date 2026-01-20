@@ -62,6 +62,7 @@ typedef struct
 
 static openxrdynlib openxr_loader = { NULL };
 
+#ifndef SDL_PLATFORM_ANDROID
 static void *OPENXR_GetSym(const char *fnname, bool *failed)
 {
     void *fn = SDL_LoadFunction(openxr_loader.lib, fnname);
@@ -76,6 +77,7 @@ static void *OPENXR_GetSym(const char *fnname, bool *failed)
 
     return fn;
 }
+#endif
 
 // Define all the function pointers and wrappers...
 #define SDL_OPENXR_SYM(name) PFN_##name OPENXR_##name = NULL;
