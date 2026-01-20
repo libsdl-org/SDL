@@ -25,10 +25,12 @@
 
 #ifdef HAVE_GPU_OPENXR
 
+#include <SDL3/SDL_dlopennote.h>
+
 #if defined(SDL_PLATFORM_APPLE)
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.dylib"
+static const char *openxr_library_names[] = { "libopenxr_loader.dylib", NULL };
 #elif defined(SDL_PLATFORM_WINDOWS)
-#define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
+static const char *openxr_library_names[] = { "openxr_loader.dll", NULL };
 #elif defined(SDL_PLATFORM_ANDROID)
 /* On Android, use the Khronos OpenXR loader (libopenxr_loader.so) which properly
  * exports xrGetInstanceProcAddr. This is bundled via the Gradle dependency:
@@ -40,9 +42,15 @@
  * Note: Do NOT use Meta's forwardloader (libopenxr_forwardloader.so) - it doesn't
  * export xrGetInstanceProcAddr directly and the function obtained via runtime
  * negotiation crashes on pre-instance calls (e.g., xrEnumerateApiLayerProperties). */
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so"
+static const char *openxr_library_names[] = { "libopenxr_loader.so", NULL };
 #else
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1,libopenxr_loader.so"
+static const char *openxr_library_names[] = { "libopenxr_loader.so.1", "libopenxr_loader.so", NULL };
+SDL_ELF_NOTE_DLOPEN(
+    "gpu-openxr",
+    "Support for OpenXR with SDL_GPU rendering",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    "libopenxr_loader.so.1", "libopenxr_loader.so"
+)
 #endif
 
 #define DEBUG_DYNAMIC_OPENXR 0
@@ -50,10 +58,9 @@
 typedef struct
 {
     SDL_SharedObject *lib;
-    const char *libnames;
 } openxrdynlib;
 
-static openxrdynlib openxr_loader = { NULL, SDL_GPU_OPENXR_DYNAMIC };
+static openxrdynlib openxr_loader = { NULL };
 
 static void *OPENXR_GetSym(const char *fnname, bool *failed)
 {
@@ -213,32 +220,25 @@ SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void)
          * unload (we don't actually unload on Android to preserve runtime state) */
         if (openxr_loader.lib == NULL) {
 #endif
-        const char *paths_hint = SDL_GetHint(SDL_HINT_OPENXR_SONAMES);
+        const char *path_hint = SDL_GetHint(SDL_HINT_OPENXR_LIBRARY);
 
-        // If no hint was specified, use the default
-        if (!paths_hint)
-            paths_hint = openxr_loader.libnames;
-
-        // dupe for strtok
-        char *paths = SDL_strdup(paths_hint);
-
-        char *strtok_state;
-        // go over all the passed paths
-        char *path = SDL_strtok_r(paths, ",", &strtok_state);
-        while (path) {
-            openxr_loader.lib = SDL_LoadObject(path);
-            // if we found the lib, break out
-            if (openxr_loader.lib) {
-                break;
-            }
-
-            path = SDL_strtok_r(NULL, ",", &strtok_state);
+        // If a hint was specified, try that first
+        if (path_hint && *path_hint) {
+            openxr_loader.lib = SDL_LoadObject(path_hint);
         }
 
-        SDL_free(paths);
+        // If no hint or hint failed, try the default library names
+        if (!openxr_loader.lib) {
+            for (int i = 0; openxr_library_names[i] != NULL; i++) {
+                openxr_loader.lib = SDL_LoadObject(openxr_library_names[i]);
+                if (openxr_loader.lib) {
+                    break;
+                }
+            }
+        }
 
         if (!openxr_loader.lib) {
-            SDL_SetError("Failed loading OpenXR library from: %s", paths_hint);
+            SDL_SetError("Failed loading OpenXR library");
             openxr_load_refcount--;
             return false;
         }

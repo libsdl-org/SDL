@@ -140,13 +140,13 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *de
  * If not called, this will be implicitly called when creating a GPU device with OpenXR.
  * 
  * This function will use the platform default OpenXR loader name, 
- * unless the `SDL_HINT_OPENXR_SONAMES` hint is set.
+ * unless the `SDL_HINT_OPENXR_LIBRARY` hint is set.
  * 
  * \returns whether the call succeeded or not.
  * 
  * \threadsafety This function is not thread safe.
  * 
- * \sa SDL_HINT_OPENXR_SONAMES
+ * \sa SDL_HINT_OPENXR_LIBRARY
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void);
 
