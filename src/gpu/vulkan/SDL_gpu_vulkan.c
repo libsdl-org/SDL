@@ -30,13 +30,9 @@
 #include "../../video/khronos/vulkan/vulkan.h"
 
 #ifdef HAVE_GPU_OPENXR
-#include <openxr/openxr.h>
-
-/* Needed for the OpenXR vulkan extension structures */
 #define XR_USE_GRAPHICS_API_VULKAN 1
-#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxr_internal.h"
 #include "../xr/SDL_openxrdyn.h"
-
 #include "../xr/SDL_gpu_openxr.h"
 #endif
 
