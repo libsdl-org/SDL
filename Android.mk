@@ -39,7 +39,6 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/io/generic/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/gpu/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/gpu/vulkan/*.c) \
-	$(wildcard $(LOCAL_PATH)/src/gpu/xr/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/haptic/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/haptic/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/haptic/dummy/*.c) \
