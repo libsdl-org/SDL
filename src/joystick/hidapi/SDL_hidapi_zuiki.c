@@ -28,10 +28,9 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
-#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
+#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
+#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define GYRO_TIMESTAMP_STEP_NS (SDL_NS_PER_SECOND / 90) // 陀螺仪数据上报时间间隔
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
@@ -40,8 +39,8 @@
 typedef struct
 {
     Uint8 last_state[USB_PACKET_LENGTH];
-    bool sensors_supported;     // 添加传感器启用状态标志
-    Uint64 sensor_timestamp_ns; // 传感器时间戳（纳秒，累加更新）
+    bool sensors_supported;     // Sensor enabled status flag
+    Uint64 sensor_timestamp_ns; // Sensor timestamp (nanoseconds, cumulative update)
     float sensor_rate;
 } SDL_DriverZUIKI_Context;
 
@@ -97,6 +96,9 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
             HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
             break;
         case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
+            ctx->sensors_supported = true;
+            ctx->sensor_rate = 200.0f;
+            break;
         case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
             ctx->sensors_supported = true;
             ctx->sensor_rate = 100.0f;
@@ -267,16 +269,15 @@ static void HIDAPI_DriverZUIKI_HandleOldStatePacket(SDL_Joystick *joystick, SDL_
 
     if (ctx->sensors_supported) {
         if (ctx->sensor_timestamp_ns == 0) {
-            ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
+            ctx->sensor_timestamp_ns = timestamp; // First use of system time initialization
         } else {
-            ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
+            ctx->sensor_timestamp_ns += SDL_NS_PER_SECOND / ctx->sensor_rate; // Subsequent accumulation of fixed intervals
         }
         Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
         float gyro_values[3];
-        // 调整后（示例：交换 Y 和 Z 轴）
         gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE; // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE;
+        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE;
         float accel_values[3];
         accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE;
         accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE;
@@ -368,17 +369,16 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
 
     if (ctx->sensors_supported) {
         // if (ctx->sensor_timestamp_ns == 0) {
-        //     ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
+        //     ctx->sensor_timestamp_ns = timestamp;
         // } else {
-        //     ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
+        //     ctx->sensor_timestamp_ns += SDL_NS_PER_SECOND / ctx->sensor_rate;
         // }
         // Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
         Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        // 调整后（示例：交换 Y 和 Z 轴）
         gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;
+        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE;
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
         float accel_values[3];
         accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
