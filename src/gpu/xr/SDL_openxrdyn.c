@@ -362,8 +362,7 @@ XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
 
 SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void)
 {
-    SDL_SetError("OpenXR is not enabled in this build of SDL");
-    return false;
+    return SDL_SetError("OpenXR is not enabled in this build of SDL");
 }
 
 SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void)
@@ -373,9 +372,7 @@ SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void)
 
 SDL_DECLSPEC PFN_xrGetInstanceProcAddr SDLCALL SDL_OpenXR_GetXrGetInstanceProcAddr(void)
 {
-    SDL_SetError("OpenXR is not enabled in this build of SDL");
-
-    return NULL;
+    return (PFN_xrGetInstanceProcAddr)SDL_SetError("OpenXR is not enabled in this build of SDL");
 }
 
 #endif // HAVE_GPU_OPENXR
