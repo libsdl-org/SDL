@@ -2891,6 +2891,7 @@ elseif(RISCOS)
       "${SDL3_SOURCE_DIR}/src/video/riscos/*.h"
     )
     set(HAVE_SDL_VIDEO TRUE)
+    set(SDL_GPU OFF)
   endif()
 
   set(SDL_FILESYSTEM_RISCOS 1)
