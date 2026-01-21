@@ -426,6 +426,7 @@ static void SDLCALL IBus_SetCapabilities(void *data, const char *name, const cha
 static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 {
     const char *client_name = "SDL3_Application";
+    DBusMessage *reply = NULL;
     const char *path = NULL;
     bool result = false;
     DBusObjectPathVTable ibus_vtable;
@@ -442,7 +443,7 @@ static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
     ibus_input_interface = IBUS_PORTAL_INPUT_INTERFACE;
     ibus_conn = dbus->session_conn;
 
-    result = SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
+    result = SDL_DBus_CallMethodOnConnection(ibus_conn, &reply, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
                                              DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
                                              DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     if (!result) {
@@ -465,7 +466,7 @@ static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
 
         dbus->connection_flush(ibus_conn);
 
-        result = SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
+        result = SDL_DBus_CallMethodOnConnection(ibus_conn, &reply, ibus_service, IBUS_PATH, ibus_interface, "CreateInputContext",
                                                  DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
                                                  DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     } else {
@@ -483,6 +484,7 @@ static bool IBus_SetupConnection(SDL_DBusContext *dbus, const char *addr)
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
     }
+    SDL_DBus_FreeReply(&reply);
 
     SDL_Window *window = SDL_GetKeyboardFocus();
     if (SDL_TextInputActive(window)) {
@@ -669,7 +671,7 @@ bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
         if (!down) {
             mods |= (1 << 30); // IBUS_RELEASE_MASK
         }
-        if (!SDL_DBus_CallMethodOnConnection(ibus_conn, ibus_service, input_ctx_path, ibus_input_interface, "ProcessKeyEvent",
+        if (!SDL_DBus_CallMethodOnConnection(ibus_conn, NULL, ibus_service, input_ctx_path, ibus_input_interface, "ProcessKeyEvent",
                                              DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &ibus_keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
                                              DBUS_TYPE_BOOLEAN, &result, DBUS_TYPE_INVALID)) {
             result = 0;
