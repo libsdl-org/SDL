@@ -78,6 +78,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
     SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *, const char *), message_new_method_call);
     SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *), message_new_signal);
+    SDL_DBUS_SYM(void (*)(DBusMessage *, dbus_bool_t), message_set_no_reply);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, ...), message_append_args);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, va_list), message_append_args_valist);
     SDL_DBUS_SYM(void (*)(DBusMessage *, DBusMessageIter *), message_iter_init_append);
@@ -306,6 +307,7 @@ static bool SDL_DBus_CallVoidMethodInternal(DBusConnection *conn, const char *no
         if (msg) {
             int firstarg = va_arg(ap, int);
             if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_append_args_valist(msg, firstarg, ap)) {
+                dbus.message_set_no_reply(msg, true);
                 if (dbus.connection_send(conn, msg, NULL)) {
                     dbus.connection_flush(conn);
                     result = true;
