@@ -12281,10 +12281,50 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     if (features->usesCustomVulkanOptions && minor > 0) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = features->desiredVulkan10DeviceFeatures;
-        featureList.pNext = minor > 1 ? &features->desiredVulkan11DeviceFeatures : NULL;
-        features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
-        features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
-        features->desiredVulkan13DeviceFeatures.pNext = NULL;
+        if (minor > 1) {
+            featureList.pNext = &features->desiredVulkan11DeviceFeatures;
+            features->desiredVulkan11DeviceFeatures.pNext = &features->desiredVulkan12DeviceFeatures;
+            features->desiredVulkan12DeviceFeatures.pNext = minor > 2 ? &features->desiredVulkan13DeviceFeatures : NULL;
+            features->desiredVulkan13DeviceFeatures.pNext = NULL;
+        } else {
+            // Break VkPhysicalDeviceVulkan11Features into pre 1.2 structures for Vulkan 1.1 Support
+            VkPhysicalDevice16BitStorageFeatures storage = { 0 };
+            storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
+            storage.storageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.storageBuffer16BitAccess;
+            storage.storageInputOutput16 = features->desiredVulkan11DeviceFeatures.storageInputOutput16;
+            storage.storagePushConstant16 = features->desiredVulkan11DeviceFeatures.storagePushConstant16;
+            storage.uniformAndStorageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.uniformAndStorageBuffer16BitAccess;
+
+            VkPhysicalDeviceMultiviewFeatures multiview = { 0 };
+            multiview.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+            multiview.multiview = features->desiredVulkan11DeviceFeatures.multiview;
+            multiview.multiviewGeometryShader = features->desiredVulkan11DeviceFeatures.multiviewGeometryShader;
+            multiview.multiviewTessellationShader = features->desiredVulkan11DeviceFeatures.multiviewTessellationShader;
+
+            VkPhysicalDeviceProtectedMemoryFeatures protectedMem = { 0 };
+            protectedMem.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES;
+            protectedMem.protectedMemory = features->desiredVulkan11DeviceFeatures.protectedMemory;
+
+            VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr = { 0 };
+            ycbcr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+            ycbcr.samplerYcbcrConversion = features->desiredVulkan11DeviceFeatures.samplerYcbcrConversion;
+
+            VkPhysicalDeviceShaderDrawParametersFeatures drawParams = { 0 };
+            drawParams.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+            drawParams.shaderDrawParameters = features->desiredVulkan11DeviceFeatures.shaderDrawParameters;
+
+            VkPhysicalDeviceVariablePointersFeatures varPointers = { 0 };
+            varPointers.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES;
+            varPointers.variablePointers = features->desiredVulkan11DeviceFeatures.variablePointers;
+            varPointers.variablePointersStorageBuffer = features->desiredVulkan11DeviceFeatures.variablePointersStorageBuffer;
+
+            featureList.pNext = &storage;
+            storage.pNext = &multiview;
+            multiview.pNext = &protectedMem;
+            protectedMem.pNext = &ycbcr;
+            ycbcr.pNext = &drawParams;
+            drawParams.pNext = &varPointers;
+        }
         deviceCreateInfo.pEnabledFeatures = NULL;
         deviceCreateInfo.pNext = &featureList;
     } else {
