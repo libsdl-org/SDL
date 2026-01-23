@@ -387,7 +387,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
             } else {
                 SDL_SendKeyboardText((const char *)utf8_buffer);
             }
-            SDL_memset(&caret_rev, 0, sizeof(SceImeCaret));
+            SDL_zero(caret_rev);
             SDL_memset(libime_out, 0, ((SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1) * sizeof(SceWChar16)));
             caret_rev.index = 1;
             sceImeSetCaret(&caret_rev);
@@ -553,7 +553,7 @@ void VITA_PumpEvents(SDL_VideoDevice *_this)
             uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 
             SceImeDialogResult result;
-            SDL_memset(&result, 0, sizeof(SceImeDialogResult));
+            SDL_zero(result);
             sceImeDialogGetResult(&result);
 
             // Convert UTF16 to UTF8

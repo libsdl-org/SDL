@@ -354,7 +354,7 @@ SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Wi
          */
         {
             XWindowAttributes attr;
-            SDL_memset(&attr, 0, sizeof(attr));
+            SDL_zero(attr);
             X11_XGetWindowAttributes(videodata->display, xwindow, &attr);
             if (attr.map_state == IsUnmapped) {
                 flags |= SDL_WINDOW_HIDDEN;

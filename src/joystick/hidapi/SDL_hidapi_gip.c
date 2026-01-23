@@ -809,7 +809,7 @@ static void GIP_MetadataFree(GIP_Metadata *metadata)
     SDL_free(metadata->device.hid_descriptor);
 
     SDL_free(metadata->message_metadata);
-    SDL_memset(metadata, 0, sizeof(*metadata));
+    SDL_zerop(metadata);
 }
 
 static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, int num_bytes, int *offset)

@@ -1140,7 +1140,7 @@ static bool VITA_GXM_RenderPresent(SDL_Renderer *renderer)
 
     data->displayData.address = data->displayBufferData[data->backBufferIndex];
 
-    SDL_memset(&updateParam, 0, sizeof(updateParam));
+    SDL_zero(updateParam);
 
     updateParam.renderTarget.colorFormat = VITA_GXM_COLOR_FORMAT;
     updateParam.renderTarget.surfaceType = SCE_GXM_COLOR_SURFACE_LINEAR;

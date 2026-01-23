@@ -138,7 +138,7 @@ static void display_callback(const void *callback_data)
     SceDisplayFrameBuf framebuf;
     const VITA_GXM_DisplayData *display_data = (const VITA_GXM_DisplayData *)callback_data;
 
-    SDL_memset(&framebuf, 0x00, sizeof(SceDisplayFrameBuf));
+    SDL_zero(framebuf);
     framebuf.size = sizeof(SceDisplayFrameBuf);
     framebuf.base = display_data->address;
     framebuf.pitch = VITA_GXM_SCREEN_STRIDE;
@@ -377,7 +377,7 @@ int gxm_init(SDL_Renderer *renderer)
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     SceGxmInitializeParams initializeParams;
-    SDL_memset(&initializeParams, 0, sizeof(SceGxmInitializeParams));
+    SDL_zero(initializeParams);
     initializeParams.flags = 0;
     initializeParams.displayQueueMaxPendingCount = VITA_GXM_PENDING_SWAPS;
     initializeParams.displayQueueCallback = display_callback;
@@ -438,7 +438,7 @@ int gxm_init(SDL_Renderer *renderer)
     }
 
     // set up parameters
-    SDL_memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
+    SDL_zero(renderTargetParams);
     renderTargetParams.flags = 0;
     renderTargetParams.width = VITA_GXM_SCREEN_WIDTH;
     renderTargetParams.height = VITA_GXM_SCREEN_HEIGHT;
@@ -555,7 +555,7 @@ int gxm_init(SDL_Renderer *renderer)
         &patcherFragmentUsseOffset);
 
     // create a shader patcher
-    SDL_memset(&patcherParams, 0, sizeof(SceGxmShaderPatcherParams));
+    SDL_zero(patcherParams);
     patcherParams.userData = NULL;
     patcherParams.hostAllocCallback = &patcher_host_alloc;
     patcherParams.hostFreeCallback = &patcher_host_free;
@@ -1097,7 +1097,7 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
 
             // set up parameters
             SceGxmRenderTargetParams renderTargetParams;
-            SDL_memset(&renderTargetParams, 0, sizeof(SceGxmRenderTargetParams));
+            SDL_zero(renderTargetParams);
             renderTargetParams.flags = 0;
             renderTargetParams.width = w;
             renderTargetParams.height = h;
