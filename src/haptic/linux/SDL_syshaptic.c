@@ -603,7 +603,7 @@ void SDL_SYS_HapticClose(SDL_Haptic *haptic)
     }
 
     // Clear the rest.
-    SDL_memset(haptic, 0, sizeof(SDL_Haptic));
+    SDL_zerop(haptic);
 }
 
 /*
@@ -725,7 +725,7 @@ static bool SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *s
     const SDL_HapticLeftRight *leftright;
 
     // Clear up
-    SDL_memset(dest, 0, sizeof(struct ff_effect));
+    SDL_zerop(dest);
 
     switch (src->type) {
     case SDL_HAPTIC_CONSTANT:
