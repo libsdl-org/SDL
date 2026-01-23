@@ -12278,6 +12278,13 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     VkPhysicalDeviceFeatures2 featureList;
     int minor = VK_VERSION_MINOR(features->desiredApiVersion);
 
+    VkPhysicalDevice16BitStorageFeatures storage;
+    VkPhysicalDeviceMultiviewFeatures multiview;
+    VkPhysicalDeviceProtectedMemoryFeatures protectedMem;
+    VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr;
+    VkPhysicalDeviceShaderDrawParametersFeatures drawParams;
+    VkPhysicalDeviceVariablePointersFeatures varPointers;
+
     if (features->usesCustomVulkanOptions && minor > 0) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = features->desiredVulkan10DeviceFeatures;
@@ -12288,32 +12295,32 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
             features->desiredVulkan13DeviceFeatures.pNext = NULL;
         } else {
             // Break VkPhysicalDeviceVulkan11Features into pre 1.2 structures for Vulkan 1.1 Support
-            VkPhysicalDevice16BitStorageFeatures storage = { 0 };
+            SDL_memset(&storage, 0, sizeof(VkPhysicalDevice16BitStorageFeatures));
             storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
             storage.storageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.storageBuffer16BitAccess;
             storage.storageInputOutput16 = features->desiredVulkan11DeviceFeatures.storageInputOutput16;
             storage.storagePushConstant16 = features->desiredVulkan11DeviceFeatures.storagePushConstant16;
             storage.uniformAndStorageBuffer16BitAccess = features->desiredVulkan11DeviceFeatures.uniformAndStorageBuffer16BitAccess;
 
-            VkPhysicalDeviceMultiviewFeatures multiview = { 0 };
+            SDL_memset(&multiview, 0, sizeof(VkPhysicalDeviceMultiviewFeatures));
             multiview.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
             multiview.multiview = features->desiredVulkan11DeviceFeatures.multiview;
             multiview.multiviewGeometryShader = features->desiredVulkan11DeviceFeatures.multiviewGeometryShader;
             multiview.multiviewTessellationShader = features->desiredVulkan11DeviceFeatures.multiviewTessellationShader;
 
-            VkPhysicalDeviceProtectedMemoryFeatures protectedMem = { 0 };
+            SDL_memset(&protectedMem, 0, sizeof(VkPhysicalDeviceProtectedMemoryFeatures));
             protectedMem.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES;
             protectedMem.protectedMemory = features->desiredVulkan11DeviceFeatures.protectedMemory;
 
-            VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr = { 0 };
+            SDL_memset(&ycbcr, 0, sizeof(VkPhysicalDeviceSamplerYcbcrConversionFeatures));
             ycbcr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
             ycbcr.samplerYcbcrConversion = features->desiredVulkan11DeviceFeatures.samplerYcbcrConversion;
 
-            VkPhysicalDeviceShaderDrawParametersFeatures drawParams = { 0 };
+            SDL_memset(&drawParams, 0, sizeof(VkPhysicalDeviceShaderDrawParametersFeatures));
             drawParams.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
             drawParams.shaderDrawParameters = features->desiredVulkan11DeviceFeatures.shaderDrawParameters;
 
-            VkPhysicalDeviceVariablePointersFeatures varPointers = { 0 };
+            SDL_memset(&varPointers, 0, sizeof(VkPhysicalDeviceVariablePointersFeatures));
             varPointers.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES;
             varPointers.variablePointers = features->desiredVulkan11DeviceFeatures.variablePointers;
             varPointers.variablePointersStorageBuffer = features->desiredVulkan11DeviceFeatures.variablePointersStorageBuffer;
