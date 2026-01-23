@@ -622,7 +622,7 @@ SDL_ListNode *X11Toolkit_MakeTextElements(SDL_ToolkitWindowX11 *data, char *txt,
         size_t csz;
         bool cond;
 
-        SDL_memset(utf8, 0, 5);
+        SDL_zeroa(utf8);
         cp = SDL_StepUTF8((const char **)&str, &sz);
         cond = (0xe00 <= cp && cp <= 0xe7f) ? true : false;
         if (cp == 0 || cond == (thai ? false : true)) {

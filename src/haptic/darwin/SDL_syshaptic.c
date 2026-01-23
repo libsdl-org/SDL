@@ -785,7 +785,7 @@ static bool SDL_SYS_ToFFEFFECT(SDL_Haptic *haptic, FFEFFECT *dest, const SDL_Hap
     DWORD *axes = NULL;
 
     // Set global stuff.
-    SDL_memset(dest, 0, sizeof(FFEFFECT));
+    SDL_zerop(dest);
     dest->dwSize = sizeof(FFEFFECT);     // Set the structure size.
     dest->dwSamplePeriod = 0;            // Not used by us.
     dest->dwGain = 10000;                // Gain is set globally, not locally.
