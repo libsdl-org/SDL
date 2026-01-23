@@ -694,9 +694,9 @@ static int lg4ff_init_slots(struct lg4ff_device *device)
         return -1;
     }
 
-    SDL_memset(&device->states, 0, sizeof(device->states));
-    SDL_memset(&device->slots, 0, sizeof(device->slots));
-    SDL_memset(&parameters, 0, sizeof(parameters));
+    SDL_zero(device->states);
+    SDL_zero(device->slots);
+    SDL_zero(parameters);
 
     device->slots[0].effect_type = SDL_HAPTIC_CONSTANT;
     device->slots[1].effect_type = SDL_HAPTIC_SPRING;

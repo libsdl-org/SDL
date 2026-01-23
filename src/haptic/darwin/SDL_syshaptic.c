@@ -1166,7 +1166,7 @@ bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
     FFEFFECT temp;
 
     // Get the effect.
-    SDL_memset(&temp, 0, sizeof(FFEFFECT));
+    SDL_zero(temp);
     if (!SDL_SYS_ToFFEFFECT(haptic, &temp, data)) {
         goto err_update;
     }

@@ -637,7 +637,7 @@ void SDL_IBus_Quit(void)
 
     SDL_RemoveHintCallback(SDL_HINT_IME_IMPLEMENTED_UI, IBus_SetCapabilities, NULL);
 
-    SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
+    SDL_zero(ibus_cursor_rect);
 }
 
 static void IBus_SimpleMessage(const char *method)
