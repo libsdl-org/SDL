@@ -1731,7 +1731,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
 
             // reply with status
-            SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+            SDL_zero(m);
             m.type = ClientMessage;
             m.display = xevent->xclient.display;
             m.window = xevent->xclient.data.l[0];
@@ -1748,7 +1748,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         } else if (xevent->xclient.message_type == videodata->atoms.XdndDrop) {
             if (data->xdnd_req == None) {
                 // say again - not interested!
-                SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+                SDL_zero(m);
                 m.type = ClientMessage;
                 m.display = xevent->xclient.display;
                 m.window = xevent->xclient.data.l[0];
@@ -2145,7 +2145,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_XFree(p.data);
 
             // send reply
-            SDL_memset(&m, 0, sizeof(XClientMessageEvent));
+            SDL_zero(m);
             m.type = ClientMessage;
             m.display = display;
             m.window = data->xdnd_source;
@@ -2213,7 +2213,7 @@ void X11_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
     Window xwindow = window->internal->xwindow;
     XClientMessageEvent event;
 
-    SDL_memset(&event, 0, sizeof(XClientMessageEvent));
+    SDL_zero(event);
     event.type = ClientMessage;
     event.display = req_display;
     event.send_event = True;

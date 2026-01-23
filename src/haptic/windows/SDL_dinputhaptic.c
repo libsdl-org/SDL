@@ -1050,7 +1050,7 @@ bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *eff
     DIEFFECT temp;
 
     // Get the effect.
-    SDL_memset(&temp, 0, sizeof(DIEFFECT));
+    SDL_zero(temp);
     if (!SDL_SYS_ToDIEFFECT(haptic, &temp, data)) {
         goto err_update;
     }

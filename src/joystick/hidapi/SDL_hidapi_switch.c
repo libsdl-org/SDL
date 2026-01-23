@@ -450,7 +450,7 @@ static bool ReadProprietaryReply(SDL_DriverSwitch_Context *ctx, ESwitchProprieta
 
 static void ConstructSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, const Uint8 *pBuf, Uint8 ucLen, SwitchSubcommandOutputPacket_t *outPacket)
 {
-    SDL_memset(outPacket, 0, sizeof(*outPacket));
+    SDL_zerop(outPacket);
 
     outPacket->commonData.ucPacketType = k_eSwitchOutputReportIDs_RumbleAndSubcommand;
     outPacket->commonData.ucPacketNumber = ctx->m_nCommandNumber;

@@ -77,7 +77,7 @@ SDL_GUID SDL_StringToGUID(const char *pchGUID)
     // Make sure it's even
     len = (len) & ~0x1;
 
-    SDL_memset(&guid, 0x00, sizeof(guid));
+    SDL_zero(guid);
 
     p = (Uint8 *)&guid;
     for (i = 0; (i < len) && ((p - (Uint8 *)&guid) < maxoutputbytes); i += 2, p++) {

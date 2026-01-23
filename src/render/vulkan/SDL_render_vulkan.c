@@ -1235,7 +1235,7 @@ static VULKAN_PipelineState *VULKAN_CreatePipelineState(SDL_Renderer *renderer,
     // Shaders
     const char *name = "main";
     for (uint32_t i = 0; i < 2; i++) {
-        SDL_memset(&shaderStageCreateInfo[i], 0, sizeof(shaderStageCreateInfo[i]));
+        SDL_zero(shaderStageCreateInfo[i]);
         shaderStageCreateInfo[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[i].module = (i == 0) ? rendererData->vertexShaderModules[shader] : rendererData->fragmentShaderModules[shader];
         shaderStageCreateInfo[i].stage = (i == 0) ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -4038,7 +4038,7 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VkSurfaceTransformFlagBitsKHR currentRotation = VULKAN_GetRotationForCurrentRenderTarget(rendererData);
     VULKAN_DrawStateCache stateCache;
-    SDL_memset(&stateCache, 0, sizeof(stateCache));
+    SDL_zero(stateCache);
 
     if (!rendererData->device) {
         return SDL_SetError("Device lost and couldn't be recovered");
