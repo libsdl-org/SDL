@@ -371,7 +371,7 @@ static char *IBus_GetDBusAddressFilename(void)
         }
     }
 
-    SDL_memset(config_dir, 0, sizeof(config_dir));
+    SDL_zeroa(config_dir);
 
     conf_env = SDL_getenv("XDG_CONFIG_HOME");
     if (conf_env && *conf_env) {
@@ -392,7 +392,7 @@ static char *IBus_GetDBusAddressFilename(void)
         return NULL;
     }
 
-    SDL_memset(file_path, 0, sizeof(file_path));
+    SDL_zeroa(file_path);
     (void)SDL_snprintf(file_path, sizeof(file_path), "%s/ibus/bus/%s-%s-%s",
                        config_dir, key, host, disp_num);
     dbus->free(key);

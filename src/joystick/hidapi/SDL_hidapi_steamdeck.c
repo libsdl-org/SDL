@@ -343,7 +343,7 @@ static bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
             return false;
     }
 
-    SDL_memset(data, 0, sizeof(data));
+    SDL_zeroa(data);
 
     do {
         r = SDL_hid_read(device->dev, data, sizeof(data));

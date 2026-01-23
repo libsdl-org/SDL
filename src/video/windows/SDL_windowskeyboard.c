@@ -243,7 +243,7 @@ void WIN_QuitKeyboard(SDL_VideoDevice *_this)
     for (int i = 0; i < keymap_cache_size; ++i) {
         SDL_DestroyKeymap(keymap_cache[i].keymap);
     }
-    SDL_memset(keymap_cache, 0, sizeof(keymap_cache));
+    SDL_zeroa(keymap_cache);
     keymap_cache_size = 0;
 }
 
