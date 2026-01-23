@@ -791,11 +791,13 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #endif
 
 #if !defined(STBI_NO_SIMD) && (defined(STBI__X86_TARGET) || defined(STBI__X64_TARGET))
+#ifdef SDL_SSE2_INTRINSICS /* SDL change */
 #define STBI_SSE2
 #include <emmintrin.h>
 
 #ifdef _MSC_VER
 
+#if 0 /* SDL change (unused due to using SDL_HasSSE2) */
 #if _MSC_VER >= 1400  // not VC6
 #include <intrin.h> // __cpuid
 static int stbi__cpuid3(void)
@@ -816,14 +818,14 @@ static int stbi__cpuid3(void)
    return res;
 }
 #endif
+#endif /* SDL change */
 
 #define STBI_SIMD_ALIGN(type, name) __declspec(align(16)) type name
 
 #if !defined(STBI_NO_JPEG) && defined(STBI_SSE2)
 static int stbi__sse2_available(void)
 {
-   int info3 = stbi__cpuid3();
-   return ((info3 >> 26) & 1) != 0;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
@@ -836,11 +838,12 @@ static int stbi__sse2_available(void)
    // If we're even attempting to compile this on GCC/Clang, that means
    // -msse2 is on, which means the compiler is allowed to use SSE2
    // instructions at will, and so are we.
-   return 1;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
 #endif
+#endif /* SDL change (SDL_SSE2_INTRINSICS) */
 #endif
 
 // ARM NEON
