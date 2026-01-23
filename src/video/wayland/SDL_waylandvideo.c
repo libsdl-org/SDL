@@ -1397,10 +1397,6 @@ static bool should_use_libdecor(SDL_VideoData *data, bool ignore_xdg)
         return false;
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, true)) {
-        return false;
-    }
-
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, false)) {
         return true;
     }
