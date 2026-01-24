@@ -12805,32 +12805,34 @@ static bool VULKAN_INTERNAL_FindXRSrgbSwapchain(int64_t *supportedFormats, Uint3
 }
 #endif // HAVE_GPU_OPENXR
 
-static XrResult VULKAN_CreateXRSwapchain(
+static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
     SDL_GPURenderer *driverData,
     XrSession session,
-    const XrSwapchainCreateInfo *oldCreateInfo,
-    SDL_GPUTextureFormat *textureFormat,
-    XrSwapchain *swapchain,
-    SDL_GPUTexture ***textures)
+    int *num_formats)
 {
 #ifdef HAVE_GPU_OPENXR
     XrResult result;
     Uint32 i, j, num_supported_formats;
     int64_t *supported_formats;
+    SDL_GPUTextureFormat found_format = SDL_GPU_TEXTUREFORMAT_INVALID;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
     result = renderer->xr->xrEnumerateSwapchainFormats(session, 0, &num_supported_formats, NULL);
-    if (result != XR_SUCCESS) return result;
+    if (result != XR_SUCCESS) return NULL;
     supported_formats = SDL_stack_alloc(int64_t, num_supported_formats);
     result = renderer->xr->xrEnumerateSwapchainFormats(session, num_supported_formats, &num_supported_formats, supported_formats);
     if (result != XR_SUCCESS) {
         SDL_stack_free(supported_formats);
-        return result;
+        return NULL;
     }
 
+    // FIXME: For now we're just searching for the optimal format, not all supported formats.
+    // FIXME: Expand this search for all SDL_GPU formats!
+
+    SDL_GPUTextureFormat sdlFormat;
     int64_t vkFormat = VK_FORMAT_UNDEFINED;
     // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
-    if (!VULKAN_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, textureFormat, &vkFormat)) {
+    if (!VULKAN_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &vkFormat)) {
         // Iterate over all formats the runtime supports
         for (i = 0; i < num_supported_formats && vkFormat == VK_FORMAT_UNDEFINED; i++) {
             // Iterate over all formats we support
@@ -12838,7 +12840,7 @@ static XrResult VULKAN_CreateXRSwapchain(
                 // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
                 if (SDLToVK_TextureFormat[j] == supported_formats[i]) {
                     vkFormat = supported_formats[i];
-                    *textureFormat = j;
+                    found_format = j;
                     break;
                 }
             }
@@ -12849,11 +12851,34 @@ static XrResult VULKAN_CreateXRSwapchain(
 
     if (vkFormat == VK_FORMAT_UNDEFINED) {
         SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
-        return XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED;
+        return NULL;
     }
 
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat));
+    *retval = found_format;
+    *num_formats = 1;
+    return retval;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return NULL;
+#endif
+}
+
+static XrResult VULKAN_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+#ifdef HAVE_GPU_OPENXR
+    XrResult result;
+    Uint32 i, j;
+    VulkanRenderer *renderer = (VulkanRenderer *)driverData;
+
     XrSwapchainCreateInfo createInfo = *oldCreateInfo;
-    createInfo.format = vkFormat;
+    createInfo.format = SDLToVK_TextureFormat[format];
 
     result = renderer->xr->xrCreateSwapchain(session, &createInfo, swapchain);
     if (result != XR_SUCCESS) return result;
@@ -12878,7 +12903,7 @@ static XrResult VULKAN_CreateXRSwapchain(
 
         VulkanTexture *texture = SDL_calloc(1, sizeof(VulkanTexture));
 
-        texture->swizzle = SwizzleForSDLFormat(*textureFormat);
+        texture->swizzle = SwizzleForSDLFormat(format);
         texture->depth = 1;
         texture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
         SDL_SetAtomicInt(&texture->referenceCount, 0);
@@ -12906,7 +12931,7 @@ static XrResult VULKAN_CreateXRSwapchain(
                             texture,
                             i,
                             j,
-                            vkFormat,
+                            SDLToVK_TextureFormat[format],
                             texture->swizzle,
                             &texture->subresources[subresourceIndex].renderTargetViews[0])) {
                         VULKAN_INTERNAL_DestroyTexture(renderer, texture);
@@ -12936,7 +12961,7 @@ static XrResult VULKAN_CreateXRSwapchain(
         SDL_zero(container->header.info);
         container->header.info.width = createInfo.width;
         container->header.info.height = createInfo.height;
-        container->header.info.format = *textureFormat;
+        container->header.info.format = format;
         container->header.info.layer_count_or_depth = createInfo.arraySize;
         container->header.info.num_levels = createInfo.mipCount;
         container->header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;

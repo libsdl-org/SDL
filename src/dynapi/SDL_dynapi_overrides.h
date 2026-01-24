@@ -1298,6 +1298,7 @@
 #define SDL_LoadSurface SDL_LoadSurface_REAL
 #define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL
 #define SDL_CreateGPUXRSession SDL_CreateGPUXRSession_REAL
+#define SDL_GetGPUXRSwapchainFormats SDL_GetGPUXRSwapchainFormats_REAL
 #define SDL_CreateGPUXRSwapchain SDL_CreateGPUXRSwapchain_REAL
 #define SDL_DestroyGPUXRSwapchain SDL_DestroyGPUXRSwapchain_REAL
 #define SDL_OpenXR_LoadLibrary SDL_OpenXR_LoadLibrary_REAL

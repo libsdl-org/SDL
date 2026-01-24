@@ -4503,6 +4503,15 @@ static XrResult METAL_DestroyXRSwapchain(
     return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
+static SDL_GPUTextureFormat* METAL_GetXRSwapchainFormats(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    int *num_formats)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return NULL;
+}
+
 static XrResult METAL_CreateXRSwapchain(
     SDL_GPURenderer *driverData,
     XrSession session,

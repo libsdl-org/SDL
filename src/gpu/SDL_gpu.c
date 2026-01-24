@@ -3592,15 +3592,25 @@ XrResult SDL_CreateGPUXRSession(
     return device->CreateXRSession(device->driverData, createinfo, session);
 }
 
+SDL_GPUTextureFormat* SDL_GetGPUXRSwapchainFormats(
+    SDL_GPUDevice *device,
+    XrSession session,
+    int *num_formats)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
+
+    return device->GetXRSwapchainFormats(device->driverData, session, num_formats);
+}
+
 XrResult SDL_CreateGPUXRSwapchain(
     SDL_GPUDevice *device,
     XrSession session,
     const XrSwapchainCreateInfo *createinfo,
-    SDL_GPUTextureFormat *textureFormat,
+    SDL_GPUTextureFormat format,
     XrSwapchain *swapchain,
     SDL_GPUTexture ***textures)
 {
     CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
 
-    return device->CreateXRSwapchain(device->driverData, session, createinfo, textureFormat, swapchain, textures);
+    return device->CreateXRSwapchain(device->driverData, session, createinfo, format, swapchain, textures);
 }

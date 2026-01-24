@@ -717,11 +717,16 @@ struct SDL_GPUDevice
         const XrSessionCreateInfo *createinfo,
         XrSession *session);
 
+    SDL_GPUTextureFormat* (*GetXRSwapchainFormats)(
+        SDL_GPURenderer *driverData,
+        XrSession session,
+        int *num_formats);
+
     XrResult (*CreateXRSwapchain)(
         SDL_GPURenderer *driverData,
         XrSession session,
         const XrSwapchainCreateInfo *createinfo,
-        SDL_GPUTextureFormat *textureFormat,
+        SDL_GPUTextureFormat format,
         XrSwapchain *swapchain,
         SDL_GPUTexture ***textures);
 
@@ -1135,6 +1140,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
     ASSIGN_DRIVER_FUNC(CreateXRSession, name)               \
+    ASSIGN_DRIVER_FUNC(GetXRSwapchainFormats, name)         \
     ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)             \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \

@@ -9006,43 +9006,45 @@ static XrResult D3D12_DestroyXRSwapchain(
 #endif
 }
 
-static XrResult D3D12_CreateXRSwapchain(
+static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
     SDL_GPURenderer *driverData,
     XrSession session,
-    const XrSwapchainCreateInfo *oldCreateInfo,
-    SDL_GPUTextureFormat *textureFormat,
-    XrSwapchain *swapchain,
-    SDL_GPUTexture ***textures)
+    int *num_formats)
 {
 #ifdef HAVE_GPU_OPENXR
     XrResult result;
-    Uint32 layerIndex, levelIndex, num_supported_formats;
+    Uint32 i, j, num_supported_formats;
     int64_t *supported_formats;
+    SDL_GPUTextureFormat found_format = SDL_GPU_TEXTUREFORMAT_INVALID;
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
 
     result = renderer->xr->xrEnumerateSwapchainFormats(session, 0, &num_supported_formats, NULL);
     if (result != XR_SUCCESS) {
-        return result;
+        return NULL;
     }
 
     supported_formats = SDL_stack_alloc(int64_t, num_supported_formats);
     result = renderer->xr->xrEnumerateSwapchainFormats(session, num_supported_formats, &num_supported_formats, supported_formats);
     if (result != XR_SUCCESS) {
         SDL_stack_free(supported_formats);
-        return result;
+        return NULL;
     }
 
+    // FIXME: For now we're just searching for the optimal format, not all supported formats.
+    // FIXME: Expand this search for all SDL_GPU formats!
+
+    SDL_GPUTextureFormat sdlFormat;
     DXGI_FORMAT dxgiFormat = DXGI_FORMAT_UNKNOWN;
     // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
-    if (!D3D12_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, textureFormat, &dxgiFormat)) {
+    if (!D3D12_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &dxgiFormat)) {
         // Iterate over all formats the runtime supports
-        for (layerIndex = 0; layerIndex < num_supported_formats && dxgiFormat == DXGI_FORMAT_UNKNOWN; layerIndex++) {
+        for (i = 0; i < num_supported_formats && dxgiFormat == DXGI_FORMAT_UNKNOWN; i++) {
             // Iterate over all formats we support
-            for (levelIndex = 0; levelIndex < SDL_arraysize(SDLToD3D12_TextureFormat); levelIndex++) {
+            for (j = 0; j < SDL_arraysize(SDLToD3D12_TextureFormat); j++) {
                 // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
-                if (SDLToD3D12_TextureFormat[levelIndex] == supported_formats[layerIndex]) {
-                    dxgiFormat = (DXGI_FORMAT)supported_formats[layerIndex];
-                    *textureFormat = (SDL_GPUTextureFormat)levelIndex;
+                if (SDLToD3D12_TextureFormat[j] == supported_formats[i]) {
+                    dxgiFormat = (DXGI_FORMAT)supported_formats[i];
+                    found_format = j;
                     break;
                 }
             }
@@ -9053,11 +9055,34 @@ static XrResult D3D12_CreateXRSwapchain(
 
     if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
         SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
-        return XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED;
+        return NULL;
     }
 
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat));
+    *retval = found_format;
+    *num_formats = 1;
+    return retval;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return NULL;
+#endif
+}
+
+static XrResult D3D12_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+#ifdef HAVE_GPU_OPENXR
+    XrResult result;
+    Uint32 layerIndex, levelIndex;
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
     XrSwapchainCreateInfo createInfo = *oldCreateInfo;
-    createInfo.format = dxgiFormat;
+    createInfo.format = SDLToD3D12_TextureFormat[format];
 
     result = renderer->xr->xrCreateSwapchain(session, &createInfo, swapchain);
     if (result != XR_SUCCESS) {
@@ -9127,7 +9152,7 @@ static XrResult D3D12_CreateXRSwapchain(
                             D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
                             &texture->subresources[subresourceIndex].rtvHandles[depthIndex]);
 
-                        rtvDesc.Format = dxgiFormat;
+                        rtvDesc.Format = SDLToD3D12_TextureFormat[format];
 
                         // For XR we typically use 2D array textures for stereo rendering
                         if (createInfo.arraySize > 1) {
@@ -9157,7 +9182,7 @@ static XrResult D3D12_CreateXRSwapchain(
         SDL_zero(container->header.info);
         container->header.info.width = createInfo.width;
         container->header.info.height = createInfo.height;
-        container->header.info.format = *textureFormat;
+        container->header.info.format = format;
         container->header.info.layer_count_or_depth = createInfo.arraySize;
         container->header.info.num_levels = createInfo.mipCount;
         container->header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;

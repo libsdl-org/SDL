@@ -95,25 +95,45 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
     XrSession *session);
 
 /**
+ * Queries the GPU device for supported XR swapchain image formats.
+ *
+ * The returned pointer should be allocated with SDL_malloc() and will be
+ * passed to SDL_free().
+ *
+ * \param device a GPU context.
+ * \param session an OpenXR session created for the given **device**.
+ * \param num_formats a pointer filled with the number of supported XR swapchain formats
+ * \returns a dynamically allocated array with **num_formats** elements, or NULL on error
+ *
+ * \sa SDL_CreateGPUXRSwapchain
+ */
+extern SDL_DECLSPEC SDL_GPUTextureFormat* SDLCALL SDL_GetGPUXRSwapchainFormats(
+    SDL_GPUDevice *device,
+    XrSession session,
+    int *num_formats
+);
+
+/**
  * Creates an OpenXR swapchain.
  * 
  * \param device a GPU context.
  * \param session an OpenXR session created for the given **device**.
  * \param createinfo the create info for the OpenXR swapchain, sans the format.
- * \param textureFormat a pointer to store the format of the created swapchain.
+ * \param format a supported format for the OpenXR swapchain.
  * \param swapchain a pointer to store the created OpenXR swapchain.
  * \param textures a pointer to store the list of created swapchain images.
  * \returns the result of the call.
  * 
  * \sa SDL_CreateGPUDeviceWithProperties
  * \sa SDL_CreateGPUXRSession
+ * \sa SDL_GetGPUXRSwapchainFormats
  * \sa SDL_DestroyGPUXRSwapchain
  */
 extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSwapchain(
     SDL_GPUDevice *device,
     XrSession session,
     const XrSwapchainCreateInfo *createinfo, 
-    SDL_GPUTextureFormat *textureFormat,
+    SDL_GPUTextureFormat format,
     XrSwapchain *swapchain,
     SDL_GPUTexture ***textures);
 
