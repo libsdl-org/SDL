@@ -217,6 +217,10 @@ else()
   set(SDL_OSS_DEFAULT OFF)
 endif()
 
+if(NOT SDL_SHARED_AVAILABLE)
+  set(SDL_SHARED_DEFAULT OFF)
+endif()
+
 if(SDL_SHARED_DEFAULT AND SDL_STATIC_DEFAULT AND SDL_SHARED_AVAILABLE)
   if(DEFINED BUILD_SHARED_LIBS)
     # When defined, use BUILD_SHARED_LIBS as default
@@ -391,8 +395,8 @@ set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if(DEFINED CACHE{SDL_SHARED} OR DEFINED CACHE{SDL_STATIC})
-  cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
-  cmake_dependent_option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT} ${SDL_STATIC_AVAILABLE} OFF)
+  cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} SDL_SHARED_AVAILABLE OFF)
+  cmake_dependent_option(SDL_STATIC "Build a static version of the library" ${SDL_STATIC_DEFAULT} SDL_STATIC_AVAILABLE OFF)
 else()
   if(NOT DEFINED SDL_SHARED)
     set(SDL_SHARED ${SDL_SHARED_DEFAULT})
