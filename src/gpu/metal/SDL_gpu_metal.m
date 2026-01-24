@@ -4516,7 +4516,7 @@ static XrResult METAL_CreateXRSwapchain(
     SDL_GPURenderer *driverData,
     XrSession session,
     const XrSwapchainCreateInfo *oldCreateInfo,
-    SDL_GPUTextureFormat *textureFormat,
+    SDL_GPUTextureFormat format,
     XrSwapchain *swapchain,
     SDL_GPUTexture ***textures)
 {

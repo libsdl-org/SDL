@@ -9211,7 +9211,7 @@ static XrResult D3D12_CreateXRSwapchain(
     (void)driverData;
     (void)session;
     (void)oldCreateInfo;
-    (void)textureFormat;
+    (void)format;
     (void)swapchain;
     (void)textures;
     SDL_SetError("SDL not built with OpenXR support");
