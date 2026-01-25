@@ -4529,7 +4529,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         hasHardwareSupport = true;
         bool allowMacFamily1 = SDL_GetBooleanProperty(
             props,
-            SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1,
+            SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN,
             false);
         if (@available(macOS 10.15, *)) {
             hasHardwareSupport = allowMacFamily1 ?
