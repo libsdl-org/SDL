@@ -4527,10 +4527,18 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 #ifdef SDL_PLATFORM_MACOS
         hasHardwareSupport = true;
+        bool allowMacFamily1 = SDL_GetBooleanProperty(
+            props,
+            SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1,
+            false);
         if (@available(macOS 10.15, *)) {
-            hasHardwareSupport = [device supportsFamily:MTLGPUFamilyMac2];
+            hasHardwareSupport = allowMacFamily1 ?
+                [device supportsFamily:MTLGPUFamilyMac1] :
+                [device supportsFamily:MTLGPUFamilyMac2];
         } else if (@available(macOS 10.14, *)) {
-            hasHardwareSupport = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
+            hasHardwareSupport = allowMacFamily1 ?
+                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v4] :
+                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
         }
 #elif defined(SDL_PLATFORM_VISIONOS)
         hasHardwareSupport = true;
