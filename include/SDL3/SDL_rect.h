@@ -425,7 +425,7 @@ SDL_FORCE_INLINE bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRect *b
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_GetRectIntersection
+ * \sa SDL_GetRectIntersectionFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B);
 
