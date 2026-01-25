@@ -2322,7 +2322,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   minimal set SDL requires.
  *
  * With the Metal backend: -
- * `SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1`: By default, macOS
+ * `SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN`: By default, macOS
  * support requires what Apple calls "MTLGPUFamilyMac2" hardware or newer.
  * However, an application can set this property to true to enable support for
  * "MTLGPUFamilyMac1" hardware, if (and only if) the application does not
@@ -2360,9 +2360,9 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN         "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
+#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
-#define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1                       "SDL.gpu.device.create.metal.allowmacfamily1"
+#define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
 
 
 /**
