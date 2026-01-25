@@ -363,7 +363,7 @@ static bool updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
     buffer = SDL_calloc(buffer_count, sizeof(screen_buffer_t));
 
     if (screen_get_window_property_pv(impl->window, SCREEN_PROPERTY_BUFFERS,
-                                      buffer) < 0) {
+                                      (void **)buffer) < 0) {
         return false;
     }
 
@@ -399,10 +399,15 @@ static SDL_FullscreenResult setWindowFullscreen(SDL_VideoDevice *_this, SDL_Wind
     }
 
     if (fullscreen) {
-        if (screen_get_display_property_iv(display_data->screen_display,
-                                           SCREEN_PROPERTY_SIZE, size) < 0) {
+        SDL_Rect bounds;
+
+        if (!getDisplayBounds(_this, display, &bounds)) {
             return SDL_FULLSCREEN_FAILED;
         }
+        position[0] = bounds.x;
+        position[1] = bounds.y;
+        size[0] = bounds.w;
+        size[1] = bounds.h;
     } else {
         position[0] = window->x;
         position[1] = window->y;
@@ -622,7 +627,9 @@ static SDL_VideoDevice *createDevice(void)
     device->GetDisplayForWindow = getDisplayForWindow;
     device->GetDisplayBounds = getDisplayBounds;
     device->GetDisplayModes = getDisplayModes;
+#if 0
     device->SetDisplayMode = setDisplayMode;
+#endif
     device->PumpEvents = pumpEvents;
     device->DestroyWindow = destroyWindow;
 
@@ -636,6 +643,9 @@ static SDL_VideoDevice *createDevice(void)
     device->GL_UnloadLibrary = glUnloadLibrary;
 
     device->free = deleteDevice;
+
+    device->device_caps = VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED;
+
     return device;
 }
 

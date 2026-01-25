@@ -49,7 +49,7 @@ static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
         screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &impl->realized_shape);
 
         impl->session = session;
-        impl->is_visible = 1;
+        impl->is_visible = true;
         cursor->internal = (void*)impl;
     } else {
         SDL_OutOfMemory();
@@ -97,7 +97,7 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
         screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &shape);
 
         impl->session = session;
-        impl->is_visible = 1;
+        impl->is_visible = true;
         cursor->internal = (void*)impl;
     } else {
         SDL_OutOfMemory();
@@ -116,24 +116,26 @@ static bool showCursor(SDL_Cursor * cursor)
     // drivers. We need to track that ourselves.
     if (cursor) {
         impl = (SDL_CursorData*)cursor->internal;
+        SDL_assert(impl != NULL);
         if (impl->is_visible) {
             return true;
         }
         session = impl->session;
         shape = impl->realized_shape;
-        impl->is_visible = 1;
+        impl->is_visible = true;
     } else {
         cursor = SDL_GetCursor();
         if (cursor == NULL) {
             return false;
         }
         impl = (SDL_CursorData*)cursor->internal;
+        SDL_assert(impl != NULL);
         if (!impl->is_visible) {
             return 0;
         }
         session = impl->session;
         shape = SCREEN_CURSOR_SHAPE_NONE;
-        impl->is_visible = 0;
+        impl->is_visible = false;
     }
 
     if (screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &shape) < 0) {
@@ -146,6 +148,7 @@ static bool showCursor(SDL_Cursor * cursor)
 static void freeCursor(SDL_Cursor * cursor)
 {
     SDL_CursorData *impl = (SDL_CursorData*)cursor->internal;
+    SDL_assert(impl != NULL);
 
     screen_destroy_session(impl->session);
     SDL_free(impl);
@@ -179,8 +182,6 @@ void initMouse(SDL_VideoDevice *_this)
     mouse->FreeCursor = freeCursor;
 
     mouse->SetRelativeMouseMode = setRelativeMouseMode;
-    // TODO: WarpMouse should be possible by setting SCREEN_PROPERTY_FLOATING
-    //       and waiting for the next motion event to occur.
 
     SDL_SetDefaultCursor(createCursor(NULL, 0, 0));
 }

@@ -51,7 +51,7 @@ typedef struct SDL_CursorData
 {
     screen_session_t session;
     int              realized_shape;
-    int              is_visible;
+    bool             is_visible;
 } SDL_CursorData;
 
 typedef struct SDL_MouseData

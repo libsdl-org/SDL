@@ -62,11 +62,11 @@ void handlePointerEvent(screen_event_t event)
 
     window = mouse->focus;
     mouse_data = mouse->internal;
-    if (mouse_data == NULL) {
-        return;
-    }
+    SDL_assert(mouse_data != NULL);
 
     if (mouse->relative_mode) {
+        // The mouse is hidden. We don't have control over its actual position
+        // with SCREEN_PROPERTY_POSITION, just the position of the icon.
         SDL_SendMouseMotion(timestamp, window, SDL_DEFAULT_MOUSE_ID, true, pos[0] - mouse_data->x_prev, pos[1] - mouse_data->y_prev);
     } else {
         SDL_SendMouseMotion(timestamp, window, SDL_DEFAULT_MOUSE_ID, false, pos[0], pos[1]);

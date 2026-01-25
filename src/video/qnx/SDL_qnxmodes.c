@@ -65,6 +65,8 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     screen_display_t      screen_display;
     screen_display_mode_t *screen_display_modes;
+    int                   screen_format;
+    int                   screen_refresh_rate;
 
     if (display_data == NULL) {
         return false;
@@ -97,12 +99,24 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         SDL_zero(display_mode);
         display_mode.w = screen_display_modes[index].width;
         display_mode.h = screen_display_modes[index].height;
-        display_mode.refresh_rate = screen_display_modes[index].refresh;
         display_mode.pixel_density = 1.0;
         display_mode.internal = display_mode_data;
 
-        display_mode.format = screenToPixelFormat(screen_display_modes[index].format);
-        display_mode_data->screen_format = screen_display_modes[index].format;
+        if (screen_display_modes[index].flags & SCREEN_DISPLAY_MODE_REFRESH_VALID) {
+            screen_refresh_rate = screen_display_modes[index].refresh;
+        } else {
+            // Fallback
+            screen_refresh_rate = 60;
+        }
+        if (screen_display_modes[index].flags & SCREEN_DISPLAY_MODE_FORMAT_VALID) {
+            screen_format = screen_display_modes[index].format;
+        } else {
+            // Fallback
+            screen_format = SCREEN_FORMAT_RGBX8888;
+        }
+        display_mode.refresh_rate = screen_refresh_rate;
+        display_mode.format = screenToPixelFormat(screen_format);
+        display_mode_data->screen_format = screen_format;
         display_mode_data->screen_display_mode = screen_display_modes[index];
 
         // This op can fail if the mode already exists.
@@ -114,6 +128,10 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     return true;
 }
 
+#if 0
+// FIXME: This seems to invalidate the screen_display_t, causing issues with the
+// (get|set)_display_property_*() apis. For now, mode switching is emulated
+// instead.
 bool setDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData     *display_data = display->internal;
@@ -151,3 +169,27 @@ bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rec
     rect->h = size[1];
     return true;
 }
+#else
+bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
+    if (display->current_mode == NULL) {
+        return false;
+    }
+
+    rect->x = 0;
+    rect->y = 0;
+
+    // When an emulated, exclusive fullscreen window has focus, treat the mode dimensions as the display bounds.
+    if (display->fullscreen_window &&
+        display->fullscreen_window->fullscreen_exclusive &&
+        display->fullscreen_window->current_fullscreen_mode.w != 0 &&
+        display->fullscreen_window->current_fullscreen_mode.h != 0) {
+        rect->w = display->fullscreen_window->current_fullscreen_mode.w;
+        rect->h = display->fullscreen_window->current_fullscreen_mode.h;
+    } else {
+        rect->w = display->current_mode->w;
+        rect->h = display->current_mode->h;
+    }
+    return true;
+}
+#endif
