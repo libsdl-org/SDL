@@ -2321,14 +2321,14 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   increasing the API version and opting into extensions aside from the
  *   minimal set SDL requires.
  *
- * With the Metal backend:
- * - `SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1`: By default, macOS
- *   support requires what Apple calls "MTLGPUFamilyMac2" hardware or newer.
- *   However, an application can set this property to true to enable support
- *   for "MTLGPUFamilyMac1" hardware, if (and only if) the application does
- *   not write to sRGB textures. (For history's sake: MacFamily1 also does not
- *   support indirect command buffers, MSAA depth resolve, and stencil
- *   resolve/feedback, but these are not exposed features in SDL_GPU.)
+ * With the Metal backend: -
+ * `SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1`: By default, macOS
+ * support requires what Apple calls "MTLGPUFamilyMac2" hardware or newer.
+ * However, an application can set this property to true to enable support for
+ * "MTLGPUFamilyMac1" hardware, if (and only if) the application does not
+ * write to sRGB textures. (For history's sake: MacFamily1 also does not
+ * support indirect command buffers, MSAA depth resolve, and stencil
+ * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
