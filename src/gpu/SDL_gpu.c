@@ -3587,7 +3587,7 @@ XrResult SDL_CreateGPUXRSession(
     const XrSessionCreateInfo *createinfo,
     XrSession *session)
 {
-    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
 
     return device->CreateXRSession(device->driverData, createinfo, session);
 }
@@ -3610,7 +3610,7 @@ XrResult SDL_CreateGPUXRSwapchain(
     XrSwapchain *swapchain,
     SDL_GPUTexture ***textures)
 {
-    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
 
     return device->CreateXRSwapchain(device->driverData, session, createinfo, format, swapchain, textures);
 }
