@@ -644,8 +644,6 @@ static SDL_VideoDevice *createDevice(void)
 
     device->free = deleteDevice;
 
-    device->device_caps = VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED;
-
     return device;
 }
 
