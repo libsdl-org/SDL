@@ -27,62 +27,48 @@
 #include <errno.h>
 
 
-// TODO: Might need to iterate all windows and attach this cursor to each of
-//       them.
-static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
+static int SDLToScreenCursorShape(SDL_SystemCursor id)
 {
-    SDL_Cursor          *cursor;
-    SDL_CursorData      *impl;
-    screen_session_t    session;
-    screen_context_t    *context = getContext();
-
-    cursor = SDL_calloc(1, sizeof(SDL_Cursor));
-    if (cursor) {
-        impl = SDL_calloc(1, sizeof(SDL_CursorData));;
-        if (impl == NULL) {
-            SDL_free(cursor);
-            SDL_OutOfMemory();
-        }
-        impl->realized_shape = SCREEN_CURSOR_SHAPE_ARROW;
-
-        screen_create_session_type(&session, *context, SCREEN_EVENT_POINTER);
-        screen_set_session_property_iv(session, SCREEN_PROPERTY_CURSOR, &impl->realized_shape);
-
-        impl->session = session;
-        impl->is_visible = true;
-        cursor->internal = (void*)impl;
-    } else {
-        SDL_OutOfMemory();
-    }
-
-    return cursor;
-}
-
-static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
-{
-    SDL_Cursor          *cursor;
-    SDL_CursorData      *impl;
-    screen_session_t    session;
-    screen_context_t    *context = getContext();
-    int                 shape;
+    // This is reserved by screen, but still not used for anything.
+    int shape = -1;
 
     switch(id)
     {
+    case SDL_SYSTEM_CURSOR_DEFAULT:
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
+        shape = SCREEN_CURSOR_SHAPE_ARROW;
+        break;
+    case SDL_SYSTEM_CURSOR_TEXT:
+        shape = SCREEN_CURSOR_SHAPE_IBEAM;
+        break;
+    case SDL_SYSTEM_CURSOR_WAIT:
+        shape = SCREEN_CURSOR_SHAPE_WAIT;
+        break;
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        shape = SCREEN_CURSOR_SHAPE_CROSS;
+        break;
+    case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
+    case SDL_SYSTEM_CURSOR_MOVE:
+        shape = SCREEN_CURSOR_SHAPE_MOVE;
+        break;
+    case SDL_SYSTEM_CURSOR_POINTER:
+        shape = SCREEN_CURSOR_SHAPE_HAND;
+        break;
     default:
-        SDL_assert(0);
-        return NULL;
-    case SDL_SYSTEM_CURSOR_DEFAULT:     shape = SCREEN_CURSOR_SHAPE_ARROW; break;
-    case SDL_SYSTEM_CURSOR_TEXT:        shape = SCREEN_CURSOR_SHAPE_IBEAM; break;
-    case SDL_SYSTEM_CURSOR_WAIT:        shape = SCREEN_CURSOR_SHAPE_WAIT; break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:   shape = SCREEN_CURSOR_SHAPE_CROSS; break;
-    case SDL_SYSTEM_CURSOR_NWSE_RESIZE: shape = SCREEN_CURSOR_SHAPE_MOVE; break;
-    case SDL_SYSTEM_CURSOR_NESW_RESIZE: shape = SCREEN_CURSOR_SHAPE_MOVE; break;
-    case SDL_SYSTEM_CURSOR_EW_RESIZE:   shape = SCREEN_CURSOR_SHAPE_MOVE; break;
-    case SDL_SYSTEM_CURSOR_NS_RESIZE:   shape = SCREEN_CURSOR_SHAPE_MOVE; break;
-    case SDL_SYSTEM_CURSOR_MOVE:        shape = SCREEN_CURSOR_SHAPE_MOVE; break;
-    case SDL_SYSTEM_CURSOR_NOT_ALLOWED: shape = SCREEN_CURSOR_SHAPE_ARROW; break;
-    case SDL_SYSTEM_CURSOR_POINTER:     shape = SCREEN_CURSOR_SHAPE_HAND; break;
+        break;
     }
+    return shape;
+}
+
+static SDL_Cursor *genericCreateCursor(int shape)
+{
+    SDL_Cursor          *cursor;
+    SDL_CursorData      *impl;
+    screen_session_t    session;
+    screen_context_t    *context = getContext();
 
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
@@ -104,6 +90,22 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
     }
 
     return cursor;
+}
+
+static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
+{
+    return genericCreateCursor(SCREEN_CURSOR_SHAPE_ARROW);
+}
+
+static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
+{
+    int shape = SDLToScreenCursorShape(id);
+    if (shape < 0) {
+        SDL_assert(0);
+        return NULL;
+    }
+
+    return genericCreateCursor(shape);
 }
 
 static bool showCursor(SDL_Cursor * cursor)
@@ -148,10 +150,10 @@ static bool showCursor(SDL_Cursor * cursor)
 static void freeCursor(SDL_Cursor * cursor)
 {
     SDL_CursorData *impl = (SDL_CursorData*)cursor->internal;
-    SDL_assert(impl != NULL);
-
-    screen_destroy_session(impl->session);
-    SDL_free(impl);
+    if (impl != NULL) {
+        screen_destroy_session(impl->session);
+        SDL_free(impl);
+    }
     SDL_free(cursor);
 }
 

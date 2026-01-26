@@ -335,8 +335,7 @@ bool glSwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (eglMakeCurrent(egl_disp, NULL, NULL, impl->context) != EGL_TRUE) {
                 return false;
             }
-            if (eglDestroySurface(egl_disp, impl->surface) != EGL_TRUE) {
-            }
+            eglDestroySurface(egl_disp, impl->surface);
 
             surface = eglCreateWindowSurface(egl_disp, impl->conf, impl->window,
                                      (EGLint *)&egl_surf_attr);
