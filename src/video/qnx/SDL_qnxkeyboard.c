@@ -170,8 +170,7 @@ void handleKeyboardEvent(screen_event_t event)
 {
     int             val;
     int             cap;
-    const size_t    ascii_bytes = 2;
-    char            ascii_text[ascii_bytes];
+    char            ascii_text[2];
     SDL_Scancode    scancode;
 
     // Get the key value.
