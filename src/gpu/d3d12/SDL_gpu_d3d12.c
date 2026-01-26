@@ -9225,13 +9225,16 @@ static XrResult D3D12_CreateXRSession(
 {
 #ifdef HAVE_GPU_OPENXR
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
-    (void)createinfo; // We build our own session create info
+
+    // Copy out the existing next ptr so that we can append it to the end of the chain we create
+    const void *XR_MAY_ALIAS currentNextPtr = createinfo->next;
 
     XrGraphicsBindingD3D12KHR graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D12_KHR };
     graphicsBinding.device = renderer->device;
     graphicsBinding.queue = renderer->commandQueue;
+    graphicsBinding.next = currentNextPtr;
 
-    XrSessionCreateInfo sessionCreateInfo = { XR_TYPE_SESSION_CREATE_INFO };
+    XrSessionCreateInfo sessionCreateInfo = *createinfo;
     sessionCreateInfo.systemId = renderer->xrSystemId;
     sessionCreateInfo.next = &graphicsBinding;
 
