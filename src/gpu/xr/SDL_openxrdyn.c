@@ -263,9 +263,11 @@ SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void)
             openxr_load_refcount--;
             return false;
         }
-#if defined(SDL_PLATFORM_ANDROID) && DEBUG_DYNAMIC_OPENXR
+#if defined(SDL_PLATFORM_ANDROID)
         } else {
+#if DEBUG_DYNAMIC_OPENXR
             SDL_Log("SDL/OpenXR: Library already loaded (Android reload), skipping SDL_LoadObject");
+#endif
         }
 #endif
 
