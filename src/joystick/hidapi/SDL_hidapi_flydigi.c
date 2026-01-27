@@ -80,8 +80,6 @@ enum
 #define FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND 0x1C
 #define FLYDIGI_V2_INPUT_REPORT         0xEF
 
-#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-
 typedef struct
 {
     SDL_HIDAPI_Device *device;
