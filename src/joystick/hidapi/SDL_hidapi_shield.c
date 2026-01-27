@@ -29,7 +29,9 @@
 #ifdef SDL_JOYSTICK_HIDAPI_SHIELD
 
 // Define this if you want to log all packets from the controller
-// #define DEBUG_SHIELD_PROTOCOL
+#if 0
+#define DEBUG_SHIELD_PROTOCOL
+#endif
 
 #define CMD_BATTERY_STATE 0x07
 #define CMD_RUMBLE        0x39
@@ -138,6 +140,11 @@ static void HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 
 static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
+#ifdef SDL_PLATFORM_MACOS
+    // We hang for several seconds when trying to send output reports on macOS
+    return SDL_Unsupported();
+
+#else
     SDL_DriverShield_Context *ctx = (SDL_DriverShield_Context *)device->context;
     ShieldCommandReport_t cmd_pkt;
 
@@ -166,6 +173,8 @@ static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd
     }
 
     return true;
+
+#endif // MACOS
 }
 
 static bool HIDAPI_DriverShield_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
