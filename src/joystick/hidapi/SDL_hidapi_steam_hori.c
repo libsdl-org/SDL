@@ -32,8 +32,6 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_HORI_PROTOCOL*/
 
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-
 enum
 {
     SDL_GAMEPAD_BUTTON_HORI_QAM = 11,
