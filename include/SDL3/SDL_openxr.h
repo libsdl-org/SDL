@@ -84,15 +84,12 @@ typedef enum XrResult {
  * 
  * \param device a GPU context.
  * \param createinfo the create info for the OpenXR session, sans the system ID.
- * \param session an OpenXR session created for the given **device**.
+ * \param session a pointer filled in with an OpenXR session created for the given device.
  * \returns the result of the call.
  * 
  * \sa SDL_CreateGPUDeviceWithProperties
  */
-extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
-    SDL_GPUDevice *device,
-    const XrSessionCreateInfo *createinfo,
-    XrSession *session);
+extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(SDL_GPUDevice *device, const XrSessionCreateInfo *createinfo, XrSession *session);
 
 /**
  * Queries the GPU device for supported XR swapchain image formats.
@@ -101,26 +98,24 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
  * passed to SDL_free().
  *
  * \param device a GPU context.
- * \param session an OpenXR session created for the given **device**.
- * \param num_formats a pointer filled with the number of supported XR swapchain formats
- * \returns a dynamically allocated array with **num_formats** elements, or NULL on error
+ * \param session an OpenXR session created for the given device.
+ * \param num_formats a pointer filled with the number of supported XR swapchain formats.
+ * \returns a 0 terminated array of supported formats or NULL on failure;
+ *          call SDL_GetError() for more information. This should be freed
+ *          with SDL_free() when it is no longer needed.
  *
  * \sa SDL_CreateGPUXRSwapchain
  */
-extern SDL_DECLSPEC SDL_GPUTextureFormat* SDLCALL SDL_GetGPUXRSwapchainFormats(
-    SDL_GPUDevice *device,
-    XrSession session,
-    int *num_formats
-);
+extern SDL_DECLSPEC SDL_GPUTextureFormat * SDLCALL SDL_GetGPUXRSwapchainFormats(SDL_GPUDevice *device, XrSession session, int *num_formats);
 
 /**
  * Creates an OpenXR swapchain.
  * 
  * \param device a GPU context.
- * \param session an OpenXR session created for the given **device**.
+ * \param session an OpenXR session created for the given device.
  * \param createinfo the create info for the OpenXR swapchain, sans the format.
  * \param format a supported format for the OpenXR swapchain.
- * \param swapchain a pointer to store the created OpenXR swapchain.
+ * \param swapchain a pointer filled in with the created OpenXR swapchain.
  * \param textures a pointer to store the list of created swapchain images.
  * \returns the result of the call.
  * 
@@ -162,7 +157,8 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *de
  * This function will use the platform default OpenXR loader name, 
  * unless the `SDL_HINT_OPENXR_LIBRARY` hint is set.
  * 
- * \returns whether the call succeeded or not.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  * 
  * \threadsafety This function is not thread safe.
  * 
