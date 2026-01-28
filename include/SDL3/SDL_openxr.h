@@ -110,13 +110,17 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat * SDLCALL SDL_GetGPUXRSwapchainFormats(
 
 /**
  * Creates an OpenXR swapchain.
- * 
+ *
+ * The array returned via `textures` is sized according to
+ *`xrEnumerateSwapchainImages`, and thus should only be accessed via index
+ * values returned from `xrAcquireSwapchainImage`.
+ *
  * \param device a GPU context.
  * \param session an OpenXR session created for the given device.
  * \param createinfo the create info for the OpenXR swapchain, sans the format.
  * \param format a supported format for the OpenXR swapchain.
  * \param swapchain a pointer filled in with the created OpenXR swapchain.
- * \param textures a pointer to store the list of created swapchain images.
+ * \param textures a pointer filled in with the array of created swapchain images.
  * \returns the result of the call.
  * 
  * \sa SDL_CreateGPUDeviceWithProperties
