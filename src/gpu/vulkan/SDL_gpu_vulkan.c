@@ -12853,8 +12853,9 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
         return NULL;
     }
 
-    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat));
-    *retval = sdlFormat;
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
+    retval[0] = sdlFormat;
+    retval[1] = NULL;
     *num_formats = 1;
     return retval;
 #else
