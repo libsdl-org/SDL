@@ -3244,6 +3244,11 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         }
     }
 
+#ifdef SDL_PLATFORM_MACOS
+    // On macOS do nothing here since we detect Steam virtual gamepads
+    // in IOKit HID backends to ensure accuracy.
+    // See joystick/darwin/SDL_iokitjoystick.c and hidapi/mac/hid.c.
+#else
     const char *hint = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
     bool allow_steam_virtual_gamepad = SDL_GetStringBoolean(hint, false);
 #ifdef SDL_PLATFORM_WIN32
@@ -3259,6 +3264,7 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !allow_steam_virtual_gamepad;
     }
+#endif
 
     if (SDL_allowed_gamepads.num_included_entries > 0) {
         if (SDL_VIDPIDInList(vendor_id, product_id, &SDL_allowed_gamepads)) {
