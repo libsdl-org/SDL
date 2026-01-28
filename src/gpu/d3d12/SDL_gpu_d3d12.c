@@ -2904,8 +2904,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     const SDL_GPUComputePipelineCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
-    void *bytecode;
-    size_t bytecodeSize;
     ID3D12PipelineState *pipelineState;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
@@ -2913,8 +2911,8 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
             createinfo->code,
             createinfo->code_size,
             createinfo->format,
-            &bytecode,
-            &bytecodeSize)) {
+            NULL,
+            NULL)) {
         return NULL;
     }
 
@@ -2923,13 +2921,12 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         createinfo);
 
     if (rootSignature == NULL) {
-        SDL_free(bytecode);
         SET_STRING_ERROR_AND_RETURN("Could not create root signature!", NULL);
     }
 
     D3D12_COMPUTE_PIPELINE_STATE_DESC pipelineDesc;
-    pipelineDesc.CS.pShaderBytecode = bytecode;
-    pipelineDesc.CS.BytecodeLength = bytecodeSize;
+    pipelineDesc.CS.pShaderBytecode = createinfo->code;
+    pipelineDesc.CS.BytecodeLength = createinfo->code_size;
     pipelineDesc.pRootSignature = rootSignature->handle;
     pipelineDesc.CachedPSO.CachedBlobSizeInBytes = 0;
     pipelineDesc.CachedPSO.pCachedBlob = NULL;
@@ -2944,7 +2941,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     if (FAILED(res)) {
         D3D12_INTERNAL_SetError(renderer, "Could not create compute pipeline state", res);
-        SDL_free(bytecode);
         return NULL;
     }
 
@@ -2953,7 +2949,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     if (!computePipeline) {
         ID3D12PipelineState_Release(pipelineState);
-        SDL_free(bytecode);
         return NULL;
     }
 
