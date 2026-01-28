@@ -607,6 +607,13 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
         return NULL;
     }
 
+#ifndef HAVE_GPU_OPENXR
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false)) {
+        SDL_SetError("OpenXR is not enabled in this build of SDL");
+        return NULL;
+    }
+#endif
+
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
         gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
@@ -750,6 +757,13 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
     device->DestroyDevice(device);
+}
+
+XrResult SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->DestroyXRSwapchain(device->driverData, swapchain, swapchainImages);
 }
 
 int SDL_GetNumGPUDrivers(void)
@@ -3566,4 +3580,37 @@ SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat form
     default:
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
+}
+
+XrResult SDL_CreateGPUXRSession(
+    SDL_GPUDevice *device,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->CreateXRSession(device->driverData, createinfo, session);
+}
+
+SDL_GPUTextureFormat* SDL_GetGPUXRSwapchainFormats(
+    SDL_GPUDevice *device,
+    XrSession session,
+    int *num_formats)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
+
+    return device->GetXRSwapchainFormats(device->driverData, session, num_formats);
+}
+
+XrResult SDL_CreateGPUXRSwapchain(
+    SDL_GPUDevice *device,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->CreateXRSwapchain(device->driverData, session, createinfo, format, swapchain, textures);
 }
