@@ -12814,7 +12814,6 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
     XrResult result;
     Uint32 i, j, num_supported_formats;
     int64_t *supported_formats;
-    SDL_GPUTextureFormat found_format = SDL_GPU_TEXTUREFORMAT_INVALID;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
     result = renderer->xr->xrEnumerateSwapchainFormats(session, 0, &num_supported_formats, NULL);
@@ -12840,7 +12839,7 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
                 // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
                 if (SDLToVK_TextureFormat[j] == supported_formats[i]) {
                     vkFormat = supported_formats[i];
-                    found_format = j;
+                    sdlFormat = j;
                     break;
                 }
             }
@@ -12855,7 +12854,7 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
     }
 
     SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat));
-    *retval = found_format;
+    *retval = sdlFormat;
     *num_formats = 1;
     return retval;
 #else

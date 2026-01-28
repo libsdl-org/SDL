@@ -8990,13 +8990,35 @@ static XrResult D3D12_DestroyXRSwapchain(
     SDL_GPUTexture **swapchainImages)
 {
 #ifdef HAVE_GPU_OPENXR
-    // Note: The actual XR swapchain destruction is handled by the application calling xrDestroySwapchain.
-    // We just need to clean up our SDL wrappers here.
-    // The textures are externally managed (owned by OpenXR runtime), so we don't release the D3D12 resources.
-    (void)driverData;
-    (void)swapchain;
-    (void)swapchainImages;
-    return XR_SUCCESS;
+    XrResult result;
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    D3D12_Wait(driverData);
+
+    Uint32 swapchainCount;
+    result = renderer->xr->xrEnumerateSwapchainImages(swapchain, 0, &swapchainCount, NULL);
+    if (result != XR_SUCCESS) {
+        return result;
+    }
+
+    // We always want to destroy the swapchain images, so don't early return if xrDestroySwapchain fails for some reason
+    for (Uint32 i = 0; i < swapchainCount; i++) {
+        D3D12Texture *container = (D3D12Texture *)swapchainImages[i];
+
+        if (!container->externallyManaged) {
+            SDL_SetError("Invalid GPU Texture handle.");
+            return XR_ERROR_HANDLE_INVALID;
+        }
+
+        D3D12_INTERNAL_DestroyTexture(container);
+
+        // Free the container now that it's unused
+        SDL_free(container);
+    }
+
+    SDL_free(swapchainImages);
+
+    return renderer->xr->xrDestroySwapchain(swapchain);
 #else
     (void)driverData;
     (void)swapchain;
@@ -9015,7 +9037,6 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
     XrResult result;
     Uint32 i, j, num_supported_formats;
     int64_t *supported_formats;
-    SDL_GPUTextureFormat found_format = SDL_GPU_TEXTUREFORMAT_INVALID;
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
 
     result = renderer->xr->xrEnumerateSwapchainFormats(session, 0, &num_supported_formats, NULL);
@@ -9044,7 +9065,7 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
                 // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
                 if (SDLToD3D12_TextureFormat[j] == supported_formats[i]) {
                     dxgiFormat = (DXGI_FORMAT)supported_formats[i];
-                    found_format = j;
+                    sdlFormat = j;
                     break;
                 }
             }
@@ -9059,7 +9080,7 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
     }
 
     SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat));
-    *retval = found_format;
+    *retval = sdlFormat;
     *num_formats = 1;
     return retval;
 #else
@@ -9226,13 +9247,16 @@ static XrResult D3D12_CreateXRSession(
 {
 #ifdef HAVE_GPU_OPENXR
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
-    (void)createinfo; // We build our own session create info
+
+    // Copy out the existing next ptr so that we can append it to the end of the chain we create
+    const void *XR_MAY_ALIAS currentNextPtr = createinfo->next;
 
     XrGraphicsBindingD3D12KHR graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D12_KHR };
     graphicsBinding.device = renderer->device;
     graphicsBinding.queue = renderer->commandQueue;
+    graphicsBinding.next = currentNextPtr;
 
-    XrSessionCreateInfo sessionCreateInfo = { XR_TYPE_SESSION_CREATE_INFO };
+    XrSessionCreateInfo sessionCreateInfo = *createinfo;
     sessionCreateInfo.systemId = renderer->xrSystemId;
     sessionCreateInfo.next = &graphicsBinding;
 
