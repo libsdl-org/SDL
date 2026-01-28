@@ -12855,7 +12855,7 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
 
     SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
     retval[0] = sdlFormat;
-    retval[1] = NULL;
+    retval[1] = SDL_GPU_TEXTUREFORMAT_INVALID;
     *num_formats = 1;
     return retval;
 #else
