@@ -12,7 +12,6 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
@@ -281,7 +280,19 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
                 int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
 
-                SDLActivity.onNativePen(pointerId, SDLActivity.getMotionListener().getPenDeviceType(event.getDevice()), buttonState, action, x, y, p);
+                SDLGenericMotionListener_API14 motionListener = SDLActivity.getMotionListener();
+                int deviceType = motionListener.getPenDeviceType(event.getDevice());
+
+                SDLActivity.onNativePen(pointerId, deviceType, buttonState, action, x, y, p);
+
+                if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
+                    final int pid = pointerId;
+                    final float ax = x, ay = y, ap = p;
+                    motionListener.queuePenActionTimeout(v, pid, action,
+                        () -> SDLActivity.onNativePen(pid, deviceType, buttonState, MotionEvent.ACTION_CANCEL, ax, ay, ap));
+                } else {
+                    motionListener.updateLastPenAction(pointerId, action);
+                }
             } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
                 pointerId = event.getPointerId(i);
                 x = getNormalizedX(event.getX(i));

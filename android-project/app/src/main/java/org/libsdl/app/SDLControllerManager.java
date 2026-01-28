@@ -3,7 +3,9 @@ package org.libsdl.app;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import android.content.Context;
 import android.hardware.lights.Light;
@@ -705,6 +707,8 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
     protected static final int SDL_PEN_DEVICE_TYPE_DIRECT = 1;
     protected static final int SDL_PEN_DEVICE_TYPE_INDIRECT = 2;
 
+    protected HashMap<Integer, Integer[]> lastActionMap = new HashMap<Integer, Integer[]>();
+
     // Generic Motion (mouse hover, joystick...) events go here
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
@@ -744,6 +748,8 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                     case MotionEvent.ACTION_HOVER_ENTER:
                     case MotionEvent.ACTION_HOVER_MOVE:
                     case MotionEvent.ACTION_HOVER_EXIT:
+                        int pointerId = event.getPointerId(i);
+                        int deviceType = getPenDeviceType(event.getDevice());
                         x = event.getX(i);
                         y = event.getY(i);
                         float p = event.getPressure(i);
@@ -755,8 +761,14 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
 
                         // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
                         int buttons = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
+                        if (action == MotionEvent.ACTION_HOVER_EXIT) {
+                            final float ax = x, ay = y, ap = p;
+                            queuePenActionTimeout(v, pointerId, action, () -> SDLActivity.onNativePen(pointerId, deviceType, buttons, action, ax, ay, ap));
+                        } else {
+                            SDLActivity.onNativePen(pointerId, deviceType, buttons, action, x, y, p);
+                            updateLastPenAction(pointerId, action);
+                        }
 
-                        SDLActivity.onNativePen(event.getPointerId(i), getPenDeviceType(event.getDevice()), buttons, action, x, y, p);
                         consumed = true;
                         break;
                 }
@@ -764,6 +776,28 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
         }
 
         return consumed;
+    }
+
+    void queuePenActionTimeout(View v, int pointerId, int action, Runnable run) {
+        lastActionMap.put(pointerId, new Integer[] { action, action });
+
+        // if no action happened with the pointerId for 20ms, assume that this pen is no longer in proximity
+        v.postDelayed(() -> {
+            Integer[] val = lastActionMap.get(pointerId);
+            if (val != null && val[0] == action) {
+                if (val[1] == action)
+                    run.run();
+
+                lastActionMap.remove(pointerId);
+            }
+        }, 20);
+    }
+
+    void updateLastPenAction(int pointerId, int action) {
+        Integer[] val = lastActionMap.get(pointerId);
+        if (val != null) {
+            val[1] = action;
+        }
     }
 
     boolean supportsRelativeMouse() {
