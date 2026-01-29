@@ -12181,6 +12181,21 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->vkGetPhysicalDeviceProperties2KHR(
             renderer->physicalDevice,
             &renderer->physicalDeviceProperties);
+
+        /* FIXME: This is very much a last resort to avoid WIP drivers.
+         *
+         * As far as I know, the only drivers available to users that are also
+         * non-conformant are incomplete Mesa drivers. hasvk is one example.
+         *
+         * It'd be nice to detect this sooner, but if this device is truly the
+         * best device on the system, it's the same outcome anyhow.
+         * -flibit
+         */
+        if (renderer->physicalDeviceDriverProperties.conformanceVersion.major < 1) {
+            SDL_stack_free(physicalDevices);
+            SDL_stack_free(physicalDeviceExtensions);
+            return 0;
+        }
     } else {
         renderer->physicalDeviceProperties.pNext = NULL;
 
