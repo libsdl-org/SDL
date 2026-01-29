@@ -63,7 +63,9 @@
 #endif
 
 #ifdef SDL_PLATFORM_WIN32
+#include <initguid.h>
 #define COBJMACROS
+#include <dxgi1_2.h>
 #include <libavutil/hwcontext_d3d11va.h>
 #endif /* SDL_PLATFORM_WIN32 */
 
@@ -83,6 +85,7 @@ static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
 static Uint64 video_start;
 static bool software_only;
+static bool have_gpu_renderer;
 static bool has_eglCreateImage;
 #ifdef HAVE_EGL
 static bool has_EGL_EXT_image_dma_buf_import;
@@ -222,6 +225,8 @@ static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *dr
     }
 #endif
 
+    have_gpu_renderer = (SDL_strcmp(SDL_GetRendererName(renderer), SDL_GPU_RENDERER) == 0);
+
     return true;
 }
 
@@ -342,7 +347,7 @@ static bool SupportedPixelFormat(enum AVPixelFormat format)
         }
 #endif
 #ifdef SDL_PLATFORM_WIN32
-        if (d3d11_device && format == AV_PIX_FMT_D3D11) {
+        if ((have_gpu_renderer || d3d11_device) && format == AV_PIX_FMT_D3D11) {
             return true;
         }
 #endif
@@ -963,6 +968,93 @@ static bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
     return result;
 }
 
+static bool GetGPUTextureforD3D11Frame(AVFrame* frame, SDL_Texture** texture)
+{
+#ifdef SDL_PLATFORM_WIN32
+    AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
+    AVHWDeviceContext *device_ctx = frames->device_ctx;
+    AVD3D11VADeviceContext *d3d11va_ctx;
+    ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
+    UINT iSliceIndex = (UINT)(uintptr_t)frame->data[1];
+    HRESULT hr;
+    D3D11_TEXTURE2D_DESC tdesc;
+    ID3D11Texture2D *dx11_texture = NULL;
+    IDXGIResource1 *dxgi_resource = NULL;
+    IDXGIKeyedMutex *dxgi_keyed_mutex = NULL;
+    HANDLE shared_handle = INVALID_HANDLE_VALUE;
+    SDL_PropertiesID props;
+    bool result = false;
+
+    if (device_ctx->type != AV_HWDEVICE_TYPE_D3D11VA) {
+        SDL_SetError("Unexpected hardware device type");
+        return false;
+    }
+
+    /* Create a shared resource for this frame */
+    d3d11va_ctx = (AVD3D11VADeviceContext *)device_ctx->hwctx;
+
+    ID3D11Texture2D_GetDesc(pTexture, &tdesc);
+    tdesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+    tdesc.ArraySize = 1;
+    tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    hr = ID3D11Device_CreateTexture2D(d3d11va_ctx->device, &tdesc, NULL, &dx11_texture);
+    if (FAILED(hr)) {
+        SDL_SetError("Couldn't create D3D11 texture");
+        goto done;
+    }
+
+    /* Get the shared resource handle */
+    hr = ID3D11Texture2D_QueryInterface(dx11_texture, &IID_IDXGIResource1, (void **)&dxgi_resource);
+    if (FAILED(hr)) {
+        SDL_SetError("Couldn't query D3D11 resource");
+        goto done;
+    }
+
+    hr = IDXGIResource_GetSharedHandle(dxgi_resource, &shared_handle);
+    if (FAILED(hr)) {
+        SDL_SetError("Couldn't get shared handle");
+        goto done;
+    }
+
+    /* Get the keyed mutex */
+    hr = IDXGIResource1_QueryInterface(dxgi_resource, &IID_IDXGIKeyedMutex, (void **)&dxgi_keyed_mutex);
+    if (FAILED(hr)) {
+        SDL_SetError("Couldn't query DXGI keyed mutex");
+        goto done;
+    }
+
+    /* Copy the video frame to the shared resource */
+    IDXGIKeyedMutex_AcquireSync(dxgi_keyed_mutex, 0, INFINITE);
+    ID3D11DeviceContext_CopySubresourceRegion(d3d11va_ctx->device_context, (ID3D11Resource *)dx11_texture, 0, 0, 0, 0, (ID3D11Resource *)pTexture, iSliceIndex, NULL);
+    IDXGIKeyedMutex_ReleaseSync(dxgi_keyed_mutex, 0);
+    IDXGIKeyedMutex_Release(dxgi_keyed_mutex);
+
+    /* Cycle the texture from the previous frame */
+    if (*texture) {
+        SDL_DestroyTexture(*texture);
+    }
+
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
+    SDL_SetPointerProperty(props, SDL_PROP_GPU_TEXTURE_CREATE_DXGI_SHARED_HANDLE_POINTER, shared_handle);
+    *texture = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
+    if (*texture) {
+        result = true;
+    }
+
+done:
+    if (dxgi_resource) {
+        IDXGIResource_Release(dxgi_resource);
+    }
+    if (dx11_texture) {
+        ID3D11Texture2D_Release(dx11_texture);
+    }
+    return result;
+#else
+    return false;
+#endif
+}
+
 static bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
 #ifdef SDL_PLATFORM_WIN32
@@ -1015,7 +1107,11 @@ static bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture
     }
 
     props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
-    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
+    if (have_gpu_renderer) {
+        SDL_SetPointerProperty(props, SDL_PROP_GPU_TEXTURE_CREATE_PIXELBUFFER_POINTER, pPixelBuffer);
+    } else {
+        SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
+    }
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
@@ -1053,7 +1149,11 @@ static bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
     case AV_PIX_FMT_DRM_PRIME:
         return GetTextureForDRMFrame(frame, texture);
     case AV_PIX_FMT_D3D11:
-        return GetTextureForD3D11Frame(frame, texture);
+        if (have_gpu_renderer) {
+            return GetGPUTextureforD3D11Frame(frame, texture);
+        } else {
+            return GetTextureForD3D11Frame(frame, texture);
+        }
     case AV_PIX_FMT_VIDEOTOOLBOX:
         return GetTextureForVideoToolboxFrame(frame, texture);
     case AV_PIX_FMT_VULKAN:
@@ -1119,7 +1219,7 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         return;
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
 
     DisplayVideoFrame(frame);
@@ -1379,6 +1479,9 @@ int main(int argc, char *argv[])
 #endif
     if (SDL_GetHint(SDL_HINT_RENDER_DRIVER) != NULL) {
         CreateWindowAndRenderer(window_flags, SDL_GetHint(SDL_HINT_RENDER_DRIVER));
+    }
+    if (!window) {
+        CreateWindowAndRenderer(window_flags, "gpu");
     }
 #ifdef HAVE_EGL
     /* Try to create an EGL compatible window for DRM hardware frame support */
