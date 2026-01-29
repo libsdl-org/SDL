@@ -1,7 +1,7 @@
 QNX
 =======
 
-SDL port for QNX.
+SDL port for QNX, providing both screen and Wayland video backends.
 
 This was originally contributed by Elad Lahav for QNX 7.0.
 
@@ -23,7 +23,7 @@ to build it are,
 ```bash
 # Note, if you're cross-compiling, you will need to source qnxsdp-env.sh and
 # provide the path to a cmake toolchain file with -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN_DIR/qnx.nto.toolchain.cmake
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DSDL_X11=0 -DSDL_WAYLAND=1 -DSDL_VIDEO=1 -DSDL_AUDIO=1 -DSDL_JOYSTICK=1
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DSDL_X11=0
 cmake --build build
 cmake --install build
 ```
@@ -37,8 +37,8 @@ This is the easiest way to get your hands on SDL.
 
 You can find the cross-compiled build tools at https://github.com/qnx-ports/build-files
 
-## Notes
+## Notes - screen
 
-- Currently, only rendering with OpenGLES2 is supported.
+- Currently, only software and OpenGLES2 rendering is supported.
 - Unless your application is managed by a window manager capable of closing the application, you will need to quit it yourself.
 - Restraining the mouse to a window or warping the mouse cursor will not work.
