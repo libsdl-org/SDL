@@ -27,7 +27,11 @@
 #import <Cocoa/Cocoa.h>
 #import <UniformTypeIdentifiers/UTType.h>
 
+#ifdef SDL_VIDEO_DRIVER_COCOA
 extern void Cocoa_SetWindowHasModalDialog(SDL_Window *window, bool has_modal);
+#else
+#define Cocoa_SetWindowHasModalDialog(window, has_modal)
+#endif
 
 static void AddFileExtensionType(NSMutableArray *types, const char *pattern_ptr)
 {
