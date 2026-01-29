@@ -111,7 +111,7 @@
 #define CREATE_DXGI_FACTORY1_FUNC           "CreateDXGIFactory1"
 #define DXGI_GET_DEBUG_INTERFACE_FUNC       "DXGIGetDebugInterface"
 #define D3D12_GET_DEBUG_INTERFACE_FUNC      "D3D12GetDebugInterface"
-#define WINDOW_PROPERTY_DATA                "SDL_GPUD3D12WindowPropertyData"
+#define WINDOW_PROPERTY_DATA                "SDL.internal.gpu.d3d12.data"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
 #define MAX_ROOT_SIGNATURE_PARAMETERS         64
@@ -831,6 +831,8 @@ typedef struct D3D12Sampler
 typedef struct D3D12WindowData
 {
     SDL_Window *window;
+    D3D12Renderer *renderer;
+    int refcount;
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     D3D12XBOX_FRAME_PIPELINE_TOKEN frameToken;
 #else
@@ -7081,6 +7083,8 @@ static bool D3D12_ClaimWindow(
             return false;
         }
         windowData->window = window;
+        windowData->renderer = renderer;
+        windowData->refcount = 1;
 
         if (D3D12_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -7101,8 +7105,11 @@ static bool D3D12_ClaimWindow(
             return true;
         } else {
             SDL_free(windowData);
-            SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", false);
+            return false;
         }
+    } else if (windowData->renderer == renderer) {
+        ++windowData->refcount;
+        return true;
     } else {
         SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
     }
@@ -7116,7 +7123,15 @@ static void D3D12_ReleaseWindow(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SET_STRING_ERROR_AND_RETURN("Window already unclaimed!", );
+        return;
+    }
+    if (windowData->renderer != renderer) {
+        SDL_SetError("Window not claimed by this device");
+        return;
+    }
+    if (windowData->refcount > 1) {
+        --windowData->refcount;
+        return;
     }
 
     D3D12_Wait(driverData);

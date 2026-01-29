@@ -70,7 +70,7 @@ typedef struct VulkanExtensions
 #define LARGE_ALLOCATION_INCREMENT    67108864 // 64  MiB
 #define MAX_UBO_SECTION_SIZE          4096     // 4   KiB
 #define DESCRIPTOR_POOL_SIZE          128
-#define WINDOW_PROPERTY_DATA          "SDL_GPUVulkanWindowPropertyData"
+#define WINDOW_PROPERTY_DATA          "SDL.internal.gpu.vulkan.data"
 
 #define IDENTITY_SWIZZLE               \
     {                                  \
@@ -432,6 +432,8 @@ static VkSamplerAddressMode SDLToVK_SamplerAddressMode[] = {
 
 // Structures
 
+typedef struct VulkanRenderer VulkanRenderer;
+typedef struct VulkanCommandPool VulkanCommandPool;
 typedef struct VulkanMemoryAllocation VulkanMemoryAllocation;
 typedef struct VulkanBuffer VulkanBuffer;
 typedef struct VulkanBufferContainer VulkanBufferContainer;
@@ -666,6 +668,8 @@ typedef struct VulkanFramebuffer
 typedef struct WindowData
 {
     SDL_Window *window;
+    VulkanRenderer *renderer;
+    int refcount;
     SDL_GPUSwapchainComposition swapchainComposition;
     SDL_GPUPresentMode presentMode;
     bool needsSwapchainRecreate;
@@ -927,10 +931,6 @@ typedef struct VulkanFencePool
     Uint32 availableFenceCount;
     Uint32 availableFenceCapacity;
 } VulkanFencePool;
-
-typedef struct VulkanCommandPool VulkanCommandPool;
-
-typedef struct VulkanRenderer VulkanRenderer;
 
 typedef struct VulkanCommandBuffer
 {
@@ -9757,8 +9757,13 @@ static bool VULKAN_ClaimWindow(
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        windowData = SDL_calloc(1, sizeof(WindowData));
+        windowData = (WindowData *)SDL_calloc(1, sizeof(WindowData));
+        if (!windowData) {
+            return false;
+        }
         windowData->window = window;
+        windowData->renderer = renderer;
+        windowData->refcount = 1;
         windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;
         windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
 
@@ -9773,18 +9778,14 @@ static bool VULKAN_ClaimWindow(
 #endif
 
         SDL_VideoDevice *videoDevice = SDL_GetVideoDevice();
-        if (!videoDevice)
-        {
-            SDL_SetError("No video device found!");
+        if (!videoDevice) {
             SDL_free(windowData);
-            return false;
+            return SDL_SetError("No video device found");
         }
 
-        if (!videoDevice->Vulkan_CreateSurface)
-        {
-            SDL_SetError("Video device does not have Vulkan_CreateSurface implemented!");
+        if (!videoDevice->Vulkan_CreateSurface) {
             SDL_free(windowData);
-            return false;
+            return SDL_SetError("Video device does not implement Vulkan_CreateSurface");
         }
 
         // Each window must have its own surface.
@@ -9794,7 +9795,6 @@ static bool VULKAN_ClaimWindow(
                 renderer->instance,
                 NULL, // FIXME: VAllocationCallbacks
                 &windowData->surface)) {
-            SDL_SetError("Failed to create Vulkan surface!");
             SDL_free(windowData);
             return false;
         }
@@ -9830,8 +9830,11 @@ static bool VULKAN_ClaimWindow(
             SDL_free(windowData);
             return false;
         }
+    } else if (windowData->renderer == renderer) {
+        ++windowData->refcount;
+        return true;
     } else {
-        SET_STRING_ERROR_AND_RETURN("Window already claimed!", false);
+        SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
     }
 }
 
@@ -9844,6 +9847,14 @@ static void VULKAN_ReleaseWindow(
     Uint32 i;
 
     if (windowData == NULL) {
+        return;
+    }
+    if (windowData->renderer != renderer) {
+        SDL_SetError("Window not claimed by this device");
+        return;
+    }
+    if (windowData->refcount > 1) {
+        --windowData->refcount;
         return;
     }
 
