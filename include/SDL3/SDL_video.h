@@ -1560,6 +1560,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER`: the OpenVR Overlay Handle ID
  *   for the associated overlay window.
  *
+ * On QNX:
+ *
+ * - `SDL_PROP_WINDOW_QNX_WINDOW_POINTER`: the screen_window_t associated with
+ *   the window.
+ * - `SDL_PROP_WINDOW_QNX_SURFACE_POINTER`: the EGLSurface associated with
+ *   the window
+ *
  * On Vivante:
  *
  * - `SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER`: the EGLNativeDisplayType
@@ -1644,6 +1651,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                        "SDL.window.cocoa.window"
 #define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER                 "SDL.window.cocoa.metal_view_tag"
 #define SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER                    "SDL.window.openvr.overlay_id"
+#define SDL_PROP_WINDOW_QNX_WINDOW_POINTER                          "SDL.window.qnx.window"
+#define SDL_PROP_WINDOW_QNX_SURFACE_POINTER                         "SDL.window.qnx.surface"
 #define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
 #define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
 #define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"

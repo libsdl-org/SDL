@@ -277,7 +277,7 @@
 #define SDL_PLATFORM_OSF 1
 #endif
 
-#ifdef __QNXNTO__
+#if defined(__QNXNTO__) || defined(__QNX__)
 
 /**
  * A preprocessor macro that is only defined if compiling for QNX Neutrino.
