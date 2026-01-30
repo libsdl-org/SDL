@@ -1564,8 +1564,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_QNX_WINDOW_POINTER`: the screen_window_t associated with
  *   the window.
- * - `SDL_PROP_WINDOW_QNX_SURFACE_POINTER`: the EGLSurface associated with
- *   the window
+ * - `SDL_PROP_WINDOW_QNX_SURFACE_POINTER`: the EGLSurface associated with the
+ *   window
  *
  * On Vivante:
  *
