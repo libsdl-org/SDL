@@ -208,7 +208,7 @@
 #define GIP_MOTOR_LEFT_IMPULSE (1u << 3)
 #define GIP_MOTOR_ALL 0xF
 
-/* Extended Comand constants */
+/* Extended Command constants */
 #define GIP_EXTCMD_GET_CAPABILITIES 0x00
 #define GIP_EXTCMD_GET_TELEMETRY_DATA 0x01
 #define GIP_EXTCMD_GET_SERIAL_NUMBER 0x04
