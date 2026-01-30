@@ -43,6 +43,7 @@ static const char *common_usage[] = {
     "[--trackmem]",
     "[--randmem]",
     "[--no-color]",
+    "[--no-time]",
     "[--info all|video|modes|render|event|event_motion]",
     "[--log all|error|system|audio|video|render|input]",
     NULL
@@ -157,6 +158,10 @@ static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **ar
     }
     if (SDL_strcasecmp(argv[index], "--no-color") == 0) {
         SDLTest_Color = false;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--no-time") == 0) {
+        SDLTest_Time = false;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--randmem") == 0) {
