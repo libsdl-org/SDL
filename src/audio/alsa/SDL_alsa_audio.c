@@ -1021,7 +1021,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             SDL_SetError("ALSA: Couldn't set the period size: %s", ALSA_snd_strerror(status));
             return -1;
         }
-        // let approximate the minimun number of periods per buffer (we target a double buffer)
+        // let approximate the minimum number of periods per buffer (we target a double buffer)
         ctx->periods = 2;
         status = ALSA_snd_pcm_hw_params_set_periods_min(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {

@@ -132,7 +132,7 @@ bool DBUS_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 
     DBusMessageIter args, props;
     dbus->message_iter_init_append(msg, &args);
-    dbus->message_iter_append_basic(&args, DBUS_TYPE_STRING, &desktop_path);   // Setup app_uri paramter
+    dbus->message_iter_append_basic(&args, DBUS_TYPE_STRING, &desktop_path);   // Setup app_uri parameter
     dbus->message_iter_open_container(&args, DBUS_TYPE_ARRAY, "{sv}", &props); // Setup properties parameter
     DBusMessageIter key_it, value_it;
     // Set progress visible property
