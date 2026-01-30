@@ -80,13 +80,19 @@ typedef enum XrResult {
 #endif /* NO_SDL_OPENXR_TYPEDEFS */
 
 /**
- * Creates an OpenXR session. The OpenXR system ID is pulled from the passed GPU context.
- * 
+ * Creates an OpenXR session.
+ *
+ * The OpenXR system ID is pulled from the passed GPU context.
+ *
  * \param device a GPU context.
- * \param createinfo the create info for the OpenXR session, sans the system ID.
- * \param session a pointer filled in with an OpenXR session created for the given device.
+ * \param createinfo the create info for the OpenXR session, sans the system
+ *                   ID.
+ * \param session a pointer filled in with an OpenXR session created for the
+ *                given device.
  * \returns the result of the call.
- * 
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
  * \sa SDL_CreateGPUDeviceWithProperties
  */
 extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(SDL_GPUDevice *device, const XrSessionCreateInfo *createinfo, XrSession *session);
@@ -99,10 +105,13 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(SDL_GPUDevice *devic
  *
  * \param device a GPU context.
  * \param session an OpenXR session created for the given device.
- * \param num_formats a pointer filled with the number of supported XR swapchain formats.
- * \returns a 0 terminated array of supported formats or NULL on failure;
- *          call SDL_GetError() for more information. This should be freed
- *          with SDL_free() when it is no longer needed.
+ * \param num_formats a pointer filled with the number of supported XR
+ *                    swapchain formats.
+ * \returns a 0 terminated array of supported formats or NULL on failure; call
+ *          SDL_GetError() for more information. This should be freed with
+ *          SDL_free() when it is no longer needed.
+ *
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_CreateGPUXRSwapchain
  */
@@ -112,7 +121,7 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat * SDLCALL SDL_GetGPUXRSwapchainFormats(
  * Creates an OpenXR swapchain.
  *
  * The array returned via `textures` is sized according to
- *`xrEnumerateSwapchainImages`, and thus should only be accessed via index
+ * `xrEnumerateSwapchainImages`, and thus should only be accessed via index
  * values returned from `xrAcquireSwapchainImage`.
  *
  * Applications are still allowed to call `xrEnumerateSwapchainImages` on the
@@ -120,12 +129,16 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat * SDLCALL SDL_GetGPUXRSwapchainFormats(
  *
  * \param device a GPU context.
  * \param session an OpenXR session created for the given device.
- * \param createinfo the create info for the OpenXR swapchain, sans the format.
+ * \param createinfo the create info for the OpenXR swapchain, sans the
+ *                   format.
  * \param format a supported format for the OpenXR swapchain.
  * \param swapchain a pointer filled in with the created OpenXR swapchain.
- * \param textures a pointer filled in with the array of created swapchain images.
+ * \param textures a pointer filled in with the array of created swapchain
+ *                 images.
  * \returns the result of the call.
- * 
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
  * \sa SDL_CreateGPUDeviceWithProperties
  * \sa SDL_CreateGPUXRSession
  * \sa SDL_GetGPUXRSwapchainFormats
@@ -140,13 +153,18 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSwapchain(
     SDL_GPUTexture ***textures);
 
 /**
- * Destroys and OpenXR swapchain previously returned by SDL_CreateGPUXRSwapchain.
- * 
+ * Destroys and OpenXR swapchain previously returned by
+ * SDL_CreateGPUXRSwapchain.
+ *
  * \param device a GPU context.
- * \param swapchain a swapchain previously returned by SDL_CreateGPUXRSwapchain.
- * \param swapchainImages an array of swapchain images returned by the same call to SDL_CreateGPUXRSwapchain.
+ * \param swapchain a swapchain previously returned by
+ *                  SDL_CreateGPUXRSwapchain.
+ * \param swapchainImages an array of swapchain images returned by the same
+ *                        call to SDL_CreateGPUXRSwapchain.
  * \returns the result of the call.
- * 
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
  * \sa SDL_CreateGPUDeviceWithProperties
  * \sa SDL_CreateGPUXRSession
  * \sa SDL_CreateGPUXRSwapchain
@@ -154,47 +172,59 @@ extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSwapchain(
 extern SDL_DECLSPEC XrResult SDLCALL SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages);
 
 /**
- * Dynamically load the OpenXR loader. This can be called at any time.
- * 
- * SDL keeps a reference count of the OpenXR loader, calling this function multiple 
- * times will increment that count, rather than loading the library multiple times.
- * 
- * If not called, this will be implicitly called when creating a GPU device with OpenXR.
- * 
- * This function will use the platform default OpenXR loader name, 
- * unless the `SDL_HINT_OPENXR_LIBRARY` hint is set.
- * 
+ * Dynamically load the OpenXR loader.
+ *
+ * This can be called at any time.
+ *
+ * SDL keeps a reference count of the OpenXR loader, calling this function
+ * multiple times will increment that count, rather than loading the library
+ * multiple times.
+ *
+ * If not called, this will be implicitly called when creating a GPU device
+ * with OpenXR.
+ *
+ * This function will use the platform default OpenXR loader name, unless the
+ * `SDL_HINT_OPENXR_LIBRARY` hint is set.
+ *
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
- * 
+ *
  * \threadsafety This function is not thread safe.
- * 
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
  * \sa SDL_HINT_OPENXR_LIBRARY
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OpenXR_LoadLibrary(void);
 
 /**
  * Unload the OpenXR loader previously loaded by SDL_OpenXR_LoadLibrary.
- * 
- * SDL keeps a reference count of the OpenXR loader, calling this function will decrement that count. 
- * Once the reference count reaches zero, the library is unloaded.
- * 
+ *
+ * SDL keeps a reference count of the OpenXR loader, calling this function
+ * will decrement that count. Once the reference count reaches zero, the
+ * library is unloaded.
+ *
  * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_OpenXR_UnloadLibrary(void);
 
 /**
  * Get the address of the `xrGetInstanceProcAddr` function.
- * 
+ *
  * This should be called after either calling SDL_OpenXR_LoadLibrary() or
  * creating an OpenXR SDL_GPUDevice.
- * 
- * The actual type of the returned function pointer is PFN_xrGetInstanceProcAddr, 
- * but that isn't always available. You should include the OpenXR headers before this header, 
- * or cast the return value of this function to the correct type.
- * 
+ *
+ * The actual type of the returned function pointer is
+ * PFN_xrGetInstanceProcAddr, but that isn't always available. You should
+ * include the OpenXR headers before this header, or cast the return value of
+ * this function to the correct type.
+ *
  * \returns the function pointer for `xrGetInstanceProcAddr` or NULL on
  *          failure; call SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC PFN_xrGetInstanceProcAddr SDLCALL SDL_OpenXR_GetXrGetInstanceProcAddr(void);
 
