@@ -11877,26 +11877,53 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
         1  // VK_PHYSICAL_DEVICE_TYPE_CPU
     };
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
+    bool isConformant;
 
     VkPhysicalDeviceType deviceType;
-    if (physicalDeviceExtensions->MSFT_layered_driver) {
+    if (physicalDeviceExtensions->KHR_driver_properties || physicalDeviceExtensions->MSFT_layered_driver) {
         VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
+        VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
         VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
+        void** ppNext = &physicalDeviceProperties.pNext;
 
         physicalDeviceProperties.sType =
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        physicalDeviceProperties.pNext = &physicalDeviceLayeredDriverProperties;
 
-        physicalDeviceLayeredDriverProperties.sType =
-            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
-        physicalDeviceLayeredDriverProperties.pNext = NULL;
+        if (physicalDeviceExtensions->KHR_driver_properties) {
+            *ppNext = &physicalDeviceDriverProperties;
+            ppNext = &physicalDeviceDriverProperties.pNext;
 
+            physicalDeviceDriverProperties.sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+        }
+
+        if (physicalDeviceExtensions->MSFT_layered_driver) {
+            *ppNext = &physicalDeviceLayeredDriverProperties;
+            ppNext = &physicalDeviceLayeredDriverProperties.pNext;
+
+            physicalDeviceLayeredDriverProperties.sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
+        }
+
+        *ppNext = NULL;
         renderer->vkGetPhysicalDeviceProperties2KHR(
             physicalDevice,
             &physicalDeviceProperties);
 
-        if (physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
+        if (physicalDeviceExtensions->KHR_driver_properties) {
+            isConformant = (physicalDeviceDriverProperties.conformanceVersion.major >= 1);
+        } else {
+            isConformant = true; // We can't check this, so just assume it's conformant
+        }
+
+        if (physicalDeviceExtensions->MSFT_layered_driver && physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
             deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+
+            /* Dozen hasn't been tested for conformance and it probably won't be,
+             * but WSL may need this so let's be generous.
+             * -flibit
+             */
+            isConformant = true;
         } else {
             deviceType = physicalDeviceProperties.properties.deviceType;
         }
@@ -11906,6 +11933,7 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
             physicalDevice,
             &physicalDeviceProperties);
         deviceType = physicalDeviceProperties.deviceType;
+        isConformant = true; // We can't check this, so just assume it's conformant
     }
 
     if (renderer->requireHardwareAcceleration) {
@@ -11915,6 +11943,15 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
             // In addition to CPU, "Other" drivers (including layered drivers) don't count as hardware-accelerated
             return 0;
         }
+    }
+
+    /* As far as I know, the only drivers available to users that are also
+     * non-conformant are incomplete Mesa drivers and Vulkan-on-12. hasvk is one
+     * example of a non-conformant driver that's built by default.
+     * -flibit
+     */
+    if (!isConformant) {
+        return 0;
     }
 
     /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
@@ -12192,21 +12229,6 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->vkGetPhysicalDeviceProperties2KHR(
             renderer->physicalDevice,
             &renderer->physicalDeviceProperties);
-
-        /* FIXME: This is very much a last resort to avoid WIP drivers.
-         *
-         * As far as I know, the only drivers available to users that are also
-         * non-conformant are incomplete Mesa drivers. hasvk is one example.
-         *
-         * It'd be nice to detect this sooner, but if this device is truly the
-         * best device on the system, it's the same outcome anyhow.
-         * -flibit
-         */
-        if (renderer->physicalDeviceDriverProperties.conformanceVersion.major < 1) {
-            SDL_stack_free(physicalDevices);
-            SDL_stack_free(physicalDeviceExtensions);
-            return 0;
-        }
     } else {
         renderer->physicalDeviceProperties.pNext = NULL;
 
