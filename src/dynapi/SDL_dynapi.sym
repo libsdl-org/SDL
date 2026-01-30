@@ -1271,6 +1271,7 @@ SDL3_0.0.0 {
     SDL_LoadSurface_IO;
     SDL_LoadSurface;
     SDL_SetWindowFillDocument;
+    SDL_TryLockJoysticks;
     SDL_CreateGPUXRSession;
     SDL_GetGPUXRSwapchainFormats;
     SDL_CreateGPUXRSwapchain;

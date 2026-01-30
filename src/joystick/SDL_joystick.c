@@ -653,6 +653,15 @@ void SDL_LockJoysticks(void)
     ++SDL_joysticks_locked;
 }
 
+bool SDL_TryLockJoysticks(void)
+{
+    if (SDL_TryLockMutex(SDL_joystick_lock)) {
+        ++SDL_joysticks_locked;
+        return true;
+    }
+    return false;
+}
+
 void SDL_UnlockJoysticks(void)
 {
     bool last_unlock = false;

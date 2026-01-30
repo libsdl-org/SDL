@@ -1297,6 +1297,7 @@
 #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
 #define SDL_LoadSurface SDL_LoadSurface_REAL
 #define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL
+#define SDL_TryLockJoysticks SDL_TryLockJoysticks_REAL
 #define SDL_CreateGPUXRSession SDL_CreateGPUXRSession_REAL
 #define SDL_GetGPUXRSwapchainFormats SDL_GetGPUXRSwapchainFormats_REAL
 #define SDL_CreateGPUXRSwapchain SDL_CreateGPUXRSwapchain_REAL

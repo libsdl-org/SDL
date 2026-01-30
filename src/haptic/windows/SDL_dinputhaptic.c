@@ -599,7 +599,7 @@ static bool SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     DWORD *axes;
 
     // Set global stuff.
-    SDL_memset(dest, 0, sizeof(DIEFFECT));
+    SDL_zerop(dest);
     dest->dwSize = sizeof(DIEFFECT);     // Set the structure size.
     dest->dwSamplePeriod = 0;            // Not used by us.
     dest->dwGain = 10000;                // Gain is set globally, not locally.
@@ -1050,7 +1050,7 @@ bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *eff
     DIEFFECT temp;
 
     // Get the effect.
-    SDL_memset(&temp, 0, sizeof(DIEFFECT));
+    SDL_zero(temp);
     if (!SDL_SYS_ToDIEFFECT(haptic, &temp, data)) {
         goto err_update;
     }

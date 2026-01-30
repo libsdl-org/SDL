@@ -737,6 +737,7 @@ static bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
             glActiveTextureARBFunc(GL_TEXTURE0_ARB + image_index);
             glBindTexture(GL_TEXTURE_2D, textures[image_index]);
             glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_2D, image);
+            eglDestroyImage(display, image);
             ++image_index;
         }
     }
@@ -922,6 +923,7 @@ static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     glActiveTextureARBFunc(GL_TEXTURE0_ARB);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureID);
     glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_EXTERNAL_OES, image);
+    eglDestroyImage(display, image);
     return true;
 }
 #endif /* HAVE_EGL */

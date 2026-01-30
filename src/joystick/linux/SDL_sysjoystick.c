@@ -1539,7 +1539,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
         return NULL;
     }
 
-    SDL_memset(uniq_item, 0, sizeof(uniq_item));
+    SDL_zeroa(uniq_item);
     fd_item = open(item->path, O_RDONLY | O_CLOEXEC, 0);
     if (fd_item < 0) {
         return NULL;
@@ -1561,7 +1561,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
             continue;
         }
 
-        SDL_memset(uniq_sensor, 0, sizeof(uniq_sensor));
+        SDL_zeroa(uniq_sensor);
         fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         if (fd_sensor < 0) {
             continue;

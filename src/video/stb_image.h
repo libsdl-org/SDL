@@ -772,7 +772,7 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 // exposed in GCC/Clang is, sadly, not really suited for one-file libs.
 // New behavior: if compiled with -msse2, we use SSE2 without any
 // detection; if not, we don't use it at all.
-#define STBI_NO_SIMD
+// #define STBI_NO_SIMD /* Changed by SDL: use SDL_TARGETING("sse2") */
 #endif
 
 #if defined(__MINGW32__) && defined(STBI__X86_TARGET) && !defined(STBI_MINGW_ENABLE_SSE2) && !defined(STBI_NO_SIMD)
@@ -791,11 +791,13 @@ typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];
 #endif
 
 #if !defined(STBI_NO_SIMD) && (defined(STBI__X86_TARGET) || defined(STBI__X64_TARGET))
+#ifdef SDL_SSE2_INTRINSICS /* SDL change */
 #define STBI_SSE2
 #include <emmintrin.h>
 
 #ifdef _MSC_VER
 
+#if 0 /* SDL change (unused due to using SDL_HasSSE2) */
 #if _MSC_VER >= 1400  // not VC6
 #include <intrin.h> // __cpuid
 static int stbi__cpuid3(void)
@@ -816,14 +818,14 @@ static int stbi__cpuid3(void)
    return res;
 }
 #endif
+#endif /* SDL change */
 
 #define STBI_SIMD_ALIGN(type, name) __declspec(align(16)) type name
 
 #if !defined(STBI_NO_JPEG) && defined(STBI_SSE2)
 static int stbi__sse2_available(void)
 {
-   int info3 = stbi__cpuid3();
-   return ((info3 >> 26) & 1) != 0;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
@@ -836,11 +838,12 @@ static int stbi__sse2_available(void)
    // If we're even attempting to compile this on GCC/Clang, that means
    // -msse2 is on, which means the compiler is allowed to use SSE2
    // instructions at will, and so are we.
-   return 1;
+   return SDL_HasSSE2(); /* SDL change */
 }
 #endif
 
 #endif
+#endif /* SDL change (SDL_SSE2_INTRINSICS) */
 #endif
 
 // ARM NEON
@@ -2687,7 +2690,7 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
 // sse2 integer IDCT. not the fastest possible implementation but it
 // produces bit-identical results to the generic C version so it's
 // fully "transparent".
-static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
+static void SDL_TARGETING("sse2") stbi__idct_simd(stbi_uc *out, int out_stride, short data[64]) /* Changed by SDL: SDL_TARGETING("sse2") */
 {
    // This is constructed to match our regular (generic) integer IDCT exactly.
    __m128i row0, row1, row2, row3, row4, row5, row6, row7;
@@ -3687,7 +3690,12 @@ static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc 
 }
 
 #if defined(STBI_SSE2) || defined(STBI_NEON)
-static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)
+#ifdef STBI_SSE2 /* Added by SDL */
+#define TARGETING_SSE2 SDL_TARGETING("sse2") /* Added by SDL */
+#else
+#define TARGETING_SSE2
+#endif /* Added by SDL */
+static stbi_uc *TARGETING_SSE2 stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs) /* Changed by SDL: TARGETING_SSE2 */
 {
    // need to generate 2x2 samples for every one in input
    int i=0,t0,t1;
@@ -3843,7 +3851,7 @@ static void stbi__YCbCr_to_RGB_row(stbi_uc *out, const stbi_uc *y, const stbi_uc
 }
 
 #if defined(STBI_SSE2) || defined(STBI_NEON)
-static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc const *pcb, stbi_uc const *pcr, int count, int step)
+static void TARGETING_SSE2 stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc const *pcb, stbi_uc const *pcr, int count, int step) /* Changed by SDL: TARGETING_SSE2 */
 {
    int i = 0;
 

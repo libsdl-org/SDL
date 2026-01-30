@@ -71,23 +71,25 @@ typedef struct
 {
     SDL_SharedObject *lib;
     const char *libname;
+    const char *hint;
+    bool hint_default;
 } waylanddynlib;
 
 static waylanddynlib waylandlibs[] = {
-    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC },
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC, NULL, false },
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
-    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL },
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL, NULL, false },
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
-    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR },
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR, NULL, false },
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
-    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON },
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON, NULL, false },
 #endif
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
-    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR },
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR, SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, true },
 #endif
-    { NULL, NULL }
+    { NULL, NULL, NULL, false }
 };
 
 static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
@@ -173,6 +175,10 @@ bool SDL_WAYLAND_LoadSymbols(void)
         int *thismod = NULL;
         for (i = 0; i < SDL_arraysize(waylandlibs); i++) {
             if (waylandlibs[i].libname) {
+                if (waylandlibs[i].hint &&
+                    !SDL_GetHintBoolean(waylandlibs[i].hint, waylandlibs[i].hint_default)) {
+                    continue;
+                }
                 waylandlibs[i].lib = SDL_LoadObject(waylandlibs[i].libname);
             }
         }

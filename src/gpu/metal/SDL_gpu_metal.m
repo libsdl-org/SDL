@@ -37,7 +37,7 @@
 // Defines
 
 #define METAL_FIRST_VERTEX_BUFFER_SLOT 14
-#define WINDOW_PROPERTY_DATA           "SDL_GPUMetalWindowPropertyData"
+#define WINDOW_PROPERTY_DATA           "SDL.internal.gpu.metal.data"
 #define SDL_GPU_SHADERSTAGE_COMPUTE    2
 
 #define TRACK_RESOURCE(resource, type, array, count, capacity)   \
@@ -429,6 +429,8 @@ static MTLDepthClipMode SDLToMetal_DepthClipMode(
 
 // Structs
 
+typedef struct MetalRenderer MetalRenderer;
+
 typedef struct MetalTexture
 {
     id<MTLTexture> handle;
@@ -458,6 +460,8 @@ typedef struct MetalFence
 typedef struct MetalWindowData
 {
     SDL_Window *window;
+    MetalRenderer *renderer;
+    int refcount;
     SDL_MetalView view;
     CAMetalLayer *layer;
     SDL_GPUPresentMode presentMode;
@@ -528,8 +532,6 @@ typedef struct MetalUniformBuffer
     Uint32 writeOffset;
     Uint32 drawOffset;
 } MetalUniformBuffer;
-
-typedef struct MetalRenderer MetalRenderer;
 
 typedef struct MetalCommandBuffer
 {
@@ -3651,7 +3653,7 @@ static bool METAL_SupportsSwapchainComposition(
 }
 
 // This function assumes that it's called from within an autorelease pool
-static Uint8 METAL_INTERNAL_CreateSwapchain(
+static bool METAL_INTERNAL_CreateSwapchain(
     MetalRenderer *renderer,
     MetalWindowData *windowData,
     SDL_GPUSwapchainComposition swapchainComposition,
@@ -3723,7 +3725,7 @@ static Uint8 METAL_INTERNAL_CreateSwapchain(
     windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
     windowData->textureContainer.header.info.height = (Uint32)drawableSize.height;
 
-    return 1;
+    return true;
 }
 
 static bool METAL_SupportsPresentMode(
@@ -3753,6 +3755,8 @@ static bool METAL_ClaimWindow(
         if (windowData == NULL) {
             windowData = (MetalWindowData *)SDL_calloc(1, sizeof(MetalWindowData));
             windowData->window = window;
+            windowData->renderer = renderer;
+            windowData->refcount = 1;
 
             if (METAL_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
                 SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -3773,10 +3777,13 @@ static bool METAL_ClaimWindow(
                 return true;
             } else {
                 SDL_free(windowData);
-                SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
+                return false;
             }
+        } else if (windowData->renderer == renderer) {
+            ++windowData->refcount;
+            return true;
         } else {
-            SET_ERROR_AND_RETURN("%s", "Window already claimed!", false);
+            SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
         }
     }
 }
@@ -3790,7 +3797,15 @@ static void METAL_ReleaseWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
-            SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GPUDevice", );
+            return;
+        }
+        if (windowData->renderer != renderer) {
+            SDL_SetError("Window not claimed by this device");
+            return;
+        }
+        if (windowData->refcount > 1) {
+            --windowData->refcount;
+            return;
         }
 
         METAL_Wait(driverData);
@@ -4576,10 +4591,18 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 #ifdef SDL_PLATFORM_MACOS
         hasHardwareSupport = true;
+        bool allowMacFamily1 = SDL_GetBooleanProperty(
+            props,
+            SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN,
+            false);
         if (@available(macOS 10.15, *)) {
-            hasHardwareSupport = [device supportsFamily:MTLGPUFamilyMac2];
+            hasHardwareSupport = allowMacFamily1 ?
+                [device supportsFamily:MTLGPUFamilyMac1] :
+                [device supportsFamily:MTLGPUFamilyMac2];
         } else if (@available(macOS 10.14, *)) {
-            hasHardwareSupport = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
+            hasHardwareSupport = allowMacFamily1 ?
+                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v4] :
+                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
         }
 #elif defined(SDL_PLATFORM_VISIONOS)
         hasHardwareSupport = true;

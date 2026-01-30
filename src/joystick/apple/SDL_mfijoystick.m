@@ -162,6 +162,13 @@ static bool IsControllerSwitchJoyConPair(GCController *controller)
     }
     return false;
 }
+static bool IsControllerNVIDIASHIELD(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"NVIDIA Controller"]) {
+        return true;
+    }
+    return false;
+}
 static bool IsControllerStadia(GCController *controller)
 {
     if ([controller.vendorName hasPrefix:@"Stadia"]) {
@@ -343,6 +350,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     device->is_ps5 = IsControllerPS5(controller);
     device->is_switch_pro = IsControllerSwitchPro(controller);
     device->is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
+    device->is_shield = IsControllerNVIDIASHIELD(controller);
     device->is_stadia = IsControllerStadia(controller);
     device->is_backbone_one = IsControllerBackboneOne(controller);
     device->is_switch_joyconL = IsControllerSwitchJoyConL(controller);
@@ -354,11 +362,13 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         (device->is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS5)) ||
         (device->is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO)) ||
         (device->is_switch_joycon_pair && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR, 0, "")) ||
+        (device->is_shield && HIDAPI_IsDevicePresent(USB_VENDOR_NVIDIA, USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104, 0, "")) ||
         (device->is_stadia && HIDAPI_IsDevicePresent(USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER, 0, "")) ||
         (device->is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
         (device->is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, "")) ||
         (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
-        (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, "")))) {
+        (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
+        (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, ""))) {
         // The HIDAPI driver is taking care of this device
         return false;
     }
@@ -492,7 +502,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         subtype = 4;
 
 #ifdef DEBUG_CONTROLLER_PROFILE
-        NSLog(@"Elements used:\n", controller.vendorName);
+        NSLog(@"Elements used:\n");
         for (id key in device->buttons) {
             NSLog(@"\tButton: %@ (%s)\n", key, elements[key].analog ? "analog" : "digital");
         }

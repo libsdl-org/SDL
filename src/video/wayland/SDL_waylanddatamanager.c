@@ -64,7 +64,7 @@ static int sigtimedwait(const sigset_t *set, siginfo_t *info, const struct times
             if (sigismember(set, signo) && sigismember(&pending, signo)) {
                 if (!sigwait(set, &signo)) {
                     if (info) {
-                        SDL_memset(info, 0, sizeof *info);
+                        SDL_zerop(info);
                         info->si_signo = signo;
                     }
                     return signo;

@@ -79,7 +79,7 @@ bool VITA_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SD
     // SDL_memset the buffer to black
     SDL_memset(data->buffer, 0x0, SCREEN_W * SCREEN_H * 4);
 
-    SDL_memset(&framebuf, 0x00, sizeof(SceDisplayFrameBuf));
+    SDL_zero(framebuf);
     framebuf.size = sizeof(SceDisplayFrameBuf);
     framebuf.base = data->buffer;
     framebuf.pitch = SCREEN_W;

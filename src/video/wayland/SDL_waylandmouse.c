@@ -1189,12 +1189,14 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     Wayland_PointerObject obj;
 
     wl_list_for_each (seat, &d->seat_list, link) {
-        obj.wl_pointer = seat->pointer.wl_pointer;
-        obj.is_pointer = true;
-        if (mouse->focus && mouse->focus->internal == seat->pointer.focus) {
-            Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, seat->pointer.focus, seat->pointer.enter_serial, cursor);
-        } else if (!seat->pointer.focus) {
-            Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
+        if (seat->pointer.wl_pointer) {
+            obj.wl_pointer = seat->pointer.wl_pointer;
+            obj.is_pointer = true;
+            if (mouse->focus && mouse->focus->internal == seat->pointer.focus) {
+                Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, seat->pointer.focus, seat->pointer.enter_serial, cursor);
+            } else if (!seat->pointer.focus) {
+                Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
+            }
         }
 
         SDL_WaylandPenTool *tool;

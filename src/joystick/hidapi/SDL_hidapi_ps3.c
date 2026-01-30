@@ -32,8 +32,6 @@
 // Define this if you want to log all packets from the controller
 // #define DEBUG_PS3_PROTOCOL
 
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-
 typedef enum
 {
     k_EPS3ReportIdState = 1,

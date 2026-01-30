@@ -450,7 +450,7 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         // TODO do not adjust for MOMO wheels, when support is added
         expand_a = expand_a >> 1;
 
-        SDL_memset(cmd, 0x00, sizeof(cmd));
+        SDL_zeroa(cmd);
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
         cmd[2] = (Uint8)(expand_a / 0xaaaa);
@@ -463,7 +463,7 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         }
 
         // enable
-        SDL_memset(cmd, 0x00, sizeof(cmd));
+        SDL_zeroa(cmd);
         cmd[0] = 0x14;
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
@@ -490,7 +490,7 @@ static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
         SDL_OutOfMemory();
         return false;
     }
-    SDL_memset(ctx, 0, sizeof(SDL_DriverLg4ff_Context));
+    SDL_zerop(ctx);
 
     device->context = ctx;
     device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;

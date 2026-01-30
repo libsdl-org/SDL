@@ -64,10 +64,12 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
     dbus_bool_t (*connection_read_write_dispatch)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
+    dbus_bool_t (*type_is_fixed)(int);
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
     DBusMessage *(*message_new_signal)(const char *, const char *, const char *);
+    void (*message_set_no_reply)(DBusMessage *, dbus_bool_t);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
     void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);
@@ -100,14 +102,19 @@ extern void SDL_DBus_Quit(void);
 extern SDL_DBusContext *SDL_DBus_GetContext(void);
 
 // These use the built-in Session connection.
-extern bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethod(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryProperty(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
 
 // These use whatever connection you like.
-extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+
+// Used to free any reply returned from SDL_DBus_CallMethod() and SDL_DBus_QueryProperty()
+extern void SDL_DBus_FreeReply(DBusMessage **saved_reply);
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);

@@ -1305,6 +1305,7 @@ SDL_DYNAPI_PROC(SDL_Surface*,SDL_RotateSurface,(SDL_Surface *a,float b),(a,b),re
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface_IO,(SDL_IOStream *a,bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface,(const char *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowFillDocument,(SDL_Window *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_TryLockJoysticks,(void),(),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a,const XrSessionCreateInfo *b,XrSession *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_GPUTextureFormat*,SDL_GetGPUXRSwapchainFormats,(SDL_GPUDevice *a,XrSession b,int *c),(a,b,c),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a,XrSession b,const XrSwapchainCreateInfo *c,SDL_GPUTextureFormat d,XrSwapchain *e,SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
