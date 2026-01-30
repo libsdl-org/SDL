@@ -11882,8 +11882,8 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
     VkPhysicalDeviceType deviceType;
     if (physicalDeviceExtensions->KHR_driver_properties || physicalDeviceExtensions->MSFT_layered_driver) {
         VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
-        VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
-        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties;
+        VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = { 0 };
+        VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties = { 0 };
         void** ppNext = &physicalDeviceProperties.pNext;
 
         physicalDeviceProperties.sType =
