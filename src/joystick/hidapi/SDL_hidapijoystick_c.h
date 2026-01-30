@@ -47,6 +47,7 @@
 #define SDL_JOYSTICK_HIDAPI_LG4FF
 #define SDL_JOYSTICK_HIDAPI_8BITDO
 #define SDL_JOYSTICK_HIDAPI_FLYDIGI
+#define SDL_JOYSTICK_HIDAPI_GAMESIR
 #define SDL_JOYSTICK_HIDAPI_GIP
 #define SDL_JOYSTICK_HIDAPI_SINPUT
 #define SDL_JOYSTICK_HIDAPI_ZUIKI
@@ -173,6 +174,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
 

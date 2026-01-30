@@ -141,6 +141,9 @@ extern bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id);
 // Function to return whether a joystick is a Flydigi controller
 extern bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id);
 
+// Function to return whether a joystick is a GameSir controller
+extern bool SDL_IsJoystickGameSirController(Uint16 vendor_id, Uint16 product_id);
+
 // Function to return whether a joystick is a Steam Deck
 extern bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
 
