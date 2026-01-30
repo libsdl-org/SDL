@@ -115,6 +115,9 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat * SDLCALL SDL_GetGPUXRSwapchainFormats(
  *`xrEnumerateSwapchainImages`, and thus should only be accessed via index
  * values returned from `xrAcquireSwapchainImage`.
  *
+ * Applications are still allowed to call `xrEnumerateSwapchainImages` on the
+ * returned XrSwapchain if they need to get the exact size of the array.
+ *
  * \param device a GPU context.
  * \param session an OpenXR session created for the given device.
  * \param createinfo the create info for the OpenXR swapchain, sans the format.
