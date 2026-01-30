@@ -25,6 +25,7 @@
 
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
+#include <CoreVideo/CoreVideo.h>
 
 #include "../SDL_sysgpu.h"
 
@@ -1430,6 +1431,49 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor new];
     id<MTLTexture> texture;
     MetalTexture *metalTexture;
+    CVPixelBufferRef pixelbuffer = nil;
+    IOSurfaceRef surface = nil;
+    NSUInteger plane = 0;
+
+    pixelbuffer = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_PIXELBUFFER_POINTER, nil);
+    if (pixelbuffer) {
+        surface = CVPixelBufferGetIOSurface(pixelbuffer);
+        if (!surface) {
+            SET_STRING_ERROR_AND_RETURN("CVPixelBufferGetIOSurface() failed", NULL);
+        }
+
+        OSType format = CVPixelBufferGetPixelFormatType(pixelbuffer);
+        switch (format) {
+        case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
+        case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange:
+            switch (createinfo->format) {
+            case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+                plane = 0;
+                break;
+            case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+                plane = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
+        case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange:
+            switch (createinfo->format) {
+            case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
+                plane = 0;
+                break;
+            case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
+                plane = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+    }
 
     textureDescriptor.textureType = SDLToMetal_TextureType(createinfo->type, createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1);
     textureDescriptor.pixelFormat = SDLToMetal_TextureFormat(createinfo->format);
@@ -1471,7 +1515,11 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
         textureDescriptor.usage |= MTLTextureUsageShaderWrite;
     }
 
-    texture = [renderer->device newTextureWithDescriptor:textureDescriptor];
+    if (surface) {
+        texture = [renderer->device newTextureWithDescriptor:textureDescriptor iosurface:surface plane:plane];
+    } else {
+        texture = [renderer->device newTextureWithDescriptor:textureDescriptor];
+    }
     if (texture == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create MTLTexture!");
         return NULL;
