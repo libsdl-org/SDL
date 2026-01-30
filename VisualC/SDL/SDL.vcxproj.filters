@@ -981,6 +981,15 @@
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
@@ -1953,6 +1962,26 @@
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c">
       <Filter>gpu</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\process\SDL_process.c" />
+    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c" />
+    <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
+    <ClCompile Include="..\..\src\storage\steam\SDL_steamstorage.c" />
+    <ClCompile Include="..\..\src\storage\SDL_storage.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam_triton.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>

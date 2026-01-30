@@ -1272,6 +1272,13 @@ SDL3_0.0.0 {
     SDL_LoadSurface;
     SDL_SetWindowFillDocument;
     SDL_TryLockJoysticks;
+    SDL_CreateGPUXRSession;
+    SDL_GetGPUXRSwapchainFormats;
+    SDL_CreateGPUXRSwapchain;
+    SDL_DestroyGPUXRSwapchain;
+    SDL_OpenXR_LoadLibrary;
+    SDL_OpenXR_UnloadLibrary;
+    SDL_OpenXR_GetXrGetInstanceProcAddr;
     # extra symbols go here (don't modify this line)
   local: *;
 };
