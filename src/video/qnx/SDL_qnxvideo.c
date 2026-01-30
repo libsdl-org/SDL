@@ -340,6 +340,10 @@ static SDL_VideoDevice *createDevice(void)
     device->GL_UnloadLibrary = glUnloadLibrary;
 
     device->free = deleteDevice;
+
+    // TODO: Is this needed?
+    device->device_caps = VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
+
     return device;
 }
 
