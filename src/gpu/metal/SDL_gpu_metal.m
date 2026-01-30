@@ -22,10 +22,17 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_GPU_METAL
+#if defined(SDL_PLATFORM_MACOS) && !defined(SDL_GPU_NO_DISPLAYLINK)
+#define SDL_DISPLAY_LINK_AVAILABLE
+#endif
 
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
-
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+#include <CoreVideo/CoreVideo.h> // CVDisplayLink
+#include <Cocoa/Cocoa.h>  // NSWindow
+#include <CoreGraphics/CoreGraphics.h> // CGDirectDisplayID
+#endif
 #include "../SDL_sysgpu.h"
 
 // Defines
@@ -464,6 +471,19 @@ typedef struct MetalWindowData
     MetalTextureContainer textureContainer;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
     Uint32 frameCounter;
+
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+    CVDisplayLinkRef displayLink;
+    // used for checking if the window is moved to a different monitor
+    CGDirectDisplayID monitor;
+    // number of command buffers waiting for presentation
+    SDL_AtomicInt undisplayedFrameCount;
+
+    bool displayLinkSignaled;
+    SDL_Mutex* displayReadyMutex;
+    SDL_Condition* displayReadyConditional;
+    Uint32 monitorCheckInterval;
+#endif
 } MetalWindowData;
 
 typedef struct MetalShader
@@ -633,6 +653,7 @@ struct MetalRenderer
     id<MTLCommandQueue> queue;
 
     bool debugMode;
+    bool useDisplayLink;
     SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
@@ -3738,6 +3759,124 @@ static bool METAL_SupportsPresentMode(
     }
 }
 
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+static CVReturn METAL_INTERNAL_DisplayLinkCallback(CVDisplayLinkRef displayLink,
+                             const CVTimeStamp *now,
+                             const CVTimeStamp *outputTime,
+                             CVOptionFlags flagsIn,
+                             CVOptionFlags *flagsOut,
+                             void *displayLinkContext) {
+
+    MetalWindowData *windowData = (MetalWindowData *)displayLinkContext;
+    SDL_LockMutex(windowData->displayReadyMutex);
+    windowData->displayLinkSignaled = true;
+    SDL_SignalCondition(windowData->displayReadyConditional);
+    SDL_UnlockMutex(windowData->displayReadyMutex);
+    return kCVReturnSuccess;
+}
+
+// must be only called from the ui thread!
+static CGDirectDisplayID METAL_INTERNAL_GetWindowMonitor(SDL_Window* window) {
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    if (props == 0) {
+        SDL_LogError(
+            SDL_LOG_CATEGORY_GPU,
+            "Cannot get screen id for window data");
+        return 0;
+    }
+
+    // Query the NSWindow pointer
+    NSWindow* cocoaWindow = (__bridge NSWindow*)SDL_GetPointerProperty(
+        props,
+        SDL_PROP_WINDOW_COCOA_WINDOW_POINTER,  // property name
+        NULL
+    );
+
+    CGDirectDisplayID id =
+        (CGDirectDisplayID)[cocoaWindow.screen.deviceDescription[@"NSScreenNumber"] unsignedIntValue];
+
+    return id;
+}
+
+static void METAL_INTERNAL_CreateDisplayLink(SDL_Window* window) {
+    MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
+
+    windowData->monitor = METAL_INTERNAL_GetWindowMonitor(window);
+    windowData->displayReadyConditional = SDL_CreateCondition();
+    windowData->displayReadyMutex = SDL_CreateMutex();
+
+    CVDisplayLinkCreateWithActiveCGDisplays(&windowData->displayLink);
+    CVDisplayLinkSetOutputCallback(windowData->displayLink, &METAL_INTERNAL_DisplayLinkCallback, windowData);
+    CVDisplayLinkStart(windowData->displayLink);
+    CVDisplayLinkSetCurrentCGDisplay(windowData->displayLink, windowData->monitor);
+}
+
+static void METAL_INTERNAL_ReleaseDisplayLink(SDL_Window* window) {
+    MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
+    if(windowData->displayLink == NULL)
+        return;
+
+    CVDisplayLinkStop(windowData->displayLink);
+    CVDisplayLinkRelease(windowData->displayLink);
+    SDL_DestroyMutex(windowData->displayReadyMutex);
+    SDL_DestroyCondition(windowData->displayReadyConditional);
+}
+
+static void METAL_INTERNAL_WaitForDisplayLink(MetalWindowData* windowData, int maxUndisplayedFrames) {
+
+    SDL_LockMutex(windowData->displayReadyMutex);
+    while(!windowData->displayLinkSignaled)
+        SDL_WaitCondition(windowData->displayReadyConditional, windowData->displayReadyMutex);
+
+    // usually when the window is minimized or not in focus, refresh rate massively goes down
+    // so we can wait for that (display link doesn't know this and still fires at monitor refresh rate)
+    // if we don't do this, the four frame queue will persist once the window goes back in focus.
+    //
+    // currently the frames in flight implementation is broken and we can't rely on that,
+    // the two could be combined in a future pr
+    //
+    // has to be guarded by @availble since we don't know how many frames are waiting for presentation
+    // before that. it could be tied to the number of active command buffers in those older versions,
+    // this is something to be tested, but thats not the case at all anymore
+    if(@available(macOS 10.15.4, *)) {
+        if(SDL_GetAtomicInt(&windowData->undisplayedFrameCount) > maxUndisplayedFrames) {
+            windowData->displayLinkSignaled = false;
+            while(!windowData->displayLinkSignaled)
+                SDL_WaitCondition(windowData->displayReadyConditional, windowData->displayReadyMutex);
+        }
+    }
+
+    SDL_UnlockMutex(windowData->displayReadyMutex);
+}
+
+static bool METAL_INTERNAL_DisplayLinkReady(MetalWindowData* windowData, int maxUndisplayedFrames) {
+    if(SDL_GetAtomicInt(&windowData->undisplayedFrameCount) > maxUndisplayedFrames)
+        return false;
+
+    bool result;
+    SDL_LockMutex(windowData->displayReadyMutex);
+    result = windowData->displayLinkSignaled;
+    SDL_UnlockMutex(windowData->displayReadyMutex);
+
+    return result;
+}
+
+static void METAL_INTERNAL_CheckMonitorChange(MetalWindowData* windowData) {
+    windowData->monitorCheckInterval++;
+
+    // check every 120 refreshes or so if the window was dragged across onto another moniter
+    if( windowData->monitorCheckInterval >= 120) {
+        windowData->monitorCheckInterval = 0;
+        CGDirectDisplayID newMonitorId = METAL_INTERNAL_GetWindowMonitor(windowData->window);
+        if(newMonitorId != windowData->monitor) {
+            windowData->monitor = newMonitorId;
+            CVDisplayLinkSetCurrentCGDisplay(windowData->displayLink, windowData->monitor);
+        }
+    }
+}
+
+#endif
+
 static bool METAL_ClaimWindow(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
@@ -3766,6 +3905,10 @@ static bool METAL_ClaimWindow(
                 renderer->claimedWindows[renderer->claimedWindowCount] = windowData;
                 renderer->claimedWindowCount += 1;
 
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+                if(renderer->useDisplayLink)
+                    METAL_INTERNAL_CreateDisplayLink(window);
+#endif
                 SDL_UnlockMutex(renderer->windowLock);
 
                 return true;
@@ -3803,6 +3946,14 @@ static void METAL_ReleaseWindow(
         }
 
         METAL_Wait(driverData);
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+        if(renderer->useDisplayLink)
+            METAL_INTERNAL_ReleaseDisplayLink(window);
+
+        while(SDL_GetAtomicInt(&windowData->undisplayedFrameCount) != 0) {
+            // spin
+        }
+#endif
         SDL_Metal_DestroyView(windowData->view);
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
             if (windowData->inFlightFences[i] != NULL) {
@@ -3821,7 +3972,6 @@ static void METAL_ReleaseWindow(
             }
         }
         SDL_UnlockMutex(renderer->windowLock);
-
         SDL_free(windowData);
 
         SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
@@ -3839,7 +3989,11 @@ static bool METAL_WaitForSwapchain(
         if (windowData == NULL) {
             SET_STRING_ERROR_AND_RETURN("Cannot wait for a swapchain from an unclaimed window!", false);
         }
-
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+        if(renderer->useDisplayLink && windowData->presentMode != SDL_GPU_PRESENTMODE_IMMEDIATE) {
+            METAL_INTERNAL_WaitForDisplayLink(windowData, renderer->allowedFramesInFlight);
+        }
+#endif
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
             if (!METAL_WaitForFences(
                 driverData,
@@ -3880,6 +4034,21 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
         if (windowData == NULL) {
             SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GPUDevice", false);
         }
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+        if(renderer->useDisplayLink && windowData->presentMode != SDL_GPU_PRESENTMODE_IMMEDIATE) {
+            if(block) {
+                METAL_INTERNAL_WaitForDisplayLink(windowData, renderer->allowedFramesInFlight);
+            } else {
+                if(!METAL_INTERNAL_DisplayLinkReady(windowData, renderer->allowedFramesInFlight))
+                    return true;
+            }
+
+            SDL_LockMutex(windowData->displayReadyMutex);
+            windowData->displayLinkSignaled = false;
+            SDL_UnlockMutex(windowData->displayReadyMutex);
+            METAL_INTERNAL_CheckMonitorChange(windowData);
+        }
+#endif
 
         // Update the window size
         drawableSize = windowData->layer.drawableSize;
@@ -4070,6 +4239,19 @@ static bool METAL_Submit(
         // Enqueue present requests, if applicable
         for (Uint32 i = 0; i < metalCommandBuffer->windowDataCount; i += 1) {
             MetalWindowData *windowData = metalCommandBuffer->windowDatas[i];
+
+#ifdef SDL_DISPLAY_LINK_AVAILABLE
+            if(@available(macOS 10.15.4, *)) {
+                if(renderer->useDisplayLink) {
+                    SDL_AddAtomicInt(&windowData->undisplayedFrameCount, +1);
+
+                    [windowData->drawable addPresentedHandler:^(id<MTLDrawable> drawable) {
+                        SDL_AddAtomicInt(&windowData->undisplayedFrameCount, -1);
+                    }];
+                }
+            }
+#endif
+
             [metalCommandBuffer->handle presentDrawable:windowData->drawable];
             windowData->drawable = nil;
 
@@ -4082,7 +4264,7 @@ static bool METAL_Submit(
 
         // Notify the fence when the command buffer has completed
         [metalCommandBuffer->handle addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-          SDL_AtomicIncRef(&metalCommandBuffer->fence->complete);
+            SDL_AtomicIncRef(&metalCommandBuffer->fence->complete);
         }];
 
         // Submit the command buffer
@@ -4592,6 +4774,10 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         // Remember debug mode
         renderer->debugMode = debugMode;
         renderer->allowedFramesInFlight = 2;
+        renderer->useDisplayLink = SDL_GetBooleanProperty(
+            props,
+            "SDL.gpu.device.create.metal.use_display_link",
+            true);
 
         // Set up colorspace array
         SwapchainCompositionToColorSpace[0] = kCGColorSpaceSRGB;
