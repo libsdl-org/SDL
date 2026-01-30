@@ -153,7 +153,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     /* wait for GPU to finish rendering the frame (remember where we  */
     /* put the fence in the GL CMDSTREAM) before doing the changes    */
     /* requested in the atomic ioct (the pageflip in this case).      */
-    /* (We export the GPU-side FENCE OJECT to the fence INPUT FD now, */
+    /* (We export the GPU-side FENCE OBJECT to the fence INPUT FD now,*/
     /* not sooner, because now we are sure that the GPU-side fence is */
     /* in the CMDSTREAM to be lifted when the CMDSTREAM to this point */
     /* is completed).                                                 */

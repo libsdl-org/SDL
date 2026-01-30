@@ -491,18 +491,18 @@ void free_plane(KMSDRM_plane **_plane)
 /* A PLANE reads a BUFFER, and a CRTC reads a PLANE and sends it's contents       */
 /*   over to a CONNECTOR->ENCODER system (several CONNECTORS can be connected     */
 /*   to the same PLANE).                                                          */
-/*   Think of a plane as a "frame" sorrounding a picture, where the "picture"     */
+/*   Think of a plane as a "frame" surrounding a picture, where the "picture"     */
 /*   is the buffer, and we move the "frame" from  a picture to another,           */
 /*   and the one that has the "frame" is the one sent over to the screen          */
 /*   via the CONNECTOR->ENCODER system.                                           */
 /*   Think of a PLANE as being "in the middle", it's the CENTRAL part             */
-/*   bewteen the CRTC and the BUFFER that is shown on screen.                     */
+/*   between the CRTC and the BUFFER that is shown on screen.                     */
 /*   What we do here is connect a PLANE to a CRTC and a BUFFER.                   */
 /*   -ALWAYS set the CRTC_ID and FB_ID attribs of a plane at the same time,       */
 /*   meaning IN THE SAME atomic request.                                          */
 /*   -And NEVER destroy a GBM surface whose buffers are being read by a plane:    */
 /*   first, move the plane away from those buffers and ONLY THEN destroy the      */
-/*   buffers and/or the GBM surface containig them.                               */
+/*   buffers and/or the GBM surface containing them.                              */
 /**********************************************************************************/
 void
 drm_atomic_set_plane_props(SDL_DisplayData *dispdata, struct KMSDRM_PlaneInfo *info)
@@ -1629,10 +1629,10 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         plane_info.plane = dispdata->display_plane;
         plane_info.crtc_id = 0;
         plane_info.fb_id = 0;
-        /***********************************************************************/
-        /* Restore the original CRTC configuration: configue the crtc with the */
-        /* original video mode and make it point to the original TTY buffer.   */
-        /***********************************************************************/
+        /************************************************************************/
+        /* Restore the original CRTC configuration: configure the crtc with the */
+        /* original video mode and make it point to the original TTY buffer.    */
+        /************************************************************************/
 
         drm_atomic_set_plane_props(dispdata, &plane_info);
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
@@ -1642,7 +1642,7 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         /* Issue atomic commit that is blocking and allows modesetting. */
         if (drm_atomic_commit(_this, dispdata, true, true)) {
             SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
-        /* If we failed to set the original mode, try to set the connector prefered mode. */
+        /* If we failed to set the original mode, try to set the connector preferred mode. */
         if (ret && (dispdata->crtc->mode_valid == 0)) {
             ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
                     dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,

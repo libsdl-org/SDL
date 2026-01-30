@@ -830,7 +830,7 @@ static SDL_GLContext OPENVR_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window 
     int i;
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     if (!videodata->hglrc) {
-        // Crate a surfaceless EGL Context
+        // Create a surfaceless EGL Context
         HWND hwnd;
 
         WNDCLASSA wnd;
@@ -982,7 +982,7 @@ static EGLint context_attribs[] = {
 
 static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 {
-    // Crate a surfaceless EGL Context
+    // Create a surfaceless EGL Context
     EGLint major, minor;
     EGLConfig eglCfg=NULL;
     EGLBoolean b;

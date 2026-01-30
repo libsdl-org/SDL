@@ -437,7 +437,7 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
 {
     int rc;
 
-    //RKRK Not sure about size. Probalby 64+1 is OK for ORs
+    //RKRK Not sure about size. Probably 64+1 is OK for ORs
     Uint8 buffer[HID_RUMBLE_OUTPUT_REPORT_BYTES];
     OutputReportMsg *msg = (OutputReportMsg *)(buffer);
 

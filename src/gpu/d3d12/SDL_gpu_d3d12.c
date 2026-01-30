@@ -256,7 +256,7 @@ static D3D12_BLEND_OP SDLToD3D12_BlendOp[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendOp, SDL_arraysize(SDLToD3D12_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 // These are actually color formats.
-// For some genius reason, D3D12 splits format capabilites for depth-stencil views.
+// For some genius reason, D3D12 splits format capabilities for depth-stencil views.
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
     DXGI_FORMAT_UNKNOWN,              // INVALID
     DXGI_FORMAT_A8_UNORM,             // A8_UNORM
