@@ -935,6 +935,7 @@ struct D3D12Renderer
 
     bool debug_mode;
     bool GPUUploadHeapSupported;
+    bool UnrestrictedBufferTextureCopyPitchSupported;
     // FIXME: these might not be necessary since we're not using custom heaps
     bool UMA;
     bool UMACacheCoherent;
@@ -5965,6 +5966,7 @@ static void D3D12_UploadToTexture(
     bool cycle)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Renderer *renderer = (D3D12Renderer *)d3d12CommandBuffer->renderer;
     D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transfer_buffer;
     D3D12Buffer *temporaryBuffer = NULL;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
@@ -5992,11 +5994,12 @@ static void D3D12_UploadToTexture(
         cycle,
         D3D12_RESOURCE_STATE_COPY_DEST);
 
-    /* D3D12 requires texture data row pitch to be 256 byte aligned, which is obviously insane.
-     * Instead of exposing that restriction to the client, which is a huge rake to step on,
-     * and a restriction that no other backend requires, we're going to copy data to a temporary buffer,
-     * copy THAT data to the texture, and then get rid of the temporary buffer ASAP.
-     * If we're lucky and the row pitch and depth pitch are already aligned, we can skip all of that.
+    /* Unless the UnrestrictedBufferTextureCopyPitchSupported feature is supported, D3D12 requires
+     * texture data row pitch to be 256 byte aligned, which is obviously insane. Instead of exposing
+     * that restriction to the client, which is a huge rake to step on, and a restriction that no
+     * other backend requires, we're going to copy data to a temporary buffer, copy THAT data to the
+     * texture, and then get rid of the temporary buffer ASAP. If we're lucky and the row pitch and
+     * depth pitch are already aligned, we can skip all of that.
      *
      * D3D12 also requires offsets to be 512 byte aligned. We'll fix that for the client and warn them as well.
      *
@@ -6018,10 +6021,16 @@ static void D3D12_UploadToTexture(
 
     bytesPerSlice = rowsPerSlice * rowPitch;
 
-    alignedRowPitch = (destination->w + (blockWidth - 1)) / blockWidth * blockSize;
-    alignedRowPitch = D3D12_INTERNAL_Align(alignedRowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-    needsRealignment = rowsPerSlice != destination->h || rowPitch != alignedRowPitch;
-    needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    if (renderer->UnrestrictedBufferTextureCopyPitchSupported) {
+        alignedRowPitch = rowPitch;
+        needsRealignment = false;
+        needsPlacementCopy = false;
+    } else {
+        alignedRowPitch = (destination->w + (blockWidth - 1)) / blockWidth * blockSize;
+        alignedRowPitch = D3D12_INTERNAL_Align(alignedRowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+        needsRealignment = rowsPerSlice != destination->h || rowPitch != alignedRowPitch;
+        needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    }
 
     alignedBytesPerSlice = alignedRowPitch * destination->h;
 
@@ -6300,6 +6309,7 @@ static void D3D12_DownloadFromTexture(
     const SDL_GPUTextureTransferInfo *destination)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
     Uint32 pixelsPerRow = destination->pixels_per_row;
@@ -6317,11 +6327,12 @@ static void D3D12_DownloadFromTexture(
     D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transfer_buffer;
     D3D12Buffer *destinationBuffer = destinationContainer->activeBuffer;
 
-    /* D3D12 requires texture data row pitch to be 256 byte aligned, which is obviously insane.
-     * Instead of exposing that restriction to the client, which is a huge rake to step on,
-     * and a restriction that no other backend requires, we're going to copy data to a temporary buffer,
-     * copy THAT data to the texture, and then get rid of the temporary buffer ASAP.
-     * If we're lucky and the row pitch and depth pitch are already aligned, we can skip all of that.
+    /* Unless the UnrestrictedBufferTextureCopyPitchSupported feature is supported, D3D12 requires
+     * texture data row pitch to be 256 byte aligned, which is obviously insane. Instead of exposing
+     * that restriction to the client, which is a huge rake to step on, and a restriction that no
+     * other backend requires, we're going to copy data to a temporary buffer, copy THAT data to the
+     * texture, and then get rid of the temporary buffer ASAP. If we're lucky and the row pitch and
+     * depth pitch are already aligned, we can skip all of that.
      *
      * D3D12 also requires offsets to be 512 byte aligned. We'll fix that for the client and warn them as well.
      *
@@ -6341,9 +6352,15 @@ static void D3D12_DownloadFromTexture(
         rowsPerSlice = source->h;
     }
 
-    alignedRowPitch = D3D12_INTERNAL_Align(rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-    needsRealignment = rowsPerSlice != source->h || rowPitch != alignedRowPitch;
-    needsPlacementCopy = destination->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    if (renderer->UnrestrictedBufferTextureCopyPitchSupported) {
+        alignedRowPitch = rowPitch;
+        needsRealignment = false;
+        needsPlacementCopy = false;
+    } else {
+        alignedRowPitch = D3D12_INTERNAL_Align(rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+        needsRealignment = rowsPerSlice != source->h || rowPitch != alignedRowPitch;
+        needsPlacementCopy = destination->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    }
 
     sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     sourceLocation.SubresourceIndex = sourceSubresource->index;
@@ -9686,6 +9703,18 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->GPUUploadHeapSupported = options16.GPUUploadHeapSupported;
     }
 #endif
+
+    // Check for unrestricted texture-buffer copy pitch support
+    D3D12_FEATURE_DATA_D3D12_OPTIONS13 options13;
+    res = ID3D12Device_CheckFeatureSupport(
+        renderer->device,
+        D3D12_FEATURE_D3D12_OPTIONS13,
+        &options13,
+        sizeof(options13));
+
+    if (SUCCEEDED(res)) {
+        renderer->UnrestrictedBufferTextureCopyPitchSupported = options13.UnrestrictedBufferTextureCopyPitchSupported;
+    }
 
     // Create command queue
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
