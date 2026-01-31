@@ -23,20 +23,23 @@
 #include "SDL_sysasyncio.h"
 #include "SDL_asyncio_c.h"
 
-static const char *AsyncFileModeValid(const char *mode)
+static const char *AsyncFileModeValid(const char *mode, bool *readonly)
 {
-    static const struct { const char *valid; const char *with_binary; } mode_map[] = {
-        { "r", "rb" },
-        { "w", "wb" },
-        { "r+","r+b" },
-        { "w+", "w+b" }
+    static const struct { const char *valid; const char *with_binary; bool readonly; } mode_map[] = {
+        { "r", "rb", true },
+        { "w", "wb", false },
+        { "r+","r+b", false },
+        { "w+", "w+b", false }
     };
 
     for (int i = 0; i < SDL_arraysize(mode_map); i++) {
         if (SDL_strcmp(mode, mode_map[i].valid) == 0) {
+            *readonly = mode_map[i].readonly;
             return mode_map[i].with_binary;
         }
     }
+
+    *readonly = false;
     return NULL;
 }
 
@@ -51,7 +54,8 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
         return NULL;
     }
 
-    const char *binary_mode = AsyncFileModeValid(mode);
+    bool readonly = false;
+    const char *binary_mode = AsyncFileModeValid(mode, &readonly);
     if (!binary_mode) {
         SDL_SetError("Unsupported file mode");
         return NULL;
@@ -61,6 +65,8 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
     if (!asyncio) {
         return NULL;
     }
+
+    asyncio->readonly = readonly;
 
     asyncio->lock = SDL_CreateMutex();
     if (!asyncio->lock) {
