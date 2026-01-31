@@ -29,8 +29,10 @@
 #include <pthread_np.h>
 #endif
 
+#ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #include <errno.h>
+#endif
 
 #ifdef __LINUX__
 #include <sys/time.h>
@@ -60,7 +62,7 @@
 #endif
 
 
-#ifndef __NACL__
+#if !defined(__NACL__) && !defined(__OPENORBIS__)
 /* List of signals to mask in the subthreads */
 static const int sig_list[] = {
     SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
@@ -162,7 +164,7 @@ void SDL_SYS_SetupThread(const char *name)
     }
 
    /* NativeClient does not yet support signals.*/
-#if !defined(__NACL__)
+#if !defined(__NACL__) && !defined(__OPENORBIS__)
     /* Mask asynchronous signals for this thread */
     sigemptyset(&mask);
     for (i = 0; sig_list[i]; ++i) {
