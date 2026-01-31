@@ -1258,8 +1258,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * If `event` is not NULL, the next event is removed from the queue and stored
  * in the SDL_Event structure pointed to by `event`.
  *
- * If `event` is NULL, it simply returns true if there is an event in the queue,
- * but will not remove it from the queue.
+ * If `event` is NULL, it simply returns true if there is an event in the
+ * queue, but will not remove it from the queue.
  *
  * As this function may implicitly call SDL_PumpEvents(), you can only call
  * this function in the thread that initialized the video subsystem.
