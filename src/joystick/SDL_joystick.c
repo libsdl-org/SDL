@@ -48,6 +48,10 @@
 #include "./virtual/SDL_virtualjoystick_c.h"
 #endif
 
+#ifdef SDL_JOYSTICK_DSU
+#include "./dsu/SDL_dsujoystick_c.h"
+#endif
+
 static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI // Highest priority driver for supported devices
     &SDL_HIDAPI_JoystickDriver,
@@ -99,6 +103,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_VIRTUAL
     &SDL_VIRTUAL_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_DSU
+    &SDL_DSU_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_VITA
     &SDL_VITA_JoystickDriver,
