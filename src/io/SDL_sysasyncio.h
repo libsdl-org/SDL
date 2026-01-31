@@ -124,6 +124,7 @@ struct SDL_AsyncIO
     SDL_AsyncIOTask tasks;
     SDL_AsyncIOTask *closing;  // The close task, which isn't queued until all pending work for this file is done.
     bool oneshot;  // true if this is a SDL_LoadFileAsync open.
+    bool readonly;  // true if this file is opened read-only.
 };
 
 // This is implemented for various platforms; param validation is done before calling this. Open file, fill in iface and userdata.

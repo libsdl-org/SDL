@@ -200,8 +200,14 @@ static SDL_AsyncIOTask *ProcessCQE(WinIoRingAsyncIOQueueData *queuedata, IORING_
                 task = NULL; // it already finished or was too far along to cancel, so we'll pick up the actual results later.
             }
         } else if (FAILED(cqe->ResultCode)) {
-            task->result = SDL_ASYNCIO_FAILURE;
-            // !!! FIXME: fill in task->error.
+            if ((task->type == SDL_ASYNCIO_TASK_CLOSE) && (cqe->ResultCode == E_ACCESSDENIED) && task->asyncio->readonly) {
+                // we push all close requests through as flushes, as there is currently no async close operation and flushing writes to disk is the time-consuming part.
+                // However, flushing a read-only handle generates an error, so we catch this specific situation and ignore it. This approach still makes the task go
+                // through the IoRing so we can handle this all in the same place otherwise. The actual close happens below.
+            } else {
+                task->result = SDL_ASYNCIO_FAILURE;
+                // !!! FIXME: fill in task->error.
+            }
         } else {
             if ((task->type == SDL_ASYNCIO_TASK_WRITE) && (((Uint64) cqe->Information) < task->requested_size)) {
                 task->result = SDL_ASYNCIO_FAILURE;  // it's always a failure on short writes.
