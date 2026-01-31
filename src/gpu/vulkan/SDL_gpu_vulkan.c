@@ -11917,7 +11917,10 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
         }
 
         if (physicalDeviceExtensions->MSFT_layered_driver && physicalDeviceLayeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT) {
-            deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+            /* Rank Dozen above CPU, but below INTEGRATED.
+             * This is needed for WSL specifically.
+             */
+            deviceType = VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
 
             /* Dozen hasn't been tested for conformance and it probably won't be,
              * but WSL may need this so let's be generous.
