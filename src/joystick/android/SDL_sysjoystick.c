@@ -106,7 +106,8 @@ static int keycode_to_SDL(int keycode)
         button = SDL_GAMEPAD_BUTTON_GUIDE;
         break;
     case AKEYCODE_BUTTON_L2:
-        button = 15;
+    case AKEYCODE_MEDIA_RECORD:
+        button = SDL_GAMEPAD_BUTTON_MISC1;
         break;
     case AKEYCODE_BUTTON_R2:
         button = 16;
