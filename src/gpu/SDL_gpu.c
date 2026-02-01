@@ -22,9 +22,9 @@
 #include "SDL_sysgpu.h"
 
 /* Normally this macro would use something like SDL_IsObjectValid, but in GPU's
- * case we prioritize performance and be more trusting of application behavior
- * than, say, SDL_Render, so trust that applications will be careful about
- * disposing the device and its resources.
+ * case we can prioritize performance and be more trusting of application
+ * behavior than, say, SDL_Render, so trust that applications will be careful
+ * about disposing the device and its resources.
  * -flibit
  */
 #define CHECK_DEVICE_MAGIC(device, retval)  \
