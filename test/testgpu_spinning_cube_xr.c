@@ -33,6 +33,9 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_openxr.h>
 
+/* Standard library for exit() */
+#include <stdlib.h>
+
 /* Include compiled shader bytecode for all backends */
 #include "testgpu/cube.frag.dxil.h"
 #include "testgpu/cube.frag.msl.h"
@@ -51,11 +54,6 @@
 
 typedef struct { float x, y, z; } Vec3;
 typedef struct { float m[16]; } Mat4;
-
-static Mat4 Mat4_Identity(void)
-{
-    return (Mat4){{ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 }};
-}
 
 static Mat4 Mat4_Multiply(Mat4 a, Mat4 b)
 {
