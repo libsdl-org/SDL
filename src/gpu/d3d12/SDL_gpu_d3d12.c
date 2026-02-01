@@ -8686,7 +8686,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to load OpenXR");
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to load OpenXR: %s", SDL_GetError());
             return false;
         }
 
