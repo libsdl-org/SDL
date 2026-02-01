@@ -559,7 +559,7 @@ static bool create_swapchains(void)
         0, &view_count, NULL);
     XR_CHECK(result, "Failed to enumerate view config views (count)");
 
-    SDL_Log("View count: %u", view_count);
+    SDL_Log("View count: %" SDL_PRIu32, view_count);
 
     XrViewConfigurationView *view_configs = SDL_calloc(view_count, sizeof(XrViewConfigurationView));
     for (Uint32 i = 0; i < view_count; i++) {
@@ -605,7 +605,7 @@ static bool create_swapchains(void)
         xr_views[i].type = XR_TYPE_VIEW;
         xr_views[i].pose.orientation.w = 1.0f;
 
-        SDL_Log("Eye %u: recommended %ux%u", i,
+        SDL_Log("Eye %" SDL_PRIu32 ": recommended %ux%u", i,
                 view_configs[i].recommendedImageRectWidth,
                 view_configs[i].recommendedImageRectHeight);
 
@@ -631,7 +631,7 @@ static bool create_swapchains(void)
         vr_swapchains[i].format = swapchain_format;
 
         if (XR_FAILED(result)) {
-            SDL_Log("Failed to create swapchain %u", i);
+            SDL_Log("Failed to create swapchain %" SDL_PRIu32, i);
             SDL_free(view_configs);
             return false;
         }
@@ -662,12 +662,12 @@ static bool create_swapchains(void)
         };
         vr_swapchains[i].depth_texture = SDL_CreateGPUTexture(gpu_device, &depth_info);
         if (!vr_swapchains[i].depth_texture) {
-            SDL_Log("Failed to create depth texture for eye %u: %s", i, SDL_GetError());
+            SDL_Log("Failed to create depth texture for eye %" SDL_PRIu32 ": %s", i, SDL_GetError());
             SDL_free(view_configs);
             return false;
         }
 
-        SDL_Log("Created swapchain %u: %dx%d, %u images, with depth buffer",
+        SDL_Log("Created swapchain %" SDL_PRIu32 ": %dx%d, %" SDL_PRIu32 " images, with depth buffer",
                 i, vr_swapchains[i].size.width, vr_swapchains[i].size.height,
                 vr_swapchains[i].image_count);
     }
