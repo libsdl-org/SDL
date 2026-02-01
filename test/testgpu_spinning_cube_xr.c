@@ -535,8 +535,6 @@ static bool init_xr_session(void)
     result = SDL_CreateGPUXRSession(gpu_device, &session_info, &xr_session);
     XR_CHECK(result, "Failed to create XR session");
 
-    SDL_Log("Created OpenXR session: %p", (void*)xr_session);
-
     /* Create reference space */
     XrReferenceSpaceCreateInfo space_info = { XR_TYPE_REFERENCE_SPACE_CREATE_INFO };
     space_info.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
@@ -956,9 +954,6 @@ int main(int argc, char *argv[])
         SDL_Quit();
         return 1;
     }
-
-    SDL_Log("GPU device created, XR instance: %p, systemId: %llu",
-            (void*)(uintptr_t)xr_instance, (unsigned long long)xr_system_id);
 
     /* Load OpenXR function pointers */
     if (!load_xr_functions()) {
