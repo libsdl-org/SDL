@@ -518,7 +518,7 @@ static bool create_cube_buffers(void)
     SDL_SubmitGPUCommandBuffer(cmd);
     SDL_ReleaseGPUTransferBuffer(gpu_device, transfer);
 
-    SDL_Log("Created cube vertex (%zu bytes) and index (%zu bytes) buffers", sizeof(vertices), sizeof(indices));
+    SDL_Log("Created cube vertex (%u bytes) and index (%u bytes) buffers", (unsigned int)sizeof(vertices), (unsigned int)sizeof(indices));
     return true;
 }
 
@@ -606,8 +606,8 @@ static bool create_swapchains(void)
         xr_views[i].pose.orientation.w = 1.0f;
 
         SDL_Log("Eye %" SDL_PRIu32 ": recommended %ux%u", i,
-                view_configs[i].recommendedImageRectWidth,
-                view_configs[i].recommendedImageRectHeight);
+                (unsigned int)view_configs[i].recommendedImageRectWidth,
+                (unsigned int)view_configs[i].recommendedImageRectHeight);
 
         /* Create swapchain using OpenXR's XrSwapchainCreateInfo */
         XrSwapchainCreateInfo swapchain_info = { XR_TYPE_SWAPCHAIN_CREATE_INFO };
