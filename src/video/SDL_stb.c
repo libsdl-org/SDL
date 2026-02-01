@@ -395,7 +395,7 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     Uint8 *trns = NULL;
     bool free_surface = false;
 
-    // Make sure we have somewhere to save
+    // Make sure we have something to save
     CHECK_PARAM(!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         goto done;
@@ -478,6 +478,14 @@ done:
 bool SDL_SavePNG(SDL_Surface *surface, const char *file)
 {
 #ifdef SDL_HAVE_STB
+    // Make sure we have something to save
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format) && !surface->palette) {
+        return SDL_SetError("Indexed surfaces must have a palette");
+    }
     SDL_IOStream *stream = SDL_IOFromFile(file, "wb");
     if (!stream) {
         return false;
