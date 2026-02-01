@@ -382,14 +382,8 @@ add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
 add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
-
-# OpenXR spinning cube test - uses SDL's vendored OpenXR headers
-# See: https://github.com/libsdl-org/SDL/issues/14931
-if(SDL_GPU_OPENXR)
-    add_sdl_test_executable(testgpu_spinning_cube_xr BUILD_DEPENDENT SOURCES testgpu_spinning_cube_xr.c)
-    # Use SDL's vendored OpenXR headers (loader is loaded dynamically by SDL)
-    target_include_directories(testgpu_spinning_cube_xr PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
-endif()
+add_sdl_test_executable(testgpu_spinning_cube_xr BUILD_DEPENDENT SOURCES testgpu_spinning_cube_xr.c)
+target_include_directories(testgpu_spinning_cube_xr PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
 
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
