@@ -22,6 +22,7 @@
 #define SDL_test_internal_h
 
 extern bool SDLTest_Color;
+extern bool SDLTest_Time;
 
 #define COLOR_RAW_RED       "\033[0;31m"
 #define COLOR_RAW_GREEN     "\033[0;32m"
