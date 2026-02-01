@@ -3,6 +3,7 @@
 #endif
 
 #include <windows.h>
+#include <psapi.h>
 #include <dbghelp.h>
 
 #define ARRAY_SIZE(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
@@ -498,6 +499,35 @@ static void log_usage(const char *argv0) {
     fprintf(stderr, "Usage: %s [--help] [--debug-stream] [--] PROGRAM [ARG1 [ARG2 [ARG3 ... ]]]\n", argv0);
 }
 
+static char *GetModuleProvidingAddress(HANDLE hProcess, LPCVOID address)
+{
+    static char result_buffer[MAX_PATH];
+    HMODULE modules[512];
+    DWORD modules_size;
+    int count_modules;
+
+    sprintf_s(result_buffer, sizeof(result_buffer), "<unknown module>");
+    if (!EnumProcessModules(hProcess, modules, sizeof(modules), &modules_size)) {
+        return result_buffer;
+    }
+    count_modules = modules_size / sizeof(HMODULE);
+    for (int i = 0; i < count_modules; i++) {
+        MODULEINFO module_info;
+        if (GetModuleInformation(hProcess, modules[i], &module_info, sizeof(module_info))) {
+            if ((uintptr_t)module_info.lpBaseOfDll <= (uintptr_t)address && (uintptr_t)address < (uintptr_t)module_info.lpBaseOfDll + module_info.SizeOfImage) {
+                char module_name[128];
+                if (!GetModuleBaseNameA(hProcess, modules[i], module_name, sizeof(module_name))) {
+                    break;
+                }
+                sprintf_s(result_buffer, sizeof(result_buffer), "%s [%p-%p]", module_name,
+                    module_info.lpBaseOfDll, (char *)module_info.lpBaseOfDll + module_info.SizeOfImage);
+                result_buffer[sizeof(result_buffer) - 1] = '\0';
+            }
+        }
+    }
+    return result_buffer;
+}
+
 int main(int argc, char *argv[]) {
     int i;
     int cmd_start;
@@ -635,8 +665,9 @@ int main(int argc, char *argv[]) {
                                     exceptionFlags_to_string(event.u.Exception.ExceptionRecord.ExceptionFlags, flag_buffer, sizeof(flag_buffer)));
 
                     printf_message("         FirstChance: %ld", event.u.Exception.dwFirstChance);
-                    printf_message("    ExceptionAddress: 0x%08lx",
-                                   event.u.Exception.ExceptionRecord.ExceptionAddress);
+                    printf_message("    ExceptionAddress: %p (%s)",
+                                   event.u.Exception.ExceptionRecord.ExceptionAddress,
+                                   GetModuleProvidingAddress(process_information.hProcess, event.u.Exception.ExceptionRecord.ExceptionAddress));
                 }
                 if (cxx_exception) {
                     char exception_name[256];
