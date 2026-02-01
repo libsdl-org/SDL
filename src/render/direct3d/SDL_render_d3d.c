@@ -46,6 +46,7 @@ typedef struct
     bool cliprect_dirty;
     D3D9_Shader shader;
     const float *shader_params;
+    bool texture_state_dirty;
 } D3D_DrawStateCache;
 
 typedef struct
@@ -815,6 +816,7 @@ static void D3D_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             data->drawstate.texture = NULL;
             data->drawstate.shader = SHADER_NONE;
             data->drawstate.shader_params = NULL;
+            data->drawstate.texture_state_dirty = false;
             IDirect3DDevice9_SetPixelShader(data->device, NULL);
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
         }
@@ -1093,7 +1095,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
-    if (texture != data->drawstate.texture) {
+    if (texture != data->drawstate.texture || data->drawstate.texture_state_dirty) {
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *)data->drawstate.texture->internal : NULL;
         D3D_TextureData *newtexturedata = texture ? (D3D_TextureData *)texture->internal : NULL;
         D3D9_Shader shader = SHADER_NONE;
@@ -1104,11 +1106,11 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
         }
         if ((!newtexturedata || !texture->palette) &&
-            (oldtexturedata && (data->drawstate.texture->palette))) {
+            ((oldtexturedata && data->drawstate.texture->palette) || data->drawstate.texture_state_dirty)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
         }
 #ifdef SDL_HAVE_YUV
-        if ((!newtexturedata || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
+        if ((!newtexturedata || !newtexturedata->yuv) && ((oldtexturedata && oldtexturedata->yuv) || data->drawstate.texture_state_dirty)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
@@ -1117,7 +1119,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             return false;
         }
 
-        if (shader != data->drawstate.shader) {
+        if (shader != data->drawstate.shader || data->drawstate.texture_state_dirty) {
             const HRESULT result = IDirect3DDevice9_SetPixelShader(data->device, data->shaders[shader]);
             if (FAILED(result)) {
                 return D3D_SetError("IDirect3DDevice9_SetPixelShader()", result);
@@ -1125,7 +1127,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             data->drawstate.shader = shader;
         }
 
-        if (shader_params != data->drawstate.shader_params) {
+        if (shader_params != data->drawstate.shader_params || data->drawstate.texture_state_dirty) {
             if (shader_params) {
                 const UINT shader_params_length = 4; // The YUV shader takes 4 float4 parameters
                 const HRESULT result = IDirect3DDevice9_SetPixelShaderConstantF(data->device, 0, shader_params, shader_params_length);
@@ -1137,6 +1139,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         }
 
         data->drawstate.texture = texture;
+        data->drawstate.texture_state_dirty = false;
     } else if (texture) {
         D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
         if (texturedata) {
@@ -1250,6 +1253,7 @@ static void D3D_InvalidateCachedState(SDL_Renderer *renderer)
     data->drawstate.texture = NULL;
     data->drawstate.shader = SHADER_NONE;
     data->drawstate.shader_params = NULL;
+    data->drawstate.texture_state_dirty = true;
 }
 
 static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -1612,6 +1616,7 @@ static void D3D_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->drawstate.texture = NULL;
         renderdata->drawstate.shader = SHADER_NONE;
         renderdata->drawstate.shader_params = NULL;
+        renderdata->drawstate.texture_state_dirty = false;
         IDirect3DDevice9_SetPixelShader(renderdata->device, NULL);
         IDirect3DDevice9_SetTexture(renderdata->device, 0, NULL);
         if (texture->palette) {
