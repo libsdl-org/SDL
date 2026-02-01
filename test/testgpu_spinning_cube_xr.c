@@ -177,10 +177,14 @@ static bool xr_should_quit = false;
 typedef struct {
     XrSwapchain swapchain;
     SDL_GPUTexture **images;
+    SDL_GPUTexture *depth_texture;  /* Local depth buffer for z-ordering */
     XrExtent2Di size;
     SDL_GPUTextureFormat format;
     Uint32 image_count;
 } VRSwapchain;
+
+/* Depth buffer format - use D24 for wide compatibility */
+static const SDL_GPUTextureFormat DEPTH_FORMAT = SDL_GPU_TEXTUREFORMAT_D24_UNORM;
 
 static VRSwapchain *vr_swapchains = NULL;
 static XrView *xr_views = NULL;
@@ -236,9 +240,12 @@ static void quit(int rc)
         index_buffer = NULL;
     }
 
-    /* Release swapchains */
+    /* Release swapchains and depth textures */
     if (vr_swapchains) {
         for (Uint32 i = 0; i < view_count; i++) {
+            if (vr_swapchains[i].depth_texture) {
+                SDL_ReleaseGPUTexture(gpu_device, vr_swapchains[i].depth_texture);
+            }
             if (vr_swapchains[i].swapchain) {
                 SDL_DestroyGPUXRSwapchain(gpu_device, vr_swapchains[i].swapchain, vr_swapchains[i].images);
             }
@@ -393,11 +400,13 @@ static bool create_pipeline(SDL_GPUTextureFormat color_format)
             .color_target_descriptions = (SDL_GPUColorTargetDescription[]){{
                 .format = color_format
             }},
-            .has_depth_stencil_target = false
+            .has_depth_stencil_target = true,
+            .depth_stencil_format = DEPTH_FORMAT
         },
         .depth_stencil_state = {
-            .enable_depth_test = false,
-            .enable_depth_write = false
+            .enable_depth_test = true,
+            .enable_depth_write = true,
+            .compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL
         },
         .rasterizer_state = {
             .cull_mode = SDL_GPU_CULLMODE_BACK,
@@ -573,7 +582,8 @@ static bool create_swapchains(void)
     vr_swapchains = SDL_calloc(view_count, sizeof(VRSwapchain));
     xr_views = SDL_calloc(view_count, sizeof(XrView));
 
-    /* Query available swapchain formats */
+    /* Query available swapchain formats
+     * Per PR #14837: format arrays are terminated with SDL_GPU_TEXTUREFORMAT_INVALID */
     int num_formats = 0;
     SDL_GPUTextureFormat *formats = SDL_GetGPUXRSwapchainFormats(gpu_device, xr_session, &num_formats);
     if (!formats || num_formats == 0) {
@@ -582,9 +592,15 @@ static bool create_swapchains(void)
         return false;
     }
     
-    /* Use first available format (typically sRGB) */
+    /* Use first available format (typically sRGB)
+     * Note: Could iterate with: while (formats[i] != SDL_GPU_TEXTUREFORMAT_INVALID) */
     SDL_GPUTextureFormat swapchain_format = formats[0];
     SDL_Log("Using swapchain format: %d (of %d available)", swapchain_format, num_formats);
+    
+    /* Log all available formats for debugging */
+    for (int f = 0; f < num_formats && formats[f] != SDL_GPU_TEXTUREFORMAT_INVALID; f++) {
+        SDL_Log("  Available format [%d]: %d", f, formats[f]);
+    }
     SDL_free(formats);
 
     for (Uint32 i = 0; i < view_count; i++) {
@@ -631,7 +647,29 @@ static bool create_swapchains(void)
         vr_swapchains[i].size.width = (int32_t)swapchain_info.width;
         vr_swapchains[i].size.height = (int32_t)swapchain_info.height;
 
-        SDL_Log("Created swapchain %u: %dx%d, %u images",
+        /* Create local depth texture for this eye
+         * Per PR #14837: Depth buffers are "really recommended" for XR apps.
+         * Using a local depth texture (not XR-managed) is the simplest approach
+         * for proper z-ordering without requiring XR_KHR_composition_layer_depth. */
+        SDL_GPUTextureCreateInfo depth_info = {
+            .type = SDL_GPU_TEXTURETYPE_2D,
+            .format = DEPTH_FORMAT,
+            .width = swapchain_info.width,
+            .height = swapchain_info.height,
+            .layer_count_or_depth = 1,
+            .num_levels = 1,
+            .sample_count = SDL_GPU_SAMPLECOUNT_1,
+            .usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+            .props = 0
+        };
+        vr_swapchains[i].depth_texture = SDL_CreateGPUTexture(gpu_device, &depth_info);
+        if (!vr_swapchains[i].depth_texture) {
+            SDL_Log("Failed to create depth texture for eye %u: %s", i, SDL_GetError());
+            SDL_free(view_configs);
+            return false;
+        }
+
+        SDL_Log("Created swapchain %u: %dx%d, %u images, with depth buffer",
                 i, vr_swapchains[i].size.width, vr_swapchains[i].size.height,
                 vr_swapchains[i].image_count);
     }
@@ -794,7 +832,17 @@ static void render_frame(void)
             color_target.clear_color.b = 0.15f;
             color_target.clear_color.a = 1.0f;
 
-            SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(cmd_buf, &color_target, 1, NULL);
+            /* Set up depth target for proper z-ordering */
+            SDL_GPUDepthStencilTargetInfo depth_target = {0};
+            depth_target.texture = swapchain->depth_texture;
+            depth_target.clear_depth = 1.0f;  /* Far plane */
+            depth_target.load_op = SDL_GPU_LOADOP_CLEAR;
+            depth_target.store_op = SDL_GPU_STOREOP_DONT_CARE;  /* We don't need to preserve depth */
+            depth_target.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE;
+            depth_target.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE;
+            depth_target.cycle = true;  /* Allow GPU to cycle the texture for efficiency */
+
+            SDL_GPURenderPass *render_pass = SDL_BeginGPURenderPass(cmd_buf, &color_target, 1, &depth_target);
 
             if (pipeline && vertex_buffer && index_buffer) {
                 SDL_BindGPUGraphicsPipeline(render_pass, pipeline);
