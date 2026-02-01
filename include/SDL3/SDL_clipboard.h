@@ -109,7 +109,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardText(const char *text);
  * This function returns an empty string if there is not enough memory left
  * for a copy of the clipboard's content.
  *
- * \returns the clipboard text on success, an empty string on failure or NULL if out of memory; call
+ * \returns the clipboard text on success or an empty string on failure; call
  *          SDL_GetError() for more information. This should be freed with
  *          SDL_free() when it is no longer needed.
  *
