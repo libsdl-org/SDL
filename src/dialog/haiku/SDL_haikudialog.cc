@@ -291,3 +291,9 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     looper->Run();
     panel->Show();
 }
+
+void SDL_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window)
+{
+    SDL_Unsupported();
+    callback(userdata, NULL);
+}
