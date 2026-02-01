@@ -596,19 +596,21 @@ int Cocoa_PumpEventsUntilDate(SDL_VideoDevice *_this, NSDate *expiration, bool a
     }
 
     for (;;) {
-        NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
-        if (event == nil) {
-            return 0;
-        }
+        @autoreleasepool {
+            NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:expiration inMode:NSDefaultRunLoopMode dequeue:YES];
+            if (event == nil) {
+                return 0;
+            }
 
-        if (!s_bShouldHandleEventsInSDLApplication) {
-            Cocoa_DispatchEvent(event);
-        }
+            if (!s_bShouldHandleEventsInSDLApplication) {
+                Cocoa_DispatchEvent(event);
+            }
 
-        // Pass events down to SDL3Application to be handled in sendEvent:
-        [NSApp sendEvent:event];
-        if (!accumulate) {
-            break;
+            // Pass events down to SDL3Application to be handled in sendEvent:
+            [NSApp sendEvent:event];
+            if (!accumulate) {
+                break;
+            }
         }
     }
     return 1;
