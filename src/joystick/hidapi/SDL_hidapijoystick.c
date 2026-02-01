@@ -72,7 +72,7 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAMDECK
     &SDL_HIDAPI_DriverSteamTriton,
-#endif 
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
     &SDL_HIDAPI_DriverNintendoClassic,
     &SDL_HIDAPI_DriverJoyCons,
@@ -914,6 +914,7 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     device->usage = info->usage;
     device->is_bluetooth = (info->bus_type == SDL_HID_API_BUS_BLUETOOTH);
     device->dev_lock = SDL_CreateMutex();
+    device->read_finished = SDL_CreateSemaphore(0);
 
     // Need the device name before getting the driver to know whether to ignore this device
     {
@@ -1001,6 +1002,10 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             // Make sure the rumble thread is done with this device
+            SDL_SetAtomicInt(&device->failed_reads, 0);
+            if (SDL_GetAtomicInt(&device->write_waiting)) {
+                SDL_SignalSemaphore(device->read_finished);
+            }
             while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
             }
@@ -1011,6 +1016,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
             SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, false);
             SDL_DestroyMutex(device->dev_lock);
+            SDL_DestroySemaphore(device->read_finished);
             SDL_free(device->manufacturer_string);
             SDL_free(device->product_string);
             SDL_free(device->serial);
@@ -1433,9 +1439,17 @@ void HIDAPI_UpdateDevices(void)
             if (device->driver) {
                 if (SDL_TryLockMutex(device->dev_lock)) {
                     device->updating = true;
+
                     device->driver->UpdateDevice(device);
+
                     device->updating = false;
                     SDL_UnlockMutex(device->dev_lock);
+                    SDL_SetAtomicInt(&device->failed_reads, 0);
+                    if (SDL_GetAtomicInt(&device->write_waiting)) {
+                        SDL_SignalSemaphore(device->read_finished);
+                    }
+                } else {
+                    SDL_AddAtomicInt(&device->failed_reads, 1);
                 }
             }
         }

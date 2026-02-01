@@ -102,6 +102,9 @@ typedef struct SDL_HIDAPI_Device
     SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
+    SDL_AtomicInt failed_reads;
+    SDL_AtomicInt write_waiting;
+    SDL_Semaphore *read_finished;
     int num_joysticks;
     SDL_JoystickID *joysticks;
 
