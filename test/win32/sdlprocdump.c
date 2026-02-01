@@ -5,8 +5,10 @@
 #include <windows.h>
 #include <dbghelp.h>
 
+#define ARRAY_SIZE(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
+
 #ifndef STATUS_HEAP_CORRUPTION
-#define STATUS_HEAP_CORRUPTION ((DWORD)0xC0000374L)    
+#define STATUS_HEAP_CORRUPTION ((DWORD)0xC0000374L)
 #endif
 #ifndef EXCEPTION_UNWINDING
 #define EXCEPTION_UNWINDING 0x2
@@ -77,7 +79,7 @@ static void printf_windows_message(const char *format, ...) {
         NULL,
         GetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        win_msg, sizeof(win_msg)/sizeof(*win_msg),
+        win_msg, ARRAY_SIZE(win_msg),
         NULL);
     win_msg_len = strlen(win_msg);
     while (win_msg[win_msg_len-1] == '\r' || win_msg[win_msg_len-1] == '\n' || win_msg[win_msg_len-1] == ' ') {
