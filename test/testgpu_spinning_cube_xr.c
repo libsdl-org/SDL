@@ -407,8 +407,7 @@ static bool create_pipeline(SDL_GPUTextureFormat color_format)
             .compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL
         },
         .rasterizer_state = {
-            .cull_mode = SDL_GPU_CULLMODE_BACK,
-            .front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
+            .cull_mode = SDL_GPU_CULLMODE_NONE,  /* Match testgpu_spinning_cube */
             .fill_mode = SDL_GPU_FILLMODE_FILL
         },
         .vertex_input_state = {
