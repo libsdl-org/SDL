@@ -12738,7 +12738,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
-            SDL_SetError("Failed to load OpenXR loader or a required symbol");
+            /* SDL_GetError() already has the detailed message from SDL_OpenXR_LoadLibrary() */
             SDL_Vulkan_UnloadLibrary();
             return false;
         }
