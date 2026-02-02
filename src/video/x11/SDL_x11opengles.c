@@ -53,7 +53,7 @@ bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 #endif
     }
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display);
 }
 
 XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent)

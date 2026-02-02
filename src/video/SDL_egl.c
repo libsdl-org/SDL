@@ -549,7 +549,7 @@ static void SDL_EGL_GetVersion(SDL_VideoDevice *_this)
     }
 }
 
-bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
+bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display)
 {
     if (!SDL_EGL_LoadLibraryOnly(_this, egl_path)) {
         return false;
@@ -558,6 +558,7 @@ bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDis
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
 #ifndef SDL_VIDEO_DRIVER_VITA
+    EGLenum platform = _this->gl_config.egl_platform;
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
          * --

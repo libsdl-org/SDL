@@ -634,6 +634,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->GL_UnloadLibrary = Wayland_GLES_UnloadLibrary;
     device->GL_GetProcAddress = Wayland_GLES_GetProcAddress;
     device->GL_DestroyContext = Wayland_GLES_DestroyContext;
+    device->GL_SetDefaultProfileConfig = Wayland_GLES_SetDefaultProfileConfig;
     device->GL_GetEGLSurface = Wayland_GLES_GetEGLSurface;
 #endif
 
