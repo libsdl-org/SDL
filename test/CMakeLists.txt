@@ -756,7 +756,7 @@ if(ANDROID AND TARGET SDL3::Jar)
             configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
             configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
             # Use XR-specific manifest for XR tests, standard manifest for others
-            if(TEST MATCHES "_xr$")
+            if("${TEST}" MATCHES "_xr$")
                 # Meta Quest-specific manifest sections (enabled by default, set to empty to disable)
                 # These are ignored by non-Meta runtimes but required for proper Quest integration
                 if(NOT DEFINED SDL_ANDROID_XR_META_SUPPORT OR SDL_ANDROID_XR_META_SUPPORT)
