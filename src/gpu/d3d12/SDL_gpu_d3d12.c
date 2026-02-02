@@ -8743,11 +8743,15 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 }
 #endif
 
-static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer, ID3D12DeviceFactory *factory)
-{
+static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    , ID3D12DeviceFactory * factory
+#endif
+) {
     PFN_D3D12_GET_DEBUG_INTERFACE pD3D12GetDebugInterface;
     HRESULT res;
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     if (factory) {
         res = ID3D12DeviceFactory_GetConfigurationInterface(factory, &D3D_CLSID_ID3D12Debug, &D3D_IID_ID3D12Debug, (void **)&renderer->d3d12Debug);
 
@@ -8757,7 +8761,9 @@ static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer, ID3D
 
         ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
         return true;
-    } else {
+    } else
+#endif
+    {
         pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
             renderer->d3d12_dll,
             D3D12_GET_DEBUG_INTERFACE_FUNC);
@@ -9612,10 +9618,10 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         SET_STRING_ERROR_AND_RETURN("Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC, NULL);
     }
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     // A device factory allows a D3D12 redistributable provided by the client to be loaded.
     ID3D12DeviceFactory *factory = NULL;
 
-#ifdef _WIN32
     if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING) && SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER)) {
         int d3d12SDKVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER, 0);
         const char *d3d12SDKPath = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING, ".\\");
@@ -9650,7 +9656,11 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
-        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer, factory);
+        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+            , factory
+#endif
+        );
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         if (hasD3d12Debug) {
             SDL_LogInfo(
