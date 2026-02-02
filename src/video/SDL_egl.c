@@ -66,11 +66,13 @@
 #ifdef SDL_VIDEO_DRIVER_RPI
 // Raspbian places the OpenGL ES/EGL binaries in a non standard path
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
-#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_EGL            "libEGL.so"
+#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_OGL_ES2        "libGLESv2.so"
+// The GLESv2 library also contains GLESv1 exports when using the dispmanx implementation
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
+#define ALT_OGL_ES         "libGLESv2.so"
 
 #elif defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_VIVANTE)
 // Android
@@ -106,8 +108,6 @@
 // QNX
 #define DEFAULT_EGL        "libEGL.so.1"
 #define DEFAULT_OGL_ES2    "libGLESv2.so.1"
-#define DEFAULT_OGL_ES_PVR "libGLESv2.so.1"
-#define DEFAULT_OGL_ES     "libGLESv2.so.1"
 
 #else
 // Desktop Linux/Unix-like
@@ -388,34 +388,45 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
     if (!opengl_dll_handle) {
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             if (_this->gl_config.major_version > 1) {
-                path = DEFAULT_OGL_ES2;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES2
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES2;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
 #ifdef ALT_OGL_ES2
                 if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
-
             } else {
-                path = DEFAULT_OGL_ES;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
+#ifdef DEFAULT_OGL_ES_PVR
                 if (!opengl_dll_handle) {
                     path = DEFAULT_OGL_ES_PVR;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
-#ifdef ALT_OGL_ES2
+#endif
+#ifdef ALT_OGL_ES
                 if (!opengl_dll_handle && !vc4) {
-                    path = ALT_OGL_ES2;
+                    path = ALT_OGL_ES;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
             }
-        }
+        } else {
 #ifdef DEFAULT_OGL
-        else {
-            path = DEFAULT_OGL;
-            opengl_dll_handle = SDL_LoadObject(path);
+            if (!opengl_dll_handle) {
+                path = DEFAULT_OGL;
+                opengl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
 #ifdef ALT_OGL
             if (!opengl_dll_handle) {
                 path = ALT_OGL;
@@ -423,7 +434,6 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
             }
 #endif
         }
-#endif
     }
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 
