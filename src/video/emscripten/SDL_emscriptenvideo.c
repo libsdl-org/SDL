@@ -101,10 +101,6 @@ static void Emscripten_ListenSystemTheme(void)
 {
     MAIN_THREAD_EM_ASM({
         if (window.matchMedia) {
-            if (typeof(Module['SDL3']) === 'undefined') {
-                Module['SDL3'] = {};
-            }
-
             var SDL3 = Module['SDL3'];
 
             SDL3.eventHandlerThemeChanged = function(event) {

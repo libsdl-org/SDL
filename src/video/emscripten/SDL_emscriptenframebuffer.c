@@ -75,7 +75,6 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         var canvas = document.querySelector(canvasId);
 
         //TODO: this should store a context per canvas
-        if (!Module['SDL3']) Module['SDL3'] = {};
         var SDL3 = Module['SDL3'];
         if (SDL3.ctxCanvas !== canvas) {
             SDL3.ctx = Browser.createContext(canvas, false, true);

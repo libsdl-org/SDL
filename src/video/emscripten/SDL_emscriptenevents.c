@@ -957,9 +957,6 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerGeneric(SDL_WindowData *window
 static void Emscripten_prep_pointer_event_callbacks(void)
 {
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         var SDL3 = Module['SDL3'];
 
         if (SDL3.makePointerEventCStruct === undefined) {
@@ -1166,10 +1163,6 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
         var target = document.querySelector(UTF8ToString($1));
         if (target) {
             var data = $0;
-
-            if (typeof(Module['SDL3']) === 'undefined') {
-                Module['SDL3'] = {};
-            }
             var SDL3 = Module['SDL3'];
 
             var makeDropEventCStruct = function(event) {

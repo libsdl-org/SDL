@@ -326,6 +326,14 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    MAIN_THREAD_EM_ASM({
+        if (typeof(Module['SDL3']) === 'undefined') {
+            Module['SDL3'] = {};
+        }
+    });
+#endif
+
     SDL_InitMainThread();
 
 #ifdef SDL_USE_LIBDBUS
