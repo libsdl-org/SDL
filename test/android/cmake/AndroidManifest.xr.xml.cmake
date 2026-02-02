@@ -9,11 +9,11 @@
     <!-- OpenGL ES 3.2 for Vulkan fallback on XR devices -->
     <uses-feature android:glEsVersion="0x00030002" android:required="true" />
     
-    <!-- Vulkan requirements for Quest -->
+    <!-- Vulkan requirements -->
     <uses-feature android:name="android.hardware.vulkan.level" android:required="true" android:version="1" />
     <uses-feature android:name="android.hardware.vulkan.version" android:required="true" android:version="0x00401000" />
 
-    <!-- VR Head Tracking (required for OpenXR on Meta Quest) -->
+    <!-- VR Head Tracking (standard OpenXR requirement) -->
     <uses-feature android:name="android.hardware.vr.headtracking" android:required="true" android:version="1" />
 
     <!-- Touchscreen not required for VR -->
@@ -21,9 +21,7 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
     
-    <!-- Hand tracking support -->
-    <uses-feature android:name="oculus.software.handtracking" android:required="false" />
-
+@ANDROID_XR_META_FEATURES@
     <!-- Game controller support -->
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -63,14 +61,7 @@
         android:enableOnBackInvokedCallback="false"
         android:hardwareAccelerated="true">
 
-        <!-- Meta Quest supported devices -->
-        <meta-data android:name="com.oculus.supportedDevices" android:value="quest|quest2|questpro|quest3|quest3s" />
-        <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
-        
-        <!-- Hand tracking support level (V2 allows launching without controllers) -->
-        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
-        <meta-data android:name="com.oculus.handtracking.frequency" android:value="HIGH" />
-
+@ANDROID_XR_META_METADATA@
         <activity
             android:name="@ANDROID_MANIFEST_PACKAGE@.SDLTestActivity"
             android:exported="true"
@@ -88,8 +79,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- VR intent category for Meta Quest -->
-                <category android:name="com.oculus.intent.category.VR" />
+@ANDROID_XR_META_INTENT_CATEGORY@
                 <!-- Khronos OpenXR category (for broader compatibility) -->
                 <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
             </intent-filter>
