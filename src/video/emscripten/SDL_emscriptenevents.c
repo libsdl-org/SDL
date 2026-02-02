@@ -974,11 +974,7 @@ static void Emscripten_prep_pointer_event_callbacks(void)
 
                 var ptr = _SDL_malloc($0);
                 if (ptr != 0) {
-                    #ifdef __wasm32__
-                    var idx = ptr >> 2;
-                    #elif __wasm64__
-                    var idx = Number(ptr / 4n);
-                    #endif
+                    var idx = SDL3.CPtrToHeap32Index(ptr);
                     HEAP32[idx++] = ptrtype;
                     HEAP32[idx++] = event.pointerId;
                     HEAP32[idx++] = (typeof(event.button) !== "undefined") ? event.button : -1;
@@ -1016,11 +1012,7 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
                 var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
                 if (d != 0)
                 {
-                    #ifdef  __wasm32__
-                    _Emscripten_HandlePointerEnter(data, d);
-                    #elif __wasm64__
-                    _Emscripten_HandlePointerEnter(BigInt(data), d);
-                    #endif
+                    _Emscripten_HandlePointerEnter(SDL3.JSVarToCPtr(data), d);
                     _SDL_free(d);
                 }
             };
@@ -1029,11 +1021,7 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
                 var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
                 if (d != 0)
                 {
-                    #ifdef __wasm32__
-                        _Emscripten_HandlePointerLeave(data, d);
-                    #elif __wasm64__
-                        _Emscripten_HandlePointerLeave(BigInt(data), d);
-                    #endif
+                    _Emscripten_HandlePointerLeave(SDL3.JSVarToCPtr(data), d);
                     _SDL_free(d);
                 }
             };
@@ -1042,11 +1030,7 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
                 var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
                 if (d != 0)
                 {
-                    #ifdef __wasm32__
-                        _Emscripten_HandlePointerGeneric(data, d);
-                    #elif __wasm64__
-                        _Emscripten_HandlePointerGeneric(BigInt(data), d);
-                    #endif
+                    _Emscripten_HandlePointerGeneric(SDL3.JSVarToCPtr(data), d);
                     _SDL_free(d);
                 }
             };
@@ -1104,11 +1088,7 @@ static void Emscripten_set_global_mouseup_callback(SDL_VideoDevice *device)
                 var d = SDL3.makePointerEventCStruct(0, 0, event);
                 if (d != 0)
                 {
-                    #ifdef __wasm32__
-                    _Emscripten_HandleMouseButtonUpGlobal($0, d);
-                    #elif __wasm64__
-                    _Emscripten_HandleMouseButtonUpGlobal(BigInt($0), d);
-                    #endif
+                    _Emscripten_HandleMouseButtonUpGlobal(SDL3.JSVarToCPtr($0), d);
                     _SDL_free(d);
                 }
             };
@@ -1348,11 +1328,7 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
                 // don't try to adjust the state on the actual lock key presses; the normal key handler will catch that and adjust.
                 if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock"))
                 {
-                    #ifdef __wasm32__
-                        _Emscripten_HandleLockKeysCheck(data, event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
-                    #elif __wasm64__
-                        _Emscripten_HandleLockKeysCheck(BigInt(data), event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
-                    #endif
+                    _Emscripten_HandleLockKeysCheck(Module['SDL3'].JSVarToCPtr(data), event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
                 }
             };
             document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck);

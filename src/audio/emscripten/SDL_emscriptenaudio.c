@@ -41,13 +41,8 @@ static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buf
     const int framelen = SDL_AUDIO_FRAMESIZE(device->spec);
     MAIN_THREAD_EM_ASM({
         /* Convert incoming buf pointer to a HEAPF32 offset. */
-        #ifdef __wasm64__
-        var buf = $0 / 4;
-        #else
-        var buf = $0 >>> 2;
-        #endif
-
         var SDL3 = Module['SDL3'];
+        var buf = SDL3.CPtrToHeap32Index($0);
         var numChannels = SDL3.audio_playback.currentPlaybackBuffer['numberOfChannels'];
         for (var c = 0; c < numChannels; ++c) {
             var channelData = SDL3.audio_playback.currentPlaybackBuffer['getChannelData'](c);
