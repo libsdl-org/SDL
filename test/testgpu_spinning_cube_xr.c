@@ -26,11 +26,29 @@
  * - Single-pass instanced: GPU instancing to select eye
  */
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+
+/* OpenXR test requires platforms with full OpenXR header support.
+ * On unsupported platforms (PSP, PS2, 3DS, Vita, 32-bit Windows), we compile
+ * a stub that exits gracefully. */
+#if defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2) || \
+    defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_VITA) || \
+    (defined(SDL_PLATFORM_WIN32) && !defined(_WIN64))
+
+int main(int argc, char *argv[])
+{
+    (void)argc;
+    (void)argv;
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenXR support on this system");
+    return 1;
+}
+
+#else /* HAVE_OPENXR */
+
 /* Include OpenXR headers BEFORE SDL_openxr.h to get full type definitions */
 #include <openxr/openxr.h>
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 #include <SDL3/SDL_openxr.h>
 
 /* Standard library for exit() */
@@ -988,3 +1006,5 @@ int main(int argc, char *argv[])
     quit(0);
     return 0;
 }
+
+#endif /* HAVE_OPENXR */
