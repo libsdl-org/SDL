@@ -4964,12 +4964,6 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #endif
 
-    if (_this->GL_DefaultProfileConfig) {
-        _this->GL_DefaultProfileConfig(_this, &_this->gl_config.profile_mask,
-                                       &_this->gl_config.major_version,
-                                       &_this->gl_config.minor_version);
-    }
-
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = -1;
     _this->gl_config.no_error = 0;
@@ -4979,6 +4973,10 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.share_with_current_context = 0;
 
     _this->gl_config.egl_platform = 0;
+
+    if (_this->GL_SetDefaultProfileConfig) {
+        _this->GL_SetDefaultProfileConfig(_this);
+    }
 }
 
 bool SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
