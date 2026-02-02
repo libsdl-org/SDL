@@ -202,8 +202,16 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->pc_mode) {
+#ifdef SDL_PLATFORM_WIN32
+        // We get a separate device for each slot
         ResetAxisRange(ctx, 0);
         HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
+#else
+        for (i = 0; i < MAX_CONTROLLERS; ++i) {
+            ResetAxisRange(ctx, i);
+            HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
+        }
+#endif
     } else {
         if (!HIDAPI_DriverGameCube_EnableAdapter(device)) {
             return false;
@@ -267,13 +275,24 @@ static void HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device
 {
 }
 
-static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, const Uint8 *packet, bool invert_c_stick)
+static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 slot, const Uint8 *packet, bool invert_c_stick)
 {
     SDL_Joystick *joystick;
-    const Uint8 i = 0;  // We have a separate context for each connected controller in PC mode, just use the first index
+    Uint8 i;
     Uint8 v;
     Sint16 axis_value;
     Uint64 timestamp = SDL_GetTicksNS();
+
+#ifdef SDL_PLATFORM_WIN32
+    // We get a separate device for each slot
+    i = 0;
+#else
+    i = slot;
+    if (i >= MAX_CONTROLLERS) {
+        // Invalid packet?
+        return;
+    }
+#endif
 
     joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
     if (!joystick) {
@@ -424,11 +443,11 @@ static bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                 // This is the older firmware
                 // The first byte is the index of the connected controller
                 // The C stick has an inverted value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, &packet[1], true);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet[0] - 1, &packet[1], true);
             } else if (size == 9) {
                 // This is the newer firmware (version 0x7)
                 // The C stick has the same value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet, false);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, 0, packet, false);
             } else {
                 // How do we handle this packet?
             }
