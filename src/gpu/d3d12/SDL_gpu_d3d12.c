@@ -9785,7 +9785,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     }
     else
     {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "CheckFeatureSupport for UnrestrictedBufferTextureCopyPitchSupported failed: %lX", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "CheckFeatureSupport for UnrestrictedBufferTextureCopyPitchSupported failed. You may need to provide a vendored D3D12Core.dll through the Agility SDK on older platforms.");
     }
 
     // Create command queue
