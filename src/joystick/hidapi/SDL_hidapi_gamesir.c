@@ -18,7 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -26,6 +25,158 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+
+/* ========================================================================= */
+/*  Win32 HID helper                                                         */
+/* ========================================================================= */
+
+/* This helper requires full desktop Win32 HID APIs.
+ * These APIs are NOT available on GDK platforms.
+ */
+#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#define SDL_HAS_WIN32_HID 1
+#else
+#define SDL_HAS_WIN32_HID 0
+#endif
+
+#if SDL_HAS_WIN32_HID
+
+/* --- Win32 HID includes ------------------------------------------------- */
+#include <windows.h>
+#include <setupapi.h>
+#include <hidsdi.h>
+
+#if defined(_MSC_VER)
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "hid.lib")
+#endif
+
+static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
+{
+    GUID hidGuid;
+    HidD_GetHidGuid(&hidGuid);
+
+    HDEVINFO deviceInfoSet = SetupDiGetClassDevs(
+        &hidGuid, NULL, NULL,
+        DIGCF_PRESENT | DIGCF_DEVICEINTERFACE
+    );
+    if (deviceInfoSet == INVALID_HANDLE_VALUE) {
+        return NULL;
+    }
+
+    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
+    deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
+
+    for (DWORD i = 0;
+         SetupDiEnumDeviceInterfaces(deviceInfoSet, NULL, &hidGuid, i, &deviceInterfaceData);
+         i++) {
+
+        DWORD requiredSize = 0;
+        SetupDiGetDeviceInterfaceDetail(
+            deviceInfoSet, &deviceInterfaceData,
+            NULL, 0, &requiredSize, NULL
+        );
+
+        PSP_DEVICE_INTERFACE_DETAIL_DATA deviceDetail =
+            (PSP_DEVICE_INTERFACE_DETAIL_DATA)SDL_malloc(requiredSize);
+        if (!deviceDetail) {
+            continue;
+        }
+
+        deviceDetail->cbSize = sizeof(*deviceDetail);
+
+        if (!SetupDiGetDeviceInterfaceDetail(
+                deviceInfoSet, &deviceInterfaceData,
+                deviceDetail, requiredSize, NULL, NULL)) {
+            SDL_free(deviceDetail);
+            continue;
+        }
+
+        HANDLE hDevice = CreateFile(
+            deviceDetail->DevicePath,
+            GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_OVERLAPPED,
+            NULL
+        );
+
+        if (hDevice == INVALID_HANDLE_VALUE) {
+            SDL_free(deviceDetail);
+            continue;
+        }
+
+        HIDD_ATTRIBUTES attributes;
+        attributes.Size = sizeof(attributes);
+
+        if (!HidD_GetAttributes(hDevice, &attributes) ||
+            attributes.VendorID != vid ||
+            attributes.ProductID != pid) {
+            CloseHandle(hDevice);
+            SDL_free(deviceDetail);
+            continue;
+        }
+
+        PHIDP_PREPARSED_DATA preparsedData = NULL;
+        if (!HidD_GetPreparsedData(hDevice, &preparsedData) || !preparsedData) {
+            CloseHandle(hDevice);
+            SDL_free(deviceDetail);
+            continue;
+        }
+
+        HIDP_CAPS caps;
+        if (HidP_GetCaps(preparsedData, &caps) != HIDP_STATUS_SUCCESS) {
+            HidD_FreePreparsedData(preparsedData);
+            CloseHandle(hDevice);
+            SDL_free(deviceDetail);
+            continue;
+        }
+
+        if ((caps.InputReportByteLength == 64 && caps.OutputReportByteLength == 64) ||
+            (caps.InputReportByteLength == 37 && caps.OutputReportByteLength == 37)) {
+
+            char col_str[16];
+            SDL_snprintf(col_str, sizeof(col_str), "col%02d", collection_index);
+
+            if (SDL_strcasestr(deviceDetail->DevicePath, col_str)) {
+                char *result = SDL_strdup(deviceDetail->DevicePath);
+                HidD_FreePreparsedData(preparsedData);
+                CloseHandle(hDevice);
+                SDL_free(deviceDetail);
+                SetupDiDestroyDeviceInfoList(deviceInfoSet);
+                return result;
+            }
+        }
+
+        HidD_FreePreparsedData(preparsedData);
+        CloseHandle(hDevice);
+        SDL_free(deviceDetail);
+    }
+
+    SetupDiDestroyDeviceInfoList(deviceInfoSet);
+    return NULL;
+}
+
+#else  /* !SDL_HAS_WIN32_HID */
+/* Stub for GDK / non-Win32 platforms */
+
+#if defined(__GNUC__) || defined(__clang__)
+#define SDL_UNUSED_FUNC __attribute__((unused))
+#else
+#define SDL_UNUSED_FUNC
+#endif
+
+static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index) SDL_UNUSED_FUNC;
+static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
+{
+    (void)vid;
+    (void)pid;
+    (void)collection_index;
+    return NULL;
+}
+
+#endif /* SDL_HAS_WIN32_HID */
 
 #ifdef SDL_JOYSTICK_HIDAPI_GAMESIR
 
@@ -175,109 +326,6 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
     return true;
 }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-#include <windows.h>
-#include <setupapi.h>
-#include <hidsdi.h>
-#if defined(SDL_PLATFORM_WIN32) && defined(_MSC_VER)
-    #pragma comment(lib, "setupapi.lib")
-    #pragma comment(lib, "hid.lib")
-#endif
-
-
-static char *FindHIDInterfacePath(USHORT vid, USHORT pid, int collection_index ) {
-    GUID hidGuid;
-    HidD_GetHidGuid(&hidGuid);
-
-    HDEVINFO deviceInfoSet = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-    if (deviceInfoSet == INVALID_HANDLE_VALUE) {
-        return NULL;
-    }
-
-    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
-    deviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-
-    for (DWORD i = 0; SetupDiEnumDeviceInterfaces(deviceInfoSet, NULL, &hidGuid, i, &deviceInterfaceData); i++) {
-        DWORD requiredSize = 0;
-        SetupDiGetDeviceInterfaceDetail(deviceInfoSet, &deviceInterfaceData, NULL, 0, &requiredSize, NULL);
-
-        PSP_DEVICE_INTERFACE_DETAIL_DATA deviceDetail = (PSP_DEVICE_INTERFACE_DETAIL_DATA)SDL_malloc(requiredSize);
-        if (!deviceDetail) continue;
-        deviceDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-        if (!SetupDiGetDeviceInterfaceDetail(deviceInfoSet, &deviceInterfaceData, deviceDetail, requiredSize, NULL, NULL)) {
-            SDL_free(deviceDetail);
-            continue;
-        }
-
-
-        HANDLE hDevice = CreateFile(deviceDetail->DevicePath,
-                                   GENERIC_READ | GENERIC_WRITE,
-                                   FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                   NULL,
-                                   OPEN_EXISTING,
-                                   FILE_FLAG_OVERLAPPED,
-                                   NULL);
-
-        if (hDevice == INVALID_HANDLE_VALUE) {
-            SDL_free(deviceDetail);
-            continue;
-        }
-
-
-        HIDD_ATTRIBUTES attributes;
-        attributes.Size = sizeof(attributes);
-        if (!HidD_GetAttributes(hDevice, &attributes) ||
-            attributes.VendorID != vid ||
-            attributes.ProductID != pid) {
-            CloseHandle(hDevice);
-            SDL_free(deviceDetail);
-            continue;
-        }
-
-
-        PHIDP_PREPARSED_DATA preparsedData = NULL;
-        if (!HidD_GetPreparsedData(hDevice, &preparsedData) || !preparsedData) {
-            CloseHandle(hDevice);
-            SDL_free(deviceDetail);
-            continue;
-        }
-
-        HIDP_CAPS caps;
-        if (HidP_GetCaps(preparsedData, &caps) != HIDP_STATUS_SUCCESS) {
-            HidD_FreePreparsedData(preparsedData);
-            CloseHandle(hDevice);
-            SDL_free(deviceDetail);
-            continue;
-        }
-
-
-        if (caps.InputReportByteLength == 64 && caps.OutputReportByteLength == 64 ||
-            caps.InputReportByteLength == 37 && caps.OutputReportByteLength == 37) {
-
-            char col_str[16];
-            snprintf(col_str, sizeof(col_str), "col%02d", collection_index);
-            if (SDL_strcasestr(deviceDetail->DevicePath, col_str)) {
-                char *result = SDL_strdup(deviceDetail->DevicePath);
-                HidD_FreePreparsedData(preparsedData);
-                CloseHandle(hDevice);
-                SDL_free(deviceDetail);
-                SetupDiDestroyDeviceInfoList(deviceInfoSet);
-                return result;
-            }
-        }
-
-        HidD_FreePreparsedData(preparsedData);
-        CloseHandle(hDevice);
-        SDL_free(deviceDetail);
-    }
-
-    SetupDiDestroyDeviceInfoList(deviceInfoSet);
-    return NULL;
-}
-#endif
-
-
 static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
 {
     Uint16 vendor_id = device->vendor_id;
@@ -287,7 +335,7 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
     struct SDL_hid_device_info *devs = SDL_hid_enumerate(vendor_id, product_id);
     for (struct SDL_hid_device_info *info = devs; info; info = info->next) {
         if (info->interface_number == 0) {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_GDK)
             if (!output_handle) {
                 char *col02_path = FindHIDInterfacePath(vendor_id, product_id, 2);
                 if (col02_path) {
@@ -412,14 +460,14 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
 
         ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
-        // 加速度计缩放因子：假设范围为±2g，16位带符号值（-32768到32767）
-        // 32768对应2g，所以缩放因子 = 2 * SDL_STANDARD_GRAVITY / 32768.0f
+        // Accelerometer scale factor: assume a range of ±2g, 16-bit signed values (-32768 to 32767)
+        // 32768 corresponds to 2g, so the scale factor = 2 * SDL_STANDARD_GRAVITY / 32768.0f
         ctx->accelScale = 2.0f * SDL_STANDARD_GRAVITY / 32768.0f;
 
-        // 陀螺仪缩放因子：参考PS4的实现方式
-        // PS4使用 (gyro_numerator / gyro_denominator) * (π / 180)
-        // 默认值为 (1 / 16) * (π / 180)，对应量程约为 ±2048 度/秒
-        // 这是游戏手柄陀螺仪的常见量程
+        // Gyro scale factor: based on the PS4 implementation
+        // PS4 uses (gyro_numerator / gyro_denominator) * (π / 180)
+        // The default value is (1 / 16) * (π / 180), corresponding to a range of approximately ±2048 degrees/second
+        // This is a common range for gamepad gyroscopes
         const float gyro_numerator = 1.0f;
         const float gyro_denominator = 16.0f;
         ctx->gyroScale = (gyro_numerator / gyro_denominator) * (SDL_PI_F / 180.0f);
@@ -642,22 +690,19 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         return;
     }
 
-    // 检查数据包格式：可能包含报告ID（0x43）作为第一个字节
-    // 实际数据包格式：43 a1 c8 [按钮数据...]
-    // 如果第一个字节是0x43，第二个字节是0xa1，第三个字节是0xc8，则跳过报告ID
-    Uint8 *packet_data = data;
+    // Check packet format: it may include a report ID (0x43) as the first byte
+    // Actual packet format: 43 a1 c8 [button data...]
+    // If the first byte is 0x43, the second is 0xA1 and the third is 0xC8, skip the report ID
     int packet_size = size;
 
     if (size >= 3 && data[0] == 0x43 && data[1] == GAMESIR_PACKET_HEADER_0 && data[2] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
-        // 数据包包含报告ID，跳过第一个字节
-        packet_data = data + 1;
+        // Packet contains a report ID; skip the first byte
         packet_size = size - 1;
     } else if (size >= 2 && data[0] == GAMESIR_PACKET_HEADER_0 && data[1] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
-        // 标准格式：没有报告ID，直接是头部字节
-        packet_data = data;
+        // Standard format: no report ID, header bytes directly
         packet_size = size;
     } else {
-        // 不匹配的数据包格式，直接返回
+        // Packet format does not match; return immediately
         return;
     }
 
@@ -671,8 +716,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     if (ctx->last_state[3] != data[3]) {
         Uint8 buttons = data[3];
         // BTN1: A B C X Y Z L1 R1
-        // 使用位运算检查每个按钮是否被按下
-        // buttons & BTN_A 会返回 BTN_A 的值（如果按下）或 0（如果未按下）
+        // Use bitwise operations to check whether each button is pressed
+        // buttons & BTN_A returns the value of BTN_A (if pressed) or 0 (if not pressed)
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, buttons & BTN_A);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,  buttons & BTN_B);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,  buttons & BTN_X);
@@ -685,8 +730,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     if (ctx->last_state[4] != data[4]) {
         Uint8 buttons = data[4];
         // BTN2: L2 R2 SELECT START HOME L3 R3 CAPTURE
-        // 注意：L2/R2 作为数字按钮在 data[4] 中，但实际的模拟值在 data[15]/data[16] 中
-        // 这里只处理其他按钮，扳机轴的模拟值在后面的代码中处理
+        // Note: L2/R2 appear as digital buttons in data[4], but their actual analog values are in data[15]/data[16].
+        // Only handle the other buttons here; trigger analog values are processed later in the code.
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, buttons & BTN_SELECT);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, buttons & BTN_START);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, buttons & BTN_HOME);
@@ -699,7 +744,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     if (ctx->last_state[5] != data[5]) {
         Uint8 buttons = data[5];
         // BTN3: UP DOWN LEFT RIGHT M MUTE L4 R4
-        // 处理方向键（十字键）
+        // Handle the directional pad (D-pad)
         Uint8 hat = SDL_HAT_CENTERED;
 
 
@@ -725,7 +770,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
-        // 处理其他按钮
+        // Handle other buttons
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, buttons & BTN_L4);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1, buttons & BTN_R4);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, buttons & BTN_MUTE);
@@ -746,27 +791,27 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     }
 
     if (is_initial_packet) {
-        // 初始化所有摇杆轴到中心位置
+        // Initialize all joystick axes to center positions
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, 0);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, 0);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, 0);
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, 0);
     } else {
-        // 左摇杆处理
-        // 左摇杆：字节 7-10 (16位值)
-        // 字节 7-8: X轴 (Hi/Low组合成带符号16位值，例如0x7df6)
-        // 字节 9-10: Y轴 (Hi/Low组合成带符号16位值)
+        // Left stick handling
+        // Left stick: bytes 7-10 (16-bit values)
+        // Bytes 7-8: X axis (Hi/Low combined into a signed 16-bit value, e.g. 0x7df6)
+        // Bytes 9-10: Y axis (Hi/Low combined into a signed 16-bit value)
         if (size >= 11) {
-            // 组合字节7-8为16位值，例如：data[7]=0x7d, data[8]=0xf6 -> 0x7df6
+            // Combine bytes 7-8 into a 16-bit value, e.g.: data[7]=0x7d, data[8]=0xf6 -> 0x7df6
             Uint16 raw_x_unsigned = ((Uint16)data[7] << 8) | data[8];
             Uint16 raw_y_unsigned = ((Uint16)data[9] << 8) | data[10];
 
-            // 将无符号16位值解释为带符号16位值
+            // Interpret the unsigned 16-bit value as a signed 16-bit value
             Sint16 raw_x = (Sint16)raw_x_unsigned;
             Sint16 raw_y = (Sint16)raw_y_unsigned;
 
             Sint16 left_x, left_y;
-            // 直接使用带符号16位值，Y轴反转（SDL约定：向上为负值）
+            // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
             left_x = raw_x;
             left_y = -raw_y;
 
@@ -782,7 +827,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_left_x, last_left_y;
                 last_left_x = last_raw_x;
-                last_left_y = -last_raw_y;  // Y轴反转
+                last_left_y = -last_raw_y;  // invert Y axis
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_left_x, last_left_y, &last_deadzone_x, &last_deadzone_y);
@@ -794,22 +839,22 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             }
         }
 
-        // 右摇杆处理
-        // 右摇杆：字节 11-14 (16位值)
-        // 字节 11-12: X轴 (Hi/Low组合成带符号16位值)
-        // 字节 13-14: Y轴 (Hi/Low组合成带符号16位值)
+        // Right stick handling
+        // Right stick: bytes 11-14 (16-bit values)
+        // Bytes 11-12: X axis (Hi/Low combined into a signed 16-bit value)
+        // Bytes 13-14: Y axis (Hi/Low combined into a signed 16-bit value)
         if (size >= 15) {
-            // 组合字节11-12为16位值
+            // Combine bytes 11-12 into a 16-bit value
             Uint16 raw_x_unsigned = ((Uint16)data[11] << 8) | data[12];
-            // 组合字节13-14为16位值
+            // Combine bytes 13-14 into a 16-bit value
             Uint16 raw_y_unsigned = ((Uint16)data[13] << 8) | data[14];
 
-            // 将无符号16位值解释为带符号16位值
+            // Interpret the unsigned 16-bit value as a signed 16-bit value
             Sint16 raw_x = (Sint16)raw_x_unsigned;
             Sint16 raw_y = (Sint16)raw_y_unsigned;
 
             Sint16 right_x, right_y;
-            // 直接使用带符号16位值，Y轴反转（SDL约定：向上为负值）
+            // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
             right_x = raw_x;
             right_y = -raw_y;
 
@@ -825,7 +870,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_right_x, last_right_y;
                 last_right_x = last_raw_x;
-                last_right_y = -last_raw_y;  // Y轴反转
+                last_right_y = -last_raw_y;  // invert Y axis
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_right_x, last_right_y, &last_deadzone_x, &last_deadzone_y);
@@ -837,11 +882,11 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             }
         }
 
-        // 处理扳机轴
-        // 协议：L2(15) - AXIS 左扳机模拟量 0-255，弹起0/按下255
-        //       R2(16) - AXIS 右扳机模拟量 0-255，弹起0/按下255
-        // SDL 范围：0-32767（0=未按下，32767=完全按下）
-        // 线性映射：0-255 -> 0-32767
+        // Handle trigger axes
+        // Protocol: L2 (byte 15) - analog left trigger 0-255, 0 = released, 255 = pressed
+        //           R2 (byte 16) - analog right trigger 0-255, 0 = released, 255 = pressed
+        // SDL range: 0-32767 (0 = released, 32767 = fully pressed)
+        // Linear mapping: 0-255 -> 0-32767
         if (ctx->last_state[15] != data[15]) {
             axis = (Sint16)(((int)data[15] * 255) - 32767);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
@@ -861,43 +906,44 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // 加速度计数据（字节 17-22）
-        // 字节 17-18: Acc X (Hi/Low组合成带符号16位值)
-        // 字节 19-20: Acc Y (Hi/Low组合成带符号16位值)
-        // 字节 21-22: Acc Z (Hi/Low组合成带符号16位值)
+        // Accelerometer data (bytes 17-22)
+        // Bytes 17-18: Acc X (Hi/Low combined into a signed 16-bit value)
+        // Bytes 19-20: Acc Y (Hi/Low combined into a signed 16-bit value)
+        // Bytes 21-22: Acc Z (Hi/Low combined into a signed 16-bit value)
         Uint16 acc_x_unsigned = ((Uint16)data[17] << 8) | data[18];
         Uint16 acc_y_unsigned = ((Uint16)data[19] << 8) | data[20];
         Uint16 acc_z_unsigned = ((Uint16)data[21] << 8) | data[22];
 
-        // 将无符号16位值转换为带符号16位值
+        // Convert the unsigned 16-bit values to signed 16-bit values
         Sint16 acc_x = (Sint16)acc_x_unsigned;
         Sint16 acc_y = (Sint16)acc_y_unsigned;
         Sint16 acc_z = (Sint16)acc_z_unsigned;
 
-        // 应用缩放因子并转换为浮点数
-        // 坐标系与PS4一致，直接使用原始值，无符号反转
+        // Apply scale factor and convert to floating point
+        // Coordinate system matches PS4; use raw values directly without sign inversion
         values[0] = (float)acc_x * ctx->accelScale;  // Acc X
         values[1] = (float)acc_y * ctx->accelScale;   // Acc Y
         values[2] = (float)acc_z * ctx->accelScale;  // Acc Z
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
 
-        // 陀螺仪数据（字节 23-28）
-        // 字节 23-24: Gyro X (Hi/Low组合成带符号16位值)
-        // 字节 25-26: Gyro Y (Hi/Low组合成带符号16位值)
-        // 字节 27-28: Gyro Z (Hi/Low组合成带符号16位值)
+        // Gyroscope data (bytes 23-28)
+        // Bytes 23-24: Gyro X (Hi/Low combined into a signed 16-bit value)
+        // Bytes 25-26: Gyro Y (Hi/Low combined into a signed 16-bit value)
+        // Bytes 27-28: Gyro Z (Hi/Low combined into a signed 16-bit value)
         Uint16 gyro_x_unsigned = ((Uint16)data[23] << 8) | data[24];
         Uint16 gyro_y_unsigned = ((Uint16)data[25] << 8) | data[26];
         Uint16 gyro_z_unsigned = ((Uint16)data[27] << 8) | data[28];
 
-        // 将无符号16位值转换为带符号16位值
+        // Convert the unsigned 16-bit values to signed 16-bit values
         Sint16 gyro_x = (Sint16)gyro_x_unsigned;
         Sint16 gyro_y = (Sint16)gyro_y_unsigned;
         Sint16 gyro_z = (Sint16)gyro_z_unsigned;
 
-        // 应用缩放因子并转换为浮点数（弧度/秒）
-        // 参考PS4的实现：使用 (gyro_numerator / gyro_denominator) * (π / 180)
-        // 默认配置对应量程约为 ±2048 度/秒，这是游戏手柄陀螺仪的常见量程
-        // 坐标系与PS4一致，直接使用原始值，无符号反转
+        // Apply scale factor and convert to floating point (radians/second)
+        // Based on the PS4 implementation: use (gyro_numerator / gyro_denominator) * (π / 180)
+        // The default configuration corresponds to a range of approximately ±2048 degrees/second,
+        // which is a common range for gamepad gyroscopes
+        // Coordinate system matches the PS4; use raw values directly without sign inversion
         values[0] = (float)gyro_x * ctx->gyroScale;  // Gyro X (Pitch)
         values[1] = (float)gyro_y * ctx->gyroScale;  // Gyro Y (Yaw)
         values[2] = (float)gyro_z * ctx->gyroScale;  // Gyro Z (Roll)
@@ -966,7 +1012,7 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((size = SDL_hid_read_timeout(handle, data, sizeof(data), 0)) > 0) {
         if (joystick) {
-            // 取消注释以处理数据包
+            // Uncomment to handle the packet
             HIDAPI_DriverGameSir_HandleStatePacket(joystick, ctx, data, size);
         }
     }
