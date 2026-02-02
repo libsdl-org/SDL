@@ -382,13 +382,10 @@ add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
 add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
-# XR test requires OpenXR headers which don't compile on exotic platforms
-# (PSP, PS2, PS Vita, 3DS, N-Gage, Haiku use non-standard toolchains)
-# Also skip 32-bit Windows as OpenXR runtimes require 64-bit
-if(NOT PSP AND NOT PS2 AND NOT VITA AND NOT N3DS AND NOT NGAGE AND NOT HAIKU AND NOT (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4))
-    add_sdl_test_executable(testgpu_spinning_cube_xr BUILD_DEPENDENT SOURCES testgpu_spinning_cube_xr.c)
-    target_include_directories(testgpu_spinning_cube_xr PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
-endif()
+# OpenXR spinning cube test - uses SDL's vendored OpenXR headers
+# See: https://github.com/libsdl-org/SDL/issues/14931
+add_sdl_test_executable(testgpu_spinning_cube_xr BUILD_DEPENDENT SOURCES testgpu_spinning_cube_xr.c)
+target_include_directories(testgpu_spinning_cube_xr PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
 
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
