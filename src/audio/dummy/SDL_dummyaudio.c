@@ -116,9 +116,6 @@ static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     // on Emscripten without threads, we just fire a repeating timer to consume audio.
     #if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         Module['SDL3'].dummy_audio = {};
         Module['SDL3'].dummy_audio.timers = [];
         Module['SDL3'].dummy_audio.timers[0] = undefined;
