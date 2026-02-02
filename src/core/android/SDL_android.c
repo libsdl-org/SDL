@@ -1358,7 +1358,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     jint device_id, jint keycode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-int button = android_keycode_to_SDL(keycode);
+int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
         RPC_Prepare(onNativePadDown);
         RPC_Add(device_id);
@@ -1385,7 +1385,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     jint device_id, jint keycode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    int button = android_keycode_to_SDL(keycode);
+    int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
         RPC_Prepare(onNativePadUp);
         RPC_Add(device_id);

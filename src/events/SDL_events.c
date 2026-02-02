@@ -1514,8 +1514,12 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *window = _this->windows;
-    Android_PumpEvents(window, 0);
+    if (_this) {
+        SDL_Window *window = _this->windows;
+        if (window) {
+            Android_PumpEvents(window, 0);
+        }
+    }
 #else
     // Get events from the video subsystem
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1750,8 +1754,12 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         }
 
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        SDL_Window *window = _this->windows;
-        Android_PumpEvents(window, delay);
+        if (_this) {
+            SDL_Window *window = _this->windows;
+            if (window) {
+                Android_PumpEvents(window, delay);
+            }
+        }
     }
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
