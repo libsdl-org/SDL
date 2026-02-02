@@ -8761,24 +8761,23 @@ static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer
 
         ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
         return true;
-    } else
-#endif
-    {
-        pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
-            renderer->d3d12_dll,
-            D3D12_GET_DEBUG_INTERFACE_FUNC);
-        if (pD3D12GetDebugInterface == NULL) {
-            return false;
-        }
-
-        res = pD3D12GetDebugInterface(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
-        if (FAILED(res)) {
-            return false;
-        }
-
-        ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
-        return true;
     }
+#endif
+
+    pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
+        renderer->d3d12_dll,
+        D3D12_GET_DEBUG_INTERFACE_FUNC);
+    if (pD3D12GetDebugInterface == NULL) {
+        return false;
+    }
+
+    res = pD3D12GetDebugInterface(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
+    if (FAILED(res)) {
+        return false;
+    }
+
+    ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
+    return true;
 }
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
