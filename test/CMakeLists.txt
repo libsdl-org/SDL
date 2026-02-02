@@ -760,9 +760,21 @@ if(ANDROID AND TARGET SDL3::Jar)
                 # Meta Quest-specific manifest sections (enabled by default, set to empty to disable)
                 # These are ignored by non-Meta runtimes but required for proper Quest integration
                 if(NOT DEFINED SDL_ANDROID_XR_META_SUPPORT OR SDL_ANDROID_XR_META_SUPPORT)
-                    set(ANDROID_XR_META_FEATURES "    <!-- Meta Quest hand tracking support -->\n    <uses-feature android:name=\"oculus.software.handtracking\" android:required=\"false\" />\n")
-                    set(ANDROID_XR_META_METADATA "        <!-- Meta Quest supported devices -->\n        <meta-data android:name=\"com.oculus.supportedDevices\" android:value=\"quest|quest2|questpro|quest3|quest3s\" />\n        <meta-data android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />\n        <!-- Hand tracking support level (V2 allows launching without controllers) -->\n        <meta-data android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />\n        <meta-data android:name=\"com.oculus.handtracking.frequency\" android:value=\"HIGH\" />\n")
-                    set(ANDROID_XR_META_INTENT_CATEGORY "                <!-- VR intent category for Meta Quest -->\n                <category android:name=\"com.oculus.intent.category.VR\" />")
+                    set(ANDROID_XR_META_FEATURES
+"    <!-- Meta Quest hand tracking support -->
+    <uses-feature android:name=\"oculus.software.handtracking\" android:required=\"false\" />
+")
+                    set(ANDROID_XR_META_METADATA
+"        <!-- Meta Quest supported devices -->
+        <meta-data android:name=\"com.oculus.supportedDevices\" android:value=\"quest|quest2|questpro|quest3|quest3s\" />
+        <meta-data android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />
+        <!-- Hand tracking support level (V2 allows launching without controllers) -->
+        <meta-data android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />
+        <meta-data android:name=\"com.oculus.handtracking.frequency\" android:value=\"HIGH\" />
+")
+                    set(ANDROID_XR_META_INTENT_CATEGORY
+"                <!-- VR intent category for Meta Quest -->
+                <category android:name=\"com.oculus.intent.category.VR\" />")
                 else()
                     set(ANDROID_XR_META_FEATURES "")
                     set(ANDROID_XR_META_METADATA "")
