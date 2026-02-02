@@ -303,7 +303,7 @@ static UINT D3D12_Align(UINT location, UINT alignment)
 }
 
 static const struct {
-    Uint32 sdl;
+    SDL_PixelFormat sdl;
     DXGI_FORMAT unorm;
     DXGI_FORMAT srgb;
 } dxgi_format_map[] = {
@@ -322,13 +322,13 @@ static SDL_PixelFormat D3D12_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
     for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
         if (dxgi_format_map[i].unorm == dxgiFormat ||
             dxgi_format_map[i].srgb == dxgiFormat) {
-            return (SDL_PixelFormat) dxgi_format_map[i].sdl;
+            return dxgi_format_map[i].sdl;
         }
     }
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(SDL_PixelFormat format, Uint32 output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_INDEX8:
@@ -354,7 +354,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
     }
 }
 
-static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
+static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(SDL_PixelFormat format, Uint32 colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_INDEX8:
@@ -3547,7 +3547,7 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
 
         if ((unorm.Support1 & D3D12_FORMAT_SUPPORT1_TEXTURE2D) &&
             (srgb.Support1  & D3D12_FORMAT_SUPPORT1_TEXTURE2D)) {
-            SDL_AddSupportedTextureFormat(renderer, (SDL_PixelFormat) dxgi_format_map[i].sdl);
+            SDL_AddSupportedTextureFormat(renderer, dxgi_format_map[i].sdl);
         }
     }
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
