@@ -2307,6 +2307,18 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION`: Certain feature
+ *   checks are only possible on Windows 11 by default. By setting this
+ *   alongside `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH` and
+ *   vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make
+ *   those feature checks possible on older platforms. The version you
+ *   provide must match the one given in the DLL.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH`: Certain feature
+ *   checks are only possible on Windows 11 by default. By setting this
+ *   alongside `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION` and
+ *   vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make
+ *   those feature checks possible on older platforms. The path you provide
+ *   must be relative to the executable path of your app.
  *
  * With the Vulkan backend:
  *
