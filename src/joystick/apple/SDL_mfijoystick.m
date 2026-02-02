@@ -366,6 +366,11 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         (device->is_stadia && HIDAPI_IsDevicePresent(USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER, 0, "")) ||
         (device->is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
         (device->is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, "")) ||
+        (SDL_strstr(name, "GameCube Controller Adapter") &&
+			(HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
+			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
+			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
+			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
         (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
         (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
         (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, ""))) {
