@@ -40,7 +40,6 @@ bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     SDL_VideoData *data = _this->internal;
 
 #if defined(SDL_PLATFORM_QNXNTO)
-    //QNX needs some extra attention here to really let egl know we are wanting wayland
     SDL_GL_SetAttribute(SDL_GL_EGL_PLATFORM, EGL_PLATFORM_WAYLAND_EXT);
 #endif
 
