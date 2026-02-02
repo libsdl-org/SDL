@@ -51,7 +51,7 @@ bool Cocoa_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     }
 
     if (_this->egl_data == NULL) {
-        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform);
+        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY);
     }
 
     return true;
@@ -127,7 +127,7 @@ bool Cocoa_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #if 0 // When hint SDL_HINT_OPENGL_ES_DRIVER is set to "1" (e.g. for ANGLE support), _this->gl_config.driver_loaded can be 1, while the below lines function.
         SDL_assert(!_this->gl_config.driver_loaded);
 #endif
-            if (!SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, _this->gl_config.egl_platform)) {
+            if (!SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY)) {
                 SDL_EGL_UnloadLibrary(_this);
                 return false;
             }

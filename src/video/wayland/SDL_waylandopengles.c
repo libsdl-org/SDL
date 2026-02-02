@@ -34,16 +34,20 @@
 
 // EGL implementation of SDL OpenGL ES support
 
+void Wayland_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
+{
+#if defined(SDL_PLATFORM_QNXNTO)
+    // QNX defaults to EGL_PLATFORM_SCREEN_QNX unless this is explicitly specified
+    _this->gl_config.egl_platform = EGL_PLATFORM_WAYLAND_EXT;
+#endif
+}
+
 bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     bool result;
     SDL_VideoData *data = _this->internal;
 
-#if defined(SDL_PLATFORM_QNXNTO)
-    SDL_GL_SetAttribute(SDL_GL_EGL_PLATFORM, EGL_PLATFORM_WAYLAND_EXT);
-#endif
-
-    result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);
