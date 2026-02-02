@@ -151,9 +151,6 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // create context
     const bool result = MAIN_THREAD_EM_ASM_INT({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         var SDL3 = Module['SDL3'];
         if (typeof(SDL3.audio_playback) === 'undefined') {
             SDL3.audio_playback = {};

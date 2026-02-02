@@ -247,9 +247,6 @@ static void EMSCRIPTENCAMERA_DetectDevices(void)
 static bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         Module['SDL3'].camera = {};
     });
 
