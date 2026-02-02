@@ -119,6 +119,7 @@
 #define CREATE_DXGI_FACTORY1_FUNC           "CreateDXGIFactory1"
 #define DXGI_GET_DEBUG_INTERFACE_FUNC       "DXGIGetDebugInterface"
 #define D3D12_GET_DEBUG_INTERFACE_FUNC      "D3D12GetDebugInterface"
+#define D3D12_GET_INTERFACE_FUNC            "D3D12GetInterface"
 #define WINDOW_PROPERTY_DATA                "SDL.internal.gpu.d3d12.data"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
@@ -183,6 +184,12 @@ static const IID D3D_IID_ID3D12PipelineState = { 0x765a30f3, 0xf624, 0x4c6f, { 0
 static const IID D3D_IID_ID3D12Debug = { 0x344488b7, 0x6846, 0x474b, { 0xb9, 0x89, 0xf0, 0x27, 0x44, 0x82, 0x45, 0xe0 } };
 static const IID D3D_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58 } };
 static const IID D3D_IID_ID3D12InfoQueue1 = { 0x2852dd88, 0xb484, 0x4c0c, { 0xb6, 0xb1, 0x67, 0x16, 0x85, 0x00, 0xe6, 0x00 } };
+
+static const GUID D3D_CLSID_ID3D12SDKConfiguration = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
+static const GUID D3D_CLSID_ID3D12Debug = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
+static const IID D3D_IID_ID3D12SDKConfiguration = { 0xe9eb5314, 0x33aa, 0x42b2, { 0xa7, 0x18, 0xd7, 0x7f, 0x58, 0xb1, 0xf1, 0xc7 } };
+static const IID D3D_IID_ID3D12SDKConfiguration1 = { 0x8aaf9303, 0xad25, 0x48b9, { 0x9a, 0x57, 0xd9, 0xc3, 0x7e, 0x00, 0x9d, 0x9f } };
+static const IID D3D_IID_ID3D12DeviceFactory = { 0x61f307d3, 0xd34e, 0x4e7c, { 0x83, 0x74, 0x3b, 0xa4, 0xde, 0x23, 0xcc, 0xcb } };
 
 // Enums
 
@@ -8736,10 +8743,26 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 }
 #endif
 
-static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
-{
+static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    , ID3D12DeviceFactory * factory
+#endif
+) {
     PFN_D3D12_GET_DEBUG_INTERFACE pD3D12GetDebugInterface;
     HRESULT res;
+
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    if (factory) {
+        res = ID3D12DeviceFactory_GetConfigurationInterface(factory, &D3D_CLSID_ID3D12Debug, &D3D_IID_ID3D12Debug, (void **)&renderer->d3d12Debug);
+
+        if (FAILED(res)) {
+            return false;
+        }
+
+        ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
+        return true;
+    }
+#endif
 
     pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
         renderer->d3d12_dll,
@@ -9314,6 +9337,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     IDXGIFactory6 *factory6;
     DXGI_ADAPTER_DESC1 adapterDesc;
     LARGE_INTEGER umdVersion;
+    PFN_D3D12_GET_INTERFACE pD3D12GetInterface;
     PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
 #endif
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
@@ -9593,9 +9617,49 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         SET_STRING_ERROR_AND_RETURN("Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC, NULL);
     }
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // A device factory allows a D3D12 redistributable provided by the client to be loaded.
+    ID3D12DeviceFactory *factory = NULL;
+
+    if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING) && SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER)) {
+        int d3d12SDKVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER, 0);
+        const char *d3d12SDKPath = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING, ".\\D3D12\\");
+
+        pD3D12GetInterface = (PFN_D3D12_GET_INTERFACE)SDL_LoadFunction(
+            renderer->d3d12_dll,
+            D3D12_GET_INTERFACE_FUNC);
+        if (pD3D12GetInterface == NULL) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load D3D12GetInterface, custom D3D12 SDK will not load.");
+        }
+
+        ID3D12SDKConfiguration *sdk_config = NULL;
+
+        if (SUCCEEDED(pD3D12GetInterface(D3D_GUID(D3D_CLSID_ID3D12SDKConfiguration), D3D_GUID(D3D_IID_ID3D12SDKConfiguration), (void**) &sdk_config))) {
+            ID3D12SDKConfiguration1 *sdk_config1 = NULL;
+            if (SUCCEEDED(IUnknown_QueryInterface(sdk_config, &D3D_IID_ID3D12SDKConfiguration1, (void**) &sdk_config1))) {
+                if (SUCCEEDED(ID3D12SDKConfiguration1_CreateDeviceFactory(sdk_config1, d3d12SDKVersion, d3d12SDKPath, &D3D_IID_ID3D12DeviceFactory, (void**) &factory))) {
+                    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Loaded vendored D3D12Core.dll");
+                } else {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to load vendored D3D12Core.dll");
+                }
+
+                ID3D12SDKConfiguration1_Release(sdk_config1);
+            }
+
+            ID3D12SDKConfiguration_Release(sdk_config);
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to load vendored D3D12 SDK Configuration");
+        }
+    }
+#endif
+
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
-        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+            , factory
+#endif
+        );
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         if (hasD3d12Debug) {
             SDL_LogInfo(
@@ -9649,15 +9713,33 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         s_Device = renderer->device;
     }
 #else
-    res = pD3D12CreateDevice(
-        (IUnknown *)renderer->adapter,
-        D3D_FEATURE_LEVEL_CHOICE,
-        D3D_GUID(D3D_IID_ID3D12Device),
-        (void **)&renderer->device);
 
-    if (FAILED(res)) {
-        D3D12_INTERNAL_DestroyRenderer(renderer);
-        CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+    if (factory) {
+        ID3D12DeviceFactory_SetFlags(factory, D3D12_DEVICE_FACTORY_FLAG_ALLOW_RETURNING_EXISTING_DEVICE);
+        res = ID3D12DeviceFactory_CreateDevice(
+            factory,
+            (IUnknown *)renderer->adapter,
+            D3D_FEATURE_LEVEL_CHOICE,
+            D3D_GUID(D3D_IID_ID3D12Device),
+            (void**)&renderer->device);
+
+        ID3D12DeviceFactory_Release(factory);
+
+        if (FAILED(res)) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+        }
+    } else {
+        res = pD3D12CreateDevice(
+            (IUnknown *)renderer->adapter,
+            D3D_FEATURE_LEVEL_CHOICE,
+            D3D_GUID(D3D_IID_ID3D12Device),
+            (void **)&renderer->device);
+
+        if (FAILED(res)) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+        }
     }
 
     // Initialize the D3D12 debug info queue, if applicable
@@ -9709,6 +9791,10 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     if (SUCCEEDED(res)) {
         renderer->UnrestrictedBufferTextureCopyPitchSupported = options13.UnrestrictedBufferTextureCopyPitchSupported;
+    }
+    else
+    {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "CheckFeatureSupport for UnrestrictedBufferTextureCopyPitchSupported failed. You may need to provide a vendored D3D12Core.dll through the Agility SDK on older platforms.");
     }
 
     // Create command queue
