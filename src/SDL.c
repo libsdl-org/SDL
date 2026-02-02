@@ -328,9 +328,21 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     MAIN_THREAD_EM_ASM({
+        // make sure this generic table to hang SDL-specific Javascript stuff is available at init time.
         if (typeof(Module['SDL3']) === 'undefined') {
             Module['SDL3'] = {};
         }
+
+        var SDL3 = Module['SDL3'];
+        #if defined(__wasm32__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return v; }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; }; }
+        #elif defined(__wasm64__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return BigInt(v); }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); }; }
+        #else
+        #error Please define your platform.
+        #endif
     });
 #endif
 
