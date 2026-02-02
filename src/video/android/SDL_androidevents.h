@@ -21,6 +21,8 @@
 #include "SDL_internal.h"
 
 extern void Android_InitEvents(void);
-extern void Android_PumpEvents(Sint64 timeoutNS);
-extern bool Android_WaitActiveAndLockActivity(void);
+extern void Android_PumpEvents(SDL_Window *window, Sint64 timeoutNS);
+extern bool Android_WaitActiveAndLockActivity(SDL_Window *window);
 extern void Android_QuitEvents(void);
+
+extern void Android_PumpLifecycleEvents(SDL_Window *window);

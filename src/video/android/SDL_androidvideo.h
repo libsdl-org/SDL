@@ -30,7 +30,7 @@ extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int
 extern void Android_SetFormat(int format_wanted, int format_got);
 extern void Android_SetOrientation(SDL_DisplayOrientation orientation);
 extern void Android_SendResize(SDL_Window *window);
-extern void Android_SetWindowSafeAreaInsets(int left, int right, int top, int bottom);
+extern void Android_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom);
 extern void Android_SetDarkMode(bool enabled);
 
 // Private display data
