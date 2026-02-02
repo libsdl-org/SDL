@@ -30,6 +30,9 @@
 #ifdef SDL_VIDEO_OPENGL_WGL
 #include <SDL3/SDL_opengl.h>
 
+// this is temporary debugging code to track down #14898 in release 3.4.2.  --ryan.
+#define PLEASE_REMOVE_SRGB_DEBUG_CODE 1
+
 #define DEFAULT_OPENGL "OPENGL32.DLL"
 
 #ifndef WGL_ARB_create_context
@@ -550,6 +553,10 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
 
     SetPixelFormat(hdc, ChoosePixelFormat(hdc, &pfd), &pfd);
 
+    #ifdef PLEASE_REMOVE_SRGB_DEBUG_CODE
+    bool reported = false;
+    #endif
+
     hglrc = _this->gl_data->wglCreateContext(hdc);
     if (hglrc) {
         _this->gl_data->wglMakeCurrent(hdc, hglrc);
@@ -566,6 +573,13 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
                 _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
             }
             _this->gl_config.framebuffer_srgb_capable = srgb;
+
+            #ifdef PLEASE_REMOVE_SRGB_DEBUG_CODE
+            if (SDL_GetHint("SDL_FORCE_WGL_SRGB")) {
+                SDL_Log("SDL3_SRGB: Got sRGB-capable pixel format: %d", srgb);
+                reported = true;
+            }
+            #endif
         }
 
         _this->gl_data->wglMakeCurrent(hdc, NULL);
@@ -574,6 +588,12 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     ReleaseDC(hwnd, hdc);
     DestroyWindow(hwnd);
     WIN_PumpEventsForHWND(_this, hwnd);
+
+    #ifdef PLEASE_REMOVE_SRGB_DEBUG_CODE
+    if (!reported) {
+        SDL_Log("SDL3_SRGB: DID NOT CHECK IF WE REALLY HAVE AN SRGB-CAPABLE PIXEL FORMAT!!!");
+    }
+    #endif
 
     return pixel_format;
 }
@@ -659,10 +679,35 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
+    #ifdef PLEASE_REMOVE_SRGB_DEBUG_CODE
+    const char *srgb_debug_hint = SDL_GetHint("SDL_FORCE_WGL_SRGB");
+    if (srgb_debug_hint) {
+        SDL_Log("SDL3_SRGB: SDL_FORCE_WGL_SRGB is '%s'", srgb_debug_hint);
+        if (!_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+            SDL_Log("SDL3_SRGB: WGL_ARB_framebuffer_sRGB is unsupported, doing nothing.");
+        } else if (SDL_strcmp(srgb_debug_hint, "false") == 0) {
+            SDL_Log("SDL3_SRGB: Forcing WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB to GL_FALSE.");
+            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            *iAttr++ = GL_FALSE;
+        } else if (SDL_strcmp(srgb_debug_hint, "true") == 0) {
+            SDL_Log("SDL3_SRGB: Forcing WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB to GL_TRUE.");
+            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            *iAttr++ = GL_TRUE;
+        } else {
+            SDL_Log("SDL3_SRGB: Not setting WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB at all.");
+        }
+    } else {  // this is the normal thing SDL 3.4.0 does, if no debug hint was set.
+        if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
+        }
+    }
+    #else  // this is the current SDL 3.4.0 code.
     if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
         *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
         *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
     }
+    #endif
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
        drivers. If the app didn't specify, we use FULL, because that's
@@ -706,6 +751,32 @@ bool WIN_GL_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_GLContext current_ctx = SDL_GL_GetCurrentContext();
     const int result = WIN_GL_SetupWindowInternal(_this, window);
     WIN_GL_MakeCurrent(_this, current_win, current_ctx);
+
+    #ifdef PLEASE_REMOVE_SRGB_DEBUG_CODE
+    if (SDL_GetHint("SDL_FORCE_WGL_SRGB")) {
+        typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
+        typedef const GLboolean *(APIENTRY* PFNGLISENABLEDPROC) (GLenum name);
+        PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
+        PFNGLISENABLEDPROC glIsEnabledFunc = (PFNGLISENABLEDPROC)SDL_GL_GetProcAddress("glIsEnabled");
+        if (!glGetStringFunc) {
+            SDL_Log("SDL3_SRGB: No glGetString() entry point?!");
+        } else if (!glIsEnabledFunc) {
+            SDL_Log("SDL3_SRGB: No glIsEnabled() entry point?!");
+        } else {
+            const char *verstr = (const char *)glGetStringFunc(GL_VERSION);
+            if (!verstr) {
+                SDL_Log("SDL3_SRGB: No GL_VERSION string?!");
+            } else {
+                const bool supported = ((SDL_atoi(verstr) >= 3) || SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB"));
+                SDL_Log("SDL3_SRGB: GL>=3 or GL_(EXT|ARB)_framebuffer_sRGB is %ssupported", supported ? "" : "NOT ");
+                if (supported) {
+                    SDL_Log("SDL3_SRGB: GL_FRAMEBUFFER_SRGB is %senabled by default", glIsEnabledFunc(GL_FRAMEBUFFER_SRGB) ? "" : "NOT ");
+                }
+            }
+        }
+    }
+    #endif
+
     return result;
 }
 
