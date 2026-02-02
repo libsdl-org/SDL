@@ -2318,7 +2318,9 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   alongside `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER` and
  *   vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make
  *   those feature checks possible on older platforms. The path you provide
- *   must be relative to the executable path of your app.
+ *   must be relative to the executable path of your app. Be sure not to put the
+ *   DLL in the same directory as the exe; Microsoft strongly advises against
+ *   this!
  *
  * With the Vulkan backend:
  *
