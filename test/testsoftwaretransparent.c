@@ -27,19 +27,21 @@ static void draw(SDL_Renderer *renderer)
     SDL_RenderClear(renderer);
 
     if (w >= 3 * SQUARE_SIZE && h >= 3 * SQUARE_SIZE) {
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
         rect.x = 0.0f;
         rect.y = 0.0f;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.y = h - SQUARE_SIZE;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 170);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.x = w - SQUARE_SIZE;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 85);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.y = 0.0f;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderFillRect(renderer, &rect);
     }
 
@@ -82,7 +84,8 @@ int main(int argc, char *argv[])
     }
 
     /* Make sure we're setting the alpha channel while drawing */
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    /* But also make sure we're setting it to premultiplied alpha and not straight alpha. */
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     /* We're ready to go! */
     while (!done) {
