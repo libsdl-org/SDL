@@ -758,7 +758,12 @@ if(ANDROID AND TARGET SDL3::Jar)
             configure_file(android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
             configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
             configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
-            configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            # Use XR-specific manifest for XR tests, standard manifest for others
+            if(TEST MATCHES "_xr$")
+                configure_file(android/cmake/AndroidManifest.xr.xml.cmake "${generated_manifest_path}" @ONLY)
+            else()
+                configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            endif()
             file(GENERATE
                 OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
                 INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${TEST}.xml"
