@@ -491,11 +491,8 @@ typedef enum {
     RPC_cmd_nativeCommitText,
     RPC_cmd_nativeGenerateScancodeForUnichar,
 
-    // SDLAudioManager_tab
-    RPC_cmd_nativeAddAudioDevice,
-    RPC_cmd_nativeRemoveAudioDevice,
-
     // SDLControllerManager_tab
+#ifdef GAMEPAD_AS_RPC
     RPC_cmd_onNativePadDown,
     RPC_cmd_onNativePadUp,
     RPC_cmd_onNativeJoy,
@@ -503,7 +500,12 @@ typedef enum {
     RPC_cmd_nativeAddJoystick,
     RPC_cmd_nativeRemoveJoystick,
     RPC_cmd_nativeAddHaptic,
-    RPC_cmd_nativeRemoveHaptic
+    RPC_cmd_nativeRemoveHaptic,
+#endif
+
+    // SDLAudioManager_tab
+    RPC_cmd_nativeAddAudioDevice,
+    RPC_cmd_nativeRemoveAudioDevice
 
     // RPC TODO HID ? see HIDDeviceManager_tab
 
@@ -554,6 +556,7 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     CASE(nativeAddAudioDevice);
     CASE(nativeRemoveAudioDevice);
 
+#ifdef GAMEPAD_AS_RPC
     // SDLControllerManager_tab
     CASE(onNativePadDown);
     CASE(onNativePadUp);
@@ -563,6 +566,7 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     CASE(nativeRemoveJoystick);
     CASE(nativeAddHaptic);
     CASE(nativeRemoveHaptic);
+#endif
 
 #undef CASE
         default:
@@ -1358,12 +1362,16 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     jint device_id, jint keycode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-int button = Android_keycode_to_SDL(keycode);
+    int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
+#ifdef GAMEPAD_AS_RPC
         RPC_Prepare(onNativePadDown);
         RPC_Add(device_id);
         RPC_Add(keycode);
         RPC_Send;
+#else
+        Android_OnPadDown(device_id, keycode);
+#endif
         return true;
     }
     return false;
@@ -1387,10 +1395,14 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
 #ifdef SDL_JOYSTICK_ANDROID
     int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
+#ifdef GAMEPAD_AS_RPC
         RPC_Prepare(onNativePadUp);
         RPC_Add(device_id);
         RPC_Add(keycode);
         RPC_Send;
+#else
+        Android_OnPadUp(device_id, keycode);
+#endif
         return true;
     }
     return false;
@@ -1414,11 +1426,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     jint device_id, jint axis, jfloat value)
 {
 #ifdef SDL_JOYSTICK_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(onNativeJoy);
     RPC_Add(device_id);
     RPC_Add(axis);
     RPC_Add(value);
     RPC_Send;
+#else
+    Android_OnJoy(device_id, axis, value);
+#endif
 #endif
 }
 
@@ -1437,12 +1453,16 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     jint device_id, jint hat_id, jint x, jint y)
 {
 #ifdef SDL_JOYSTICK_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(onNativeHat);
     RPC_Add(device_id);
     RPC_Add(hat_id);
     RPC_Add(x);
     RPC_Add(y);
     RPC_Send;
+#else
+    Android_OnHat(device_id, hat_id, x, y);
+#endif
 #endif
 }
 
@@ -1470,6 +1490,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led)
 {
 #ifdef SDL_JOYSTICK_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(nativeAddJoystick);
     RPC_Add(device_id);
     RPC_AddString(device_name);
@@ -1483,6 +1504,11 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     RPC_Add(can_rumble);
     RPC_Add(has_rgb_led);
     RPC_Send;
+#else
+    Android_AddJoystick(device_id, device_name, device_desc,
+            vendor_id, product_id, button_mask, naxes,
+            axis_mask, nhats, can_rumble, has_rgb_led);
+#endif
 #endif
 }
 
@@ -1497,9 +1523,13 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     jint device_id)
 {
 #ifdef SDL_JOYSTICK_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(nativeRemoveJoystick);
     RPC_Add(device_id);
     RPC_Send;
+#else
+    Android_RemoveJoystick(device_id);
+#endif
 #endif
 }
 
@@ -1515,10 +1545,14 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls, jint device_id, jstring device_name)
 {
 #ifdef SDL_HAPTIC_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(nativeAddHaptic);
     RPC_Add(device_name);
     RPC_AddString(device_name);
     RPC_Send;
+#else
+    Android_AddHaptic(device_id, device_name);
+#endif
 #endif
 }
 
@@ -1532,9 +1566,13 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls, jint device_id)
 {
 #ifdef SDL_HAPTIC_ANDROID
+#ifdef GAMEPAD_AS_RPC
     RPC_Prepare(nativeRemoveHaptic);
     RPC_Add(device_id);
     RPC_Send;
+#else
+    Android_RemoveHaptic(device_id);
+#endif
 #endif
 }
 
@@ -3684,6 +3722,7 @@ onNativeFileDialog_end:
                 }
                 break;
 
+#ifdef GAMEPAD_AS_RPC
                 // ------------------------------
                 // SDLControllerManager_tab
                 // ------------------------------
@@ -3753,7 +3792,6 @@ onNativeFileDialog_end:
 
 #ifdef SDL_HAPTIC_ANDROID
                     Android_AddHaptic(data.device_id, data.device_name);
-
 #endif
                     SDL_free(data.device_name);
 
@@ -3769,6 +3807,8 @@ onNativeFileDialog_end:
 
                 }
                 break;
+#endif
+
 
                 // ------------------------------
                 // HIDDeviceManager_tab
