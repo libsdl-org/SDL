@@ -55,9 +55,9 @@ void KMSDRM_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
        definitely a Pi device) or with the ROCKCHIP video driver
        (it's a ROCKCHIP device),  default to GLES2. */
 #if defined(SDL_VIDEO_DRIVER_RPI) || defined(SDL_VIDEO_DRIVER_ROCKCHIP)
-    _this->gl_config.mask = SDL_GL_CONTEXT_PROFILE_ES;
-    _this->gl_config.major = 2;
-    _this->gl_config.minor = 0;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 0;
 #endif
 
     _this->gl_config.egl_platform = EGL_PLATFORM_GBM_MESA;
