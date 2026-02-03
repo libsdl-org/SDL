@@ -167,8 +167,8 @@ struct DSU_Context_t *s_dsu_ctx = NULL;
 /* Use the DSU_Context type from the shared header */
 
 /* Forward declarations */
-void DSU_RequestControllerInfo(DSU_Context *ctx, Uint8 slot);
-void DSU_RequestControllerData(DSU_Context *ctx, Uint8 slot);
+void DSU_RequestControllerInfo(DSU_ServerConnection *server, Uint8 slot);
+void DSU_RequestControllerData(DSU_ServerConnection *server, Uint8 slot);
 
 /* Platform-specific network function wrappers */
 /* Standard sendto/recvfrom for all supported platforms */
@@ -261,10 +261,10 @@ void DSU_CloseSocket(dsu_socket_t socket)
 }
 
 /* Send a packet to the DSU server */
-static int DSU_SendPacket(DSU_Context *ctx, void *packet, size_t size)
+static int DSU_SendPacket(DSU_ServerConnection *conn, void *packet, size_t size)
 {
     DSU_Header *header;
-    struct sockaddr_in server;
+    struct sockaddr_in server_addr;
     int result;
 
     header = (DSU_Header *)packet;
@@ -273,20 +273,20 @@ static int DSU_SendPacket(DSU_Context *ctx, void *packet, size_t size)
     SDL_memcpy(header->magic, DSU_MAGIC_CLIENT, 4);
     header->version = SDL_Swap16LE(DSU_PROTOCOL_VERSION);
     header->length = SDL_Swap16LE((Uint16)(size - sizeof(DSU_Header)));
-    header->client_id = SDL_Swap32LE(ctx->client_id);
+    header->client_id = SDL_Swap32LE(conn->client_id);
     header->crc32 = 0;
 
     /* Calculate and store CRC32 */
     header->crc32 = SDL_Swap32LE(SDL_crc32(0, packet, size));
 
     /* Send to server */
-    SDL_memset(&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = DSU_htons(ctx->server_port);
-    server.sin_addr.s_addr = DSU_ipv4_addr(ctx->server_address);
+    SDL_memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = DSU_htons(conn->server_port);
+    server_addr.sin_addr.s_addr = DSU_ipv4_addr(conn->server_address);
 
-    result = DSU_sendto(ctx->socket, (const char*)packet, (int)size, 0,
-                        (struct sockaddr *)&server, (int)sizeof(server));
+    result = DSU_sendto(conn->socket, (const char*)packet, (int)size, 0,
+                        (struct sockaddr *)&server_addr, (int)sizeof(server_addr));
 
     if (result < 0) {
 #ifdef _WIN32
@@ -301,9 +301,10 @@ static int DSU_SendPacket(DSU_Context *ctx, void *packet, size_t size)
 }
 
 /* Request controller information */
-void DSU_RequestControllerInfo(DSU_Context *ctx, Uint8 slot)
+void DSU_RequestControllerInfo(DSU_ServerConnection *conn, Uint8 slot)
 {
     DSU_PortRequest request;
+    int result;
 
     SDL_memset(&request, 0, sizeof(request));
     request.header.message_type = SDL_Swap32LE(DSU_MSG_PORTS_INFO);
@@ -311,11 +312,12 @@ void DSU_RequestControllerInfo(DSU_Context *ctx, Uint8 slot)
     request.slot_id = slot;  /* 0xFF for all slots */
     /* MAC is zeros for all controllers */
 
-    DSU_SendPacket(ctx, &request, sizeof(request));
+    result = DSU_SendPacket(conn, &request, sizeof(request));
+    (void)result;
 }
 
 /* Request controller data */
-void DSU_RequestControllerData(DSU_Context *ctx, Uint8 slot)
+void DSU_RequestControllerData(DSU_ServerConnection *conn, Uint8 slot)
 {
     DSU_PortRequest request;
 
@@ -324,20 +326,22 @@ void DSU_RequestControllerData(DSU_Context *ctx, Uint8 slot)
     request.flags = 0;  /* Subscribe to data */
     request.slot_id = slot;
 
-    DSU_SendPacket(ctx, &request, sizeof(request));
+    DSU_SendPacket(conn, &request, sizeof(request));
 }
 
 /* Process incoming controller data */
-static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data)
+static void DSU_ProcessControllerData(DSU_ServerConnection *conn, DSU_ControllerData *data)
 {
     DSU_ControllerSlot *slot;
+    DSU_Context *ctx;
     int slot_id;
     bool was_connected;
 
-    /* Validate context */
-    if (!ctx || !ctx->slots_mutex) {
+    /* Validate connection and parent context */
+    if (!conn || !conn->parent || !conn->parent->slots_mutex) {
         return;
     }
+    ctx = conn->parent;
 
     /* Get slot ID */
     slot_id = data->info.slot;
@@ -347,7 +351,8 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
     }
 
     SDL_LockMutex(ctx->slots_mutex);
-    slot = &ctx->slots[slot_id];
+    slot = &conn->slots[slot_id];
+
 
     /* If already connected to SDL, just update data without changing state */
     if (slot->connected) {
@@ -356,6 +361,7 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
         /* Update connection state */
         was_connected = slot->detected;
         slot->detected = (data->info.slot_state == DSU_STATE_CONNECTED);
+        /* Debug logging removed */
     }
 
     if (slot->detected || slot->connected) {
@@ -365,9 +371,10 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
         slot->model = data->info.device_model;
         slot->connection = data->info.connection_type;
         slot->slot_id = (Uint8)slot_id;
+        slot->parent_conn = conn;  /* Back-reference for rumble */
 
-        /* Generate name */
-        SDL_snprintf(slot->name, sizeof(slot->name), "DSUClient/%d", slot_id);
+        /* Generate name with server index for multi-server support */
+        SDL_snprintf(slot->name, sizeof(slot->name), "DSUClient/%d/%d", conn->server_index, slot_id);
 
         /* Update button states */
         slot->buttons = 0;
@@ -444,6 +451,8 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
         Uint16 vendor;
         Uint16 product;
 
+        /* New controller detected */
+
         /* New controller connected */
         slot->instance_id = SDL_GetNextObjectID();
 
@@ -456,48 +465,85 @@ static void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data
         slot->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, 0,
                                            NULL, slot->name, 'd', 0);
 
-        /* Mark as connected before notifying SDL */
-        slot->connected = true;
-
-        /* Unlock our mutex before taking the joystick lock to avoid deadlock */
-        SDL_UnlockMutex(ctx->slots_mutex);
-
-        /* Add the joystick with proper locking */
-        SDL_LockJoysticks();
-        SDL_PrivateJoystickAdded(slot->instance_id);
-        SDL_UnlockJoysticks();
-
-        /* Re-lock our mutex to continue */
-        SDL_LockMutex(ctx->slots_mutex);
+        /* Mark slot as ready for detection - DSU_JoystickDetect will add it to SDL */
+        /* Do NOT call SDL_PrivateJoystickAdded here - it would deadlock with main thread */
+        /* Controller ready for JoystickDetect */
     }
 
     SDL_UnlockMutex(ctx->slots_mutex);
 
     /* Subscribe to controller data updates if just detected */
     if (!was_connected && slot->detected) {
-        DSU_RequestControllerData(ctx, (Uint8)slot_id);
+        DSU_RequestControllerData(conn, (Uint8)slot_id);
     }
 }
 
-/* Receiver thread implementation */
+/* Receiver thread implementation - one per server connection */
 int SDLCALL DSU_ReceiverThread(void *data)
 {
-    DSU_Context *ctx = (DSU_Context *)data;
+    DSU_ServerConnection *conn = (DSU_ServerConnection *)data;
     Uint8 buffer[1024];
     struct sockaddr_in sender;
     socklen_t sender_len = sizeof(sender);
     DSU_Header *header;
     int received;
+    fd_set readfds;
+    struct timeval tv;
+    int select_result;
 
     SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     /* Main receive loop */
-    while (SDL_GetAtomicInt(&ctx->running)) {
-        /* Double-check context is still valid */
-        if (!ctx->slots_mutex) {
+    while (SDL_GetAtomicInt(&conn->running)) {
+        /* Double-check parent context is still valid */
+        if (!conn->parent || !conn->parent->slots_mutex) {
             break;
         }
-        received = DSU_recvfrom(ctx->socket, (char*)buffer, sizeof(buffer), 0,
+
+        /* Use select() with timeout instead of spinning */
+        FD_ZERO(&readfds);
+        FD_SET(conn->socket, &readfds);
+        tv.tv_sec = 0;
+        tv.tv_usec = 10000;  /* 10ms timeout */
+
+#ifdef _WIN32
+        select_result = select(0, &readfds, NULL, NULL, &tv);
+#else
+        select_result = select((int)conn->socket + 1, &readfds, NULL, NULL, &tv);
+#endif
+
+        if (select_result < 0) {
+            /* Select error - check if socket was closed */
+#ifdef _WIN32
+            int error = WSAGetLastError();
+            if (error == WSAENOTSOCK || error == WSAEBADF) {
+                break;
+            }
+            if (error != WSAEINTR) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: select error %d", error);
+                SDL_Delay(100);
+            }
+#else
+            int err = DSU_GetLastError();
+            if (err == EBADF) {
+                break;
+            }
+            if (err != EINTR) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: select errno %d", err);
+                SDL_Delay(100);
+            }
+#endif
+            continue;
+        }
+
+        if (select_result == 0) {
+            /* Timeout - no data available, loop continues */
+            continue;
+        }
+
+        /* Data available - receive it */
+        sender_len = sizeof(sender);
+        received = DSU_recvfrom(conn->socket, (char*)buffer, sizeof(buffer), 0,
                                (struct sockaddr *)&sender, &sender_len);
 
         if (received > (int)sizeof(DSU_Header)) {
@@ -532,12 +578,10 @@ int SDLCALL DSU_ReceiverThread(void *data)
                             data_ptr = buffer + sizeof(DSU_Header);
                             slot_id = data_ptr[0];
                             slot_state = data_ptr[1];
-                            /* Skip device_model = data_ptr[2] and connection_type = data_ptr[3] - not used */
-
 
                             /* If controller is connected in this slot, request data */
                             if (slot_state == DSU_STATE_CONNECTED && slot_id < DSU_MAX_SLOTS) {
-                                DSU_RequestControllerData(ctx, slot_id);
+                                DSU_RequestControllerData(conn, slot_id);
                             }
                         }
                         break;
@@ -546,8 +590,7 @@ int SDLCALL DSU_ReceiverThread(void *data)
                     case DSU_MSG_DATA:
                         /* Controller data */
                         if (received >= (int)sizeof(DSU_ControllerData)) {
-                            DSU_ControllerData *packet = (DSU_ControllerData *)buffer;
-                            DSU_ProcessControllerData(ctx, packet);
+                            DSU_ProcessControllerData(conn, (DSU_ControllerData *)buffer);
                         }
                         break;
 
@@ -555,48 +598,59 @@ int SDLCALL DSU_ReceiverThread(void *data)
                         /* Unknown message type */
                         break;
                     }
-                };
+                }
             }
         } else if (received < 0) {
             /* Check for real errors (not just EWOULDBLOCK) */
 #ifdef _WIN32
             int error = WSAGetLastError();
             if (error == WSAENOTSOCK || error == WSAEBADF) {
-                /* Socket closed, exit gracefully */
                 break;
-            }
-            if (error != WSAEWOULDBLOCK && error != WSAEINTR && error != WSAECONNRESET) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: recvfrom error %d", error);
-                SDL_Delay(100);  /* Back off on errors */
             }
 #else
             int err = DSU_GetLastError();
             if (err == EBADF) {
-                /* Socket closed, exit gracefully */
                 break;
-            }
-            if (err != EWOULDBLOCK && err != EAGAIN && err != EINTR) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: recvfrom errno %d", err);
-                SDL_Delay(100);
             }
 #endif
         }
-
-        /* Small delay to prevent CPU spinning */
-        SDL_Delay(1);
     }
 
     return 0;
+}
+
+/* Helper to parse server string (format: "address" or "address:port") */
+static void DSU_ParseServerString(const char *str, char *address, size_t addr_size, Uint16 *port)
+{
+    const char *colon;
+    size_t addr_len;
+
+    colon = SDL_strchr(str, ':');
+    if (colon) {
+        addr_len = (size_t)(colon - str);
+        if (addr_len >= addr_size) {
+            addr_len = addr_size - 1;
+        }
+        SDL_memcpy(address, str, addr_len);
+        address[addr_len] = '\0';
+        *port = (Uint16)SDL_atoi(colon + 1);
+    } else {
+        SDL_strlcpy(address, str, addr_size);
+    }
 }
 
 /* Driver functions - merged from SDL_dsujoystick_driver.c */
 static bool DSU_JoystickInit(void)
 {
     const char *enabled;
-    const char *server;
-    const char *server_port;
-    const char *client_port;
+    const char *servers_hint;
+    const char *client_port_hint;
     struct DSU_Context_t *ctx;
+    char server_list[1024];
+    char *token;
+    char *saveptr;
+    int server_idx;
+    DSU_ServerConnection *conn;
 
     /* Check if DSU is enabled */
     enabled = SDL_GetHint(SDL_HINT_JOYSTICK_DSU);
@@ -611,29 +665,13 @@ static bool DSU_JoystickInit(void)
         return false;
     }
 
-    /* Get configuration from hints with fallbacks */
-    server = SDL_GetHint(SDL_HINT_DSU_SERVER);
-    if (!server || !*server) {
-        server = DSU_SERVER_ADDRESS_DEFAULT;
-    }
-    SDL_strlcpy(ctx->server_address, server,
-                sizeof(ctx->server_address));
-
-    server_port = SDL_GetHint(SDL_HINT_DSU_SERVER_PORT);
-    if (server_port && *server_port) {
-        ctx->server_port = (Uint16)SDL_atoi(server_port);
-    } else {
-        ctx->server_port = DSU_SERVER_PORT_DEFAULT;
-    }
-
-    client_port = SDL_GetHint(SDL_HINT_DSU_CLIENT_PORT);
-    if (client_port && *client_port) {
-        ctx->client_port = (Uint16)SDL_atoi(client_port);
+    /* Get client port */
+    client_port_hint = SDL_GetHint(SDL_HINT_DSU_CLIENT_PORT);
+    if (client_port_hint && *client_port_hint) {
+        ctx->client_port = (Uint16)SDL_atoi(client_port_hint);
     } else {
         ctx->client_port = DSU_CLIENT_PORT_DEFAULT;
     }
-
-    ctx->client_id = (Uint32)SDL_GetTicks();
 
     /* Initialize sockets */
     if (DSU_InitSockets() != 0) {
@@ -641,50 +679,96 @@ static bool DSU_JoystickInit(void)
         return false;
     }
 
-    /* Create UDP socket */
-    ctx->socket = DSU_CreateSocket(ctx->client_port);
-    if (ctx->socket == DSU_INVALID_SOCKET) {
-        DSU_CleanupSockets();
-        SDL_free(ctx);
-        return false;
-    }
-
     /* Create mutex */
     ctx->slots_mutex = SDL_CreateMutex();
     if (!ctx->slots_mutex) {
-        DSU_CloseSocket(ctx->socket);
         DSU_CleanupSockets();
         SDL_free(ctx);
         SDL_OutOfMemory();
         return false;
     }
 
-    /* Start receiver thread */
-    SDL_SetAtomicInt(&ctx->running, 1);
-    ctx->receiver_thread = SDL_CreateThread(
-        DSU_ReceiverThread, "DSU_Receiver", ctx);
-    if (!ctx->receiver_thread) {
+    /* Parse server list (comma-separated: "127.0.0.1:26760,192.168.1.50:26761") */
+    servers_hint = SDL_GetHint(SDL_HINT_DSU_SERVER);
+    if (!servers_hint || !*servers_hint) {
+        /* Default to single localhost server */
+        SDL_snprintf(server_list, sizeof(server_list), "%s:%d",
+                     DSU_SERVER_ADDRESS_DEFAULT, DSU_SERVER_PORT_DEFAULT);
+    } else {
+        SDL_strlcpy(server_list, servers_hint, sizeof(server_list));
+    }
+
+    /* Parse each server */
+    server_idx = 0;
+    token = SDL_strtok_r(server_list, ",", &saveptr);
+    while (token && server_idx < DSU_MAX_SERVERS) {
+        /* Skip whitespace */
+        while (*token == ' ') token++;
+
+        conn = &ctx->servers[server_idx];
+        conn->parent = ctx;
+        conn->server_index = server_idx;
+        conn->server_port = DSU_SERVER_PORT_DEFAULT;
+
+        /* Parse address:port */
+        DSU_ParseServerString(token, conn->server_address,
+                              sizeof(conn->server_address), &conn->server_port);
+
+        /* Create socket for this server */
+        conn->socket = DSU_CreateSocket(ctx->client_port + (Uint16)server_idx);
+        if (conn->socket == DSU_INVALID_SOCKET) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: Failed to create socket for server %d", server_idx);
+            token = SDL_strtok_r(NULL, ",", &saveptr);
+            continue;
+        }
+
+        /* Generate unique client ID */
+        conn->client_id = (Uint32)SDL_GetTicks() + (Uint32)server_idx;
+
+        /* Start receiver thread for this server */
+        SDL_SetAtomicInt(&conn->running, 1);
+        {
+            char thread_name[32];
+            SDL_snprintf(thread_name, sizeof(thread_name), "DSU_Recv_%d", server_idx);
+            conn->receiver_thread = SDL_CreateThread(DSU_ReceiverThread, thread_name, conn);
+        }
+
+        if (!conn->receiver_thread) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: Failed to create thread for server %d", server_idx);
+            DSU_CloseSocket(conn->socket);
+            conn->socket = DSU_INVALID_SOCKET;
+            token = SDL_strtok_r(NULL, ",", &saveptr);
+            continue;
+        }
+
+        server_idx++;
+        token = SDL_strtok_r(NULL, ",", &saveptr);
+    }
+
+    ctx->server_count = server_idx;
+
+    if (ctx->server_count == 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "DSU: No servers configured");
         SDL_DestroyMutex(ctx->slots_mutex);
-        DSU_CloseSocket(ctx->socket);
         DSU_CleanupSockets();
         SDL_free(ctx);
-        SDL_SetError("Failed to create DSU receiver thread");
-        return false;
+        return true;  /* Not an error, just no servers */
     }
 
     /* Store context globally */
     s_dsu_ctx = ctx;
 
-    /* Request controller info from all slots */
-    DSU_RequestControllerInfo(ctx, 0xFF);
+    /* Request controller info from all servers */
+    for (server_idx = 0; server_idx < ctx->server_count; server_idx++) {
+        DSU_RequestControllerInfo(&ctx->servers[server_idx], 0xFF);
+    }
 
     return true;
 }
 
 static int DSU_JoystickGetCount(void)
 {
-    int count = 0;
-    int i;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
 
@@ -695,9 +779,11 @@ static int DSU_JoystickGetCount(void)
 
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if (ctx->slots[i].connected) {
-            count++;
+    for (s = 0; s < ctx->server_count; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if (ctx->servers[s].slots[i].connected) {
+                count++;
+            }
         }
     }
     SDL_UnlockMutex(mutex);
@@ -708,59 +794,93 @@ static int DSU_JoystickGetCount(void)
 static void DSU_JoystickDetect(void)
 {
     Uint64 now;
-    int i;
+    int s, i;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
+    DSU_ServerConnection *conn;
 
     ctx = s_dsu_ctx;
     if (!ctx) {
         return;
     }
 
-    /* Periodically request controller info and re-subscribe to data */
     now = SDL_GetTicks();
-    if (now - ctx->last_request_time >= 500) {  /* Request more frequently */
-        DSU_RequestControllerInfo(ctx, (Uint8)0xFF);
 
-        /* Re-subscribe to data for detected controllers */
-        for (i = 0; i < DSU_MAX_SLOTS; i++) {
-            if (ctx->slots[i].detected || ctx->slots[i].connected) {
-                DSU_RequestControllerData(ctx, (Uint8)i);
+    /* For each server, periodically request controller info */
+    for (s = 0; s < ctx->server_count; s++) {
+        conn = &ctx->servers[s];
+
+        if (now >= (conn->last_request_time + 500)) {  /* Request every 500ms */
+            DSU_RequestControllerInfo(conn, (Uint8)0xFF);
+
+            /* Re-subscribe to data for detected controllers */
+            for (i = 0; i < DSU_MAX_SLOTS; i++) {
+                if (conn->slots[i].detected || conn->slots[i].connected) {
+                    DSU_RequestControllerData(conn, (Uint8)i);
+                }
             }
-        }
 
-        ctx->last_request_time = now;
+            conn->last_request_time = now;
+        }
     }
 
-    /* Check for timeouts */
-    mutex = ctx->slots_mutex;
+    /* Check for newly detected controllers - notify SDL about them */
+    /* Collect IDs to add, then notify SDL outside our mutex to avoid deadlock */
+    {
+        SDL_JoystickID ids_to_add[DSU_MAX_SERVERS * DSU_MAX_SLOTS];
+        int add_count = 0;
+
+        mutex = ctx->slots_mutex;
+        SDL_LockMutex(mutex);
+        for (s = 0; s < ctx->server_count; s++) {
+            conn = &ctx->servers[s];
+            for (i = 0; i < DSU_MAX_SLOTS; i++) {
+                if (conn->slots[i].detected && !conn->slots[i].connected && conn->slots[i].instance_id != 0) {
+                    /* Mark connected BEFORE notifying so SDL can find it */
+                    conn->slots[i].connected = true;
+                    ids_to_add[add_count++] = conn->slots[i].instance_id;
+                }
+            }
+        }
+        SDL_UnlockMutex(mutex);
+
+        /* Now notify SDL - must be outside our mutex because SDL will call back into us */
+        for (i = 0; i < add_count; i++) {
+            SDL_PrivateJoystickAdded(ids_to_add[i]);
+        }
+    }
+
+    /* Check for timeouts on all servers */
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if ((ctx->slots[i].detected || ctx->slots[i].connected) &&
-            now - ctx->slots[i].last_packet_time > 5000) {  /* Increased timeout */
-            /* Controller timed out - notify SDL if it was connected */
-            if (ctx->slots[i].connected && ctx->slots[i].instance_id != 0) {
-                SDL_JoystickID removed_id = ctx->slots[i].instance_id;
+    for (s = 0; s < ctx->server_count; s++) {
+        conn = &ctx->servers[s];
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if ((conn->slots[i].detected || conn->slots[i].connected) &&
+                now > (conn->slots[i].last_packet_time + 5000)) {  /* 5 second timeout */
+                /* Controller timed out - notify SDL if it was connected */
+                if (conn->slots[i].connected && conn->slots[i].instance_id != 0) {
+                    SDL_JoystickID removed_id = conn->slots[i].instance_id;
 
-                /* Clear state before notifying to avoid race conditions */
-                ctx->slots[i].detected = false;
-                ctx->slots[i].connected = false;
-                ctx->slots[i].instance_id = 0;
+                    /* Clear state before notifying to avoid race conditions */
+                    conn->slots[i].detected = false;
+                    conn->slots[i].connected = false;
+                    conn->slots[i].instance_id = 0;
 
-                /* Unlock our mutex before taking the joystick lock to avoid deadlock */
-                SDL_UnlockMutex(mutex);
+                    /* Unlock our mutex before taking the joystick lock to avoid deadlock */
+                    SDL_UnlockMutex(mutex);
 
-                SDL_LockJoysticks();
-                SDL_PrivateJoystickRemoved(removed_id);
-                SDL_UnlockJoysticks();
+                    SDL_LockJoysticks();
+                    SDL_PrivateJoystickRemoved(removed_id);
+                    SDL_UnlockJoysticks();
 
-                /* Re-lock our mutex to continue the loop */
-                SDL_LockMutex(mutex);
-            } else {
-                /* Clear all state flags */
-                ctx->slots[i].detected = false;
-                ctx->slots[i].connected = false;
-                ctx->slots[i].instance_id = 0;
+                    /* Re-lock our mutex to continue the loop */
+                    SDL_LockMutex(mutex);
+                } else {
+                    /* Clear all state flags */
+                    conn->slots[i].detected = false;
+                    conn->slots[i].connected = false;
+                    conn->slots[i].instance_id = 0;
+                }
             }
         }
     }
@@ -769,7 +889,7 @@ static void DSU_JoystickDetect(void)
 
 static const char *DSU_JoystickGetDeviceName(int device_index)
 {
-    int i, count = 0;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
 
@@ -780,17 +900,19 @@ static const char *DSU_JoystickGetDeviceName(int device_index)
 
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if (ctx->slots[i].connected) {
-            if (count == device_index) {
-                SDL_UnlockMutex(mutex);
-                return ctx->slots[i].name;
+    for (s = 0; s < ctx->server_count; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if (ctx->servers[s].slots[i].connected) {
+                if (count == device_index) {
+                    const char *name = ctx->servers[s].slots[i].name;
+                    SDL_UnlockMutex(mutex);
+                    return name;
+                }
+                count++;
             }
-            count++;
         }
     }
     SDL_UnlockMutex(mutex);
-
     return NULL;
 }
 
@@ -805,9 +927,14 @@ static const char *DSU_JoystickGetDevicePath(int device_index)
     return NULL;  /* No path for network devices */
 }
 
+static int DSU_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;  /* DSU controllers are not Steam virtual gamepads */
+}
+
 static int DSU_JoystickGetDevicePlayerIndex(int device_index)
 {
-    int i, count = 0;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
 
@@ -818,17 +945,19 @@ static int DSU_JoystickGetDevicePlayerIndex(int device_index)
 
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if (ctx->slots[i].connected) {
-            if (count == device_index) {
-                SDL_UnlockMutex(mutex);
-                return i;  /* Return slot ID as player index */
+    for (s = 0; s < ctx->server_count; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if (ctx->servers[s].slots[i].connected) {
+                if (count == device_index) {
+                    int result = (s * DSU_MAX_SLOTS) + i;
+                    SDL_UnlockMutex(mutex);
+                    return result;
+                }
+                count++;
             }
-            count++;
         }
     }
     SDL_UnlockMutex(mutex);
-
     return -1;
 }
 
@@ -840,7 +969,7 @@ static void DSU_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 static SDL_GUID DSU_JoystickGetDeviceGUID(int device_index)
 {
     SDL_GUID guid;
-    int i, count = 0;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
 
@@ -853,24 +982,25 @@ static SDL_GUID DSU_JoystickGetDeviceGUID(int device_index)
 
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if (ctx->slots[i].connected) {
-            if (count == device_index) {
-                guid = ctx->slots[i].guid;
-                SDL_UnlockMutex(mutex);
-                return guid;
+    for (s = 0; s < ctx->server_count; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if (ctx->servers[s].slots[i].connected) {
+                if (count == device_index) {
+                    guid = ctx->servers[s].slots[i].guid;
+                    SDL_UnlockMutex(mutex);
+                    return guid;
+                }
+                count++;
             }
-            count++;
         }
     }
     SDL_UnlockMutex(mutex);
-
     return guid;
 }
 
 static SDL_JoystickID DSU_JoystickGetDeviceInstanceID(int device_index)
 {
-    int i, count = 0;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
 
@@ -881,14 +1011,16 @@ static SDL_JoystickID DSU_JoystickGetDeviceInstanceID(int device_index)
 
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        if (ctx->slots[i].connected) {
-            if (count == device_index) {
-                SDL_JoystickID id = ctx->slots[i].instance_id;
-                SDL_UnlockMutex(mutex);
-                return id;
+    for (s = 0; s < ctx->server_count; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            if (ctx->servers[s].slots[i].connected) {
+                if (count == device_index) {
+                    SDL_JoystickID id = ctx->servers[s].slots[i].instance_id;
+                    SDL_UnlockMutex(mutex);
+                    return id;
+                }
+                count++;
             }
-            count++;
         }
     }
     SDL_UnlockMutex(mutex);
@@ -899,9 +1031,10 @@ static SDL_JoystickID DSU_JoystickGetDeviceInstanceID(int device_index)
 static bool DSU_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     DSU_ControllerSlot *slot = NULL;
-    int i, count = 0;
+    int s, i, count = 0;
     struct DSU_Context_t *ctx;
     SDL_Mutex *mutex;
+    bool found = false;
 
     ctx = s_dsu_ctx;
     if (!ctx) {
@@ -914,17 +1047,20 @@ static bool DSU_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return false;
     }
 
-    /* Find the slot for this device - check detected controllers */
+    /* Find the slot for this device - check detected controllers across all servers */
     mutex = ctx->slots_mutex;
     SDL_LockMutex(mutex);
-    for (i = 0; i < DSU_MAX_SLOTS; i++) {
-        /* Look for detected controllers that are about to be connected */
-        if (ctx->slots[i].detected && ctx->slots[i].instance_id != 0) {
-            if (count == device_index) {
-                slot = &ctx->slots[i];
-                break;
+    for (s = 0; s < ctx->server_count && !found; s++) {
+        for (i = 0; i < DSU_MAX_SLOTS; i++) {
+            /* Look for detected controllers that are about to be connected */
+            if (ctx->servers[s].slots[i].detected && ctx->servers[s].slots[i].instance_id != 0) {
+                if (count == device_index) {
+                    slot = &ctx->servers[s].slots[i];
+                    found = true;
+                    break;
+                }
+                count++;
             }
-            count++;
         }
     }
     SDL_UnlockMutex(mutex);
@@ -940,27 +1076,31 @@ static bool DSU_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->naxes = 6;      /* LX, LY, RX, RY, L2, R2 */
     joystick->nhats = 1;      /* D-Pad */
 
-    /* Set up touchpad if available */
+    /* Set up touchpad if available - use SDL's API to properly allocate */
     if (slot->has_touchpad) {
-        joystick->ntouchpads = 1;
-        joystick->touchpads = (SDL_JoystickTouchpadInfo *)SDL_calloc(1, sizeof(SDL_JoystickTouchpadInfo));
-        if (joystick->touchpads) {
-            joystick->touchpads[0].nfingers = 2;  /* DSU supports 2 fingers */
-        } else {
-            joystick->ntouchpads = 0;  /* Failed to allocate, disable touchpad */
-        }
+        SDL_PrivateJoystickAddTouchpad(joystick, 2);  /* DSU supports 2 fingers */
     }
 
     /* Register sensors if available */
     if (slot->has_gyro || (slot->model == DSU_MODEL_FULL_GYRO) || (slot->model == DSU_MODEL_PARTIAL_GYRO)) {
-        /* DSU reports gyro at varying rates, but typically 250-1000Hz for DS4/DS5 */
+        /* DSU reports gyro at varying rates, typically 250-1000Hz for DS4/DS5 */
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+        /* Enable sensor directly - DSU always provides sensor data */
+        if (joystick->nsensors > 0) {
+            joystick->sensors[joystick->nsensors - 1].enabled = true;
+        }
         slot->has_gyro = true;
+        slot->sensors_enabled = true;
     }
     if (slot->has_accel || (slot->model == DSU_MODEL_FULL_GYRO)) {
         /* DSU reports accelerometer at same rate as gyro */
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+        /* Enable sensor directly - DSU always provides sensor data */
+        if (joystick->nsensors > 0) {
+            joystick->sensors[joystick->nsensors - 1].enabled = true;
+        }
         slot->has_accel = true;
+        slot->sensors_enabled = true;
     }
 
     return true;
@@ -970,21 +1110,20 @@ static bool DSU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     DSU_ControllerSlot *slot = (DSU_ControllerSlot *)joystick->hwdata;
     DSU_RumblePacket packet;
-    struct sockaddr_in server;
-    struct DSU_Context_t *ctx;
+    struct sockaddr_in server_addr;
+    DSU_ServerConnection *conn;
 
-    ctx = s_dsu_ctx;
-    if (!ctx || !slot || !slot->connected) {
-        SDL_SetError("DSU controller not available");
-        return false;
+    if (!slot || !slot->connected || !slot->parent_conn) {
+        return SDL_SetError("DSU controller not available");
     }
+    conn = slot->parent_conn;
 
     /* Build rumble packet */
     SDL_memset(&packet, 0, sizeof(packet));
     SDL_memcpy(packet.header.magic, DSU_MAGIC_CLIENT, 4);
     packet.header.version = SDL_Swap16LE(DSU_PROTOCOL_VERSION);
     packet.header.length = SDL_Swap16LE((Uint16)(sizeof(packet) - sizeof(DSU_Header)));
-    packet.header.client_id = SDL_Swap32LE(ctx->client_id);
+    packet.header.client_id = SDL_Swap32LE(conn->client_id);
     packet.header.message_type = SDL_Swap32LE(DSU_MSG_RUMBLE);
 
     /* Set rumble values */
@@ -997,14 +1136,13 @@ static bool DSU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     packet.header.crc32 = SDL_Swap32LE(SDL_crc32(0, &packet, sizeof(packet)));
 
     /* Send to server */
-    SDL_memset(&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = DSU_htons(ctx->server_port);
-    server.sin_addr.s_addr = DSU_ipv4_addr(ctx->server_address);
-    if (DSU_sendto(ctx->socket, (const char*)&packet, (int)sizeof(packet), 0,
-                   (struct sockaddr *)&server, (int)sizeof(server)) < 0) {
-        SDL_SetError("Failed to send rumble packet");
-        return false;
+    SDL_memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = DSU_htons(conn->server_port);
+    server_addr.sin_addr.s_addr = DSU_ipv4_addr(conn->server_address);
+    if (DSU_sendto(conn->socket, (const char*)&packet, (int)sizeof(packet), 0,
+                   (struct sockaddr *)&server_addr, (int)sizeof(server_addr)) < 0) {
+        return SDL_SetError("Failed to send rumble packet");
     }
 
     return true;
@@ -1012,31 +1150,27 @@ static bool DSU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 
 static bool DSU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    SDL_Unsupported();
-    return false;
+    return SDL_Unsupported();
 }
 
 static bool DSU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    SDL_Unsupported();
-    return false;
+    return SDL_Unsupported();
 }
 
 static bool DSU_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
-    SDL_Unsupported();
-    return false;
+    return SDL_Unsupported();
 }
 
 static bool DSU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     DSU_ControllerSlot *slot = (DSU_ControllerSlot *)joystick->hwdata;
 
-    /* Sensors are always enabled if available */
     if (!(slot->has_gyro || slot->has_accel)) {
-        SDL_Unsupported();
-        return false;
+        return SDL_Unsupported();
     }
+    slot->sensors_enabled = enabled;
     return true;
 }
 
@@ -1064,13 +1198,13 @@ static void DSU_JoystickUpdate(SDL_Joystick *joystick)
     timestamp = SDL_GetTicks();
 
     /* Update buttons */
-    for (i = 0; i < 12; i++) {
+    for (i = 0; i < joystick->nbuttons && i < 12; i++) {
         bool pressed = (slot->buttons & (1 << i)) ? true : false;
         SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, pressed);
     }
 
     /* Update axes */
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < joystick->naxes && i < 6; i++) {
         SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, slot->axes[i]);
     }
 
@@ -1142,14 +1276,16 @@ static void DSU_JoystickUpdate(SDL_Joystick *joystick)
         break;
     }
 
-    /* Update sensors if available */
-    if (slot->has_gyro) {
-        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO,
-                                  slot->motion_timestamp, slot->gyro, 3);
-    }
-    if (slot->has_accel) {
-        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL,
-                                  slot->motion_timestamp, slot->accel, 3);
+    /* Update sensors if enabled */
+    if (slot->sensors_enabled) {
+        if (slot->has_gyro) {
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO,
+                                      slot->motion_timestamp, slot->gyro, 3);
+        }
+        if (slot->has_accel) {
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL,
+                                      slot->motion_timestamp, slot->accel, 3);
+        }
     }
 
     SDL_UnlockMutex(mutex);
@@ -1157,19 +1293,15 @@ static void DSU_JoystickUpdate(SDL_Joystick *joystick)
 
 static void DSU_JoystickClose(SDL_Joystick *joystick)
 {
-    /* Free touchpad info if allocated */
-    if (joystick->touchpads) {
-        SDL_free(joystick->touchpads);
-        joystick->touchpads = NULL;
-        joystick->ntouchpads = 0;
-    }
-
+    /* SDL handles touchpad cleanup - we just clear hwdata */
     joystick->hwdata = NULL;
 }
 
 static void DSU_JoystickQuit(void)
 {
     struct DSU_Context_t *ctx;
+    int s;
+    DSU_ServerConnection *conn;
 
     ctx = s_dsu_ctx;
     if (!ctx) {
@@ -1179,21 +1311,30 @@ static void DSU_JoystickQuit(void)
     /* Clear the global pointer first to prevent access during shutdown */
     s_dsu_ctx = NULL;
 
-    /* Stop receiver thread */
-    if (SDL_GetAtomicInt(&ctx->running) != 0) {
-        SDL_SetAtomicInt(&ctx->running, 0);
+    /* Stop all receiver threads */
+    for (s = 0; s < ctx->server_count; s++) {
+        conn = &ctx->servers[s];
+        if (SDL_GetAtomicInt(&conn->running) != 0) {
+            SDL_SetAtomicInt(&conn->running, 0);
+        }
     }
 
-    /* Close socket to interrupt any blocking recvfrom */
-    if (ctx->socket != DSU_INVALID_SOCKET) {
-        DSU_CloseSocket(ctx->socket);
-        ctx->socket = DSU_INVALID_SOCKET;
+    /* Close all sockets to interrupt any blocking select/recvfrom */
+    for (s = 0; s < ctx->server_count; s++) {
+        conn = &ctx->servers[s];
+        if (conn->socket != DSU_INVALID_SOCKET) {
+            DSU_CloseSocket(conn->socket);
+            conn->socket = DSU_INVALID_SOCKET;
+        }
     }
 
-    /* Now wait for thread to finish */
-    if (ctx->receiver_thread) {
-        SDL_WaitThread(ctx->receiver_thread, NULL);
-        ctx->receiver_thread = NULL;
+    /* Wait for all threads to finish */
+    for (s = 0; s < ctx->server_count; s++) {
+        conn = &ctx->servers[s];
+        if (conn->receiver_thread) {
+            SDL_WaitThread(conn->receiver_thread, NULL);
+            conn->receiver_thread = NULL;
+        }
     }
 
     /* Clean up sockets */
@@ -1222,7 +1363,7 @@ SDL_JoystickDriver SDL_DSU_JoystickDriver = {
     DSU_JoystickIsDevicePresent,
     DSU_JoystickGetDeviceName,
     DSU_JoystickGetDevicePath,
-    NULL, /* GetDeviceSteamVirtualGamepadSlot */
+    DSU_JoystickGetDeviceSteamVirtualGamepadSlot,
     DSU_JoystickGetDevicePlayerIndex,
     DSU_JoystickSetDevicePlayerIndex,
     DSU_JoystickGetDeviceGUID,
