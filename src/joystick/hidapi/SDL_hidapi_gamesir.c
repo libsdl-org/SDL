@@ -183,7 +183,6 @@ static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
 #define GAMESIR_PACKET_HEADER_0 0xA1
 #define GAMESIR_PACKET_HEADER_1_GAMEPAD 0xC8
 
-
 #define BTN_A        0x01
 #define BTN_B        0x02
 #define BTN_C        0x04
@@ -192,7 +191,6 @@ static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
 #define BTN_Z        0x20
 #define BTN_L1       0x40
 #define BTN_R1       0x80
-
 
 #define BTN_L2       0x01
 #define BTN_R2       0x02
@@ -203,7 +201,6 @@ static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
 #define BTN_R3       0x40
 #define BTN_CAPTURE  0x80
 
-
 #define BTN_UP       0x01
 #define BTN_UP_L     0x08
 #define BTN_UP_R     0x02
@@ -213,12 +210,10 @@ static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
 #define BTN_LEFT     0x07
 #define BTN_RIGHT    0x03
 
-
 #define BTN_M        0x10
 #define BTN_MUTE     0x20
 #define BTN_L4       0x40
 #define BTN_R4       0x80
-
 
 #define BTN_L5       0x01
 #define BTN_R5       0x02
@@ -243,6 +238,7 @@ typedef struct {
 typedef struct {
     bool sensors_supported;
     bool sensors_enabled;
+    bool led_supported;
     Uint64 sensor_timestamp_ns;
     Uint64 sensor_timestamp_step_ns;
     float accelScale;
@@ -275,6 +271,34 @@ static bool HIDAPI_DriverGameSir_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     return SDL_IsJoystickGameSirController(vendor_id, product_id);
 }
 
+static SDL_hid_device *HIDAPI_DriverGameSir_GetOutputHandle(SDL_HIDAPI_Device *device)
+{
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
+    if (ctx && ctx->output_handle) {
+        return ctx->output_handle;
+    }
+    return NULL;
+#else
+    return device->dev;
+#endif
+}
+
+static SDL_hid_device *HIDAPI_DriverGameSir_GetInputHandle(SDL_HIDAPI_Device *device, SDL_DriverGamesir_Context *ctx)
+{
+#if defined(_WIN32)
+    if (device->is_bluetooth) {
+        return device->dev;
+    }
+    if (ctx && ctx->output_handle) {
+        return ctx->output_handle;
+    }
+    return device->dev;
+#else
+    return device->dev;
+#endif
+}
+
 
 static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
 {
@@ -284,17 +308,9 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
     buf[0] = 0xA2;
     SDL_memcpy(buf + 1, &cmd, sizeof(cmd));
 
-    SDL_hid_device *handle = NULL;
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
-    if (ctx && ctx->output_handle) {
-        handle = ctx->output_handle;
-    }
-#else
-    handle = device->dev;
-#endif
+    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
+    SDL_assert(handle != NULL);
     if (handle == NULL) {
-        SDL_SetError("Gamesir: output handle is null");
         return false;
     }
     for (int attempt = 0; attempt < 3; ++attempt) {
@@ -302,8 +318,6 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
         if (result < 0) {
             return false;
         }
-
-
         for (int i = 0; i < 10; ++i) {
             SDL_Delay(1);
 
@@ -343,8 +357,6 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
                     SDL_free(col02_path);
                 }
             }
-#else
-
 #endif
         }
         if (info->interface_number == -1) {
@@ -352,14 +364,12 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
             if (info->usage_page == 0x0001 && info->usage == 0x0005) {
                 output_handle = SDL_hid_open_path(info->path);
                 if (output_handle) {
-                    SDL_Log("GameSir: Opened output interface via path pattern");
+                    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Opened output interface via path pattern");
                     break;
                 }
-
             }
 #endif
-        }
-        else if (!output_handle && info->interface_number == 1) {
+        } else if (!output_handle && info->interface_number == 1) {
             output_handle = SDL_hid_open_path(info->path);
         }
     }
@@ -374,20 +384,22 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
 
+    ctx->led_supported = true;
     ctx->output_handle = output_handle;
     device->context = ctx;
-
 
     switch (device->product_id) {
     case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID:
         HIDAPI_SetDeviceName(device, "GameSir-G7 Pro (HID)");
         ctx->sensors_supported = true;
-        SDL_Log("GameSir: Device detected - G7 Pro HID mode (PID 0x%04X)", device->product_id);
+        ctx->led_supported = false;
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro HID mode (PID 0x%04X)", device->product_id);
         break;
     case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID:
         HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K (HID)");
         ctx->sensors_supported = true;
-        SDL_Log("GameSir: Device detected - G7 Pro 8K HID mode (PID 0x%04X)", device->product_id);
+        ctx->led_supported = false;
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K HID mode (PID 0x%04X)", device->product_id);
         break;
     default:
         HIDAPI_SetDeviceName(device, "GameSir Controller");
@@ -422,43 +434,37 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
     SDL_zeroa(ctx->last_state);
 
-
-
     SendGameSirModeSwitch(device);
-
 
     if (device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID) {
         if (device->is_bluetooth) {
             joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
-            SDL_Log("GameSir: Joystick opened - Connection type: Bluetooth (wireless, HID mode)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: Bluetooth (wireless, HID mode)");
         } else {
             joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
-            SDL_Log("GameSir: Joystick opened - Connection type: USB/2.4G (HID mode)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: USB/2.4G (HID mode)");
         }
     } else if (device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID) {
         if (device->is_bluetooth) {
             joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
-            SDL_Log("GameSir: Joystick opened - Connection type: Bluetooth (wireless, 8K HID mode)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: Bluetooth (wireless, 8K HID mode)");
         } else {
             joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
-            SDL_Log("GameSir: Joystick opened - Connection type: USB/2.4G (8K HID mode)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: USB/2.4G (8K HID mode)");
         }
     } else if (device->is_bluetooth) {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
-        SDL_Log("GameSir: Joystick opened - Connection type: Bluetooth (wireless)");
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: Bluetooth (wireless)");
     } else {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
-        SDL_Log("GameSir: Joystick opened - Connection type: USB (wired)");
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Joystick opened - Connection type: USB (wired)");
     }
-
 
     joystick->nbuttons = 35;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-
-
         ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
         // Accelerometer scale factor: assume a range of ±2g, 16-bit signed values (-32768 to 32767)
         // 32768 corresponds to 2g, so the scale factor = 2 * SDL_STANDARD_GRAVITY / 32768.0f
@@ -492,33 +498,19 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     }
     Uint8 buf[64];
     SDL_zero(buf);
-
     buf[0] = 0xA2;
     buf[1] = 0x03;
-
-
     buf[2] = (Uint8)(low_frequency_rumble / 256);
-
-
     buf[3] = (Uint8)(high_frequency_rumble / 256);
 
-    SDL_hid_device *handle = NULL;
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (ctx && ctx->output_handle) {
-        handle = ctx->output_handle;
-    }
-#else
-    handle = device->dev;
-#endif
-
+    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
+    SDL_assert(handle != NULL);
     if (handle == NULL) {
-        SDL_SetError("Gamesir: output handle is null");
         return false;
     }
 
     int result = SDL_hid_write(handle, buf, sizeof(buf));
     if (result < 0) {
-        SDL_SetError("Gamesir: Failed to send rumble command, error: %s", SDL_GetError());
         return false;
     }
 
@@ -537,33 +529,19 @@ static bool HIDAPI_DriverGameSir_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
     }
     Uint8 buf[64];
     SDL_zero(buf);
-
     buf[0] = 0xA2;
     buf[1] = 0x03;
-
-
     buf[4] = (Uint8)(left_rumble / 256);
-
-
     buf[5] = (Uint8)(right_rumble / 256);
 
-    SDL_hid_device *handle = NULL;
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (ctx && ctx->output_handle) {
-        handle = ctx->output_handle;
-    }
-#else
-    handle = device->dev;
-#endif
-
+    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
+    SDL_assert(handle != NULL);
     if (handle == NULL) {
-        SDL_SetError("Gamesir: output handle is null");
         return false;
     }
 
     int result = SDL_hid_write(handle, buf, sizeof(buf));
     if (result < 0) {
-        SDL_SetError("Gamesir: Failed to send trigger rumble command, error: %s", SDL_GetError());
         return false;
     }
 
@@ -575,9 +553,8 @@ static Uint32 HIDAPI_DriverGameSir_GetJoystickCapabilities(SDL_HIDAPI_Device *de
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
     Uint32 caps = SDL_JOYSTICK_CAP_RUMBLE | SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
-    if (ctx && ctx->sensors_supported) {
-
-
+    if (ctx && ctx->led_supported) {
+        caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
     return caps;
 }
@@ -589,46 +566,30 @@ static bool HIDAPI_DriverGameSir_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_J
         return false;
     }
 
-
-    if (device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID ||
-        device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID) {
-        return SDL_Unsupported();
-    }
-
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
     if (!ctx) {
         return false;
     }
+    if (!ctx->led_supported) {
+        return SDL_Unsupported();
+    }
     Uint8 buf[64];
     SDL_zero(buf);
-
     buf[0] = 0xA2;
     buf[1] = 0x04;
     buf[2] = 0x01;
     buf[3] = 0x01;
-
-
     buf[4] = red;
     buf[5] = green;
     buf[6] = blue;
-
-    SDL_hid_device *handle = NULL;
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (ctx && ctx->output_handle) {
-        handle = ctx->output_handle;
-    }
-#else
-    handle = device->dev;
-#endif
-
+    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
+    SDL_assert(handle != NULL);
     if (handle == NULL) {
-        SDL_SetError("Gamesir: output handle is null");
         return false;
     }
 
     int result = SDL_hid_write(handle, buf, sizeof(buf));
     if (result < 0) {
-        SDL_SetError("Gamesir: Failed to send LED command, error: %s", SDL_GetError());
         return false;
     }
 
@@ -655,8 +616,6 @@ static bool ApplyCircularDeadzone(Sint16 x, Sint16 y, Sint16 *out_x, Sint16 *out
     const Sint16 MAX_AXIS = 32767;
     const float deadzone_percent = 5.0f;
     const float deadzone_radius = (float)MAX_AXIS * deadzone_percent / 100.0f;
-
-
     float distance = SDL_sqrtf((float)x * (float)x + (float)y * (float)y);
     if (distance == 0.0f) {
         *out_x = 0;
@@ -665,7 +624,6 @@ static bool ApplyCircularDeadzone(Sint16 x, Sint16 y, Sint16 *out_x, Sint16 *out
     }
 
     if (distance < deadzone_radius) {
-
         *out_x = 0;
         *out_y = 0;
         return false;
@@ -724,7 +682,6 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, buttons & BTN_Y);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  buttons & BTN_L1);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, buttons & BTN_R1);
-
     }
 
     if (ctx->last_state[4] != data[4]) {
@@ -738,7 +695,6 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, buttons & BTN_L3);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, buttons & BTN_R3);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, buttons & BTN_CAPTURE);
-
     }
 
     if (ctx->last_state[5] != data[5]) {
@@ -746,7 +702,6 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         // BTN3: UP DOWN LEFT RIGHT M MUTE L4 R4
         // Handle the directional pad (D-pad)
         Uint8 hat = SDL_HAT_CENTERED;
-
 
         if (buttons == BTN_UP_R) {
             hat = SDL_HAT_RIGHTUP;
@@ -774,7 +729,6 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, buttons & BTN_L4);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1, buttons & BTN_R4);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, buttons & BTN_MUTE);
-
     }
 
     if (ctx->last_state[6] != data[6]) {
@@ -786,8 +740,6 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC4, buttons & BTN_R6);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC5, buttons & BTN_L7);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC6, buttons & BTN_R7);
-
-
     }
 
     if (is_initial_packet) {
@@ -898,8 +850,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
     }
 
-    if (ctx->sensors_enabled && !is_initial_packet && size >= 29)
-    {
+    if (ctx->sensors_enabled && !is_initial_packet && size >= 29) {
         Uint64 sensor_timestamp;
         float values[3];
 
@@ -988,24 +939,8 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    SDL_hid_device *handle = NULL;
-#if defined(_WIN32)
-
-    if (device->is_bluetooth) {
-
-        handle = device->dev;
-    } else {
-
-        if (ctx && ctx->output_handle) {
-            handle = ctx->output_handle;
-        } else {
-            handle = device->dev;
-        }
-    }
-#else
-
-    handle = device->dev;
-#endif
+    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetInputHandle(device, ctx);
+    SDL_assert(handle != NULL);
     if (handle == NULL) {
         return false;
     }
@@ -1018,24 +953,22 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     if (size < 0) {
-
-
         if (device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID) {
             if (device->is_bluetooth) {
-                SDL_Log("GameSir: Device disconnected - Connection type was: Bluetooth (wireless, HID mode)");
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: Bluetooth (wireless, HID mode)");
             } else {
-                SDL_Log("GameSir: Device disconnected - Connection type was: USB/2.4G (HID mode)");
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: USB/2.4G (HID mode)");
             }
         } else if (device->product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID) {
             if (device->is_bluetooth) {
-                SDL_Log("GameSir: Device disconnected - Connection type was: Bluetooth (wireless, 8K HID mode)");
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: Bluetooth (wireless, 8K HID mode)");
             } else {
-                SDL_Log("GameSir: Device disconnected - Connection type was: USB/2.4G (8K HID mode)");
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: USB/2.4G (8K HID mode)");
             }
         } else if (device->is_bluetooth) {
-            SDL_Log("GameSir: Device disconnected - Connection type was: Bluetooth (wireless)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: Bluetooth (wireless)");
         } else {
-            SDL_Log("GameSir: Device disconnected - Connection type was: USB (wired)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device disconnected - Connection type was: USB (wired)");
         }
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
