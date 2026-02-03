@@ -1083,7 +1083,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
 #ifdef SDL_PLATFORM_ANDROID
-    if (!Android_WaitActiveAndLockActivity()) {
+    if (!Android_WaitActiveAndLockActivity(window)) {
         return NULL;
     }
 #endif
@@ -1263,7 +1263,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_renderers = renderer;
 
 #ifdef SDL_PLATFORM_ANDROID
-    Android_UnlockActivityMutex();
+    Android_UnlockActivityState();
 #endif
 
     SDL_ClearError();
@@ -1272,7 +1272,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
 error:
 #ifdef SDL_PLATFORM_ANDROID
-    Android_UnlockActivityMutex();
+    Android_UnlockActivityState();
 #endif
 
     if (renderer) {
