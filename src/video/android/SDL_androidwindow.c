@@ -34,18 +34,32 @@
 
 
 // Currently only one window
-SDL_Window *Android_Window = NULL;
+static bool window_created = false;
 
 bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
     bool result = true;
 
-    if (!Android_WaitActiveAndLockActivity()) {
+    // Android_WaitActiveAndLockActivity() process some RPC:
+    // "onSurfaceCreated" that needs "window->internal"
+    // and also "nativeSetScreenResolution"
+
+    data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
         return false;
     }
 
-    if (Android_Window) {
+#ifdef SDL_VIDEO_OPENGL_EGL
+    data->egl_surface = EGL_NO_SURFACE;
+#endif
+    window->internal = data;
+
+    if (!Android_WaitActiveAndLockActivity(window)) {
+        return false;
+    }
+
+    if (window_created) {
         result = SDL_SetError("Android only supports one window");
         goto endfunction;
     }
@@ -63,44 +77,23 @@ bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
-    if (!data) {
+    if (!Android_nativeSurfaceCreated(window)) {
         result = false;
         goto endfunction;
     }
 
-    data->native_window = Android_JNI_GetNativeWindow();
-    if (!data->native_window) {
-        SDL_free(data);
-        result = SDL_SetError("Could not fetch native window");
+    if (!Android_nativeSurfaceChanged(window)) {
+        result = false;
         goto endfunction;
     }
-    SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
-
-    /* Do not create EGLSurface for Vulkan window since it will then make the window
-       incompatible with vkCreateAndroidSurfaceKHR */
-#ifdef SDL_VIDEO_OPENGL_EGL
-    if (window->flags & SDL_WINDOW_OPENGL) {
-        data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->native_window);
-
-        if (data->egl_surface == EGL_NO_SURFACE) {
-            ANativeWindow_release(data->native_window);
-            SDL_free(data);
-            result = false;
-            goto endfunction;
-        }
-    }
-    SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
-#endif
 
     SDL_SetWindowSafeAreaInsets(window, Android_SafeInsetLeft, Android_SafeInsetRight, Android_SafeInsetTop, Android_SafeInsetBottom);
 
-    window->internal = data;
-    Android_Window = window;
+    window_created = true;
 
 endfunction:
 
-    Android_UnlockActivityMutex();
+    Android_UnlockActivityState();
 
     return result;
 }
@@ -112,53 +105,47 @@ void Android_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 
 SDL_FullscreenResult Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
-    Android_LockActivityMutex();
+    SDL_WindowData *data;
+    int old_w, old_h, new_w, new_h;
 
-    if (window == Android_Window) {
-        SDL_WindowData *data;
-        int old_w, old_h, new_w, new_h;
+    // If the window is being destroyed don't change visible state
+    if (!window->is_destroying) {
+        Android_JNI_SetWindowStyle(fullscreen);
+    }
 
-        // If the window is being destroyed don't change visible state
-        if (!window->is_destroying) {
-            Android_JNI_SetWindowStyle(fullscreen);
+    /* Ensure our size matches reality after we've executed the window style change.
+     *
+     * It is possible that we've set width and height to the full-size display, but on
+     * Samsung DeX or Chromebooks or other windowed Android environments, our window may
+     * still not be the full display size.
+     */
+    if (!SDL_IsDeXMode() && !SDL_IsChromebook()) {
+        goto endfunction;
+    }
+
+    data = window->internal;
+    if (!data || !data->native_window) {
+        if (data && !data->native_window) {
+            SDL_SetError("Missing native window");
         }
+        goto endfunction;
+    }
 
-        /* Ensure our size matches reality after we've executed the window style change.
-         *
-         * It is possible that we've set width and height to the full-size display, but on
-         * Samsung DeX or Chromebooks or other windowed Android environments, our window may
-         * still not be the full display size.
-         */
-        if (!SDL_IsDeXMode() && !SDL_IsChromebook()) {
-            goto endfunction;
-        }
+    old_w = window->w;
+    old_h = window->h;
 
-        data = window->internal;
-        if (!data || !data->native_window) {
-            if (data && !data->native_window) {
-                SDL_SetError("Missing native window");
-            }
-            goto endfunction;
-        }
+    new_w = ANativeWindow_getWidth(data->native_window);
+    new_h = ANativeWindow_getHeight(data->native_window);
 
-        old_w = window->w;
-        old_h = window->h;
+    if (new_w < 0 || new_h < 0) {
+        SDL_SetError("ANativeWindow_getWidth/Height() fails");
+    }
 
-        new_w = ANativeWindow_getWidth(data->native_window);
-        new_h = ANativeWindow_getHeight(data->native_window);
-
-        if (new_w < 0 || new_h < 0) {
-            SDL_SetError("ANativeWindow_getWidth/Height() fails");
-        }
-
-        if (old_w != new_w || old_h != new_h) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, new_w, new_h);
-        }
+    if (old_w != new_w || old_h != new_h) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, new_w, new_h);
     }
 
 endfunction:
-
-    Android_UnlockActivityMutex();
 
     return SDL_FULLSCREEN_SUCCEEDED;
 }
@@ -176,29 +163,86 @@ void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool
 
 void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    Android_LockActivityMutex();
+    window_created = false;
 
-    if (window == Android_Window) {
-        Android_Window = NULL;
 
-        if (window->internal) {
-            SDL_WindowData *data = window->internal;
+    if (window->internal) {
+        Android_nativeSurfaceDestroyed(window);
+        SDL_free(window->internal);
+        window->internal = NULL;
+    }
+}
 
-#ifdef SDL_VIDEO_OPENGL_EGL
-            if (data->egl_surface != EGL_NO_SURFACE) {
-                SDL_EGL_DestroySurface(_this, data->egl_surface);
-            }
-#endif
 
-            if (data->native_window) {
-                ANativeWindow_release(data->native_window);
-            }
-            SDL_free(window->internal);
-            window->internal = NULL;
+// Those functions called from RPC onNativeSurface{Created,Changed,Destroyed}()
+// and SDL_{Create,Destroy}Window();
+
+bool Android_nativeSurfaceCreated(SDL_Window *window)
+{
+    if (window) {
+        SDL_WindowData *data = window->internal;
+
+        data->native_window = Android_JNI_GetNativeWindow();
+        SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, data->native_window);
+        if (data->native_window == NULL) {
+            SDL_SetError("Could not fetch native window");
+            return false;
         }
+        return true;
     }
 
-    Android_UnlockActivityMutex();
+    return false;
+}
+
+bool Android_nativeSurfaceChanged(SDL_Window *window)
+{
+    if (window) {
+#ifdef SDL_VIDEO_OPENGL_EGL
+        /* Do not create EGLSurface for Vulkan window since it will then make the window
+           incompatible with vkCreateAndroidSurfaceKHR */
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
+            SDL_WindowData *data = window->internal;
+
+            // If the surface has been previously destroyed by onNativeSurfaceDestroyed
+            // or if it is the first time, recreate it.
+            if (data->egl_surface == EGL_NO_SURFACE) {
+                data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->native_window);
+                SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER, data->egl_surface);
+            }
+
+            if (data->egl_surface == EGL_NO_SURFACE) {
+                if (data->native_window) {
+                    ANativeWindow_release(data->native_window);
+                    data->native_window = 0;
+                }
+                return false;
+            }
+        }
+#endif
+        return true;
+    }
+
+    return false;
+}
+
+void Android_nativeSurfaceDestroyed(SDL_Window *window)
+{
+    if (window) {
+        SDL_WindowData *data = window->internal;
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+        if (data->egl_surface != EGL_NO_SURFACE) {
+            SDL_EGL_DestroySurface(SDL_GetVideoDevice(), data->egl_surface);
+            data->egl_surface = EGL_NO_SURFACE;
+        }
+#endif
+
+        if (data->native_window) {
+            ANativeWindow_release(data->native_window);
+            data->native_window = NULL;
+        }
+    }
 }
 
 #endif // SDL_VIDEO_DRIVER_ANDROID
