@@ -512,13 +512,6 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
         _this->gl_data->HAS_WGL_ARB_create_context_no_error = true;
     }
 
-    // Check for WGL_ARB_framebuffer_sRGB
-    if (HasExtension("WGL_ARB_framebuffer_sRGB", extensions)) {
-        _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
-    } else if (HasExtension("WGL_EXT_framebuffer_sRGB", extensions)) {  // same thing.
-        _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
-    }
-
     /* Check for WGL_ARB_pixel_format_float */
     _this->gl_data->HAS_WGL_ARB_pixel_format_float =
         HasExtension("WGL_ARB_pixel_format_float", extensions);
@@ -538,6 +531,9 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     HGLRC hglrc;
     int pixel_format = 0;
     unsigned int matching;
+
+    int qAttrib = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+    int srgb = 0;
 
     hwnd =
         CreateWindow(SDL_Appname, SDL_Appname, (WS_POPUP | WS_DISABLED), 0, 0,
@@ -560,11 +556,7 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
                                                     &matching);
 
             // Check whether we actually got an SRGB capable buffer
-            int srgb = 0;
-            if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
-                int qAttrib = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-                _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
-            }
+            _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
             _this->gl_config.framebuffer_srgb_capable = srgb;
         }
 
@@ -659,9 +651,9 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
-    if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+    if (_this->gl_config.framebuffer_srgb_capable) {
         *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
+        *iAttr++ = _this->gl_config.framebuffer_srgb_capable;
     }
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
