@@ -110,6 +110,9 @@ static SDL_VideoDevice *OFFSCREEN_CreateDevice(void)
     device->DestroyWindow = OFFSCREEN_DestroyWindow;
     device->SetWindowSize = OFFSCREEN_SetWindowSize;
 
+    // TODO: Is this needed?
+    device->device_caps = VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
+
     return device;
 }
 
