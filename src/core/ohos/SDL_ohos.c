@@ -662,35 +662,47 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
     OH_NativeXComponent_GetTouchPointToolType(component, 0, &toolType);
 
+    // Only process the finger that triggered this event (touchEvent.id).
+    // The touchPoints array contains current state of all fingers, not just the changed one.
+    int targetIndex = -1;
     for (int i = 0; i < touchEvent.numPoints; i++) {
-        SDL_OHOSTouchEvent e;
-        e.timestamp = touchEvent.timeStamp;
-        // skip assertions
-        e.deviceId = touchEvent.deviceId + 1;
-        e.fingerId = touchEvent.touchPoints[i].id + 1;
-        e.area = touchEvent.touchPoints[i].size;
-        e.x = touchEvent.touchPoints[i].x / (float)wid;
-        e.y = touchEvent.touchPoints[i].y / (float)hei;
-        e.p = touchEvent.touchPoints[i].force;
-
-        switch (touchEvent.touchPoints[i].type) {
-        case OH_NATIVEXCOMPONENT_DOWN:
-            e.type = SDL_EVENT_FINGER_DOWN;
-            break;
-        case OH_NATIVEXCOMPONENT_MOVE:
-            e.type = SDL_EVENT_FINGER_MOTION;
-            break;
-        case OH_NATIVEXCOMPONENT_UP:
-            e.type = SDL_EVENT_FINGER_UP;
-            break;
-        case OH_NATIVEXCOMPONENT_CANCEL:
-        case OH_NATIVEXCOMPONENT_UNKNOWN:
-            e.type = SDL_EVENT_FINGER_CANCELED;
+        if (touchEvent.touchPoints[i].id == touchEvent.id) {
+            targetIndex = i;
             break;
         }
-        
-        OHOS_OnTouch(e);
     }
+    
+    if (targetIndex < 0) {
+        OHOS_UnlockPage();
+        return;
+    }
+
+    SDL_OHOSTouchEvent e;
+    e.timestamp = touchEvent.timeStamp;
+    e.deviceId = touchEvent.deviceId + 1;
+    e.fingerId = touchEvent.touchPoints[targetIndex].id + 1;
+    e.area = touchEvent.touchPoints[targetIndex].size;
+    e.x = touchEvent.touchPoints[targetIndex].x / (float)wid;
+    e.y = touchEvent.touchPoints[targetIndex].y / (float)hei;
+    e.p = touchEvent.touchPoints[targetIndex].force;
+
+    switch (touchEvent.touchPoints[targetIndex].type) {
+    case OH_NATIVEXCOMPONENT_DOWN:
+        e.type = SDL_EVENT_FINGER_DOWN;
+        break;
+    case OH_NATIVEXCOMPONENT_MOVE:
+        e.type = SDL_EVENT_FINGER_MOTION;
+        break;
+    case OH_NATIVEXCOMPONENT_UP:
+        e.type = SDL_EVENT_FINGER_UP;
+        break;
+    case OH_NATIVEXCOMPONENT_CANCEL:
+    case OH_NATIVEXCOMPONENT_UNKNOWN:
+        e.type = SDL_EVENT_FINGER_CANCELED;
+        break;
+    }
+    
+    OHOS_OnTouch(e);
     
     OHOS_UnlockPage();
 }
