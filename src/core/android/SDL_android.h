@@ -52,8 +52,8 @@ typedef enum
 void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
 bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
 
-void Android_LockActivityMutex(void);
-void Android_UnlockActivityMutex(void);
+void Android_LockActivityState(void);
+void Android_UnlockActivityState(void);
 
 void Android_SetAllowRecreateActivity(bool enabled);
 
@@ -156,6 +156,10 @@ bool SDL_IsAndroidTV(void);
 bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
     bool multiple);
+
+// Pump RPC commands
+void Android_PumpRPC(SDL_Window *window);
+
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
