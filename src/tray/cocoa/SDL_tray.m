@@ -28,7 +28,18 @@
 #include "../SDL_tray_utils.h"
 #include "../../video/SDL_surface_c.h"
 
-/* applicationDockMenu */
+/* Forward declaration */
+struct SDL_Tray;
+
+/* Objective-C helper class to handle status item button clicks */
+@interface SDLTrayClickHandler : NSObject
+@property (nonatomic, assign) struct SDL_Tray *tray;
+@property (nonatomic, assign) NSTimeInterval lastLeftClickTime;
+@property (nonatomic, strong) id middleClickMonitor;
+- (void)handleClick:(id)sender;
+- (void)startMonitoringMiddleClicks;
+- (void)stopMonitoringMiddleClicks;
+@end
 
 struct SDL_TrayMenu {
     NSMenu *nsmenu;
@@ -56,7 +67,109 @@ struct SDL_Tray {
     NSStatusItem *statusItem;
 
     SDL_TrayMenu *menu;
+    SDL_PropertiesID props;
+    SDLTrayClickHandler *clickHandler;
 };
+
+@implementation SDLTrayClickHandler
+
+- (void)handleClick:(id)sender
+{
+    if (!self.tray) {
+        return;
+    }
+
+    NSEvent *event = [NSApp currentEvent];
+    NSUInteger buttonNumber = [event buttonNumber];
+
+    void *userdata = SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_USERDATA_POINTER, NULL);
+    SDL_TrayClickCallback callback = NULL;
+    bool show_menu = false;
+
+    if (buttonNumber == 0) {
+        /* Left click - check for double-click ourselves */
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval doubleClickInterval = [NSEvent doubleClickInterval];
+
+        if ((now - self.lastLeftClickTime) <= doubleClickInterval) {
+            /* Double-click */
+            callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_DOUBLECLICK_CALLBACK_POINTER, NULL);
+            if (callback) {
+                callback(userdata, self.tray);
+            }
+            self.lastLeftClickTime = 0; /* Reset to prevent triple-click from triggering another double */
+        } else {
+            /* Single left click */
+            self.lastLeftClickTime = now;
+            callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_LEFTCLICK_CALLBACK_POINTER, NULL);
+            if (callback) {
+                callback(userdata, self.tray);
+            } else {
+                show_menu = true;
+            }
+        }
+    } else if (buttonNumber == 1) {
+        /* Right click */
+        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_RIGHTCLICK_CALLBACK_POINTER, NULL);
+        if (callback) {
+            callback(userdata, self.tray);
+        } else {
+            show_menu = true;
+        }
+    } else if (buttonNumber == 2) {
+        /* Middle click */
+        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER, NULL);
+        if (callback) {
+            callback(userdata, self.tray);
+        }
+    }
+
+    if (show_menu && self.tray->menu) {
+        [self.tray->statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+    }
+}
+
+- (void)startMonitoringMiddleClicks
+{
+    if (self.middleClickMonitor) {
+        return;
+    }
+
+    __weak SDLTrayClickHandler *weakSelf = self;
+    self.middleClickMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskOtherMouseUp handler:^NSEvent *(NSEvent *event) {
+        SDLTrayClickHandler *strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.tray || [event buttonNumber] != 2) {
+            return event;
+        }
+
+        /* Check if the click is within the status item's button bounds */
+        NSPoint clickLocation = [event locationInWindow];
+        NSWindow *statusItemWindow = strongSelf.tray->statusItem.button.window;
+
+        if (statusItemWindow && event.window == statusItemWindow) {
+            NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
+            if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
+                void *userdata = SDL_GetPointerProperty(strongSelf.tray->props, SDL_PROP_TRAY_USERDATA_POINTER, NULL);
+                SDL_TrayClickCallback callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(strongSelf.tray->props, SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER, NULL);
+                if (callback) {
+                    callback(userdata, strongSelf.tray);
+                }
+            }
+        }
+
+        return event;
+    }];
+}
+
+- (void)stopMonitoringMiddleClicks
+{
+    if (self.middleClickMonitor) {
+        [NSEvent removeMonitor:self.middleClickMonitor];
+        self.middleClickMonitor = nil;
+    }
+}
+
+@end
 
 static void DestroySDLMenu(SDL_TrayMenu *menu)
 {
@@ -140,6 +253,25 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         SDL_DestroySurface(icon);
     }
 
+    /* Create properties */
+    tray->props = SDL_CreateProperties();
+    if (!tray->props) {
+        [[NSStatusBar systemStatusBar] removeStatusItem:tray->statusItem];
+        SDL_free(tray);
+        return NULL;
+    }
+
+    /* Create click handler and set up button to receive clicks */
+    tray->clickHandler = [[SDLTrayClickHandler alloc] init];
+    tray->clickHandler.tray = tray;
+
+    [tray->statusItem.button setTarget:tray->clickHandler];
+    [tray->statusItem.button setAction:@selector(handleClick:)];
+    [tray->statusItem.button sendActionOn:(NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp)];
+
+    /* Start monitoring for middle clicks since status items don't receive them via the normal action mechanism */
+    [tray->clickHandler startMonitoringMiddleClicks];
+
     SDL_RegisterTray(tray);
 
     return tray;
@@ -216,7 +348,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
     NSMenu *nsmenu = [[NSMenu alloc] init];
     [nsmenu setAutoenablesItems:FALSE];
 
-    [tray->statusItem setMenu:nsmenu];
+    /* Don't set menu on statusItem - we handle menu display manually in the click handler */
 
     tray->menu = menu;
     menu->nsmenu = nsmenu;
@@ -518,7 +650,27 @@ void SDL_DestroyTray(SDL_Tray *tray)
         DestroySDLMenu(tray->menu);
     }
 
+    if (tray->props) {
+        SDL_DestroyProperties(tray->props);
+    }
+
+    if (tray->clickHandler) {
+        [tray->clickHandler stopMonitoringMiddleClicks];
+        tray->clickHandler.tray = NULL;
+        tray->clickHandler = nil;
+    }
+
     SDL_free(tray);
+}
+
+SDL_PropertiesID SDL_GetTrayProperties(SDL_Tray *tray)
+{
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return 0;
+    }
+
+    return tray->props;
 }
 
 #endif // SDL_PLATFORM_MACOS

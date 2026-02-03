@@ -62,6 +62,7 @@ struct SDL_Tray {
     HWND hwnd;
     HICON icon;
     SDL_TrayMenu *menu;
+    SDL_PropertiesID props;
 };
 
 static UINT_PTR get_next_id(void)
@@ -119,10 +120,47 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
     switch (uMsg) {
         case WM_TRAYICON:
-            if (LOWORD(lParam) == WM_CONTEXTMENU || LOWORD(lParam) == WM_LBUTTONUP) {
-                SetForegroundWindow(hwnd);
+            {
+                void *userdata = SDL_GetPointerProperty(tray->props, SDL_PROP_TRAY_USERDATA_POINTER, NULL);
+                SDL_TrayClickCallback callback = NULL;
+                bool show_menu = false;
 
-                if (tray->menu) {
+                switch (LOWORD(lParam)) {
+                    case WM_LBUTTONUP:
+                        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(tray->props, SDL_PROP_TRAY_LEFTCLICK_CALLBACK_POINTER, NULL);
+                        if (callback) {
+                            callback(userdata, tray);
+                        } else {
+                            show_menu = true;
+                        }
+                        break;
+
+                    case WM_CONTEXTMENU:
+                        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(tray->props, SDL_PROP_TRAY_RIGHTCLICK_CALLBACK_POINTER, NULL);
+                        if (callback) {
+                            callback(userdata, tray);
+                        } else {
+                            show_menu = true;
+                        }
+                        break;
+
+                    case WM_MBUTTONUP:
+                        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(tray->props, SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER, NULL);
+                        if (callback) {
+                            callback(userdata, tray);
+                        }
+                        break;
+
+                    case WM_LBUTTONDBLCLK:
+                        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(tray->props, SDL_PROP_TRAY_DOUBLECLICK_CALLBACK_POINTER, NULL);
+                        if (callback) {
+                            callback(userdata, tray);
+                        }
+                        break;
+                }
+
+                if (show_menu && tray->menu) {
+                    SetForegroundWindow(hwnd);
                     TrackPopupMenu(tray->menu->hMenu, TPM_BOTTOMALIGN | TPM_RIGHTALIGN, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, hwnd, NULL);
                 }
             }
@@ -318,6 +356,17 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
 
     SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR) tray);
+
+    tray->props = SDL_CreateProperties();
+    if (!tray->props) {
+        Shell_NotifyIconW(NIM_DELETE, &tray->nid);
+        DestroyWindow(tray->hwnd);
+        if (tray->icon) {
+            DestroyIcon(tray->icon);
+        }
+        SDL_free(tray);
+        return NULL;
+    }
 
     SDL_RegisterTray(tray);
 
@@ -741,5 +790,19 @@ void SDL_DestroyTray(SDL_Tray *tray)
         DestroyWindow(tray->hwnd);
     }
 
+    if (tray->props) {
+        SDL_DestroyProperties(tray->props);
+    }
+
     SDL_free(tray);
+}
+
+SDL_PropertiesID SDL_GetTrayProperties(SDL_Tray *tray)
+{
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return 0;
+    }
+
+    return tray->props;
 }

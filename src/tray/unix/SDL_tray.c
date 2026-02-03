@@ -161,6 +161,7 @@ struct SDL_Tray {
     char *icon_path;
 
     GtkMenuShell *menu_cached;
+    SDL_PropertiesID props;
 };
 
 static void call_callback(GtkMenuItem *item, gpointer ptr)
@@ -304,6 +305,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     // The tray icon isn't shown before a menu is created; create one early.
     tray->menu_cached = (GtkMenuShell *)gtk->g.object_ref_sink(gtk->gtk.menu_new());
     app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu_cached));
+
+    tray->props = SDL_CreateProperties();
+    if (!tray->props) {
+        goto icon_dir_error;
+    }
 
     SDL_RegisterTray(tray);
     SDL_Gtk_ExitContext(gtk);
@@ -762,5 +768,19 @@ void SDL_DestroyTray(SDL_Tray *tray)
         SDL_Gtk_ExitContext(gtk);
     }
 
+    if (tray->props) {
+        SDL_DestroyProperties(tray->props);
+    }
+
     SDL_free(tray);
+}
+
+SDL_PropertiesID SDL_GetTrayProperties(SDL_Tray *tray)
+{
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return 0;
+    }
+
+    return tray->props;
 }

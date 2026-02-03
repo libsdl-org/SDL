@@ -1313,3 +1313,4 @@ SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain
 SDL_DYNAPI_PROC(bool,SDL_OpenXR_LoadLibrary,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_OpenXR_UnloadLibrary,(void),(),)
 SDL_DYNAPI_PROC(PFN_xrGetInstanceProcAddr,SDL_OpenXR_GetXrGetInstanceProcAddr,(void),(),return)
+SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetTrayProperties,(SDL_Tray *a),(a),return)

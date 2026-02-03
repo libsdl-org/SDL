@@ -34,6 +34,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
@@ -97,6 +98,25 @@ typedef Uint32 SDL_TrayEntryFlags;
 typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
 /**
+ * A callback that is invoked when the tray icon is clicked.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked. May be NULL.
+ * \param tray the tray icon that was clicked.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTrayProperties
+ */
+typedef void (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
+
+#define SDL_PROP_TRAY_USERDATA_POINTER             "SDL.tray.userdata"
+#define SDL_PROP_TRAY_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.leftclick_callback"
+#define SDL_PROP_TRAY_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.rightclick_callback"
+#define SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.middleclick_callback"
+#define SDL_PROP_TRAY_DOUBLECLICK_CALLBACK_POINTER "SDL.tray.doubleclick_callback"
+
+/**
  * Create an icon to be placed in the operating system's tray, or equivalent.
  *
  * Many platforms advise not using a system tray unless persistence is a
@@ -119,6 +139,34 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * \sa SDL_DestroyTray
  */
 extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);
+
+/**
+ * Get the properties associated with a tray icon.
+ *
+ * The following read-write properties are provided by SDL:
+ *
+ * - `SDL_PROP_TRAY_USERDATA_POINTER`: an optional pointer to associate with
+ *   the tray icon, which will be passed to callbacks.
+ * - `SDL_PROP_TRAY_LEFTCLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback to
+ *   be invoked when the tray icon is left-clicked. If set, the default menu
+ *   will not be shown on left-click.
+ * - `SDL_PROP_TRAY_RIGHTCLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback to
+ *   be invoked when the tray icon is right-clicked. If set, the default menu
+ *   will not be shown on right-click.
+ * - `SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback to
+ *   be invoked when the tray icon is middle-clicked.
+ * - `SDL_PROP_TRAY_DOUBLECLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback to
+ *   be invoked when the tray icon is double-clicked.
+ *
+ * \param tray the tray icon to query.
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTrayProperties(SDL_Tray *tray);
 
 /**
  * Updates the system tray icon's icon.
