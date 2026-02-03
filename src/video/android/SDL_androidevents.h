@@ -25,3 +25,6 @@ extern void Android_PumpEvents(Sint64 timeoutNS);
 extern bool Android_WaitActiveAndLockActivity(SDL_Window *window);
 extern void Android_QuitEvents(void);
 extern void Android_PumpLifecycleEvents(SDL_Window *window);
+#ifdef SDL_VIDEO_OPENGL_EGL
+void Android_egl_context_restore(SDL_Window *window);
+#endif

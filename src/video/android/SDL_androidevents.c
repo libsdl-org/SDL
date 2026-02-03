@@ -33,33 +33,38 @@
 
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-static void android_egl_context_restore(SDL_Window *window)
+// Restore EGL context when we have both:
+// nativeSurfaceCreated()
+// and SDLActivity hasFocus();
+void Android_egl_context_restore(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
-    SDL_GL_MakeCurrent(window, NULL);
-    if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
-        // The context is no longer valid, create a new one
-        data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
-        SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_RENDER_DEVICE_RESET;
-        event.render.windowID = SDL_GetWindowID(window);
-        SDL_PushEvent(&event);
-    }
-    data->backup_done = false;
 
-    SDL_GL_SetSwapInterval(data->swap_interval);
+    if (data->backup_done && data->hasFocus && data->egl_surface != EGL_NO_SURFACE) {
+        SDL_GL_MakeCurrent(window, NULL);
+        if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
+            // The context is no longer valid, create a new one
+            data->egl_context = (EGLContext)SDL_GL_CreateContext(window);
+            SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context);
+            SDL_Event event;
+            SDL_zero(event);
+            event.type = SDL_EVENT_RENDER_DEVICE_RESET;
+            event.render.windowID = SDL_GetWindowID(window);
+            SDL_PushEvent(&event);
+        }
+        data->backup_done = false;
+
+        SDL_GL_SetSwapInterval(data->swap_interval);
+    }
 }
 
-static void android_egl_context_backup(SDL_Window *window)
+static void Android_egl_context_backup(SDL_Window *window)
 {
     int interval = 0;
     // Keep a copy of the EGL Context so we can try to restore it when we resume
     SDL_WindowData *data = window->internal;
     data->egl_context = SDL_GL_GetCurrentContext();
 
-    SDL_Log("android_egl_context_backup ...");
     // Save/Restore the swap interval / vsync
     if (SDL_GL_GetSwapInterval(&interval)) {
         data->has_swap_interval = 1;
@@ -119,7 +124,7 @@ static void Android_OnPause(SDL_Window *window)
      */
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (window && !window->external_graphics_context) {
-        android_egl_context_backup(window);
+        Android_egl_context_backup(window);
     }
 #endif
 
@@ -142,7 +147,7 @@ static void Android_OnResume(SDL_Window *window)
 #ifdef SDL_VIDEO_OPENGL_EGL
     // Restore the GL Context from here, as this operation is thread dependent
     if (window && !window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
-        android_egl_context_restore(window);
+        Android_egl_context_restore(window);
     }
 #endif
 
