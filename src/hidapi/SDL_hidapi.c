@@ -834,6 +834,8 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef read_thread
 #undef return_data
 
+#endif // HAVE_LIBUSB
+
 /* If the platform has any backend other than libusb, try to avoid using
  * libusb as the main backend for devices, since it detaches drivers and
  * therefore makes devices inaccessible to the rest of the OS.
@@ -845,7 +847,7 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 static const struct {
     Uint16 vendor;
     Uint16 product;
-} SDL_libusb_whitelist[] = {
+} SDL_libusb_required[] = {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT },
@@ -853,19 +855,16 @@ static const struct {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_PRO },
 };
 
-static bool IsInWhitelist(Uint16 vendor, Uint16 product)
+static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
 {
-    int i;
-    for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
-        if (vendor == SDL_libusb_whitelist[i].vendor &&
-            product == SDL_libusb_whitelist[i].product) {
+    for (int i = 0; i < SDL_arraysize(SDL_libusb_required); ++i) {
+        if (vendor == SDL_libusb_required[i].vendor &&
+            product == SDL_libusb_required[i].product) {
             return true;
         }
     }
     return false;
 }
-
-#endif // HAVE_LIBUSB
 
 #endif // !SDL_HIDAPI_DISABLED
 
@@ -1055,17 +1054,19 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
 
 bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb)
 {
-#ifdef HAVE_LIBUSB
     if (libusb) {
-        if (use_libusb_whitelist && !IsInWhitelist(vendor_id, product_id)) {
+        if (use_libusb_whitelist && !RequiresLibUSB(vendor_id, product_id)) {
             return true;
         }
         if (!use_libusb_gamecube &&
             vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
             return true;
         }
+    } else {
+        if (RequiresLibUSB(vendor_id, product_id)) {
+            return true;
+        }
     }
-#endif
 
     // See if there are any devices we should skip in enumeration
     if (SDL_hidapi_only_controllers && usage_page) {
