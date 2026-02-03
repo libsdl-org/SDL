@@ -29,9 +29,9 @@
 
 void RPI_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
 {
-    _this->gl_config.mask = SDL_GL_CONTEXT_PROFILE_ES;
-    _this->gl_config.major = 2;
-    _this->gl_config.minor = 0;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 0;
 }
 
 bool RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
