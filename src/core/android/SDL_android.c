@@ -3556,6 +3556,12 @@ void Android_PumpRPC(SDL_Window *window)
                     RPC_Get(nativeFocusChanged);
                     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
                     SDL_SendWindowEvent(window, (data.hasFocus ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST), 0, 0);
+                    if (window) {
+                        window->internal->hasFocus = data.hasFocus;
+#ifdef SDL_VIDEO_OPENGL_EGL
+                        Android_egl_context_restore(window);
+#endif
+                    }
                 }
                 break;
 
