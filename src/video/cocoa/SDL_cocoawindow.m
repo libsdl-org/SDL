@@ -1375,6 +1375,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)aNotification
 {
+    SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)_data.window->internal;
+    NSView *contentView = windata.sdlContentView;
     NSNumber *oldscale = [[aNotification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey];
 
     if (inFullscreenTransition) {
@@ -1382,6 +1384,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     }
 
     if ([oldscale doubleValue] != [_data.nswindow backingScaleFactor]) {
+        // Update the content scale on the window layer
+        // This is required to keep content scale in sync with ANGLE
+        contentView.layer.contentsScale = [_data.nswindow backingScaleFactor];
         // Send a resize event when the backing scale factor changes.
         [self windowDidResize:aNotification];
     }
