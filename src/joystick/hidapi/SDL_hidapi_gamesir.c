@@ -648,15 +648,17 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         return;
     }
 
+    int packet_size = size;
+    const Uint8 *packet = data;
+
     // Check packet format: it may include a report ID (0x43) as the first byte
     // Actual packet format: 43 a1 c8 [button data...]
     // If the first byte is 0x43, the second is 0xA1 and the third is 0xC8, skip the report ID
-    int packet_size = size;
-
-    if (size >= 3 && data[0] == 0x43 && data[1] == GAMESIR_PACKET_HEADER_0 && data[2] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
-        // Packet contains a report ID; skip the first byte
+    if (size >= 3 && packet[0] == 0x43 && packet[1] == GAMESIR_PACKET_HEADER_0 && packet[2] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
+        // Packet contains a report ID; skip it for indexing and size checks
         packet_size = size - 1;
-    } else if (size >= 2 && data[0] == GAMESIR_PACKET_HEADER_0 && data[1] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
+        packet = data + 1;
+    } else if (size >= 2 && packet[0] == GAMESIR_PACKET_HEADER_0 && packet[1] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
         // Standard format: no report ID, header bytes directly
         packet_size = size;
     } else {
@@ -664,15 +666,20 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         return;
     }
 
+    const int header_size = 2;
+    const int payload_size = packet_size - header_size;
+    const Uint8 *payload = packet + header_size;
+    const Uint8 *last = ctx->last_state + header_size;
+
     bool is_initial_packet = (ctx->last_state[0] == 0 && ctx->last_state[1] == 0 && ctx->last_state[2] == 0 && ctx->last_state[3] == 0);
 
-    const int min_packet_size = ctx->sensors_enabled ? 29 : 17;
-    if (packet_size < min_packet_size) {
+    const int min_payload_size = ctx->sensors_enabled ? 26 : 14;
+    if (payload_size < min_payload_size) {
         return;
     }
 
-    if (ctx->last_state[3] != data[3]) {
-        Uint8 buttons = data[3];
+    if (last[0] != payload[0]) {
+        Uint8 buttons = payload[0];
         // BTN1: A B C X Y Z L1 R1
         // Use bitwise operations to check whether each button is pressed
         // buttons & BTN_A returns the value of BTN_A (if pressed) or 0 (if not pressed)
@@ -684,10 +691,10 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, buttons & BTN_R1);
     }
 
-    if (ctx->last_state[4] != data[4]) {
-        Uint8 buttons = data[4];
+    if (last[1] != payload[1]) {
+        Uint8 buttons = payload[1];
         // BTN2: L2 R2 SELECT START HOME L3 R3 CAPTURE
-        // Note: L2/R2 appear as digital buttons in data[4], but their actual analog values are in data[15]/data[16].
+        // Note: L2/R2 appear as digital buttons in payload[1], but their actual analog values are in payload[12]/payload[13].
         // Only handle the other buttons here; trigger analog values are processed later in the code.
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, buttons & BTN_SELECT);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, buttons & BTN_START);
@@ -697,8 +704,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, buttons & BTN_CAPTURE);
     }
 
-    if (ctx->last_state[5] != data[5]) {
-        Uint8 buttons = data[5];
+    if (last[2] != payload[2]) {
+        Uint8 buttons = payload[2];
         // BTN3: UP DOWN LEFT RIGHT M MUTE L4 R4
         // Handle the directional pad (D-pad)
         Uint8 hat = SDL_HAT_CENTERED;
@@ -731,8 +738,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, buttons & BTN_MUTE);
     }
 
-    if (ctx->last_state[6] != data[6]) {
-        Uint8 buttons = data[6];
+    if (last[3] != payload[3]) {
+        Uint8 buttons = payload[3];
         // BTN4: L5 R5 L6 R6 L7 R7 L8 R8
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE2, buttons & BTN_L5);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, buttons & BTN_R5);
@@ -750,13 +757,13 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, 0);
     } else {
         // Left stick handling
-        // Left stick: bytes 7-10 (16-bit values)
-        // Bytes 7-8: X axis (Hi/Low combined into a signed 16-bit value, e.g. 0x7df6)
-        // Bytes 9-10: Y axis (Hi/Low combined into a signed 16-bit value)
-        if (size >= 11) {
-            // Combine bytes 7-8 into a 16-bit value, e.g.: data[7]=0x7d, data[8]=0xf6 -> 0x7df6
-            Uint16 raw_x_unsigned = ((Uint16)data[7] << 8) | data[8];
-            Uint16 raw_y_unsigned = ((Uint16)data[9] << 8) | data[10];
+        // Left stick: payload bytes 4-7 (16-bit values)
+        // Bytes 4-5: X axis (Hi/Low combined into a signed 16-bit value, e.g. 0x7df6)
+        // Bytes 6-7: Y axis (Hi/Low combined into a signed 16-bit value)
+        if (payload_size >= 8) {
+            // Combine bytes 4-5 into a 16-bit value, e.g.: payload[4]=0x7d, payload[5]=0xf6 -> 0x7df6
+            Uint16 raw_x_unsigned = ((Uint16)payload[4] << 8) | payload[5];
+            Uint16 raw_y_unsigned = ((Uint16)payload[6] << 8) | payload[7];
 
             // Interpret the unsigned 16-bit value as a signed 16-bit value
             Sint16 raw_x = (Sint16)raw_x_unsigned;
@@ -767,8 +774,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             left_x = raw_x;
             left_y = -raw_y;
 
-            Uint16 last_raw_x_unsigned = ((Uint16)ctx->last_state[7] << 8) | ctx->last_state[8];
-            Uint16 last_raw_y_unsigned = ((Uint16)ctx->last_state[9] << 8) | ctx->last_state[10];
+            Uint16 last_raw_x_unsigned = ((Uint16)last[4] << 8) | last[5];
+            Uint16 last_raw_y_unsigned = ((Uint16)last[6] << 8) | last[7];
             Sint16 last_raw_x = (Sint16)last_raw_x_unsigned;
             Sint16 last_raw_y = (Sint16)last_raw_y_unsigned;
             bool raw_changed = (raw_x != last_raw_x || raw_y != last_raw_y);
@@ -792,14 +799,14 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
 
         // Right stick handling
-        // Right stick: bytes 11-14 (16-bit values)
-        // Bytes 11-12: X axis (Hi/Low combined into a signed 16-bit value)
-        // Bytes 13-14: Y axis (Hi/Low combined into a signed 16-bit value)
-        if (size >= 15) {
-            // Combine bytes 11-12 into a 16-bit value
-            Uint16 raw_x_unsigned = ((Uint16)data[11] << 8) | data[12];
-            // Combine bytes 13-14 into a 16-bit value
-            Uint16 raw_y_unsigned = ((Uint16)data[13] << 8) | data[14];
+        // Right stick: payload bytes 8-11 (16-bit values)
+        // Bytes 8-9: X axis (Hi/Low combined into a signed 16-bit value)
+        // Bytes 10-11: Y axis (Hi/Low combined into a signed 16-bit value)
+        if (payload_size >= 12) {
+            // Combine bytes 8-9 into a 16-bit value
+            Uint16 raw_x_unsigned = ((Uint16)payload[8] << 8) | payload[9];
+            // Combine bytes 10-11 into a 16-bit value
+            Uint16 raw_y_unsigned = ((Uint16)payload[10] << 8) | payload[11];
 
             // Interpret the unsigned 16-bit value as a signed 16-bit value
             Sint16 raw_x = (Sint16)raw_x_unsigned;
@@ -810,8 +817,8 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             right_x = raw_x;
             right_y = -raw_y;
 
-            Uint16 last_raw_x_unsigned = ((Uint16)ctx->last_state[11] << 8) | ctx->last_state[12];
-            Uint16 last_raw_y_unsigned = ((Uint16)ctx->last_state[13] << 8) | ctx->last_state[14];
+            Uint16 last_raw_x_unsigned = ((Uint16)last[8] << 8) | last[9];
+            Uint16 last_raw_y_unsigned = ((Uint16)last[10] << 8) | last[11];
             Sint16 last_raw_x = (Sint16)last_raw_x_unsigned;
             Sint16 last_raw_y = (Sint16)last_raw_y_unsigned;
             bool raw_changed = (raw_x != last_raw_x || raw_y != last_raw_y);
@@ -835,35 +842,35 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
 
         // Handle trigger axes
-        // Protocol: L2 (byte 15) - analog left trigger 0-255, 0 = released, 255 = pressed
-        //           R2 (byte 16) - analog right trigger 0-255, 0 = released, 255 = pressed
+        // Protocol: L2 (payload byte 12) - analog left trigger 0-255, 0 = released, 255 = pressed
+        //           R2 (payload byte 13) - analog right trigger 0-255, 0 = released, 255 = pressed
         // SDL range: 0-32767 (0 = released, 32767 = fully pressed)
         // Linear mapping: 0-255 -> 0-32767
-        if (ctx->last_state[15] != data[15]) {
-            axis = (Sint16)(((int)data[15] * 255) - 32767);
+        if (last[12] != payload[12]) {
+            axis = (Sint16)(((int)payload[12] * 255) - 32767);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
         }
 
-        if (ctx->last_state[16] != data[16]) {
-            axis = (Sint16)(((int)data[16] * 255) - 32767);
+        if (last[13] != payload[13]) {
+            axis = (Sint16)(((int)payload[13] * 255) - 32767);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
         }
     }
 
-    if (ctx->sensors_enabled && !is_initial_packet && size >= 29) {
+    if (ctx->sensors_enabled && !is_initial_packet && payload_size >= 26) {
         Uint64 sensor_timestamp;
         float values[3];
 
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // Accelerometer data (bytes 17-22)
-        // Bytes 17-18: Acc X (Hi/Low combined into a signed 16-bit value)
-        // Bytes 19-20: Acc Y (Hi/Low combined into a signed 16-bit value)
-        // Bytes 21-22: Acc Z (Hi/Low combined into a signed 16-bit value)
-        Uint16 acc_x_unsigned = ((Uint16)data[17] << 8) | data[18];
-        Uint16 acc_y_unsigned = ((Uint16)data[19] << 8) | data[20];
-        Uint16 acc_z_unsigned = ((Uint16)data[21] << 8) | data[22];
+        // Accelerometer data (payload bytes 14-19)
+        // Bytes 14-15: Acc X (Hi/Low combined into a signed 16-bit value)
+        // Bytes 16-17: Acc Y (Hi/Low combined into a signed 16-bit value)
+        // Bytes 18-19: Acc Z (Hi/Low combined into a signed 16-bit value)
+        Uint16 acc_x_unsigned = ((Uint16)payload[14] << 8) | payload[15];
+        Uint16 acc_y_unsigned = ((Uint16)payload[16] << 8) | payload[17];
+        Uint16 acc_z_unsigned = ((Uint16)payload[18] << 8) | payload[19];
 
         // Convert the unsigned 16-bit values to signed 16-bit values
         Sint16 acc_x = (Sint16)acc_x_unsigned;
@@ -877,13 +884,13 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         values[2] = (float)acc_z * ctx->accelScale;  // Acc Z
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
 
-        // Gyroscope data (bytes 23-28)
-        // Bytes 23-24: Gyro X (Hi/Low combined into a signed 16-bit value)
-        // Bytes 25-26: Gyro Y (Hi/Low combined into a signed 16-bit value)
-        // Bytes 27-28: Gyro Z (Hi/Low combined into a signed 16-bit value)
-        Uint16 gyro_x_unsigned = ((Uint16)data[23] << 8) | data[24];
-        Uint16 gyro_y_unsigned = ((Uint16)data[25] << 8) | data[26];
-        Uint16 gyro_z_unsigned = ((Uint16)data[27] << 8) | data[28];
+        // Gyroscope data (payload bytes 20-25)
+        // Bytes 20-21: Gyro X (Hi/Low combined into a signed 16-bit value)
+        // Bytes 22-23: Gyro Y (Hi/Low combined into a signed 16-bit value)
+        // Bytes 24-25: Gyro Z (Hi/Low combined into a signed 16-bit value)
+        Uint16 gyro_x_unsigned = ((Uint16)payload[20] << 8) | payload[21];
+        Uint16 gyro_y_unsigned = ((Uint16)payload[22] << 8) | payload[23];
+        Uint16 gyro_z_unsigned = ((Uint16)payload[24] << 8) | payload[25];
 
         // Convert the unsigned 16-bit values to signed 16-bit values
         Sint16 gyro_x = (Sint16)gyro_x_unsigned;
@@ -900,12 +907,12 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         values[2] = (float)gyro_z * ctx->gyroScale;  // Gyro Z (Roll)
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
     }
-    if (size >= 35) {
-        Uint16 l_touchpad_x = ((Uint16)data[29] << 4) | ((data[30] >> 4) & 0x0F);
-        Uint16 l_touchpad_y = ((Uint16)(data[30] & 0x0F) << 8) | data[31];
+    if (payload_size >= 32) {
+        Uint16 l_touchpad_x = ((Uint16)payload[26] << 4) | ((payload[27] >> 4) & 0x0F);
+        Uint16 l_touchpad_y = ((Uint16)(payload[27] & 0x0F) << 8) | payload[28];
 
-        Uint16 r_touchpad_x = ((Uint16)data[32] << 4) | ((data[33] >> 4) & 0x0F);
-        Uint16 r_touchpad_y = ((Uint16)(data[33] & 0x0F) << 8) | data[34];
+        Uint16 r_touchpad_x = ((Uint16)payload[29] << 4) | ((payload[30] >> 4) & 0x0F);
+        Uint16 r_touchpad_y = ((Uint16)(payload[30] & 0x0F) << 8) | payload[31];
 
         (void)l_touchpad_x;
         (void)l_touchpad_y;
@@ -913,7 +920,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         (void)r_touchpad_y;
     }
 
-    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+    SDL_memcpy(ctx->last_state, packet, SDL_min(packet_size, sizeof(ctx->last_state)));
 }
 
 
