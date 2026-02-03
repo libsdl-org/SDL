@@ -42,7 +42,6 @@
 #include "../video/SDL_sysvideo.h"
 
 #ifdef SDL_PLATFORM_ANDROID
-#include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidevents.h"
 #endif
 
@@ -1178,7 +1177,7 @@ static void SDL_CutEvent(SDL_EventEntry *entry)
 static void SDL_SendWakeupEvent(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
+    Android_WakeUp();
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this == NULL || !_this->SendWakeupEvent) {
@@ -1570,7 +1569,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
-    Android_PumpEvents(0);
+    Android_PumpEvents();
 #else
     // Get events from the video subsystem
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1604,7 +1603,12 @@ void SDL_PumpEvents(void)
 
 bool SDL_PollEvent(SDL_Event *event)
 {
-    return SDL_WaitEventTimeoutNS(event, 0);
+    bool ret = SDL_WaitEventTimeoutNS(event, 0);
+#ifdef SDL_PLATFORM_ANDROID
+    Android_BlockEventLoop();
+#endif
+    return ret;
+
 }
 
 static Sint64 SDL_events_get_polling_interval(void)
@@ -1831,7 +1835,7 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         if (delay == SDL_MAX_SINT64) {
             delay = -1;
         }
-        Android_PumpEvents(delay);
+        SDL_DelayNS(delay);
     }
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
