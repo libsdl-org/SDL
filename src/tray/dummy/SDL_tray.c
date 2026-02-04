@@ -29,6 +29,12 @@ void SDL_UpdateTrays(void)
 {
 }
 
+SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Unsupported();
