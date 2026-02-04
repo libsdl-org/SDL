@@ -303,7 +303,7 @@ static SDL_hid_device *HIDAPI_DriverGameSir_GetInputHandle(SDL_HIDAPI_Device *de
 
 static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
 {
-    Gamesir_CommandMode cmd = { 0x01 };
+    Gamesir_CommandMode cmd = { 0x01, 0x00 };
     Uint8 buf[64];
     SDL_zero(buf);
     buf[0] = 0xA2;
