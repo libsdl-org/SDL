@@ -451,32 +451,15 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 
 static bool HIDAPI_DriverGameSir_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    // FIXME: This is the same report as rumble above, is this intentional?
-    Uint8 buf[64];
-    SDL_zero(buf);
-    buf[0] = 0xA2;
-    buf[1] = 0x03;
-    buf[4] = (Uint8)(left_rumble / 256);
-    buf[5] = (Uint8)(right_rumble / 256);
-
-    SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
-    if (handle == NULL) {
-        return false;
-    }
-
-    int result = SDL_hid_write(handle, buf, sizeof(buf));
-    if (result < 0) {
-        return false;
-    }
-    return true;
+    return SDL_Unsupported();
 }
 
 
 static Uint32 HIDAPI_DriverGameSir_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
-    Uint32 caps = SDL_JOYSTICK_CAP_RUMBLE | SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
-    if (ctx && ctx->led_supported) {
+    Uint32 caps = SDL_JOYSTICK_CAP_RUMBLE;
+    if (ctx->led_supported) {
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
     return caps;
