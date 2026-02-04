@@ -162,6 +162,12 @@ struct SDL_Tray {
 
     GtkMenuShell *menu_cached;
     SDL_PropertiesID props;
+
+    void *userdata;
+    SDL_TrayClickCallback left_click_callback;
+    SDL_TrayClickCallback right_click_callback;
+    SDL_TrayClickCallback middle_click_callback;
+    SDL_TrayClickCallback double_click_callback;
 };
 
 static void call_callback(GtkMenuItem *item, gpointer ptr)
@@ -240,7 +246,7 @@ void SDL_UpdateTrays(void)
     }
 }
 
-SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
 {
     if (!SDL_IsMainThread()) {
         SDL_SetError("This function should be called on the main thread");
@@ -250,6 +256,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     if (!init_appindicator()) {
         return NULL;
     }
+
+    SDL_Surface *icon = (SDL_Surface *)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, NULL);
 
     SDL_Tray *tray = NULL;
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
@@ -261,6 +269,12 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     if (!tray) {
         goto tray_error;
     }
+
+    tray->userdata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
+    tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
+    tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
+    tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray->double_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER, NULL);
 
     const gchar *cache_dir = gtk->g.get_user_cache_dir();
     if (!cache_dir) {
@@ -331,6 +345,24 @@ tray_error:
     }
 
     return NULL;
+}
+
+SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+{
+    SDL_Tray *tray;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        return NULL;
+    }
+    if (icon) {
+        SDL_SetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, icon);
+    }
+    if (tooltip) {
+        SDL_SetStringProperty(props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, tooltip);
+    }
+    tray = SDL_CreateTrayWithProperties(props);
+    SDL_DestroyProperties(props);
+    return tray;
 }
 
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)

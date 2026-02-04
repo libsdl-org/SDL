@@ -69,6 +69,12 @@ struct SDL_Tray {
     SDL_TrayMenu *menu;
     SDL_PropertiesID props;
     SDLTrayClickHandler *clickHandler;
+
+    void *userdata;
+    SDL_TrayClickCallback left_click_callback;
+    SDL_TrayClickCallback right_click_callback;
+    SDL_TrayClickCallback middle_click_callback;
+    SDL_TrayClickCallback double_click_callback;
 };
 
 @implementation SDLTrayClickHandler
@@ -82,8 +88,6 @@ struct SDL_Tray {
     NSEvent *event = [NSApp currentEvent];
     NSUInteger buttonNumber = [event buttonNumber];
 
-    void *userdata = SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_USERDATA_POINTER, NULL);
-    SDL_TrayClickCallback callback = NULL;
     bool show_menu = false;
 
     if (buttonNumber == 0) {
@@ -91,36 +95,30 @@ struct SDL_Tray {
         NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
         NSTimeInterval doubleClickInterval = [NSEvent doubleClickInterval];
 
-        if ((now - self.lastLeftClickTime) <= doubleClickInterval) {
+        if (self.tray->double_click_callback && (now - self.lastLeftClickTime) <= doubleClickInterval) {
             /* Double-click */
-            callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_DOUBLECLICK_CALLBACK_POINTER, NULL);
-            if (callback) {
-                callback(userdata, self.tray);
-            }
+            self.tray->double_click_callback(self.tray->userdata, self.tray);
             self.lastLeftClickTime = 0; /* Reset to prevent triple-click from triggering another double */
         } else {
             /* Single left click */
             self.lastLeftClickTime = now;
-            callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_LEFTCLICK_CALLBACK_POINTER, NULL);
-            if (callback) {
-                callback(userdata, self.tray);
+            if (self.tray->left_click_callback) {
+                self.tray->left_click_callback(self.tray->userdata, self.tray);
             } else {
                 show_menu = true;
             }
         }
     } else if (buttonNumber == 1) {
         /* Right click */
-        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_RIGHTCLICK_CALLBACK_POINTER, NULL);
-        if (callback) {
-            callback(userdata, self.tray);
+        if (self.tray->right_click_callback) {
+            self.tray->right_click_callback(self.tray->userdata, self.tray);
         } else {
             show_menu = true;
         }
     } else if (buttonNumber == 2) {
         /* Middle click */
-        callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(self.tray->props, SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER, NULL);
-        if (callback) {
-            callback(userdata, self.tray);
+        if (self.tray->middle_click_callback) {
+            self.tray->middle_click_callback(self.tray->userdata, self.tray);
         }
     }
 
@@ -149,10 +147,8 @@ struct SDL_Tray {
         if (statusItemWindow && event.window == statusItemWindow) {
             NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
             if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
-                void *userdata = SDL_GetPointerProperty(strongSelf.tray->props, SDL_PROP_TRAY_USERDATA_POINTER, NULL);
-                SDL_TrayClickCallback callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(strongSelf.tray->props, SDL_PROP_TRAY_MIDDLECLICK_CALLBACK_POINTER, NULL);
-                if (callback) {
-                    callback(userdata, strongSelf.tray);
+                if (strongSelf.tray->middle_click_callback) {
+                    strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray);
                 }
             }
         }
@@ -195,12 +191,15 @@ void SDL_UpdateTrays(void)
 {
 }
 
-SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
 {
     if (!SDL_IsMainThread()) {
         SDL_SetError("This function should be called on the main thread");
         return NULL;
     }
+
+    SDL_Surface *icon = (SDL_Surface *)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, NULL);
+    const char *tooltip = SDL_GetStringProperty(props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, NULL);
 
     if (icon) {
         icon = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
@@ -214,6 +213,12 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         SDL_DestroySurface(icon);
         return NULL;
     }
+
+    tray->userdata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
+    tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
+    tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
+    tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray->double_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER, NULL);
 
     tray->statusItem = nil;
     tray->statusBar = [NSStatusBar systemStatusBar];
@@ -274,6 +279,24 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     SDL_RegisterTray(tray);
 
+    return tray;
+}
+
+SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+{
+    SDL_Tray *tray;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        return NULL;
+    }
+    if (icon) {
+        SDL_SetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, icon);
+    }
+    if (tooltip) {
+        SDL_SetStringProperty(props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, tooltip);
+    }
+    tray = SDL_CreateTrayWithProperties(props);
+    SDL_DestroyProperties(props);
     return tray;
 }
 
