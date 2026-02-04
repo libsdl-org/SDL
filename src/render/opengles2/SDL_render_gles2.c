@@ -772,7 +772,9 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
     if (data->drawstate.program &&
         data->drawstate.program->vertex_shader == vertex &&
         data->drawstate.program->fragment_shader == fragment &&
-        data->drawstate.program->shader_params == shader_params) {
+        (!shader_params ||
+         (data->drawstate.program->shader_params &&
+          SDL_memcmp(shader_params, data->drawstate.program->shader_params, shader_params_len) == 0))) {
         return true;
     }
 
@@ -789,7 +791,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
 
     if (shader_params &&
         (!program->shader_params ||
-         SDL_memcmp(shader_params,  program->shader_params, shader_params_len) != 0)) {
+         SDL_memcmp(shader_params, program->shader_params, shader_params_len) != 0)) {
 #ifdef SDL_HAVE_YUV
         if (ftype >= GLES2_SHADER_FRAGMENT_TEXTURE_YUV) {
             // YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0
@@ -813,7 +815,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
         }
         else
 #endif
-        if (shader_params) {
+        {
             data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_TEXEL_SIZE], shader_params[0], shader_params[1], shader_params[2], shader_params[3]);
         }
 
