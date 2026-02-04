@@ -59,6 +59,7 @@ static const char *video_usage[] = {
     "[--display N]",
     "[--flash-on-focus-loss]",
     "[--fullscreen | --fullscreen-desktop | --windows N]",
+    "[--fill-document]",
     "[--geometry WxH]",
     "[--gldebug]",
     "[--grab]",
@@ -248,6 +249,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 0;
     }
 
+    // !!! FIXME: these should be else-ifs.
     if (SDL_strcasecmp(argv[index], "--video") == 0) {
         ++index;
         if (!argv[index]) {
@@ -288,6 +290,11 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
     }
     if (SDL_strcasecmp(argv[index], "--vulkan-window") == 0) {
         state->window_flags |= SDL_WINDOW_VULKAN;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--fill-document") == 0) {
+        state->window_flags |= SDL_WINDOW_FILL_DOCUMENT;
+        state->num_windows = 1;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
