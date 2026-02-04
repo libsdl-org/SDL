@@ -102,7 +102,7 @@ struct SDL_Tray {
             /* Single left click */
             self.lastLeftClickTime = now;
             if (self.tray->left_click_callback) {
-                self.tray->left_click_callback(self.tray->userdata, self.tray);
+                show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray);
             } else {
                 show_menu = true;
             }
@@ -110,7 +110,7 @@ struct SDL_Tray {
     } else if (buttonNumber == 1) {
         /* Right click */
         if (self.tray->right_click_callback) {
-            self.tray->right_click_callback(self.tray->userdata, self.tray);
+            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray);
         } else {
             show_menu = true;
         }

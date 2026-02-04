@@ -134,7 +134,7 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                         if (tray->ignore_next_left_up) {
                             tray->ignore_next_left_up = false;
                         } else if (tray->left_click_callback) {
-                            tray->left_click_callback(tray->userdata, tray);
+                            show_menu = tray->left_click_callback(tray->userdata, tray);
                         } else {
                             show_menu = true;
                         }
@@ -142,7 +142,7 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
                     case WM_CONTEXTMENU:
                         if (tray->right_click_callback) {
-                            tray->right_click_callback(tray->userdata, tray);
+                            show_menu = tray->right_click_callback(tray->userdata, tray);
                         } else {
                             show_menu = true;
                         }
