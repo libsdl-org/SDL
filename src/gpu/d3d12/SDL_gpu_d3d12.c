@@ -9104,7 +9104,7 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
     // FIXME: For now we're just searching for the optimal format, not all supported formats.
     // FIXME: Expand this search for all SDL_GPU formats!
 
-    SDL_GPUTextureFormat sdlFormat;
+    SDL_GPUTextureFormat sdlFormat = SDL_GPU_TEXTUREFORMAT_INVALID;
     DXGI_FORMAT dxgiFormat = DXGI_FORMAT_UNKNOWN;
     // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
     if (!D3D12_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &dxgiFormat)) {
