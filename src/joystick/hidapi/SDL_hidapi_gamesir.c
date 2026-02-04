@@ -368,7 +368,6 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "GameSir Controller");
         break;
     }
-    SendGameSirModeSwitch(device);
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -398,9 +397,17 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_zeroa(ctx->last_state);
     ctx->last_state_initialized = false;
 
-    SendGameSirModeSwitch(device);
+    bool extended_report_mode = SendGameSirModeSwitch(device);
+    if (!extended_report_mode) {
+        ctx->sensors_supported = false;
+        ctx->led_supported = false;
+    }
 
-    joystick->nbuttons = 35;
+    if (extended_report_mode) {
+        joystick->nbuttons = 35;
+    } else {
+        joystick->nbuttons = 11;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
@@ -796,6 +803,187 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     ctx->last_state_initialized = true;
 }
 
+static void HIDAPI_DriverGameSir_HandleSimpleStatePacketBluetooth(SDL_Joystick *joystick, SDL_DriverGamesir_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+    const Uint8 *last = ctx->last_state;
+
+    if (last[5] != data[5]) {
+        Uint8 buttons = data[5];
+        // BTN1: A B C X Y Z L1 R1
+        // Use bitwise operations to check whether each button is pressed
+        // buttons & BTN_A returns the value of BTN_A (if pressed) or 0 (if not pressed)
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, buttons & BTN_A);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, buttons & BTN_B);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, buttons & BTN_X);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, buttons & BTN_Y);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, buttons & BTN_L1);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, buttons & BTN_R1);
+    }
+
+    if (last[6] != data[6]) {
+        Uint8 buttons = data[6];
+        // BTN2: L2 R2 SELECT START HOME L3 R3 CAPTURE
+        // Note: L2/R2 appear as digital buttons in data[6], but their actual analog values are in data[7]/data[8].
+        // Only handle the other buttons here; trigger analog values are processed later in the code.
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, buttons & BTN_SELECT);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, buttons & BTN_START);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, buttons & BTN_HOME);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, buttons & BTN_L3);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, buttons & BTN_R3);
+    }
+
+    if (last[4] != data[4]) {
+        Uint8 hat;
+
+        switch (data[4] & 0xF) {
+        case 0:
+            hat = SDL_HAT_UP;
+            break;
+        case 1:
+            hat = SDL_HAT_RIGHTUP;
+            break;
+        case 2:
+            hat = SDL_HAT_RIGHT;
+            break;
+        case 3:
+            hat = SDL_HAT_RIGHTDOWN;
+            break;
+        case 4:
+            hat = SDL_HAT_DOWN;
+            break;
+        case 5:
+            hat = SDL_HAT_LEFTDOWN;
+            break;
+        case 6:
+            hat = SDL_HAT_LEFT;
+            break;
+        case 7:
+            hat = SDL_HAT_LEFTUP;
+            break;
+        default:
+            hat = SDL_HAT_CENTERED;
+            break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+
+#define READ_STICK_AXIS(offset) \
+    (data[offset] == 0x80 ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), -0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    {
+        axis = READ_STICK_AXIS(0);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+        axis = READ_STICK_AXIS(1);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+        axis = READ_STICK_AXIS(2);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        axis = READ_STICK_AXIS(3);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+    }
+#undef READ_STICK_AXIS
+
+#define READ_TRIGGER_AXIS(offset) \
+    (Sint16)HIDAPI_RemapVal((float)data[offset], 0, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    axis = READ_TRIGGER_AXIS(8);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+    axis = READ_TRIGGER_AXIS(7);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+#undef READ_TRIGGER_AXIS
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
+static void HIDAPI_DriverGameSir_HandleSimpleStatePacketUSB(SDL_Joystick *joystick, SDL_DriverGamesir_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+    const Uint8 *last = ctx->last_state;
+
+    if (last[0] != data[0]) {
+        Uint8 buttons = data[0];
+        // BTN1: A B C X Y Z L1 R1
+        // Use bitwise operations to check whether each button is pressed
+        // buttons & BTN_A returns the value of BTN_A (if pressed) or 0 (if not pressed)
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, buttons & BTN_A);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, buttons & BTN_B);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, buttons & BTN_X);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, buttons & BTN_Y);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, buttons & BTN_L1);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, buttons & BTN_R1);
+    }
+
+    if (last[1] != data[1]) {
+        Uint8 buttons = data[1];
+        // BTN2: L2 R2 SELECT START HOME L3 R3 CAPTURE
+        // Note: L2/R2 appear as digital buttons in data[6], but their actual analog values are in data[7]/data[8].
+        // Only handle the other buttons here; trigger analog values are processed later in the code.
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, buttons & BTN_SELECT);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, buttons & BTN_START);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, buttons & BTN_HOME);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, buttons & BTN_L3);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, buttons & BTN_R3);
+    }
+
+    if (last[2] != data[2]) {
+        Uint8 hat;
+
+        switch (data[2] & 0xF) {
+        case 0:
+            hat = SDL_HAT_UP;
+            break;
+        case 1:
+            hat = SDL_HAT_RIGHTUP;
+            break;
+        case 2:
+            hat = SDL_HAT_RIGHT;
+            break;
+        case 3:
+            hat = SDL_HAT_RIGHTDOWN;
+            break;
+        case 4:
+            hat = SDL_HAT_DOWN;
+            break;
+        case 5:
+            hat = SDL_HAT_LEFTDOWN;
+            break;
+        case 6:
+            hat = SDL_HAT_LEFT;
+            break;
+        case 7:
+            hat = SDL_HAT_LEFTUP;
+            break;
+        default:
+            hat = SDL_HAT_CENTERED;
+            break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+
+#define READ_STICK_AXIS(offset) \
+    (data[offset] == 0x80 ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x80), -0x80, 0xff - 0x80, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    {
+        axis = READ_STICK_AXIS(3);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+        axis = READ_STICK_AXIS(4);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+        axis = READ_STICK_AXIS(5);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        axis = READ_STICK_AXIS(6);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+    }
+#undef READ_STICK_AXIS
+
+#define READ_TRIGGER_AXIS(offset) \
+    (Sint16)HIDAPI_RemapVal((float)data[offset], 0, 0xff, SDL_MIN_SINT16, SDL_MAX_SINT16)
+    axis = READ_TRIGGER_AXIS(7);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+    axis = READ_TRIGGER_AXIS(8);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+#undef READ_TRIGGER_AXIS
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
 
 static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
 {
@@ -829,12 +1017,19 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
         if (size >= 3 && data[0] == 0x43 && data[1] == GAMESIR_PACKET_HEADER_0 && data[2] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
             payload = data + 3;
             payload_size = size - 3;
+            HIDAPI_DriverGameSir_HandleStatePacket(joystick, ctx, payload, payload_size);
         } else if (size >= 2 && data[0] == GAMESIR_PACKET_HEADER_0 && data[1] == GAMESIR_PACKET_HEADER_1_GAMEPAD) {
             payload = data + 2;
             payload_size = size - 2;
-        }
-        if (payload) {
             HIDAPI_DriverGameSir_HandleStatePacket(joystick, ctx, payload, payload_size);
+        } else if (size >= 10 && data[0] == 0x07) {
+            payload = data + 1;
+            payload_size = size - 1;
+            HIDAPI_DriverGameSir_HandleSimpleStatePacketBluetooth(joystick, ctx, payload, payload_size);
+        } else if (size == 9) {
+            payload = data;
+            payload_size = size;
+            HIDAPI_DriverGameSir_HandleSimpleStatePacketUSB(joystick, ctx, payload, payload_size);
         }
     }
 
