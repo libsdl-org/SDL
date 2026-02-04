@@ -24,6 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
+#include "../../SDL_hints_c.h"
 
 // WGL implementation of SDL OpenGL support
 
@@ -660,8 +661,18 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
     }
 
     if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
-        *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                *iAttr++ = SDL_GetStringBoolean(srgbhint, false) ? GL_TRUE : GL_FALSE;
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
+            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            *iAttr++ = GL_TRUE;
+        }
     }
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
