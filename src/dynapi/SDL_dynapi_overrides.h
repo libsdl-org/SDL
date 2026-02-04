@@ -1305,3 +1305,4 @@
 #define SDL_OpenXR_LoadLibrary SDL_OpenXR_LoadLibrary_REAL
 #define SDL_OpenXR_UnloadLibrary SDL_OpenXR_UnloadLibrary_REAL
 #define SDL_OpenXR_GetXrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr_REAL
+#define SDL_CreateTrayWithProperties SDL_CreateTrayWithProperties_REAL
