@@ -35,11 +35,17 @@ SDL3 provides OpenXR integration through the GPU API, allowing you to render to 
 #include <SDL3/SDL_openxr.h>
 #include <openxr/openxr.h>
 
+// These will be populated by SDL
+XrInstance xr_instance = XR_NULL_HANDLE;
+XrSystemId xr_system_id = 0;
+
 // Create GPU device with XR enabled
 SDL_PropertiesID props = SDL_CreateProperties();
 SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, true);
 SDL_SetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER, &xr_instance);
 SDL_SetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER, &xr_system_id);
+
+// Optional: Override app name/version (defaults to SDL_SetAppMetadata values if not set)
 SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, "My VR App");
 SDL_SetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 1);
 
