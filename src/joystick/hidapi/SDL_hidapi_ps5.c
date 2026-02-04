@@ -823,7 +823,7 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     if (ctx->sensors_supported) {
         // Standard DualSense sensor update rate is 250 Hz over USB
         float update_rate = 250.0f;
-        
+
         if (ctx->device->is_bluetooth) {
             // Bluetooth sensor update rate appears to be 1000 Hz
             update_rate = 1000.0f;
@@ -1066,10 +1066,11 @@ static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *c
 
     if (ctx->device->is_bluetooth) {
         data[0] = k_EPS5ReportIdBluetoothEffects;
-        data[1] = 0x02; // Magic value
+        data[1] = 0x00; // Tag and sequence
+        data[2] = 0x10; // Magic value
 
         report_size = 78;
-        offset = 2;
+        offset = 3;
     } else {
         data[0] = k_EPS5ReportIdUsbEffects;
 
