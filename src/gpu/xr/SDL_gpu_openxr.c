@@ -49,7 +49,7 @@ static bool SDL_OPENXR_INTERNAL_InitializeAndroidLoader(void)
 }
 #endif /* SDL_PLATFORM_ANDROID */
 
-bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
+static bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
     /* On Android/Quest, the xrGetInstanceProcAddr obtained through runtime negotiation
@@ -131,7 +131,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     extensionNames[userExtensionCount + 1] = XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME;
 #endif
 
-    XrInstanceCreateInfo xrInstanceCreateInfo = { XR_TYPE_INSTANCE_CREATE_INFO };
+    XrInstanceCreateInfo xrInstanceCreateInfo = {};
+    xrInstanceCreateInfo.type = XR_TYPE_INSTANCE_CREATE_INFO;
     xrInstanceCreateInfo.applicationInfo.apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER, XR_API_VERSION_1_0);
     xrInstanceCreateInfo.enabledApiLayerCount = userApiLayerCount + ((debugMode && validationLayersAvailable) ? 1 : 0); // in debug mode, we enable the validation layer
     xrInstanceCreateInfo.enabledApiLayerNames = apiLayerNames;
@@ -147,7 +148,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     }
     void *activity = SDL_GetAndroidActivity();
 
-    XrInstanceCreateInfoAndroidKHR instanceCreateInfoAndroid = { XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR };
+    XrInstanceCreateInfoAndroidKHR instanceCreateInfoAndroid = {};
+    instanceCreateInfoAndroid.type = XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR;
     instanceCreateInfoAndroid.applicationVM = vm;
     instanceCreateInfoAndroid.applicationActivity = activity;
     xrInstanceCreateInfo.next = &instanceCreateInfoAndroid;
@@ -184,7 +186,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
         return false;
     }
 
-    XrSystemGetInfo systemGetInfo = { XR_TYPE_SYSTEM_GET_INFO };
+    XrSystemGetInfo systemGetInfo = {};
+    systemGetInfo.type = XR_TYPE_SYSTEM_GET_INFO;
     systemGetInfo.formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY);
     if ((xrResult = (*xr)->xrGetSystem(*instance, &systemGetInfo, systemId)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");

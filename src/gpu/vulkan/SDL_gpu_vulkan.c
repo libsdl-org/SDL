@@ -11905,7 +11905,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
             return 0;
         }
 
-        XrVulkanInstanceCreateInfoKHR xrCreateInfo = {XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR};
+        XrVulkanInstanceCreateInfoKHR xrCreateInfo = {};
+        xrCreateInfo.type = XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR;
         xrCreateInfo.vulkanCreateInfo = &createInfo;
         xrCreateInfo.systemId = renderer->xrSystemId;
         xrCreateInfo.pfnGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
@@ -12520,7 +12521,8 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
             return 0;
         }
 
-        XrVulkanDeviceCreateInfoKHR xrDeviceCreateInfo = {XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR};
+        XrVulkanDeviceCreateInfoKHR xrDeviceCreateInfo = {};
+        xrDeviceCreateInfo.type = XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR;
         xrDeviceCreateInfo.vulkanCreateInfo = &deviceCreateInfo;
         xrDeviceCreateInfo.systemId = renderer->xrSystemId;
         xrDeviceCreateInfo.vulkanPhysicalDevice = renderer->physicalDevice;
@@ -12651,7 +12653,7 @@ static bool VULKAN_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *f
 
     XrExtensionProperties *extension_properties = (XrExtensionProperties *)SDL_calloc(extension_count, sizeof(XrExtensionProperties));
     for (i = 0; i < extension_count; i++)
-        extension_properties[i] = (XrExtensionProperties){XR_TYPE_EXTENSION_PROPERTIES};
+        extension_properties[i].type = XR_TYPE_EXTENSION_PROPERTIES;
 
     result = xrEnumerateInstanceExtensionProperties(NULL, extension_count, &extension_count, extension_properties);
     if (result != XR_SUCCESS) {
@@ -12688,7 +12690,8 @@ static XrResult VULKAN_INTERNAL_GetXrMinimumVulkanApiVersion(XrVersion *minimumV
         return xrResult;
     }
 
-    XrGraphicsRequirementsVulkanKHR graphicsRequirementsVulkan = {XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR};
+    XrGraphicsRequirementsVulkanKHR graphicsRequirementsVulkan = {};
+    graphicsRequirementsVulkan.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR;
     if ((xrResult = xrGetVulkanGraphicsRequirements2KHR(instance, systemId, &graphicsRequirementsVulkan)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get vulkan graphics requirements, got OpenXR error %d", xrResult);
         return xrResult;
@@ -13096,7 +13099,8 @@ static XrResult VULKAN_CreateXRSession(
     const void *XR_MAY_ALIAS currentNextPtr = createinfo->next;
 
     // KHR_vulkan_enable and KHR_vulkan_enable2 share this structure, so we don't need to change any logic here to handle both
-    XrGraphicsBindingVulkanKHR graphicsBinding = {XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
+    XrGraphicsBindingVulkanKHR graphicsBinding = {};
+    graphicsBinding.type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
     graphicsBinding.instance = renderer->instance;
     graphicsBinding.physicalDevice = renderer->physicalDevice;
     graphicsBinding.device = renderer->logicalDevice;
