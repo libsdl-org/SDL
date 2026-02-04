@@ -353,8 +353,10 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->nid.uVersion = NOTIFYICON_VERSION_4;
     if (tooltip) {
         wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
-        SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
-        SDL_free(tooltipw);
+        if(tooltipw) {
+            SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
+            SDL_free(tooltipw);
+        }
     }
 
     if (icon) {
