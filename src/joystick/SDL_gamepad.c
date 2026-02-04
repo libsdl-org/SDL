@@ -2362,7 +2362,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
     return mapping;
 }
 
-bool SDL_PrivateIsGamepadPlatformMatch(const char *platform, size_t platform_len)
+static bool SDL_PrivateIsGamepadPlatformMatch(const char *platform, size_t platform_len)
 {
 #ifdef SDL_PLATFORM_MACOS
     // We also accept the older SDL2 platform name for macOS
