@@ -67,7 +67,6 @@ struct SDL_Tray {
     NSStatusItem *statusItem;
 
     SDL_TrayMenu *menu;
-    SDL_PropertiesID props;
     SDLTrayClickHandler *clickHandler;
 
     void *userdata;
@@ -256,14 +255,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
         tray->statusItem.button.image = iconimg22;
 
         SDL_DestroySurface(icon);
-    }
-
-    /* Create properties */
-    tray->props = SDL_CreateProperties();
-    if (!tray->props) {
-        [[NSStatusBar systemStatusBar] removeStatusItem:tray->statusItem];
-        SDL_free(tray);
-        return NULL;
     }
 
     /* Create click handler and set up button to receive clicks */
@@ -671,10 +662,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     if (tray->menu) {
         DestroySDLMenu(tray->menu);
-    }
-
-    if (tray->props) {
-        SDL_DestroyProperties(tray->props);
     }
 
     if (tray->clickHandler) {

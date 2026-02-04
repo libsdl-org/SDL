@@ -62,7 +62,6 @@ struct SDL_Tray {
     HWND hwnd;
     HICON icon;
     SDL_TrayMenu *menu;
-    SDL_PropertiesID props;
 
     void *userdata;
     SDL_TrayClickCallback left_click_callback;
@@ -375,17 +374,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
 
     SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR) tray);
-
-    tray->props = SDL_CreateProperties();
-    if (!tray->props) {
-        Shell_NotifyIconW(NIM_DELETE, &tray->nid);
-        DestroyWindow(tray->hwnd);
-        if (tray->icon) {
-            DestroyIcon(tray->icon);
-        }
-        SDL_free(tray);
-        return NULL;
-    }
 
     SDL_RegisterTray(tray);
 
@@ -825,10 +813,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     if (tray->hwnd) {
         DestroyWindow(tray->hwnd);
-    }
-
-    if (tray->props) {
-        SDL_DestroyProperties(tray->props);
     }
 
     SDL_free(tray);

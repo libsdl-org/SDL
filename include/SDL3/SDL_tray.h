@@ -102,7 +102,7 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked. May be NULL.
- * \param tray the tray icon that was clicked.
+ * \param tray the tray that was clicked.
  *
  * \since This datatype is available since SDL 3.6.0.
  *

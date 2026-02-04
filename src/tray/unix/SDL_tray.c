@@ -161,13 +161,6 @@ struct SDL_Tray {
     char *icon_path;
 
     GtkMenuShell *menu_cached;
-    SDL_PropertiesID props;
-
-    void *userdata;
-    SDL_TrayClickCallback left_click_callback;
-    SDL_TrayClickCallback right_click_callback;
-    SDL_TrayClickCallback middle_click_callback;
-    SDL_TrayClickCallback double_click_callback;
 };
 
 static void call_callback(GtkMenuItem *item, gpointer ptr)
@@ -270,12 +263,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
         goto tray_error;
     }
 
-    tray->userdata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
-    tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
-    tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
-    tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
-    tray->double_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER, NULL);
-
     const gchar *cache_dir = gtk->g.get_user_cache_dir();
     if (!cache_dir) {
         SDL_SetError("Cannot get user cache directory: %s", strerror(errno));
@@ -319,11 +306,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     // The tray icon isn't shown before a menu is created; create one early.
     tray->menu_cached = (GtkMenuShell *)gtk->g.object_ref_sink(gtk->gtk.menu_new());
     app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu_cached));
-
-    tray->props = SDL_CreateProperties();
-    if (!tray->props) {
-        goto icon_dir_error;
-    }
 
     SDL_RegisterTray(tray);
     SDL_Gtk_ExitContext(gtk);
@@ -798,10 +780,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
         }
 
         SDL_Gtk_ExitContext(gtk);
-    }
-
-    if (tray->props) {
-        SDL_DestroyProperties(tray->props);
     }
 
     SDL_free(tray);
