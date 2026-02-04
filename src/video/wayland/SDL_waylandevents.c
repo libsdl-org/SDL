@@ -122,7 +122,7 @@ static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed
 static void Wayland_SeatCancelTouch(SDL_WaylandSeat *seat, SDL_WaylandTouchPoint *tp)
 {
     if (tp->surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(tp->surface);
 
         if (window_data) {
             const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
@@ -1429,7 +1429,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
     Wayland_SeatRemoveTouch(seat, id, &fx, &fy, &surface);
 
     if (surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
         if (window_data) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
@@ -1460,7 +1460,7 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
     Wayland_SeatUpdateTouch(seat, id, fx, fy, &surface);
 
     if (surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
         if (window_data) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
