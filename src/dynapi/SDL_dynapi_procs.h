@@ -1313,3 +1313,4 @@ SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain
 SDL_DYNAPI_PROC(bool,SDL_OpenXR_LoadLibrary,(void),(),return)
 SDL_DYNAPI_PROC(void,SDL_OpenXR_UnloadLibrary,(void),(),)
 SDL_DYNAPI_PROC(PFN_xrGetInstanceProcAddr,SDL_OpenXR_GetXrGetInstanceProcAddr,(void),(),return)
+SDL_DYNAPI_PROC(void,SDL_ShowSimpleInputDialog,(SDL_DialogInputCallback a,void *b,const char *c,const char *d,const char *e,SDL_Window *f),(a,b,c,d,e,f),)

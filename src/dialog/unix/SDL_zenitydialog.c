@@ -350,6 +350,92 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     SDL_DetachThread(thread);
 }
 
+void SDL_Zenity_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window)
+{
+    SDL_Process *process = NULL;
+    SDL_Environment *env = NULL;
+    int status = -1;
+    size_t bytes_read = 0;
+    char *container = NULL;
+    bool result = false;
+    const char *argv[9];
+    int argc = 0;
+
+    argv[argc++] = "zenity";
+    argv[argc++] = "--entry";
+
+    if (title) {
+        argv[argc++] = "--title";
+        argv[argc++] = title;
+    }
+
+    if (message) {
+        argv[argc++] = "--text";
+        argv[argc++] = message;
+    }
+
+    if (value) {
+        argv[argc++] = "--entry-text";
+        argv[argc++] = value;
+    }
+
+    argv[argc] = NULL;
+
+    env = SDL_CreateEnvironment(true);
+    if (!env) {
+        goto done;
+    }
+
+    /* Recent versions of Zenity have different exit codes, but picks up
+      different codes from the environment */
+    SDL_SetEnvironmentVariable(env, "ZENITY_OK", "0", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_CANCEL", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ESC", "1", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_EXTRA", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_ERROR", "2", true);
+    SDL_SetEnvironmentVariable(env, "ZENITY_TIMEOUT", "2", true);
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, argv);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+    process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (!process) {
+        goto done;
+    }
+
+    container = SDL_ReadProcess(process, &bytes_read, &status);
+    if (!container) {
+        goto done;
+    }
+
+    // Strings returned by Zenity finish with '\n'; swap that with a '\0'
+    container[bytes_read - 1] = '\0';
+
+    if (status == 0) {
+        callback(userdata, container);
+    } else if (status == 1) {
+        callback(userdata, "");
+    } else {
+        SDL_SetError("Could not run zenity: exit code %d", status);
+        callback(userdata, NULL);
+    }
+
+    result = true;
+
+done:
+    SDL_free(container);
+    SDL_DestroyEnvironment(env);
+    SDL_DestroyProcess(process);
+
+    if (!result) {
+        callback(userdata, NULL);
+    }
+}
+
 bool SDL_Zenity_detect(void)
 {
     const char *args[] = {
