@@ -152,89 +152,69 @@ static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **ar
     if ((SDL_strcasecmp(argv[index], "-h") == 0) || (SDL_strcasecmp(argv[index], "--help") == 0)) {
         /* Print the usage message */
         return -1;
-    }
-    if (SDL_strcasecmp(argv[index], "--trackmem") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--trackmem") == 0) {
         /* Already handled in SDLTest_CommonCreateState() */
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--no-color") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--no-color") == 0) {
         SDLTest_Color = false;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--no-time") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--no-time") == 0) {
         SDLTest_Time = false;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--randmem") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--randmem") == 0) {
         /* Already handled in SDLTest_CommonCreateState() */
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--log") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--log") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
-        }
-        if (SDL_strcasecmp(argv[index], "all") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "all") == 0) {
             SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "system") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "system") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_SYSTEM, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "audio") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "audio") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_AUDIO, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "video") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "video") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "render") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "render") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_RENDER, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "input") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "input") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_INPUT, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
         }
         return -1;
-    }
-
-    if (SDL_strcasecmp(argv[index], "--info") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--info") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
-        }
-        if (SDL_strcasecmp(argv[index], "all") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "all") == 0) {
             state->verbose |=
                 (VERBOSE_VIDEO | VERBOSE_MODES | VERBOSE_RENDER |
                  VERBOSE_EVENT);
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "video") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "video") == 0) {
             state->verbose |= VERBOSE_VIDEO;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "modes") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "modes") == 0) {
             state->verbose |= VERBOSE_MODES;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "render") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "render") == 0) {
             state->verbose |= VERBOSE_RENDER;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "event") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "event") == 0) {
             state->verbose |= VERBOSE_EVENT;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "event_motion") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "event_motion") == 0) {
             state->verbose |= (VERBOSE_EVENT | VERBOSE_MOTION);
             return 2;
         }
         return -1;
-    }
-    if (SDL_strcmp(argv[index], "-NSDocumentRevisionsDebugMode") == 0) {
+    } else if (SDL_strcmp(argv[index], "-NSDocumentRevisionsDebugMode") == 0) {
         /* Debug flag sent by Xcode */
         return 2;
     }
@@ -247,10 +227,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
 
     if (!(state->flags & SDL_INIT_VIDEO)) {
         return 0;
-    }
-
-    // !!! FIXME: these should be else-ifs.
-    if (SDL_strcasecmp(argv[index], "--video") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--video") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -258,8 +235,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->videodriver = argv[index];
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, state->videodriver);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--renderer") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--renderer") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -267,80 +243,66 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->renderdriver = argv[index];
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, state->renderdriver);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--gldebug") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--gldebug") == 0) {
         state->gl_debug = 1;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--display") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--display") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->display_index = SDL_atoi(argv[index]);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--metal-window") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--metal-window") == 0) {
         state->window_flags |= SDL_WINDOW_METAL;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--opengl-window") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--opengl-window") == 0) {
         state->window_flags |= SDL_WINDOW_OPENGL;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--vulkan-window") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--vulkan-window") == 0) {
         state->window_flags |= SDL_WINDOW_VULKAN;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--fill-document") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--fill-document") == 0) {
         state->window_flags |= SDL_WINDOW_FILL_DOCUMENT;
         state->num_windows = 1;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--fullscreen") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN;
         state->fullscreen_exclusive = true;
         state->num_windows = 1;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--fullscreen-desktop") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--fullscreen-desktop") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN;
         state->fullscreen_exclusive = false;
         state->num_windows = 1;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--windows") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--windows") == 0) {
         ++index;
         if (!argv[index] || !SDL_isdigit((unsigned char) *argv[index])) {
             return -1;
-        }
-        if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
+        } else if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
             state->num_windows = SDL_atoi(argv[index]);
         }
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--title") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--title") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->window_title = argv[index];
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--icon") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--icon") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->window_icon = argv[index];
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--center") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--center") == 0) {
         state->window_x = SDL_WINDOWPOS_CENTERED;
         state->window_y = SDL_WINDOWPOS_CENTERED;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--position") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--position") == 0) {
         char *x, *y;
         ++index;
         if (!argv[index]) {
@@ -358,8 +320,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->window_x = SDL_atoi(x);
         state->window_y = SDL_atoi(y);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--confine-cursor") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--confine-cursor") == 0) {
         char *x, *y, *w, *h;
         ++index;
         if (!argv[index]) {
@@ -377,12 +338,10 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->confine.w = SDL_atoi(w);
         state->confine.h = SDL_atoi(h);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
         state->fill_usable_bounds = true;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--geometry") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--geometry") == 0) {
         char *w, *h;
         ++index;
         if (!argv[index]) {
@@ -400,8 +359,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->window_w = SDL_atoi(w);
         state->window_h = SDL_atoi(h);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--min-geometry") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--min-geometry") == 0) {
         char *w, *h;
         ++index;
         if (!argv[index]) {
@@ -419,8 +377,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->window_minW = SDL_atoi(w);
         state->window_minH = SDL_atoi(h);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--max-geometry") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--max-geometry") == 0) {
         char *w, *h;
         ++index;
         if (!argv[index]) {
@@ -438,8 +395,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->window_maxW = SDL_atoi(w);
         state->window_maxH = SDL_atoi(h);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--aspect") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--aspect") == 0) {
         char *min_aspect, *max_aspect;
         ++index;
         if (!argv[index]) {
@@ -458,8 +414,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->window_min_aspect = (float)SDL_atof(min_aspect);
         state->window_max_aspect = (float)SDL_atof(max_aspect);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--logical") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--logical") == 0) {
         char *w, *h;
         ++index;
         if (!argv[index]) {
@@ -477,20 +432,17 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         state->logical_w = SDL_atoi(w);
         state->logical_h = SDL_atoi(h);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--high-pixel-density") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--high-pixel-density") == 0) {
         state->window_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--auto-scale-content") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--auto-scale-content") == 0) {
         state->auto_scale_content = true;
 
         if (state->logical_presentation == SDL_LOGICAL_PRESENTATION_DISABLED) {
             state->logical_presentation = SDL_LOGICAL_PRESENTATION_STRETCH;
         }
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--logical-presentation") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--logical-presentation") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -516,40 +468,34 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
             return 2;
         }
         return -1;
-    }
-    if (SDL_strcasecmp(argv[index], "--scale") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--scale") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->scale = (float) SDL_atof(argv[index]);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--depth") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--depth") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->depth = SDL_atoi(argv[index]);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--refresh") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--refresh") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->refresh_rate = (float) SDL_atof(argv[index]);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--vsync") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--vsync") == 0) {
         state->render_vsync = 1;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--noframe") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--noframe") == 0) {
         state->window_flags |= SDL_WINDOW_BORDERLESS;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--quit-after-ms") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--quit-after-ms") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -559,60 +505,46 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
             return -1;
         }
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--transparent") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--transparent") == 0) {
         state->window_flags |= SDL_WINDOW_TRANSPARENT;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--always-on-top") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--always-on-top") == 0) {
         state->window_flags |= SDL_WINDOW_ALWAYS_ON_TOP;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--minimize") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--minimize") == 0) {
         state->window_flags |= SDL_WINDOW_MINIMIZED;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--maximize") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--maximize") == 0) {
         state->window_flags |= SDL_WINDOW_MAXIMIZED;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
         state->window_flags |= SDL_WINDOW_HIDDEN;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--input-focus") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--input-focus") == 0) {
         state->window_flags |= SDL_WINDOW_INPUT_FOCUS;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--mouse-focus") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--mouse-focus") == 0) {
         state->window_flags |= SDL_WINDOW_MOUSE_FOCUS;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--flash-on-focus-loss") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--flash-on-focus-loss") == 0) {
         state->flash_on_focus_loss = true;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--grab") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--grab") == 0) {
         state->window_flags |= SDL_WINDOW_MOUSE_GRABBED;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--keyboard-grab") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--keyboard-grab") == 0) {
         state->window_flags |= SDL_WINDOW_KEYBOARD_GRABBED;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--utility") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--utility") == 0) {
         state->window_flags |= SDL_WINDOW_UTILITY;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--hide-cursor") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--hide-cursor") == 0) {
         state->hide_cursor = true;
         return 1;
-    }
-    if (SDL_strcasecmp(argv[index], "--gpu") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--gpu") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -630,8 +562,7 @@ static int SDLCALL SDLTest_CommonStateParseAudioArguments(void *data, char **arg
 
     if (!(state->flags & SDL_INIT_AUDIO)) {
         return 0;
-    }
-    if (SDL_strcasecmp(argv[index], "--audio") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--audio") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
@@ -639,67 +570,53 @@ static int SDLCALL SDLTest_CommonStateParseAudioArguments(void *data, char **arg
         state->audiodriver = argv[index];
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, state->audiodriver);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--rate") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--rate") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
         }
         state->audio_freq = SDL_atoi(argv[index]);
         return 2;
-    }
-    if (SDL_strcasecmp(argv[index], "--format") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--format") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
-        }
-        if (SDL_strcasecmp(argv[index], "U8") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "U8") == 0) {
             state->audio_format = SDL_AUDIO_U8;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S8") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S8") == 0) {
             state->audio_format = SDL_AUDIO_S8;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S16") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S16") == 0) {
             state->audio_format = SDL_AUDIO_S16;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S16LE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S16LE") == 0) {
             state->audio_format = SDL_AUDIO_S16LE;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S16BE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S16BE") == 0) {
             state->audio_format = SDL_AUDIO_S16BE;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S32") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S32") == 0) {
             state->audio_format = SDL_AUDIO_S32;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S32LE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S32LE") == 0) {
             state->audio_format = SDL_AUDIO_S32LE;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "S32BE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "S32BE") == 0) {
             state->audio_format = SDL_AUDIO_S32BE;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "F32") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "F32") == 0) {
             state->audio_format = SDL_AUDIO_F32;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "F32LE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "F32LE") == 0) {
             state->audio_format = SDL_AUDIO_F32LE;
             return 2;
-        }
-        if (SDL_strcasecmp(argv[index], "F32BE") == 0) {
+        } else if (SDL_strcasecmp(argv[index], "F32BE") == 0) {
             state->audio_format = SDL_AUDIO_F32BE;
             return 2;
         }
         return -1;
-    }
-    if (SDL_strcasecmp(argv[index], "--channels") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--channels") == 0) {
         ++index;
         if (!argv[index]) {
             return -1;
