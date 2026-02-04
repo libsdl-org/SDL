@@ -110,14 +110,6 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  */
 typedef void (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
 
-#define SDL_PROP_TRAY_CREATE_ICON_POINTER                 "SDL.tray.create.icon"
-#define SDL_PROP_TRAY_CREATE_TOOLTIP_STRING               "SDL.tray.create.tooltip"
-#define SDL_PROP_TRAY_CREATE_USERDATA_POINTER             "SDL.tray.create.userdata"
-#define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
-#define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
-#define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
-#define SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER "SDL.tray.create.doubleclick_callback"
-
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.
  *
@@ -191,18 +183,13 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  */
 extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTrayWithProperties(SDL_PropertiesID props);
 
-/**
- * Get the properties associated with a tray icon.
- *
- * \param tray the tray icon to query.
- * \returns a valid property ID on success or 0 on failure; call
- *          SDL_GetError() for more information.
- *
- * \threadsafety This function should only be called on the main thread.
- *
- * \since This function is available since SDL 3.6.0.
- */
-extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTrayProperties(SDL_Tray *tray);
+#define SDL_PROP_TRAY_CREATE_ICON_POINTER                 "SDL.tray.create.icon"
+#define SDL_PROP_TRAY_CREATE_TOOLTIP_STRING               "SDL.tray.create.tooltip"
+#define SDL_PROP_TRAY_CREATE_USERDATA_POINTER             "SDL.tray.create.userdata"
+#define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
+#define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
+#define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
+#define SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER "SDL.tray.create.doubleclick_callback"
 
 /**
  * Updates the system tray icon's icon.

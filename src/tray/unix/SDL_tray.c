@@ -806,13 +806,3 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     SDL_free(tray);
 }
-
-SDL_PropertiesID SDL_GetTrayProperties(SDL_Tray *tray)
-{
-    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
-        SDL_InvalidParamError("tray");
-        return 0;
-    }
-
-    return tray->props;
-}

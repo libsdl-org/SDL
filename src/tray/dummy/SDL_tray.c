@@ -146,9 +146,4 @@ void SDL_DestroyTray(SDL_Tray *tray)
 {
 }
 
-SDL_PropertiesID SDL_GetTrayProperties(SDL_Tray *tray)
-{
-    return 0;
-}
-
 #endif // SDL_TRAY_DUMMY
