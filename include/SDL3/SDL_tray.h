@@ -104,9 +104,8 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *                 it will be invoked. May be NULL.
  * \param tray the tray that was clicked.
  * \returns true to show the tray menu after the callback returns, false to
- *          skip showing the menu. This return value is only used for left
- *          and right click callbacks; other mouse events ignore the return
- *          value.
+ *          skip showing the menu. This return value is only used for left and
+ *          right click callbacks; other mouse events ignore the return value.
  *
  * \since This datatype is available since SDL 3.6.0.
  *
@@ -152,26 +151,25 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  *
  * - `SDL_PROP_TRAY_CREATE_ICON_POINTER`: an SDL_Surface to be used as the
  *   tray icon. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_TOOLTIP_STRING`: a tooltip to be displayed when
- *   the mouse hovers the icon in UTF-8 encoding. Not supported on all
- *   platforms. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_USERDATA_POINTER`: an optional pointer to
- *   associate with the tray, which will be passed to click callbacks.
+ * - `SDL_PROP_TRAY_CREATE_TOOLTIP_STRING`: a tooltip to be displayed when the
+ *   mouse hovers the icon in UTF-8 encoding. Not supported on all platforms.
  *   May be NULL.
- * - `SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback
- *   to be invoked when the tray icon is left-clicked. Not supported on all
- *   platforms. The callback should return true to show the default menu, or
- *   false to skip showing it. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback
- *   to be invoked when the tray icon is right-clicked. Not supported on all
- *   platforms. The callback should return true to show the default menu, or
- *   false to skip showing it. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback
- *   to be invoked when the tray icon is middle-clicked. Not supported on all
- *   platforms. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER`: an SDL_TrayClickCallback
- *   to be invoked when the tray icon is double-clicked. Not supported on all
- *   platforms. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_USERDATA_POINTER`: an optional pointer to associate
+ *   with the tray, which will be passed to click callbacks. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is left-clicked.
+ *   Not supported on all platforms. The callback should return true to show
+ *   the default menu, or false to skip showing it. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
+ *   Not supported on all platforms. The callback should return true to show
+ *   the default menu, or false to skip showing it. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
+ *   Not supported on all platforms. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is double-clicked.
+ *   Not supported on all platforms. May be NULL.
  *
  * \param props the properties to use.
  * \returns The newly created system tray icon.
