@@ -3,6 +3,35 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+/*
+ * testtray - SDL system tray API test application
+ *
+ * This program creates two system tray icons to demonstrate and test the
+ * SDL tray API:
+ *
+ * 1. Control tray (sdl-test_round.png) - Provides a menu to:
+ *    - Quit: Exit the application
+ *    - Destroy trays: Remove both tray icons and show the window
+ *    - Hide/Show window: Toggle the window visibility
+ *    - Change icon: Change the example tray's icon via file dialog
+ *    - Create button/checkbox/submenu/separator: Add menu items to the
+ *      example tray, demonstrating dynamic menu construction
+ *
+ * 2. Example tray (speaker.png) - A target tray that can be manipulated
+ *    through the control tray's menu. Menu items created here can be
+ *    enabled, disabled, checked, unchecked, or removed via submenus that
+ *    appear in the control tray. This tray is created with
+ *    SDL_CreateTrayWithProperties to demonstrate click callbacks:
+ *    - Left click: Logs a message and shows the menu (returns true)
+ *    - Right click: Logs a message and suppresses the menu (returns false)
+ *
+ * Window behavior:
+ * - Closing the window (X button) hides it to the tray rather than exiting
+ * - The "Hide/Show window" menu item toggles visibility and updates its label
+ * - If trays are destroyed while the window is hidden, it is shown first
+ * - If trays are destroyed, closing the window exits the application
+ */
+
 static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
 {
     SDL_Event e;
@@ -10,7 +39,21 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
+static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray)
+{
+    SDL_Log("Left click on example tray - menu shown");
+    return true;
+}
+
+static bool SDLCALL tray2_rightclick(void *userdata, SDL_Tray *tray)
+{
+    SDL_Log("Right click on example tray - menu suppressed");
+    return false;
+}
+
 static bool trays_destroyed = false;
+static SDL_Window *window = NULL;
+static SDL_TrayEntry *entry_toggle = NULL;
 
 static void SDLCALL tray_close(void *ptr, SDL_TrayEntry *entry)
 {
@@ -18,8 +61,23 @@ static void SDLCALL tray_close(void *ptr, SDL_TrayEntry *entry)
 
     trays_destroyed = true;
 
+    if (window) {
+        SDL_ShowWindow(window);
+    }
+
     SDL_DestroyTray(trays[0]);
     SDL_DestroyTray(trays[1]);
+}
+
+static void SDLCALL toggle_window(void *ptr, SDL_TrayEntry *entry)
+{
+    if (SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN) {
+        SDL_ShowWindow(window);
+        SDL_SetTrayEntryLabel(entry, "Hide window");
+    } else {
+        SDL_HideWindow(window);
+        SDL_SetTrayEntryLabel(entry, "Show window");
+    }
 }
 
 static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filter)
@@ -514,9 +572,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow("testtray", 640, 480, 0);
+    window = SDL_CreateWindow("testtray", 640, 480, 0);
 
-    if (!w) {
+    if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         goto quit;
     }
@@ -544,7 +602,13 @@ int main(int argc, char **argv)
         goto clean_window;
     }
 
-    SDL_Tray *tray2 = SDL_CreateTray(icon2, "SDL Tray example");
+    SDL_PropertiesID tray2_props = SDL_CreateProperties();
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_ICON_POINTER, icon2);
+    SDL_SetStringProperty(tray2_props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, "SDL Tray example");
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, tray2_leftclick);
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, tray2_rightclick);
+    SDL_Tray *tray2 = SDL_CreateTrayWithProperties(tray2_props);
+    SDL_DestroyProperties(tray2_props);
 
     if (!tray2) {
         SDL_Log("Couldn't create example tray: %s", SDL_GetError());
@@ -569,7 +633,7 @@ int main(int argc, char **argv)
     SDL_TrayEntry *entry_quit = SDL_InsertTrayEntryAt(menu, -1, "Quit", SDL_TRAYENTRY_BUTTON);
     CHECK(entry_quit);
 
-    SDL_TrayEntry *entry_close = SDL_InsertTrayEntryAt(menu, -1, "Close", SDL_TRAYENTRY_BUTTON);
+    SDL_TrayEntry *entry_close = SDL_InsertTrayEntryAt(menu, -1, "Destroy trays", SDL_TRAYENTRY_BUTTON);
     CHECK(entry_close);
 
     /* TODO: Track memory! */
@@ -583,6 +647,13 @@ int main(int argc, char **argv)
 
     SDL_SetTrayEntryCallback(entry_quit, tray_quit, NULL);
     SDL_SetTrayEntryCallback(entry_close, tray_close, trays);
+
+    SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
+
+    entry_toggle = SDL_InsertTrayEntryAt(menu, -1, "Hide window", SDL_TRAYENTRY_BUTTON);
+    CHECK(entry_toggle);
+
+    SDL_SetTrayEntryCallback(entry_toggle, toggle_window, NULL);
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 
@@ -620,8 +691,10 @@ int main(int argc, char **argv)
         if (e.type == SDL_EVENT_QUIT) {
             break;
         } else if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-            SDL_DestroyWindow(w);
-            w = NULL;
+            if (trays_destroyed) {
+                break;
+            }
+            toggle_window(NULL, entry_toggle);
         }
     }
 
@@ -637,8 +710,8 @@ clean_tray1:
     SDL_free(trays);
 
 clean_window:
-    if (w) {
-        SDL_DestroyWindow(w);
+    if (window) {
+        SDL_DestroyWindow(window);
     }
 
 quit:
