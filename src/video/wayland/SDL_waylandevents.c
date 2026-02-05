@@ -3471,7 +3471,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
 
     if (sdltool->frame.have_proximity && sdltool->frame.in_proximity) {
-        SDL_SendPenProximity(timestamp, instance_id, window, true);
+        SDL_SendPenProximity(timestamp, instance_id, window, true, true);
         Wayland_TabletToolUpdateCursor(sdltool);
     }
 
@@ -3510,7 +3510,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     }
 
     if (sdltool->frame.have_proximity && !sdltool->frame.in_proximity) {
-        SDL_SendPenProximity(timestamp, instance_id, window, false);
+        SDL_SendPenProximity(timestamp, instance_id, window, false, false);
         sdltool->focus = NULL;
         Wayland_TabletToolUpdateCursor(sdltool);
     }

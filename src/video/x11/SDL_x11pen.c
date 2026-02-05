@@ -328,7 +328,7 @@ void X11_NotifyPenProximityChange(SDL_VideoDevice *_this, SDL_Window *window, in
     bool in_proximity;
     X11_PenHandle *pen = X11_FindPenByDeviceID(deviceid);
     if (pen && X11_XInput2PenIsInProximity(_this, deviceid, &in_proximity)) {
-        SDL_SendPenProximity(0, pen->pen, window, in_proximity);
+        SDL_SendPenProximity(0, pen->pen, window, in_proximity, in_proximity);
     }
 }
 

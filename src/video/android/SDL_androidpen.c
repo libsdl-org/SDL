@@ -78,12 +78,12 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
     // we don't compare tip flags above because MotionEvent.getButtonState doesn't return stylus tip/eraser state.
     switch (action) {
     case ACTION_HOVER_ENTER:
-        SDL_SendPenProximity(0, pen, window, true);
+        SDL_SendPenProximity(0, pen, window, true, true);
         break;
 
     case ACTION_CANCEL:
     case ACTION_HOVER_EXIT:  // strictly speaking, this can mean both "proximity out" and "left the View" but close enough.
-        SDL_SendPenProximity(0, pen, window, false);
+        SDL_SendPenProximity(0, pen, window, false, false);
         break;
 
     case ACTION_DOWN:
