@@ -1814,12 +1814,12 @@ int Cocoa_CreateWindow(_THIS, SDL_Window * window)
     }
 #endif
 
-    if (videodata.allow_spaces) {
+    /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
+    if ((window->flags & SDL_WINDOW_RESIZABLE) && videodata.allow_spaces) {
         /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
-            /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
-            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-        }
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    } else {
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenNone];
     }
 
     if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
@@ -2124,13 +2124,11 @@ void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
     if (![listener isInFullscreenSpace]) {
         SetWindowStyle(window, GetWindowStyle(window));
     }
-    if (videodata.allow_spaces) {
-        if (resizable) {
-            /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
-            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-        } else {
-            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
-        }
+    if (resizable && videodata.allow_spaces) {
+        /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    } else {
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorNone];
     }
 }}
 
