@@ -3063,8 +3063,8 @@ extern "C" {
  *
  * - "0": Force a request for an OpenGL context that is _not_ sRGB-capable.
  * - "1": Force a request for an OpenGL context that _is_ sRGB-capable.
- * - "skip": Don't make any request for an sRGB-capable context
- *   (don't specify the attribute at all during context creation time).
+ * - "skip": Don't make any request for an sRGB-capable context (don't specify
+ *   the attribute at all during context creation time).
  * - any other string is undefined behavior.
  *
  * If unset, or set to an empty string, SDL will make a request using the
