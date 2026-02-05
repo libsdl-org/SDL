@@ -66,12 +66,12 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
     SDL_PenInputFlags current = SDL_GetPenStatus(pen, NULL, 0);
     int diff = current ^ button;
     if (diff != 0) {
-        // Android only exposes BUTTON_STYLUS_PRIMARY and BUTTON_STYLUS_SECONDARY
-        if (diff & SDL_PEN_INPUT_BUTTON_1)
-            SDL_SendPenButton(0, pen, window, 1, (button & SDL_PEN_INPUT_BUTTON_1) != 0);
-
-        if (diff & SDL_PEN_INPUT_BUTTON_2)
-            SDL_SendPenButton(0, pen, window, 2, (button & SDL_PEN_INPUT_BUTTON_2) != 0);
+        for (Uint8 i = 1; i <= 5; ++i) {
+            Uint8 mask = (1 << i);
+            if (diff & mask) {
+                SDL_SendPenButton(0, pen, window, i, (button & mask) != 0);
+            }
+        }
     }
 
     // button contains DOWN/ERASER_TIP on DOWN/UP regardless of pressed state, use action to distinguish
