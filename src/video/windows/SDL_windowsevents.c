@@ -1282,7 +1282,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen) {
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true, true);
         } else {
             // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
             //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
@@ -1323,7 +1323,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
             // technically this isn't just _proximity_ but maybe just leaving the window. Good enough. WinTab apparently has real proximity info.
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false, false);
         }
         returnCode = 0;
     } break;
