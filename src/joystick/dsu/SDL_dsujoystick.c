@@ -88,6 +88,8 @@ typedef int socklen_t;
         #include <fcntl.h>
         #include <unistd.h>
         #include <errno.h>
+        #include <sys/time.h>
+        #include <sys/select.h>
         #ifdef HAVE_SYS_IOCTL_H
             #include <sys/ioctl.h>
         #endif
