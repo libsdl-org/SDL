@@ -24,6 +24,7 @@
  *    SDL_CreateTrayWithProperties to demonstrate click callbacks:
  *    - Left click: Logs a message and shows the menu (returns true)
  *    - Right click: Logs a message and suppresses the menu (returns false)
+ *    - Middle click: Logs a message (menu never shows for middle click)
  *
  * Window behavior:
  * - Closing the window (X button) hides it to the tray rather than exiting
@@ -48,6 +49,12 @@ static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray)
 static bool SDLCALL tray2_rightclick(void *userdata, SDL_Tray *tray)
 {
     SDL_Log("Right click on example tray - menu suppressed");
+    return false;
+}
+
+static bool SDLCALL tray2_middleclick(void *userdata, SDL_Tray *tray)
+{
+    SDL_Log("Middle click on example tray - menu doesn't show for middle click");
     return false;
 }
 
@@ -607,6 +614,7 @@ int main(int argc, char **argv)
     SDL_SetStringProperty(tray2_props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, "SDL Tray example");
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, tray2_leftclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, tray2_rightclick);
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, tray2_middleclick);
     SDL_Tray *tray2 = SDL_CreateTrayWithProperties(tray2_props);
     SDL_DestroyProperties(tray2_props);
 

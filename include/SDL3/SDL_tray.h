@@ -167,9 +167,6 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
  *   Not supported on all platforms. May be NULL.
- * - `SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER`: an
- *   SDL_TrayClickCallback to be invoked when the tray icon is double-clicked.
- *   Not supported on all platforms. May be NULL.
  *
  * \param props the properties to use.
  * \returns The newly created system tray icon.
@@ -191,7 +188,6 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTrayWithProperties(SDL_Properti
 #define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
 #define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
 #define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
-#define SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER "SDL.tray.create.doubleclick_callback"
 
 /**
  * Updates the system tray icon's icon.

@@ -67,8 +67,6 @@ struct SDL_Tray {
     SDL_TrayClickCallback left_click_callback;
     SDL_TrayClickCallback right_click_callback;
     SDL_TrayClickCallback middle_click_callback;
-    SDL_TrayClickCallback double_click_callback;
-    bool ignore_next_left_up;
 };
 
 static UINT_PTR get_next_id(void)
@@ -131,9 +129,7 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
                 switch (LOWORD(lParam)) {
                     case WM_LBUTTONUP:
-                        if (tray->ignore_next_left_up) {
-                            tray->ignore_next_left_up = false;
-                        } else if (tray->left_click_callback) {
+                        if (tray->left_click_callback) {
                             show_menu = tray->left_click_callback(tray->userdata, tray);
                         } else {
                             show_menu = true;
@@ -151,16 +147,6 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                     case WM_MBUTTONUP:
                         if (tray->middle_click_callback) {
                             tray->middle_click_callback(tray->userdata, tray);
-                        }
-                        break;
-
-                    case WM_LBUTTONDBLCLK:
-                        if (tray->double_click_callback) {
-                            tray->double_click_callback(tray->userdata, tray);
-                            /* Suppress the WM_LBUTTONUP that follows a double-click, so we
-                               don't fire both double-click and left-click callbacks. This
-                               matches the behavior on other platforms. */
-                            tray->ignore_next_left_up = true;
                         }
                         break;
                 }
@@ -331,7 +317,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
-    tray->double_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER, NULL);
 
     tray->menu = NULL;
     if (!SDL_RegisterTrayClass(TEXT("SDL_TRAY"))) {
