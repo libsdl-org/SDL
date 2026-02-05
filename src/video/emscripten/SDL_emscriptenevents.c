@@ -868,7 +868,7 @@ static void Emscripten_HandlePenEnter(SDL_WindowData *window_data, const Emscrip
 
     SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) 1);  // something > 0 for the single pen handle.
     if (pen) {
-        SDL_SendPenProximity(0, pen, window_data->window, true);
+        SDL_SendPenProximity(0, pen, window_data->window, true, true);
     } else {
         // Web browsers offer almost none of this information as specifics, but can without warning offer any of these specific things.
         SDL_PenInfo peninfo;
@@ -902,7 +902,7 @@ static void Emscripten_HandlePenLeave(SDL_WindowData *window_data, const Emscrip
     const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) 1);   // something > 0 for the single pen handle.
     if (pen) {
         Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
-        SDL_SendPenProximity(0, pen, window_data->window, false);
+        SDL_SendPenProximity(0, pen, window_data->window, false, false);
     }
 }
 

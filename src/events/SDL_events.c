@@ -1484,6 +1484,8 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_SendPendingPenProximity();
+
     SDL_UpdateCursorAnimation();
 
     SDL_UpdateTrays();
