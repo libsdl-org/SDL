@@ -212,6 +212,7 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
     {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
     {" Pen",            GAMEPAD_BLACKLIST_END}, // "Wacom One by Wacom S Pen"
     {" Finger",         GAMEPAD_BLACKLIST_END}, // "Wacom HID 495F Finger"
+    {" System Control", GAMEPAD_BLACKLIST_END}, // "hid-over-i2c 0107 System Control"
     {" LED ",           GAMEPAD_BLACKLIST_ANYWHERE}, // "ASRock LED Controller"
     {" Thelio ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "System76 Thelio Io 2"
 };
