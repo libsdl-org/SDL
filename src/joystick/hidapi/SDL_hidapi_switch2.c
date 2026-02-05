@@ -381,6 +381,7 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         return SDL_SetError("Couldn't find bulk endpoints");
     }
 
+    ctx->libusb->set_auto_detach_kernel_driver(ctx->device_handle, true);
     int res = ctx->libusb->claim_interface(ctx->device_handle, ctx->interface_number);
     if (res < 0) {
         return SDL_SetError("Couldn't claim interface %d: %d\n", ctx->interface_number, res);
