@@ -34,7 +34,6 @@ struct SDL_Tray;
 /* Objective-C helper class to handle status item button clicks */
 @interface SDLTrayClickHandler : NSObject
 @property (nonatomic, assign) struct SDL_Tray *tray;
-@property (nonatomic, assign) NSTimeInterval lastLeftClickTime;
 @property (nonatomic, strong) id middleClickMonitor;
 - (void)handleClick:(id)sender;
 - (void)startMonitoringMiddleClicks;
@@ -73,7 +72,6 @@ struct SDL_Tray {
     SDL_TrayClickCallback left_click_callback;
     SDL_TrayClickCallback right_click_callback;
     SDL_TrayClickCallback middle_click_callback;
-    SDL_TrayClickCallback double_click_callback;
 };
 
 @implementation SDLTrayClickHandler
@@ -90,22 +88,11 @@ struct SDL_Tray {
     bool show_menu = false;
 
     if (buttonNumber == 0) {
-        /* Left click - check for double-click ourselves */
-        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-        NSTimeInterval doubleClickInterval = [NSEvent doubleClickInterval];
-
-        if (self.tray->double_click_callback && (now - self.lastLeftClickTime) <= doubleClickInterval) {
-            /* Double-click */
-            self.tray->double_click_callback(self.tray->userdata, self.tray);
-            self.lastLeftClickTime = 0; /* Reset to prevent triple-click from triggering another double */
+        /* Left click */
+        if (self.tray->left_click_callback) {
+            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray);
         } else {
-            /* Single left click */
-            self.lastLeftClickTime = now;
-            if (self.tray->left_click_callback) {
-                show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray);
-            } else {
-                show_menu = true;
-            }
+            show_menu = true;
         }
     } else if (buttonNumber == 1) {
         /* Right click */
@@ -217,7 +204,6 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
-    tray->double_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_DOUBLECLICK_CALLBACK_POINTER, NULL);
 
     tray->statusItem = nil;
     tray->statusBar = [NSStatusBar systemStatusBar];
