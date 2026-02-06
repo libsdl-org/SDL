@@ -230,7 +230,7 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 // Convert a DirectInput return code to a text message
 static bool SetDIerror(const char *function, HRESULT code)
 {
-    return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
+    return SDL_SetError("%s() DirectX error 0x%8.8lx", function, (unsigned long)code);
 }
 
 static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)

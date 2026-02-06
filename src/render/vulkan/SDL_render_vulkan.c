@@ -2680,7 +2680,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             }
             break;
         default:
-            return SDL_SetError("Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->colorspace));
+            return SDL_SetError("Unsupported Ycbcr colorspace: %u", SDL_COLORSPACEMATRIX(texture->colorspace));
         }
         samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         samplerYcbcrConversionCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;

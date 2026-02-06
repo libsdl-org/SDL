@@ -773,7 +773,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
         ret = IAudioClient2_SetClientProperties(client2, &audioProps);
         if (FAILED(ret)) {
             // This isn't fatal, let's log it instead of failing
-            SDL_LogWarn(SDL_LOG_CATEGORY_AUDIO, "IAudioClient2_SetClientProperties failed: 0x%lx", ret);
+            SDL_LogWarn(SDL_LOG_CATEGORY_AUDIO, "IAudioClient2_SetClientProperties failed: 0x%lx", (unsigned long)ret);
         }
         IAudioClient2_Release(client2);
     }

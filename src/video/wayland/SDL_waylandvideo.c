@@ -1261,7 +1261,7 @@ static void libdecor_error(struct libdecor *context,
                            enum libdecor_error error,
                            const char *message)
 {
-    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s", error, message);
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%u): %s", error, message);
 }
 
 static struct libdecor_interface libdecor_interface = {

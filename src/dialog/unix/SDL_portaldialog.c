@@ -344,7 +344,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
     default:
         /* This is already checked in ../SDL_dialog.c; this silences compiler warnings */
-        SDL_SetError("Invalid file dialog type: %d", type);
+        SDL_SetError("Invalid file dialog type: %u", type);
         callback(userdata, NULL, -1);
         goto cleanup;
     }

@@ -583,15 +583,15 @@ static bool GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLe
             }
         }
         if (info) {
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to load the shader %d: %s", type, info);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to load the shader %u: %s", type, info);
             SDL_free(info);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to load the shader %d", type);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to load the shader %u", type);
 
         }
         data->glDeleteShader(id);
 
-        return SDL_SetError("Failed to load the shader %d", type);
+        return SDL_SetError("Failed to load the shader %u", type);
     }
 
     // Cache

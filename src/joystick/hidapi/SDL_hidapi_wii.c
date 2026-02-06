@@ -1445,7 +1445,7 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
 
     // FIXME: This should see if the data format is compatible rather than equal
     if (eExpectedReport != ctx->m_rgucReadBuffer[0]) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %d", eExpectedReport);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %u", eExpectedReport);
         RequestButtonPacketType(ctx, eExpectedReport);
     }
 

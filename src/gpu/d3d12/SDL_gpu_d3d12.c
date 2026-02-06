@@ -1328,9 +1328,9 @@ static void D3D12_INTERNAL_SetError(
     // No message? Screw it, just post the code.
     if (dwChars == 0) {
         if (renderer->debug_mode) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, (ULONG)res);
         }
-        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, res);
+        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, (ULONG)res);
         return;
     }
 
@@ -1350,9 +1350,9 @@ static void D3D12_INTERNAL_SetError(
     wszMsgBuff[dwChars] = '\0';
 
     if (renderer->debug_mode) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, (ULONG)res);
     }
-    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, (ULONG)res);
 }
 
 // Release / Cleanup
@@ -7069,7 +7069,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         SDL_LogWarn(
             SDL_LOG_CATEGORY_GPU,
             "Could not get swapchain parent! Error Code: " HRESULT_FMT,
-            res);
+            (ULONG)res);
     } else {
         // Disable DXGI window crap
         res = IDXGIFactory1_MakeWindowAssociation(
@@ -7080,7 +7080,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_GPU,
                 "MakeWindowAssociation failed! Error Code: " HRESULT_FMT,
-                res);
+                (ULONG)res);
         }
 
         // We're done with the parent now
@@ -8884,7 +8884,7 @@ static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
     if (severity <= D3D12_MESSAGE_SEVERITY_ERROR) {
         SDL_LogError(
             SDL_LOG_CATEGORY_GPU,
-            "D3D12 ERROR: %s [%s %s #%d]",
+            "D3D12 ERROR: %s [%s %s #%u]",
             description,
             catStr,
             sevStr,
@@ -8892,7 +8892,7 @@ static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
     } else {
         SDL_LogWarn(
             SDL_LOG_CATEGORY_GPU,
-            "D3D12 WARNING: %s [%s %s #%d]",
+            "D3D12 WARNING: %s [%s %s #%u]",
             description,
             catStr,
             sevStr,

@@ -188,7 +188,7 @@ static bool OPENVR_SetOverlayError(EVROverlayError e)
     CASE(TimedOut);
 #undef CASE
     default:
-        return SDL_SetError("Unknown VROverlayError %d", e);
+        return SDL_SetError("Unknown VROverlayError %u", e);
     }
 }
 
@@ -598,12 +598,12 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
             window->title, &videodata->overlayID, &videodata->thumbID);
         if (result != EVROverlayError_VROverlayError_None) {
             SDL_free(cursorname);
-            return SDL_SetError("Could not create dashboard overlay (%d)", result );
+            return SDL_SetError("Could not create dashboard overlay (%u)", result );
         }
         result = videodata->oOverlay->CreateOverlay(cursorname, window->title, &videodata->cursorID);
         if (result != EVROverlayError_VROverlayError_None) {
             SDL_free(cursorname);
-            return SDL_SetError("Could not create cursor overlay (%d)", result );
+            return SDL_SetError("Could not create cursor overlay (%u)", result );
         }
         SDL_PropertiesID props = SDL_GetWindowProperties(window);
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER, videodata->overlayID);

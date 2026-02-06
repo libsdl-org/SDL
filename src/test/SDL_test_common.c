@@ -1780,7 +1780,7 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->button.windowID);
         break;
     case SDL_EVENT_MOUSE_WHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %d) in window %" SDL_PRIu32,
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %u) in window %" SDL_PRIu32,
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
@@ -1798,7 +1798,7 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->jaxis.value);
         break;
     case SDL_EVENT_JOYSTICK_BALL_MOTION:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIs32 ": ball %d moved by %d,%d",
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 ": ball %d moved by %d,%d",
                 event->jball.which, event->jball.ball, event->jball.xrel,
                 event->jball.yrel);
         break;
@@ -2018,7 +2018,7 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->pmotion.which, event->pmotion.x, event->pmotion.y);
         break;
     case SDL_EVENT_PEN_AXIS:
-        SDL_Log("SDL EVENT: Pen %" SDL_PRIu32 " axis %d changed to %.2f",
+        SDL_Log("SDL EVENT: Pen %" SDL_PRIu32 " axis %u changed to %.2f",
                 event->paxis.which, event->paxis.axis, event->paxis.value);
         break;
     case SDL_EVENT_LOCALE_CHANGED:
