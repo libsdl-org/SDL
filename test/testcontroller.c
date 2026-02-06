@@ -1069,7 +1069,6 @@ static const char *GetBindingInstruction(void)
         default:
             return "";
         }
-        break;
     case SDL_GAMEPAD_BUTTON_BACK:
         return "Press the left center button (Back/View/Share)";
     case SDL_GAMEPAD_BUTTON_GUIDE:
