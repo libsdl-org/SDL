@@ -630,7 +630,7 @@ int main(int argc, char **argv)
     if (!name) { \
         SDL_Log("Couldn't create " #name ": %s", SDL_GetError()); \
         goto clean_all; \
-    }
+    } do {} while(0)
 
     SDL_TrayMenu *menu = SDL_CreateTrayMenu(tray);
     CHECK(menu);

@@ -127,7 +127,7 @@ quit(int rc)
             SDL_Log("glGetError() = %i (0x%.8x) at line %i", glError, glError, __LINE__); \
             quit(1);                                                                        \
         }                                                                                   \
-    }
+    } do {} while(0)
 
 /**
  * Simulates desktop's glRotatef. The matrix is returned in column-major

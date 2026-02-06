@@ -56,7 +56,7 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     {                                            \
         SDL_Log("HIT-TEST: RESIZE_" #name ""); \
         return SDL_HITTEST_RESIZE_##name;        \
-    }
+    } do {} while(0)
 
     if (pt->x < RESIZE_BORDER && pt->y < RESIZE_BORDER) {
         REPORT_RESIZE_HIT(TOPLEFT);
