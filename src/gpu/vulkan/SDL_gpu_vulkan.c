@@ -11905,7 +11905,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
             return 0;
         }
 
-        XrVulkanInstanceCreateInfoKHR xrCreateInfo = {};
+        XrVulkanInstanceCreateInfoKHR xrCreateInfo;
+        SDL_zero(xrCreateInfo);
         xrCreateInfo.type = XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR;
         xrCreateInfo.vulkanCreateInfo = &createInfo;
         xrCreateInfo.systemId = renderer->xrSystemId;
@@ -12521,7 +12522,8 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
             return 0;
         }
 
-        XrVulkanDeviceCreateInfoKHR xrDeviceCreateInfo = {};
+        XrVulkanDeviceCreateInfoKHR xrDeviceCreateInfo;
+        SDL_zero(xrDeviceCreateInfo);
         xrDeviceCreateInfo.type = XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR;
         xrDeviceCreateInfo.vulkanCreateInfo = &deviceCreateInfo;
         xrDeviceCreateInfo.systemId = renderer->xrSystemId;
@@ -12690,7 +12692,8 @@ static XrResult VULKAN_INTERNAL_GetXrMinimumVulkanApiVersion(XrVersion *minimumV
         return xrResult;
     }
 
-    XrGraphicsRequirementsVulkanKHR graphicsRequirementsVulkan = {};
+    XrGraphicsRequirementsVulkanKHR graphicsRequirementsVulkan;
+    SDL_zero(graphicsRequirementsVulkan);
     graphicsRequirementsVulkan.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR;
     if ((xrResult = xrGetVulkanGraphicsRequirements2KHR(instance, systemId, &graphicsRequirementsVulkan)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get vulkan graphics requirements, got OpenXR error %d", xrResult);
@@ -13099,7 +13102,8 @@ static XrResult VULKAN_CreateXRSession(
     const void *XR_MAY_ALIAS currentNextPtr = createinfo->next;
 
     // KHR_vulkan_enable and KHR_vulkan_enable2 share this structure, so we don't need to change any logic here to handle both
-    XrGraphicsBindingVulkanKHR graphicsBinding = {};
+    XrGraphicsBindingVulkanKHR graphicsBinding;
+    SDL_zero(graphicsBinding);
     graphicsBinding.type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR;
     graphicsBinding.instance = renderer->instance;
     graphicsBinding.physicalDevice = renderer->physicalDevice;
