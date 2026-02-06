@@ -344,7 +344,7 @@
     #endif
 
     /* If _USING_V110_SDK71_ is defined it means we are using the Windows XP toolset. */
-#elif defined(_MSC_VER) && (_MSC_VER >= 1700 && !_USING_V110_SDK71_)    /* _MSC_VER == 1700 for Visual Studio 2012 */
+#elif defined(_MSC_VER) && (_MSC_VER >= 1700 && !defined(_USING_V110_SDK71_))    /* _MSC_VER == 1700 for Visual Studio 2012 */
     #define HAVE_WINAPIFAMILY_H 1
 #else
     #define HAVE_WINAPIFAMILY_H 0
