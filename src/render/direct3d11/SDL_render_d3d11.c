@@ -40,9 +40,9 @@
 #include "SDL_shaders_d3d11.h"
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_FUNCTION ", " str
 #else
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(SDL_FUNCTION) ", " str
 #endif
 
 #define SAFE_RELEASE(X)                                   \
@@ -932,7 +932,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
         IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
-        SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
+        SDL_SetError(SDL_FUNCTION ", Unable to find something to attach a swap chain to");
         goto done;
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
     }
@@ -1020,7 +1020,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
      */
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
     data->rotation = D3D11_GetCurrentRotation();
-    // SDL_Log("%s: windowSize={%d,%d}, orientation=%d", __FUNCTION__, w, h, (int)data->rotation);
+    // SDL_Log("%s: windowSize={%d,%d}, orientation=%d", SDL_FUNCTION, w, h, (int)data->rotation);
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
         w = h;
@@ -1244,7 +1244,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
     if (textureFormat == DXGI_FORMAT_UNKNOWN) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
-                            __FUNCTION__, texture->format);
+                            SDL_FUNCTION, texture->format);
     }
 
     textureData = (D3D11_TextureData *)SDL_calloc(1, sizeof(*textureData));
@@ -2071,7 +2071,7 @@ static bool D3D11_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        // SDL_Log("%s, no viewport was set!", __FUNCTION__);
+        // SDL_Log("%s, no viewport was set!", SDL_FUNCTION);
         return false;
     }
 
@@ -2138,7 +2138,7 @@ static bool D3D11_UpdateViewport(SDL_Renderer *renderer)
     d3dviewport.Height = orientationAlignedViewport.h;
     d3dviewport.MinDepth = 0.0f;
     d3dviewport.MaxDepth = 1.0f;
-    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
+    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}", SDL_FUNCTION, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D11DeviceContext_RSSetViewports(data->d3dContext, 1, &d3dviewport);
 
     data->viewportDirty = false;
@@ -2774,13 +2774,13 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 
     renderTargetView = D3D11_GetCurrentRenderTargetView(renderer);
     if (!renderTargetView) {
-        SDL_SetError("%s, ID3D11DeviceContext::OMGetRenderTargets failed", __FUNCTION__);
+        SDL_SetError("%s, ID3D11DeviceContext::OMGetRenderTargets failed", SDL_FUNCTION);
         goto done;
     }
 
     ID3D11View_GetResource(renderTargetView, (ID3D11Resource **)&backBuffer);
     if (!backBuffer) {
-        SDL_SetError("%s, ID3D11View::GetResource failed", __FUNCTION__);
+        SDL_SetError("%s, ID3D11View::GetResource failed", SDL_FUNCTION);
         goto done;
     }
 
