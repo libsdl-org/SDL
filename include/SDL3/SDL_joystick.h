@@ -46,7 +46,8 @@
  * and load appropriate drivers.
  *
  * If you would like to receive joystick updates while the application is in
- * the background, you should set the SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS hint.
+ * the background, you should set the
+ * SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS hint.
  *
  * SDL can provide virtual joysticks as well: the app defines an imaginary
  * controller with SDL_AttachVirtualJoystick(), and then can provide inputs
