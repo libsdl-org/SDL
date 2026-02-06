@@ -110,9 +110,7 @@ static void HIDAPI_DriverGameSir_UnregisterHints(SDL_HintCallback callback, void
 
 static bool HIDAPI_DriverGameSir_IsEnabled(void)
 {
-    // Temporarily disabled by default until response from GameSir
-    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, false);
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
 
@@ -354,14 +352,8 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
     ctx->output_handle = GetOutputHandle(device);
 
     switch (device->product_id) {
-    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID:
-        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro (HID)");
-        ctx->sensors_supported = true;
-        ctx->led_supported = false;
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro HID mode (PID 0x%04X)", device->product_id);
-        break;
-    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID:
-        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K (HID)");
+    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K:
+        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K");
         ctx->sensors_supported = true;
         ctx->led_supported = false;
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K HID mode (PID 0x%04X)", device->product_id);
