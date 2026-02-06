@@ -64,7 +64,7 @@
 #define HID_API_AS_STR(x) HID_API_AS_STR_IMPL(x)
 #define HID_API_TO_VERSION_STR(v1, v2, v3) HID_API_AS_STR(v1.v2.v3)
 
-/** @brief Coverts a version as Major/Minor/Patch into a number:
+/** @brief Converts a version as Major/Minor/Patch into a number:
 	<8 bit major><16 bit minor><8 bit patch>.
 
 	This macro was added in version 0.12.0.

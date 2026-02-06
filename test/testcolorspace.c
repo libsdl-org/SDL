@@ -192,7 +192,7 @@ static void RenderClearBackground(void)
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderClear(renderer);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -220,7 +220,7 @@ static void RenderDrawBackground(void)
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderFillRect(renderer, NULL);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -269,7 +269,7 @@ static void RenderTextureBackground(void)
     SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_DestroyTexture(texture);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -307,7 +307,7 @@ static void RenderTargetBackground(void)
     SDL_RenderTexture(renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
