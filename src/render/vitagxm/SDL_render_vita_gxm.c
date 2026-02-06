@@ -1017,7 +1017,7 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
                 }
             }
 
-            if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
+            if ((data->drawstate.cliprect_enabled || !data->drawstate.viewport_is_set) && SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&data->drawstate.cliprect, rect);
                 data->drawstate.cliprect_dirty = SDL_TRUE;
             }
