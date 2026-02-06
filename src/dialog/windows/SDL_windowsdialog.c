@@ -411,7 +411,7 @@ typedef struct
     char *cancel;
 } winFArgs;
 
-void freeWinArgs(winArgs *args)
+static void freeWinArgs(winArgs *args)
 {
     SDL_free(args->default_file);
     SDL_free(args->filters_str);
@@ -422,7 +422,7 @@ void freeWinArgs(winArgs *args)
     SDL_free(args);
 }
 
-void freeWinFArgs(winFArgs *args)
+static void freeWinFArgs(winFArgs *args)
 {
     SDL_free(args->default_folder);
     SDL_free(args->title);
@@ -433,12 +433,12 @@ void freeWinFArgs(winFArgs *args)
 }
 
 /** Converts dialog.nFilterIndex to SDL-compatible value */
-int getFilterIndex(int as_reported_by_windows)
+static int getFilterIndex(int as_reported_by_windows)
 {
     return as_reported_by_windows - 1;
 }
 
-char *clear_filt_names(const char *filt)
+static char *clear_filt_names(const char *filt)
 {
     char *cleared = SDL_strdup(filt);
 
@@ -456,7 +456,7 @@ char *clear_filt_names(const char *filt)
     return cleared;
 }
 
-bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const char *default_file, SDL_Window *parent, bool allow_many, SDL_DialogFileCallback callback, void *userdata, const char *title, const char *accept, const char *cancel, wchar_t *filter_wchar, int nfilters)
+static bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const char *default_file, SDL_Window *parent, bool allow_many, SDL_DialogFileCallback callback, void *userdata, const char *title, const char *accept, const char *cancel, wchar_t *filter_wchar, int nfilters)
 {
     bool is_save = dialog_type == SDL_FILEDIALOG_SAVEFILE;
     bool is_folder = dialog_type == SDL_FILEDIALOG_OPENFOLDER;
@@ -754,7 +754,7 @@ quit:
 }
 
 // TODO: The new version of file dialogs
-void windows_ShowFileDialog(void *ptr)
+static void windows_ShowFileDialog(void *ptr)
 {
 
     winArgs *args = (winArgs *) ptr;
@@ -1036,14 +1036,14 @@ void windows_ShowFileDialog(void *ptr)
     SDL_free(filebuffer);
 }
 
-int windows_file_dialog_thread(void *ptr)
+static int windows_file_dialog_thread(void *ptr)
 {
     windows_ShowFileDialog(ptr);
     freeWinArgs(ptr);
     return 0;
 }
 
-int CALLBACK browse_callback_proc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+static int CALLBACK browse_callback_proc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
 {
     switch (uMsg) {
     case BFFM_INITIALIZED:
@@ -1061,7 +1061,7 @@ int CALLBACK browse_callback_proc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lp
     return 0;
 }
 
-void windows_ShowFolderDialog(void *ptr)
+static void windows_ShowFolderDialog(void *ptr)
 {
     winFArgs *args = (winFArgs *) ptr;
     SDL_Window *window = args->parent;
@@ -1120,14 +1120,14 @@ void windows_ShowFolderDialog(void *ptr)
     }
 }
 
-int windows_folder_dialog_thread(void *ptr)
+static int windows_folder_dialog_thread(void *ptr)
 {
     windows_ShowFolderDialog(ptr);
     freeWinFArgs((winFArgs *)ptr);
     return 0;
 }
 
-wchar_t *win_get_filters(const SDL_DialogFileFilter *filters, int nfilters)
+static wchar_t *win_get_filters(const SDL_DialogFileFilter *filters, int nfilters)
 {
     wchar_t *filter_wchar = NULL;
 
@@ -1224,7 +1224,7 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
     SDL_DetachThread(thread);
 }
 
-void ShowFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many, const char *title, const char *accept, const char *cancel)
+static void ShowFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many, const char *title, const char *accept, const char *cancel)
 {
     winFArgs *args;
     SDL_Thread *thread;

@@ -105,7 +105,7 @@ static SDL_TrayEntry *find_entry_with_id(SDL_Tray *tray, UINT_PTR id)
     return find_entry_in_menu(tray->menu, id);
 }
 
-LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     SDL_Tray *tray = (SDL_Tray *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     SDL_TrayEntry *entry = NULL;
 

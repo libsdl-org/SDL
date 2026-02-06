@@ -267,7 +267,7 @@ void SDL_Gtk_Quit(void)
     SDL_SetInitialized(&gtk_init, false);
 }
 
-SDL_GtkContext *SDL_Gtk_GetContext(void)
+static SDL_GtkContext *SDL_Gtk_GetContext(void)
 {
     return IsGtkInit() ? &gtk : NULL;
 }

@@ -1467,7 +1467,7 @@ static void WIN_GrabKeyboard(SDL_Window *window)
     data->keyboard_hook = SetWindowsHookEx(WH_KEYBOARD_LL, WIN_KeyboardHookProc, module, 0);
 }
 
-void WIN_UngrabKeyboard(SDL_Window *window)
+static void WIN_UngrabKeyboard(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
 

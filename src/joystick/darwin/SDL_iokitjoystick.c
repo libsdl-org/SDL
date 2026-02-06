@@ -39,7 +39,7 @@ static IOHIDManagerRef hidman = NULL;
 // Linked list of all available devices
 static recDevice *gpDeviceList = NULL;
 
-void FreeRumbleEffectData(FFEFFECT *effect)
+static void FreeRumbleEffectData(FFEFFECT *effect)
 {
     if (!effect) {
         return;
@@ -50,7 +50,7 @@ void FreeRumbleEffectData(FFEFFECT *effect)
     SDL_free(effect);
 }
 
-FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
+static FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
     FFEFFECT *effect;
     FFPERIODIC *periodic;

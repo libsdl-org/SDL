@@ -1214,7 +1214,7 @@ void X11_GetBorderValues(SDL_WindowData *data)
     }
 }
 
-void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent)
+static void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent)
 {
     if (!data->size_move_event_flags) {
         int x = xevent->x;

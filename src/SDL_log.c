@@ -652,7 +652,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
 }
 
 #if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
-enum {
+static enum {
     CONSOLE_UNATTACHED = 0,
     CONSOLE_ATTACHED_CONSOLE = 1,
     CONSOLE_ATTACHED_FILE = 2,

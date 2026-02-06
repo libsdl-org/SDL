@@ -3448,7 +3448,7 @@ static bool D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return true;
 }
 
-bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
+static bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *data;
 

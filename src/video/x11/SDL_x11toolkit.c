@@ -1608,7 +1608,7 @@ static Bool X11Toolkit_EventTest(Display *display, XEvent *event, XPointer arg)
     return False;
 }
 
-void X11Toolkit_ProcessWindowEvents(SDL_ToolkitWindowX11 *data, XEvent *e) {
+static void X11Toolkit_ProcessWindowEvents(SDL_ToolkitWindowX11 *data, XEvent *e) {
     /* If X11_XFilterEvent returns True, then some input method has filtered the
         event, and the client should discard the event. */
     if ((e->type != Expose) && X11_XFilterEvent(e, None)) {

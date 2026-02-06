@@ -167,7 +167,7 @@ struct joystick_hwdata
 };
 typedef struct joystick_hwdata RAWINPUT_DeviceContext;
 
-SDL_RAWINPUT_Device *SDL_RAWINPUT_devices;
+static SDL_RAWINPUT_Device *SDL_RAWINPUT_devices;
 
 static const Uint16 subscribed_devices[] = {
     USB_USAGE_GENERIC_GAMEPAD,

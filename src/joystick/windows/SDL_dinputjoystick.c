@@ -344,7 +344,7 @@ static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, Uint
     return true;
 }
 
-void FreeRumbleEffectData(DIEFFECT *effect)
+static void FreeRumbleEffectData(DIEFFECT *effect)
 {
     if (!effect) {
         return;
@@ -355,7 +355,7 @@ void FreeRumbleEffectData(DIEFFECT *effect)
     SDL_free(effect);
 }
 
-DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
+static DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
     DIEFFECT *effect;
     DIPERIODIC *periodic;

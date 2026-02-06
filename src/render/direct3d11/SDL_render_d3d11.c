@@ -255,7 +255,7 @@ static const struct {
     { SDL_PIXELFORMAT_ARGB4444,     DXGI_FORMAT_B4G4R4A4_UNORM,     DXGI_FORMAT_B4G4R4A4_UNORM      }
 };
 
-SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
+static SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
         if (dxgi_format_map[i].unorm == dxgiFormat ||
