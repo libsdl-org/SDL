@@ -759,7 +759,7 @@ static void WIN_ApplySystemScale(void *internal, Uint64 timestamp, SDL_Window *w
         return;
     }
 
-    int i, j, k;
+    int i, j = 0, k;
     for (i = 1; i < 5; i++) {
         j = i;
         if (speed < xs[j]) {
