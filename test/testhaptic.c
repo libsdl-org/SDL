@@ -319,7 +319,7 @@ int main(int argc, char **argv)
 /**
  * Cleans up a bit.
  */
-static void
+static SDL_NORETURN void
 abort_execution(void)
 {
     SDL_Log("%s", "");
