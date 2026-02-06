@@ -1038,7 +1038,7 @@ static SDL_FunctionPointer OVR_EGL_GetProcAddress(SDL_VideoDevice *_this, const 
 }
 static void OVR_EGL_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    return SDL_EGL_UnloadLibrary(_this);
+    SDL_EGL_UnloadLibrary(_this);
 }
 static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
 {
