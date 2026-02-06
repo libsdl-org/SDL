@@ -55,7 +55,7 @@ static bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable(void)
     /* On Android/Quest, the xrGetInstanceProcAddr obtained through runtime negotiation
      * crashes when used for pre-instance global functions. Skip validation layer check. */
     return false;
-#endif
+#else
 
     Uint32 apiLayerCount;
     if (XR_FAILED(xrEnumerateApiLayerProperties(0, &apiLayerCount, NULL))) {
@@ -84,6 +84,7 @@ static bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable(void)
 
     SDL_stack_free(apiLayerProperties);
     return found;
+#endif
 }
 
 XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
