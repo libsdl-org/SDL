@@ -1118,7 +1118,7 @@ static int SDLCALL surface_testCompleteSurfaceConversion(void *arg)
  */
 static int SDLCALL surface_testLoadFailure(void *arg)
 {
-    SDL_Surface *face = SDL_LoadBMP("nonexistant.bmp");
+    SDL_Surface *face = SDL_LoadBMP("nonexistent.bmp");
     SDLTest_AssertCheck(face == NULL, "SDL_CreateLoadBmp");
 
     return TEST_COMPLETED;

@@ -224,7 +224,7 @@ If you're using the SDL main callbacks, the mainloop defaults to using
 requestAnimationFrame (effectively vsync), because it calls
 emscripten_set_main_loop() with a zero fps. This is almost certainly what you
 want to do! Do this even if you aren't using the main callbacks!
-SDL will attempt to accomodate the app if it messes with vsync settings, or
+SDL will attempt to accommodate the app if it messes with vsync settings, or
 doesn't use requestAnimationFrame, but modern thinking is that this is the
 most efficient, consistent, and correct way to run a game in a web browser.
 
