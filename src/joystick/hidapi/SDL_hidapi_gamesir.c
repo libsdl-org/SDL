@@ -159,25 +159,10 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
 
     for (int attempt = 0; attempt < 3; ++attempt) {
         int result = SDL_hid_write(handle, buf, sizeof(buf));
-        if (result < 0) {
-            return false;
+        if (result >= 0) {
+            return true;
         }
-        for (int i = 0; i < 10; ++i) {
-            SDL_Delay(1);
-
-            Uint8 data[USB_PACKET_LENGTH] = {0};
-            int size = SDL_hid_read_timeout(handle, data, sizeof(data), 0);
-            if (size < 0) {
-                break;
-            }
-            if (size == 0) {
-                continue;
-            }
-
-            if (size == 64 && data[0] == 0xA1 && data[1] == 0x43 && data[2] == 0x01) {
-                return true;
-            }
-        }
+        SDL_Delay(1);
     }
     return false;
 }
@@ -356,7 +341,7 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K");
         ctx->sensors_supported = true;
         ctx->led_supported = false;
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K HID mode (PID 0x%04X)", device->product_id);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K mode (PID 0x%04X)", device->product_id);
         break;
     default:
         HIDAPI_SetDeviceName(device, "GameSir Controller");
@@ -391,17 +376,11 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_zeroa(ctx->last_state);
     ctx->last_state_initialized = false;
 
-    bool extended_report_mode = SendGameSirModeSwitch(device);
-    if (!extended_report_mode) {
-        ctx->sensors_supported = false;
-        ctx->led_supported = false;
+    if (!SendGameSirModeSwitch(device)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: failed to send SDL mode switch command (0xA2, 0x01)");
     }
 
-    if (extended_report_mode) {
-        joystick->nbuttons = 35;
-    } else {
-        joystick->nbuttons = 11;
-    }
+    joystick->nbuttons = 35;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
@@ -434,8 +413,8 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     SDL_zero(buf);
     buf[0] = 0xA2;
     buf[1] = 0x03;
-    buf[2] = (Uint8)(low_frequency_rumble / 256);
-    buf[3] = (Uint8)(high_frequency_rumble / 256);
+    buf[2] = (Uint8)(low_frequency_rumble >> 8);
+    buf[3] = (Uint8)(high_frequency_rumble >> 8);
 
     SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
     if (handle == NULL) {
