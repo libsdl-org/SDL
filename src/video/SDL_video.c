@@ -5410,11 +5410,14 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
         return NULL;
     }
 
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     bool srgb_requested = (_this->gl_config.framebuffer_srgb_capable > 0);
     const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
     if (srgbhint && *srgbhint) {
         srgb_requested = SDL_GetStringBoolean(srgbhint, false);
     }
+
+#endif
 
     ctx = _this->GL_CreateContext(_this, window);
 
@@ -5426,6 +5429,7 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
         SDL_SetTLS(&_this->current_glctx_tls, ctx, NULL);
     }
 
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
     // try to force the window framebuffer to the requested sRGB state.
     PFNGLENABLEPROC glToggleFunc = (PFNGLENABLEPROC) SDL_GL_GetProcAddress(srgb_requested ? "glEnable" : "glDisable");
     PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
@@ -5443,6 +5447,7 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
             glToggleFunc(GL_FRAMEBUFFER_SRGB);
         }
     }
+#endif
 
     return ctx;
 }
