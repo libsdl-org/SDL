@@ -5394,7 +5394,11 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
         return NULL;
     }
 
-    const bool srgb_requested = (_this->gl_config.framebuffer_srgb_capable > 0);
+    bool srgb_requested = (_this->gl_config.framebuffer_srgb_capable > 0);
+    const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
+    if (srgbhint && *srgbhint) {
+        srgb_requested = SDL_GetStringBoolean(srgbhint, false);
+    }
 
     ctx = _this->GL_CreateContext(_this, window);
 
