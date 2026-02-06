@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
     }
     
     success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                                       "Cyrillic (Ukranian)",
+                                       "Cyrillic (Ukrainian)",
                                        "Для запису людської мови використовуються системи письма.",
                                        NULL);
     if (!success) {

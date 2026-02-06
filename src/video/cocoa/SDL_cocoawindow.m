@@ -1555,7 +1555,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         [self addPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
         [nswindow miniaturize:nil];
     } else {
-        // Adjust the fullscreen toggle button and readd menu now that we're here.
+        // Adjust the fullscreen toggle button and re-add menu now that we're here.
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
