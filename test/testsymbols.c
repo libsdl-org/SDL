@@ -68,7 +68,7 @@ extern SDL_DECLSPEC void SDLCALL JNI_OnLoad(void);
 
 #include <SDL3/SDL_openxr.h>
 
-const static struct {
+static const struct {
     const char *name;
     SDL_FunctionPointer address;
 } sdl_symbols[] = {
