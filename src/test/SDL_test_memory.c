@@ -314,9 +314,9 @@ void SDLTest_TrackAllocations(void)
         if (!dyn_dbghelp.module) {
             goto dbghelp_failed;
         }
-        dyn_dbghelp.pSymInitialize = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymInitialize");
-        dyn_dbghelp.pSymFromAddr = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymFromAddr");
-        dyn_dbghelp.pSymGetLineFromAddr64 = (void *)SDL_LoadFunction(dyn_dbghelp.module, "SymGetLineFromAddr64");
+        *(SDL_FunctionPointer*)&dyn_dbghelp.pSymInitialize = (SDL_FunctionPointer)SDL_LoadFunction(dyn_dbghelp.module, "SymInitialize");
+        *(SDL_FunctionPointer*)&dyn_dbghelp.pSymFromAddr = (SDL_FunctionPointer)SDL_LoadFunction(dyn_dbghelp.module, "SymFromAddr");
+        *(SDL_FunctionPointer*)&dyn_dbghelp.pSymGetLineFromAddr64 = (SDL_FunctionPointer)SDL_LoadFunction(dyn_dbghelp.module, "SymGetLineFromAddr64");
         if (!dyn_dbghelp.pSymInitialize || !dyn_dbghelp.pSymFromAddr || !dyn_dbghelp.pSymGetLineFromAddr64) {
             goto dbghelp_failed;
         }

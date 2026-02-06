@@ -54,7 +54,8 @@ SDL_SharedObject *SDL_LoadObject(const char *sofile)
 
 SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
 {
-    void *symbol = dlsym(handle, name);
+    SDL_FunctionPointer symbol;
+    *(void**)&symbol = dlsym(handle, name);
     if (!symbol) {
         // prepend an underscore for platforms that need that.
         bool isstack;
@@ -62,7 +63,7 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
         char *_name = SDL_small_alloc(char, len + 1, &isstack);
         _name[0] = '_';
         SDL_memcpy(&_name[1], name, len);
-        symbol = dlsym(handle, _name);
+        *(void**)&symbol = dlsym(handle, _name);
         SDL_small_free(_name, isstack);
         if (!symbol) {
             SDL_SetError("Failed loading %s: %s", name,

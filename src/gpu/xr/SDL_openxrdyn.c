@@ -65,7 +65,7 @@ static openxrdynlib openxr_loader = { NULL };
 #ifndef SDL_PLATFORM_ANDROID
 static void *OPENXR_GetSym(const char *fnname, bool *failed)
 {
-    void *fn = SDL_LoadFunction(openxr_loader.lib, fnname);
+    SDL_FunctionPointer fn = SDL_LoadFunction(openxr_loader.lib, fnname);
 
 #if DEBUG_DYNAMIC_OPENXR
     if (fn) {
@@ -75,7 +75,7 @@ static void *OPENXR_GetSym(const char *fnname, bool *failed)
     }
 #endif
 
-    return fn;
+    return (void*)fn;
 }
 #endif
 

@@ -94,7 +94,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
         ppthread_setname_np = (int (*)(const char *))fn;
 #elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)
-        ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
+        *(void**)&ppthread_setname_np = fn;
 #endif
         checked_setname = true;
     }

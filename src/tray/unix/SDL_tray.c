@@ -114,10 +114,10 @@ static bool init_appindicator(void)
         return SDL_SetError("Could not load AppIndicator libraries");
     }
 
-    app_indicator_new = dlsym(libappindicator, "app_indicator_new");
-    app_indicator_set_status = dlsym(libappindicator, "app_indicator_set_status");
-    app_indicator_set_icon = dlsym(libappindicator, "app_indicator_set_icon");
-    app_indicator_set_menu = dlsym(libappindicator, "app_indicator_set_menu");
+    *(void**)&app_indicator_new = dlsym(libappindicator, "app_indicator_new");
+    *(void**)&app_indicator_set_status = dlsym(libappindicator, "app_indicator_set_status");
+    *(void**)&app_indicator_set_icon = dlsym(libappindicator, "app_indicator_set_icon");
+    *(void**)&app_indicator_set_menu = dlsym(libappindicator, "app_indicator_set_menu");
 
     if (!app_indicator_new ||
         !app_indicator_set_status ||
@@ -586,7 +586,8 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     gtk->gtk.widget_show(entry->item);
     gtk->gtk.menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
 
-    gtk->g.signal_connect(entry->item, "activate", call_callback, entry);
+    SDL_FunctionPointer fn = (SDL_FunctionPointer)call_callback;
+    gtk->g.signal_connect(entry->item, "activate", *(void**)&fn, entry);
 
     SDL_Gtk_ExitContext(gtk);
 

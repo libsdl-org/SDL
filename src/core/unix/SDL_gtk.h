@@ -48,7 +48,7 @@ typedef enum SDL_GConnectFlags
     SDL_G_CONNECT_SWAPPED = 1 << 1
 } SDL_GConnectFlags;
 
-#define SDL_G_CALLBACK(f) ((GCallback) (f))
+#define SDL_G_CALLBACK(f) (*(GCallback*) (&f))
 #define SDL_G_TYPE_CIC(ip, gt, ct) ((ct*) ip)
 #define SDL_G_TYPE_CHECK_INSTANCE_CAST(instance, g_type, c_type) (SDL_G_TYPE_CIC ((instance), (g_type), c_type))
 

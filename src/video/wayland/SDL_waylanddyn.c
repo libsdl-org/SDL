@@ -94,7 +94,7 @@ static waylanddynlib waylandlibs[] = {
 
 static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
 {
-    void *fn = NULL;
+    SDL_FunctionPointer fn = NULL;
     waylanddynlib *dynlib;
     for (dynlib = waylandlibs; dynlib->libname; dynlib++) {
         if (dynlib->lib) {
@@ -117,7 +117,7 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
         *pHasModule = 0; // kill this module.
     }
 
-    return fn;
+    return *(void**)&fn;
 }
 
 #else
@@ -187,8 +187,8 @@ bool SDL_WAYLAND_LoadSymbols(void)
 #include "SDL_waylandsym.h"
 
 #define SDL_WAYLAND_MODULE(modname)         thismod = &SDL_WAYLAND_HAVE_##modname;
-#define SDL_WAYLAND_SYM(rc, fn, params)     WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn)WAYLAND_GetSym(#fn, thismod, true);
-#define SDL_WAYLAND_SYM_OPT(rc, fn, params) WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn)WAYLAND_GetSym(#fn, thismod, false);
+#define SDL_WAYLAND_SYM(rc, fn, params)     *(void**)&WAYLAND_##fn = WAYLAND_GetSym(#fn, thismod, true);
+#define SDL_WAYLAND_SYM_OPT(rc, fn, params) *(void**)&WAYLAND_##fn = WAYLAND_GetSym(#fn, thismod, false);
 #define SDL_WAYLAND_INTERFACE(iface)        WAYLAND_##iface = (struct wl_interface *)WAYLAND_GetSym(#iface, thismod, true);
 #include "SDL_waylandsym.h"
 

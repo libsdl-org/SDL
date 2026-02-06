@@ -289,7 +289,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
         /* Skip SIGHUP and SIGPIPE if handler is already installed
          * - assume the handler will do the cleanup
          */
-        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (void (*)(int))old_action_p->sa_sigaction != SIG_DFL)) {
+        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (SDL_FunctionPointer)old_action_p->sa_sigaction != (SDL_FunctionPointer)SIG_DFL)) {
             continue;
         }
 

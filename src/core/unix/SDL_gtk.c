@@ -26,7 +26,7 @@
 #include <unistd.h>
 
 #define SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym)                     \
-    ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym)
+    *(SDL_FunctionPointer*)&ctx.sub.fn = (SDL_FunctionPointer)SDL_LoadFunction(lib, #sym)
 
 #define SDL_GTK_SYM2(ctx, lib, sub, fn, sym)                              \
     SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym);                        \

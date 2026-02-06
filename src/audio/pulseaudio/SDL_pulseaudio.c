@@ -145,7 +145,7 @@ static SDL_SharedObject *pulseaudio_handle = NULL;
 
 static bool load_pulseaudio_sym(const char *fn, void **addr)
 {
-    *addr = SDL_LoadFunction(pulseaudio_handle, fn);
+    *((SDL_FunctionPointer*)addr) = (SDL_FunctionPointer)SDL_LoadFunction(pulseaudio_handle, fn);
     if (!*addr) {
         // Don't call SDL_SetError(): SDL_LoadFunction already did.
         return false;

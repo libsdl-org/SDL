@@ -962,7 +962,8 @@ static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SD
 static bool SDLCALL mem_close(void *userdata)
 {
     IOStreamMemData *iodata = (IOStreamMemData *) userdata;
-    SDL_free_func free_func = SDL_GetPointerProperty(iodata->props, SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER, NULL);
+    SDL_free_func free_func;
+    *(void**)&free_func = SDL_GetPointerProperty(iodata->props, SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER, NULL);
     if (free_func) {
         free_func(iodata->base);
     }

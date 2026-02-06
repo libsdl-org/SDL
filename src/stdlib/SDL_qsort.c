@@ -532,13 +532,14 @@ void SDL_qsort_r(void *base, size_t nmemb, size_t size,
 
 static int SDLCALL qsort_non_r_bridge(void *userdata, const void *a, const void *b)
 {
-    int (SDLCALL *compare)(const void *, const void *) = (int (SDLCALL *)(const void *, const void *)) userdata;
+    int (SDLCALL *compare)(const void *, const void *);
+    *(void**)&compare = userdata;
     return compare(a, b);
 }
 
 void SDL_qsort(void *base, size_t nmemb, size_t size, SDL_CompareCallback compare)
 {
-    SDL_qsort_r(base, nmemb, size, qsort_non_r_bridge, compare);
+    SDL_qsort_r(base, nmemb, size, qsort_non_r_bridge, *(void**)&compare);
 }
 
 // Don't use the C runtime for such a simple function, since we want to allow SDLCALL callbacks and userdata.
@@ -572,5 +573,5 @@ void *SDL_bsearch_r(const void *key, const void *base, size_t nmemb, size_t size
 void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback compare)
 {
     // qsort_non_r_bridge just happens to match calling conventions, so reuse it.
-    return SDL_bsearch_r(key, base, nmemb, size, qsort_non_r_bridge, compare);
+    return SDL_bsearch_r(key, base, nmemb, size, qsort_non_r_bridge, *(void**)&compare);
 }

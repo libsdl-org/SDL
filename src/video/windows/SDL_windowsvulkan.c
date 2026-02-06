@@ -163,7 +163,7 @@ void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
                                const struct VkAllocationCallbacks *allocator)
 {
     if (_this->vulkan_config.loader_handle) {
-        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+        SDL_Vulkan_DestroySurface_Internal((void*)_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
     }
 }
 

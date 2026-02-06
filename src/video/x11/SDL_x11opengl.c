@@ -200,11 +200,11 @@ bool X11_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
     // Load function pointers
     handle = _this->gl_config.dll_handle;
-    _this->gl_data->glXQueryExtension =
-        (Bool(*)(Display *, int *, int *))
+    *(void**)&_this->gl_data->glXQueryExtension =
+        /*(Bool(*)(Display *, int *, int *))*/
             GL_LoadFunction(handle, "glXQueryExtension");
-    _this->gl_data->glXGetProcAddress =
-        (__GLXextFuncPtr (*)(const GLubyte *))
+    *(void**)&_this->gl_data->glXGetProcAddress = 
+        /*(__GLXextFuncPtr (*)(const GLubyte *))*/
             GL_LoadFunction(handle, "glXGetProcAddressARB");
     _this->gl_data->glXChooseVisual =
         (XVisualInfo * (*)(Display *, int, int *))
@@ -279,7 +279,8 @@ SDL_FunctionPointer X11_GL_GetProcAddress(SDL_VideoDevice *_this, const char *pr
     if (_this->gl_data->glXGetProcAddress) {
         return _this->gl_data->glXGetProcAddress((const GLubyte *)proc);
     }
-    return GL_LoadFunction(_this->gl_config.dll_handle, proc);
+    void* fn = GL_LoadFunction(_this->gl_config.dll_handle, proc);
+    return *(SDL_FunctionPointer*)&fn;
 }
 
 void X11_GL_UnloadLibrary(SDL_VideoDevice *_this)

@@ -525,12 +525,12 @@ static void SDL_InitDynamicAPILocked(void)
     if (libname) {
         while (*libname && !entry) {
             // This is evil, but we're not making any permanent changes...
-            char *ptr = (char *)libname;
+            char *ptr = libname;
             while (true) {
                 char ch = *ptr;
                 if ((ch == ',') || (ch == '\0')) {
                     *ptr = '\0';
-                    entry = (SDL_DYNAPI_ENTRYFN)get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
+                    *(void **)&entry = get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
                     *ptr = ch;
                     libname = (ch == '\0') ? ptr : (ptr + 1);
                     break;

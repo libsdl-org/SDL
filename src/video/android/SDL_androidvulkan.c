@@ -65,8 +65,8 @@ bool Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     if (!vkGetInstanceProcAddr) {
         goto fail;
     }
-    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
-    _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
+    *(void**)&_this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
+    *(void**)&_this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
@@ -168,7 +168,7 @@ void Android_Vulkan_DestroySurface(SDL_VideoDevice *_this,
                                    const struct VkAllocationCallbacks *allocator)
 {
     if (_this->vulkan_config.loader_handle) {
-        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+        SDL_Vulkan_DestroySurface_Internal(*(void**)&_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
     }
 }
 

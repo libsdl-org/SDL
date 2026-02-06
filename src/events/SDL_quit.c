@@ -77,7 +77,7 @@ static void SDL_EventSignal_Init(const int sig)
 
     sigaction(sig, NULL, &action);
 #ifdef HAVE_SA_SIGACTION
-    if (action.sa_handler == SIG_DFL && (void (*)(int))action.sa_sigaction == SIG_DFL) {
+    if (action.sa_handler == SIG_DFL && (SDL_FunctionPointer)action.sa_sigaction == (SDL_FunctionPointer)SIG_DFL) {
 #else
     if (action.sa_handler == SIG_DFL) {
 #endif

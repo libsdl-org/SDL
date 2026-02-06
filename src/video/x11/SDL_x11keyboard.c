@@ -725,7 +725,7 @@ void X11_CreateInputContext(SDL_WindowData *data)
 
             XIMCallback start_callback;
             start_callback.client_data = (XPointer)data;
-            start_callback.callback = (XIMProc)preedit_start_callback;
+            start_callback.callback = (XIMProc)(SDL_FunctionPointer)preedit_start_callback;
 
             XIMCallback done_callback;
             done_callback.client_data = (XPointer)data;
