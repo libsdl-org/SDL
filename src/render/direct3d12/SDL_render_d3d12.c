@@ -2795,7 +2795,6 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
                 break;
             default:
                 return SDL_SetError("[direct3d12] Trying to set a sampler for a shader which doesn't have one");
-                break;
             }
 
             ID3D12GraphicsCommandList2_SetGraphicsRootDescriptorTable(rendererData->commandList, tableIndex, GPUHandle);

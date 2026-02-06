@@ -2230,7 +2230,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_SendDropComplete(data->window);
         DragFinish(drop);
         return 0;
-    } break;
+    }
 
     case WM_DISPLAYCHANGE:
     {
@@ -2462,7 +2462,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->expected_resize = false;
             return 0;
         }
-        break;
 
     case WM_SETTINGCHANGE:
         if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
