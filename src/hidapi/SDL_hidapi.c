@@ -922,41 +922,41 @@ static const struct hidapi_backend PLATFORM_Backend = {
 
 #ifdef HAVE_DRIVER_BACKEND
 static const struct hidapi_backend DRIVER_Backend = {
-    (void *)DRIVER_hid_write,
-    (void *)DRIVER_hid_read_timeout,
-    (void *)DRIVER_hid_read,
-    (void *)DRIVER_hid_set_nonblocking,
-    (void *)DRIVER_hid_send_feature_report,
-    (void *)DRIVER_hid_get_feature_report,
-    (void *)DRIVER_hid_get_input_report,
-    (void *)DRIVER_hid_close,
-    (void *)DRIVER_hid_get_manufacturer_string,
-    (void *)DRIVER_hid_get_product_string,
-    (void *)DRIVER_hid_get_serial_number_string,
-    (void *)DRIVER_hid_get_indexed_string,
-    (void *)DRIVER_hid_get_device_info,
-    (void *)DRIVER_hid_get_report_descriptor,
-    (void *)DRIVER_hid_error
+    (int (*)(void *, const unsigned char *, size_t))DRIVER_hid_write,
+    (int (*)(void *, unsigned char *, size_t, int))DRIVER_hid_read_timeout,
+    (int (*)(void *, unsigned char *, size_t))DRIVER_hid_read,
+    (int (*)(void *, int))DRIVER_hid_set_nonblocking,
+    (int (*)(void *, const unsigned char *, size_t))DRIVER_hid_send_feature_report,
+    (int (*)(void *, unsigned char *, size_t))DRIVER_hid_get_feature_report,
+    (int (*)(void *, unsigned char *, size_t))DRIVER_hid_get_input_report,
+    (void (*)(void *))DRIVER_hid_close,
+    (int (*)(void *, wchar_t *, size_t))DRIVER_hid_get_manufacturer_string,
+    (int (*)(void *, wchar_t *, size_t))DRIVER_hid_get_product_string,
+    (int (*)(void *, wchar_t *, size_t))DRIVER_hid_get_serial_number_string,
+    (int (*)(void *, int, wchar_t *, size_t))DRIVER_hid_get_indexed_string,
+    (struct hid_device_info *(*)(void *))DRIVER_hid_get_device_info,
+    (int (*)(void *, unsigned char *, size_t))DRIVER_hid_get_report_descriptor,
+    (const wchar_t *(*)(void *))DRIVER_hid_error
 };
 #endif // HAVE_DRIVER_BACKEND
 
 #ifdef HAVE_LIBUSB
 static const struct hidapi_backend LIBUSB_Backend = {
-    (void *)LIBUSB_hid_write,
-    (void *)LIBUSB_hid_read_timeout,
-    (void *)LIBUSB_hid_read,
-    (void *)LIBUSB_hid_set_nonblocking,
-    (void *)LIBUSB_hid_send_feature_report,
-    (void *)LIBUSB_hid_get_feature_report,
-    (void *)LIBUSB_hid_get_input_report,
-    (void *)LIBUSB_hid_close,
-    (void *)LIBUSB_hid_get_manufacturer_string,
-    (void *)LIBUSB_hid_get_product_string,
-    (void *)LIBUSB_hid_get_serial_number_string,
-    (void *)LIBUSB_hid_get_indexed_string,
-    (void *)LIBUSB_hid_get_device_info,
-    (void *)LIBUSB_hid_get_report_descriptor,
-    (void *)LIBUSB_hid_error
+    (int (*)(void *, const unsigned char *, size_t))LIBUSB_hid_write,
+    (int (*)(void *, unsigned char *, size_t, int))LIBUSB_hid_read_timeout,
+    (int (*)(void *, unsigned char *, size_t))LIBUSB_hid_read,
+    (int (*)(void *, int))LIBUSB_hid_set_nonblocking,
+    (int (*)(void *, const unsigned char *, size_t))LIBUSB_hid_send_feature_report,
+    (int (*)(void *, unsigned char *, size_t))LIBUSB_hid_get_feature_report,
+    (int (*)(void *, unsigned char *, size_t))LIBUSB_hid_get_input_report,
+    (void (*)(void *))LIBUSB_hid_close,
+    (int (*)(void *, wchar_t *, size_t))LIBUSB_hid_get_manufacturer_string,
+    (int (*)(void *, wchar_t *, size_t))LIBUSB_hid_get_product_string,
+    (int (*)(void *, wchar_t *, size_t))LIBUSB_hid_get_serial_number_string,
+    (int (*)(void *, int, wchar_t *, size_t))LIBUSB_hid_get_indexed_string,
+    (struct hid_device_info *(*)(void *))LIBUSB_hid_get_device_info,
+    (int (*)(void *, unsigned char *, size_t))LIBUSB_hid_get_report_descriptor,
+    (const wchar_t *(*)(void *))LIBUSB_hid_error
 };
 #endif // HAVE_LIBUSB
 
