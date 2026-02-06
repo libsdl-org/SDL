@@ -209,7 +209,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
                 SDL_small_free(tmp, isstack); \
             } \
         } \
-    }
+    } do {} while(0)
 
     switch (bitsize) {
         case 8: CHANNEL_SWIZZLE(8); break;

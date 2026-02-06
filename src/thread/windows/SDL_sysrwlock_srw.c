@@ -163,7 +163,7 @@ SDL_RWLock *SDL_CreateRWLock(void)
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 bool okay = true;
-                #define LOOKUP_SRW_SYM(sym) if (okay) { if ((p##sym = (pfn##sym)GetProcAddress(kernel32, #sym)) == NULL) { okay = false; } }
+                #define LOOKUP_SRW_SYM(sym) if (okay) { if ((p##sym = (pfn##sym)GetProcAddress(kernel32, #sym)) == NULL) { okay = false; } } do{} while(0)
                 LOOKUP_SRW_SYM(InitializeSRWLock);
                 LOOKUP_SRW_SYM(ReleaseSRWLockShared);
                 LOOKUP_SRW_SYM(AcquireSRWLockShared);

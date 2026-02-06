@@ -32,7 +32,7 @@
     SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym);                        \
     if (!ctx.sub.fn) {                                                    \
         return SDL_SetError("Could not load GTK functions");              \
-    }
+    } do{} while(0)
 
 #define SDL_GTK_SYM_OPTIONAL(ctx, lib, sub, fn) \
     SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sub##_##fn)

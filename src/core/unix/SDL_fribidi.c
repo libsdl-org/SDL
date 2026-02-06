@@ -43,7 +43,7 @@ SDL_FriBidi *SDL_FriBidi_Create(void)
     }
 
 #ifdef SDL_FRIBIDI_DYNAMIC
-    #define SDL_FRIBIDI_LOAD_SYM(x, n, t) x = ((t)SDL_LoadFunction(fribidi->lib, n)); if (!x) { SDL_UnloadObject(fribidi->lib); SDL_free(fribidi); return NULL; }
+    #define SDL_FRIBIDI_LOAD_SYM(x, n, t) x = ((t)SDL_LoadFunction(fribidi->lib, n)); if (!x) { SDL_UnloadObject(fribidi->lib); SDL_free(fribidi); return NULL; } do{} while(0)
 
     fribidi->lib = SDL_LoadObject(SDL_FRIBIDI_DYNAMIC);
     if (!fribidi->lib) {

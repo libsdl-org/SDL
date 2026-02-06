@@ -289,7 +289,7 @@ typedef struct { char * first; char * last; } stack_entry;
       }						\
     }						\
     first+=sz; last-=sz;			\
-  }
+  } do{} while(0)
 
 #ifdef DEBUG_QSORT
 #include <stdio.h>
@@ -305,7 +305,7 @@ typedef struct { char * first; char * last; } stack_entry;
       first+=sz; last-=sz; }			\
     else if (first==last) { first+=sz; last-=sz; break; }\
   } while (first<=last);			\
-}
+} do{} while(0)
 
 /* and so is the pre-insertion-sort operation of putting
  * the smallest element into place as a sentinel.
@@ -324,7 +324,8 @@ typedef struct { char * first; char * last; } stack_entry;
   while (last!=base) {				\
     if (compare(userdata,first,last)>0) first=last;	\
     last-=sz; }					\
-  if (first!=base) swapper(first,(char*)base);
+  if (first!=base) swapper(first,(char*)base); \
+  do{} while(0)
 
 /* and so is the insertion sort, in the first two cases: */
 #define Insertion(swapper)			\
@@ -343,7 +344,7 @@ typedef struct { char * first; char * last; } stack_entry;
       memmove(test+size,test,first-test);	\
       memcpy(test,pivot,size);			\
     }						\
-  }
+  } do{} while(0)
 
 #define SWAP_nonaligned(a,b) { \
   register char *aa=(a),*bb=(b); \

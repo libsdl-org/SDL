@@ -1778,7 +1778,7 @@ static bool SDL_ConvertPixels_Planar2x2_to_Planar2x2(int width, int height,
         srcYUV += 16;                                             \
         dstYUV += 16;                                             \
         x -= 4;                                                   \
-    }
+    } do{} while(0)
 
 static bool SDL_TARGETING("sse2") SDL_ConvertPixels_YUY2_to_UYVY_SSE2(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
 {

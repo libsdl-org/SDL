@@ -482,7 +482,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     {                      \
         if (!(expression)) \
             goto err;      \
-    }
+    } do{} while(0)
     JoyStick_DeviceData *pNewJoystick = NULL;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     Uint16 vendor = 0;
@@ -590,7 +590,7 @@ static BOOL CALLBACK EnumJoystickPresentCallback(LPCDIDEVICEINSTANCE pDeviceInst
     {                      \
         if (!(expression)) \
             goto err;      \
-    }
+    } do{} while(0)
     Joystick_PresentData *pData = (Joystick_PresentData *)pContext;
     Uint16 vendor = 0;
     Uint16 product = 0;

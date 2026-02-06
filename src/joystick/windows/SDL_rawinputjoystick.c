@@ -859,7 +859,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     {                      \
         if (!(expression)) \
             goto err;      \
-    }
+    } do{} while(0)
     SDL_RAWINPUT_Device *device = NULL;
     SDL_RAWINPUT_Device *curr, *last;
     RID_DEVICE_INFO rdi;
@@ -1678,7 +1678,7 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     {                                                                                \
         int match_axis = axis + SDL_JOYSTICK_RAWINPUT_MATCH_COUNT - joystick->naxes; \
         AddAxisToMatchState(match_axis, value);                                      \
-    }
+    } do{} while(0)
 #endif // SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
 
     if (ctx->trigger_hack) {

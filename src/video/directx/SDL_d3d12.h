@@ -48,7 +48,7 @@
     if (X) {                     \
         (X)->lpVtbl->Release(X); \
         X = NULL;                \
-    }
+    } do{} while(0)
 
 /* Some D3D12 calls are mismatched between Windows/Xbox, so we need to wrap the
  * C function ourselves :(
@@ -69,7 +69,7 @@
     if (X) {                \
         (X)->Release();     \
         X = NULL;           \
-    }
+    } do{} while(0)
 
 // Older versions of the Xbox GDK may not have this defined
 #ifndef D3D12_TEXTURE_DATA_PITCH_ALIGNMENT

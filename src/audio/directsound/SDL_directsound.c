@@ -88,7 +88,7 @@ static bool DSOUND_Load(void)
         p##f = (pfn##f)SDL_LoadFunction(DSoundDLL, #f); \
         if (!p##f)                                     \
             loaded = false;                                \
-    }
+    } do{} while(0)
         loaded = true; // will reset if necessary.
         DSOUNDLOAD(DirectSoundCreate8);
         DSOUNDLOAD(DirectSoundEnumerateW);

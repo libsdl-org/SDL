@@ -156,7 +156,7 @@ struct SDL_Gamepad
         SDL_InvalidParamError("gamepad");                               \
         SDL_UnlockJoysticks();                                          \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 static SDL_vidpid_list SDL_allowed_gamepads = {
     SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT, 0, 0, NULL,

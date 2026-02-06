@@ -53,20 +53,20 @@ this should probably be removed at some point in the future.  --ryan. */
     CHECK_PARAM(!SDL_ObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER)) { \
         SDL_InvalidParamError("renderer");                              \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 #define CHECK_RENDERER_MAGIC(renderer, result)                          \
     CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, result);      \
     CHECK_PARAM(renderer->destroyed) {                                  \
         SDL_SetError("Renderer's window has been destroyed, can't use further"); \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 #define CHECK_TEXTURE_MAGIC(texture, result)                            \
     CHECK_PARAM(!SDL_ObjectValid(texture, SDL_OBJECT_TYPE_TEXTURE)) {   \
         SDL_InvalidParamError("texture");                               \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 // Predefined blend modes
 #define SDL_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
@@ -2980,7 +2980,7 @@ bool SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_
 
 bool SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode)
 {
-    #define SETVAL(ptr, val) if (ptr) { *ptr = val; }
+    #define SETVAL(ptr, val) if (ptr) { *ptr = val; } do{} while(0)
 
     SETVAL(w, 0);
     SETVAL(h, 0);
@@ -3288,7 +3288,7 @@ bool SDL_GetRenderSafeArea(SDL_Renderer *renderer, SDL_Rect *rect)
 
 bool SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
 
     SDL_RenderViewState *view = renderer->view;
     if (rect && rect->w >= 0 && rect->h >= 0) {
@@ -3309,7 +3309,7 @@ bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
         SDL_zerop(rect);
     }
 
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
 
     if (rect) {
         SDL_copyp(rect, &renderer->view->clip_rect);
@@ -3319,7 +3319,7 @@ bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 
 bool SDL_RenderClipEnabled(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
     return renderer->view->clipping_enabled;
 }
 

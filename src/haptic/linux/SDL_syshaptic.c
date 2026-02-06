@@ -80,7 +80,7 @@ static int numhaptics = 0;
 #define EV_TEST(ev, f)              \
     if (test_bit((ev), features)) { \
         ret |= (f);                 \
-    }
+    } do{} while(0)
 /*
  * Test whether a device has haptic properties.
  * Returns available properties or 0 if there are none.

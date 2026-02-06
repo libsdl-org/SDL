@@ -158,18 +158,18 @@ static VideoBootStrap *bootstrap[] = {
     CHECK_PARAM(!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {     \
         SDL_SetError("Invalid window");                                 \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 #define CHECK_DISPLAY_MAGIC(display, result)                            \
     CHECK_PARAM(!display) {                                             \
         return result;                                                  \
-    }                                                                   \
+    } do{} while(0)                                                     \
 
 #define CHECK_WINDOW_NOT_POPUP(window, result)                          \
     CHECK_PARAM(SDL_WINDOW_IS_POPUP(window)) {                          \
         SDL_SetError("Operation invalid on popup windows");             \
         return result;                                                  \
-    }
+    } do{} while(0)
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
 // Support for macOS fullscreen spaces, etc.
@@ -3566,7 +3566,7 @@ bool SDL_SetWindowFullscreen(SDL_Window *window, bool fullscreen)
 
 bool SDL_SyncWindow(SDL_Window *window)
 {
-    CHECK_WINDOW_MAGIC(window, false)
+    CHECK_WINDOW_MAGIC(window, false);
 
     if (_this->SyncWindow) {
         return _this->SyncWindow(_this, window);
@@ -6068,8 +6068,8 @@ bool SDL_ShouldAllowTopmost(void)
 
 bool SDL_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 {
-    CHECK_WINDOW_MAGIC(window, false)
-    CHECK_WINDOW_NOT_POPUP(window, false)
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
 
     if (_this->ShowWindowSystemMenu) {
         _this->ShowWindowSystemMenu(window, x, y);

@@ -121,7 +121,7 @@ static BOOL (*ov_wglMakeCurrent)(HDC, HGLRC);
 #define OPENVR_DEFAULT_WIDTH 1920
 #define OPENVR_DEFAULT_HEIGHT 1080
 
-#define OPENVR_SetupProc(proc) { *(SDL_FunctionPointer*)&proc = (SDL_FunctionPointer)SDL_GL_GetProcAddress((#proc)+3); if (!proc) { failed_extension = (#proc)+3; } }
+#define OPENVR_SetupProc(proc) { *(SDL_FunctionPointer*)&proc = (SDL_FunctionPointer)SDL_GL_GetProcAddress((#proc)+3); if (!proc) { failed_extension = (#proc)+3; } } do{} while(0)
 
 static bool OPENVR_InitExtensions(SDL_VideoDevice *_this)
 {

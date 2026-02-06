@@ -111,7 +111,7 @@ static SDL_Haptic *SDL_haptics = NULL;
     CHECK_PARAM(!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
         SDL_InvalidParamError("haptic");                            \
         return result;                                              \
-    }
+    } do {} while(0)
 
 bool SDL_InitHaptics(void)
 {

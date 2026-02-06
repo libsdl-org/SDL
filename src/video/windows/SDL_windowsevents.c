@@ -2300,7 +2300,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     {                                                                      \
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0); \
         return ret;                                                        \
-    }
+    } do{} while(0)
                 case SDL_HITTEST_DRAGGABLE:
                 {
                     /* If the mouse button state is something other than none or left button down,

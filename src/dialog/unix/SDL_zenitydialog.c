@@ -125,7 +125,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
                 goto cleanup;                                       \
             }                                                       \
         }                                                           \
-    }
+    } do{} while(0)
 
     COPY_STRING_PROPERTY(args->filename, SDL_PROP_FILE_DIALOG_LOCATION_STRING);
     COPY_STRING_PROPERTY(args->title, SDL_PROP_FILE_DIALOG_TITLE_STRING);

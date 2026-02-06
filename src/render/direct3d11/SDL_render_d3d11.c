@@ -49,7 +49,7 @@
     if ((X)) {                                            \
         IUnknown_Release(SDL_static_cast(IUnknown *, X)); \
         X = NULL;                                         \
-    }
+    } do{} while(0)
 
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
