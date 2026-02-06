@@ -85,7 +85,7 @@
 #define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
 #define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
-#define USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K         0x10B8 // Wired/2.4G/Bluetooth 8K HID mode
+#define USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K             0x10B8 // Wired/2.4G/Bluetooth 8K mode
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4         0x011c
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
