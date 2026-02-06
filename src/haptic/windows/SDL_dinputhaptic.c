@@ -872,6 +872,10 @@ static void SDL_SYS_HapticFreeDIEFFECT(DIEFFECT *effect, int type)
 /*
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#endif
 // NOLINTNEXTLINE(readability-const-return-type): Can't fix Windows' headers
 static REFGUID SDL_SYS_HapticEffectType(const SDL_HapticEffect *effect)
 {
@@ -916,6 +920,10 @@ static REFGUID SDL_SYS_HapticEffectType(const SDL_HapticEffect *effect)
         return NULL;
     }
 }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 bool SDL_DINPUT_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     HRESULT ret;
