@@ -351,8 +351,10 @@ parse_settings (unsigned char *data,
           fprintf (stderr, "Duplicate XSETTINGS entry for '%s'\n", setting->name);
           SDL_FALLTHROUGH;
         case XSETTINGS_FAILED:
+          (void)0;
           SDL_FALLTHROUGH;
         case XSETTINGS_SUCCESS:
+          (void)0;
           SDL_FALLTHROUGH;
         case XSETTINGS_NO_ENTRY:
           break;
