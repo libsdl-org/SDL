@@ -113,8 +113,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     const char *const *userExtensionNames = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES_POINTER, NULL);
 
     // allocate enough space for the validation layer + the user's api layers
-    char **apiLayerNames = SDL_stack_alloc(char *, userApiLayerCount + 1);
-    SDL_memcpy(apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
+    const char **apiLayerNames = SDL_stack_alloc(const char *, userApiLayerCount + 1);
+    SDL_memcpy((void *)apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
     apiLayerNames[userApiLayerCount] = VALIDATION_LAYER_API_NAME;
 
     // On Android, we need an extra extension for android_create_instance
@@ -124,8 +124,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     const Uint32 platformExtensionCount = 1; // GPU extension only
 #endif
 
-    char **extensionNames = SDL_stack_alloc(char *, userExtensionCount + platformExtensionCount);
-    SDL_memcpy(extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
+    const char **extensionNames = SDL_stack_alloc(const char *, userExtensionCount + platformExtensionCount);
+    SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
     extensionNames[userExtensionCount] = gpuExtension.extensionName;
 #ifdef SDL_PLATFORM_ANDROID
     extensionNames[userExtensionCount + 1] = XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME;
