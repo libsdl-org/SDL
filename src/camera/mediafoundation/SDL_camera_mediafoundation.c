@@ -586,7 +586,7 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
     }
 
     IMFMediaBuffer *buffer = NULL;
-    ret = (result < 0) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(sample, &buffer); // IMFSample_GetBufferByIndex(sample, 0, &buffer);
+    ret = IMFSample_ConvertToContiguousBuffer(sample, &buffer); // IMFSample_GetBufferByIndex(sample, 0, &buffer);
 
     if (FAILED(ret)) {
         result = SDL_CAMERA_FRAME_ERROR;
