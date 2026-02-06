@@ -101,7 +101,7 @@ static void WIN_CacheKeymap(HKL layout, SDL_Keymap *keymap)
     ++keymap_cache_size;
 }
 
-static SDL_Keymap *WIN_BuildKeymap()
+static SDL_Keymap *WIN_BuildKeymap(void)
 {
     SDL_Scancode scancode;
     BYTE keyboardState[256] = { 0 };
