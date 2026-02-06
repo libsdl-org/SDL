@@ -2128,7 +2128,7 @@ void Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
         /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
         [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     } else {
-        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorNone];
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenNone];
     }
 }}
 
