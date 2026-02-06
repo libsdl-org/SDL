@@ -200,6 +200,14 @@ static SDL_TimerID SDLTest_SetTestTimeout(int timeout, SDL_TimerCallback callbac
     return timerID;
 }
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code-return"
+#endif
 /**
  * Timeout handler. Aborts test run and exits harness process.
  */
@@ -207,8 +215,14 @@ static Uint32 SDLCALL SDLTest_BailOut(void *userdata, SDL_TimerID timerID, Uint3
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");
     exit(TEST_ABORTED); /* bail out from the test */
-    return 0;
+    return 0; // unreachable
 }
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 /**
  * Execute a test using the given execution key.

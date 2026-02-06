@@ -311,6 +311,21 @@ bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         }
         close(fds[1]);
         _exit(exitcode); // don't run atexit() stuff, static destructors, etc.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code-return"
+#endif
+        return result;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
     } else {             // we're the parent
         pid_t rc;
         close(fds[1]);
