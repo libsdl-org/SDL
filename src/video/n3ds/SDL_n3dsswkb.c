@@ -28,7 +28,7 @@
 #include "SDL_n3dsswkb.h"
 
 static SwkbdState sw_keyboard;
-const static size_t BUFFER_SIZE = 256;
+static const size_t BUFFER_SIZE = 256;
 
 void N3DS_SwkbInit(void)
 {
