@@ -1616,6 +1616,10 @@ static void X11Toolkit_ProcessWindowEvents(SDL_ToolkitWindowX11 *data, XEvent *e
     }
 
     data->draw = false;
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-pointer" // false positive - its not a local variable
+#endif
     data->e = e;
 
     switch (e->type) {
@@ -1793,6 +1797,9 @@ static void X11Toolkit_ProcessWindowEvents(SDL_ToolkitWindowX11 *data, XEvent *e
     if (data->draw) {
         X11Toolkit_DrawWindow(data);
     }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
