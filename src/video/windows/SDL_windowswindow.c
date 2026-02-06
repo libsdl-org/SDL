@@ -2065,7 +2065,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                 HDROP drop = (HDROP)GlobalLock(med.hGlobal);
                 SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". In Drop File for   GlobalLock, format %08x '%s', memory (%lu) %p",
-                             fetc.cfFormat, format_mime, (unsigned long)bsize, drop);
+                             fetc.cfFormat, format_mime, (unsigned long)bsize, (void*)drop);
                 UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
                 for (UINT i = 0; i < count; ++i) {
                     UINT size = DragQueryFile(drop, i, NULL, 0) + 1;
