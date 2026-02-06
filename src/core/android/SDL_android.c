@@ -1841,7 +1841,7 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
 static void Internal_Android_Create_AssetManager(void)
 {
 
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
     jobject context;
@@ -2062,7 +2062,7 @@ bool Android_JNI_HasClipboardText(void)
  */
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent)
 {
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
     jobject context;
@@ -2425,7 +2425,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
     static char *s_AndroidInternalFilesPath = NULL;
 
     if (!s_AndroidInternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;
@@ -2476,7 +2476,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
 {
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     jmethodID mid;
     jclass cls;
     jstring stateString;
@@ -2519,7 +2519,7 @@ const char *SDL_GetAndroidExternalStoragePath(void)
     static char *s_AndroidExternalFilesPath = NULL;
 
     if (!s_AndroidExternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;
@@ -2565,7 +2565,7 @@ const char *SDL_GetAndroidCachePath(void)
     static char *s_AndroidCachePath = NULL;
 
     if (!s_AndroidCachePath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;
