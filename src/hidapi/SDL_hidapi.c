@@ -902,21 +902,21 @@ struct hidapi_backend
 
 #ifdef HAVE_PLATFORM_BACKEND
 static const struct hidapi_backend PLATFORM_Backend = {
-    (void *)PLATFORM_hid_write,
-    (void *)PLATFORM_hid_read_timeout,
-    (void *)PLATFORM_hid_read,
-    (void *)PLATFORM_hid_set_nonblocking,
-    (void *)PLATFORM_hid_send_feature_report,
-    (void *)PLATFORM_hid_get_feature_report,
-    (void *)PLATFORM_hid_get_input_report,
-    (void *)PLATFORM_hid_close,
-    (void *)PLATFORM_hid_get_manufacturer_string,
-    (void *)PLATFORM_hid_get_product_string,
-    (void *)PLATFORM_hid_get_serial_number_string,
-    (void *)PLATFORM_hid_get_indexed_string,
-    (void *)PLATFORM_hid_get_device_info,
-    (void *)PLATFORM_hid_get_report_descriptor,
-    (void *)PLATFORM_hid_error
+    (int (*)(void *, const unsigned char *, size_t))PLATFORM_hid_write,
+    (int (*)(void *, unsigned char *, size_t, int))PLATFORM_hid_read_timeout,
+    (int (*)(void *, unsigned char *, size_t))PLATFORM_hid_read,
+    (int (*)(void *, int))PLATFORM_hid_set_nonblocking,
+    (int (*)(void *, const unsigned char *, size_t))PLATFORM_hid_send_feature_report,
+    (int (*)(void *, unsigned char *, size_t))PLATFORM_hid_get_feature_report,
+    (int (*)(void *, unsigned char *, size_t))PLATFORM_hid_get_input_report,
+    (void (*)(void *))PLATFORM_hid_close,
+    (int (*)(void *, wchar_t *, size_t))PLATFORM_hid_get_manufacturer_string,
+    (int (*)(void *, wchar_t *, size_t))PLATFORM_hid_get_product_string,
+    (int (*)(void *, wchar_t *, size_t))PLATFORM_hid_get_serial_number_string,
+    (int (*)(void *, int, wchar_t *, size_t))PLATFORM_hid_get_indexed_string,
+    (struct hid_device_info *(*)(void *))PLATFORM_hid_get_device_info,
+    (int (*)(void *, unsigned char *, size_t))PLATFORM_hid_get_report_descriptor,
+    (const wchar_t *(*)(void *))PLATFORM_hid_error
 };
 #endif // HAVE_PLATFORM_BACKEND
 
