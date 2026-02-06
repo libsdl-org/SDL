@@ -231,6 +231,7 @@ typedef struct hidp_preparsed_data_ {
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wc++-compat"
 #endif
 		hid_pp_cap caps[0];
 		hid_pp_link_collection_node LinkCollectionArray[0];
