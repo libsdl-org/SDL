@@ -97,7 +97,7 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
     if (test_bit(EV_ABS, bitmask_ev) &&
         test_bit(ABS_X, bitmask_abs) && test_bit(ABS_Y, bitmask_abs)) {
         if (test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key)) {
-            ; // ID_INPUT_TABLET
+            //; // ID_INPUT_TABLET
         } else if (test_bit(BTN_TOOL_FINGER, bitmask_key) && !test_bit(BTN_TOOL_PEN, bitmask_key)) {
             devclass |= SDL_UDEV_DEVICE_TOUCHPAD; // ID_INPUT_TOUCHPAD
         } else if (test_bit(BTN_MOUSE, bitmask_key)) {

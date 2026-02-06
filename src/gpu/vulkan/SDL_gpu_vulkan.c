@@ -2505,7 +2505,7 @@ static void VULKAN_INTERNAL_TrackFramebuffer(
         VulkanFramebuffer *,
         usedFramebuffers,
         usedFramebufferCount,
-        usedFramebufferCapacity);
+        usedFramebufferCapacity)
 }
 
 static void VULKAN_INTERNAL_TrackUniformBuffer(

@@ -1713,7 +1713,7 @@ int SDL_GetNumJoystickBalls(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, -1);
+        CHECK_JOYSTICK_MAGIC(joystick, -1)
 
         result = joystick->nballs;
     }

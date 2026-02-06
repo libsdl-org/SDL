@@ -74,7 +74,7 @@ static bool get_x11_window_handle(SDL_PropertiesID props, char *out)
     }
     if (SDL_snprintf(out, X11_HANDLE_MAX_WIDTH, "0x%" SDL_PRIx64, handle) >= X11_HANDLE_MAX_WIDTH) {
         return false;
-    };
+    }
     return true;
 }
 
@@ -156,7 +156,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
     case SDL_FILEDIALOG_OPENFOLDER:
         argv[argc++] = "--directory";
         break;
-    };
+    }
 
     if (args->filename) {
         argv[argc++] = "--filename";

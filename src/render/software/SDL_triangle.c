@@ -131,8 +131,8 @@ static bool is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise
 void trianglepoint_2_fixedpoint(SDL_Point *a)
 {
     int val;
-    PRECOMP(a->x, a->x);
-    PRECOMP(a->y, a->y);
+    PRECOMP(a->x, a->x)
+    PRECOMP(a->y, a->y)
 }
 
 // bounding rect of three points (in fixed point)
