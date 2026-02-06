@@ -836,6 +836,8 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 
 #endif // HAVE_LIBUSB
 
+#endif // !SDL_HIDAPI_DISABLED
+
 /* If the platform has any backend other than libusb, try to avoid using
  * libusb as the main backend for devices, since it detaches drivers and
  * therefore makes devices inaccessible to the rest of the OS.
@@ -865,8 +867,6 @@ static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
     }
     return false;
 }
-
-#endif // !SDL_HIDAPI_DISABLED
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 // We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred
