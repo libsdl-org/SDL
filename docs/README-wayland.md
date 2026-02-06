@@ -68,7 +68,7 @@ encounter limitations or behavior that is different from other windowing systems
 
 ### The application progress bar can't be set via ```SDL_SetWindowProgressState()``` or ```SDL_SetWindowProgressValue()```
 
-- Only some Desktop Environemnts support the underlying API. Known compatible DEs: Unity, KDE
+- Only some Desktop Environments support the underlying API. Known compatible DEs: Unity, KDE
 - The underlying API requires a desktop entry file, aka a `.desktop` file.
   Please see the [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for
   more information on the format of this file. Note that if your application manually sets the application ID via the

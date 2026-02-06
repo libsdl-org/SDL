@@ -1362,7 +1362,7 @@ while (my $d = readdir(DH)) {
                 if (($p eq 'void') || ($p eq '')) {
                     die("Void parameter in a function with multiple params?! ('$sym' in '$incpath/$dent')") if (scalar(@params) != 1);
                 } elsif ($p eq '...') {
-                    die("Mutiple '...' params?! ('$sym' in '$incpath/$dent')") if ($dotdotdot);
+                    die("Multiple '...' params?! ('$sym' in '$incpath/$dent')") if ($dotdotdot);
                     $dotdotdot = 1;
                     push @paraminfo, '...';
                     push @paraminfo, '...';
@@ -1673,7 +1673,7 @@ while (my $d = readdir(DH)) {
                 if ($has_doxygen) {
                     print STDERR "WARNING: Symbol '$sym' appears to be documented in multiple locations. Only keeping the first one we saw!\n";
                 }
-                push @contents, join("\n", @decllines) if (scalar(@decllines) > 0);  # just put the existing declation in as-is.
+                push @contents, join("\n", @decllines) if (scalar(@decllines) > 0);  # just put the existing declaration in as-is.
             }
         }
 
