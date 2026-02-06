@@ -165,7 +165,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
             buf.memory = V4L2_MEMORY_MMAP;
 
-            if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+            if (xioctl(fd, (int)VIDIOC_DQBUF, &buf) == -1) {
                 switch (errno) {
                 case EAGAIN:
                     return SDL_CAMERA_FRAME_SKIP;
@@ -206,7 +206,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
             buf.memory = V4L2_MEMORY_USERPTR;
 
-            if (xioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+            if (xioctl(fd, (int)VIDIOC_DQBUF, &buf) == -1) {
                 switch (errno) {
                 case EAGAIN:
                     return SDL_CAMERA_FRAME_SKIP;
@@ -284,7 +284,7 @@ static void V4L2_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
             buf.memory = V4L2_MEMORY_MMAP;
             buf.index = i;
 
-            if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+            if (xioctl(fd, (int)VIDIOC_QBUF, &buf) == -1) {
                 // !!! FIXME: disconnect the device.
                 return; //SDL_SetError("VIDIOC_QBUF");
             }
@@ -300,7 +300,7 @@ static void V4L2_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
             buf.m.userptr = (unsigned long)frame->pixels;
             buf.length = (int) device->hidden->buffers[i].length;
 
-            if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+            if (xioctl(fd, (int)VIDIOC_QBUF, &buf) == -1) {
                 // !!! FIXME: disconnect the device.
                 return; //SDL_SetError("VIDIOC_QBUF");
             }
@@ -331,7 +331,7 @@ static bool EnqueueBuffers(SDL_Camera *device)
                     buf.memory = V4L2_MEMORY_MMAP;
                     buf.index = i;
 
-                    if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+                    if (xioctl(fd, (int)VIDIOC_QBUF, &buf) == -1) {
                         return SDL_SetError("VIDIOC_QBUF");
                     }
                 }
@@ -350,7 +350,7 @@ static bool EnqueueBuffers(SDL_Camera *device)
                     buf.m.userptr = (unsigned long)device->hidden->buffers[i].start;
                     buf.length = (int) device->hidden->buffers[i].length;
 
-                    if (xioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+                    if (xioctl(fd, (int)VIDIOC_QBUF, &buf) == -1) {
                         return SDL_SetError("VIDIOC_QBUF");
                     }
                 }
@@ -382,7 +382,7 @@ static bool AllocBufferMmap(SDL_Camera *device)
         buf.memory      = V4L2_MEMORY_MMAP;
         buf.index       = i;
 
-        if (xioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
+        if (xioctl(fd, (int)VIDIOC_QUERYBUF, &buf) == -1) {
             return SDL_SetError("VIDIOC_QUERYBUF");
         }
 
@@ -517,7 +517,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     } else if (!S_ISCHR(st.st_mode)) {
         close(fd);
         return SDL_SetError("%s is not a character device", handle->path);
-    } else if (xioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
+    } else if (xioctl(fd, (int)VIDIOC_QUERYCAP, &cap) == -1) {
         const int err = errno;
         close(fd);
         if (err == EINVAL) {
@@ -543,7 +543,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     struct v4l2_cropcap cropcap;
     SDL_zero(cropcap);
     cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (xioctl(fd, VIDIOC_CROPCAP, &cropcap) == 0) {
+    if (xioctl(fd, (int)VIDIOC_CROPCAP, &cropcap) == 0) {
         struct v4l2_crop crop;
         SDL_zero(crop);
         crop.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -565,7 +565,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     { const Uint32 f = fmt.fmt.pix.pixelformat; SDL_Log("CAMERA: set format V4L2_format=%d  %c%c%c%c", f, (f >> 0) & 0xff, (f >> 8) & 0xff, (f >> 16) & 0xff, (f >> 24) & 0xff); }
     #endif
 
-    if (xioctl(fd, VIDIOC_S_FMT, &fmt) == -1) {
+    if (xioctl(fd, (int)VIDIOC_S_FMT, &fmt) == -1) {
         return SDL_SetError("Error VIDIOC_S_FMT");
     }
 
@@ -573,13 +573,13 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
         struct v4l2_streamparm setfps;
         SDL_zero(setfps);
         setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        if (xioctl(fd, VIDIOC_G_PARM, &setfps) == 0) {
+        if (xioctl(fd, (int)VIDIOC_G_PARM, &setfps) == 0) {
             if ( (setfps.parm.capture.timeperframe.denominator != spec->framerate_numerator) ||
                  (setfps.parm.capture.timeperframe.numerator != spec->framerate_denominator) ) {
                 setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 setfps.parm.capture.timeperframe.numerator = spec->framerate_denominator;
                 setfps.parm.capture.timeperframe.denominator = spec->framerate_numerator;
-                if (xioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
+                if (xioctl(fd, (int)VIDIOC_S_PARM, &setfps) == -1) {
                     return SDL_SetError("Error VIDIOC_S_PARM");
                 }
             }
@@ -588,7 +588,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
     SDL_zero(fmt);
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (xioctl(fd, VIDIOC_G_FMT, &fmt) == -1) {
+    if (xioctl(fd, (int)VIDIOC_G_FMT, &fmt) == -1) {
         return SDL_SetError("Error VIDIOC_G_FMT");
     }
     device->hidden->driver_pitch = fmt.fmt.pix.bytesperline;
@@ -600,7 +600,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
         req.count = 8;
         req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         req.memory = V4L2_MEMORY_MMAP;
-        if ((xioctl(fd, VIDIOC_REQBUFS, &req) == 0) && (req.count >= 2)) {
+        if ((xioctl(fd, (int)VIDIOC_REQBUFS, &req) == 0) && (req.count >= 2)) {
             io = IO_METHOD_MMAP;
             device->hidden->nb_buffers = req.count;
         } else {  // mmap didn't work out? Try USERPTR.
@@ -608,7 +608,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
             req.count = 8;
             req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
             req.memory = V4L2_MEMORY_USERPTR;
-            if (xioctl(fd, VIDIOC_REQBUFS, &req) == 0) {
+            if (xioctl(fd, (int)VIDIOC_REQBUFS, &req) == 0) {
                 io = IO_METHOD_USERPTR;
                 device->hidden->nb_buffers = 8;
             }

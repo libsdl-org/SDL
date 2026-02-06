@@ -1173,7 +1173,7 @@ void gxm_init_for_common_dialog(void)
             &buffer_for_common_dialog[i].uid);
         sceGxmColorSurfaceInit(
             &buffer_for_common_dialog[i].surf,
-            VITA_GXM_PIXEL_FORMAT,
+            (SceGxmColorFormat)VITA_GXM_PIXEL_FORMAT,
             SCE_GXM_COLOR_SURFACE_LINEAR,
             SCE_GXM_COLOR_SURFACE_SCALE_NONE,
             SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT,
@@ -1190,7 +1190,7 @@ void gxm_swap_for_common_dialog(void)
 {
     SceCommonDialogUpdateParam updateParam;
     SDL_zero(updateParam);
-    updateParam.renderTarget.colorFormat = VITA_GXM_PIXEL_FORMAT;
+    updateParam.renderTarget.colorFormat = (SceGxmColorFormat)VITA_GXM_PIXEL_FORMAT;
     updateParam.renderTarget.surfaceType = SCE_GXM_COLOR_SURFACE_LINEAR;
     updateParam.renderTarget.width = VITA_GXM_SCREEN_WIDTH;
     updateParam.renderTarget.height = VITA_GXM_SCREEN_HEIGHT;

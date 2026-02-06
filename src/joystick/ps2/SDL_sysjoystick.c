@@ -72,10 +72,10 @@ static inline uint8_t rumble_status(uint8_t index)
     if (info->rumble_ready == 0) {
         actAlign[0] = 0;
         actAlign[1] = 1;
-        actAlign[2] = 0xff;
-        actAlign[3] = 0xff;
-        actAlign[4] = 0xff;
-        actAlign[5] = 0xff;
+        actAlign[2] = (char)0xff;
+        actAlign[3] = (char)0xff;
+        actAlign[4] = (char)0xff;
+        actAlign[5] = (char)0xff;
 
         res = padSetActAlign(info->port, info->slot, actAlign);
         info->rumble_ready = res <= 0 ? -1 : 1;
@@ -294,10 +294,10 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     // Initial value
     actAlign[0] = low_frequency_rumble >> 8;  // Enable small engine
     actAlign[1] = high_frequency_rumble >> 8; // Enable big engine
-    actAlign[2] = 0xff;
-    actAlign[3] = 0xff;
-    actAlign[4] = 0xff;
-    actAlign[5] = 0xff;
+    actAlign[2] = (char)0xff;
+    actAlign[3] = (char)0xff;
+    actAlign[4] = (char)0xff;
+    actAlign[5] = (char)0xff;
 
     res = padSetActDirect(info->port, info->slot, actAlign);
     return (res == 1);

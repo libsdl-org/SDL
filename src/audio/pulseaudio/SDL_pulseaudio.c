@@ -973,7 +973,7 @@ static int SDLCALL HotplugThread(void *data)
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
 
     // don't WaitForPulseOperation on the subscription; when it's done we'll be able to get hotplug events, but waiting doesn't changing anything.
-    op = PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SERVER, NULL, NULL);
+    op = PULSEAUDIO_pa_context_subscribe(pulseaudio_context, (pa_subscription_mask_t)(PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SERVER), NULL, NULL);
 
     SDL_SignalSemaphore((SDL_Semaphore *) data);
 

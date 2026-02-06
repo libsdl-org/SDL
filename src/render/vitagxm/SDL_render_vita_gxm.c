@@ -117,14 +117,14 @@ static int PixelFormatToVITAFMT(Uint32 format)
     case SDL_PIXELFORMAT_BGR565:
         return SCE_GXM_TEXTURE_FORMAT_U5U6U5_BGR;
     case SDL_PIXELFORMAT_YV12:
-        return SCE_GXM_TEXTURE_FORMAT_YVU420P3_CSC0;
+        return (int)SCE_GXM_TEXTURE_FORMAT_YVU420P3_CSC0;
     case SDL_PIXELFORMAT_IYUV:
-        return SCE_GXM_TEXTURE_FORMAT_YUV420P3_CSC0;
+        return (int)SCE_GXM_TEXTURE_FORMAT_YUV420P3_CSC0;
     // should be the other way around. looks like SCE bug.
     case SDL_PIXELFORMAT_NV12:
-        return SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC0;
+        return (int)SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC0;
     case SDL_PIXELFORMAT_NV21:
-        return SCE_GXM_TEXTURE_FORMAT_YUV420P2_CSC0;
+        return (int)SCE_GXM_TEXTURE_FORMAT_YUV420P2_CSC0;
     default:
         return SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR;
     }

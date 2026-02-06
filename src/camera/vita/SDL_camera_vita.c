@@ -151,8 +151,8 @@ static bool VITACAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec
     }
     sceKernelGetMemBlockBase(imbUid, &(info->pIBase));
 
-    info->pUBase = info->pIBase + info->sizeIBase;
-    info->pVBase = info->pIBase + (info->sizeIBase + info->sizeUBase);
+    info->pUBase = (Uint8*)info->pIBase + info->sizeIBase;
+    info->pVBase = (Uint8*)info->pIBase + (info->sizeIBase + info->sizeUBase);
 
     device->hidden = (struct SDL_PrivateCameraData *)info;
 

@@ -1146,8 +1146,8 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelAlphaSwizzleSSE41(SDL_Bli
             __m128i srca_hi = _mm_unpackhi_epi8(srcA, srcA);
 
             // Calculate 255-srcA in every second 8-bit lane (255-srcA = srcA^0xff)
-            srca_lo = _mm_xor_si128(srca_lo, _mm_set1_epi16(0xff00));
-            srca_hi = _mm_xor_si128(srca_hi, _mm_set1_epi16(0xff00));
+            srca_lo = _mm_xor_si128(srca_lo, _mm_set1_epi16((Sint16)0xff00));
+            srca_hi = _mm_xor_si128(srca_hi, _mm_set1_epi16((Sint16)0xff00));
 
             // maddubs expects second argument to be signed, so subtract 128
             src128 = _mm_sub_epi8(src128, _mm_set1_epi8((Uint8)128));
@@ -1250,8 +1250,8 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelAlphaSwizzleAVX2(SDL_BlitIn
             __m256i alpha_hi = _mm256_unpackhi_epi8(srcA, srcA);
 
             // Calculate 255-srcA in every second 8-bit lane (255-srcA = srcA^0xff)
-            alpha_lo = _mm256_xor_si256(alpha_lo, _mm256_set1_epi16(0xff00));
-            alpha_hi = _mm256_xor_si256(alpha_hi, _mm256_set1_epi16(0xff00));
+            alpha_lo = _mm256_xor_si256(alpha_lo, _mm256_set1_epi16((Sint16)0xff00));
+            alpha_hi = _mm256_xor_si256(alpha_hi, _mm256_set1_epi16((Sint16)0xff00));
 
             // maddubs expects second argument to be signed, so subtract 128
             src256 = _mm256_sub_epi8(src256, _mm256_set1_epi8((Uint8)128));
