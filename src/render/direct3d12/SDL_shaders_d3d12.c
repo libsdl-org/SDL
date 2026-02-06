@@ -27,7 +27,7 @@
 
 #include "SDL_shaders_d3d12.h"
 
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(SDL_FUNCTION) ", " str
 
 // The shaders here were compiled with compile_shaders.bat
 

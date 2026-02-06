@@ -257,7 +257,7 @@ void *alloca(size_t);
  * For example:
  *
  * ```c
- * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")`
+ * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(SDL_FUNCTION) ": " X "\n")`
  * ```
  *
  * \param arg the text to turn into a string literal.
