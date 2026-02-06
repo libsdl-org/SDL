@@ -50,7 +50,7 @@ cleanup(void)
     unlink(FBASENAME2);
 }
 
-static void
+static SDL_NORETURN void
 iostrm_error_quit(unsigned line, SDL_IOStream *iostrm)
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed", line);
