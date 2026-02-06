@@ -3681,6 +3681,8 @@ if(NOT HAVE_SDL_MAIN_CALLBACKS)
   )
 endif()
 
+set(SDL_PEDANTIC 1)
+
 # config variables may contain generator expression, so we need to generate SDL_build_config.h in 2 steps:
 # 1. replace all `#cmakedefine`'s and `@abc@`
 configure_file("${SDL3_SOURCE_DIR}/include/build_config/SDL_build_config.h.cmake"

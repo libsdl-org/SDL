@@ -619,6 +619,9 @@ typedef unsigned int uintptr_t;
 #cmakedefine SDL_DISABLE_LASX 1
 #cmakedefine SDL_DISABLE_NEON 1
 
+/* Build config */
+#cmakedefine SDL_PEDANTIC 1
+
 #ifdef SDL_PLATFORM_PRIVATE
 #include "SDL_end_config_private.h"
 #endif
