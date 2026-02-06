@@ -2515,7 +2515,7 @@ static void Wayland_SeatDestroyTouch(SDL_WaylandSeat *seat)
     WAYLAND_wl_list_init(&seat->touch.points);
 }
 
-static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum wl_seat_capability capabilities)
+static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32_t /*enum wl_seat_capability*/ capabilities)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     char name_fmt[256];
