@@ -366,6 +366,14 @@ static GLenum GetBlendFunc(SDL_BlendFactor factor)
         return GL_DST_ALPHA;
     case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
         return GL_ONE_MINUS_DST_ALPHA;
+    case SDL_BLENDFACTOR_SRC1_COLOR:
+        return GL_SRC1_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC1_COLOR:
+        return GL_ONE_MINUS_SRC1_COLOR;
+    case SDL_BLENDFACTOR_SRC1_ALPHA:
+        return GL_SRC1_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC1_ALPHA:
+        return GL_ONE_MINUS_SRC1_ALPHA;
     default:
         return GL_INVALID_ENUM;
     }

@@ -601,6 +601,14 @@ static D3D12_BLEND GetBlendFunc(SDL_BlendFactor factor)
         return D3D12_BLEND_DEST_ALPHA;
     case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
         return D3D12_BLEND_INV_DEST_ALPHA;
+    case SDL_BLENDFACTOR_SRC1_COLOR:
+        return D3D12_BLEND_SRC1_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC1_COLOR:
+        return D3D12_BLEND_INV_SRC1_COLOR;
+    case SDL_BLENDFACTOR_SRC1_ALPHA:
+        return D3D12_BLEND_SRC1_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC1_ALPHA:
+        return D3D12_BLEND_INV_SRC1_ALPHA;
     default:
         return (D3D12_BLEND)0;
     }

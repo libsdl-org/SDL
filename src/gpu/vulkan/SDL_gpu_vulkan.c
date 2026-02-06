@@ -387,7 +387,11 @@ static VkBlendFactor SDLToVK_BlendFactor[] = {
     VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
     VK_BLEND_FACTOR_CONSTANT_COLOR,
     VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
-    VK_BLEND_FACTOR_SRC_ALPHA_SATURATE
+    VK_BLEND_FACTOR_SRC_ALPHA_SATURATE,
+    VK_BLEND_FACTOR_SRC1_COLOR,
+    VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
+    VK_BLEND_FACTOR_SRC1_ALPHA,
+    VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA
 };
 SDL_COMPILE_TIME_ASSERT(SDLToVK_BlendFactor, SDL_arraysize(SDLToVK_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
@@ -12102,7 +12106,8 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         (!deviceFeatures.shaderClipDistance && features->desiredVulkan10DeviceFeatures.shaderClipDistance) ||
         (!deviceFeatures.drawIndirectFirstInstance && features->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance) ||
         (!deviceFeatures.sampleRateShading && features->desiredVulkan10DeviceFeatures.sampleRateShading) ||
-        (!deviceFeatures.samplerAnisotropy && features->desiredVulkan10DeviceFeatures.samplerAnisotropy)) {
+        (!deviceFeatures.samplerAnisotropy && features->desiredVulkan10DeviceFeatures.samplerAnisotropy) ||
+        (!deviceFeatures.dualSrcBlend && features->desiredVulkan10DeviceFeatures.dualSrcBlend)) {
         return 0;
     }
 
@@ -12613,6 +12618,7 @@ static bool VULKAN_INTERNAL_PrepareVulkan(
     features->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
     features->desiredVulkan10DeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
     features->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    features->desiredVulkan10DeviceFeatures.dualSrcBlend = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DUAL_SOURCE_BLENDING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
     // These features have near universal support so they are always enabled
     features->desiredVulkan10DeviceFeatures.independentBlend = VK_TRUE;
