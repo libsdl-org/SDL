@@ -4799,7 +4799,7 @@ void SDL_GL_UnloadLibrary(void)
 typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
 typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
-typedef const void (APIENTRY* PFNGLENABLEPROC) (GLenum cap);
+typedef void (APIENTRY* PFNGLENABLEPROC) (GLenum cap);
 #ifndef SDL_VIDEO_OPENGL
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 #endif
