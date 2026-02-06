@@ -13,7 +13,7 @@
 #include "math.h"
 #include "math_private.h"
 
-int __isinf(double x)
+static int __isinf(double x)
 {
 	int32_t hx,lx;
 	EXTRACT_WORDS(hx,lx,x);

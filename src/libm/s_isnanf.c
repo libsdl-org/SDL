@@ -22,7 +22,7 @@
 #include "math.h"
 #include "math_private.h"
 
-int __isnanf(float x)
+static int __isnanf(float x)
 {
 	int32_t ix;
 	GET_FLOAT_WORD(ix,x);

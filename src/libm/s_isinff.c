@@ -12,7 +12,7 @@
 #include "math.h"
 #include "math_private.h"
 
-int __isinff (float x)
+static int __isinff (float x)
 {
 	int32_t ix,t;
 	GET_FLOAT_WORD(ix,x);
