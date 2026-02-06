@@ -80,3 +80,7 @@ bool OFFSCREEN_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif // SDL_VIDEO_DRIVER_OFFSCREEN && SDL_VIDEO_OPENGL_EGL
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

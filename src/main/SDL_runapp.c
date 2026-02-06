@@ -38,3 +38,7 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
 }
 
 #endif
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

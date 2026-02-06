@@ -168,3 +168,7 @@ SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *
 }
 
 #endif // SDL_VIDEO_RENDER_GPU
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

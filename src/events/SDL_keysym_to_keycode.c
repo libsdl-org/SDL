@@ -66,3 +66,7 @@ SDL_Keycode SDL_GetKeyCodeFromKeySym(Uint32 keysym, Uint32 keycode, SDL_Keymod m
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

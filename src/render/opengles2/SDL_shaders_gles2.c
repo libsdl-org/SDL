@@ -598,3 +598,7 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
 }
 
 #endif // SDL_VIDEO_RENDER_OGL_ES2
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

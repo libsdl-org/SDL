@@ -266,3 +266,7 @@ void OFFSCREEN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 }
 
 #endif
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -1840,3 +1840,7 @@ SDL_RenderDriver GPU_RenderDriver = {
 };
 
 #endif // SDL_VIDEO_RENDER_GPU
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

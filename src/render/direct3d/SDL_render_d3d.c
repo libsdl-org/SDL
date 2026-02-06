@@ -2017,3 +2017,7 @@ SDL_RenderDriver D3D_RenderDriver = {
     D3D_CreateRenderer, "direct3d"
 };
 #endif // SDL_VIDEO_RENDER_D3D
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

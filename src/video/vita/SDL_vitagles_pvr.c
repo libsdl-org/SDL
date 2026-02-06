@@ -89,3 +89,7 @@ bool VITA_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 #endif // SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

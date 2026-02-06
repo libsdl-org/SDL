@@ -214,3 +214,7 @@ bool VITA_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 }
 
 #endif // SDL_VIDEO_DRIVER_VITA
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

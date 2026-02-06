@@ -1217,3 +1217,7 @@ void gxm_term_for_common_dialog(void)
 }
 
 #endif // SDL_VIDEO_RENDER_VITA_GXM
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

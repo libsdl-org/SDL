@@ -347,3 +347,6 @@ SDL_KeySymToUcs4(Uint32 keysym)
 
 #endif /* SDL_VIDEO_DRIVER_X11 */
 
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -3569,3 +3569,7 @@ SDL_RenderDriver D3D12_RenderDriver = {
 #endif
 
 #endif // SDL_VIDEO_RENDER_D3D12
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

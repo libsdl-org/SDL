@@ -1402,3 +1402,7 @@ void SDL_EGL_DestroySurface(SDL_VideoDevice *_this, EGLSurface egl_surface)
 }
 
 #endif // SDL_VIDEO_OPENGL_EGL
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

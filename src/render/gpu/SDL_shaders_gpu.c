@@ -283,3 +283,7 @@ void GPU_FillSupportedShaderFormats(SDL_PropertiesID props)
 }
 
 #endif // SDL_VIDEO_RENDER_GPU
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -119,3 +119,7 @@ SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *p
 }
 
 #endif // SDL_VIDEO_DRIVER_VITA && SDL_VIDEO_VITA_PVR
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

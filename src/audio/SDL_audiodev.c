@@ -122,3 +122,7 @@ void SDL_EnumUnixAudioDevices(const bool classic, bool (*test)(int))
 }
 
 #endif // Audio device selection
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -20,3 +20,7 @@
 */
 #include "SDL_internal.h"
 
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

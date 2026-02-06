@@ -772,3 +772,7 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
 }
 
 #endif // SDL_VIDEO_RENDER_OGL
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

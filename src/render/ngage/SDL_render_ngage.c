@@ -534,3 +534,7 @@ static bool NGAGE_SetVSync(SDL_Renderer *renderer, int vsync)
 }
 
 #endif // SDL_VIDEO_RENDER_NGAGE
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

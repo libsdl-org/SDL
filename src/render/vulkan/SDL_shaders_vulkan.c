@@ -58,3 +58,7 @@ void VULKAN_GetPixelShader(VULKAN_Shader shader, const uint32_t **outBytecode, s
 }
 
 #endif // SDL_VIDEO_RENDER_VULKAN
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

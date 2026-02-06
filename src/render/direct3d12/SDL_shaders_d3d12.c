@@ -123,3 +123,7 @@ void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECO
 }
 
 #endif // SDL_VIDEO_RENDER_D3D12 && !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

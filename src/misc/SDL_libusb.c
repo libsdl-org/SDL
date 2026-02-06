@@ -117,3 +117,7 @@ void SDL_QuitLibUSB(void)
 }
 
 #endif // HAVE_LIBUSB
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -114,3 +114,7 @@ bool D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D
 }
 
 #endif // SDL_VIDEO_RENDER_D3D11
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -765,3 +765,7 @@ SDL_RenderDriver PS2_RenderDriver = {
 };
 
 #endif // SDL_VIDEO_RENDER_PS2
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

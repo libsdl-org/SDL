@@ -777,3 +777,7 @@ void *_intel_fast_memset(void *dst, int c, size_t len)
 #endif
 
 #endif // !HAVE_LIBC && !SDL_STATIC_LIB
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

@@ -437,3 +437,7 @@ SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode)
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

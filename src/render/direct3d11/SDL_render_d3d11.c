@@ -2989,3 +2989,7 @@ SDL_RenderDriver D3D11_RenderDriver = {
 };
 
 #endif // SDL_VIDEO_RENDER_D3D11
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

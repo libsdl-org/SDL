@@ -2503,3 +2503,7 @@ SDL_RenderDriver GLES2_RenderDriver = {
 };
 
 #endif // SDL_VIDEO_RENDER_OGL_ES2
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif

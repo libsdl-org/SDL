@@ -2050,3 +2050,7 @@ SDL_RenderDriver GL_RenderDriver = {
 };
 
 #endif // SDL_VIDEO_RENDER_OGL
+
+#if defined(SDL_PEDANTIC)
+    typedef void* ensureNonEmptySourceFile;
+#endif
