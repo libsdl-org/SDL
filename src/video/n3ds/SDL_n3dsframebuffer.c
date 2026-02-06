@@ -75,7 +75,7 @@ bool SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), N3DS_SURFACE, NULL);
     if (!surface) {
-        return SDL_SetError("%s: Unable to get the window surface.", __func__);
+        return SDL_SetError("%s: Unable to get the window surface.", SDL_FUNCTION);
     }
 
     // Get the N3DS internal framebuffer and its size

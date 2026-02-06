@@ -29,7 +29,7 @@
 
 #include "SDL_shaders_d3d12.h"
 
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(SDL_FUNCTION) ", " str
 
 
 // Shader blob headers are generated with a pre-build step using compile_shaders_xbox.bat

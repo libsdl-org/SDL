@@ -26,9 +26,9 @@
 #include <XGameRuntime.h>
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_FUNCTION ", " str
 #else
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(SDL_FUNCTION) ", " str
 #endif
 
 static const GUID SDL_IID_ID3D12Device1 = { 0x77acce80, 0x638e, 0x4e65, { 0x88, 0x95, 0xc1, 0xf2, 0x33, 0x86, 0x86, 0x3e } };
