@@ -229,7 +229,6 @@
  * - `shaderClipDistance`
  * - `drawIndirectFirstInstance`
  * - `sampleRateShading`
- * - `dualSrcBlend`
  *
  * You can remove some of these requirements to increase compatibility with
  * Android devices by using these properties when creating the GPU device with
@@ -239,7 +238,6 @@
  * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN
  * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN
  * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN
- * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DUAL_SOURCE_BLENDING_BOOLEAN
  *
  * ### D3D12
  *
@@ -2290,7 +2288,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   (SDL_BLENDFACTOR_SRC1_COLOR, SDL_BLENDFACTOR_ONE_MINUS_SRC1_COLOR,
  *   SDL_BLENDFACTOR_SRC1_ALPHA, SDL_BLENDFACTOR_ONE_MINUS_SRC1_ALPHA) are not
  *   supported. Disabling optional features allows the application to run on
- *   some older Android devices. Defaults to true.
+ *   some older Android devices. Defaults to false.
  *
  * These are the current shader format properties:
  *
