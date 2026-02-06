@@ -450,7 +450,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
+        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) ((char*)vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
 
         switch (cmd->data.draw.texture_scale_mode) {
@@ -467,7 +467,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
         gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
-        const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+        const GSPRIMPOINT *verts = (GSPRIMPOINT *)((char*)vertices + cmd->data.draw.first);
         gsKit_prim_list_triangle_gouraud_3d(data->gsGlobal, count, verts);
     }
 
@@ -478,7 +478,7 @@ static bool PS2_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCo
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
-    const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *)((char*)vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
     gsKit_prim_list_line_goraud_3d(data->gsGlobal, count, verts);
@@ -491,7 +491,7 @@ static bool PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderC
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
-    const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *)((char*)vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
     gsKit_prim_list_points(data->gsGlobal, count, verts);
