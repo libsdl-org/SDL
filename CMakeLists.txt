@@ -4397,6 +4397,9 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
   else()
       string(APPEND CMAKE_C_FLAGS " -Wall -Wextra -Wpedantic")
   endif()
+  string(APPEND CMAKE_C_FLAGS " -Wno-error=pedantic")
+  string(APPEND CMAKE_C_FLAGS " -Wno-error=unused-function")
+   
   string(APPEND CMAKE_C_FLAGS " -Wno-padded")
   string(APPEND CMAKE_C_FLAGS " -Wno-missing-variable-declarations")
 
