@@ -63,7 +63,7 @@ ThreadFunc(void *data)
 
     SDL_Log("Thread '%d' waiting for signal", tid);
     while (SDL_GetAtomicInt(&time_for_threads_to_die[tid]) != 1) {
-        ; /* do nothing */
+        (void)0; /* do nothing */
     }
 
     SDL_Log("Thread '%d' sending signals to subthreads", tid);
