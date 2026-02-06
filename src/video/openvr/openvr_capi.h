@@ -2650,6 +2650,12 @@ typedef struct PathRead_t
 } PathRead_t;
 
 
+#if defined(__linux__) || defined(__APPLE__) 
+// This structure was originally defined mis-packed on Linux, preserved for 
+// compatibility. 
+#pragma pack( push, 4 )
+#endif
+
 typedef union
 {
 	VREvent_Reserved_t reserved;
@@ -2678,12 +2684,6 @@ typedef union
 	VREvent_InputActionManifestLoad_t actionManifest;
 	VREvent_SpatialAnchor_t spatialAnchor;
 } VREvent_Data_t;
-
-#if defined(__linux__) || defined(__APPLE__) 
-// This structure was originally defined mis-packed on Linux, preserved for 
-// compatibility. 
-#pragma pack( push, 4 )
-#endif
 
 /** An event posted by the server to all running applications */
 struct VREvent_t
