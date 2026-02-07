@@ -226,7 +226,7 @@ static wchar_t *escape_label(const char *in)
     return out;
 }
 
-static HICON load_default_icon()
+static HICON load_default_icon(void)
 {
     HINSTANCE hInstance = GetModuleHandle(NULL);
     if (!hInstance) {
