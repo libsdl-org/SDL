@@ -28,7 +28,7 @@
 /* Transform the name given in argument into something viable for the engine.
    Useful if there are special characters to avoid on certain platforms (such
    as "|" with Zenity). */
-typedef char *(NameTransform)(const char * name);
+typedef char *(*NameTransform)(const char * name);
 
 // Converts all the filters into a single string.
 // <prefix>[filter]{<separator>[filter]...}<suffix>
