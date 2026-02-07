@@ -304,7 +304,7 @@ static SDL_Texture *CreateTexture(const void *pixels, int pitch)
     return tex;
 }
 
-static bool CreateTextures()
+static bool CreateTextures(void)
 {
     Uint8 data[256];
     int i;

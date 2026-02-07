@@ -33,7 +33,7 @@
 // Assume we can directly read and write BMP fields without byte swapping
 SDL_COMPILE_TIME_ASSERT(verify_byte_order, SDL_BYTEORDER == SDL_LIL_ENDIAN);
 
-static UINT GetClipboardFormatPNG()
+static UINT GetClipboardFormatPNG(void)
 {
     static UINT format;
 
