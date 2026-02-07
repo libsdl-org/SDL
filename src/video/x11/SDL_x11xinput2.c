@@ -139,7 +139,7 @@ static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-static void xinput2_reset_scrollable_valuators()
+static void xinput2_reset_scrollable_valuators(void)
 {
     for (int i = 0; i < scrollable_device_count; ++i) {
         for (int j = 0; j < scrollable_devices[i].scroll_info_count; ++j) {
