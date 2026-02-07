@@ -778,9 +778,10 @@ static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
 {
     if (!ctx->m_bInputOnly) {
         Uint8 led_data = 0;
+        const Uint8 player_pattern[] = { 0x1, 0x3, 0x7, 0xf, 0x9, 0x5, 0xd, 0x6 };
 
         if (ctx->m_bPlayerLights && ctx->m_nPlayerIndex >= 0) {
-            led_data = (1 << (ctx->m_nPlayerIndex % 4));
+            led_data = player_pattern[ctx->m_nPlayerIndex % 8];
         }
         WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
     }
