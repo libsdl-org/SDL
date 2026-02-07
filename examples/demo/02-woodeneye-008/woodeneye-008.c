@@ -371,7 +371,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
         case SDL_EVENT_QUIT:
             return SDL_APP_SUCCESS;
-            break;
         case SDL_EVENT_MOUSE_REMOVED:
             for (i = 0; i < player_count; i++) {
                 if (players[i].mouse == event->mdevice.which) {
