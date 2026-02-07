@@ -349,11 +349,11 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == dpitch) {
         SDL_memcpy(dst, pixels, length * rect->h);
-        *(Uint8**)&pixels += pitch * rect->h;
+        pixels = (const Uint8 *)pixels + pitch * rect->h;
     } else {
         for (row = 0; row < rect->h; ++row) {
             SDL_memcpy(dst, pixels, length);
-            *(Uint8**)&pixels += pitch;
+            pixels = (const Uint8 *)pixels + pitch;
             dst += dpitch;
         }
     }
@@ -377,11 +377,11 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // U plane
         if (length == uv_src_pitch && length == uv_pitch) {
             SDL_memcpy(Udst, pixels, length * UVrect.h);
-            *(Uint8**)&pixels += uv_src_pitch * UVrect.h;
+            pixels = (const Uint8 *)pixels + uv_src_pitch * UVrect.h;
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(Udst, pixels, length);
-                *(Uint8**)&pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 Udst += uv_pitch;
             }
         }
@@ -392,7 +392,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(Vdst, pixels, length);
-                *(Uint8**)&pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 Vdst += uv_pitch;
             }
         }
@@ -415,7 +415,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(UVdst, pixels, length);
-                *(Uint8**)&pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 UVdst += uv_pitch;
             }
         }
