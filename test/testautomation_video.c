@@ -268,12 +268,10 @@ static int SDLCALL video_createWindowVariousFlags(void *arg)
             flags = SDL_WINDOW_FULLSCREEN;
             /* Skip - blanks screen; comment out next line to run test */
             continue;
-            break;
         case 2:
             flags = SDL_WINDOW_OPENGL;
             /* Skip - not every video driver supports OpenGL; comment out next line to run test */
             continue;
-            break;
         case 3:
             flags = 0;
             break;
