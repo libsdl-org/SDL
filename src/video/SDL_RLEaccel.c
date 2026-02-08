@@ -489,16 +489,16 @@ static bool SDLCALL SDL_RLEBlit(SDL_Surface *surf_src, const SDL_Rect *srcrect,
 
             switch (surf_src->fmt->bytes_per_pixel) {
             case 1:
-                RLESKIP(1, Uint8);
+                RLESKIP(1, Uint8)
                 break;
             case 2:
-                RLESKIP(2, Uint8);
+                RLESKIP(2, Uint8)
                 break;
             case 3:
-                RLESKIP(3, Uint8);
+                RLESKIP(3, Uint8)
                 break;
             case 4:
-                RLESKIP(4, Uint16);
+                RLESKIP(4, Uint16)
                 break;
             }
 

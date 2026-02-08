@@ -830,7 +830,7 @@ static void init_render_state(int msaa)
         true,
         state->gpudriver
     );
-    CHECK_CREATE(gpu_device, "GPU device");
+    CHECK_CREATE(gpu_device, "GPU device")
 
     /* Claim the windows */
 
