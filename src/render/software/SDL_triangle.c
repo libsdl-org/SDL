@@ -681,7 +681,7 @@ bool SDL_SW_BlitTriangle(
     if ((X) < INT_MIN || (X) > INT_MAX) { \
         result = SDL_SetError("integer overflow (%s = %" SDL_PRIs64 ")", #X, X); \
         goto end; \
-    }
+    } do{} while(0)
         CHECK_INT_RANGE(area);
         CHECK_INT_RANGE(w0_row);
         CHECK_INT_RANGE(w1_row);

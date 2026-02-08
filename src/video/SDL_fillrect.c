@@ -50,7 +50,7 @@
         _mm_stream_ps((float *)(p+32), c128); \
         _mm_stream_ps((float *)(p+48), c128); \
         p += 64; \
-    }
+    } do{} while(0)
 
 #define SSE_END
 

@@ -289,23 +289,22 @@ typedef struct { char * first; char * last; } stack_entry;
       }						\
     }						\
     first+=sz; last-=sz;			\
-  }
+  } do{} while(0)
 
 #ifdef DEBUG_QSORT
 #include <stdio.h>
 #endif
 
 /* and so is the partitioning logic: */
-#define Partition(swapper,sz) {			\
-  do {						\
-    while (compare(userdata,first,pivot)<0) first+=sz;	\
-    while (compare(userdata,pivot,last)<0) last-=sz;	\
-    if (first<last) {				\
-      swapper(first,last);			\
-      first+=sz; last-=sz; }			\
-    else if (first==last) { first+=sz; last-=sz; break; }\
-  } while (first<=last);			\
-}
+#define Partition(swapper,sz)															\
+  do {																										\
+    while (compare(userdata,first,pivot)<0) first+=sz;		\
+    while (compare(userdata,pivot,last)<0) last-=sz;			\
+    if (first<last) {																			\
+      swapper(first,last);																\
+      first+=sz; last-=sz; }															\
+    else if (first==last) { first+=sz; last-=sz; break; }	\
+  } while (first<=last)
 
 /* and so is the pre-insertion-sort operation of putting
  * the smallest element into place as a sentinel.
@@ -324,26 +323,28 @@ typedef struct { char * first; char * last; } stack_entry;
   while (last!=base) {				\
     if (compare(userdata,first,last)>0) first=last;	\
     last-=sz; }					\
-  if (first!=base) swapper(first,(char*)base);
+  if (first!=base) swapper(first,(char*)base)
 
 /* and so is the insertion sort, in the first two cases: */
 #define Insertion(swapper)			\
   last=((char*)base)+nmemb*size;		\
-  for (first=((char*)base)+size;first!=last;first+=size) {	\
-    char *test;					\
-    /* Find the right place for |first|.	\
-     * My apologies for var reuse. */		\
-    for (test=first-size;test>=(char*)base&&compare(userdata,test,first)>0;test-=size) ;	\
-    test+=size;					\
-    if (test!=first) {				\
-      /* Shift everything in [test,first)	\
-       * up by one, and place |first|		\
-       * where |test| is. */			\
-      memcpy(pivot,first,size);			\
-      memmove(test+size,test,first-test);	\
-      memcpy(test,pivot,size);			\
-    }						\
-  }
+  do {	\
+    for (first=((char*)base)+size;first!=last;first+=size) {	\
+      char *test;					\
+      /* Find the right place for |first|.	\
+      * My apologies for var reuse. */		\
+      for (test=first-size;test>=(char*)base&&compare(userdata,test,first)>0;test-=size) ;	\
+      test+=size;					\
+      if (test!=first) {				\
+        /* Shift everything in [test,first)	\
+        * up by one, and place |first|		\
+        * where |test| is. */			\
+        memcpy(pivot,first,size);			\
+        memmove(test+size,test,first-test);	\
+        memcpy(test,pivot,size);			\
+      }						\
+    }\
+ } while(0)
 
 #define SWAP_nonaligned(a,b) { \
   register char *aa=(a),*bb=(b); \

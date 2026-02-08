@@ -226,7 +226,7 @@ static void computeSourceIncrements90(SDL_Surface *src, int bpp, int angle, int 
                 *(pixelType *)dp = *(pixelType *)sp;                                                        \
             }                                                                                               \
         }                                                                                                   \
-    }
+    } do{} while(0)
 
 static void transformSurfaceRGBA90(SDL_Surface *src, SDL_Surface *dst, int angle, int flipx, int flipy)
 {

@@ -996,7 +996,7 @@ static void DeleteHIDDeviceWrapper(SDL_hid_device *wrapper)
     if (!SDL_ObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_DEVICE)) {  \
         SDL_SetError("Invalid device");                             \
         return result;                                              \
-    }
+    } do {} while(0)
 
 #define COPY_IF_EXISTS(var)                \
     if (pSrc->var != NULL) {               \

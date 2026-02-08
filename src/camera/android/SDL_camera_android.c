@@ -858,7 +858,7 @@ static bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
     }
 
     bool okay = true;
-    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) dlsym(lib, #fn); if (!p##fn) { SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); okay = false; } }
+    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) dlsym(lib, #fn); if (!p##fn) { SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); okay = false; } } do{} while(0)
     //#define LOADSYM(lib, fn) p##fn = (pfn##fn) fn
     LOADSYM(libcamera2, ACameraManager_create);
     LOADSYM(libcamera2, ACameraManager_registerAvailabilityCallback);

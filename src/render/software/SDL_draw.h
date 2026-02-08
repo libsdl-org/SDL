@@ -427,7 +427,7 @@
 
 // Horizontal line
 #define HLINE(type, op, draw_end)                              \
-    {                                                          \
+    do {                                                       \
         int length;                                            \
         int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
         type *pixels;                                          \
@@ -445,11 +445,11 @@
             op;                                                \
             ++pixels;                                          \
         }                                                      \
-    }
+    } while(0)
 
 // Vertical line
 #define VLINE(type, op, draw_end)                              \
-    {                                                          \
+    do {                                                       \
         int length;                                            \
         int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
         type *pixels;                                          \
@@ -467,11 +467,11 @@
             op;                                                \
             pixels += pitch;                                   \
         }                                                      \
-    }
+    } while(0)
 
 // Diagonal line
 #define DLINE(type, op, draw_end)                              \
-    {                                                          \
+    do {                                                       \
         int length;                                            \
         int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
         type *pixels;                                          \
@@ -502,11 +502,11 @@
             op;                                                \
             pixels += pitch;                                   \
         }                                                      \
-    }
+    } while(0)
 
 // Bresenham's line algorithm
 #define BLINE(x1, y1, x2, y2, op, draw_end) \
-    {                                       \
+    do {                                    \
         int i, deltax, deltay, numpixels;   \
         int d, dinc1, dinc2;                \
         int x, xinc1, xinc2;                \
@@ -562,11 +562,11 @@
                 y += yinc2;                 \
             }                               \
         }                                   \
-    }
+    } while(0)
 
 // Xiaolin Wu's line algorithm, based on Michael Abrash's implementation
 #define WULINE(x1, y1, x2, y2, opaque_op, blend_op, draw_end)                       \
-    {                                                                               \
+    do {                                                                            \
         Uint16 ErrorAdj, ErrorAcc;                                                  \
         Uint16 ErrorAccTemp, Weighting;                                             \
         int DeltaX, DeltaY, Temp, XDir;                                             \
@@ -675,7 +675,7 @@
                 }                                                                   \
             }                                                                       \
         }                                                                           \
-    }
+    } while(0)
 
 #ifdef AA_LINES
 #define AALINE(x1, y1, x2, y2, opaque_op, blend_op, draw_end) \

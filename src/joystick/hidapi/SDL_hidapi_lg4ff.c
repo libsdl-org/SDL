@@ -138,22 +138,22 @@ static Uint16 HIDAPI_DriverLg4ff_IdentifyWheel(Uint16 device_id, Uint16 release_
             return ret; \
         } \
     }
-    #define is_dfp { \
+    #define is_dfp do { \
         is_device(USB_DEVICE_ID_LOGITECH_DFP_WHEEL, 0xf000, 0x1000); \
-    }
-    #define is_dfgt { \
+    } while(0)
+    #define is_dfgt do { \
         is_device(USB_DEVICE_ID_LOGITECH_DFGT_WHEEL, 0xff00, 0x1300); \
-    }
-    #define is_g25 { \
+    } while(0)
+    #define is_g25 do { \
         is_device(USB_DEVICE_ID_LOGITECH_G25_WHEEL, 0xff00, 0x1200); \
-    }
-    #define is_g27 { \
+    } while(0)
+    #define is_g27 do { \
         is_device(USB_DEVICE_ID_LOGITECH_G27_WHEEL, 0xfff0, 0x1230); \
-    }
-    #define is_g29 { \
+    } while(0)
+    #define is_g29 do { \
         is_device(USB_DEVICE_ID_LOGITECH_G29_WHEEL, 0xfff8, 0x1350); \
         is_device(USB_DEVICE_ID_LOGITECH_G29_WHEEL, 0xff00, 0x8900); \
-    }
+    } while(0)
     switch(device_id){
         case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
         case USB_DEVICE_ID_LOGITECH_WHEEL:

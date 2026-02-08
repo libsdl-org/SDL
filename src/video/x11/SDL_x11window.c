@@ -49,7 +49,7 @@
     }                                                                   \
     if (!window->internal) {                                          \
         return SDL_SetError("Invalid window driver data");              \
-    }
+    } do{} while(0)
 
 #define CHECK_DISPLAY_DATA(display)                                     \
     if (!_display) {                                                    \
@@ -57,7 +57,7 @@
     }                                                                   \
     if (!_display->internal) {                                        \
         return SDL_SetError("Invalid display driver data");             \
-    }
+    } do{} while(0)
 
 static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win) // NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef
 {

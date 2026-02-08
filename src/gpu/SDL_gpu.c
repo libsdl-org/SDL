@@ -31,7 +31,7 @@
     CHECK_PARAM(device == NULL) {           \
         SDL_SetError("Invalid GPU device"); \
         return retval;                      \
-    }
+    } do {} while(0)
 
 #define CHECK_COMMAND_BUFFER                                        \
     if (((CommandBufferCommonHeader *)command_buffer)->submitted) { \

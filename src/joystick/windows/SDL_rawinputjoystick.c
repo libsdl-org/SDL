@@ -856,10 +856,10 @@ static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const
 static void RAWINPUT_AddDevice(HANDLE hDevice)
 {
 #define CHECK(expression)  \
-    {                      \
+    do {                   \
         if (!(expression)) \
             goto err;      \
-    }
+    } while(0)
     SDL_RAWINPUT_Device *device = NULL;
     SDL_RAWINPUT_Device *curr, *last;
     RID_DEVICE_INFO rdi;
@@ -1675,10 +1675,10 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
 
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
 #define AddTriggerToMatchState(axis, value)                                          \
-    {                                                                                \
+    do {                                                                             \
         int match_axis = axis + SDL_JOYSTICK_RAWINPUT_MATCH_COUNT - joystick->naxes; \
         AddAxisToMatchState(match_axis, value);                                      \
-    }
+    } while(0)
 #endif // SDL_JOYSTICK_RAWINPUT_MATCH_TRIGGERS
 
     if (ctx->trigger_hack) {

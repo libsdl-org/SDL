@@ -44,7 +44,7 @@ SDL_LibThai *SDL_LibThai_Create(void)
     }
 
 #ifdef SDL_LIBTHAI_DYNAMIC
-    #define SDL_LIBTHAI_LOAD_SYM(a, x, n, t) x = ((t)SDL_LoadFunction(a->lib, n)); if (!x) { SDL_UnloadObject(a->lib); SDL_free(a); return NULL; }
+    #define SDL_LIBTHAI_LOAD_SYM(a, x, n, t) x = ((t)SDL_LoadFunction(a->lib, n)); if (!x) { SDL_UnloadObject(a->lib); SDL_free(a); return NULL; } do {} while(0)
 
     th->lib = SDL_LoadObject(SDL_LIBTHAI_DYNAMIC);
     if (!th->lib) {

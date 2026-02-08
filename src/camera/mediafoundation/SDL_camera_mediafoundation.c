@@ -746,7 +746,7 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
         goto failed;
     }
 
-    #define CHECK_HRESULT(what, r) if (FAILED(r)) { WIN_SetErrorFromHRESULT(what " failed", r); goto failed; }
+    #define CHECK_HRESULT(what, r) if (FAILED(r)) { WIN_SetErrorFromHRESULT(what " failed", r); goto failed; } do{} while(0)
 
     ret = pMFCreateAttributes(&attrs, 1);
     CHECK_HRESULT("MFCreateAttributes", ret);
@@ -1094,7 +1094,7 @@ static bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     }
 
     bool okay = true;
-    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) GetProcAddress(lib, #fn); if (!p##fn) { okay = false; } }
+    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) GetProcAddress(lib, #fn); if (!p##fn) { okay = false; } } do{} while(0)
     LOADSYM(mf, MFEnumDeviceSources);
     LOADSYM(mf, MFCreateDeviceSource);
     LOADSYM(mfplat, MFStartup);

@@ -65,7 +65,7 @@ static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
         SDL_InvalidParamError("sensor");                            \
         SDL_UnlockSensors();                                        \
         return result;                                              \
-    }
+    } do{} while(0)
 
 bool SDL_SensorsInitialized(void)
 {

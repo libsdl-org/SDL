@@ -2980,7 +2980,7 @@ bool SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_
 
 bool SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode)
 {
-    #define SETVAL(ptr, val) if (ptr) { *ptr = val; }
+    #define SETVAL(ptr, val) if (ptr) { *ptr = val; } do {} while(0)
 
     SETVAL(w, 0);
     SETVAL(h, 0);

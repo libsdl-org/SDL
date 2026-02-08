@@ -373,12 +373,12 @@
  * placed in the top byte. This is the format used for RLE with alpha.
  */
 #define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)   \
-    {                                                \
+    do {                                             \
         Pixel = ((r >> (8 - fmt->Rbits)) << fmt->Rshift) | \
                 ((g >> (8 - fmt->Gbits)) << fmt->Gshift) | \
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) | \
                 (a << 24);                           \
-    }
+    } while(0)
 
 /*
  * This takes care of the case when the surface is clipped on the left and/or
@@ -1034,7 +1034,7 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         dst[0] = (Uint8)n;                \
         dst[1] = (Uint8)m;                \
         dst += 2;                         \
-    }
+    } do{} while(0)
 
         // translucent counts are always 16 bit
 #define ADD_TRANSL_COUNTS(n, m) \
@@ -1235,7 +1235,7 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
         dst[0] = (Uint8)n;              \
         dst[1] = (Uint8)m;              \
         dst += 2;                       \
-    }
+    } do{} while(0)
 
     for (y = 0; y < h; y++) {
         int x = 0;

@@ -117,7 +117,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
     /* Properties can be destroyed as soon as the function returns; copy over what we need. */
 #define COPY_STRING_PROPERTY(dst, prop)                             \
-    {                                                               \
+    do {                                                               \
         const char *str = SDL_GetStringProperty(props, prop, NULL); \
         if (str) {                                                  \
             dst = SDL_strdup(str);                                  \
@@ -125,7 +125,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
                 goto cleanup;                                       \
             }                                                       \
         }                                                           \
-    }
+    } while(0)
 
     COPY_STRING_PROPERTY(args->filename, SDL_PROP_FILE_DIALOG_LOCATION_STRING);
     COPY_STRING_PROPERTY(args->title, SDL_PROP_FILE_DIALOG_TITLE_STRING);

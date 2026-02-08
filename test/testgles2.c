@@ -121,13 +121,13 @@ quit(int rc)
 
 #define GL_CHECK(x)                                                                         \
     x;                                                                                      \
-    {                                                                                       \
+    do {                                                                                    \
         GLenum glError = ctx.glGetError();                                                  \
         if (glError != GL_NO_ERROR) {                                                       \
-            SDL_Log("glGetError() = %i (0x%.8x) at line %i", glError, glError, __LINE__); \
+            SDL_Log("glGetError() = %i (0x%.8x) at line %i", glError, glError, __LINE__);   \
             quit(1);                                                                        \
         }                                                                                   \
-    }
+    } while(0)
 
 /**
  * Simulates desktop's glRotatef. The matrix is returned in column-major

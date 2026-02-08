@@ -84,11 +84,11 @@ static bool DSOUND_Load(void)
     } else {
 // Now make sure we have DirectX 8 or better...
 #define DSOUNDLOAD(f)                                  \
-    {                                                  \
+    do {                                                  \
         p##f = (pfn##f)SDL_LoadFunction(DSoundDLL, #f); \
         if (!p##f)                                     \
             loaded = false;                                \
-    }
+    } while(0)
         loaded = true; // will reset if necessary.
         DSOUNDLOAD(DirectSoundCreate8);
         DSOUNDLOAD(DirectSoundEnumerateW);

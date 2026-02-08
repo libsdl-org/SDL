@@ -127,29 +127,29 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 // Load pixel of the specified format from a buffer and get its R-G-B values
 #define RGB_FROM_PIXEL(Pixel, fmt, r, g, b)                                     \
-    {                                                                           \
+    do {                                                                        \
         r = SDL_expand_byte[fmt->Rbits][((Pixel & fmt->Rmask) >> fmt->Rshift)]; \
         g = SDL_expand_byte[fmt->Gbits][((Pixel & fmt->Gmask) >> fmt->Gshift)]; \
         b = SDL_expand_byte[fmt->Bbits][((Pixel & fmt->Bmask) >> fmt->Bshift)]; \
-    }
+    } while (0)
 #define RGB_FROM_RGB565(Pixel, r, g, b)                   \
-    {                                                     \
+    do {                                                  \
         r = SDL_expand_byte[5][((Pixel & 0xF800) >> 11)]; \
         g = SDL_expand_byte[6][((Pixel & 0x07E0) >> 5)];  \
         b = SDL_expand_byte[5][(Pixel & 0x001F)];         \
-    }
+    } while (0)
 #define RGB_FROM_RGB555(Pixel, r, g, b)                   \
-    {                                                     \
+    do {                                                  \
         r = SDL_expand_byte[5][((Pixel & 0x7C00) >> 10)]; \
         g = SDL_expand_byte[5][((Pixel & 0x03E0) >> 5)];  \
         b = SDL_expand_byte[5][(Pixel & 0x001F)];         \
-    }
+    } while (0)
 #define RGB_FROM_XRGB8888(Pixel, r, g, b) \
-    {                                   \
+    do {                                \
         r = ((Pixel & 0xFF0000) >> 16); \
         g = ((Pixel & 0xFF00) >> 8);    \
         b = (Pixel & 0xFF);             \
-    }
+    } while (0)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define GET_RGB24(B) (B[2] << 16) | (B[1] << 8) | B[0]
 #else
@@ -223,54 +223,54 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 // Assemble R-G-B values into a specified pixel format and store them
 #define PIXEL_FROM_RGB(Pixel, fmt, r, g, b)                 \
-    {                                                       \
+    do {                                                    \
         Pixel = ((r >> (8 - fmt->Rbits)) << fmt->Rshift) |  \
                 ((g >> (8 - fmt->Gbits)) << fmt->Gshift) |  \
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) |  \
                 fmt->Amask;                                 \
-    }
+    } while (0)
 #define RGB332_FROM_RGB(Pixel, r, g, b)                        \
-    {                                                          \
+    do {                                                       \
         Pixel = (Uint8)(((r >> 5) << 5) | ((g >> 5) << 2) | (b >> 6)); \
-    }
+    } while (0)
 #define RGB565_FROM_RGB(Pixel, r, g, b)                        \
-    {                                                          \
+    do {                                                       \
         Pixel = (Uint16)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)); \
-    }
+    } while (0)
 #define RGB555_FROM_RGB(Pixel, r, g, b)                        \
-    {                                                          \
+    do {                                                       \
         Pixel = (Uint16)(((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)); \
-    }
+    } while (0)
 #define XRGB8888_FROM_RGB(Pixel, r, g, b)   \
-    {                                     \
+    do {                                  \
         Pixel = (r << 16) | (g << 8) | b; \
-    }
+    } while (0)
 #define ARGB8888_FROM_RGBA(Pixel, r, g, b, a)         \
-    {                                                 \
+    do {                                              \
         Pixel = (a << 24) | (r << 16) | (g << 8) | b; \
-    }
+    } while (0)
 #define RGBA8888_FROM_RGBA(Pixel, r, g, b, a)         \
-    {                                                 \
+    do {                                              \
         Pixel = (r << 24) | (g << 16) | (b << 8) | a; \
-    }
+    } while (0)
 #define ABGR8888_FROM_RGBA(Pixel, r, g, b, a)         \
-    {                                                 \
+    do {                                              \
         Pixel = (a << 24) | (b << 16) | (g << 8) | r; \
-    }
+    } while (0)
 #define BGRA8888_FROM_RGBA(Pixel, r, g, b, a)         \
-    {                                                 \
+    do {                                              \
         Pixel = (b << 24) | (g << 16) | (r << 8) | a; \
-    }
+    } while(0)
 #define ARGB2101010_FROM_RGBA(Pixel, r, g, b, a)       \
-    {                                                  \
+    do {                                               \
         r = r ? ((r << 2) | 0x3) : 0;                  \
         g = g ? ((g << 2) | 0x3) : 0;                  \
         b = b ? ((b << 2) | 0x3) : 0;                  \
         a = (a * 3) / 255;                             \
         Pixel = (a << 30) | (r << 20) | (g << 10) | b; \
-    }
+    } while(0)
 #define ARGB2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a) \
-    {                                                 \
+    do {                                              \
         r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;       \
         g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
         b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
@@ -279,17 +279,17 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 (((Uint32)SDL_roundf(r)) << 20) |     \
                 (((Uint32)SDL_roundf(g)) << 10) |     \
                 (Uint32)SDL_roundf(b);                \
-    }
+    } while(0)
 #define ABGR2101010_FROM_RGBA(Pixel, r, g, b, a)       \
-    {                                                  \
+    do {                                               \
         r = r ? ((r << 2) | 0x3) : 0;                  \
         g = g ? ((g << 2) | 0x3) : 0;                  \
         b = b ? ((b << 2) | 0x3) : 0;                  \
         a = (a * 3) / 255;                             \
         Pixel = (a << 30) | (b << 20) | (g << 10) | r; \
-    }
+    } while(0)
 #define ABGR2101010_FROM_RGBAFLOAT(Pixel, r, g, b, a) \
-    {                                                 \
+    do {                                              \
         r = SDL_clamp(r, 0.0f, 1.0f) * 1023.0f;       \
         g = SDL_clamp(g, 0.0f, 1.0f) * 1023.0f;       \
         b = SDL_clamp(b, 0.0f, 1.0f) * 1023.0f;       \
@@ -298,9 +298,9 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 (((Uint32)SDL_roundf(b)) << 20) |     \
                 (((Uint32)SDL_roundf(g)) << 10) |     \
                 (Uint32)SDL_roundf(r);                \
-    }
+    } while (0)
 #define ASSEMBLE_RGB(buf, bpp, fmt, r, g, b)           \
-    {                                                  \
+    do {                                                  \
         switch (bpp) {                                 \
         case 1:                                        \
         {                                              \
@@ -333,79 +333,79 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
             *((Uint32 *)(buf)) = _pixel;               \
         } break;                                       \
         }                                              \
-    }
+    } while(0)
 
 // FIXME: Should we rescale alpha into 0..255 here?
 #define RGBA_FROM_PIXEL(Pixel, fmt, r, g, b, a)                                 \
-    {                                                                           \
+    do {                                                                        \
         r = SDL_expand_byte[fmt->Rbits][((Pixel & fmt->Rmask) >> fmt->Rshift)]; \
         g = SDL_expand_byte[fmt->Gbits][((Pixel & fmt->Gmask) >> fmt->Gshift)]; \
         b = SDL_expand_byte[fmt->Bbits][((Pixel & fmt->Bmask) >> fmt->Bshift)]; \
         a = SDL_expand_byte[fmt->Abits][((Pixel & fmt->Amask) >> fmt->Ashift)]; \
-    }
+    } while(0)
 #define RGBA_FROM_8888(Pixel, fmt, r, g, b, a)   \
-    {                                            \
+    do {                                         \
         r = (Pixel & fmt->Rmask) >> fmt->Rshift; \
         g = (Pixel & fmt->Gmask) >> fmt->Gshift; \
         b = (Pixel & fmt->Bmask) >> fmt->Bshift; \
         a = (Pixel & fmt->Amask) >> fmt->Ashift; \
-    }
+    } while(0)
 #define RGBA_FROM_RGBA8888(Pixel, r, g, b, a) \
-    {                                         \
+    do {                                      \
         r = (Pixel >> 24);                    \
         g = ((Pixel >> 16) & 0xFF);           \
         b = ((Pixel >> 8) & 0xFF);            \
         a = (Pixel & 0xFF);                   \
-    }
+    } while(0)
 #define RGBA_FROM_ARGB8888(Pixel, r, g, b, a) \
-    {                                         \
+    do {                                      \
         r = ((Pixel >> 16) & 0xFF);           \
         g = ((Pixel >> 8) & 0xFF);            \
         b = (Pixel & 0xFF);                   \
         a = (Pixel >> 24);                    \
-    }
+    } while(0)
 #define RGBA_FROM_ABGR8888(Pixel, r, g, b, a) \
-    {                                         \
+    do {                                      \
         r = (Pixel & 0xFF);                   \
         g = ((Pixel >> 8) & 0xFF);            \
         b = ((Pixel >> 16) & 0xFF);           \
         a = (Pixel >> 24);                    \
-    }
+    } while(0)
 #define RGBA_FROM_BGRA8888(Pixel, r, g, b, a) \
-    {                                         \
+    do {                                      \
         r = ((Pixel >> 8) & 0xFF);            \
         g = ((Pixel >> 16) & 0xFF);           \
         b = (Pixel >> 24);                    \
         a = (Pixel & 0xFF);                   \
-    }
+    } while(0)
 #define RGBA_FROM_ARGB2101010(Pixel, r, g, b, a) \
-    {                                            \
+    do {                                         \
         r = ((Pixel >> 22) & 0xFF);              \
         g = ((Pixel >> 12) & 0xFF);              \
         b = ((Pixel >> 2) & 0xFF);               \
         a = SDL_expand_byte[2][(Pixel >> 30)];   \
-    }
+    } while(0)
 #define RGBAFLOAT_FROM_ARGB2101010(Pixel, r, g, b, a)   \
-    {                                                   \
+    do {                                                \
         r = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;   \
         g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;   \
         b = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;    \
         a = (float)(Pixel >> 30) / 3.0f;                \
-    }
+    } while(0)
 #define RGBA_FROM_ABGR2101010(Pixel, r, g, b, a) \
-    {                                            \
+    do {                                         \
         r = ((Pixel >> 2) & 0xFF);               \
         g = ((Pixel >> 12) & 0xFF);              \
         b = ((Pixel >> 22) & 0xFF);              \
         a = SDL_expand_byte[2][(Pixel >> 30)];   \
-    }
+    } while(0)
 #define RGBAFLOAT_FROM_ABGR2101010(Pixel, r, g, b, a)   \
-    {                                                   \
+    do {                                                \
         r = (float)((Pixel >> 0) & 0x3FF) / 1023.0f;    \
         g = (float)((Pixel >> 10) & 0x3FF) / 1023.0f;   \
         b = (float)((Pixel >> 20) & 0x3FF) / 1023.0f;   \
         a = (float)(Pixel >> 30) / 3.0f;                \
-    }
+    } while(0)
 #define DISEMBLE_RGBA(buf, bpp, fmt, Pixel, r, g, b, a) \
     do {                                                \
         switch (bpp) {                                  \
@@ -443,14 +443,14 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 
 // FIXME: this isn't correct, especially for Alpha (maximum != 255)
 #define PIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)             \
-    {                                                       \
+    do {                                                    \
         Pixel = ((r >> (8 - fmt->Rbits)) << fmt->Rshift) |  \
                 ((g >> (8 - fmt->Gbits)) << fmt->Gshift) |  \
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) |  \
                 ((a >> (8 - fmt->Abits)) << fmt->Ashift);   \
-    }
+    } while (0)
 #define ASSEMBLE_RGBA(buf, bpp, fmt, r, g, b, a)       \
-    {                                                  \
+    do {                                               \
         switch (bpp) {                                 \
         case 1:                                        \
         {                                              \
@@ -483,7 +483,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
             *((Uint32 *)(buf)) = _pixel;               \
         } break;                                       \
         }                                              \
-    }
+    } while(0)
 
 // Convert any 32-bit 4-bpp pixel to ARGB format
 #define PIXEL_TO_ARGB_PIXEL(src, srcfmt, dst)         \
@@ -595,18 +595,18 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #endif
 
 #define DUFFS_LOOP1(pixel_copy_increment, width) \
-    {                                            \
+    do {                                         \
         int n;                                   \
         for (n = width; n > 0; --n) {            \
             pixel_copy_increment;                \
         }                                        \
-    }
+    } while (0)
 
 #ifdef USE_DUFFS_LOOP
 
 // 8-times unrolled loop
 #define DUFFS_LOOP8(pixel_copy_increment, width) \
-    {                                            \
+    do {                                         \
         int n = (width + 7) / 8;                 \
         switch (width & 7) {                     \
         case 0:                                  \
@@ -635,11 +635,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 pixel_copy_increment;            \
             } while (--n > 0);                   \
         }                                        \
-    }
+    } while (0)
 
 // 4-times unrolled loop
 #define DUFFS_LOOP4(pixel_copy_increment, width) \
-    {                                            \
+    do {                                         \
         int n = (width + 3) / 4;                 \
         switch (width & 3) {                     \
         case 0:                                  \
@@ -656,11 +656,11 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 pixel_copy_increment;            \
             } while (--n > 0);                   \
         }                                        \
-    }
+    } while (0)
 
 // 2-times unrolled loop
 #define DUFFS_LOOP2(pixel_copy_increment, width) \
-    {                                            \
+    do {                                         \
         int n = (width + 1) / 2;                 \
         switch (width & 1) {                     \
         case 0:                                  \
@@ -671,7 +671,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 pixel_copy_increment;            \
             } while (--n > 0);                   \
         }                                        \
-    }
+    } while (0)
 
 // Use the 4-times version of the loop by default
 #define DUFFS_LOOP(pixel_copy_increment, width) \
@@ -684,7 +684,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
 #define DUFFS_LOOP_124(pixel_copy_increment1,        \
                        pixel_copy_increment2,        \
                        pixel_copy_increment4, width) \
-    {                                                \
+    do {                                             \
         int n = width;                               \
         if (n & 1) {                                 \
             pixel_copy_increment1;                   \
@@ -705,7 +705,7 @@ extern SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface);
                 pixel_copy_increment4;               \
             } while (--n > 0);                       \
         }                                            \
-    }
+    } while (0)
 
 #else
 

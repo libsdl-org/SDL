@@ -58,7 +58,7 @@
         SDL_stack_free(ptr);         \
     } else {                         \
         SDL_free(ptr);               \
-    }
+    } do {} while(0)
 
 #include "SDL_build_config.h"
 

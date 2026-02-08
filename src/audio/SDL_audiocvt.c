@@ -162,7 +162,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
         }
     }
 
-    #define CHANNEL_SWIZZLE(bits) { \
+    #define CHANNEL_SWIZZLE(bits) do { \
         Uint##bits *tdst = (Uint##bits *) dst; /* treat as UintX; we only care about moving bits and not the type here. */ \
         const Uint##bits *tsrc = (const Uint##bits *) src; \
         if (src != dst) {  /* don't need to copy to a temporary frame first. */ \
@@ -209,7 +209,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
                 SDL_small_free(tmp, isstack); \
             } \
         } \
-    }
+    } while(0)
 
     switch (bitsize) {
         case 8: CHANNEL_SWIZZLE(8); break;
