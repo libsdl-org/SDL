@@ -254,12 +254,6 @@ void *alloca(size_t);
 /**
  * Macro useful for building other macros with strings in them.
  *
- * For example:
- *
- * ```c
- * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(SDL_FUNCTION) ": " X "\n")`
- * ```
- *
  * \param arg the text to turn into a string literal.
  *
  * \since This macro is available since SDL 3.2.0.
