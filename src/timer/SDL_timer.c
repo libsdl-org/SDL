@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 
 // #define DEBUG_TIMERS
 
-#if !defined(SDL_PLATFORM_EMSCRIPTEN) || !defined(SDL_THREADS_DISABLED)
+#if !defined(SDL_PLATFORM_EMSCRIPTEN)
 
 typedef struct SDL_Timer
 {
@@ -407,7 +407,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#else
+#else   // Emscripten-specific implementation.
 
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
@@ -533,7 +533,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#endif // !SDL_PLATFORM_EMSCRIPTEN || !SDL_THREADS_DISABLED
+#endif // !SDL_PLATFORM_EMSCRIPTEN
 
 static Uint64 tick_start;
 static Uint32 tick_numerator_ns;

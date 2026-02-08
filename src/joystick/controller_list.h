@@ -159,6 +159,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1012 ), k_eControllerType_PS5Controller, NULL },	// Razer Kitsune
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1024 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode wired)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1026 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS

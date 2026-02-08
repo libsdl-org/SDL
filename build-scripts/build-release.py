@@ -267,8 +267,12 @@ class Archiver:
 
     def close(self):
         # Archiver is intentionally made invalid after this function
+        for zf in self._zip_files:
+            zf.close()
         del self._zip_files
         self._zip_files = None
+        for tf in self._tar_files:
+            tf.close()
         del self._tar_files
         self._tar_files = None
 

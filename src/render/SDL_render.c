@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1469,10 +1469,12 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
     } else {
         bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
         bool isIndexed = SDL_ISPIXELFORMAT_INDEXED(format);
+        int size = SDL_BYTESPERPIXEL(format);
 
         // We just want to match the first format that has the same channels
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
+                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == hasAlpha &&
                 SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == isIndexed) {
                 return renderer->texture_formats[i];
@@ -1846,9 +1848,11 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
         // Indexed formats don't support the transparency needed for color-keyed surfaces
         bool preferIndexed = SDL_ISPIXELFORMAT_INDEXED(surface->format) && !needAlpha;
+        int size = SDL_BYTESPERPIXEL(format);
 
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
+                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha &&
                 SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == preferIndexed) {
                 format = renderer->texture_formats[i];
@@ -6143,7 +6147,7 @@ bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale
     return true;
 }
 
-SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo)
+SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_GPURenderStateCreateInfo *createinfo)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 

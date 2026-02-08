@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -491,7 +491,7 @@ typedef enum SDL_GLAttr
     SDL_GL_CONTEXT_FLAGS,               /**< some combination of 0 or more of elements of the SDL_GLContextFlag enumeration; defaults to 0. */
     SDL_GL_CONTEXT_PROFILE_MASK,        /**< type of GL context (Core, Compatibility, ES). See SDL_GLProfile; default value depends on platform. */
     SDL_GL_SHARE_WITH_CURRENT_CONTEXT,  /**< OpenGL context sharing; defaults to 0. */
-    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB-capable visual if 1. Defaults to -1 ("don't care"). This is a request; GL drivers might not comply! */
+    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB capable visual; defaults to 0. */
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR,    /**< sets context the release behavior. See SDL_GLContextReleaseFlag; defaults to FLUSH. */
     SDL_GL_CONTEXT_RESET_NOTIFICATION,  /**< set context reset notification. See SDL_GLContextResetNotification; defaults to NO_NOTIFICATION. */
     SDL_GL_CONTEXT_NO_ERROR,
@@ -1560,6 +1560,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER`: the OpenVR Overlay Handle ID
  *   for the associated overlay window.
  *
+ * On QNX:
+ *
+ * - `SDL_PROP_WINDOW_QNX_WINDOW_POINTER`: the screen_window_t associated with
+ *   the window.
+ * - `SDL_PROP_WINDOW_QNX_SURFACE_POINTER`: the EGLSurface associated with the
+ *   window
+ *
  * On Vivante:
  *
  * - `SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER`: the EGLNativeDisplayType
@@ -1644,6 +1651,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                        "SDL.window.cocoa.window"
 #define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER                 "SDL.window.cocoa.metal_view_tag"
 #define SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER                    "SDL.window.openvr.overlay_id"
+#define SDL_PROP_WINDOW_QNX_WINDOW_POINTER                          "SDL.window.qnx.window"
+#define SDL_PROP_WINDOW_QNX_SURFACE_POINTER                         "SDL.window.qnx.surface"
 #define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
 #define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
 #define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"
@@ -1881,7 +1890,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, i
  * notches, TV overscan, etc. This function provides the area of the window
  * which is safe to have interactable content. You should continue rendering
  * into the rest of the window, but it should not contain visually important
- * or interactible content.
+ * or interactable content.
  *
  * \param window the window to query.
  * \param rect a pointer filled in with the client area that is safe for

@@ -156,6 +156,7 @@ add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawin
 add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.png)
 add_sdl_example_executable(misc-power SOURCES misc/01-power/power.c)
 add_sdl_example_executable(misc-clipboard SOURCES misc/02-clipboard/clipboard.c)
+add_sdl_example_executable(misc-locale SOURCES misc/03-locale/locale.c)
 add_sdl_example_executable(demo-snake SOURCES demo/01-snake/snake.c)
 add_sdl_example_executable(demo-woodeneye-008 SOURCES demo/02-woodeneye-008/woodeneye-008.c)
 add_sdl_example_executable(demo-infinite-monkeys SOURCES demo/03-infinite-monkeys/infinite-monkeys.c)

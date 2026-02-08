@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1271,7 +1271,7 @@ SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCall
 SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateCreateInfo *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,const SDL_GPURenderStateCreateInfo *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateFragmentUniforms,(SDL_GPURenderState *a,Uint32 b,const void *c,Uint32 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_SetGPURenderState,(SDL_Renderer *a,SDL_GPURenderState *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyGPURenderState,(SDL_GPURenderState *a),(a),)
@@ -1305,3 +1305,12 @@ SDL_DYNAPI_PROC(SDL_Surface*,SDL_RotateSurface,(SDL_Surface *a,float b),(a,b),re
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface_IO,(SDL_IOStream *a,bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadSurface,(const char *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowFillDocument,(SDL_Window *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_TryLockJoysticks,(void),(),return)
+SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a,const XrSessionCreateInfo *b,XrSession *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_GPUTextureFormat*,SDL_GetGPUXRSwapchainFormats,(SDL_GPUDevice *a,XrSession b,int *c),(a,b,c),return)
+SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a,XrSession b,const XrSwapchainCreateInfo *c,SDL_GPUTextureFormat d,XrSwapchain *e,SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain b,SDL_GPUTexture **c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_OpenXR_LoadLibrary,(void),(),return)
+SDL_DYNAPI_PROC(void,SDL_OpenXR_UnloadLibrary,(void),(),)
+SDL_DYNAPI_PROC(PFN_xrGetInstanceProcAddr,SDL_OpenXR_GetXrGetInstanceProcAddr,(void),(),return)
+SDL_DYNAPI_PROC(SDL_Tray*,SDL_CreateTrayWithProperties,(SDL_PropertiesID a),(a),return)

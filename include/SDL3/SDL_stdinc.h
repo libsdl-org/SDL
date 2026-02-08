@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -257,7 +257,7 @@ void *alloca(size_t);
  * For example:
  *
  * ```c
- * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(__FUNCTION__) ": " X "\n")`
+ * #define LOG_ERROR(X) OutputDebugString(SDL_STRINGIFY_ARG(SDL_FUNCTION) ": " X "\n")`
  * ```
  *
  * \param arg the text to turn into a string literal.

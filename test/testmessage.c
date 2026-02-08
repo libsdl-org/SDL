@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
     }
     
     success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                                       "Cyrillic (Ukranian)",
+                                       "Cyrillic (Ukrainian)",
                                        "Для запису людської мови використовуються системи письма.",
                                        NULL);
     if (!success) {
@@ -358,7 +358,9 @@ int main(int argc, char *argv[])
         }
 
         while (SDL_WaitEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_UP) {
+            if (event.type == SDL_EVENT_QUIT ||
+                event.type == SDL_EVENT_KEY_UP ||
+                event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 break;
             }
         }

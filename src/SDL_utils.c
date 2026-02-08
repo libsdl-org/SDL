@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -445,6 +445,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "(Standard system devices) ", "" },
         { "8BitDo Tech Ltd", "8BitDo" },
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },

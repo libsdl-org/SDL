@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -370,7 +370,7 @@ bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down)
         return false;
     }
 
-    if (SDL_DBus_CallMethod(FCITX_DBUS_SERVICE, fcitx_client.ic_path, FCITX_IC_DBUS_INTERFACE, "ProcessKeyEvent",
+    if (SDL_DBus_CallMethod(NULL, FCITX_DBUS_SERVICE, fcitx_client.ic_path, FCITX_IC_DBUS_INTERFACE, "ProcessKeyEvent",
                             DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mod_state, DBUS_TYPE_BOOLEAN, &is_release, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
                             DBUS_TYPE_BOOLEAN, &handled, DBUS_TYPE_INVALID)) {
         if (handled) {

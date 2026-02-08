@@ -73,6 +73,8 @@ NSApplicationDelegate implementation:
 }
 ```
 
+SDL is [not designed to be used in setuid or setgid executables](README-platforms.md#setuid).
+
 # Using the Simple DirectMedia Layer with a traditional Makefile
 
 An existing build system for your SDL app has good chances to work almost

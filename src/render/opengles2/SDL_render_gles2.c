@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1713,7 +1713,6 @@ static bool GLES2_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
     if (!GL_CheckError("glGenTexures()", renderer)) {
         return false;
     }
-    data->glActiveTexture(GL_TEXTURE1);
     data->glBindTexture(GL_TEXTURE_2D, palettedata->texture);
     data->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     if (!GL_CheckError("glTexImage2D()", renderer)) {
@@ -2395,6 +2394,7 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->name = GLES2_RenderDriver.name;
 
     // Create an OpenGL ES 2.0 context
+    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
         goto error;

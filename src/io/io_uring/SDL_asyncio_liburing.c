@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for async IO through liburing",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_DRIVER_LIBURING_DYNAMIC
-);
+)
 
 #define SDL_LIBURING_FUNCS \
     SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \

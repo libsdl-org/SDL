@@ -228,14 +228,20 @@ static void HIDAPI_DriverSteamTriton_HandleBatteryStatus(SDL_HIDAPI_Device *devi
 {
     SDL_PowerState state;
 
-    if (device->is_bluetooth) {
+    switch (pTritonBatteryStatus->ucChargeState) {
+    case k_EChargeStateDischarging:
         state = SDL_POWERSTATE_ON_BATTERY;
-    } else if (IsProteusDongle(device->product_id)) {
-        state = SDL_POWERSTATE_ON_BATTERY;
-    } else if (pTritonBatteryStatus->ucBatteryLevel == 100) {
-        state = SDL_POWERSTATE_CHARGED;
-    } else {
+        break;
+    case k_EChargeStateCharging:
         state = SDL_POWERSTATE_CHARGING;
+        break;
+    case k_EChargeStateChargingDone:
+        state = SDL_POWERSTATE_CHARGED;
+        break;
+    default:
+        // Error state?
+        state = SDL_POWERSTATE_UNKNOWN;
+        break;
     }
     SDL_SendJoystickPowerInfo(joystick, state, pTritonBatteryStatus->ucBatteryLevel);
 }
@@ -431,7 +437,7 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
 {
     int rc;
 
-    //RKRK Not sure about size. Probalby 64+1 is OK for ORs
+    //RKRK Not sure about size. Probably 64+1 is OK for ORs
     Uint8 buffer[HID_RUMBLE_OUTPUT_REPORT_BYTES];
     OutputReportMsg *msg = (OutputReportMsg *)(buffer);
 

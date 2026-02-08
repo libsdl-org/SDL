@@ -88,9 +88,13 @@ foreach(resource_file IN LISTS RESOURCE_FILES)
     get_filename_component(res_file_name ${resource_file} NAME)
     list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
     set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    set(depends_resource_file "${resource_file}")
+    if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+        set(depends_resource_file "${CMAKE_CURRENT_LIST_FILE}")
+    endif()
     add_custom_command(OUTPUT "${resource_file_bindir}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
-        DEPENDS "${resource_file}"
+        DEPENDS "${depends_resource_file}"
     )
     list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
 endforeach()

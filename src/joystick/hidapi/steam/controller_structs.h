@@ -603,15 +603,25 @@ typedef struct
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
 
+enum EChargeState
+{
+    k_EChargeStateReset,
+    k_EChargeStateDischarging,
+    k_EChargeStateCharging,
+    k_EChargeStateSrcValidate,
+    k_EChargeStateChargingDone,
+};
+
 typedef struct
 {
+    unsigned char ucChargeState; // EChargeState
     unsigned char ucBatteryLevel;
     unsigned short sBatteryVoltage;
     unsigned short sSystemVoltage;
     unsigned short sInputVoltage;
     unsigned short sCurrent;
     unsigned short sInputCurrent;
-    char cTemperature;
+    unsigned short sTemperature;
 } TritonBatteryStatus_t;
 
 typedef struct

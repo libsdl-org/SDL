@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 
 #include "../../core/linux/SDL_system_theme.h"
 #include "../../core/linux/SDL_progressbar.h"
+#include "../../core/unix/SDL_gtk.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -633,6 +634,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->GL_UnloadLibrary = Wayland_GLES_UnloadLibrary;
     device->GL_GetProcAddress = Wayland_GLES_GetProcAddress;
     device->GL_DestroyContext = Wayland_GLES_DestroyContext;
+    device->GL_SetDefaultProfileConfig = Wayland_GLES_SetDefaultProfileConfig;
     device->GL_GetEGLSurface = Wayland_GLES_GetEGLSurface;
 #endif
 
@@ -1069,8 +1071,6 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
         AddEmulatedModes(internal, native_mode.w, native_mode.h);
     }
 
-    SDL_SetDisplayHDRProperties(dpy, &internal->HDR);
-
     if (internal->display == 0) {
         // First time getting display info, initialize the VideoDisplay
         if (internal->physical_width_mm >= internal->physical_height_mm) {
@@ -1086,6 +1086,9 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
 
         // During initialization, the displays will be added after enumeration is complete.
         if (!video->initializing) {
+            if (video->wp_color_manager_v1) {
+                Wayland_GetColorInfoForOutput(internal, false);
+            }
             internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
             SDL_free(internal->placeholder.name);
             SDL_zero(internal->placeholder);
@@ -1133,7 +1136,6 @@ static void handle_output_image_description_changed(void *data,
                                                     struct wp_color_management_output_v1 *wp_color_management_output_v1)
 {
     SDL_DisplayData *display = (SDL_DisplayData *)data;
-    // wl_display.done is called after this event, so the display HDR status will be updated there.
     Wayland_GetColorInfoForOutput(display, false);
 }
 
@@ -1173,7 +1175,11 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     if (data->videodata->wp_color_manager_v1) {
         data->wp_color_management_output = wp_color_manager_v1_get_output(data->videodata->wp_color_manager_v1, output);
         wp_color_management_output_v1_add_listener(data->wp_color_management_output, &wp_color_management_output_listener, data);
-        Wayland_GetColorInfoForOutput(data, true);
+
+        // If not initializing, this will be queried synchronously in wl_output.done.
+        if (d->initializing) {
+            Wayland_GetColorInfoForOutput(data, true);
+        }
     }
     return true;
 }
@@ -1293,7 +1299,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
     } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
-        Wayland_DisplayCreateTextInputManager(d, id);
+        d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
+        Wayland_DisplayInitTextInputManager(d, id);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
         Wayland_DisplayInitDataDeviceManager(d);
@@ -1330,7 +1337,7 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
     } else if (SDL_strcmp(interface, "wp_color_manager_v1") == 0) {
-        d->wp_color_manager_v1 = wl_registry_bind(d->registry, id, &wp_color_manager_v1_interface, 1);
+        d->wp_color_manager_v1 = wl_registry_bind(d->registry, id, &wp_color_manager_v1_interface, SDL_min(version, 2));
         Wayland_InitColorManager(d);
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
@@ -1391,10 +1398,6 @@ static bool should_use_libdecor(SDL_VideoData *data, bool ignore_xdg)
         return false;
     }
 
-    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, true)) {
-        return false;
-    }
-
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, false)) {
         return true;
     }
@@ -1409,6 +1412,19 @@ static bool should_use_libdecor(SDL_VideoData *data, bool ignore_xdg)
 
     return true;
 }
+
+static void LibdecorNew(SDL_VideoData *data)
+{
+    data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+}
+
+// Called in another thread, but the UI thread is blocked in SDL_WaitThread
+// during that time, so it should be OK to dereference data without locks
+static int SDLCALL LibdecorNewInThread(void *data)
+{
+    LibdecorNew((SDL_VideoData *)data);
+    return 0;
+}
 #endif
 
 bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
@@ -1418,7 +1434,18 @@ bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
         return true; // Already loaded!
     }
     if (should_use_libdecor(data, ignore_xdg)) {
-        data->shell.libdecor = libdecor_new(data->display, &libdecor_interface);
+        if (SDL_CanUseGtk()) {
+            LibdecorNew(data);
+        } else {
+            // Intentionally initialize libdecor in a non-main thread
+            // so that it will not use its GTK plugin, but instead will
+            // fall back to the Cairo or dummy plugin
+            SDL_Thread *thread = SDL_CreateThread(LibdecorNewInThread, "SDL_LibdecorNew", (void *)data);
+            // Note that the other thread now "owns" data until we have
+            // waited for it, so don't touch data here
+            SDL_WaitThread(thread, NULL);
+        }
+
         return data->shell.libdecor != NULL;
     }
 #endif

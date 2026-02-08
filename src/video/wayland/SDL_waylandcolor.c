@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,6 +110,15 @@ static void image_description_info_handle_done(void *data,
         case WAYLAND_COLOR_OBJECT_TYPE_DISPLAY:
         {
             SDL_copyp(&state->display_data->HDR, &state->HDR);
+
+            if (state->display_data->display) {
+                SDL_VideoDisplay *disp = SDL_GetVideoDisplay(state->display_data->display);
+                if (disp) {
+                    SDL_SetDisplayHDRProperties(disp, &state->HDR);
+                }
+            } else {
+                SDL_copyp(&state->display_data->placeholder.HDR, &state->HDR);
+            }
         } break;
     }
 }
@@ -236,9 +245,9 @@ static void image_description_handle_failed(void *data,
     }
 }
 
-static void image_description_handle_ready(void *data,
-                                           struct wp_image_description_v1 *wp_image_description_v1,
-                                           uint32_t identity)
+static void image_description_handle_ready2(void *data,
+                                            struct wp_image_description_v1 *wp_image_description_v1,
+                                            uint32_t identity_hi, uint32_t identity_lo)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
 
@@ -263,9 +272,17 @@ static void image_description_handle_ready(void *data,
     }
 }
 
+static void image_description_handle_ready(void *data,
+                                           struct wp_image_description_v1 *wp_image_description_v1,
+                                           uint32_t identity)
+{
+    image_description_handle_ready2(data, wp_image_description_v1, 0, identity);
+}
+
 static const struct wp_image_description_v1_listener image_description_listener = {
     image_description_handle_failed,
-    image_description_handle_ready
+    image_description_handle_ready,
+    image_description_handle_ready2
 };
 
 void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event_processing)

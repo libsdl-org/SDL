@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,6 +73,7 @@ struct SDL_VideoData
         Atom WM_TAKE_FOCUS;
         Atom WM_NAME;
         Atom WM_TRANSIENT_FOR;
+        Atom WM_STATE;
         Atom _NET_WM_STATE;
         Atom _NET_WM_STATE_HIDDEN;
         Atom _NET_WM_STATE_FOCUSED;

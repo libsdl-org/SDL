@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -57,6 +57,7 @@ typedef struct SDL_LibUSBContext
     int (LIBUSB_CALL *kernel_driver_active)(libusb_device_handle *dev_handle, int interface_number);
     int (LIBUSB_CALL *detach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
     int (LIBUSB_CALL *attach_kernel_driver)(libusb_device_handle *dev_handle, int interface_number);
+    int (LIBUSB_CALL *set_auto_detach_kernel_driver)(libusb_device_handle *dev_handle, int enable);
     int (LIBUSB_CALL *set_interface_alt_setting)(libusb_device_handle *dev, int interface_number, int alternate_setting);
     struct libusb_transfer * (LIBUSB_CALL *alloc_transfer)(int iso_packets);
     int (LIBUSB_CALL *submit_transfer)(struct libusb_transfer *transfer);

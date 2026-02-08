@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -325,6 +325,26 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     if (!SDL_MainIsReady) {
         return SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
     }
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    MAIN_THREAD_EM_ASM({
+        // make sure this generic table to hang SDL-specific Javascript stuff is available at init time.
+        if (typeof(Module['SDL3']) === 'undefined') {
+            Module['SDL3'] = {};
+        }
+
+        var SDL3 = Module['SDL3'];
+        #if defined(__wasm32__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return v; }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; }; }
+        #elif defined(__wasm64__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return BigInt(v); }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); }; }
+        #else
+        #error Please define your platform.
+        #endif
+    });
+#endif
 
     SDL_InitMainThread();
 
@@ -689,7 +709,7 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(SDL_PLATFORM_OHOS)
+#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(SDL_PLATFORM_OHOS) && !defined(SDL_PLATFORM_PRIVATE)
     SDL_Gtk_Quit();
 #endif
 
@@ -706,7 +726,7 @@ void SDL_Quit(void)
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.
      */
-    SDL_memset(SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount));
+    SDL_zeroa(SDL_SubsystemRefCount);
 
     SDL_QuitLog();
     SDL_QuitHints();

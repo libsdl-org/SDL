@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,18 +61,17 @@
 #define GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH 0x82FC
 #endif
 
+// This is always the same number between the various EXT/ARB/GLES extensions.
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
 #ifdef SDL_PLATFORM_3DS
 #include <3ds.h>
-#endif
-
-#ifdef SDL_PLATFORM_LINUX
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #endif
 
 #ifndef GL_RGBA_FLOAT_MODE_ARB
@@ -225,6 +224,11 @@ static bool SDL_DriverSendsHDRChanges(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES);
 }
 
+static bool SDL_DriverHasSlowFramebuffer(SDL_VideoDevice *_this)
+{
+    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER);
+}
+
 // Hint to treat all window ops as synchronous
 static bool syncHint;
 
@@ -282,7 +286,7 @@ typedef struct
 
 static Uint32 SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
 {
-#if (defined(SDL_VIDEO_OPENGL) && defined(SDL_PLATFORM_MACOS)) || (defined(SDL_PLATFORM_IOS) && !TARGET_OS_MACCATALYST)
+#if (defined(SDL_VIDEO_OPENGL) && defined(SDL_PLATFORM_MACOS)) || (defined(SDL_PLATFORM_IOS) && !TARGET_OS_MACCATALYST) || defined(SDL_PLATFORM_QNXNTO)
     if (_this->GL_CreateContext) {
         return SDL_WINDOW_OPENGL;
     }
@@ -724,7 +728,7 @@ bool SDL_VideoInit(const char *driver_name)
        but most things using SDL are games or media players; you wouldn't
        want a screensaver to trigger if you're playing exclusively with a
        joystick, or passively watching a movie. Things that use SDL but
-       function more like a normal desktop app should explicitly reenable the
+       function more like a normal desktop app should explicitly re-enable the
        screensaver. */
     if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, false)) {
         SDL_DisableScreenSaver();
@@ -3582,11 +3586,11 @@ bool SDL_SyncWindow(SDL_Window *window)
 static bool ShouldAttemptTextureFramebuffer(void)
 {
     const char *hint;
-    bool attempt_texture_framebuffer = true;
+    bool attempt_texture_framebuffer;
 
-    // The dummy driver never has GPU support, of course.
-    if (_this->is_dummy) {
-        return false;
+    // If the driver doesn't support window framebuffers, always use the render API.
+    if (!_this->CreateWindowFramebuffer) {
+        return true;
     }
 
     // See if there's a hint override
@@ -3598,24 +3602,11 @@ static bool ShouldAttemptTextureFramebuffer(void)
             attempt_texture_framebuffer = true;
         }
     } else {
-        // Check for platform specific defaults
-#ifdef SDL_PLATFORM_LINUX
-        // On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer.
-        if ((_this->CreateWindowFramebuffer) && (SDL_strcmp(_this->name, "x11") == 0)) {
-            struct stat sb;
-            if ((stat("/proc/sys/fs/binfmt_misc/WSLInterop", &sb) == 0) || (stat("/run/WSL", &sb) == 0)) { // if either of these exist, we're on WSL.
-                attempt_texture_framebuffer = false;
-            }
-        }
-#endif
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) // GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?)
-        if (_this->CreateWindowFramebuffer && (SDL_strcmp(_this->name, "windows") == 0)) {
+        if (SDL_DriverHasSlowFramebuffer(_this)) {
+            attempt_texture_framebuffer = true;
+        } else {
             attempt_texture_framebuffer = false;
         }
-#endif
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-        attempt_texture_framebuffer = false;
-#endif
     }
     return attempt_texture_framebuffer;
 }
@@ -4670,6 +4661,16 @@ void SDL_VideoQuit(void)
     while (_this->windows) {
         SDL_DestroyWindow(_this->windows);
     }
+
+    if (_this->gl_config.driver_loaded && _this->GL_UnloadLibrary) {
+        _this->GL_UnloadLibrary(_this);
+        _this->gl_config.driver_loaded = 0;
+    }
+    if (_this->vulkan_config.loader_loaded && _this->Vulkan_UnloadLibrary) {
+        _this->Vulkan_UnloadLibrary(_this);
+        _this->vulkan_config.loader_loaded = 0;
+    }
+
     _this->VideoQuit(_this);
 
     for (i = _this->num_displays; i--; ) {
@@ -4787,6 +4788,7 @@ void SDL_GL_UnloadLibrary(void)
 typedef GLenum (APIENTRY* PFNGLGETERRORPROC) (void);
 typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint *params);
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGPROC) (GLenum name);
+typedef void (APIENTRY* PFNGLENABLEPROC) (GLenum cap);
 #ifndef SDL_VIDEO_OPENGL
 typedef const GLubyte *(APIENTRY* PFNGLGETSTRINGIPROC) (GLenum name, GLuint index);
 #endif
@@ -4971,14 +4973,8 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #endif
 
-    if (_this->GL_DefaultProfileConfig) {
-        _this->GL_DefaultProfileConfig(_this, &_this->gl_config.profile_mask,
-                                       &_this->gl_config.major_version,
-                                       &_this->gl_config.minor_version);
-    }
-
     _this->gl_config.flags = 0;
-    _this->gl_config.framebuffer_srgb_capable = -1;
+    _this->gl_config.framebuffer_srgb_capable = 0;
     _this->gl_config.no_error = 0;
     _this->gl_config.release_behavior = SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH;
     _this->gl_config.reset_notification = SDL_GL_CONTEXT_RESET_NO_NOTIFICATION;
@@ -4986,6 +4982,10 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.share_with_current_context = 0;
 
     _this->gl_config.egl_platform = 0;
+
+    if (_this->GL_SetDefaultProfileConfig) {
+        _this->GL_SetDefaultProfileConfig(_this);
+    }
 }
 
 bool SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
@@ -5397,6 +5397,15 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
         return NULL;
     }
 
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
+    bool srgb_requested = (_this->gl_config.framebuffer_srgb_capable > 0);
+    const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
+    if (srgbhint && *srgbhint) {
+        srgb_requested = SDL_GetStringBoolean(srgbhint, false);
+    }
+
+#endif
+
     ctx = _this->GL_CreateContext(_this, window);
 
     // Creating a context is assumed to make it current in the SDL driver.
@@ -5406,6 +5415,27 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
         SDL_SetTLS(&_this->current_glwin_tls, window, NULL);
         SDL_SetTLS(&_this->current_glctx_tls, ctx, NULL);
     }
+
+#if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
+    // try to force the window framebuffer to the requested sRGB state.
+    PFNGLENABLEPROC glToggleFunc = (PFNGLENABLEPROC) SDL_GL_GetProcAddress(srgb_requested ? "glEnable" : "glDisable");
+    PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
+    if (glToggleFunc && glGetStringFunc) {
+        bool supported = isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION));  // no extensions needed in OpenGL 3+ or GLES 3+.
+        if (!supported) {
+            if (_this->gl_config.profile_mask & SDL_GL_CONTEXT_PROFILE_ES) {
+                supported = SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control");
+            } else {
+                supported = SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB");
+            }
+        }
+
+        if (supported) {
+            glToggleFunc(GL_FRAMEBUFFER_SRGB);
+        }
+    }
+#endif
+
     return ctx;
 }
 

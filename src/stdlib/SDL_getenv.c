@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -337,7 +337,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     return setenv(name, value, overwrite);
 }
@@ -352,7 +354,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     if (getenv(name) != NULL) {
         if (!overwrite) {
@@ -376,7 +380,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     if (!overwrite) {
         if (GetEnvironmentVariableA(name, NULL, 0) > 0) {
@@ -407,7 +413,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return 0;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     // Allocate memory for the variable
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
@@ -462,7 +470,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     return unsetenv(name);
 }
@@ -475,7 +485,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     // Hope this environment uses the non-standard extension of removing the environment variable if it has no '='
     return putenv(name);
@@ -489,7 +501,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     if (!SetEnvironmentVariableA(name, NULL)) {
         return -1;
@@ -506,7 +520,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     if (environ) {
         len = SDL_strlen(name);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,10 +72,6 @@ static char kmsdrm_dri_cardpath[32];
 #endif
 #ifndef DRM_FORMAT_MOD_LINEAR
 #define DRM_FORMAT_MOD_LINEAR fourcc_mod_code(NONE, 0)
-#endif
-
-#ifndef EGL_PLATFORM_GBM_MESA
-#define EGL_PLATFORM_GBM_MESA 0x31D7
 #endif
 
 static int get_driindex(void)
@@ -491,18 +487,18 @@ void free_plane(KMSDRM_plane **_plane)
 /* A PLANE reads a BUFFER, and a CRTC reads a PLANE and sends it's contents       */
 /*   over to a CONNECTOR->ENCODER system (several CONNECTORS can be connected     */
 /*   to the same PLANE).                                                          */
-/*   Think of a plane as a "frame" sorrounding a picture, where the "picture"     */
+/*   Think of a plane as a "frame" surrounding a picture, where the "picture"     */
 /*   is the buffer, and we move the "frame" from  a picture to another,           */
 /*   and the one that has the "frame" is the one sent over to the screen          */
 /*   via the CONNECTOR->ENCODER system.                                           */
 /*   Think of a PLANE as being "in the middle", it's the CENTRAL part             */
-/*   bewteen the CRTC and the BUFFER that is shown on screen.                     */
+/*   between the CRTC and the BUFFER that is shown on screen.                     */
 /*   What we do here is connect a PLANE to a CRTC and a BUFFER.                   */
 /*   -ALWAYS set the CRTC_ID and FB_ID attribs of a plane at the same time,       */
 /*   meaning IN THE SAME atomic request.                                          */
 /*   -And NEVER destroy a GBM surface whose buffers are being read by a plane:    */
 /*   first, move the plane away from those buffers and ONLY THEN destroy the      */
-/*   buffers and/or the GBM surface containig them.                               */
+/*   buffers and/or the GBM surface containing them.                              */
 /**********************************************************************************/
 void
 drm_atomic_set_plane_props(SDL_DisplayData *dispdata, struct KMSDRM_PlaneInfo *info)
@@ -696,7 +692,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DestroyContext = KMSDRM_GLES_DestroyContext;
-    device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
+    device->GL_SetDefaultProfileConfig = KMSDRM_GLES_SetDefaultProfileConfig;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
@@ -1629,10 +1625,10 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         plane_info.plane = dispdata->display_plane;
         plane_info.crtc_id = 0;
         plane_info.fb_id = 0;
-        /***********************************************************************/
-        /* Restore the original CRTC configuration: configue the crtc with the */
-        /* original video mode and make it point to the original TTY buffer.   */
-        /***********************************************************************/
+        /************************************************************************/
+        /* Restore the original CRTC configuration: configure the crtc with the */
+        /* original video mode and make it point to the original TTY buffer.    */
+        /************************************************************************/
 
         drm_atomic_set_plane_props(dispdata, &plane_info);
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
@@ -1642,7 +1638,7 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         /* Issue atomic commit that is blocking and allows modesetting. */
         if (drm_atomic_commit(_this, dispdata, true, true)) {
             SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
-        /* If we failed to set the original mode, try to set the connector prefered mode. */
+        /* If we failed to set the original mode, try to set the connector preferred mode. */
         if (ret && (dispdata->crtc->mode_valid == 0)) {
             ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
                     dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
@@ -2132,12 +2128,12 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
            before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
         if (!_this->egl_data) {
             egl_display = (NativeDisplayType)_this->internal->gbm_dev;
-            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display)) {
                 // Try again with OpenGL ES 2.0
                 _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
                 _this->gl_config.major_version = 2;
                 _this->gl_config.minor_version = 0;
-                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display)) {
                     return SDL_SetError("Can't load EGL/GL library on window creation.");
                 }
             }

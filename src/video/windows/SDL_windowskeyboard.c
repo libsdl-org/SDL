@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -101,7 +101,7 @@ static void WIN_CacheKeymap(HKL layout, SDL_Keymap *keymap)
     ++keymap_cache_size;
 }
 
-static SDL_Keymap *WIN_BuildKeymap()
+static SDL_Keymap *WIN_BuildKeymap(void)
 {
     SDL_Scancode scancode;
     BYTE keyboardState[256] = { 0 };
@@ -243,7 +243,7 @@ void WIN_QuitKeyboard(SDL_VideoDevice *_this)
     for (int i = 0; i < keymap_cache_size; ++i) {
         SDL_DestroyKeymap(keymap_cache[i].keymap);
     }
-    SDL_memset(keymap_cache, 0, sizeof(keymap_cache));
+    SDL_zeroa(keymap_cache);
     keymap_cache_size = 0;
 }
 
@@ -606,7 +606,7 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex)
     char szTemp[256];
     HKL hkl = 0;
     DWORD dwLang = 0;
-    SDL_assert(uIndex < sizeof(dwRet) / sizeof(dwRet[0]));
+    SDL_assert(uIndex < SDL_arraysize(dwRet));
 
     hkl = videodata->ime_hkl;
     if (hklprev == hkl) {

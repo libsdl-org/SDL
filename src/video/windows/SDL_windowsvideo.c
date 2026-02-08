@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -630,6 +630,8 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
     if (!WIN_InitModes(_this)) {
         return false;
     }
+
+    _this->internal->detect_device_hotplug = SDL_GetHintBoolean("SDL_WINDOWS_DETECT_DEVICE_HOTPLUG", true);
 
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -752,6 +752,9 @@ static void handle_xdg_surface_configure(void *data, struct xdg_surface *xdg, ui
         xdg_surface_ack_configure(xdg, serial);
     } else {
         wind->pending_config_ack = true;
+
+        // Send an exposure event so that clients doing deferred updates will trigger a frame callback and make guaranteed forward progress when resizing.
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
@@ -1706,16 +1709,25 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
     frog_preferred_metadata_handler
 };
 
-static void handle_surface_feedback_preferred_changed(void *data,
-                                                      struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
-                                                      uint32_t identity)
+
+static void handle_surface_feedback_preferred_changed2(void *data,
+                                                       struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                                       uint32_t identity_hi, uint32_t identity_lo)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     Wayland_GetColorInfoForWindow(wind, false);
 }
 
+static void handle_surface_feedback_preferred_changed(void *data,
+                                                      struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                                      uint32_t identity)
+{
+    handle_surface_feedback_preferred_changed2(data, wp_color_management_surface_feedback_v1, 0, identity);
+}
+
 static const struct wp_color_management_surface_feedback_v1_listener color_management_surface_feedback_listener = {
-    handle_surface_feedback_preferred_changed
+    handle_surface_feedback_preferred_changed,
+    handle_surface_feedback_preferred_changed2
 };
 
 static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)
@@ -2994,10 +3006,6 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         return SDL_SetError("wayland: cannot set icon; required xdg_toplevel_icon_v1 protocol not supported");
     }
 
-    if (icon->w != icon->h) {
-        return SDL_SetError("wayland: icon width and height must be equal, got %ix%i", icon->w, icon->h);
-    }
-
     int image_count = 0;
     SDL_Surface **images = SDL_GetSurfaceImages(icon, &image_count);
     if (!images || !image_count) {
@@ -3024,12 +3032,9 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
     // Calculate the size of the buffer pool.
     size_t pool_size = 0;
     for (int i = 0; i < image_count; ++i) {
-        // Ignore non-square images; if we got here, we know that at least the base image is square.
-        if (images[i]->w == images[i]->h) {
-            pool_size += images[i]->w * images[i]->h * 4;
-        } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "wayland: icon width and height must be equal, got %ix%i for image level %i; skipping", images[i]->w, images[i]->h, i);
-        }
+        // Images must be square. Non-square images will be centered.
+        const int size = SDL_max(images[i]->w, images[i]->h);
+        pool_size += size * size * 4;
     }
 
     // Sort the images in ascending order by size.
@@ -3037,46 +3042,59 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
     shm_pool = Wayland_AllocSHMPool(pool_size);
     if (!shm_pool) {
-        SDL_SetError("wayland: failed to allocate SHM pool for the icon");
+        SDL_SetError("wayland: failed to allocate an SHM pool for the icon");
         goto failure_cleanup;
     }
 
+    const double base_size = (double)SDL_max(icon->w, icon->h);
     for (int i = 0; i < image_count; ++i) {
-        if (images[i]->w == images[i]->h) {
-            SDL_Surface *surface = images[i];
+        SDL_Surface *surface = images[i];
 
-            // Choose the largest image for each integer scale, ignoring any below the base size.
-            const int scale = (int)SDL_floor((double)surface->w / (double)icon->w);
-            if (!scale) {
-                continue;
-            }
+        // Choose the largest image for each integer scale, ignoring any below the base size.
+        const int level_size = SDL_max(surface->w, surface->h);
+        const int scale = (int)SDL_floor((double)level_size / base_size);
+        if (!scale) {
+            continue;
+        }
 
-            void *buffer_mem;
-            struct wl_buffer *buffer = Wayland_AllocBufferFromPool(shm_pool, surface->w, surface->h, &buffer_mem);
-            if (!buffer) {
-                SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
+        if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
+            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+            if (!surface) {
+                SDL_SetError("wayland: failed to convert the icon image to ARGB8888 format");
                 goto failure_cleanup;
             }
+        }
 
-            wind->icon_buffers[wind->icon_buffer_count++] = buffer;
-
-            if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
-                surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
-                if (!surface) {
-                    SDL_SetError("wayland: unable to convert surface to ARGB8888 format");
-                    goto failure_cleanup;
-                }
-            }
-
-            SDL_PremultiplyAlpha(surface->w, surface->h, surface->format, surface->pixels, surface->pitch,
-                                 SDL_PIXELFORMAT_ARGB8888, buffer_mem, surface->w * 4, true);
-
-            xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, buffer, scale);
-
+        void *buffer_mem;
+        struct wl_buffer *buffer = Wayland_AllocBufferFromPool(shm_pool, level_size, level_size, &buffer_mem);
+        if (!buffer) {
             // Clean up the temporary conversion surface.
             if (surface != images[i]) {
                 SDL_DestroySurface(surface);
             }
+            SDL_SetError("wayland: failed to allocate a wl_buffer for the icon");
+            goto failure_cleanup;
+        }
+
+        wind->icon_buffers[wind->icon_buffer_count++] = buffer;
+
+        // Center non-square images.
+        if (surface->w < level_size) {
+            SDL_memset(buffer_mem, 0, level_size * level_size * 4);
+            buffer_mem = (Uint8 *)buffer_mem + (((level_size - surface->w) / 2) * 4);
+        } else if (surface->h < level_size) {
+            SDL_memset(buffer_mem, 0, level_size * level_size * 4);
+            buffer_mem = (Uint8 *)buffer_mem + (((level_size - surface->h) / 2) * (level_size * 4));
+        }
+
+        SDL_PremultiplyAlpha(surface->w, surface->h, surface->format, surface->pixels, surface->pitch,
+                             SDL_PIXELFORMAT_ARGB8888, buffer_mem, level_size * 4, true);
+
+        xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, buffer, scale);
+
+        // Clean up the temporary scaled or conversion surface.
+        if (surface != images[i]) {
+            SDL_DestroySurface(surface);
         }
     }
 

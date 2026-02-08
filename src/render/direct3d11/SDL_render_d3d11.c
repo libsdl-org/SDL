@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,9 +40,9 @@
 #include "SDL_shaders_d3d11.h"
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_FUNCTION ", " str
 #else
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
+#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(SDL_FUNCTION) ", " str
 #endif
 
 #define SAFE_RELEASE(X)                                   \
@@ -240,49 +240,35 @@ static const GUID SDL_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe
 
 static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, int bpp, int x, int y, int w, int h, const void *pixels, int pitch);
 
+static const struct {
+    Uint32 sdl;
+    DXGI_FORMAT unorm;
+    DXGI_FORMAT srgb;
+} dxgi_format_map[] = {
+    { SDL_PIXELFORMAT_ARGB8888,     DXGI_FORMAT_B8G8R8A8_UNORM,     DXGI_FORMAT_B8G8R8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR8888,     DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_XRGB8888,     DXGI_FORMAT_B8G8R8X8_UNORM,     DXGI_FORMAT_B8G8R8X8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR2101010,  DXGI_FORMAT_R10G10B10A2_UNORM,  DXGI_FORMAT_R10G10B10A2_UNORM   },
+    { SDL_PIXELFORMAT_RGBA64_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT  },
+    { SDL_PIXELFORMAT_RGB565,       DXGI_FORMAT_B5G6R5_UNORM,       DXGI_FORMAT_B5G6R5_UNORM        },
+    { SDL_PIXELFORMAT_ARGB1555,     DXGI_FORMAT_B5G5R5A1_UNORM,     DXGI_FORMAT_B5G5R5A1_UNORM      },
+    { SDL_PIXELFORMAT_ARGB4444,     DXGI_FORMAT_B4G4R4A4_UNORM,     DXGI_FORMAT_B4G4R4A4_UNORM      }
+};
+
 SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
-    switch (dxgiFormat) {
-    case DXGI_FORMAT_B8G8R8A8_UNORM:
-    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_ARGB8888;
-    case DXGI_FORMAT_R8G8B8A8_UNORM:
-    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_ABGR8888;
-    case DXGI_FORMAT_B8G8R8X8_UNORM:
-    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_XRGB8888;
-    case DXGI_FORMAT_R10G10B10A2_UNORM:
-        return SDL_PIXELFORMAT_ABGR2101010;
-    case DXGI_FORMAT_R16G16B16A16_FLOAT:
-        return SDL_PIXELFORMAT_RGBA64_FLOAT;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
+    for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+        if (dxgi_format_map[i].unorm == dxgiFormat ||
+            dxgi_format_map[i].srgb == dxgiFormat) {
+            return dxgi_format_map[i].sdl;
+        }
     }
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 output_colorspace)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGBA64_FLOAT:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case SDL_PIXELFORMAT_ABGR2101010:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case SDL_PIXELFORMAT_ARGB8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_ABGR8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case SDL_PIXELFORMAT_XRGB8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -292,9 +278,16 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
         return DXGI_FORMAT_NV12;
     case SDL_PIXELFORMAT_P010:
         return DXGI_FORMAT_P010;
-    case SDL_PIXELFORMAT_RGB565:
-        return DXGI_FORMAT_B5G6R5_UNORM;
     default:
+        for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+            if (dxgi_format_map[i].sdl == format) {
+                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                    return dxgi_format_map[i].srgb;
+                } else {
+                    return dxgi_format_map[i].unorm;
+                }
+            }
+        }
         return DXGI_FORMAT_UNKNOWN;
     }
 }
@@ -302,25 +295,6 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
 static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uint32 colorspace)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGBA64_FLOAT:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case SDL_PIXELFORMAT_ABGR2101010:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case SDL_PIXELFORMAT_ARGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_ABGR8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case SDL_PIXELFORMAT_XRGB8888:
-        if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-        }
-        return DXGI_FORMAT_B8G8R8X8_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:  // For the Y texture
@@ -329,7 +303,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
     case SDL_PIXELFORMAT_P010:  // For the Y texture
         return DXGI_FORMAT_R16_UNORM;
     default:
-        return DXGI_FORMAT_UNKNOWN;
+        return SDLPixelFormatToDXGITextureFormat(format, colorspace);
     }
 }
 
@@ -930,7 +904,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
         IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
-        SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
+        SDL_SetError(SDL_FUNCTION ", Unable to find something to attach a swap chain to");
         goto done;
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
     }
@@ -1018,7 +992,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
      */
     SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
     data->rotation = D3D11_GetCurrentRotation();
-    // SDL_Log("%s: windowSize={%d,%d}, orientation=%d", __FUNCTION__, w, h, (int)data->rotation);
+    // SDL_Log("%s: windowSize={%d,%d}, orientation=%d", SDL_FUNCTION, w, h, (int)data->rotation);
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
         w = h;
@@ -1242,7 +1216,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
     if (textureFormat == DXGI_FORMAT_UNKNOWN) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
-                            __FUNCTION__, texture->format);
+                            SDL_FUNCTION, texture->format);
     }
 
     textureData = (D3D11_TextureData *)SDL_calloc(1, sizeof(*textureData));
@@ -2069,7 +2043,7 @@ static bool D3D11_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        // SDL_Log("%s, no viewport was set!", __FUNCTION__);
+        // SDL_Log("%s, no viewport was set!", SDL_FUNCTION);
         return false;
     }
 
@@ -2136,7 +2110,7 @@ static bool D3D11_UpdateViewport(SDL_Renderer *renderer)
     d3dviewport.Height = orientationAlignedViewport.h;
     d3dviewport.MinDepth = 0.0f;
     d3dviewport.MaxDepth = 1.0f;
-    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
+    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}", SDL_FUNCTION, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D11DeviceContext_RSSetViewports(data->d3dContext, 1, &d3dviewport);
 
     data->viewportDirty = false;
@@ -2772,13 +2746,13 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 
     renderTargetView = D3D11_GetCurrentRenderTargetView(renderer);
     if (!renderTargetView) {
-        SDL_SetError("%s, ID3D11DeviceContext::OMGetRenderTargets failed", __FUNCTION__);
+        SDL_SetError("%s, ID3D11DeviceContext::OMGetRenderTargets failed", SDL_FUNCTION);
         goto done;
     }
 
     ID3D11View_GetResource(renderTargetView, (ID3D11Resource **)&backBuffer);
     if (!backBuffer) {
-        SDL_SetError("%s, ID3D11View::GetResource failed", __FUNCTION__);
+        SDL_SetError("%s, ID3D11View::GetResource failed", SDL_FUNCTION);
         goto done;
     }
 
@@ -2962,17 +2936,6 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     D3D11_InvalidateCachedState(renderer);
 
     renderer->name = D3D11_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
     data->swapChainFlags = 0;
     data->syncInterval = 0;
@@ -2991,10 +2954,32 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         return false;
     }
 
-    // DXGI_FORMAT_B5G6R5_UNORM is supported since Direct3D 11.1 on Windows 8 and later
-    if (data->featureLevel >= D3D_FEATURE_LEVEL_11_1 && WIN_IsWindows8OrGreater()) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
+    for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
+        UINT unorm, srgb;
+
+        if (FAILED(ID3D11Device_CheckFormatSupport(data->d3dDevice,
+                                                   dxgi_format_map[i].unorm,
+                                                   &unorm))) {
+            continue;
+        }
+
+        if (FAILED(ID3D11Device_CheckFormatSupport(data->d3dDevice,
+                                                   dxgi_format_map[i].srgb,
+                                                   &srgb))) {
+            continue;
+        }
+
+        if ((unorm & D3D11_FORMAT_SUPPORT_TEXTURE2D) &&
+            (srgb  & D3D11_FORMAT_SUPPORT_TEXTURE2D)) {
+            SDL_AddSupportedTextureFormat(renderer, dxgi_format_map[i].sdl);
+        }
     }
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
     return true;
 }

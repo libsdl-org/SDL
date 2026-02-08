@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,7 +88,7 @@ void PSP_PumpEvents(SDL_VideoDevice *_this)
     changed = old_keys ^ keys;
     old_keys = keys;
     if (changed) {
-        for (i = 0; i < sizeof(keymap_psp) / sizeof(keymap_psp[0]); i++) {
+        for (i = 0; i < SDL_arraysize(keymap_psp); i++) {
             if (changed & keymap_psp[i].id) {
                 bool down = ((keys & keymap_psp[i].id) != 0);
                 SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keymap_psp[i].id, keymap_psp[i].scancode, down);

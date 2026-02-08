@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -43,12 +43,6 @@
 #endif
 
 #define BLUETOOTH_DISCONNECT_TIMEOUT_MS 500
-
-#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
-                            (((Uint32)(B)) << 8) |  \
-                            (((Uint32)(C)) << 16) | \
-                            (((Uint32)(D)) << 24))
 
 enum
 {

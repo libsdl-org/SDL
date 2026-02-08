@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -152,6 +152,19 @@ typedef struct GPU_TextureData
     SDL_GPUTexture *textureNV;
 #endif
 } GPU_TextureData;
+
+// TODO: Sort this list based on what the GPU driver prefers?
+static const SDL_PixelFormat supported_formats[] = {
+    SDL_PIXELFORMAT_BGRA32, // SDL_PIXELFORMAT_ARGB8888 on little endian systems
+    SDL_PIXELFORMAT_RGBA32,
+    SDL_PIXELFORMAT_BGRX32,
+    SDL_PIXELFORMAT_RGBX32,
+    SDL_PIXELFORMAT_ABGR2101010,
+    SDL_PIXELFORMAT_RGBA64_FLOAT,
+    SDL_PIXELFORMAT_RGB565,
+    SDL_PIXELFORMAT_ARGB1555,
+    SDL_PIXELFORMAT_ARGB4444
+};
 
 static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
@@ -665,7 +678,7 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
     int i;
     int count = indices ? num_indices : num_vertices;
     float *verts;
-    size_t sz = 2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float);
+    size_t sz = 2 * sizeof(float) + 4 * sizeof(float) + 2 * sizeof(float);
     bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     verts = (float *)SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
@@ -705,10 +718,13 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
         *(verts++) = col_.b;
         *(verts++) = col_.a;
 
-        if (texture) {
+        if (uv) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
             *(verts++) = uv_[0];
             *(verts++) = uv_[1];
+        } else {
+            *(verts++) = 0.0f;
+            *(verts++) = 0.0f;
         }
     }
     return true;
@@ -1457,6 +1473,8 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
     tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
     tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
+    SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
+
     data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
     data->backbuffer.width = w;
     data->backbuffer.height = h;
@@ -1731,6 +1749,10 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN)) {
             SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
         }
+        // These properties allow using the renderer on more macOS devices.
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN, false);
+        }
 
         GPU_FillSupportedShaderFormats(create_props);
         data->device = SDL_CreateGPUDeviceWithProperties(create_props);
@@ -1787,12 +1809,14 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         }
     }
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
+    for (int i = 0; i < SDL_arraysize(supported_formats); i++) {
+        if (SDL_GPUTextureSupportsFormat(data->device,
+                                         SDL_GetGPUTextureFormatFromPixelFormat(supported_formats[i]),
+                                         SDL_GPU_TEXTURETYPE_2D,
+                                         SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
+            SDL_AddSupportedTextureFormat(renderer, supported_formats[i]);
+        }
+    }
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);

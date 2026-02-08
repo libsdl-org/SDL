@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -651,6 +651,15 @@ void SDL_LockJoysticks(void)
     (void)SDL_AtomicDecRef(&SDL_joystick_lock_pending);
 
     ++SDL_joysticks_locked;
+}
+
+bool SDL_TryLockJoysticks(void)
+{
+    if (SDL_TryLockMutex(SDL_joystick_lock)) {
+        ++SDL_joysticks_locked;
+        return true;
+    }
+    return false;
 }
 
 void SDL_UnlockJoysticks(void)
@@ -3305,6 +3314,16 @@ bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
     return false;
 }
 
+bool SDL_IsJoystickGameSirController(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id != USB_VENDOR_GAMESIR) {
+        return false;
+    }
+
+    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID ||
+            product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID);
+}
+
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
@@ -3961,9 +3980,15 @@ void SDL_LoadVIDPIDList(SDL_vidpid_list *list)
 
     if (list->included_hint_name) {
         included_list = SDL_GetHint(list->included_hint_name);
+        if (!included_list) {
+            included_list = SDL_getenv_unsafe(list->included_hint_name);
+        }
     }
     if (list->excluded_hint_name) {
         excluded_list = SDL_GetHint(list->excluded_hint_name);
+        if (!excluded_list) {
+            excluded_list = SDL_getenv_unsafe(list->excluded_hint_name);
+        }
     }
     SDL_LoadVIDPIDListFromHints(list, included_list, excluded_list);
 }

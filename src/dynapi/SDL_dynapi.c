@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_openxr.h>
 #define SDL_MAIN_NOIMPL // don't drag in header-only implementation of SDL_main
 #include <SDL3/SDL_main.h>
 #include "../core/SDL_core_unsupported.h"
@@ -597,6 +598,7 @@ static void SDL_InitDynamicAPI(void)
 #else // SDL_DYNAMIC_API
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_openxr.h>
 
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize);
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)

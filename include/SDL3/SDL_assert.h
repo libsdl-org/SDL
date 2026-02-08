@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -136,7 +136,7 @@ extern "C" {
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif SDL_HAS_BUILTIN(__builtin_trap)
     #define SDL_TriggerBreakpoint() __builtin_trap()
-#elif (defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)) && (defined(__i386__) || defined(__x86_64__))
+#elif (defined(__GNUC__) || defined(__clang__) || defined(__TINYC__) || defined(__slimcc__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "ebreak\n\t" )

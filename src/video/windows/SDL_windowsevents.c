@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -984,6 +984,10 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
+    if (!_this->internal->detect_device_hotplug) {
+        return;
+    }
+
     // Check to see if anything has changed
     static Uint64 s_last_device_change;
     Uint64 last_device_change = WIN_GetLastDeviceNotification();
@@ -1278,7 +1282,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen) {
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true, true);
         } else {
             // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
             //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
@@ -1319,7 +1323,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
             // technically this isn't just _proximity_ but maybe just leaving the window. Good enough. WinTab apparently has real proximity info.
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false, false);
         }
         returnCode = 0;
     } break;
@@ -2226,7 +2230,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_SendDropComplete(data->window);
         DragFinish(drop);
         return 0;
-    } break;
+    }
 
     case WM_DISPLAYCHANGE:
     {
@@ -2458,7 +2462,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->expected_resize = false;
             return 0;
         }
-        break;
 
     case WM_SETTINGCHANGE:
         if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {

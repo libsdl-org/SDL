@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -536,17 +536,17 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
     Sint64 si64 = 0;
     double d = 0.0;
 
-    if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Type", DBUS_TYPE_UINT32, &ui32)) {
+    if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Type", DBUS_TYPE_UINT32, &ui32)) {
         return;             // Don't know _what_ we're looking at. Give up on it.
     } else if (ui32 != 2) { // 2==Battery
         return;             // we don't care about UPS and such.
-    } else if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "PowerSupply", DBUS_TYPE_BOOLEAN, &ui32)) {
+    } else if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "PowerSupply", DBUS_TYPE_BOOLEAN, &ui32)) {
         return;
     } else if (!ui32) {
         return; // we don't care about random devices with batteries, like wireless controllers, etc
     }
 
-    if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "IsPresent", DBUS_TYPE_BOOLEAN, &ui32)) {
+    if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "IsPresent", DBUS_TYPE_BOOLEAN, &ui32)) {
         return;
     }
     if (!ui32) {
@@ -555,9 +555,11 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
         /* Get updated information on the battery status
          * This can occasionally fail, and we'll just return slightly stale data in that case
          */
-        SDL_DBus_CallMethodOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh", DBUS_TYPE_INVALID, DBUS_TYPE_INVALID);
+        SDL_DBus_CallMethodOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Refresh",
+                                        DBUS_TYPE_INVALID,
+                                        DBUS_TYPE_INVALID);
 
-        if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
+        if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "State", DBUS_TYPE_UINT32, &ui32)) {
             st = SDL_POWERSTATE_UNKNOWN; // uh oh
         } else if (ui32 == 1) {          // 1 == charging
             st = SDL_POWERSTATE_CHARGING;
@@ -578,14 +580,14 @@ static void check_upower_device(DBusConnection *conn, const char *path, SDL_Powe
         }
     }
 
-    if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Percentage", DBUS_TYPE_DOUBLE, &d)) {
+    if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "Percentage", DBUS_TYPE_DOUBLE, &d)) {
         pct = -1; // some old/cheap batteries don't set this property.
     } else {
         pct = (int)d;
         pct = (pct > 100) ? 100 : pct; // clamp between 0%, 100%
     }
 
-    if (!SDL_DBus_QueryPropertyOnConnection(conn, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "TimeToEmpty", DBUS_TYPE_INT64, &si64)) {
+    if (!SDL_DBus_QueryPropertyOnConnection(conn, NULL, UPOWER_DBUS_NODE, path, UPOWER_DEVICE_DBUS_INTERFACE, "TimeToEmpty", DBUS_TYPE_INT64, &si64)) {
         secs = -1;
     } else {
         secs = (int)si64;
@@ -620,25 +622,41 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    DBusMessage *reply = NULL;
     char **paths = NULL;
+    char *path = NULL;
     int i, numpaths = 0;
 
-    if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
-                                                         DBUS_TYPE_INVALID,
-                                                         DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+    if (!dbus) {
         return false; // try a different approach than UPower.
     }
 
-    result = true;                  // Clearly we can use this interface.
-    *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
-    *seconds = -1;
-    *percent = -1;
+    if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, &reply, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "GetDisplayDevice",
+                                        DBUS_TYPE_INVALID,
+                                        DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
+        result = true;                  // Clearly we can use this interface.
+        *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
+        *seconds = -1;
+        *percent = -1;
 
-    for (i = 0; i < numpaths; i++) {
-        check_upower_device(dbus->system_conn, paths[i], state, seconds, percent);
+        check_upower_device(dbus->system_conn, path, state, seconds, percent);
+        SDL_DBus_FreeReply(&reply);
+
+    } else if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, NULL, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
+                                                DBUS_TYPE_INVALID,
+                                                DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+        result = true;                  // Clearly we can use this interface.
+        *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
+        *seconds = -1;
+        *percent = -1;
+
+        for (i = 0; i < numpaths; i++) {
+            check_upower_device(dbus->system_conn, paths[i], state, seconds, percent);
+        }
+
+        dbus->free_string_array(paths);
     }
 
-    dbus->free_string_array(paths);
 #endif // SDL_USE_LIBDBUS
 
     return result;

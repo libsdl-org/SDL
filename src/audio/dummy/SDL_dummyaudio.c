@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -116,9 +116,6 @@ static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     // on Emscripten without threads, we just fire a repeating timer to consume audio.
     #if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         Module['SDL3'].dummy_audio = {};
         Module['SDL3'].dummy_audio.timers = [];
         Module['SDL3'].dummy_audio.timers[0] = undefined;

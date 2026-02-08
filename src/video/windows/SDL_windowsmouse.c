@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -566,9 +566,12 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
-    float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
-    if (scale == 0.0f) {
-        scale = 1.0f;
+    float scale = 1.0f;
+    if (SDL_GetHintBoolean(SDL_HINT_MOUSE_DPI_SCALE_CURSORS, false)) {
+        scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
+        if (scale == 0.0f) {
+            scale = 1.0f;
+        }
     }
     for (CachedCursor *entry = data->cache; entry; entry = entry->next) {
         if (scale == entry->scale) {

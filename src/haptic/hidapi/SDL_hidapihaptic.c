@@ -144,6 +144,14 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
             haptic->nplaying = device->driver->NumEffectsPlaying(device);
             haptic->supported = device->driver->GetFeatures(device);
             haptic->naxes = device->driver->NumAxes(device);
+            haptic->neffects = device->driver->NumEffects(device);
+            haptic->effects = (struct haptic_effect *)SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
+            if (haptic->effects == NULL) {
+                device->driver->Close(device);
+                SDL_free(device);
+                return SDL_OutOfMemory();
+            }
+            SDL_memset(haptic->effects, 0, sizeof(struct haptic_effect) * haptic->neffects);
 
             // outside of SYS_HAPTIC
             haptic->instance_id = 255;
@@ -215,6 +223,7 @@ void SDL_HIDAPI_HapticClose(SDL_Haptic *haptic)
 
             SDL_free(device->ctx);
             SDL_free(device);
+            SDL_free(haptic->effects);
             SDL_free(cur);
             SDL_UnlockMutex(haptic_list_mutex);
             return;
@@ -238,7 +247,11 @@ void SDL_HIDAPI_HapticQuit(void)
 SDL_HapticEffectID SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_HapticEffect *base)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
-    return device->driver->CreateEffect(device, base);
+    SDL_HapticEffectID new_id = device->driver->CreateEffect(device, base);
+    if (new_id >= 0){
+        haptic->effects[new_id].effect = *base;
+    }
+    return new_id;
 }
 
 bool SDL_HIDAPI_HapticUpdateEffect(SDL_Haptic *haptic, SDL_HapticEffectID id, const SDL_HapticEffect *data)

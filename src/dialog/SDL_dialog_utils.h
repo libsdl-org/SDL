@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 /* Transform the name given in argument into something viable for the engine.
    Useful if there are special characters to avoid on certain platforms (such
    as "|" with Zenity). */
-typedef char *(NameTransform)(const char * name);
+typedef char *(*NameTransform)(const char * name);
 
 // Converts all the filters into a single string.
 // <prefix>[filter]{<separator>[filter]...}<suffix>

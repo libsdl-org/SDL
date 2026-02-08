@@ -1092,7 +1092,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		const hid_device_info *info = pDevice->GetDeviceInfo();
 
 		/* See if there are any devices we should skip in enumeration */
-		if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_UNKNOWN, info->vendor_id, info->product_id, 0, 0)) {
+		if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_UNKNOWN, info->vendor_id, info->product_id, 0, 0, false)) {
 			continue;
 		}
 

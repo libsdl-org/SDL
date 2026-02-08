@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,12 @@
 #include "SDL_internal.h"
 #include "SDL_sysgpu.h"
 
-// FIXME: This could probably use SDL_ObjectValid
+/* Normally this macro would use something like SDL_IsObjectValid, but in GPU's
+ * case we can prioritize performance and be more trusting of application
+ * behavior than, say, SDL_Render, so trust that applications will be careful
+ * about disposing the device and its resources.
+ * -flibit
+ */
 #define CHECK_DEVICE_MAGIC(device, retval)  \
     CHECK_PARAM(device == NULL) {           \
         SDL_SetError("Invalid GPU device"); \
@@ -607,6 +612,13 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
         return NULL;
     }
 
+#ifndef HAVE_GPU_OPENXR
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false)) {
+        SDL_SetError("OpenXR is not enabled in this build of SDL");
+        return NULL;
+    }
+#endif
+
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
         gpudriver = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, NULL);
@@ -750,6 +762,13 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, );
     device->DestroyDevice(device);
+}
+
+XrResult SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->DestroyXRSwapchain(device->driverData, swapchain, swapchainImages);
 }
 
 int SDL_GetNumGPUDrivers(void)
@@ -981,11 +1000,33 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
             return NULL;
         }
         if (createinfo->num_readwrite_storage_textures > MAX_COMPUTE_WRITE_TEXTURES) {
+            SDL_COMPILE_TIME_ASSERT(compute_write_textures, MAX_COMPUTE_WRITE_TEXTURES == 8);
             SDL_assert_release(!"Compute pipeline write-only texture count cannot be higher than 8!");
             return NULL;
         }
         if (createinfo->num_readwrite_storage_buffers > MAX_COMPUTE_WRITE_BUFFERS) {
+            SDL_COMPILE_TIME_ASSERT(compute_write_buffers, MAX_COMPUTE_WRITE_BUFFERS == 8);
             SDL_assert_release(!"Compute pipeline write-only buffer count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(compute_texture_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
+            SDL_assert_release(!"Compute pipeline sampler count cannot be higher than 16!");
+            return NULL;
+        }
+        if (createinfo->num_readonly_storage_textures > MAX_STORAGE_TEXTURES_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(compute_storage_textures, MAX_STORAGE_TEXTURES_PER_STAGE == 8);
+            SDL_assert_release(!"Compute pipeline readonly storage texture count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_readonly_storage_buffers > MAX_STORAGE_BUFFERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(compute_storage_buffers, MAX_STORAGE_BUFFERS_PER_STAGE == 8);
+            SDL_assert_release(!"Compute pipeline readonly storage buffer count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_uniform_buffers > MAX_UNIFORM_BUFFERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(compute_uniform_buffers, MAX_UNIFORM_BUFFERS_PER_STAGE == 4);
+            SDL_assert_release(!"Compute pipeline uniform buffer count cannot be higher than 4!");
             return NULL;
         }
         if (createinfo->threadcount_x == 0 ||
@@ -1075,6 +1116,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             return NULL;
         }
         if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers > MAX_VERTEX_BUFFERS) {
+            SDL_COMPILE_TIME_ASSERT(vertex_buffers, MAX_VERTEX_BUFFERS == 16);
             SDL_assert_release(!"The number of vertex buffer descriptions in a vertex input state must not exceed 16!");
             return NULL;
         }
@@ -1083,6 +1125,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             return NULL;
         }
         if (graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes > MAX_VERTEX_ATTRIBUTES) {
+            SDL_COMPILE_TIME_ASSERT(vertex_attributes, MAX_VERTEX_ATTRIBUTES == 16);
             SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
             return NULL;
         }
@@ -1177,6 +1220,26 @@ SDL_GPUShader *SDL_CreateGPUShader(
         }
         if (!(createinfo->format & device->shader_formats)) {
             SDL_assert_release(!"Incompatible shader format for GPU backend");
+            return NULL;
+        }
+        if (createinfo->num_samplers > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(shader_texture_samplers, MAX_TEXTURE_SAMPLERS_PER_STAGE == 16);
+            SDL_assert_release(!"Shader sampler count cannot be higher than 16!");
+            return NULL;
+        }
+        if (createinfo->num_storage_textures > MAX_STORAGE_TEXTURES_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(shader_storage_textures, MAX_STORAGE_TEXTURES_PER_STAGE == 8);
+            SDL_assert_release(!"Shader storage texture count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_storage_buffers > MAX_STORAGE_BUFFERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(shader_storage_buffers, MAX_STORAGE_BUFFERS_PER_STAGE == 8);
+            SDL_assert_release(!"Shader storage buffer count cannot be higher than 8!");
+            return NULL;
+        }
+        if (createinfo->num_uniform_buffers > MAX_UNIFORM_BUFFERS_PER_STAGE) {
+            SDL_COMPILE_TIME_ASSERT(shader_uniform_buffers, MAX_UNIFORM_BUFFERS_PER_STAGE == 4);
+            SDL_assert_release(!"Shader uniform buffer count cannot be higher than 4!");
             return NULL;
         }
     }
@@ -1650,6 +1713,10 @@ void SDL_PushGPUVertexUniformData(
         SDL_InvalidParamError("data");
         return;
     }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER
@@ -1676,6 +1743,10 @@ void SDL_PushGPUFragmentUniformData(
         SDL_InvalidParamError("data");
         return;
     }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER
@@ -1700,6 +1771,10 @@ void SDL_PushGPUComputeUniformData(
     }
     CHECK_PARAM(data == NULL) {
         SDL_InvalidParamError("data");
+        return;
+    }
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+        SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
         return;
     }
 
@@ -2008,6 +2083,10 @@ void SDL_BindGPUVertexSamplers(
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2043,6 +2122,10 @@ void SDL_BindGPUVertexStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2074,6 +2157,10 @@ void SDL_BindGPUVertexStorageBuffers(
         SDL_InvalidParamError("storage_buffers");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2102,6 +2189,10 @@ void SDL_BindGPUFragmentSamplers(
     }
     CHECK_PARAM(texture_sampler_bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("texture_sampler_bindings");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
         return;
     }
 
@@ -2138,6 +2229,10 @@ void SDL_BindGPUFragmentStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
@@ -2167,6 +2262,10 @@ void SDL_BindGPUFragmentStorageBuffers(
     }
     CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
 
@@ -2453,6 +2552,10 @@ void SDL_BindGPUComputeSamplers(
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
+        return;
+    }
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
@@ -2483,6 +2586,10 @@ void SDL_BindGPUComputeStorageTextures(
         SDL_InvalidParamError("storage_textures");
         return;
     }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
+        return;
+    }
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
@@ -2511,6 +2618,10 @@ void SDL_BindGPUComputeStorageBuffers(
     }
     CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
+        return;
+    }
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+        SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
 
@@ -3146,6 +3257,7 @@ bool SDL_SetGPUAllowedFramesInFlight(
     if (device->debug_mode) {
         if (allowed_frames_in_flight < 1 || allowed_frames_in_flight > 3)
         {
+            SDL_COMPILE_TIME_ASSERT(max_frames_in_flight, MAX_FRAMES_IN_FLIGHT == 3);
             SDL_assert_release(!"allowed_frames_in_flight value must be between 1 and 3!");
         }
     }
@@ -3415,11 +3527,11 @@ SDL_PixelFormat SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat form
 {
     switch (format) {
     case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
-        return SDL_PIXELFORMAT_BGRA4444;
+        return SDL_PIXELFORMAT_ARGB4444;
     case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
-        return SDL_PIXELFORMAT_BGR565;
+        return SDL_PIXELFORMAT_RGB565;
     case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
-        return SDL_PIXELFORMAT_BGRA5551;
+        return SDL_PIXELFORMAT_ARGB1555;
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
         return SDL_PIXELFORMAT_RGBA32;
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
@@ -3450,11 +3562,11 @@ SDL_PixelFormat SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat form
 SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_BGRA4444:
+    case SDL_PIXELFORMAT_ARGB4444:
         return SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM;
-    case SDL_PIXELFORMAT_BGR565:
+    case SDL_PIXELFORMAT_RGB565:
         return SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM;
-    case SDL_PIXELFORMAT_BGRA5551:
+    case SDL_PIXELFORMAT_ARGB1555:
         return SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM;
     case SDL_PIXELFORMAT_BGRA32:
     case SDL_PIXELFORMAT_BGRX32:
@@ -3473,4 +3585,37 @@ SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat form
     default:
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
+}
+
+XrResult SDL_CreateGPUXRSession(
+    SDL_GPUDevice *device,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->CreateXRSession(device->driverData, createinfo, session);
+}
+
+SDL_GPUTextureFormat* SDL_GetGPUXRSwapchainFormats(
+    SDL_GPUDevice *device,
+    XrSession session,
+    int *num_formats)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
+
+    return device->GetXRSwapchainFormats(device->driverData, session, num_formats);
+}
+
+XrResult SDL_CreateGPUXRSwapchain(
+    SDL_GPUDevice *device,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->CreateXRSwapchain(device->driverData, session, createinfo, format, swapchain, textures);
 }
