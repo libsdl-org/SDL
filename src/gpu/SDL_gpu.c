@@ -1067,7 +1067,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             return NULL;
         }
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->target_info.num_color_targets; i += 1) {
-            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, NULL);
+            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, NULL)
             if (IsDepthFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format)) {
                 SDL_assert_release(!"Color target formats cannot be a depth format!");
                 return NULL;
@@ -1089,7 +1089,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             }
         }
         if (graphicsPipelineCreateInfo->target_info.has_depth_stencil_target) {
-            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.depth_stencil_format, NULL);
+            CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.depth_stencil_format, NULL)
             if (!IsDepthFormat(graphicsPipelineCreateInfo->target_info.depth_stencil_format)) {
                 SDL_assert_release(!"Depth-stencil target format must be a depth format!");
                 return NULL;
@@ -1137,7 +1137,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
         }
         Uint32 locations[MAX_VERTEX_ATTRIBUTES];
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
-            CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
+            CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL)
 
             locations[i] = graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].location;
             for (Uint32 j = 0; j < i; j += 1) {
