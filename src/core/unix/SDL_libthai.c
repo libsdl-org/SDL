@@ -52,7 +52,7 @@ SDL_LibThai *SDL_LibThai_Create(void)
         return NULL;
     }
 
-    SDL_LIBTHAI_LOAD_SYM(th, th->make_cells, "th_make_cells", SDL_LibThaiMakeCells);
+    SDL_LIBTHAI_LOAD_SYM(th, th->make_cells, "th_make_cells", SDL_LibThaiMakeCells)
 #else
     th->make_cells = th_make_cells;
 #endif

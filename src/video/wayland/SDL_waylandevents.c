@@ -1066,7 +1066,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *pointer, uint32
         Wayland_UpdateImplicitGrabSerial(seat, serial);
     }
 
-    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);;
+    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);
 
     if (wl_seat_get_version(seat->wl_seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
         if (state_w) {

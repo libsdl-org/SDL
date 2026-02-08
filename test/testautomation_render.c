@@ -211,21 +211,21 @@ static int SDLCALL render_testPrimitivesWithViewport(void *arg)
     viewport.y = 2;
     viewport.w = 2;
     viewport.h = 2;
-    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport));
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
 
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 255, 255, SDL_ALPHA_OPAQUE))
-    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 0.0f, 1.0f, 1.0f));
+    CHECK_FUNC(SDL_RenderLine, (renderer, 0.0f, 0.0f, 1.0f, 1.0f))
 
     viewport.x = 3;
     viewport.y = 3;
     viewport.w = 1;
     viewport.h = 1;
-    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport));
+    CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
 
     surface = SDL_RenderReadPixels(renderer, NULL);
     if (surface) {
         Uint8 r, g, b, a;
-        CHECK_FUNC(SDL_ReadSurfacePixel, (surface, 0, 0, &r, &g, &b, &a));
+        CHECK_FUNC(SDL_ReadSurfacePixel, (surface, 0, 0, &r, &g, &b, &a))
         SDLTest_AssertCheck(r == 0xFF && g == 0xFF && b == 0xFF && a == 0xFF, "Validate diagonal line drawing with viewport, expected 0xFFFFFFFF, got 0x%.2x%.2x%.2x%.2x", r, g, b, a);
         SDL_DestroySurface(surface);
     } else {
@@ -2108,7 +2108,7 @@ static void CheckUniformColor(float expected)
     if (surface) {
         const float epsilon = 0.001f;
         float r, g, b, a;
-        CHECK_FUNC(SDL_ReadSurfacePixelFloat, (surface, 0, 0, &r, &g, &b, &a));
+        CHECK_FUNC(SDL_ReadSurfacePixelFloat, (surface, 0, 0, &r, &g, &b, &a))
         SDLTest_AssertCheck(
             SDL_fabs(r - expected) <= epsilon &&
             SDL_fabs(g - expected) <= epsilon &&
@@ -2152,60 +2152,60 @@ static int SDLCALL render_testColorspaceLinear(void *arg)
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 1, 1);
     SDLTest_AssertPass("Create texture");
     SDLTest_AssertCheck(texture != NULL, "Check SDL_CreateTexture result");
-    CHECK_FUNC(SDL_UpdateTexture, (texture, NULL, &pixel, sizeof(pixel)));
+    CHECK_FUNC(SDL_UpdateTexture, (texture, NULL, &pixel, sizeof(pixel)))
 
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.0f);
 
     SDLTest_AssertPass("Checking sRGB clear 0x40");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.0512695f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB draw 0x40");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f))
     CheckUniformColor(0.0512695f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB texture 0x40");
-    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL));
+    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL))
     CheckUniformColor(0.0512695f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDL_SetRenderColorScale(renderer, 2.0f);
 
     SDLTest_AssertPass("Checking sRGB clear 0x40 with color scale 2.0");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.102478f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB draw 0x40 with color scale 2.0f");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f))
     CheckUniformColor(0.102478f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB texture 0x40 with color scale 2.0f");
-    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL));
+    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL))
     CheckUniformColor(0.102478f);
 
     SDL_DestroyTexture(texture);
@@ -2243,60 +2243,60 @@ static int SDLCALL render_testColorspaceSRGB(void *arg)
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT, SDL_TEXTUREACCESS_STATIC, 1, 1);
     SDLTest_AssertPass("Create texture");
     SDLTest_AssertCheck(texture != NULL, "Check SDL_CreateTexture result");
-    CHECK_FUNC(SDL_UpdateTexture, (texture, NULL, &pixel, sizeof(pixel)));
+    CHECK_FUNC(SDL_UpdateTexture, (texture, NULL, &pixel, sizeof(pixel)))
 
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.0f);
 
     SDLTest_AssertPass("Checking sRGB clear 0x40");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.25098f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB draw 0x40");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f))
     CheckUniformColor(0.25098f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking linear texture 0.25");
-    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL));
+    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL))
     CheckUniformColor(0.537255f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDL_SetRenderColorScale(renderer, 2.0f);
 
     SDLTest_AssertPass("Checking sRGB clear 0x40 with color scale 2.0");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
     CheckUniformColor(0.501961f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking sRGB draw 0x40 with color scale 2.0f");
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255));
-    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0x40, 0x40, 0x40, 255))
+    CHECK_FUNC(SDL_RenderPoint, (renderer, 0.0f, 0.0f))
     CheckUniformColor(0.501961f);
 
     /* Clear target to 0 */
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255));
-    CHECK_FUNC(SDL_RenderClear, (renderer));
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, 255))
+    CHECK_FUNC(SDL_RenderClear, (renderer))
 
     SDLTest_AssertPass("Checking linear texture 0.25 with color scale 2.0f");
-    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL));
+    CHECK_FUNC(SDL_RenderTexture, (renderer, texture, NULL, NULL))
     CheckUniformColor(0.737255f);
 
     SDL_DestroyTexture(texture);

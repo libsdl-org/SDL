@@ -1654,7 +1654,7 @@ static int surface_testSetGetSurfaceClipRect(void *args)
     }
     SDL_DestroySurface(s);
     return TEST_COMPLETED;
-};
+}
 
 static int SDLCALL surface_testFlip(void *arg)
 {
@@ -1683,7 +1683,7 @@ static int SDLCALL surface_testFlip(void *arg)
     offset = 0;
 
     SDLTest_AssertPass("Call to SDL_FlipSurface(surface, SDL_FLIP_VERTICAL)");
-    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_VERTICAL));
+    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_VERTICAL))
     SDLTest_AssertCheck(pixels[offset] == 0x00,
                         "Expected pixels[%d] == 0x00 got 0x%.2X", offset, pixels[offset]);
     offset = 2 * surface->pitch;
@@ -1691,7 +1691,7 @@ static int SDLCALL surface_testFlip(void *arg)
                         "Expected pixels[%d] == 0xFF got 0x%.2X", offset, pixels[offset]);
 
     SDLTest_AssertPass("Call to SDL_FlipSurface(surface, SDL_FLIP_HORIZONTAL)");
-    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_HORIZONTAL));
+    CHECK_FUNC(SDL_FlipSurface, (surface, SDL_FLIP_HORIZONTAL))
     SDLTest_AssertCheck(pixels[offset] == 0x00,
                         "Expected pixels[%d] == 0x00 got 0x%.2X", offset, pixels[offset]);
     offset += (surface->w - 1) * SDL_BYTESPERPIXEL(surface->format);
