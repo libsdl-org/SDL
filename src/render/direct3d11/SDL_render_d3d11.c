@@ -35,12 +35,6 @@
 
 #include "SDL_shaders_d3d11.h"
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#define SDL_COMPOSE_ERROR(str) __FUNCTION__ ", " str
-#else
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
-#endif
-
 #define SAFE_RELEASE(X)                                   \
     if ((X)) {                                            \
         IUnknown_Release(SDL_static_cast(IUnknown *, X)); \
@@ -483,7 +477,7 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     result = ID3D11Device_CreateBlendState(data->d3dDevice, &blendDesc, &blendState);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBlendState"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device1::CreateBlendState", result);
         return NULL;
     }
 
@@ -579,13 +573,13 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 
         result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
+            WIN_SetErrorFromHRESULT("DXGIGetDebugInterface1", result);
             goto done;
         }
 
         result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
+            WIN_SetErrorFromHRESULT("DXGIGetDebugInterface1", result);
             goto done;
         }
 
@@ -602,14 +596,14 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     }
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
+        WIN_SetErrorFromHRESULT("CreateDXGIFactory", result);
         goto done;
     }
 
     // FIXME: Should we use the default adapter?
     result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
+        WIN_SetErrorFromHRESULT("EnumAdapters", result);
         goto done;
     }
 
@@ -642,25 +636,25 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         &d3dContext          // Returns the device immediate context.
     );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
+        WIN_SetErrorFromHRESULT("D3D11CreateDevice", result);
         goto done;
     }
 
     result = ID3D11Device_QueryInterface(d3dDevice, &SDL_IID_ID3D11Device1, (void **)&data->d3dDevice);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device to ID3D11Device1"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device to ID3D11Device1", result);
         goto done;
     }
 
     result = ID3D11DeviceContext_QueryInterface(d3dContext, &SDL_IID_ID3D11DeviceContext1, (void **)&data->d3dContext);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext to ID3D11DeviceContext1"), result);
+        WIN_SetErrorFromHRESULT("ID3D11DeviceContext to ID3D11DeviceContext1", result);
         goto done;
     }
 
     result = ID3D11Device_QueryInterface(d3dDevice, &SDL_IID_IDXGIDevice1, (void **)&dxgiDevice);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device to IDXGIDevice1"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device to IDXGIDevice1", result);
         goto done;
     }
 
@@ -669,7 +663,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
      */
     result = IDXGIDevice1_SetMaximumFrameLatency(dxgiDevice, 1);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIDevice1::SetMaximumFrameLatency"), result);
+        WIN_SetErrorFromHRESULT("IDXGIDevice1::SetMaximumFrameLatency", result);
         goto done;
     }
 
@@ -717,7 +711,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
                                        NULL,
                                        &data->vertexShaderConstants);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBuffer [vertex shader constants]"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device1::CreateBuffer [vertex shader constants]", result);
         goto done;
     }
 
@@ -748,7 +742,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
                                                  &samplerDesc,
                                                  &data->samplers[i]);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateSamplerState [nearest-pixel filter]"), result);
+            WIN_SetErrorFromHRESULT("ID3D11Device1::CreateSamplerState [nearest-pixel filter]", result);
             goto done;
         }
     }
@@ -767,14 +761,14 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     rasterDesc.SlopeScaledDepthBias = 0.0f;
     result = ID3D11Device_CreateRasterizerState(data->d3dDevice, &rasterDesc, &data->mainRasterizer);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateRasterizerState [main rasterizer]"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device1::CreateRasterizerState [main rasterizer]", result);
         goto done;
     }
 
     rasterDesc.ScissorEnable = TRUE;
     result = ID3D11Device_CreateRasterizerState(data->d3dDevice, &rasterDesc, &data->clippedRasterizer);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateRasterizerState [clipped rasterizer]"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device1::CreateRasterizerState [clipped rasterizer]", result);
         goto done;
     }
 
@@ -917,7 +911,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                                                             NULL, // Allow on all displays.
                                                             &data->swapChain);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory2::CreateSwapChainForCoreWindow"), result);
+            WIN_SetErrorFromHRESULT("IDXGIFactory2::CreateSwapChainForCoreWindow", result);
             goto done;
         }
     } else {
@@ -937,13 +931,13 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
                                                       NULL, // Allow on all displays.
                                                       &data->swapChain);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGIFactory2::CreateSwapChainForHwnd"), result);
+            WIN_SetErrorFromHRESULT("IDXGIFactory2::CreateSwapChainForHwnd", result);
             goto done;
         }
 
         IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
-        SDL_SetError(__FUNCTION__ ", Unable to find something to attach a swap chain to");
+        SDL_SetError("%s, Unable to find something to attach a swap chain to", __FUNCTION__);
         goto done;
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
     }
@@ -968,7 +962,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             (colorspace_support & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT)) {
             result = IDXGISwapChain3_SetColorSpace1(swapChain3, colorspace);
             if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain3::SetColorSpace1"), result);
+                WIN_SetErrorFromHRESULT("IDXGISwapChain3::SetColorSpace1", result);
                 goto done;
             }
         } else if (colorspace != DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709) {
@@ -1024,7 +1018,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                               DXGI_FORMAT_UNKNOWN,
                                               0);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::ResizeBuffers"), result);
+            WIN_SetErrorFromHRESULT("IDXGISwapChain::ResizeBuffers", result);
             goto done;
         }
     } else {
@@ -1039,7 +1033,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
         if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
             result = IDXGISwapChain1_SetRotation(data->swapChain, data->rotation);
             if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain1::SetRotation"), result);
+                WIN_SetErrorFromHRESULT("IDXGISwapChain1::SetRotation", result);
                 goto done;
             }
         }
@@ -1050,7 +1044,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                       &SDL_IID_ID3D11Texture2D,
                                       (void **)&backBuffer);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::GetBuffer [back-buffer]"), result);
+        WIN_SetErrorFromHRESULT("IDXGISwapChain::GetBuffer [back-buffer]", result);
         goto done;
     }
 
@@ -1060,7 +1054,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                                  NULL,
                                                  &data->mainRenderTargetView);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateRenderTargetView"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device::CreateRenderTargetView", result);
         goto done;
     }
 
@@ -1222,7 +1216,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                               NULL,
                                               &textureData->mainTexture);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D", result);
         }
     }
     SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_POINTER, textureData->mainTexture);
@@ -1243,7 +1237,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                   NULL,
                                                   &textureData->mainTextureU);
             if (FAILED(result)) {
-                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+                return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D", result);
             }
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_U_POINTER, textureData->mainTextureU);
@@ -1257,7 +1251,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                   NULL,
                                                   &textureData->mainTextureV);
             if (FAILED(result)) {
-                return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D"), result);
+                return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D", result);
             }
         }
         SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D11_TEXTURE_V_POINTER, textureData->mainTextureV);
@@ -1298,7 +1292,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                    &resourceViewDesc,
                                                    &textureData->mainTextureResourceView);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
     }
 #ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
@@ -1307,14 +1301,14 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                        &resourceViewDesc,
                                                        &textureData->mainTextureResourceViewU);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
         }
         result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
                                                        (ID3D11Resource *)textureData->mainTextureV,
                                                        &resourceViewDesc,
                                                        &textureData->mainTextureResourceViewV);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
         }
     }
 
@@ -1332,7 +1326,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                        &nvResourceViewDesc,
                                                        &textureData->mainTextureResourceViewNV);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateShaderResourceView", result);
         }
     }
 #endif // SDL_HAVE_YUV
@@ -1349,7 +1343,7 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                      &renderTargetViewDesc,
                                                      &textureData->mainTextureRenderTargetView);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateRenderTargetView"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateRenderTargetView", result);
         }
     }
 
@@ -1410,7 +1404,7 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
                                           NULL,
                                           &stagingTexture);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D [create staging texture]", result);
     }
 
     // Get a write-only pointer to data in the staging texture:
@@ -1422,7 +1416,7 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
                                      &textureMemory);
     if (FAILED(result)) {
         SAFE_RELEASE(stagingTexture);
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [map staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11DeviceContext1::Map [map staging texture]", result);
     }
 
     src = (const Uint8 *)pixels;
@@ -1603,7 +1597,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                           NULL,
                                           &stagingTexture);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D [create staging texture]", result);
     }
 
     // Get a write-only pointer to data in the staging texture:
@@ -1615,7 +1609,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      &textureMemory);
     if (FAILED(result)) {
         SAFE_RELEASE(stagingTexture);
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [map staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11DeviceContext1::Map [map staging texture]", result);
     }
 
     src = Yplane;
@@ -1728,7 +1722,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                           NULL,
                                           &textureData->stagingTexture);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D [create staging texture]", result);
     }
 
     // Get a write-only pointer to data in the staging texture:
@@ -1740,7 +1734,7 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                      &textureMemory);
     if (FAILED(result)) {
         SAFE_RELEASE(textureData->stagingTexture);
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [map staging texture]"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11DeviceContext1::Map [map staging texture]", result);
     }
 
     /* Make note of where the staging texture will be written to
@@ -1927,7 +1921,7 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
                                          0,
                                          &mappedResource);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [vertex buffer]"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11DeviceContext1::Map [vertex buffer]", result);
         }
         SDL_memcpy(mappedResource.pData, vertexData, dataSizeInBytes);
         ID3D11DeviceContext_Unmap(rendererData->d3dContext, (ID3D11Resource *)rendererData->vertexBuffers[vbidx], 0);
@@ -1953,7 +1947,7 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
                                            &vertexBufferData,
                                            &rendererData->vertexBuffers[vbidx]);
         if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBuffer [vertex buffer]"), result);
+            return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateBuffer [vertex buffer]", result);
         }
 
         rendererData->vertexBufferSizes[vbidx] = dataSizeInBytes;
@@ -2248,7 +2242,7 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
         HRESULT result = ID3D11Device_CreateBuffer(rendererData->d3dDevice, &desc, &data, &shader_state->constants);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device::CreateBuffer [create shader constants]"), result);
+            WIN_SetErrorFromHRESULT("ID3D11Device::CreateBuffer [create shader constants]", result);
             return false;
         }
         SDL_memcpy(&shader_state->shader_constants, shader_constants, sizeof(*shader_constants));
@@ -2545,7 +2539,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
                                           NULL,
                                           &stagingTexture);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateTexture2D [create staging texture]"), result);
+        WIN_SetErrorFromHRESULT("ID3D11Device1::CreateTexture2D [create staging texture]", result);
         goto done;
     }
 
@@ -2577,7 +2571,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
                                      0,
                                      &textureMemory);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext1::Map [map staging texture]"), result);
+        WIN_SetErrorFromHRESULT("ID3D11DeviceContext1::Map [map staging texture]", result);
         goto done;
     }
 
@@ -2638,9 +2632,9 @@ static bool D3D11_RenderPresent(SDL_Renderer *renderer)
         } else if (result == DXGI_ERROR_INVALID_CALL) {
             // We probably went through a fullscreen <-> windowed transition
             D3D11_CreateWindowSizeDependentResources(renderer);
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
+            WIN_SetErrorFromHRESULT("IDXGISwapChain::Present", result);
         } else {
-            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::Present"), result);
+            WIN_SetErrorFromHRESULT("IDXGISwapChain::Present", result);
         }
         return false;
     }
