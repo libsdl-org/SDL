@@ -1957,7 +1957,7 @@ static int SDLCALL video_getSetWindowState(void *arg)
     SDL_Rect display;
     SDL_WindowFlags flags;
     int windowedX, windowedY;
-    int currentX, currentY;
+    int currentX = 0, currentY = 0;
     int desiredX = 0, desiredY = 0;
     int windowedW, windowedH;
     int currentW, currentH;
