@@ -792,7 +792,7 @@ int SDL_DBus_CameraPortalRequestAccess(void)
         goto failed;
     }
     while (!data.done && dbus.connection_read_write_dispatch(dbus.session_conn, -1)) {
-        ;
+        // do nothing
     }
 
     dbus.bus_remove_match(dbus.session_conn, SIGNAL_NAMEOWNERCHANGED, &err);

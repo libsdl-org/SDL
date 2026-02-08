@@ -942,7 +942,7 @@ static bool IMA_ADPCM_DecodeBlockHeader(ADPCM_DecoderState *state)
 
         // Reserved byte in block header, should be 0.
         if (state->block.data[o + 3] != 0) {
-            /* Uh oh, corrupt data?  Buggy code? */;
+            /* Uh oh, corrupt data?  Buggy code? */
         }
     }
 

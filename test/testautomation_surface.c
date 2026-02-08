@@ -1654,7 +1654,7 @@ static int surface_testSetGetSurfaceClipRect(void *args)
     }
     SDL_DestroySurface(s);
     return TEST_COMPLETED;
-};
+}
 
 static int SDLCALL surface_testFlip(void *arg)
 {
