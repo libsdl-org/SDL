@@ -2434,7 +2434,7 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
     }                                                           \
     commandBuffer->array[commandBuffer->count] = resource;      \
     commandBuffer->count += 1;                                  \
-    SDL_AtomicIncRef(&resource->referenceCount);
+    SDL_AtomicIncRef(&resource->referenceCount)
 
 static void VULKAN_INTERNAL_TrackBuffer(
     VulkanCommandBuffer *commandBuffer,
@@ -2445,7 +2445,7 @@ static void VULKAN_INTERNAL_TrackBuffer(
         VulkanBuffer *,
         usedBuffers,
         usedBufferCount,
-        usedBufferCapacity)
+        usedBufferCapacity);
 }
 
 static void VULKAN_INTERNAL_TrackTexture(
@@ -2457,7 +2457,7 @@ static void VULKAN_INTERNAL_TrackTexture(
         VulkanTexture *,
         usedTextures,
         usedTextureCount,
-        usedTextureCapacity)
+        usedTextureCapacity);
 }
 
 static void VULKAN_INTERNAL_TrackSampler(
@@ -2469,7 +2469,7 @@ static void VULKAN_INTERNAL_TrackSampler(
         VulkanSampler *,
         usedSamplers,
         usedSamplerCount,
-        usedSamplerCapacity)
+        usedSamplerCapacity);
 }
 
 static void VULKAN_INTERNAL_TrackGraphicsPipeline(
@@ -2481,7 +2481,7 @@ static void VULKAN_INTERNAL_TrackGraphicsPipeline(
         VulkanGraphicsPipeline *,
         usedGraphicsPipelines,
         usedGraphicsPipelineCount,
-        usedGraphicsPipelineCapacity)
+        usedGraphicsPipelineCapacity);
 }
 
 static void VULKAN_INTERNAL_TrackComputePipeline(
@@ -2493,7 +2493,7 @@ static void VULKAN_INTERNAL_TrackComputePipeline(
         VulkanComputePipeline *,
         usedComputePipelines,
         usedComputePipelineCount,
-        usedComputePipelineCapacity)
+        usedComputePipelineCapacity);
 }
 
 static void VULKAN_INTERNAL_TrackFramebuffer(
