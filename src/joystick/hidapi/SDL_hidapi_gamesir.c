@@ -623,8 +623,9 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
             Sint16 left_x, left_y;
             // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
+            // Clamp -(-32768) to 32767 to avoid Sint16 overflow wrapping back to -32768
             left_x = raw_x;
-            left_y = -raw_y;
+            left_y = (raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -raw_y;
 
             Uint16 last_raw_x_unsigned = ((Uint16)last[4] << 8) | last[5];
             Uint16 last_raw_y_unsigned = ((Uint16)last[6] << 8) | last[7];
@@ -638,7 +639,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_left_x, last_left_y;
                 last_left_x = last_raw_x;
-                last_left_y = -last_raw_y;  // invert Y axis
+                last_left_y = (last_raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -last_raw_y;  // invert Y axis, clamp overflow
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_left_x, last_left_y, &last_deadzone_x, &last_deadzone_y);
@@ -666,8 +667,9 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
             Sint16 right_x, right_y;
             // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
+            // Clamp -(-32768) to 32767 to avoid Sint16 overflow wrapping back to -32768
             right_x = raw_x;
-            right_y = -raw_y;
+            right_y = (raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -raw_y;
 
             Uint16 last_raw_x_unsigned = ((Uint16)last[8] << 8) | last[9];
             Uint16 last_raw_y_unsigned = ((Uint16)last[10] << 8) | last[11];
@@ -681,7 +683,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_right_x, last_right_y;
                 last_right_x = last_raw_x;
-                last_right_y = -last_raw_y;  // invert Y axis
+                last_right_y = (last_raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -last_raw_y;  // invert Y axis, clamp overflow
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_right_x, last_right_y, &last_deadzone_x, &last_deadzone_y);
