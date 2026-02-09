@@ -88,7 +88,7 @@ static int SDLCALL events_pushPumpAndPollUserevent(void *arg)
     }
     SDLTest_AssertCheck(i < MAX_ITERATIONS, "Check the user event is seen in less then %d polls, got %d poll", MAX_ITERATIONS, i + 1);
 
-    SDLTest_AssertCheck(SDL_EVENT_USER == event_out.type, "Check event type is SDL_EVENT_USER, expected: 0x%x, got: 0x%" SDL_PRIx32, (Uint32)SDL_EVENT_USER, event_out.type);
+    SDLTest_AssertCheck(SDL_EVENT_USER == event_out.type, "Check event type is SDL_EVENT_USER, expected: 0x%x, got: 0x%" SDL_PRIx32, (unsigned int)SDL_EVENT_USER, event_out.type);
     SDLTest_AssertCheck(ref_code == event_out.user.code, "Check SDL_Event.user.code, expected: 0x%" SDL_PRIx32 ", got: 0x%" SDL_PRIx32 , (Uint32)ref_code, (Uint32)event_out.user.code);
     SDLTest_AssertCheck(0 == event_out.user.windowID, "Check SDL_Event.user.windowID, expected: NULL , got: %" SDL_PRIu32, event_out.user.windowID);
     SDLTest_AssertCheck((void *)&g_userdataValue1 == event_out.user.data1, "Check SDL_Event.user.data1, expected: %p, got: %p", (void*)&g_userdataValue1, event_out.user.data1);
@@ -283,7 +283,7 @@ static int SDLCALL events_mainThreadCallbacks(void *arg)
 
         /* Run the main callbacks */
         SDL_WaitEvent(&event);
-        SDLTest_AssertCheck(event.type == SDL_EVENT_USER, "Expected user event (0x%.4x), got 0x%.4x", (Uint32)SDL_EVENT_USER, event.type);
+        SDLTest_AssertCheck(event.type == SDL_EVENT_USER, "Expected user event (0x%.4x), got 0x%.4x", (unsigned int)SDL_EVENT_USER, (unsigned int)event.type);
         SDL_WaitThread(thread, NULL);
         SDLTest_AssertCheck(data.counter == 3, "Incremented counter on main thread, expected 3, got %d", data.counter);
 
@@ -297,7 +297,7 @@ static int SDLCALL events_mainThreadCallbacks(void *arg)
 
         /* Run the main callbacks */
         SDL_WaitEvent(&event);
-        SDLTest_AssertCheck(event.type == SDL_EVENT_USER, "Expected user event (0x%.4x), got 0x%.4x", (Uint32)SDL_EVENT_USER, event.type);
+        SDLTest_AssertCheck(event.type == SDL_EVENT_USER, "Expected user event (0x%.4x), got 0x%.4x", (unsigned int)SDL_EVENT_USER, (unsigned int)event.type);
         SDL_WaitThread(thread, NULL);
         SDLTest_AssertCheck(data.counter == 5, "Incremented counter on main thread, expected 5, got %d", data.counter);
 

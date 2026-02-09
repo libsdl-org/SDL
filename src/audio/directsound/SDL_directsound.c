@@ -152,7 +152,7 @@ static bool SetDSerror(const char *function, HRESULT code)
         break;
     }
 
-    return SDL_SetError("%s: %s (0x%x)", function, error, (ULONG)code);
+    return SDL_SetError("%s: %s (0x%lx)", function, error, (ULONG)code);
 }
 
 static void DSOUND_FreeDeviceHandle(SDL_AudioDevice *device)
