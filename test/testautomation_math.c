@@ -12,7 +12,7 @@
 /* ================= Test Constants ================== */
 
 /* Range tests parameters */
-#define RANGE_TEST_ITERATIONS (Uint32)10000000
+#define RANGE_TEST_ITERATIONS 10000000u
 #define RANGE_TEST_STEP       ((Uint32)(SDL_MAX_UINT32 / RANGE_TEST_ITERATIONS))
 
 /* Margin of error for imprecise tests */
