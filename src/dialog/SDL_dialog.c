@@ -60,7 +60,7 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
         SDL_SetError("Unsupported file dialog type: %d", (int) type);
         callback(userdata, NULL, -1);
         break;
-    };
+    }
 #endif
 }
 
