@@ -20,12 +20,12 @@
  */
 static int SDLCALL main_testInitQuitSubSystem(void *arg)
 {
-    int i;
-    int subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMEPAD };
+    size_t i;
+    Uint32 subsystems[] = { SDL_INIT_JOYSTICK, SDL_INIT_HAPTIC, SDL_INIT_GAMEPAD };
 
     for (i = 0; i < SDL_arraysize(subsystems); ++i) {
-        int initialized_system;
-        int subsystem = subsystems[i];
+        Uint32 initialized_system;
+        Uint32 subsystem = subsystems[i];
 
         SDLTest_AssertCheck((SDL_WasInit(subsystem) & subsystem) == 0, "SDL_WasInit(%x) before init should be false", subsystem);
         SDLTest_AssertCheck(SDL_InitSubSystem(subsystem), "SDL_InitSubSystem(%x)", subsystem);
@@ -41,10 +41,10 @@ static int SDLCALL main_testInitQuitSubSystem(void *arg)
     return TEST_COMPLETED;
 }
 
-static const int joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD;
+static const Uint32 joy_and_controller = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD;
 static int SDLCALL main_testImpliedJoystickInit(void *arg)
 {
-    int initialized_system;
+    Uint32 initialized_system;
 
     /* First initialize the controller */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
@@ -65,7 +65,7 @@ static int SDLCALL main_testImpliedJoystickInit(void *arg)
 
 static int SDLCALL main_testImpliedJoystickQuit(void *arg)
 {
-    int initialized_system;
+    Uint32 initialized_system;
 
     /* First initialize the controller and the joystick (explicitly) */
     SDLTest_AssertCheck((SDL_WasInit(joy_and_controller) & joy_and_controller) == 0, "SDL_WasInit() before init should be false for joystick & controller");
