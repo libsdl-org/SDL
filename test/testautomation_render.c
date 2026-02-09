@@ -918,7 +918,7 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
         SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
         ret = SDL_GetTextureBlendMode(dst, &blendMode);
         SDLTest_AssertCheck(ret == true, "Verify result from SDL_GetTextureBlendMode(), expected: true, got: %i", ret);
-        SDLTest_AssertCheck(blendMode == SDL_BLENDMODE_BLEND, "Verify alpha texture blend mode, expected %d, got %" SDL_PRIu32, SDL_BLENDMODE_BLEND, blendMode);
+        SDLTest_AssertCheck(blendMode == SDL_BLENDMODE_BLEND, "Verify alpha texture blend mode, expected %u, got %" SDL_PRIu32, SDL_BLENDMODE_BLEND, blendMode);
     }
 
     /* Set as render target */

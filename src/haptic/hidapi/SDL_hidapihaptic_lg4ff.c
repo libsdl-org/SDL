@@ -919,7 +919,7 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
     ctx->product_id = SDL_GetJoystickProduct(joystick);
     ctx->release_number = SDL_GetJoystickProductVersion(joystick);
 
-    SDL_snprintf(ctx->thread_name_buf, sizeof(ctx->thread_name_buf), "SDL_hidapihaptic_lg4ff %d %04x:%04x", SDL_GetJoystickID(joystick), USB_VENDOR_ID_LOGITECH, ctx->product_id);
+    SDL_snprintf(ctx->thread_name_buf, sizeof(ctx->thread_name_buf), "SDL_hidapihaptic_lg4ff %u %04x:%04x", SDL_GetJoystickID(joystick), USB_VENDOR_ID_LOGITECH, ctx->product_id);
     ctx->stop_thread = false;
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_HapticDriverLg4ff_ThreadFunction, ctx->thread_name_buf, ctx);
 

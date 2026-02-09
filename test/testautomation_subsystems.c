@@ -42,8 +42,8 @@ static void SDLCALL subsystemsTearDown(void *arg)
  */
 static int SDLCALL subsystems_referenceCount(void *arg)
 {
-    const int system = SDL_INIT_VIDEO;
-    int result;
+    const Uint32 system = SDL_INIT_VIDEO;
+    Uint32 result;
     /* Ensure that we start with a non-initialized subsystem. */
     SDLTest_AssertCheck(SDL_WasInit(system) == 0, "Check result from SDL_WasInit(0x%x)", system);
 
@@ -92,7 +92,7 @@ static int SDLCALL subsystems_referenceCount(void *arg)
  */
 static int SDLCALL subsystems_dependRefCountInitAllQuitByOne(void *arg)
 {
-    int result;
+    Uint32 result;
     /* Ensure that we start with reset subsystems. */
     SDLTest_AssertCheck(SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS) == 0,
                         "Check result from SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS)");
@@ -132,7 +132,7 @@ static int SDLCALL subsystems_dependRefCountInitAllQuitByOne(void *arg)
  */
 static int SDLCALL subsystems_dependRefCountInitByOneQuitAll(void *arg)
 {
-    int result;
+    Uint32 result;
     /* Ensure that we start with reset subsystems. */
     SDLTest_AssertCheck(SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS) == 0,
                         "Check result from SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS)");
@@ -167,7 +167,7 @@ static int SDLCALL subsystems_dependRefCountInitByOneQuitAll(void *arg)
  */
 static int SDLCALL subsystems_dependRefCountWithExtraInit(void *arg)
 {
-    int result;
+    Uint32 result;
     /* Ensure that we start with reset subsystems. */
     SDLTest_AssertCheck(SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS) == 0,
                         "Check result from SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK | SDL_INIT_EVENTS)");

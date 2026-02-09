@@ -111,7 +111,7 @@ generic_compare_r(void *userdata, const void *a, const void *b)
             }                                                                                             \
         }                                                                                                 \
         SDLTest_AssertCheck(count_non_sorted == 0,                                                        \
-            STR(TYPE) "Array (size=%d) is sorted (bad count=%" SDL_PRIu64 ")", (SIZE), count_non_sorted); \
+            STR(TYPE) "Array (size=%u) is sorted (bad count=%" SDL_PRIu64 ")", (SIZE), count_non_sorted); \
     } while (0)
 
 /* This test is O(n^2), so very slow (a hashmap can speed this up):
@@ -354,7 +354,7 @@ static int SDLCALL qsort_testReverseSorted(void *arg)
         }                                                                          \
         for (check_index = 0; check_index < MAX_RANDOM_INT_VALUE; check_index++) { \
             if (presences[check_index] != 0) {                                     \
-                SDLTest_AssertCheck(false, "Value %d appears %s in sorted array",  \
+                SDLTest_AssertCheck(false, "Value %u appears %s in sorted array",  \
                     check_index,                                                   \
                     presences[check_index] > 0 ? "MORE" : "LESS");                 \
             }                                                                      \
@@ -506,7 +506,7 @@ int main(int argc, char *argv[])
                         break;
                     }
                     if (count_arraylens >= SDL_arraysize(arraylens)) {
-                        SDL_LogWarn(SDL_LOG_CATEGORY_TEST, "Dropping array length %d", arraylen);
+                        SDL_LogWarn(SDL_LOG_CATEGORY_TEST, "Dropping array length %u", arraylen);
                     } else {
                         arraylens[count_arraylens] = arraylen;
                     }

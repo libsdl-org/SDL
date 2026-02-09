@@ -2186,7 +2186,7 @@ run_test(void)
         if (actual == t->expected) {
             printf("\tOK\n");
         } else {
-            printf("\tExpected 0x%08x\n", t->expected);
+            printf("\tExpected 0x%08x\n", (Uint32)t->expected);
 
             for (j = 0; device_classes[j].code != 0; j++) {
                 if (t->expected & device_classes[j].code) {
@@ -2194,7 +2194,7 @@ run_test(void)
                 }
             }
 
-            printf("\tGot      0x%08x\n", actual);
+            printf("\tGot      0x%08x\n", (Uint32)actual);
 
             for (j = 0; device_classes[j].code != 0; j++) {
                 if (actual & device_classes[j].code) {

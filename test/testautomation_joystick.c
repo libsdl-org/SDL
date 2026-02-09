@@ -49,7 +49,7 @@ static int SDLCALL joystick_testVirtual(void *arg)
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103;
     desc.name = "Virtual NVIDIA SHIELD Controller";
     device_id = SDL_AttachVirtualJoystick(&desc);
-    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIs32 " (expected > 0)", device_id);
+    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIu32 " (expected > 0)", device_id);
     SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_id), "SDL_IsJoystickVirtual()");
     if (device_id > 0) {
         joystick = SDL_OpenJoystick(device_id);
@@ -69,11 +69,11 @@ static int SDLCALL joystick_testVirtual(void *arg)
             }
             {
                 Uint16 product_version = SDL_GetJoystickProductVersion(joystick);
-                SDLTest_AssertCheck(product_version == 0, "SDL_GetJoystickProductVersion() -> 0x%04x (expected 0x%04x)", product_version, 0);
+                SDLTest_AssertCheck(product_version == 0, "SDL_GetJoystickProductVersion() -> 0x%04x (expected 0x%04x)", product_version, 0U);
             }
             {
                 Uint16 firmware_Version = SDL_GetJoystickFirmwareVersion(joystick);
-                SDLTest_AssertCheck(firmware_Version == 0, "SDL_GetJoystickFirmwareVersion() -> 0x%04x (expected 0x%04x)", firmware_Version, 0);
+                SDLTest_AssertCheck(firmware_Version == 0, "SDL_GetJoystickFirmwareVersion() -> 0x%04x (expected 0x%04x)", firmware_Version, 0U);
             }
             {
                 const char *serial = SDL_GetJoystickSerial(joystick);
@@ -229,7 +229,7 @@ static int SDLCALL joystick_testMappings(void *arg)
     desc.product_id = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
     desc.name = "Virtual NVIDIA SHIELD Controller";
     device_id = SDL_AttachVirtualJoystick(&desc);
-    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIs32 " (expected > 0)", device_id);
+    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIu32 " (expected > 0)", device_id);
     SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_id), "SDL_IsJoystickVirtual()");
 
     gamepad = SDL_OpenGamepad(device_id);
@@ -262,7 +262,7 @@ static int SDLCALL joystick_testMappings(void *arg)
     /* Try matching mappings with a new CRC */
     desc.name = "Virtual NVIDIA SHIELD Controller V2";
     device_id = SDL_AttachVirtualJoystick(&desc);
-    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIs32 " (expected > 0)", device_id);
+    SDLTest_AssertCheck(device_id > 0, "SDL_AttachVirtualJoystick() -> %" SDL_PRIu32 " (expected > 0)", device_id);
     SDLTest_AssertCheck(SDL_IsJoystickVirtual(device_id), "SDL_IsJoystickVirtual()");
 
     gamepad = SDL_OpenGamepad(device_id);
