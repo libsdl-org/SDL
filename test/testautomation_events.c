@@ -91,10 +91,10 @@ static int SDLCALL events_pushPumpAndPollUserevent(void *arg)
     SDLTest_AssertCheck(SDL_EVENT_USER == event_out.type, "Check event type is SDL_EVENT_USER, expected: 0x%x, got: 0x%" SDL_PRIx32, SDL_EVENT_USER, event_out.type);
     SDLTest_AssertCheck(ref_code == event_out.user.code, "Check SDL_Event.user.code, expected: 0x%" SDL_PRIx32 ", got: 0x%" SDL_PRIx32 , ref_code, event_out.user.code);
     SDLTest_AssertCheck(0 == event_out.user.windowID, "Check SDL_Event.user.windowID, expected: NULL , got: %" SDL_PRIu32, event_out.user.windowID);
-    SDLTest_AssertCheck((void *)&g_userdataValue1 == event_out.user.data1, "Check SDL_Event.user.data1, expected: %p, got: %p", &g_userdataValue1, event_out.user.data1);
-    SDLTest_AssertCheck((void *)&g_userdataValue2 == event_out.user.data2, "Check SDL_Event.user.data2, expected: %p, got: %p", &g_userdataValue2, event_out.user.data2);
+    SDLTest_AssertCheck((void *)&g_userdataValue1 == event_out.user.data1, "Check SDL_Event.user.data1, expected: %p, got: %p", (void*)&g_userdataValue1, event_out.user.data1);
+    SDLTest_AssertCheck((void *)&g_userdataValue2 == event_out.user.data2, "Check SDL_Event.user.data2, expected: %p, got: %p", (void*)&g_userdataValue2, event_out.user.data2);
     event_window = SDL_GetWindowFromEvent(&event_out);
-    SDLTest_AssertCheck(NULL == SDL_GetWindowFromEvent(&event_out), "Check SDL_GetWindowFromEvent returns the window id from a user event, expected: NULL, got: %p", event_window);
+    SDLTest_AssertCheck(NULL == SDL_GetWindowFromEvent(&event_out), "Check SDL_GetWindowFromEvent returns the window id from a user event, expected: NULL, got: %p", (void*)event_window);
 
     /* Need to finish getting all events and sentinel, otherwise other tests that rely on event are in bad state */
     SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
@@ -268,7 +268,7 @@ static int SDLCALL events_mainThreadCallbacks(void *arg)
         SDL_Event event;
 
         window = SDL_CreateWindow("test", 0, 0, SDL_WINDOW_HIDDEN);
-        SDLTest_AssertCheck(window != NULL, "Create window, expected non-NULL, got %p", window);
+        SDLTest_AssertCheck(window != NULL, "Create window, expected non-NULL, got %p", (void*)window);
 
         /* Flush any pending events */
         SDL_PumpEvents();
