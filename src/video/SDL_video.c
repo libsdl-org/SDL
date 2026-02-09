@@ -5418,13 +5418,13 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
     PFNGLENABLEPROC glToggleFunc = (PFNGLENABLEPROC) SDL_GL_GetProcAddress(srgb_requested ? "glEnable" : "glDisable");
     PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
     if (glToggleFunc && glGetStringFunc) {
-        bool supported = isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION));  // no extensions needed in OpenGL 3+ or GLES 3+.
-        if (!supported) {
-            if (_this->gl_config.profile_mask & SDL_GL_CONTEXT_PROFILE_ES) {
-                supported = SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control");
-            } else {
-                supported = SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB");
-            }
+        bool supported = false;
+        if (_this->gl_config.profile_mask & SDL_GL_CONTEXT_PROFILE_ES) {
+            supported = SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control");  // GL_FRAMEBUFFER_SRGB is not core in any GLES version at the moment.
+        } else {
+            supported = isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION)) ||  // no extensions needed in OpenGL 3+.
+                        SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") ||
+                        SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB");
         }
 
         if (supported) {
