@@ -1269,7 +1269,7 @@ static int SDLCALL surface_testBlitBitmap(void *arg)
     Uint32 value, expected = 0xFFFFFFFF;
 
     palette = SDL_CreatePalette(SDL_arraysize(colors));
-    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette() != NULL, result = %p", (void*)palette);
+    SDLTest_AssertCheck(palette != NULL, "SDL_CreatePalette() != NULL, result = %p", palette);
 
     result = SDL_SetPaletteColors(palette, colors, 0, SDL_arraysize(colors));
     SDLTest_AssertCheck(result, "SDL_SetPaletteColors, result = %s", result ? "true" : "false");

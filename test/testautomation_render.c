@@ -1229,7 +1229,7 @@ static int SDLCALL render_testRGBSurfaceNoAlpha(void* arg)
 
     SDLTest_AssertPass("About to call SDL_GetPixelFormatDetails(surface->format)");
     format_details = SDL_GetPixelFormatDetails(surface->format);
-    SDLTest_AssertCheck(format_details != NULL, "Result must be non-NULL, is %p", (void*)format_details);
+    SDLTest_AssertCheck(format_details != NULL, "Result must be non-NULL, is %p", format_details);
     if (format_details == NULL) {
         SDL_DestroySurface(surface);
         return TEST_ABORTED;

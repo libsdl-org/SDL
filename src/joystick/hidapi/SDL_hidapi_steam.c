@@ -463,7 +463,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 2);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("GET_ATTRIBUTES_VALUES failed for controller %p\n", (void*)dev);
+            printf("GET_ATTRIBUTES_VALUES failed for controller %p\n", dev);
         }
         return false;
     }
@@ -474,7 +474,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     if (res < 0 || buf[1] != ID_GET_ATTRIBUTES_VALUES) {
         HEXDUMP(buf, res);
         if (!bSuppressErrorSpew) {
-            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", (void*)dev);
+            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
         }
         return false;
     }
@@ -482,7 +482,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     nAttributesLength = buf[2];
     if (nAttributesLength > res) {
         if (!bSuppressErrorSpew) {
-            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", (void*)dev);
+            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
         }
         return false;
     }
@@ -517,7 +517,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 2);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", (void*)dev);
+            printf("CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", dev);
         }
         return false;
     }
@@ -529,7 +529,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 3);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("LOAD_DEFAULT_SETTINGS failed for controller %p\n", (void*)dev);
+            printf("LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev);
         }
         return false;
     }
@@ -559,7 +559,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 3 + nSettings * 3);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("SET_SETTINGS failed for controller %p\n", (void*)dev);
+            printf("SET_SETTINGS failed for controller %p\n", dev);
         }
         return false;
     }
