@@ -73,7 +73,7 @@ static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
         SDL_WaitSemaphore(ctx->request_sem);
 
         if (ctx->next_delay > 0) {
-            SDL_DelayPrecise(ctx->next_delay);
+            SDL_Delay(ctx->next_delay);
             ctx->next_delay -= BACKOFF_RESET_NS;
         }
 
