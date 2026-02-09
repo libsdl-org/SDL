@@ -69,11 +69,11 @@ static int SDLCALL joystick_testVirtual(void *arg)
             }
             {
                 Uint16 product_version = SDL_GetJoystickProductVersion(joystick);
-                SDLTest_AssertCheck(product_version == 0, "SDL_GetJoystickProductVersion() -> 0x%04x (expected 0x%04x)", product_version, 0U);
+                SDLTest_AssertCheck(product_version == 0, "SDL_GetJoystickProductVersion() -> 0x%04x (expected 0x%04x)", product_version, 0u);
             }
             {
                 Uint16 firmware_Version = SDL_GetJoystickFirmwareVersion(joystick);
-                SDLTest_AssertCheck(firmware_Version == 0, "SDL_GetJoystickFirmwareVersion() -> 0x%04x (expected 0x%04x)", firmware_Version, 0U);
+                SDLTest_AssertCheck(firmware_Version == 0, "SDL_GetJoystickFirmwareVersion() -> 0x%04x (expected 0x%04x)", firmware_Version, 0u);
             }
             {
                 const char *serial = SDL_GetJoystickSerial(joystick);
