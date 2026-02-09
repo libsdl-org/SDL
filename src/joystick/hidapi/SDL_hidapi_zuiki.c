@@ -30,11 +30,18 @@
 
 #define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
 #define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
+#define FILTER_SIZE 11  // Must be an odd number
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
 #endif
+
+typedef struct {
+    float buffer[FILTER_SIZE];
+    uint8_t index;
+    uint8_t count;
+} MedianFilter_t;
 
 typedef struct
 {
@@ -42,7 +49,28 @@ typedef struct
     bool sensors_supported;     // Sensor enabled status flag
     Uint64 sensor_timestamp_ns; // Sensor timestamp (nanoseconds, cumulative update)
     float sensor_rate;
+    MedianFilter_t filter_gyro_x;
+    MedianFilter_t filter_gyro_y;
+    MedianFilter_t filter_gyro_z;
 } SDL_DriverZUIKI_Context;
+
+float median_filter_update(MedianFilter_t* mf, float input) {
+    mf->buffer[mf->index] = input;
+    mf->index = (mf->index + 1) % FILTER_SIZE;
+    if (mf->count < FILTER_SIZE) mf->count++;
+    float temp[FILTER_SIZE];
+    memcpy(temp, mf->buffer, sizeof(temp));
+    for (int i = 0; i < mf->count - 1; i++) {
+        for (int j = i + 1; j < mf->count; j++) {
+            if (temp[i] > temp[j]) {
+                float t = temp[i];
+                temp[i] = temp[j];
+                temp[j] = t;
+            }
+        }
+    }
+    return temp[mf->count / 2];
+}
 
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -268,16 +296,11 @@ static void HIDAPI_DriverZUIKI_HandleOldStatePacket(SDL_Joystick *joystick, SDL_
 #undef READ_STICK_AXIS
 
     if (ctx->sensors_supported) {
-        if (ctx->sensor_timestamp_ns == 0) {
-            ctx->sensor_timestamp_ns = timestamp; // First use of system time initialization
-        } else {
-            ctx->sensor_timestamp_ns += SDL_NS_PER_SECOND / ctx->sensor_rate; // Subsequent accumulation of fixed intervals
-        }
-        Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
+        Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE;
-        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE;
+        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[8], data[9]) * GYRO_SCALE);
+        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[12], data[13]) * GYRO_SCALE);
+        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[10], data[11]) * GYRO_SCALE);
         float accel_values[3];
         accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE;
         accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE;
@@ -368,17 +391,11 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
     }
 
     if (ctx->sensors_supported) {
-        // if (ctx->sensor_timestamp_ns == 0) {
-        //     ctx->sensor_timestamp_ns = timestamp;
-        // } else {
-        //     ctx->sensor_timestamp_ns += SDL_NS_PER_SECOND / ctx->sensor_rate;
-        // }
-        // Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
         Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;
-        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE;
+        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[8], data[9]) * GYRO_SCALE);
+        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[12], data[13]) * GYRO_SCALE);
+        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[10], data[11]) * GYRO_SCALE);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
         float accel_values[3];
         accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
