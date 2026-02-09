@@ -377,7 +377,7 @@ static int SDLCALL qsort_testReverseSorted(void *arg)
         }                                                                                           \
         for (check_index = 0; check_index < 256 * 256 * 256; check_index++) {                       \
             if (presences[check_index] != 0) {                                                      \
-                SDLTest_AssertCheck(false, STR(TYPE) "Version %d.%d.%d appears %s in sorted array", \
+                SDLTest_AssertCheck(false, STR(TYPE) "Version %u.%u.%u appears %s in sorted array", \
                     INT_VERSION_MAJOR(check_index),                                                 \
                     INT_VERSION_MINOR(check_index),                                                 \
                     INT_VERSION_MICRO(check_index),                                                 \
