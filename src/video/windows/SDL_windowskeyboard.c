@@ -959,7 +959,7 @@ static void IME_AddCandidate(SDL_VideoData *videodata, UINT i, LPCWSTR candidate
 
     SDL_COMPILE_TIME_ASSERT(IME_CANDIDATE_INDEXING_REQUIRES, MAX_CANDLIST == 10);
     char *candidate_utf8 = WIN_StringToUTF8W(candidate);
-    SDL_asprintf(&videodata->ime_candidates[i], "%d %s", ((i + videodata->ime_candlistindexbase) % 10), candidate_utf8);
+    SDL_asprintf(&videodata->ime_candidates[i], "%d %s", (((int)i + videodata->ime_candlistindexbase) % 10), candidate_utf8);
     SDL_free(candidate_utf8);
 
     videodata->ime_candcount = (i + 1);
