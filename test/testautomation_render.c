@@ -1294,35 +1294,35 @@ static int SDLCALL render_testRGBSurfaceNoAlpha(void* arg)
     SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
     SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
         "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
-        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+        r, g, b, a, 0xaau, 0xbbu, 0xccu, (Uint32)SDL_ALPHA_OPAQUE);
 
     SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(15, 15)");
     result = SDL_ReadSurfacePixel(surface, 15, 15, &r, &g, &b, &a);
     SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
     SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
         "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
-        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+        r, g, b, a, 0xaau, 0xbbu, 0xccu, (Uint32)SDL_ALPHA_OPAQUE);
 
     SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(16, 16)");
     result = SDL_ReadSurfacePixel(surface, 16, 16, &r, &g, &b, &a);
     SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
     SDLTest_AssertCheck(r == 0x00 && g == 0x00 && b == 0x00 && a == SDL_ALPHA_OPAQUE,
         "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
-        r, g, b, a, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+        r, g, b, a, 0x00u, 0x00u, 0x00u, (Uint32)SDL_ALPHA_OPAQUE);
 
     SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(31, 31)");
     result = SDL_ReadSurfacePixel(surface, 31, 31, &r, &g, &b, &a);
     SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
     SDLTest_AssertCheck(r == 0x00 && g == 0x00 && b == 0x00 && a == SDL_ALPHA_OPAQUE,
         "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
-        r, g, b, a, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+        r, g, b, a, 0x00u, 0x00u, 0x00u, (Uint32)SDL_ALPHA_OPAQUE);
 
     SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(32, 32)");
     result = SDL_ReadSurfacePixel(surface, 32, 32, &r, &g, &b, &a);
     SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
     SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
         "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
-        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+        r, g, b, a, 0xaau, 0xbbu, 0xccu, (Uint32)SDL_ALPHA_OPAQUE);
 
     SDL_DestroyTexture(texture2);
     SDL_DestroySurface(surface2);

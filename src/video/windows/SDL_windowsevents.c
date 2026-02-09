@@ -1055,7 +1055,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
         }
         *ptr = '\0';
 
-        SDL_sscanf(instance, "HID\\VID_%X&PID_%X&", &vendor, &product);
+        SDL_sscanf(instance, "HID\\VID_%X&PID_%X&", (unsigned int*)&vendor, (unsigned int*)&product);
 
         switch (dwType) {
         case RIM_TYPEKEYBOARD:
