@@ -951,8 +951,8 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 #ifdef SDL_USE_LIBDBUS
     SDL_SystemTheme theme;
 #endif
-    #define ErrorFreeRetNull(x, y) SDL_SetError(x); SDL_free(y); return NULL;
-    #define ErrorCloseFreeRetNull(x, y, z) X11_XCloseDisplay(z->display); SDL_SetError(x, y); SDL_free(z); return NULL;
+    #define ErrorFreeRetNull(x, y) SDL_SetError(x); SDL_free(y); return NULL
+    #define ErrorCloseFreeRetNull(x, y, z) X11_XCloseDisplay(z->display); SDL_SetError(x, y); SDL_free(z); return NULL
 
     if (!SDL_X11_LoadSymbols()) {
         return NULL;

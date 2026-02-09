@@ -3292,7 +3292,7 @@ bool SDL_GetRenderSafeArea(SDL_Renderer *renderer, SDL_Rect *rect)
 
 bool SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
 
     SDL_RenderViewState *view = renderer->view;
     if (rect && rect->w >= 0 && rect->h >= 0) {
@@ -3313,7 +3313,7 @@ bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
         SDL_zerop(rect);
     }
 
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
 
     if (rect) {
         SDL_copyp(rect, &renderer->view->clip_rect);
@@ -3323,7 +3323,7 @@ bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
 
 bool SDL_RenderClipEnabled(SDL_Renderer *renderer)
 {
-    CHECK_RENDERER_MAGIC(renderer, false)
+    CHECK_RENDERER_MAGIC(renderer, false);
     return renderer->view->clipping_enabled;
 }
 

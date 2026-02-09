@@ -31,7 +31,7 @@
     c128.m128_u32[0] = color; \
     c128.m128_u32[1] = color; \
     c128.m128_u32[2] = color; \
-    c128.m128_u32[3] = color;
+    c128.m128_u32[3] = color
 #else
 #define SSE_BEGIN \
     __m128 c128; \
@@ -40,7 +40,7 @@
     cccc[1] = color; \
     cccc[2] = color; \
     cccc[3] = color; \
-    c128 = *(__m128 *)cccc;
+    c128 = *(__m128 *)cccc
 #endif
 
 #define SSE_WORK \
