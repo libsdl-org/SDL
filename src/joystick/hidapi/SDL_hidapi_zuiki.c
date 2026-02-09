@@ -28,22 +28,49 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALE   (2048.0f / INT16_MAX * SDL_PI_F / 180.0f) // 根据陀螺仪数据范围和弧度计算缩放因子
-#define ACCEL_SCALE  (4.0f / INT16_MAX * SDL_STANDARD_GRAVITY) // 根据陀螺仪数据范围和标准重力计算加速度缩放因子
+#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
+#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
+#define FILTER_SIZE 11  // Must be an odd number
 #define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
-#define GYRO_TIMESTAMP_STEP_NS (SDL_NS_PER_SECOND / 90) // 陀螺仪数据上报时间间隔
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
 #endif
 
+typedef struct {
+    float buffer[FILTER_SIZE];
+    uint8_t index;
+    uint8_t count;
+} MedianFilter_t;
+
 typedef struct
 {
     Uint8 last_state[USB_PACKET_LENGTH];
-    bool sensors_supported;     // 添加传感器启用状态标志
-    Uint64 sensor_timestamp_ns; // 传感器时间戳（纳秒，累加更新）
+    bool sensors_supported;     // Sensor enabled status flag
+    Uint64 sensor_timestamp_ns; // Sensor timestamp (nanoseconds, cumulative update)
     float sensor_rate;
+    MedianFilter_t filter_gyro_x;
+    MedianFilter_t filter_gyro_y;
+    MedianFilter_t filter_gyro_z;
 } SDL_DriverZUIKI_Context;
+
+float median_filter_update(MedianFilter_t* mf, float input) {
+    mf->buffer[mf->index] = input;
+    mf->index = (mf->index + 1) % FILTER_SIZE;
+    if (mf->count < FILTER_SIZE) mf->count++;
+    float temp[FILTER_SIZE];
+    memcpy(temp, mf->buffer, sizeof(temp));
+    for (int i = 0; i < mf->count - 1; i++) {
+        for (int j = i + 1; j < mf->count; j++) {
+            if (temp[i] > temp[j]) {
+                float t = temp[i];
+                temp[i] = temp[j];
+                temp[j] = t;
+            }
+        }
+    }
+    return temp[mf->count / 2];
+}
 
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -65,7 +92,8 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
     if (vendor_id == USB_VENDOR_ZUIKI) {
         switch (product_id) {
         case USB_PRODUCT_ZUIKI_MASCON_PRO:
-        case USB_PRODUCT_ZUIKI_EVOTOP_AXIS:
+        case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
         case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
             return true;
         default:
@@ -77,28 +105,42 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
 
 static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
 {
+    Uint8 data[USB_PACKET_LENGTH * 2];
     SDL_DriverZUIKI_Context *ctx = (SDL_DriverZUIKI_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
     }
     device->context = ctx;
     ctx->sensors_supported = false;
-    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS) {
-        ctx->sensors_supported = true;
-        ctx->sensor_rate = 100.0f;
-    }
-    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
-        ctx->sensors_supported = true;
-        ctx->sensor_rate = 50.0f;
-    }
-    if (device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO) {
-        HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
+
+    // Force reading of reported data once for device initialization
+    int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
+    while (!size) {
+        size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
     }
 
-    if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
-        HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
+    switch (device->product_id) {
+        case USB_PRODUCT_ZUIKI_MASCON_PRO:
+            HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
+            break;
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
+            ctx->sensors_supported = true;
+            ctx->sensor_rate = 200.0f;
+            break;
+        case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
+            ctx->sensors_supported = true;
+            ctx->sensor_rate = 100.0f;
+            break;
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
+            if (size > 0 && data[16] != 0) {
+                ctx->sensors_supported = true;
+                ctx->sensor_rate = 50.0f;
+            }
+            HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
+            break;
+        default:
+            break;
     }
-
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -254,17 +296,11 @@ static void HIDAPI_DriverZUIKI_HandleOldStatePacket(SDL_Joystick *joystick, SDL_
 #undef READ_STICK_AXIS
 
     if (ctx->sensors_supported) {
-        if (ctx->sensor_timestamp_ns == 0) {
-            ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
-        } else {
-            ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
-        }
-        Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
+        Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        // 调整后（示例：交换 Y 和 Z 轴）
-        gyro_values[0] = LOAD16(data[8], data[9]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[12], data[13]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[10], data[11]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[8], data[9]) * GYRO_SCALE);
+        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[12], data[13]) * GYRO_SCALE);
+        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[10], data[11]) * GYRO_SCALE);
         float accel_values[3];
         accel_values[0] = LOAD16(data[14], data[15]) * ACCEL_SCALE;
         accel_values[2] = -LOAD16(data[16], data[17]) * ACCEL_SCALE;
@@ -355,18 +391,11 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
     }
 
     if (ctx->sensors_supported) {
-        // if (ctx->sensor_timestamp_ns == 0) {
-        //     ctx->sensor_timestamp_ns = timestamp; // 首次使用系统时间初始化
-        // } else {
-        //     ctx->sensor_timestamp_ns += GYRO_TIMESTAMP_STEP_NS; // 后续累加固定间隔
-        // }
-        // Uint64 sensor_timestamp = ctx->sensor_timestamp_ns;
         Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        // 调整后（示例：交换 Y 和 Z 轴）
-        gyro_values[0] = LOAD16(data[17], data[18]) * GYRO_SCALE;
-        gyro_values[1] = LOAD16(data[21], data[22]) * GYRO_SCALE;  // 原 Z 轴改为 Y 轴
-        gyro_values[2] = -LOAD16(data[19], data[20]) * GYRO_SCALE; // 原 Y 轴改为 Z 轴
+        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[8], data[9]) * GYRO_SCALE);
+        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[12], data[13]) * GYRO_SCALE);
+        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[10], data[11]) * GYRO_SCALE);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
         float accel_values[3];
         accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
@@ -408,11 +437,12 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
             HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(joystick, ctx, data, size);
-        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_AXIS || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO) {
+        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT
+            || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO
+            || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
-
     if (size < 0) {
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
