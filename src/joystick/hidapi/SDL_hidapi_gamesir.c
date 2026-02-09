@@ -696,17 +696,17 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
 
         // Handle trigger axes
-        // Protocol: L2 (payload byte 12) - analog left trigger 0-255, 0 = released, 255 = pressed
-        //           R2 (payload byte 13) - analog right trigger 0-255, 0 = released, 255 = pressed
-        // SDL range: 0-32767 (0 = released, 32767 = fully pressed)
-        // Linear mapping: 0-255 -> 0-32767
+        // Protocol: L2 (payload byte 12) - analog left trigger 0-255, 0 = released, 255 = fully pressed
+        //           R2 (payload byte 13) - analog right trigger 0-255, 0 = released, 255 = fully pressed
+        // SDL range: -32768 to 32767 (-32768 = released, 32767 = fully pressed)
+        // Linear mapping: 0-255 -> -32768..32767, formula: data * 257 - 32768 (same as PS4)
         if (last[12] != data[12]) {
-            axis = (Sint16)(((int)data[12] * 255) - 32767);
+            axis = ((int)data[12] * 257) - 32768;
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
         }
 
         if (last[13] != data[13]) {
-            axis = (Sint16)(((int)data[13] * 255) - 32767);
+            axis = ((int)data[13] * 257) - 32768;
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
         }
     }
