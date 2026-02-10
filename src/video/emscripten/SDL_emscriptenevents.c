@@ -1164,13 +1164,17 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
             target.addEventListener("dragover", SDL3.eventHandlerDropDragover);
 
             SDL3.drop_count = 0;
-            FS.mkdir("/tmp/filedrop");
+
+            // FS.* functions throw exceptions when there are errors (such as the temp dir already existing),
+            //  but we ignore all of these in a catch handler; you just won't get the drop event if there's a problem.
+            try { FS.mkdir("/tmp/filedrop"); } catch (e) {}
+
             SDL3.eventHandlerDropDrop = function(event) {
                 event.preventDefault();
                 if (event.dataTransfer.types.includes("text/plain")) {
                     let plain_text = stringToNewUTF8(event.dataTransfer.getData("text/plain"));
                     _Emscripten_SendDragTextEvent(data, plain_text);
-                    _free(plain_text);
+                    _Emscripten_force_free(plain_text);
                 } else if (event.dataTransfer.types.includes("Files")) {
                     let files_read = 0;
                     const files_to_read = event.dataTransfer.files.length;
@@ -1186,13 +1190,16 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                             const c_fs_filepath = stringToNewUTF8(fs_filepath);
                             const contents_array8 = new Uint8Array(event.target.result);
 
-                            FS.mkdir(fs_dropdir);
-                            var stream = FS.open(fs_filepath, "w");
-                            FS.write(stream, contents_array8, 0, contents_array8.length, 0);
-                            FS.close(stream);
-
-                            _Emscripten_SendDragFileEvent(data, c_fs_filepath);
-                            _free(c_fs_filepath);
+                            try {
+                                FS.mkdir(fs_dropdir);
+                                var stream = FS.open(fs_filepath, "w");
+                                FS.write(stream, contents_array8, 0, contents_array8.length, 0);
+                                FS.close(stream);
+                                _Emscripten_SendDragFileEvent(data, c_fs_filepath);
+                            } catch (e) {
+                                // if this threw an exception at any point, we skip this drop event. Sorry!
+                            }
+                            _Emscripten_force_free(c_fs_filepath);
                             onFileRead();
                         };
                         file_reader.onerror = function(event) {
