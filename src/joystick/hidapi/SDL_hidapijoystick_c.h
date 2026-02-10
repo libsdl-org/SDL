@@ -99,7 +99,6 @@ typedef struct SDL_HIDAPI_Device
 
     struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;
@@ -107,9 +106,6 @@ typedef struct SDL_HIDAPI_Device
 
     // Used during scanning for device changes
     bool seen;
-
-    // Used to flag that the device is being updated
-    bool updating;
 
     // Used to flag devices that failed open
     // This can happen on Windows with Bluetooth devices that have turned off
