@@ -26,6 +26,14 @@
 
 #include "joystick/SDL_joystick_c.h" // For SDL_GetGamepadTypeFromVIDPID()
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_force_free(void *ptr)
+{
+    free(ptr);  // This should NOT be SDL_free()
+}
+#endif
 
 // Common utility functions that aren't in the public API
 
