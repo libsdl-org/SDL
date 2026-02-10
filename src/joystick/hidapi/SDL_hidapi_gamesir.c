@@ -35,6 +35,7 @@
 
 #define GAMESIR_PACKET_HEADER_0 0xA1
 #define GAMESIR_PACKET_HEADER_1_GAMEPAD 0xC8
+#define GAMESIR_IMU_RATE_HZ 1000
 
 #define BTN_A        0x01
 #define BTN_B        0x02
@@ -335,6 +336,7 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx->led_supported = true;
     ctx->output_handle = GetOutputHandle(device);
+    ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / GAMESIR_IMU_RATE_HZ;
 
     switch (device->product_id) {
     case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K:
@@ -385,7 +387,9 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-        ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
+        // GameSir SDL protocol packets currently don't expose an IMU timestamp.
+        // Use a synthetic monotonic timestamp at the firmware's fixed IMU rate.
+        ctx->sensor_timestamp_ns = SDL_GetTicksNS();
         // Accelerometer scale factor: assume a range of ±2g, 16-bit signed values (-32768 to 32767)
         // 32768 corresponds to 2g, so the scale factor = 2 * SDL_STANDARD_GRAVITY / 32768.0f
         ctx->accelScale = 2.0f * SDL_STANDARD_GRAVITY / 32768.0f;
@@ -398,7 +402,7 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         const float gyro_denominator = 16.0f;
         ctx->gyroScale = (gyro_numerator / gyro_denominator) * (SDL_PI_F / 180.0f);
 
-        const float flSensorRate = 1000.0f;
+        const float flSensorRate = (float)GAMESIR_IMU_RATE_HZ;
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
@@ -485,6 +489,9 @@ static bool HIDAPI_DriverGameSir_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
     if (ctx->sensors_supported) {
         ctx->sensors_enabled = enabled;
+        if (enabled) {
+            ctx->sensor_timestamp_ns = SDL_GetTicksNS();
+        }
         return true;
     }
     return SDL_Unsupported();
