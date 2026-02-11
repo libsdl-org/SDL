@@ -60,7 +60,7 @@ float median_filter_update(MedianFilter_t* mf, float input) {
     mf->index = (mf->index + 1) % FILTER_SIZE;
     if (mf->count < FILTER_SIZE) mf->count++;
     float temp[FILTER_SIZE];
-    memcpy(temp, mf->buffer, sizeof(temp));
+    SDL_memcpy(temp, mf->buffer, sizeof(temp));
     for (int i = 0; i < mf->count - 1; i++) {
         for (int j = i + 1; j < mf->count; j++) {
             if (temp[i] > temp[j]) {
