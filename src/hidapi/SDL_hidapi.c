@@ -388,18 +388,20 @@ static void HIDAPI_UpdateDiscovery(void)
     }
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-#if 0 // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan.
-    // We'll only get messages on the same thread that created the window
-    if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
-        MSG msg;
-        while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
-            if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
+    if (SDL_IsMainThread()) {
+        // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 2998. --ryan.
+    } else {
+        // We'll only get messages on the same thread that created the window
+        if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+            MSG msg;
+            while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
+                if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
             }
         }
     }
-#endif
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 #ifdef SDL_PLATFORM_MACOS
