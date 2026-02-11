@@ -388,7 +388,7 @@ static void HIDAPI_UpdateDiscovery(void)
     }
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (SDL_IsMainThread()) {
+    if (SDL_IsVideoThread()) {
         // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 2998. --ryan.
     } else {
         // We'll only get messages on the same thread that created the window
