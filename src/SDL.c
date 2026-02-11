@@ -280,6 +280,11 @@ bool SDL_IsMainThread(void)
     return true;
 }
 
+bool SDL_IsVideoThread(void)
+{
+    return (SDL_GetCurrentThreadID() == SDL_VideoThreadID);
+}
+
 // Initialize all the subsystems that require initialization before threads start
 void SDL_InitMainThread(void)
 {
