@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,18 +27,25 @@
 
 // This logic is adapted from drivers/tty/vt/keyboard.c in the Linux kernel source, slightly modified to work with FreeBSD
 
+#include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/kbio.h>
 #include <sys/consio.h>
+#include <termios.h>
 
 #include <signal.h>
 
 #include "../../events/SDL_events_c.h"
 #include "SDL_evdev_kbd_default_keyaccmap.h"
 
+#ifndef K_OFF
+#define K_OFF 0x04
+#endif
+
 typedef void(fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
+
 
 /*
  * Keyboard State
@@ -48,6 +55,7 @@ struct SDL_EVDEV_keyboard_state
 {
     int console_fd;
     int keyboard_fd;
+    bool muted;
     unsigned long old_kbd_mode;
     unsigned short **key_maps;
     keymap_t *key_map;
@@ -63,6 +71,10 @@ struct SDL_EVDEV_keyboard_state
     char shift_state;
     char text[128];
     unsigned int text_len;
+    void (*vt_release_callback)(void *);
+    void *vt_release_callback_data;
+    void (*vt_acquire_callback)(void *);
+    void *vt_acquire_callback_data;
 };
 
 static bool SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
@@ -83,22 +95,28 @@ static int fatal_signals[] = {
     SIGSYS
 };
 
-static void kbd_cleanup(void)
+static void vt_update_mouse(SDL_EVDEV_keyboard_state *kbd, int operation)
 {
     struct mouse_info mData;
+
+    SDL_zero(mData);
+    mData.operation = operation;
+    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
+}
+
+static void kbd_cleanup(void)
+{
     SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
     if (!kbd) {
         return;
     }
     kbd_cleanup_state = NULL;
-    SDL_zero(mData);
-    mData.operation = MOUSE_SHOW;
     ioctl(kbd->keyboard_fd, KDSKBMODE, kbd->old_kbd_mode);
     if (kbd->keyboard_fd != kbd->console_fd) {
         close(kbd->keyboard_fd);
     }
     ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
-    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
+    vt_update_mouse(kbd, true);
 }
 
 void SDL_EVDEV_kbd_reraise_signal(int sig)
@@ -144,7 +162,7 @@ static void kbd_unregister_emerg_cleanup(void)
     }
     kbd_cleanup_sigactions_installed = 0;
 
-    for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
+    for (tabidx = 0; tabidx < SDL_arraysize(fatal_signals); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction cur_action;
         int signum = fatal_signals[tabidx];
@@ -197,7 +215,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
     kbd_cleanup_sigactions_installed = 1;
 
-    for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
+    for (tabidx = 0; tabidx < SDL_arraysize(fatal_signals); ++tabidx) {
         struct sigaction *old_action_p;
         struct sigaction new_action;
         int signum = fatal_signals[tabidx];
@@ -220,15 +238,108 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
+enum {
+    VT_SIGNAL_NONE,
+    VT_SIGNAL_RELEASE,
+    VT_SIGNAL_ACQUIRE,
+};
+static int vt_release_signal;
+static int vt_acquire_signal;
+static SDL_AtomicInt vt_signal_pending;
+SDL_AtomicInt vt_current;
+
+typedef void (*signal_handler)(int signum);
+
+
+static void kbd_vt_release_signal_action(int signum)
+{
+    SDL_SetAtomicInt(&vt_signal_pending, VT_SIGNAL_RELEASE);
+    SDL_SetAtomicInt(&vt_current, VT_THEIRS);
+}
+
+static void kbd_vt_acquire_signal_action(int signum)
+{
+    SDL_SetAtomicInt(&vt_signal_pending, VT_SIGNAL_ACQUIRE);
+    SDL_SetAtomicInt(&vt_current, VT_OURS);
+}
+
+static bool setup_vt_signal(int signum, signal_handler handler)
+{
+    struct sigaction *old_action_p;
+    struct sigaction new_action;
+    old_action_p = &(old_sigaction[signum]);
+    SDL_zero(new_action);
+    new_action.sa_handler = handler;
+    new_action.sa_flags = SA_RESTART;
+    if (sigaction(signum, &new_action, old_action_p) < 0) {
+        return false;
+    }
+    if (old_action_p->sa_handler != SIG_DFL) {
+        // This signal is already in use
+        if (signum == SIGUSR1 || signum == SIGUSR2) {
+            /*
+             * For the moment we have no other options in FreeBSD because
+             * the vt(4) will not accept signal numbers over 32.
+             */
+            return true;
+        }
+        sigaction(signum, old_action_p, NULL);
+        return false;
+    }
+    return true;
+}
+
+static void kbd_vt_quit(int console_fd)
+{
+    struct vt_mode mode;
+
+    if (vt_release_signal) {
+        sigaction(vt_release_signal, &old_sigaction[vt_release_signal], NULL);
+        vt_release_signal = 0;
+    }
+    if (vt_acquire_signal) {
+        sigaction(vt_acquire_signal, &old_sigaction[vt_acquire_signal], NULL);
+        vt_acquire_signal = 0;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_AUTO;
+    ioctl(console_fd, VT_SETMODE, &mode);
+}
+
+static bool kbd_vt_init(int console_fd)
+{
+    struct vt_mode mode;
+
+    if (setup_vt_signal(SIGUSR1, kbd_vt_release_signal_action)) {
+        vt_release_signal = SIGUSR1;
+    }
+    if (setup_vt_signal(SIGUSR2, kbd_vt_acquire_signal_action)) {
+        vt_acquire_signal = SIGUSR2;
+    }
+    if (!vt_release_signal || !vt_acquire_signal ) {
+        kbd_vt_quit(console_fd);
+        return false;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_PROCESS;
+    mode.relsig = vt_release_signal;
+    mode.acqsig = vt_acquire_signal;
+    mode.frsig = SIGIO;
+    if (ioctl(console_fd, VT_SETMODE, &mode) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed VT_SETMODE ioctl: %s", strerror(errno));
+        kbd_vt_quit(console_fd);
+        return false;
+    }
+    return true;
+}
+
 SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
-    struct mouse_info mData;
     char flag_state;
-    char *devicePath;
 
-    SDL_zero(mData);
-    mData.operation = MOUSE_HIDE;
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(SDL_EVDEV_keyboard_state));
     if (!kbd) {
         return NULL;
@@ -246,7 +357,6 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     kbd->kbInfo = SDL_calloc(1, sizeof(keyboard_info_t));
 
     ioctl(kbd->console_fd, KDGKBINFO, kbd->kbInfo);
-    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
 
     if (ioctl(kbd->console_fd, KDGKBSTATE, &flag_state) == 0) {
         kbd->ledflagstate = flag_state;
@@ -265,43 +375,31 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
             kbd->key_map = &keymap_default_us_acc;
         }
 
-        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
-            /* Take keyboard from console and open the actual keyboard device.
-             * Ensures that the keystrokes do not leak through to the console.
-             */
-            ioctl(kbd->console_fd, CONS_RELKBD, 1ul);
-            SDL_asprintf(&devicePath, "/dev/kbd%d", kbd->kbInfo->kb_index);
-            kbd->keyboard_fd = open(devicePath, O_WRONLY | O_CLOEXEC);
-            if (kbd->keyboard_fd == -1) {
-                // Give keyboard back.
-                ioctl(kbd->console_fd, CONS_SETKBD, (unsigned long)(kbd->kbInfo->kb_index));
-                kbd->keyboard_fd = kbd->console_fd;
-            }
+        if (!kbd_vt_init(kbd->console_fd)) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_INPUT, "kbd_vt_init failed");
+        }
 
-            /* Make sure to restore keyboard if application fails to call
-             * SDL_Quit before exit or fatal signal is raised.
-             */
-            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
-                kbd_register_emerg_cleanup(kbd);
-            }
-            SDL_free(devicePath);
-        } else
-            kbd->keyboard_fd = kbd->console_fd;
+        kbd->keyboard_fd = kbd->console_fd;
+
+        if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
+            kbd_register_emerg_cleanup(kbd);
+        }
     }
+
+    vt_update_mouse(kbd, MOUSE_HIDE);
 
     return kbd;
 }
 
 void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
-    struct mouse_info mData;
-
     if (!kbd) {
         return;
     }
-    SDL_zero(mData);
-    mData.operation = MOUSE_SHOW;
-    ioctl(kbd->console_fd, CONS_MOUSECTL, &mData);
+
+    kbd_vt_quit(kbd->console_fd);
+
+    vt_update_mouse(kbd, MOUSE_SHOW);
 
     kbd_unregister_emerg_cleanup();
 
@@ -322,14 +420,83 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 
 void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
 {
+    struct termios tios;
+
+    SDL_zero(tios);
+
+    if (!state) {
+        return;
+    }
+
+    if (muted == state->muted) {
+        return;
+    }
+
+    if (tcgetattr(state->console_fd, &tios) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Could not get terminal mode: %s", strerror(errno));
+        return;
+    }
+
+    if (muted) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
+            ioctl(state->console_fd, KDSKBMODE, K_OFF);
+            cfmakeraw(&tios);
+
+            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
+                kbd_register_emerg_cleanup(state);
+            }
+        }
+    } else {
+        kbd_unregister_emerg_cleanup();
+
+        cfmakesane(&tios);
+        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
+    }
+
+    if (tcsetattr(state->console_fd, TCSAFLUSH, &tios) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Could not set terminal mode to %s: %s", muted ? "raw" : "sane", strerror(errno));
+        return;
+    }
+
+    state->muted = muted;
 }
 
 void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void *), void *release_callback_data, void (*acquire_callback)(void *), void *acquire_callback_data)
 {
+    if (state == NULL) {
+        return;
+    }
+
+    state->vt_release_callback = release_callback;
+    state->vt_release_callback_data = release_callback_data;
+    state->vt_acquire_callback = acquire_callback;
+    state->vt_acquire_callback_data = acquire_callback_data;
 }
 
 void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
 {
+    if (!state) {
+        return;
+    }
+
+    int signal_pending = SDL_GetAtomicInt(&vt_signal_pending);
+
+    if (signal_pending != VT_SIGNAL_NONE) {
+        if (signal_pending == VT_SIGNAL_RELEASE) {
+            if (state->vt_release_callback) {
+                vt_update_mouse(state, MOUSE_SHOW);
+                state->vt_release_callback(state->vt_release_callback_data);
+            }
+            ioctl(state->console_fd, VT_RELDISP, 1);
+        } else {
+            if (state->vt_acquire_callback) {
+                state->vt_acquire_callback(state->vt_acquire_callback_data);
+                vt_update_mouse(state, MOUSE_HIDE);
+            }
+            ioctl(state->console_fd, VT_RELDISP, VT_ACKACQ);
+        }
+        SDL_CompareAndSwapAtomicInt(&vt_signal_pending, signal_pending, VT_SIGNAL_NONE);
+    }
 }
 
 /*

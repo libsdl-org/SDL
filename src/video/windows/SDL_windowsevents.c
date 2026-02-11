@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -579,6 +579,11 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
     if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE ||
         (SDL_TouchDevicesAvailable() && (rawmouse->ulExtraInformation & 0x80) == 0x80)) {
         return;
@@ -648,7 +653,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                         }
                     }
                 }
-            } else {
+            } else if (mouse->pen_mouse_events) {
                 const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
                 if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
                     SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
@@ -656,6 +661,14 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                 } else {
                     SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
                 }
+            } else {
+                int screen_x = virtual_desktop ? GetSystemMetrics(SM_XVIRTUALSCREEN) : 0;
+                int screen_y = virtual_desktop ? GetSystemMetrics(SM_YVIRTUALSCREEN) : 0;
+
+                if (!data->raw_input_fake_pen_id) {
+                    data->raw_input_fake_pen_id = SDL_AddPenDevice(timestamp, "raw mouse input", window, NULL, (void *)(size_t)-1, true);
+                }
+                SDL_SendPenMotion(timestamp, data->raw_input_fake_pen_id, window, (float)(x + screen_x - window->x), (float)(y + screen_y - window->y));
             }
 
             data->last_raw_mouse_position.x = x;
@@ -971,6 +984,10 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
+    if (!_this->internal->detect_device_hotplug) {
+        return;
+    }
+
     // Check to see if anything has changed
     static Uint64 s_last_device_change;
     Uint64 last_device_change = WIN_GetLastDeviceNotification();
@@ -1251,41 +1268,53 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_POINTERENTER:
     {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
         if (!data->videodata->GetPointerType) {
             break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
-        }
-
-        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
-        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-        if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
+        } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
             break;  // oh well.
         } else if (pointer_type != PT_PEN) {
             break;  // we only care about pens here.
-        } else if (SDL_FindPenByHandle(hpointer)) {
-            break;  // we already have this one, don't readd it.
         }
 
-        // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
-        //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
-        //  could be unset at this moment because Windows is still deciding what capabilities the pen has, and/or
-        //  doesn't yet have valid data for them. As such, just say everything that the interface supports is
-        //  available...we don't expose this information through the public API at the moment anyhow.
-        SDL_PenInfo info;
-        SDL_zero(info);
-        info.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_DISTANCE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_ERASER;
-        info.max_tilt = 90.0f;
-        info.num_buttons = 1;
-        info.subtype = SDL_PEN_TYPE_PENCIL;
-        SDL_AddPenDevice(0, NULL, &info, hpointer);
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
+        const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        if (pen) {
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true, true);
+        } else {
+            // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
+            //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
+            //  could be unset at this moment because Windows is still deciding what capabilities the pen has, and/or
+            //  doesn't yet have valid data for them. As such, just say everything that the interface supports is
+            //  available...we don't expose this information through the public API at the moment anyhow.
+            SDL_PenInfo info;
+            SDL_zero(info);
+            info.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_DISTANCE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_ERASER;
+            info.max_tilt = 90.0f;
+            info.num_buttons = 1;
+            info.subtype = SDL_PEN_TYPE_PENCIL;
+            SDL_AddPenDevice(WIN_GetEventTimestamp(), NULL, data->window, &info, hpointer, true);
+        }
         returnCode = 0;
     } break;
 
     case WM_POINTERCAPTURECHANGED:
     case WM_POINTERLEAVE:
     {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+        if (!data->videodata->GetPointerType) {
+            break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
+        } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
+            break;  // oh well.
+        } else if (pointer_type != PT_PEN) {
+            break;  // we only care about pens here.
+        }
+
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen == 0) {
             break;  // not a pen, or not a pen we already knew about.
@@ -1293,31 +1322,31 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
-            SDL_RemovePenDevice(WIN_GetEventTimestamp(), pen);
+            // technically this isn't just _proximity_ but maybe just leaving the window. Good enough. WinTab apparently has real proximity info.
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false, false);
         }
         returnCode = 0;
     } break;
 
+    case WM_POINTERDOWN:
+    case WM_POINTERUP:
     case WM_POINTERUPDATE: {
+        // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
         POINTER_INPUT_TYPE pointer_type = PT_POINTER;
-        if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(GET_POINTERID_WPARAM(wParam), &pointer_type)) {
+        if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(pointerid, &pointer_type)) {
             break;  // oh well.
-        }
-
-        if (pointer_type == PT_MOUSE) {
+        } else if ((msg == WM_POINTERUPDATE) && (pointer_type == PT_MOUSE)) {
             data->last_pointer_update = lParam;
             returnCode = 0;
             break;
+        } else if (pointer_type != PT_PEN) {
+            break; // we only care about pens here.
         }
-    }
-    SDL_FALLTHROUGH;
 
-    case WM_POINTERDOWN:
-    case WM_POINTERUP: {
-        POINTER_PEN_INFO pen_info;
-        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
-        void *hpointer = (void *) (size_t) pointerid;
+        void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        POINTER_PEN_INFO pen_info;
         if (pen == 0) {
             break;  // not a pen, or not a pen we already knew about.
         } else if (!data->videodata->GetPointerPenInfo || !data->videodata->GetPointerPenInfo(pointerid, &pen_info)) {
@@ -1334,12 +1363,33 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, false);
         }
 
-        POINT position;
-        position.x = (LONG) GET_X_LPARAM(lParam);
-        position.y = (LONG) GET_Y_LPARAM(lParam);
-        ScreenToClient(data->hwnd, &position);
+        const POINTER_INFO *pointer_info = &pen_info.pointerInfo;
+        RECT tablet_bounds, tablet_mapping;
+        float fx, fy;
 
-        SDL_SendPenMotion(timestamp, pen, window, (float) position.x, (float) position.y);
+        // try to get a more-precise position than is stored in lParam...GetPointerDeviceRects is available starting in Windows 8.
+        // we might need to cache this somewhere (and if we cache it, we will need to update it if the display changes)...for now we'll see if GetPointerDeviceRect is fast enough.
+        if (!data->videodata->GetPointerDeviceRects || !data->videodata->GetPointerDeviceRects(pointer_info->sourceDevice, &tablet_bounds, &tablet_mapping)) {
+            POINT position = { (LONG) GET_X_LPARAM(lParam), (LONG) GET_Y_LPARAM(lParam) };
+            ScreenToClient(data->hwnd, &position);
+            fx = (float) position.x;
+            fy = (float) position.y;
+        } else {
+            int ix, iy;
+            SDL_GetWindowPosition(window, &ix, &iy);
+            const SDL_FPoint window_pos = { (float) ix, (float) iy };
+
+            const float facX = pointer_info->ptHimetricLocationRaw.x / (float) (tablet_bounds.right );
+            const float facY = pointer_info->ptHimetricLocationRaw.y / (float) (tablet_bounds.bottom);
+
+            const float w = tablet_mapping.right  - tablet_mapping.left;
+            const float h = tablet_mapping.bottom - tablet_mapping.top;
+
+            fx = (tablet_mapping.left + (facX * w)) - window_pos.x;
+            fy = (tablet_mapping.top  + (facY * h)) - window_pos.y;
+        }
+
+        SDL_SendPenMotion(timestamp, pen, window, fx, fy);
         SDL_SendPenButton(timestamp, pen, window, 1, (pen_info.penFlags & PEN_FLAG_BARREL) != 0);
         SDL_SendPenButton(timestamp, pen, window, 2, (pen_info.penFlags & PEN_FLAG_ERASER) != 0);
 
@@ -1709,13 +1759,28 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if (data->expected_resize) {
             returnCode = 0;
+        } else if (data->in_modal_loop) {
+            WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+
+            /* While in a modal loop, the size may only be updated if the window is being resized interactively.
+             * Set the SWP_NOSIZE flag if the reported size hasn't changed from the last WM_WINDOWPOSCHANGING
+             * event, or a size set programmatically may end up being overwritten by old size data.
+             */
+            if (data->last_modal_width == windowpos->cx && data->last_modal_height == windowpos->cy) {
+                windowpos->flags |= SWP_NOSIZE;
+            }
+
+            data->last_modal_width = windowpos->cx;
+            data->last_modal_height = windowpos->cy;
+
+            returnCode = 0;
         }
         break;
 
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
-        const SDL_DisplayID original_displayID = data->last_displayID;
+        const SDL_DisplayID original_displayID = data->window->displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
         bool iconic;
         bool zoomed;
@@ -1790,9 +1855,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateClipCursor(data->window);
 
         // Update the window display position
-        data->last_displayID = SDL_GetDisplayForWindow(data->window);
-
-        if (data->last_displayID != original_displayID) {
+        if (data->window->displayID != original_displayID) {
             // Display changed, check ICC profile
             WIN_UpdateWindowICCProfile(data->window, true);
         }
@@ -1804,9 +1867,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
-
-        // Forces a WM_PAINT event
-        InvalidateRect(hwnd, NULL, FALSE);
 
     } break;
 
@@ -1821,6 +1881,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         ++data->in_modal_loop;
         if (data->in_modal_loop == 1) {
+            RECT rect;
+            SDL_zero(rect);
+            GetWindowRect(data->hwnd, &rect);
+            data->last_modal_width = rect.right - rect.left;
+            data->last_modal_height = rect.bottom - rect.top;
+
             data->initial_size_rect.left = data->window->x;
             data->initial_size_rect.right = data->window->x + data->window->w;
             data->initial_size_rect.top = data->window->y;
@@ -2164,7 +2230,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_SendDropComplete(data->window);
         DragFinish(drop);
         return 0;
-    } break;
+    }
 
     case WM_DISPLAYCHANGE:
     {
@@ -2396,7 +2462,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->expected_resize = false;
             return 0;
         }
-        break;
 
     case WM_SETTINGCHANGE:
         if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
@@ -2405,6 +2470,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
         if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
             WIN_UpdateMouseSystemScale();
+        }
+        if (wParam == SPI_SETWORKAREA) {
+            WIN_UpdateDisplayUsableBounds(SDL_GetVideoDevice());
         }
         break;
 
@@ -2484,6 +2552,26 @@ void WIN_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     PostMessage(data->hwnd, data->videodata->_SDL_WAKEUP, 0, 0);
+}
+
+// Simplified event pump for using when creating and destroying windows
+void WIN_PumpEventsForHWND(SDL_VideoDevice *_this, HWND hwnd)
+{
+    MSG msg;
+
+    if (g_WindowsEnableMessageLoop) {
+        SDL_processing_messages = true;
+
+        while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE)) {
+            WIN_SetMessageTick(msg.time);
+
+            // Always translate the message in case it's a non-SDL window (e.g. with Qt integration)
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        SDL_processing_messages = false;
+    }
 }
 
 void WIN_PumpEvents(SDL_VideoDevice *_this)
@@ -2710,18 +2798,12 @@ bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     SDL_Instance = hInst ? (HINSTANCE)hInst : GetModuleHandle(NULL);
 
     // Register the application class
+    SDL_zero(wcex);
     wcex.cbSize = sizeof(WNDCLASSEX);
-    wcex.hCursor = NULL;
-    wcex.hIcon = NULL;
-    wcex.hIconSm = NULL;
-    wcex.lpszMenuName = NULL;
     wcex.lpszClassName = SDL_Appname;
     wcex.style = SDL_Appstyle;
-    wcex.hbrBackground = NULL;
     wcex.lpfnWndProc = WIN_WindowProc;
     wcex.hInstance = SDL_Instance;
-    wcex.cbClsExtra = 0;
-    wcex.cbWndExtra = 0;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);

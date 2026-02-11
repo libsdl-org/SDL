@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,14 @@
 
 #ifndef SDL_evdev_kbd_h_
 #define SDL_evdev_kbd_h_
+
+#ifdef SDL_INPUT_FBSDKBIO
+enum {
+    VT_OURS,
+    VT_THEIRS,
+};
+extern SDL_AtomicInt vt_current;
+#endif
 
 struct SDL_EVDEV_keyboard_state;
 typedef struct SDL_EVDEV_keyboard_state SDL_EVDEV_keyboard_state;

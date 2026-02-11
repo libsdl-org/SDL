@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,67 @@
 
 // Lookup tables to expand partial bytes to the full 0..255 range
 
+// This is the code used to generate the lookup tables below:
+#if 0
+#include <stdio.h>
+#include <SDL3/SDL.h>
+
+#define GENERATE_SHIFTS
+
+static Uint32 Calculate(int v, int bits, int vmax, int shift)
+{
+#if defined(GENERATE_FLOOR)
+    return (Uint32)SDL_floor(v * 255.0f / vmax) << shift;
+#elif defined(GENERATE_ROUND)
+    return (Uint32)SDL_roundf(v * 255.0f / vmax) << shift;
+#elif defined(GENERATE_SHIFTS)
+    switch (bits) {
+    case 1:
+        v = (v << 7) | (v << 6) | (v << 5) | (v << 4) | (v << 3) | (v << 2) | (v << 1) | v;
+        break;
+    case 2:
+        v = (v << 6) | (v << 4) | (v << 2) | v;
+        break;
+    case 3:
+        v = (v << 5) | (v << 2) | (v >> 1);
+        break;
+    case 4:
+        v = (v << 4) | v;
+        break;
+    case 5:
+        v = (v << 3) | (v >> 2);
+        break;
+    case 6:
+        v = (v << 2) | (v >> 4);
+        break;
+    case 7:
+        v = (v << 1) | (v >> 6);
+        break;
+    case 8:
+        break;
+    }
+    return (Uint32)v << shift;
+#endif
+}
+
+int main(int argc, char *argv[])
+{
+    int i, b;
+
+    for (b = 1; b <= 8; ++b) {
+        printf("static const Uint8 lookup_%d[] = {\n    ", b);
+        for (i = 0; i < (1 << b); ++i) {
+            if (i > 0) {
+                printf(", ");
+            }
+            printf("%d", Calculate(i, b, (1 << b) - 1, 0));
+        }
+        printf("\n};\n\n");
+    }
+    return 0;
+}
+#endif
+
 static const Uint8 lookup_0[] = {
     255
 };
@@ -41,7 +102,7 @@ static const Uint8 lookup_2[] = {
 };
 
 static const Uint8 lookup_3[] = {
-    0, 36, 72, 109, 145, 182, 218, 255
+    0, 36, 73, 109, 146, 182, 219, 255
 };
 
 static const Uint8 lookup_4[] = {
@@ -49,15 +110,15 @@ static const Uint8 lookup_4[] = {
 };
 
 static const Uint8 lookup_5[] = {
-    0, 8, 16, 24, 32, 41, 49, 57, 65, 74, 82, 90, 98, 106, 115, 123, 131, 139, 148, 156, 164, 172, 180, 189, 197, 205, 213, 222, 230, 238, 246, 255
+    0, 8, 16, 24, 33, 41, 49, 57, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 198, 206, 214, 222, 231, 239, 247, 255
 };
 
 static const Uint8 lookup_6[] = {
-    0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145, 149, 153, 157, 161, 165, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 214, 218, 222, 226, 230, 234, 238, 242, 246, 250, 255
+    0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 195, 199, 203, 207, 211, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255
 };
 
 static const Uint8 lookup_7[] = {
-    0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 134, 136, 138, 140, 142, 144, 146, 148, 150, 152, 154, 156, 158, 160, 162, 164, 166, 168, 170, 172, 174, 176, 178, 180, 182, 184, 186, 188, 190, 192, 194, 196, 198, 200, 202, 204, 206, 208, 210, 212, 214, 216, 218, 220, 222, 224, 226, 228, 230, 232, 234, 236, 238, 240, 242, 244, 246, 248, 250, 252, 255
+    0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 129, 131, 133, 135, 137, 139, 141, 143, 145, 147, 149, 151, 153, 155, 157, 159, 161, 163, 165, 167, 169, 171, 173, 175, 177, 179, 181, 183, 185, 187, 189, 191, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 217, 219, 221, 223, 225, 227, 229, 231, 233, 235, 237, 239, 241, 243, 245, 247, 249, 251, 253, 255
 };
 
 static const Uint8 lookup_8[] = {
@@ -1035,7 +1096,7 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
     SDL_Palette *palette;
 
     // Input validation
-    if (ncolors < 1) {
+    CHECK_PARAM(ncolors < 1) {
         SDL_InvalidParamError("ncolors");
         return NULL;
     }
@@ -1126,7 +1187,7 @@ void SDL_DitherPalette(SDL_Palette *palette)
 /*
  * Match an RGB value to a particular palette index
  */
-Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+static Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     // Do colorspace distance matching
     unsigned int smallest;
@@ -1156,16 +1217,18 @@ Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
 {
     Uint8 color_index = 0;
-    const void *value;
-    if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
-        color_index = (Uint8)(uintptr_t)value;
-    } else {
-        Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
-        Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
-        Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
-        Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
-        color_index = SDL_FindColor(pal, r, g, b, a);
-        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+    if (pal) {
+        const void *value;
+        if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
+            color_index = (Uint8)(uintptr_t)value;
+        } else {
+            Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
+            Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
+            Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
+            Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
+            color_index = SDL_FindColor(pal, r, g, b, a);
+            SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+        }
     }
     return color_index;
 }
@@ -1219,13 +1282,13 @@ void SDL_DetectPalette(const SDL_Palette *pal, bool *is_opaque, bool *has_alpha_
 // Find the opaque pixel value corresponding to an RGB triple
 Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b)
 {
-    if (!format) {
+    CHECK_PARAM(!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        if (!palette) {
+        CHECK_PARAM(!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }
@@ -1248,13 +1311,13 @@ Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palet
 // Find the pixel value corresponding to an RGBA quadruple
 Uint32 SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    if (!format) {
+    CHECK_PARAM(!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        if (!palette) {
+        CHECK_PARAM(!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }
@@ -1380,24 +1443,31 @@ void SDL_GetRGBA(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const 
     }
 }
 
+bool SDL_IsSamePalette(const SDL_Palette *src, const SDL_Palette *dst)
+{
+    if (src->ncolors <= dst->ncolors) {
+        // If an identical palette, no need to map
+        if (src == dst ||
+            (SDL_memcmp(src->colors, dst->colors,
+                        src->ncolors * sizeof(SDL_Color)) == 0)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Map from Palette to Palette
 static Uint8 *Map1to1(const SDL_Palette *src, const SDL_Palette *dst, int *identical)
 {
     Uint8 *map;
     int i;
 
-    if (identical) {
-        if (src->ncolors <= dst->ncolors) {
-            // If an identical palette, no need to map
-            if (src == dst ||
-                (SDL_memcmp(src->colors, dst->colors,
-                            src->ncolors * sizeof(SDL_Color)) == 0)) {
-                *identical = 1;
-                return NULL;
-            }
-        }
-        *identical = 0;
+    if (SDL_IsSamePalette(src, dst)) {
+        *identical = 1;
+        return NULL;
     }
+    *identical = 0;
+
     map = (Uint8 *)SDL_calloc(256, sizeof(Uint8));
     if (!map) {
         return NULL;
@@ -1492,7 +1562,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     map = &src->map;
 #ifdef SDL_HAVE_RLE
     if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(src, true);
+        SDL_UnRLESurface(src);
     }
 #endif
     SDL_InvalidateMap(map);

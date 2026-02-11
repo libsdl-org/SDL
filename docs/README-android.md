@@ -76,7 +76,7 @@ For more complex projects, follow these instructions:
 
    The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.
 
-2. If you are _not_ already building SDL as a part of your project (e.g. via CMake add_subdirectory() or FetchContent) move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the 'android-project/app/jni' directory. Alternatively you can [use the SDL3 Android Archive (.aar)](#using-the-sdl3-android-archive-aar), see bellow for more details.
+2. If you are _not_ already building SDL as a part of your project (e.g. via CMake add_subdirectory() or FetchContent) move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the 'android-project/app/jni' directory. Alternatively you can [use the SDL3 Android Archive (.aar)](#using-the-sdl3-android-archive-aar), see below for more details.
 
     This is needed as SDL has to be compiled by the Android compiler.
 
@@ -598,7 +598,7 @@ The only caveat is that the APK's support a single architecture.
 
 When configuring the CMake project, you need to use the Android NDK CMake toolchain, and pass the Android home path through `SDL_ANDROID_HOME`.
 ```
-cmake .. -DCMAKE_TOOLCHAIN_FILE=<path/to/android.toolchain.cmake> -DANDROID_ABI=<android-abi> -DSDL_ANDROID_HOME=<path-to-android-sdk-home> -DANDROID_PLATFORM=23 -DSDL_TESTS=ON
+cmake .. -DCMAKE_TOOLCHAIN_FILE=<path/to/android.toolchain.cmake> -DANDROID_ABI=<android-abi> -DSDL_ANDROID_HOME=<path-to-android-sdk-home> -DANDROID_PLATFORM=21 -DSDL_TESTS=ON
 ```
 
 Remarks:

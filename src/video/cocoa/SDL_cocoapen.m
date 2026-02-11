@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,14 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
             return;  // we ignore other things, which hopefully is right.
         }
 
-        Cocoa_PenHandle *handle = (Cocoa_PenHandle *) SDL_calloc(1, sizeof (*handle));
+        Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID(devid, toolid);
+        if (handle) {
+            handle->is_eraser = is_eraser;  // in case this changed.
+            SDL_SendPenProximity(Cocoa_GetEventTimestamp([event timestamp]), handle->pen, _data.window, true, true);
+            return;  // already have this one.
+        }
+
+        handle = (Cocoa_PenHandle *) SDL_calloc(1, sizeof (*handle));
         if (!handle) {
             return;  // oh well.
         }
@@ -100,15 +107,16 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
         handle->deviceid = devid;
         handle->toolid = toolid;
         handle->is_eraser = is_eraser;
-        handle->pen = SDL_AddPenDevice(Cocoa_GetEventTimestamp([event timestamp]), NULL, &peninfo, handle);
+        handle->pen = SDL_AddPenDevice(Cocoa_GetEventTimestamp([event timestamp]), NULL, _data.window, &peninfo, handle, true);
         if (!handle->pen) {
             SDL_free(handle);  // oh well.
         }
     } else {  // old pen leaving!
         Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID(devid, toolid);
         if (handle) {
-            SDL_RemovePenDevice(Cocoa_GetEventTimestamp([event timestamp]), handle->pen);
-            SDL_free(handle);
+            // We never remove pens (until shutdown), since Apple gives no indication when they are actually gone.
+            // But unless you are plugging and unplugging a tablet millions of times, generating new device IDs, this shouldn't be a massive memory drain.
+            SDL_SendPenProximity(Cocoa_GetEventTimestamp([event timestamp]), handle->pen, _data.window, false, false);
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -231,6 +231,103 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
 
             *dst = dst32 | 0xff000000;
 
+            src += 4;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif
+
+#ifdef SDL_LSX_INTRINSICS
+
+static void SDL_TARGETING("lsx") Blit8888to8888PixelAlphaSwizzleLSX(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    bool fill_alpha = !dstfmt->Amask;
+    Uint32 dstAmask, dstAshift;
+    const Uint8 offsets[] = {0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12};
+
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+
+    const __m128i const_0xff00 = __lsx_vreplgr2vr_h(0xff00);
+    const __m128i const_128 = __lsx_vreplgr2vr_b((Uint8)128);
+    const __m128i const_32641 = __lsx_vreplgr2vr_h(32641);
+    const __m128i const_257 = __lsx_vreplgr2vr_h(257);
+
+    // The byte offsets for the start of each pixel
+    const __m128i mask_offsets = __lsx_vld(offsets, 0);
+
+    const __m128i convert_mask = __lsx_vadd_w(
+        __lsx_vreplgr2vr_w(
+            ((srcfmt->Rshift >> 3) << dstfmt->Rshift) |
+            ((srcfmt->Gshift >> 3) << dstfmt->Gshift) |
+            ((srcfmt->Bshift >> 3) << dstfmt->Bshift)),
+        mask_offsets);
+
+    const __m128i alpha_splat_mask = __lsx_vadd_b(__lsx_vreplgr2vr_b(srcfmt->Ashift >> 3), mask_offsets);
+    const __m128i alpha_fill_mask = __lsx_vreplgr2vr_w((int)dstAmask);
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 4 <= width; i += 4) {
+            __m128i src128 = __lsx_vld(src, 0);
+            __m128i dst128 = __lsx_vld(dst, 0);
+
+            __m128i srcA = __lsx_vshuf_b(src128, src128, alpha_splat_mask);
+            src128 = __lsx_vshuf_b(src128, src128, convert_mask);
+
+            src128 = __lsx_vor_v(src128, alpha_fill_mask);
+
+            __m128i srca_lo = __lsx_vilvl_b(srcA, srcA);
+            __m128i srca_hi = __lsx_vilvh_b(srcA, srcA);
+
+            srca_lo = __lsx_vxor_v(srca_lo, const_0xff00);
+            srca_hi = __lsx_vxor_v(srca_hi, const_0xff00);
+
+            src128 = __lsx_vsub_b(src128, const_128);
+            dst128 = __lsx_vsub_b(dst128, const_128);
+
+            __m128i tmp = __lsx_vilvl_b(dst128, src128);
+            __m128i dst_lo = __lsx_vsadd_h(__lsx_vmulwev_h_bu_b(srca_lo, tmp), __lsx_vmulwod_h_bu_b(srca_lo, tmp));
+            tmp = __lsx_vilvh_b(dst128, src128);
+            __m128i dst_hi = __lsx_vsadd_h(__lsx_vmulwev_h_bu_b(srca_hi, tmp), __lsx_vmulwod_h_bu_b(srca_hi, tmp));
+
+            dst_lo = __lsx_vadd_h(dst_lo, const_32641);
+            dst_hi = __lsx_vadd_h(dst_hi, const_32641);
+
+            dst_lo = __lsx_vmuh_hu(dst_lo, const_257);
+            dst_hi = __lsx_vmuh_hu(dst_hi, const_257);
+
+            dst128 = __lsx_vssrarni_bu_h(dst_hi, dst_lo, 0);
+            if (fill_alpha) {
+                dst128 = __lsx_vor_v(dst128, alpha_fill_mask);
+            }
+            __lsx_vst(dst128, dst, 0);
+
+            src += 16;
+            dst += 16;
+        }
+
+        for (; i < width; ++i) {
+            Uint32 src32 = *(Uint32 *)src;
+            Uint32 dst32 = *(Uint32 *)dst;
+            ALPHA_BLEND_SWIZZLE_8888(src32, dst32, srcfmt, dstfmt);
+            if (fill_alpha) {
+                dst32 |= dstAmask;
+            }
+            *(Uint32 *)dst = dst32;
             src += 4;
             dst += 4;
         }
@@ -1202,7 +1299,7 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelAlphaSwizzleAVX2(SDL_BlitIn
 
 #endif
 
-#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
 
 static void Blit8888to8888PixelAlphaSwizzleNEON(SDL_BlitInfo *info)
 {
@@ -1402,7 +1499,12 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                     return Blit8888to8888PixelAlphaSwizzleSSE41;
                 }
 #endif
-#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+#ifdef SDL_LSX_INTRINSICS
+                if (SDL_HasLSX()) {
+                    return Blit8888to8888PixelAlphaSwizzleLSX;
+                }
+#endif
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
                 // To prevent "unused function" compiler warnings/errors
                 (void)Blit8888to8888PixelAlpha;
                 (void)Blit8888to8888PixelAlphaSwizzle;

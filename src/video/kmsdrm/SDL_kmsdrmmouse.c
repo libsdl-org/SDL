@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -67,6 +67,23 @@ void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     // Destroy the curso GBM BO.
     if (dispdata->cursor_bo) {
+        SDL_VideoData *viddata = (SDL_VideoData *) _this->internal;
+        if (viddata->is_atomic) {
+            if (dispdata->cursor_plane) {
+                // Unset the the cursor BO from the cursor plane.
+                KMSDRM_PlaneInfo info;
+                SDL_zero(info);
+                info.plane = dispdata->cursor_plane;
+                drm_atomic_set_plane_props(dispdata, &info);
+                // Wait until the cursor is unset from the cursor plane before destroying it's BO.
+                if (drm_atomic_commit(_this, dispdata, true, false)) {
+                    SDL_SetError("Failed atomic commit in KMSDRM_DenitMouse.");
+                }
+                // Free the cursor plane, on which the cursor was being shown.
+                free_plane(&dispdata->cursor_plane);
+            }
+        }
+
         KMSDRM_gbm_bo_destroy(dispdata->cursor_bo);
         dispdata->cursor_bo = NULL;
         dispdata->cursor_bo_drm_fd = -1;
@@ -78,10 +95,13 @@ void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
    build a window and assign a display to it. */
 bool KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
 {
-
     SDL_VideoDevice *dev = SDL_GetVideoDevice();
     SDL_VideoData *viddata = dev->internal;
     SDL_DisplayData *dispdata = display->internal;
+
+    if (viddata->is_atomic) {
+        setup_plane(dev, dispdata, &dispdata->cursor_plane, DRM_PLANE_TYPE_CURSOR);
+    }
 
     if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
                                                GBM_FORMAT_ARGB8888,
@@ -121,15 +141,29 @@ static bool KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
     SDL_VideoData *viddata = video_device->internal;
 
-    const int rc = KMSDRM_drmModeSetCursor(viddata->drm_fd, dispdata->crtc->crtc_id, 0, 0, 0);
-    if (rc < 0) {
-        result = SDL_SetError("drmModeSetCursor() failed: %s", strerror(-rc));
+    if (viddata->is_atomic) {
+        if (dispdata->cursor_plane) {
+            KMSDRM_PlaneInfo info;
+            SDL_zero(info);
+            info.plane = dispdata->cursor_plane;
+            // The rest of the members are zeroed, so this takes away the cursor from the cursor plane.
+            drm_atomic_set_plane_props(dispdata, &info);
+            if (drm_atomic_commit(video_device, dispdata, true, false)) {
+                result = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
+            }
+        }
+    } else {
+        const int rc = KMSDRM_drmModeSetCursor(viddata->drm_fd, dispdata->crtc.crtc->crtc_id, 0, 0, 0);
+        if (rc < 0) {
+            result = SDL_SetError("drmModeSetCursor() failed: %s", strerror(-rc));
+        }
     }
+
     return result;
 }
 
 // Dump a cursor buffer to a display's DRM cursor BO.
-static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
+static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Mouse *mouse, SDL_Cursor *cursor)
 {
     SDL_DisplayData *dispdata = display->internal;
     SDL_CursorData *curdata = cursor->internal;
@@ -173,25 +207,43 @@ static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Cursor *cursor)
         goto cleanup;
     }
 
-    // Put the GBM BO buffer on screen using the DRM interface.
-    bo_handle = KMSDRM_gbm_bo_get_handle(dispdata->cursor_bo).u32;
-    if (curdata->hot_x == 0 && curdata->hot_y == 0) {
-        rc = KMSDRM_drmModeSetCursor(viddata->drm_fd, dispdata->crtc->crtc_id,
-                                      bo_handle, dispdata->cursor_w, dispdata->cursor_h);
+    if (viddata->is_atomic) {
+        // Get the fb_id for the GBM BO so we can show it on the cursor plane.
+        KMSDRM_FBInfo *fb = KMSDRM_FBFromBO(video_device, dispdata->cursor_bo);
+        KMSDRM_PlaneInfo info;
+
+        // Show the GBM BO buffer on the cursor plane.
+        SDL_zero(info);
+        info.plane = dispdata->cursor_plane;
+        info.crtc_id = dispdata->crtc.crtc->crtc_id;
+        info.fb_id = fb->fb_id;
+        info.src_w = dispdata->cursor_w;
+        info.src_h = dispdata->cursor_h;
+        info.crtc_x = ((int32_t) SDL_roundf(mouse->x)) - curdata->hot_x;
+        info.crtc_y = ((int32_t) SDL_roundf(mouse->y)) - curdata->hot_y;
+        info.crtc_w = curdata->w;
+        info.crtc_h = curdata->h;
+        drm_atomic_set_plane_props(dispdata, &info);
+        if (drm_atomic_commit(video_device, dispdata, true, false)) {
+            result = SDL_SetError("Failed atomic commit in KMSDRM_ShowCursor.");
+            goto cleanup;
+        }
     } else {
-        rc = KMSDRM_drmModeSetCursor2(viddata->drm_fd, dispdata->crtc->crtc_id,
-                                       bo_handle, dispdata->cursor_w, dispdata->cursor_h, curdata->hot_x, curdata->hot_y);
-    }
-    if (rc < 0) {
-        result = SDL_SetError("Failed to set DRM cursor: %s", strerror(-rc));
-        goto cleanup;
+        // Put the GBM BO buffer on screen using the DRM interface.
+        bo_handle = KMSDRM_gbm_bo_get_handle(dispdata->cursor_bo).u32;
+        if (curdata->hot_x == 0 && curdata->hot_y == 0) {
+            rc = KMSDRM_drmModeSetCursor(viddata->drm_fd, dispdata->crtc.crtc->crtc_id, bo_handle, dispdata->cursor_w, dispdata->cursor_h);
+        } else {
+            rc = KMSDRM_drmModeSetCursor2(viddata->drm_fd, dispdata->crtc.crtc->crtc_id, bo_handle, dispdata->cursor_w, dispdata->cursor_h, curdata->hot_x, curdata->hot_y);
+        }
+        if (rc < 0) {
+            result = SDL_SetError("Failed to set DRM cursor: %s", strerror(-rc));
+            goto cleanup;
+        }
     }
 
 cleanup:
-
-    if (ready_buffer) {
-        SDL_free(ready_buffer);
-    }
+    SDL_free(ready_buffer);
     return result;
 }
 
@@ -209,9 +261,7 @@ static void KMSDRM_FreeCursor(SDL_Cursor *cursor)
             curdata->buffer = NULL;
         }
         // Free cursor itself
-        if (cursor->internal) {
-            SDL_free(cursor->internal);
-        }
+        SDL_free(cursor->internal);
         SDL_free(cursor);
     }
 }
@@ -268,14 +318,10 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
 cleanup:
     if (!result) {
         if (curdata) {
-            if (curdata->buffer) {
-                SDL_free(curdata->buffer);
-            }
+            SDL_free(curdata->buffer);
             SDL_free(curdata);
         }
-        if (cursor) {
-            SDL_free(cursor);
-        }
+        SDL_free(cursor);
     }
 
     return result;
@@ -316,7 +362,7 @@ static bool KMSDRM_ShowCursor(SDL_Cursor *cursor)
             if (cursor) {
                 /* Dump the cursor to the display DRM cursor BO so it becomes visible
                    on that display. */
-                result = KMSDRM_DumpCursorToBO(display, cursor);
+                result = KMSDRM_DumpCursorToBO(display, mouse, cursor);
             } else {
                 // Hide the cursor on that display.
                 result = KMSDRM_RemoveCursorFromBO(display);
@@ -325,6 +371,18 @@ static bool KMSDRM_ShowCursor(SDL_Cursor *cursor)
     }
 
     return result;
+}
+
+static void drm_atomic_movecursor(SDL_DisplayData *dispdata, const SDL_CursorData *curdata, uint16_t x, uint16_t y)
+{
+    if (dispdata->cursor_plane) {  // We can't move a non-existing cursor, but that's ok.
+        // Do we have a set of changes already in the making? If not, allocate a new one.
+        if (!dispdata->atomic_req) {
+            dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
+        }
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_X", x - curdata->hot_x);
+        add_plane_property(dispdata->atomic_req, dispdata->cursor_plane, "CRTC_Y", y - curdata->hot_y);
+    }
 }
 
 static bool KMSDRM_WarpMouseGlobal(float x, float y)
@@ -340,17 +398,25 @@ static bool KMSDRM_WarpMouseGlobal(float x, float y)
 
         // And now update the cursor graphic position on screen.
         if (dispdata->cursor_bo) {
-            const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, (int)x, (int)y);
-            if (rc < 0) {
-                return SDL_SetError("drmModeMoveCursor() failed: %s", strerror(-rc));
+            SDL_VideoDevice *dev = SDL_GetVideoDevice();
+            SDL_VideoData *viddata = dev->internal;
+            if (viddata->is_atomic) {
+                const SDL_CursorData *curdata = (const SDL_CursorData *) mouse->cur_cursor->internal;
+                drm_atomic_movecursor(dispdata, curdata, (uint16_t) (int) x, (uint16_t) (int) y);
+            } else {
+                const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc.crtc->crtc_id, (int)x, (int)y);
+                if (rc < 0) {
+                    return SDL_SetError("drmModeMoveCursor() failed: %s", strerror(-rc));
+                }
             }
-            return true;
         } else {
             return SDL_SetError("Cursor not initialized properly.");
         }
     } else {
         return SDL_SetError("No mouse or current cursor.");
     }
+
+    return true;
 }
 
 static bool KMSDRM_WarpMouse(SDL_Window *window, float x, float y)
@@ -394,14 +460,27 @@ static bool KMSDRM_MoveCursor(SDL_Cursor *cursor)
     if (mouse && mouse->cur_cursor && mouse->focus) {
         SDL_Window *window = mouse->focus;
         SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
+        SDL_VideoDevice *dev = SDL_GetVideoDevice();
+        SDL_VideoData *viddata = dev->internal;
 
         if (!dispdata->cursor_bo) {
             return SDL_SetError("Cursor not initialized properly.");
         }
 
-        const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc->crtc_id, (int)mouse->x, (int)mouse->y);
-        if (rc < 0) {
-            return SDL_SetError("drmModeMoveCursor() failed: %s", strerror(-rc));
+        if (viddata->is_atomic) {
+            /* !!! FIXME: Some programs expect cursor movement even while they don't do SwapWindow() calls,
+               and since we ride on the atomic_commit() in SwapWindow() for cursor movement,
+               cursor won't move in these situations. We could do an atomic_commit() here
+               for each cursor movement request, but it cripples the movement to 30FPS,
+               so a future solution is needed. SDLPoP "QUIT?" menu is an example of this
+               situation. */
+            const SDL_CursorData *curdata = (const SDL_CursorData *) mouse->cur_cursor->internal;
+            drm_atomic_movecursor(dispdata, curdata, (uint16_t) (int) mouse->x, (uint16_t) (int) mouse->y);
+        } else {
+            const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc.crtc->crtc_id, (int)mouse->x, (int)mouse->y);
+            if (rc < 0) {
+                return SDL_SetError("drmModeMoveCursor() failed: %s", strerror(-rc));
+            }
         }
     }
     return true;

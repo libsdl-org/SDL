@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -112,6 +112,7 @@ static SDL_VideoDevice *VITA_Create(void)
 
     /*
         // Disabled, causes issues on high-framerate updates. SDL still emulates this.
+        // TODO: Is VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER needed?
         device->CreateWindowFramebuffer = VITA_CreateWindowFramebuffer;
         device->UpdateWindowFramebuffer = VITA_UpdateWindowFramebuffer;
         device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
@@ -143,7 +144,6 @@ static SDL_VideoDevice *VITA_Create(void)
     device->HasScreenKeyboardSupport = VITA_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = VITA_ShowScreenKeyboard;
     device->HideScreenKeyboard = VITA_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = VITA_IsScreenKeyboardShown;
 
     device->PumpEvents = VITA_PumpEvents;
 
@@ -327,10 +327,7 @@ void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data;
 
     data = window->internal;
-    if (data) {
-        // TODO: should we destroy egl context? No one sane should recreate ogl window as non-ogl
-        SDL_free(data);
-    }
+    SDL_free(data);
 
     window->internal = NULL;
     Vita_Window = NULL;
@@ -391,7 +388,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
             } else {
                 SDL_SendKeyboardText((const char *)utf8_buffer);
             }
-            SDL_memset(&caret_rev, 0, sizeof(SceImeCaret));
+            SDL_zero(caret_rev);
             SDL_memset(libime_out, 0, ((SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1) * sizeof(SceWChar16)));
             caret_rev.index = 1;
             sceImeSetCaret(&caret_rev);
@@ -404,10 +401,11 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
     case SCE_IME_EVENT_PRESS_CLOSE:
         sceImeClose();
         videodata->ime_active = false;
+        SDL_SendScreenKeyboardHidden();
         break;
     }
 }
-#endif
+#endif // SDL_VIDEO_VITA_PVR
 
 void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
@@ -506,6 +504,8 @@ void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Pro
 #endif
 
     videodata->ime_active = true;
+
+    SDL_SendScreenKeyboardShown();
 }
 
 void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
@@ -526,17 +526,8 @@ void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     videodata->ime_active = false;
-#endif
-}
 
-bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-#ifdef SDL_VIDEO_VITA_PVR
-    SDL_VideoData *videodata = _this->internal;
-    return videodata->ime_active;
-#else
-    SceCommonDialogStatus dialogStatus = sceImeDialogGetStatus();
-    return dialogStatus == SCE_COMMON_DIALOG_STATUS_RUNNING;
+    SDL_SendScreenKeyboardHidden();
 #endif
 }
 
@@ -563,7 +554,7 @@ void VITA_PumpEvents(SDL_VideoDevice *_this)
             uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 
             SceImeDialogResult result;
-            SDL_memset(&result, 0, sizeof(SceImeDialogResult));
+            SDL_zero(result);
             sceImeDialogGetResult(&result);
 
             // Convert UTF16 to UTF8
@@ -580,6 +571,8 @@ void VITA_PumpEvents(SDL_VideoDevice *_this)
             sceImeDialogTerm();
 
             videodata->ime_active = false;
+
+            SDL_SendScreenKeyboardHidden();
         }
     }
 #endif

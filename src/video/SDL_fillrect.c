@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
     c128.m128_u32[0] = color; \
     c128.m128_u32[1] = color; \
     c128.m128_u32[2] = color; \
-    c128.m128_u32[3] = color;
+    c128.m128_u32[3] = color
 #else
 #define SSE_BEGIN \
     __m128 c128; \
@@ -40,7 +40,7 @@
     cccc[1] = color; \
     cccc[2] = color; \
     cccc[3] = color; \
-    c128 = *(__m128 *)cccc;
+    c128 = *(__m128 *)cccc
 #endif
 
 #define SSE_WORK \
@@ -132,6 +132,69 @@ DEFINE_SSE_FILLRECT(4, Uint32)
 
 /* *INDENT-ON* */ // clang-format on
 #endif            // __SSE__
+
+#ifdef SDL_LSX_INTRINSICS
+/* *INDENT-OFF* */ // clang-format off
+
+#define LSX_BEGIN __m128i c128 = __lsx_vreplgr2vr_w(color);
+
+#define LSX_WORK \
+    for (i = n / 64; i--;) { \
+        __lsx_vst(c128, p, 0); \
+        __lsx_vst(c128, p, 16); \
+        __lsx_vst(c128, p, 32); \
+        __lsx_vst(c128, p, 48); \
+        p += 64; \
+    }
+
+#define DEFINE_LSX_FILLRECT(bpp, type) \
+static void SDL_TARGETING("lsx") SDL_FillSurfaceRect##bpp##LSX(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
+{ \
+    int i, n; \
+    Uint8 *p = NULL; \
+  \
+    /* If the number of bytes per row is equal to the pitch, treat */ \
+    /* all rows as one long continuous row (for better performance) */ \
+    if ((w) * (bpp) == pitch) { \
+        w = w * h; \
+        h = 1; \
+    } \
+ \
+    LSX_BEGIN; \
+ \
+    while (h--) { \
+        n = (w) * (bpp); \
+        p = pixels; \
+ \
+        if (n > 63) { \
+            int adjust = 16 - ((uintptr_t)p & 15); \
+            if (adjust < 16) { \
+                n -= adjust; \
+                adjust /= (bpp); \
+                while (adjust--) { \
+                    *((type *)p) = (type)color; \
+                    p += (bpp); \
+                } \
+            } \
+            LSX_WORK; \
+        } \
+        if (n & 63) { \
+            int remainder = (n & 63); \
+            remainder /= (bpp); \
+            while (remainder--) { \
+                *((type *)p) = (type)color; \
+                p += (bpp); \
+            } \
+        } \
+        pixels += pitch; \
+    } \
+ \
+}
+
+DEFINE_LSX_FILLRECT(4, Uint32)
+
+/* *INDENT-ON* */ // clang-format on
+#endif /* __LSX__ */
 
 static void SDL_FillSurfaceRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
@@ -238,7 +301,7 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
  */
 bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    if (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
@@ -262,22 +325,21 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
     void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    if (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
-    // Nothing to do
-    if (dst->w == 0 || dst->h == 0) {
-        return true;
+    CHECK_PARAM(!rects) {
+        return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
     }
 
-    // Perform software fill
-    if (!dst->pixels) {
+    if (!dst->pixels && SDL_MUSTLOCK(dst)) {
         return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
     }
 
-    if (!rects) {
-        return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
+    // Nothing to do
+    if (dst->w == 0 || dst->h == 0 || !dst->pixels) {
+        return true;
     }
 
     /* This function doesn't usually work on surfaces < 8 bpp
@@ -338,6 +400,12 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
 #ifdef SDL_SSE_INTRINSICS
             if (SDL_HasSSE()) {
                 fill_function = SDL_FillSurfaceRect4SSE;
+                break;
+            }
+#endif
+#ifdef SDL_LSX_INTRINSICS
+            if (SDL_HasLSX()) {
+                fill_function = SDL_FillSurfaceRect4LSX;
                 break;
             }
 #endif

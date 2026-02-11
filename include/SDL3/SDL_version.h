@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MINOR_VERSION   3
+#define SDL_MINOR_VERSION   5
 
 /**
  * The current micro (or patchlevel) version of the SDL headers.
@@ -153,7 +153,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
  *
  * This value is the revision of the code you are linking against and may be
  * different from the code you are compiling with, which is found in the
- * constant SDL_REVISION.
+ * constant SDL_REVISION if you explicitly include SDL_revision.h
  *
  * The revision is an arbitrary string (a hash value) uniquely identifying the
  * exact revision of the SDL library in use, and is only useful in comparing

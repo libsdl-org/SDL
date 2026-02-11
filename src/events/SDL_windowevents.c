@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,6 +70,8 @@ static bool SDLCALL RemoveSupersededWindowEvents(void *userdata, SDL_Event *even
 
 bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data1, int data2)
 {
+    SDL_VideoDevice *_this;
+    bool post_event = true;
     bool posted = false;
 
     if (!window) {
@@ -77,9 +79,6 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     }
     SDL_assert(SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW));
 
-    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
-        return false;
-    }
     switch (windowevent) {
     case SDL_EVENT_WINDOW_SHOWN:
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
@@ -191,11 +190,11 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
+        if (data1 == 0 || (SDL_DisplayID)data1 == window->displayID) {
             return false;
         }
         window->update_fullscreen_on_display_changed = true;
-        window->last_displayID = (SDL_DisplayID)data1;
+        window->displayID = (SDL_DisplayID)data1;
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
         if (window->flags & SDL_WINDOW_OCCLUDED) {
@@ -219,6 +218,19 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         break;
     }
 
+    if (window->is_destroying && windowevent != SDL_EVENT_WINDOW_DESTROYED) {
+        return false;
+    }
+
+    // Only post if we are not currently quitting
+    _this = SDL_GetVideoDevice();
+    if (_this == NULL || _this->is_quitting) {
+        post_event = false;
+    }
+
+    // The window might be destroyed in an event handler, so cache the topmost status first.
+    const bool window_is_topmost = !window->parent;
+
     // Post the event, if desired
     SDL_Event event;
     event.type = windowevent;
@@ -230,7 +242,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_EARLY], &event);
     SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_NORMAL], &event);
 
-    if (SDL_EventEnabled(windowevent)) {
+    if (post_event && SDL_EventEnabled(windowevent)) {
         // Fixes queue overflow with move/resize events that aren't processed
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||
@@ -243,62 +255,66 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         posted = SDL_PushEvent(&event);
     }
 
-    switch (windowevent) {
-    case SDL_EVENT_WINDOW_SHOWN:
-        SDL_OnWindowShown(window);
-        break;
-    case SDL_EVENT_WINDOW_HIDDEN:
-        SDL_OnWindowHidden(window);
-        break;
-    case SDL_EVENT_WINDOW_MOVED:
-        SDL_OnWindowMoved(window);
-        break;
-    case SDL_EVENT_WINDOW_RESIZED:
-        SDL_OnWindowResized(window);
-        break;
-    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-        SDL_OnWindowPixelSizeChanged(window);
-        break;
-    case SDL_EVENT_WINDOW_MINIMIZED:
-        SDL_OnWindowMinimized(window);
-        break;
-    case SDL_EVENT_WINDOW_MAXIMIZED:
-        SDL_OnWindowMaximized(window);
-        break;
-    case SDL_EVENT_WINDOW_RESTORED:
-        SDL_OnWindowRestored(window);
-        break;
-    case SDL_EVENT_WINDOW_MOUSE_ENTER:
-        SDL_OnWindowEnter(window);
-        break;
-    case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-        SDL_OnWindowLeave(window);
-        break;
-    case SDL_EVENT_WINDOW_FOCUS_GAINED:
-        SDL_OnWindowFocusGained(window);
-        break;
-    case SDL_EVENT_WINDOW_FOCUS_LOST:
-        SDL_OnWindowFocusLost(window);
-        break;
-    case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        SDL_OnWindowDisplayChanged(window);
-        break;
-    default:
-        break;
+    // Ensure that the window is still valid, as it may have been destroyed in an event handler.
+    window = SDL_GetWindowFromID(event.window.windowID);
+
+    if (window) {
+        switch (windowevent) {
+        case SDL_EVENT_WINDOW_SHOWN:
+            SDL_OnWindowShown(window);
+            break;
+        case SDL_EVENT_WINDOW_HIDDEN:
+            SDL_OnWindowHidden(window);
+            break;
+        case SDL_EVENT_WINDOW_MOVED:
+            SDL_OnWindowMoved(window);
+            break;
+        case SDL_EVENT_WINDOW_RESIZED:
+            SDL_OnWindowResized(window);
+            break;
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+            SDL_OnWindowPixelSizeChanged(window);
+            break;
+        case SDL_EVENT_WINDOW_MINIMIZED:
+            SDL_OnWindowMinimized(window);
+            break;
+        case SDL_EVENT_WINDOW_MAXIMIZED:
+            SDL_OnWindowMaximized(window);
+            break;
+        case SDL_EVENT_WINDOW_RESTORED:
+            SDL_OnWindowRestored(window);
+            break;
+        case SDL_EVENT_WINDOW_MOUSE_ENTER:
+            SDL_OnWindowEnter(window);
+            break;
+        case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+            SDL_OnWindowLeave(window);
+            break;
+        case SDL_EVENT_WINDOW_FOCUS_GAINED:
+            SDL_OnWindowFocusGained(window);
+            break;
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+            SDL_OnWindowFocusLost(window);
+            break;
+        case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+            SDL_OnWindowDisplayChanged(window);
+            break;
+        default:
+            break;
+        }
     }
 
-    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !window->parent && !SDL_HasActiveTrays()) {
-        int toplevel_count = 0;
-        SDL_Window *n;
-        for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
+    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && window_is_topmost && !SDL_HasActiveTrays()) {
+        int count = window ? 0 : 1;
+        for (SDL_Window *n = _this->windows; n; n = n->next) {
             if (!n->parent && !(n->flags & SDL_WINDOW_HIDDEN)) {
-                ++toplevel_count;
+                ++count;
             }
         }
 
-        if (toplevel_count <= 1) {
+        if (count <= 1) {
             if (SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, true)) {
-                SDL_SendQuit(); // This is the last toplevel window in the list so send the SDL_EVENT_QUIT event
+                SDL_SendQuit(); // This is the last window in the list, so send the SDL_EVENT_QUIT event
             }
         }
     }

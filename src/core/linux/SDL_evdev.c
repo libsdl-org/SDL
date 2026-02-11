@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,10 +32,11 @@
 #include "SDL_evdev.h"
 #include "SDL_evdev_kbd.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <linux/input.h>
 
 #include "../../events/SDL_events_c.h"
@@ -322,16 +323,17 @@ void SDL_EVDEV_Poll(void)
         return;
     }
 
-#ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_Poll();
-#endif
-
     SDL_EVDEV_kbd_update(_this->kbd);
 
     mouse = SDL_GetMouse();
 
     for (item = _this->first; item; item = item->next) {
         while ((len = read(item->fd, events, sizeof(events))) > 0) {
+#ifdef SDL_INPUT_FBSDKBIO
+            if (SDL_GetAtomicInt(&vt_current) == VT_THEIRS) {
+                continue;
+            }
+#endif
             len /= sizeof(events[0]);
             for (i = 0; i < len; ++i) {
                 struct input_event *event = &events[i];
@@ -546,16 +548,16 @@ void SDL_EVDEV_Poll(void)
                              * be window-relative in that case. */
                             switch (item->touchscreen_data->slots[j].delta) {
                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, mouse->focus, SDL_EVENT_FINGER_DOWN, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_UP:
-                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouch(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, mouse->focus, SDL_EVENT_FINGER_UP, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].tracking_id = 0;
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
-                                SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, NULL, norm_x, norm_y, norm_pressure);
+                                SDL_SendTouchMotion(SDL_EVDEV_GetEventTimestamp(event), item->fd, item->touchscreen_data->slots[j].tracking_id, mouse->focus, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             default:
@@ -678,7 +680,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
     if (ret < 0) {
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen name");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen name");
+        return false;
     }
 
     item->touchscreen_data->name = SDL_strdup(name);
@@ -691,7 +694,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
 
     if (abs_info.maximum == 0) {
@@ -708,7 +712,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_x = abs_info.minimum;
     item->touchscreen_data->max_x = abs_info.maximum;
@@ -718,7 +723,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_y = abs_info.minimum;
     item->touchscreen_data->max_y = abs_info.maximum;
@@ -728,7 +734,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_pressure = abs_info.minimum;
     item->touchscreen_data->max_pressure = abs_info.maximum;
@@ -912,8 +919,9 @@ static bool SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     item->fd = open(dev_path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (item->fd < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Couldn't open %s: %s", dev_path, strerror(errno));
         SDL_free(item);
-        return SDL_SetError("Unable to open %s", dev_path);
+        return false;
     }
 
     item->path = SDL_strdup(dev_path);

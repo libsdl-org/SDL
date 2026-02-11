@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,6 +11,7 @@
 */
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_test.h>
 #include <wayland-client.h>
 #include <xdg-shell-client-protocol.h>
 
@@ -35,7 +36,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
@@ -89,7 +90,7 @@ static void MoveSprites(void)
 static int InitSprites(void)
 {
     /* Create the sprite texture and initialize the sprite positions */
-    sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
+    sprite = CreateTexture(renderer, icon_png, icon_png_len, &sprite_w, &sprite_h);
 
     if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create sprite texture");
@@ -113,7 +114,7 @@ static int InitSprites(void)
 }
 
 /* Encapsulated in a struct to silence shadow variable warnings */
-static struct _state
+static struct
 {
     /* These are owned by SDL and must not be destroyed! */
     struct wl_display *wl_display;
@@ -124,11 +125,11 @@ static struct _state
     struct xdg_wm_base *xdg_wm_base;
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *xdg_toplevel;
-} state;
+} test_wl_state;
 
 static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial)
 {
-    xdg_surface_ack_configure(state.xdg_surface, serial);
+    xdg_surface_ack_configure(test_wl_state.xdg_surface, serial);
 }
 
 static const struct xdg_surface_listener xdg_surface_listener = {
@@ -164,7 +165,7 @@ static const struct xdg_toplevel_listener xdg_toplevel_listener = {
 
 static void xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
 {
-    xdg_wm_base_pong(state.xdg_wm_base, serial);
+    xdg_wm_base_pong(test_wl_state.xdg_wm_base, serial);
 }
 
 static const struct xdg_wm_base_listener xdg_wm_base_listener = {
@@ -174,8 +175,8 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 static void registry_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version)
 {
     if (SDL_strcmp(interface, xdg_wm_base_interface.name) == 0) {
-        state.xdg_wm_base = wl_registry_bind(state.wl_registry, name, &xdg_wm_base_interface, 1);
-        xdg_wm_base_add_listener(state.xdg_wm_base, &xdg_wm_base_listener, NULL);
+        test_wl_state.xdg_wm_base = wl_registry_bind(test_wl_state.wl_registry, name, &xdg_wm_base_interface, 1);
+        xdg_wm_base_add_listener(test_wl_state.xdg_wm_base, &xdg_wm_base_listener, NULL);
     }
 }
 
@@ -193,9 +194,19 @@ int main(int argc, char **argv)
 {
     int ret = -1;
     SDL_PropertiesID props;
+    SDLTest_CommonState *state;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        goto exit;
+    }
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-        return -1;
+        goto exit;
     }
 
     if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") != 0) {
@@ -227,29 +238,29 @@ int main(int argc, char **argv)
     }
 
     /* Get the display object and use it to create a registry object, which will enumerate the xdg_wm_base protocol. */
-    state.wl_display = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-    state.wl_registry = wl_display_get_registry(state.wl_display);
-    wl_registry_add_listener(state.wl_registry, &wl_registry_listener, NULL);
+    test_wl_state.wl_display = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+    test_wl_state.wl_registry = wl_display_get_registry(test_wl_state.wl_display);
+    wl_registry_add_listener(test_wl_state.wl_registry, &wl_registry_listener, NULL);
 
     /* Roundtrip to enumerate registry objects. */
-    wl_display_roundtrip(state.wl_display);
+    wl_display_roundtrip(test_wl_state.wl_display);
 
-    if (!state.xdg_wm_base) {
+    if (!test_wl_state.xdg_wm_base) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "'xdg_wm_base' protocol not found!");
         goto exit;
     }
 
     /* Get the wl_surface object from the SDL_Window, and create a toplevel window with it. */
-    state.wl_surface = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+    test_wl_state.wl_surface = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
 
     /* Create the xdg_surface from the wl_surface. */
-    state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface);
-    xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, NULL);
+    test_wl_state.xdg_surface = xdg_wm_base_get_xdg_surface(test_wl_state.xdg_wm_base, test_wl_state.wl_surface);
+    xdg_surface_add_listener(test_wl_state.xdg_surface, &xdg_surface_listener, NULL);
 
     /* Create the xdg_toplevel from the xdg_surface. */
-    state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
-    xdg_toplevel_add_listener(state.xdg_toplevel, &xdg_toplevel_listener, NULL);
-    xdg_toplevel_set_title(state.xdg_toplevel, SDL_GetWindowTitle(window));
+    test_wl_state.xdg_toplevel = xdg_surface_get_toplevel(test_wl_state.xdg_surface);
+    xdg_toplevel_add_listener(test_wl_state.xdg_toplevel, &xdg_toplevel_listener, NULL);
+    xdg_toplevel_set_title(test_wl_state.xdg_toplevel, SDL_GetWindowTitle(window));
 
     /* Initialize the sprites. */
     if (InitSprites() < 0) {
@@ -294,21 +305,21 @@ int main(int argc, char **argv)
 
 exit:
     /* The display and surface handles obtained from SDL are owned by SDL and must *NOT* be destroyed here! */
-    if (state.xdg_toplevel) {
-        xdg_toplevel_destroy(state.xdg_toplevel);
-        state.xdg_toplevel = NULL;
+    if (test_wl_state.xdg_toplevel) {
+        xdg_toplevel_destroy(test_wl_state.xdg_toplevel);
+        test_wl_state.xdg_toplevel = NULL;
     }
-    if (state.xdg_surface) {
-        xdg_surface_destroy(state.xdg_surface);
-        state.xdg_surface = NULL;
+    if (test_wl_state.xdg_surface) {
+        xdg_surface_destroy(test_wl_state.xdg_surface);
+        test_wl_state.xdg_surface = NULL;
     }
-    if (state.xdg_wm_base) {
-        xdg_wm_base_destroy(state.xdg_wm_base);
-        state.xdg_wm_base = NULL;
+    if (test_wl_state.xdg_wm_base) {
+        xdg_wm_base_destroy(test_wl_state.xdg_wm_base);
+        test_wl_state.xdg_wm_base = NULL;
     }
-    if (state.wl_registry) {
-        wl_registry_destroy(state.wl_registry);
-        state.wl_registry = NULL;
+    if (test_wl_state.wl_registry) {
+        wl_registry_destroy(test_wl_state.wl_registry);
+        test_wl_state.wl_registry = NULL;
     }
 
     /* Destroy the SDL resources */
@@ -326,5 +337,6 @@ exit:
     }
 
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return ret;
 }

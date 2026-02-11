@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -330,12 +330,12 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
 
     {
         int val;
-        PRECOMP(d2d1_y, d1->y - d2->y)
-        PRECOMP(d0d2_y, d2->y - d0->y)
-        PRECOMP(d1d0_y, d0->y - d1->y)
-        PRECOMP(d1d2_x, d2->x - d1->x)
-        PRECOMP(d2d0_x, d0->x - d2->x)
-        PRECOMP(d0d1_x, d1->x - d0->x)
+        PRECOMP(d2d1_y, d1->y - d2->y);
+        PRECOMP(d0d2_y, d2->y - d0->y);
+        PRECOMP(d1d0_y, d0->y - d1->y);
+        PRECOMP(d1d2_x, d2->x - d1->x);
+        PRECOMP(d2d0_x, d0->x - d2->x);
+        PRECOMP(d0d1_x, d1->x - d0->x);
     }
 
     // Starting point for rendering, at the middle of a pixel
@@ -502,10 +502,10 @@ bool SDL_SW_BlitTriangle(
 
     bool has_modulation;
 
-    if (!SDL_SurfaceValid(src)) {
+    CHECK_PARAM(!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     }
-    if (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -572,12 +572,12 @@ bool SDL_SW_BlitTriangle(
 
     {
         int val;
-        PRECOMP(d2d1_y, d1->y - d2->y)
-        PRECOMP(d0d2_y, d2->y - d0->y)
-        PRECOMP(d1d0_y, d0->y - d1->y)
-        PRECOMP(d1d2_x, d2->x - d1->x)
-        PRECOMP(d2d0_x, d0->x - d2->x)
-        PRECOMP(d0d1_x, d1->x - d0->x)
+        PRECOMP(d2d1_y, d1->y - d2->y);
+        PRECOMP(d0d2_y, d2->y - d0->y);
+        PRECOMP(d1d0_y, d0->y - d1->y);
+        PRECOMP(d1d2_x, d2->x - d1->x);
+        PRECOMP(d2d0_x, d0->x - d2->x);
+        PRECOMP(d0d1_x, d1->x - d0->x);
     }
 
     s2s0_x = s0->x - s2->x;
@@ -743,12 +743,16 @@ end:
 
 #define FORMAT_ALPHA                0
 #define FORMAT_NO_ALPHA             -1
+#define FORMAT_INDEX8               -2
 #define FORMAT_2101010              1
+#define FORMAT_INDEXED(format)      format == FORMAT_INDEX8
 #define FORMAT_HAS_ALPHA(format)    format == 0
 #define FORMAT_HAS_NO_ALPHA(format) format < 0
 static int detect_format(const SDL_PixelFormatDetails *pf)
 {
-    if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
+    if (SDL_ISPIXELFORMAT_INDEXED(pf->format)) {
+        return FORMAT_INDEX8;
+    } if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;
     } else if (pf->Amask) {
         return FORMAT_ALPHA;
@@ -766,6 +770,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_TextureAddressMode texture_address_mode_v)
 {
     SDL_Surface *src_surface = info->src_surface;
+    SDL_Palette *palette = src_surface->palette;
     const int flags = info->flags;
     Uint32 modulateR = info->r;
     Uint32 modulateG = info->g;
@@ -796,7 +801,14 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
         Uint8 *dst = dptr;
         TRIANGLE_GET_TEXTCOORD
         src = (info->src + (srcy * info->src_pitch) + (srcx * srcbpp));
-        if (FORMAT_HAS_ALPHA(srcfmt_val)) {
+        if (FORMAT_INDEXED(srcfmt_val)) {
+            srcpixel = *src;
+            const SDL_Color *color = &palette->colors[srcpixel];
+            srcR = color->r;
+            srcG = color->g;
+            srcB = color->b;
+            srcA = color->a;
+        } else if (FORMAT_HAS_ALPHA(srcfmt_val)) {
             DISEMBLE_RGBA(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB, srcA);
         } else if (FORMAT_HAS_NO_ALPHA(srcfmt_val)) {
             DISEMBLE_RGB(src, srcbpp, src_fmt, srcpixel, srcR, srcG, srcB);

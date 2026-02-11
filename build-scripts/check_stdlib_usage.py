@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ import sys
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-STDLIB_SYMBOLS = [
+STDLIB_SYMBOLS = (
     'abs',
     'acos',
     'acosf',
@@ -147,8 +147,8 @@ STDLIB_SYMBOLS = [
     'wcsncasecmp',
     'wcsncmp',
     'wcsstr',
-]
-RE_STDLIB_SYMBOL = re.compile(rf"\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
+)
+RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 
 
 def find_symbols_in_file(file: pathlib.Path) -> int:
@@ -161,6 +161,7 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
         "src/libm",
         "src/hidapi",
         "src/video/khronos",
+        "src/video/miniz.h",
         "src/video/stb_image.h",
         "include/SDL3",
         "build-scripts/gen_audio_resampler_filter.c",
@@ -219,13 +220,19 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
                     line_comment += line[pos_line_comment:]
                     line = line[:pos_line_comment]
 
-                if m := RE_STDLIB_SYMBOL.match(line):
-                    override_string = f"This should NOT be SDL_{m['symbol']}()"
-                    if override_string not in line_comment:
-                        print(f"{filename}:{line_i}")
-                        print(f"    {line}")
-                        print(f"")
-                        match_count += 1
+                if matches := tuple(RE_STDLIB_SYMBOL.finditer(line)):
+                    text_string = " or ".join(f"SDL_{m.group(1)}" for m in matches)
+                    first_quote = line.find("\"")
+                    last_quote = line.rfind("\"")
+                    first_occurrence = min(m.span()[0] for m in matches)
+                    last_occurrence = max(m.span()[1] for m in matches)
+                    if first_quote == -1 or not (first_quote < first_occurrence and last_quote > last_occurrence):
+                        override_string = f"This should NOT be {text_string}"
+                        if override_string not in line_comment:
+                            print(f"{filename}:{line_i}")
+                            print(f"    {line}")
+                            print(f"")
+                            match_count += 1
 
     except UnicodeDecodeError:
         print(f"{file} is not text, skipping", file=sys.stderr)
@@ -234,7 +241,7 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
 
 def find_symbols_in_dir(path: pathlib.Path) -> int:
     match_count = 0
-    for entry in path.glob("*"):
+    for entry in path.iterdir():
         if entry.is_dir():
             match_count += find_symbols_in_dir(entry)
         else:
@@ -248,7 +255,10 @@ def main():
 
     print(f"Looking for stdlib usage in {args.path}...")
 
-    match_count = find_symbols_in_dir(args.path)
+    if args.path.is_file():
+        match_count = find_symbols_in_file(args.path)
+    else:
+        match_count = find_symbols_in_dir(args.path)
 
     if match_count:
         print("If the stdlib usage is intentional, add a '// This should NOT be SDL_<symbol>()' line comment.")

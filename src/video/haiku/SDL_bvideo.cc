@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -106,6 +106,9 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
     device->HasClipboardText = HAIKU_HasClipboardText;
 
     device->free = HAIKU_DeleteDevice;
+
+    // TODO: Is this needed?
+    device->device_caps = VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
 
     return device;
 }
@@ -240,16 +243,18 @@ static bool HAIKU_SetRelativeMouseMode(bool enabled)
     }
 
 	SDL_BWin *bewin = _ToBeWin(window);
-	BGLView *_SDL_GLView = bewin->GetGLView();
-    if (!_SDL_GLView) {
-        return false;
-    }
+	BView *_SDL_View = bewin->GetGLView();
+	if (!_SDL_View) {
+		_SDL_View = bewin->GetView();
+		if (!_SDL_View)
+			return false;
+	}
 
 	bewin->Lock();
 	if (enabled)
-		_SDL_GLView->SetEventMask(B_POINTER_EVENTS, B_NO_POINTER_HISTORY);
+		_SDL_View->SetEventMask(B_POINTER_EVENTS, B_NO_POINTER_HISTORY);
 	else
-		_SDL_GLView->SetEventMask(0, 0);
+		_SDL_View->SetEventMask(0, 0);
 	bewin->Unlock();
 
     return true;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,7 +56,7 @@ bool SDL_GetPowerInfo_Haiku(SDL_PowerState *state, int *seconds, int *percent)
         return false; // maybe some other method will work?
     }
 
-    SDL_memset(regs, '\0', sizeof(regs));
+    SDL_zeroa(regs);
     regs[0] = APM_FUNC_OFFSET + APM_FUNC_GET_POWER_STATUS;
     regs[1] = APM_DEVICE_ALL;
     rc = ioctl(fd, APM_BIOS_CALL, regs);

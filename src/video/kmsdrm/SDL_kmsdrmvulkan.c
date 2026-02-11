@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for Vulkan on KMSDRM",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_VULKAN
-);
+)
 
 bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -117,7 +117,7 @@ bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasDisplayExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_DISPLAY_EXTENSION_NAME "extension");
+        SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_DISPLAY_EXTENSION_NAME " extension");
         goto fail;
     }
 
@@ -177,7 +177,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     uint32_t display_count;
     uint32_t mode_count;
     uint32_t plane_count;
-    uint32_t plane = UINT32_MAX;
+    uint32_t _plane = UINT32_MAX;
 
     VkPhysicalDevice *physical_devices = NULL;
     VkPhysicalDeviceProperties *device_props = NULL;
@@ -443,9 +443,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         }
 
         // Free the list of displays supported by this plane.
-        if (supported_displays) {
-            SDL_free(supported_displays);
-        }
+        SDL_free(supported_displays);
 
         // If the display is not supported by this plane, iterate to the next plane.
         if (!plane_supports_display) {
@@ -456,13 +454,13 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         vkGetDisplayPlaneCapabilitiesKHR(gpu, display_mode, i, &plane_caps);
         if (plane_caps.supportedAlpha == alpha_mode) {
             // Yep, this plane is alright.
-            plane = i;
+            _plane = i;
             break;
         }
     }
 
     // If we couldn't find an appropriate plane, error out.
-    if (plane == UINT32_MAX) {
+    if (_plane == UINT32_MAX) {
         SDL_SetError("Vulkan couldn't find an appropriate plane.");
         goto clean;
     }
@@ -477,7 +475,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     SDL_zero(display_plane_surface_create_info);
     display_plane_surface_create_info.sType = VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR;
     display_plane_surface_create_info.displayMode = display_mode;
-    display_plane_surface_create_info.planeIndex = plane;
+    display_plane_surface_create_info.planeIndex = _plane;
     display_plane_surface_create_info.imageExtent = image_size;
     display_plane_surface_create_info.transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     display_plane_surface_create_info.alphaMode = alpha_mode;
@@ -494,21 +492,11 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     ret = true;  // success!
 
 clean:
-    if (physical_devices) {
-        SDL_free(physical_devices);
-    }
-    if (display_props) {
-        SDL_free(display_props);
-    }
-    if (device_props) {
-        SDL_free(device_props);
-    }
-    if (plane_props) {
-        SDL_free(plane_props);
-    }
-    if (mode_props) {
-        SDL_free(mode_props);
-    }
+    SDL_free(physical_devices);
+    SDL_free(display_props);
+    SDL_free(device_props);
+    SDL_free(plane_props);
+    SDL_free(mode_props);
 
     return ret;
 }

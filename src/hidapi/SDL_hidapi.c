@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 
 #include "SDL_hidapi_c.h"
 #include "../joystick/usb_ids.h"
+#include "../joystick/SDL_joystick_c.h"
 #include "../SDL_hints_c.h"
 
 // Initial type declarations
@@ -46,7 +47,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for joysticks through libusb",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_LIBUSB_DYNAMIC
-);
+)
 #endif
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
@@ -540,8 +541,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 // Platform HIDAPI Implementation
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE) \
-        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE)
+#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB) \
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -736,37 +737,39 @@ static SDL_LibUSBContext *libusb_ctx;
 struct LIBUSB_hid_device_;
 typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 
-#define free_hid_device              LIBUSB_free_hid_device
-#define hid_close                    LIBUSB_hid_close
-#define hid_device                   LIBUSB_hid_device
-#define hid_device_                  LIBUSB_hid_device_
-#define hid_enumerate                LIBUSB_hid_enumerate
-#define hid_error                    LIBUSB_hid_error
-#define hid_exit                     LIBUSB_hid_exit
-#define hid_free_enumeration         LIBUSB_hid_free_enumeration
-#define hid_get_device_info          LIBUSB_hid_get_device_info
-#define hid_get_feature_report       LIBUSB_hid_get_feature_report
-#define hid_get_indexed_string       LIBUSB_hid_get_indexed_string
-#define hid_get_input_report         LIBUSB_hid_get_input_report
-#define hid_get_manufacturer_string  LIBUSB_hid_get_manufacturer_string
-#define hid_get_product_string       LIBUSB_hid_get_product_string
-#define hid_get_report_descriptor    LIBUSB_hid_get_report_descriptor
-#define hid_get_serial_number_string LIBUSB_hid_get_serial_number_string
-#define hid_init                     LIBUSB_hid_init
-#define hid_open                     LIBUSB_hid_open
-#define hid_open_path                LIBUSB_hid_open_path
-#define hid_read                     LIBUSB_hid_read
-#define hid_read_timeout             LIBUSB_hid_read_timeout
-#define hid_send_feature_report      LIBUSB_hid_send_feature_report
-#define hid_set_nonblocking          LIBUSB_hid_set_nonblocking
-#define hid_write                    LIBUSB_hid_write
-#define hid_version                  LIBUSB_hid_version
-#define hid_version_str              LIBUSB_hid_version_str
-#define input_report                 LIBUSB_input_report
-#define make_path                    LIBUSB_make_path
-#define new_hid_device               LIBUSB_new_hid_device
-#define read_thread                  LIBUSB_read_thread
-#define return_data                  LIBUSB_return_data
+#define free_hid_device                 LIBUSB_free_hid_device
+#define get_usb_code_for_current_locale LIBUSB_get_usb_code_for_current_locale
+#define hid_close                       LIBUSB_hid_close
+#define hid_device                      LIBUSB_hid_device
+#define hid_device_                     LIBUSB_hid_device_
+#define hid_enumerate                   LIBUSB_hid_enumerate
+#define hid_error                       LIBUSB_hid_error
+#define hid_exit                        LIBUSB_hid_exit
+#define hid_free_enumeration            LIBUSB_hid_free_enumeration
+#define hid_get_device_info             LIBUSB_hid_get_device_info
+#define hid_get_feature_report          LIBUSB_hid_get_feature_report
+#define hid_get_indexed_string          LIBUSB_hid_get_indexed_string
+#define hid_get_input_report            LIBUSB_hid_get_input_report
+#define hid_get_manufacturer_string     LIBUSB_hid_get_manufacturer_string
+#define hid_get_product_string          LIBUSB_hid_get_product_string
+#define hid_get_report_descriptor       LIBUSB_hid_get_report_descriptor
+#define hid_get_serial_number_string    LIBUSB_hid_get_serial_number_string
+#define hid_init                        LIBUSB_hid_init
+#define hid_open                        LIBUSB_hid_open
+#define hid_open_path                   LIBUSB_hid_open_path
+#define hid_read                        LIBUSB_hid_read
+#define hid_read_timeout                LIBUSB_hid_read_timeout
+#define hid_send_feature_report         LIBUSB_hid_send_feature_report
+#define hid_set_nonblocking             LIBUSB_hid_set_nonblocking
+#define hid_write                       LIBUSB_hid_write
+#define hid_libusb_wrap_sys_device      LIBUSB_hid_libusb_wrap_sys_device
+#define hid_version                     LIBUSB_hid_version
+#define hid_version_str                 LIBUSB_hid_version_str
+#define input_report                    LIBUSB_input_report
+#define make_path                       LIBUSB_make_path
+#define new_hid_device                  LIBUSB_new_hid_device
+#define read_thread                     LIBUSB_read_thread
+#define return_data                     LIBUSB_return_data
 
 #include "SDL_hidapi_libusb.h"
 
@@ -831,6 +834,10 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef read_thread
 #undef return_data
 
+#endif // HAVE_LIBUSB
+
+#endif // !SDL_HIDAPI_DISABLED
+
 /* If the platform has any backend other than libusb, try to avoid using
  * libusb as the main backend for devices, since it detaches drivers and
  * therefore makes devices inaccessible to the rest of the OS.
@@ -842,7 +849,7 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 static const struct {
     Uint16 vendor;
     Uint16 product;
-} SDL_libusb_whitelist[] = {
+} SDL_libusb_required[] = {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT },
@@ -850,21 +857,16 @@ static const struct {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_PRO },
 };
 
-static bool IsInWhitelist(Uint16 vendor, Uint16 product)
+static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
 {
-    int i;
-    for (i = 0; i < SDL_arraysize(SDL_libusb_whitelist); i += 1) {
-        if (vendor == SDL_libusb_whitelist[i].vendor &&
-            product == SDL_libusb_whitelist[i].product) {
+    for (int i = 0; i < SDL_arraysize(SDL_libusb_required); ++i) {
+        if (vendor == SDL_libusb_required[i].vendor &&
+            product == SDL_libusb_required[i].product) {
             return true;
         }
     }
     return false;
 }
-
-#endif // HAVE_LIBUSB
-
-#endif // !SDL_HIDAPI_DISABLED
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND)
 // We have another way to get HID devices, so use the whitelist to get devices where libusb is preferred
@@ -875,6 +877,7 @@ static bool IsInWhitelist(Uint16 vendor, Uint16 product)
 #endif // HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND
 
 static bool use_libusb_whitelist = SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT;
+static bool use_libusb_gamecube = true;
 
 // Shared HIDAPI Implementation
 
@@ -1041,9 +1044,7 @@ static void SDLCALL OnlyControllersChanged(void *userdata, const char *name, con
 
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (SDL_hidapi_ignored_devices) {
-        SDL_free(SDL_hidapi_ignored_devices);
-    }
+    SDL_free(SDL_hidapi_ignored_devices);
     if (hint && *hint) {
         SDL_hidapi_ignored_devices = SDL_strdup(hint);
     } else {
@@ -1051,8 +1052,22 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage)
+bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb)
 {
+    if (libusb) {
+        if (use_libusb_whitelist && !RequiresLibUSB(vendor_id, product_id)) {
+            return true;
+        }
+        if (!use_libusb_gamecube &&
+            vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) {
+            return true;
+        }
+    } else {
+        if (RequiresLibUSB(vendor_id, product_id)) {
+            return true;
+        }
+    }
+
     // See if there are any devices we should skip in enumeration
     if (SDL_hidapi_only_controllers && usage_page) {
         if (vendor_id == USB_VENDOR_VALVE) {
@@ -1068,7 +1083,13 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
                 (usage == USB_USAGE_GENERIC_KEYBOARD || usage == USB_USAGE_GENERIC_MOUSE)) {
                 return true;
             }
-        } else if (vendor_id == USB_VENDOR_FLYDIGI && product_id == USB_PRODUCT_FLYDIGI_GAMEPAD) {
+        } else if (vendor_id == USB_VENDOR_FLYDIGI_V1 && product_id == USB_PRODUCT_FLYDIGI_V1_GAMEPAD) {
+            if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
+                return false;
+            }
+            return true;
+        } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }
@@ -1122,6 +1143,7 @@ int SDL_hid_init(void)
 
     use_libusb_whitelist = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_WHITELIST,
                                               SDL_HINT_HIDAPI_LIBUSB_WHITELIST_DEFAULT);
+    use_libusb_gamecube = SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB_GAMECUBE, true);
 #ifdef HAVE_LIBUSB
     if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_LIBUSB, true)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
@@ -1286,34 +1308,6 @@ static void RemoveDeviceFromEnumeration(const char *driver_name, struct hid_devi
 }
 #endif // HAVE_LIBUSB || HAVE_PLATFORM_BACKEND
 
-#ifdef HAVE_LIBUSB
-static void RemoveNonWhitelistedDevicesFromEnumeration(struct hid_device_info **devs, void (*free_device_info)(struct hid_device_info *))
-{
-    struct hid_device_info *last = NULL, *curr, *next;
-
-    for (curr = *devs; curr; curr = next) {
-        next = curr->next;
-
-        if (!IsInWhitelist(curr->vendor_id, curr->product_id)) {
-#ifdef DEBUG_HIDAPI
-            SDL_Log("Device was not in libusb whitelist, skipping: %ls %ls 0x%.4hx/0x%.4hx/%d",
-                    curr->manufacturer_string, curr->product_string, curr->vendor_id, curr->product_id, curr->interface_number);
-#endif
-            if (last) {
-                last->next = next;
-            } else {
-                *devs = next;
-            }
-
-            curr->next = NULL;
-            free_device_info(curr);
-            continue;
-        }
-        last = curr;
-    }
-}
-#endif // HAVE_LIBUSB
-
 struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
     struct hid_device_info *driver_devs = NULL;
@@ -1334,10 +1328,6 @@ struct SDL_hid_device_info *SDL_hid_enumerate(unsigned short vendor_id, unsigned
 #ifdef HAVE_LIBUSB
     if (libusb_ctx) {
         usb_devs = LIBUSB_hid_enumerate(vendor_id, product_id);
-
-        if (use_libusb_whitelist) {
-            RemoveNonWhitelistedDevicesFromEnumeration(&usb_devs,  LIBUSB_hid_free_enumeration);
-        }
     }
 #endif // HAVE_LIBUSB
 
@@ -1615,60 +1605,3 @@ void SDL_hid_ble_scan(bool active)
     hid_ble_scan(active);
 #endif
 }
-
-#ifdef HAVE_ENABLE_GAMECUBE_ADAPTORS
-// This is needed to enable input for Nyko and EVORETRO GameCube adaptors
-void SDL_EnableGameCubeAdaptors(void)
-{
-#ifdef HAVE_LIBUSB
-    libusb_context *context = NULL;
-    libusb_device **devs = NULL;
-    libusb_device_handle *handle = NULL;
-    struct libusb_device_descriptor desc;
-    ssize_t i, num_devs;
-    int kernel_detached = 0;
-
-    if (!libusb_ctx) {
-        return;
-    }
-
-    if (libusb_ctx->init(&context) == 0) {
-        num_devs = libusb_ctx->get_device_list(context, &devs);
-        for (i = 0; i < num_devs; ++i) {
-            if (libusb_ctx->get_device_descriptor(devs[i], &desc) != 0) {
-                continue;
-            }
-
-            if (desc.idVendor != 0x057e || desc.idProduct != 0x0337) {
-                continue;
-            }
-
-            if (libusb_ctx->open(devs[i], &handle) != 0) {
-                continue;
-            }
-
-            if (libusb_ctx->kernel_driver_active(handle, 0)) {
-                if (libusb_ctx->detach_kernel_driver(handle, 0) == 0) {
-                    kernel_detached = 1;
-                }
-            }
-
-            if (libusb_ctx->claim_interface(handle, 0) == 0) {
-                libusb_ctx->control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
-                libusb_ctx->release_interface(handle, 0);
-            }
-
-            if (kernel_detached) {
-                libusb_ctx->attach_kernel_driver(handle, 0);
-            }
-
-            libusb_ctx->close(handle);
-        }
-
-        libusb_ctx->free_device_list(devs, 1);
-
-        libusb_ctx->exit(context);
-    }
-#endif // HAVE_LIBUSB
-}
-#endif // HAVE_ENABLE_GAMECUBE_ADAPTORS

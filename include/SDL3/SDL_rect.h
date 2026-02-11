@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -128,10 +128,10 @@ typedef struct SDL_FRect
  */
 SDL_FORCE_INLINE void SDL_RectToFRect(const SDL_Rect *rect, SDL_FRect *frect)
 {
-    frect->x = (float)rect->x;
-    frect->y = (float)rect->y;
-    frect->w = (float)rect->w;
-    frect->h = (float)rect->h;
+    frect->x = SDL_static_cast(float, rect->x);
+    frect->y = SDL_static_cast(float, rect->y);
+    frect->w = SDL_static_cast(float, rect->w);
+    frect->h = SDL_static_cast(float, rect->h);
 }
 
 /**
@@ -425,7 +425,7 @@ SDL_FORCE_INLINE bool SDL_RectsEqualFloat(const SDL_FRect *a, const SDL_FRect *b
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_GetRectIntersection
+ * \sa SDL_GetRectIntersectionFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasRectIntersectionFloat(const SDL_FRect *A, const SDL_FRect *B);
 

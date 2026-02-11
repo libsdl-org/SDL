@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@ struct GL_ShaderContext
     bool GL_ARB_texture_rectangle_supported;
 
     GL_ShaderData shaders[NUM_SHADERS];
-    const float *shader_params[NUM_SHADERS];
+    float *shader_params[NUM_SHADERS];
 };
 
 /* *INDENT-OFF* */ // clang-format off
@@ -83,6 +83,73 @@ struct GL_ShaderContext
 "    v_color = gl_Color;\n"                                     \
 "    v_texCoord = vec2(gl_MultiTexCoord0);\n"                   \
 "}"                                                             \
+
+#define RGB_SHADER_PROLOGUE                                     \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0;\n"                                     \
+"\n"
+
+#define RGB_PIXELART_SHADER_PROLOGUE                            \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0;\n"                                     \
+"uniform vec4 texel_size; // texel size (xy: texel size, zw: texture dimensions)\n" \
+"\n"
+
+#define PALETTE_SHADER_PROLOGUE                                 \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0;\n"                                     \
+"uniform sampler2D tex1;\n"                                     \
+"uniform vec4 texel_size; // texel size (xy: texel size, zw: texture dimensions)\n" \
+"\n"
+
+// Implementation with thanks from bgolus:
+// https://discussions.unity.com/t/how-to-make-data-shader-support-bilinear-trilinear/598639/8
+#define PALETTE_SHADER_FUNCTIONS                                    \
+"vec4 SamplePaletteNearest(vec2 uv)\n"                              \
+"{\n"                                                               \
+"    float index = texture2D(tex0, uv).r * 255.0;\n"                \
+"    return texture2D(tex1, vec2((index + 0.5) / 256.0, 0.5));\n"   \
+"}\n"                                                               \
+"\n"                                                                \
+"vec4 SamplePaletteLinear(vec2 uv)\n"                               \
+"{\n"                                                               \
+"    // scale & offset uvs to integer values at texel centers\n"    \
+"    vec2 uv_texels = uv * texel_size.zw + 0.5;\n"                  \
+"\n"                                                                \
+"    // get uvs for the center of the 4 surrounding texels by flooring\n" \
+"    vec4 uv_min_max = vec4((floor(uv_texels) - 0.5) * texel_size.xy, (floor(uv_texels) + 0.5) * texel_size.xy);\n" \
+"\n"                                                                \
+"    // blend factor\n"                                             \
+"    vec2 uv_frac = fract(uv_texels);\n"                            \
+"\n"                                                                \
+"    // sample all 4 texels\n"                                      \
+"    vec4 texelA = SamplePaletteNearest(uv_min_max.xy);\n"          \
+"    vec4 texelB = SamplePaletteNearest(uv_min_max.xw);\n"          \
+"    vec4 texelC = SamplePaletteNearest(uv_min_max.zy);\n"          \
+"    vec4 texelD = SamplePaletteNearest(uv_min_max.zw);\n"          \
+"\n"                                                                \
+"    // bilinear interpolation\n"                                   \
+"    return mix(mix(texelA, texelB, uv_frac.y), mix(texelC, texelD, uv_frac.y), uv_frac.x);\n" \
+"}\n"                                                               \
+"\n"
+
+#define PIXELART_SHADER_FUNCTIONS                                               \
+"vec2 GetPixelArtUV(vec2 uv)\n"                                                 \
+"{\n"                                                                           \
+"    vec2 boxSize = clamp(fwidth(uv) * texel_size.zw, 1e-5, 1.0);\n"            \
+"    vec2 tx = uv * texel_size.zw - 0.5 * boxSize;\n"                           \
+"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"  \
+"    return (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"                    \
+"}\n"                                                                           \
+"\n"                                                                            \
+"vec4 GetPixelArtSample(vec2 uv)\n"                                             \
+"{\n"                                                                           \
+"    return textureGrad(tex0, GetPixelArtUV(uv), dFdx(v_texCoord), dFdy(v_texCoord));\n"  \
+"}\n"                                                                           \
+"\n"                                                                            \
 
 #define YUV_SHADER_PROLOGUE                                     \
 "varying vec4 v_color;\n"                                       \
@@ -260,15 +327,61 @@ static struct {
         NULL
     },
 
+    // SHADER_PALETTE_NEAREST
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+        PALETTE_SHADER_PROLOGUE
+        PALETTE_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    gl_FragColor = SamplePaletteNearest(v_texCoord) * v_color;\n"
+"}",
+        // fragment version
+        NULL
+    },
+
+    // SHADER_PALETTE_LINEAR
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+        PALETTE_SHADER_PROLOGUE
+        PALETTE_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    gl_FragColor = SamplePaletteLinear(v_texCoord) * v_color;\n"
+"}",
+        // fragment version
+        NULL
+    },
+
+    // SHADER_PALETTE_PIXELART
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+        PALETTE_SHADER_PROLOGUE
+        PALETTE_SHADER_FUNCTIONS
+        PIXELART_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    gl_FragColor = SamplePaletteLinear(GetPixelArtUV(v_texCoord)) * v_color;\n"
+"}",
+        // fragment version
+        "#version 130\n"
+    },
+
     // SHADER_RGB
     {
         // vertex shader
         TEXTURE_VERTEX_SHADER,
         // fragment shader
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0;\n"
-"uniform vec4 texel_size; // texel size (xy: texel size, zw: texture dimensions)\n"
+        RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
 "{\n"
@@ -280,14 +393,30 @@ static struct {
         NULL
     },
 
+    // SHADER_RGB_PIXELART
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+        RGB_PIXELART_SHADER_PROLOGUE
+        PIXELART_SHADER_FUNCTIONS
+"\n"
+"void main()\n"
+"{\n"
+"    gl_FragColor = GetPixelArtSample(v_texCoord);\n"
+"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor *= v_color;\n"
+"}",
+        // fragment version
+        "#version 130\n"
+    },
+
     // SHADER_RGBA
     {
         // vertex shader
         TEXTURE_VERTEX_SHADER,
         // fragment shader
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0;\n"
+        RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
 "{\n"
@@ -297,47 +426,17 @@ static struct {
         NULL
     },
 
-    // SHADER_RGB_PIXELART
-    {
-        // vertex shader
-        TEXTURE_VERTEX_SHADER,
-        // fragment shader
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0;\n"
-"uniform vec4 texel_size;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 boxSize = clamp(fwidth(v_texCoord) * texel_size.zw, 1e-5, 1.0);\n"
-"    vec2 tx = v_texCoord * texel_size.zw - 0.5 * boxSize;\n"
-"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"
-"    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
-"    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
-"    gl_FragColor.a = 1.0;\n"
-"    gl_FragColor *= v_color;\n"
-"}",
-        // fragment version
-        "#version 130\n"
-    },
-
     // SHADER_RGBA_PIXELART
     {
         // vertex shader
         TEXTURE_VERTEX_SHADER,
         // fragment shader
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0;\n"
-"uniform vec4 texel_size;\n"
+        RGB_PIXELART_SHADER_PROLOGUE
+        PIXELART_SHADER_FUNCTIONS
 "\n"
 "void main()\n"
 "{\n"
-"    vec2 boxSize = clamp(fwidth(v_texCoord) * texel_size.zw, 1e-5, 1.0);\n"
-"    vec2 tx = v_texCoord * texel_size.zw - 0.5 * boxSize;\n"
-"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"
-"    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
-"    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
+"    gl_FragColor = GetPixelArtSample(v_texCoord);\n"
 "    gl_FragColor *= v_color;\n"
 "}",
         // fragment version
@@ -421,10 +520,15 @@ static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char 
         info = SDL_small_alloc(char, length + 1, &isstack);
         if (info) {
             ctx->glGetInfoLogARB(shader, length, NULL, info);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
-	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", defines);
-	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", source);
-	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", info);
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
+            if (version) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", version);
+            }
+            if (defines) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", defines);
+            }
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", source);
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", info);
             SDL_small_free(info, isstack);
         }
         return false;
@@ -499,9 +603,18 @@ static bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData
 
 static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
 {
-    ctx->glDeleteObjectARB(data->vert_shader);
-    ctx->glDeleteObjectARB(data->frag_shader);
-    ctx->glDeleteObjectARB(data->program);
+    if (data->vert_shader) {
+        ctx->glDeleteObjectARB(data->vert_shader);
+        data->vert_shader = 0;
+    }
+    if (data->frag_shader) {
+        ctx->glDeleteObjectARB(data->frag_shader);
+        data->frag_shader = 0;
+    }
+    if (data->program) {
+        ctx->glDeleteObjectARB(data->program);
+        data->program = 0;
+    }
 }
 
 GL_ShaderContext *GL_CreateShaderContext(void)
@@ -570,13 +683,17 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     // Compile all the shaders
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(ctx, i, &ctx->shaders[i])) {
-            GL_DestroyShaderContext(ctx);
-            return NULL;
+            DestroyShaderProgram(ctx, &ctx->shaders[i]);
         }
     }
 
     // We're done!
     return ctx;
+}
+
+bool GL_SupportsShader(GL_ShaderContext *ctx, GL_Shader shader)
+{
+    return ctx && ctx->shaders[shader].program;
 }
 
 void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shader_params)
@@ -586,8 +703,25 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
 
     ctx->glUseProgramObjectARB(program);
 
-    if (shader_params && shader_params != ctx->shader_params[shader]) {
-        if (shader == SHADER_RGB_PIXELART ||
+    int shader_params_len = 0;
+    if (shader == SHADER_PALETTE_LINEAR ||
+        shader == SHADER_PALETTE_PIXELART ||
+        shader == SHADER_RGB_PIXELART ||
+        shader == SHADER_RGBA_PIXELART) {
+        shader_params_len = 4 * sizeof(float);
+#ifdef SDL_HAVE_YUV
+    } else if (shader >= SHADER_YUV) {
+        shader_params_len = 16 * sizeof(float);
+#endif
+    }
+    SDL_assert(!shader_params || shader_params_len > 0);
+
+    if (shader_params &&
+        (!ctx->shader_params[shader] ||
+         SDL_memcmp(shader_params, ctx->shader_params[shader], shader_params_len) != 0)) {
+        if (shader == SHADER_PALETTE_LINEAR ||
+            shader == SHADER_PALETTE_PIXELART ||
+            shader == SHADER_RGB_PIXELART ||
             shader == SHADER_RGBA_PIXELART) {
             location = ctx->glGetUniformLocationARB(program, "texel_size");
             if (location >= 0) {
@@ -617,7 +751,12 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
         }
 #endif // SDL_HAVE_YUV
 
-        ctx->shader_params[shader] = shader_params;
+        if (!ctx->shader_params[shader]) {
+            ctx->shader_params[shader] = (float *)SDL_malloc(shader_params_len);
+        }
+        if (ctx->shader_params[shader]) {
+            SDL_memcpy(ctx->shader_params[shader], shader_params, shader_params_len);
+        }
     }
 }
 
@@ -627,6 +766,7 @@ void GL_DestroyShaderContext(GL_ShaderContext *ctx)
 
     for (i = 0; i < NUM_SHADERS; ++i) {
         DestroyShaderProgram(ctx, &ctx->shaders[i]);
+        SDL_free(ctx->shader_params[i]);
     }
     SDL_free(ctx);
 }

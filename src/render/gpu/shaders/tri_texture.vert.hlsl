@@ -1,6 +1,5 @@
 cbuffer Context : register(b0, space1) {
     float4x4 mvp;
-    float4 color;  /* XXX unused */
 };
 
 struct VSInput {

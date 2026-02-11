@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,9 +31,10 @@
 #define ACTION_CANCEL 3
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP   6
+#define ACTION_HOVER_ENTER  9
 #define ACTION_HOVER_EXIT   10
 
-void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, float x, float y, float p)
+void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_type, int button, int action, float x, float y, float p)
 {
     if (!window) {
         return;
@@ -50,7 +51,8 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, fl
         peninfo.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_ERASER;
         peninfo.num_buttons = 2;
         peninfo.subtype = SDL_PEN_TYPE_PEN;
-        pen = SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) pen_id_in);
+        peninfo.device_type = device_type;
+        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *) (size_t) pen_id_in, true);
         if (!pen) {
             SDL_Log("error: can't add a pen device %d", pen_id_in);
             return;
@@ -64,20 +66,24 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, int button, int action, fl
     SDL_PenInputFlags current = SDL_GetPenStatus(pen, NULL, 0);
     int diff = current ^ button;
     if (diff != 0) {
-        // Android only exposes BUTTON_STYLUS_PRIMARY and BUTTON_STYLUS_SECONDARY
-        if (diff & SDL_PEN_INPUT_BUTTON_1)
-            SDL_SendPenButton(0, pen, window, 1, (button & SDL_PEN_INPUT_BUTTON_1) != 0);
-
-        if (diff & SDL_PEN_INPUT_BUTTON_2)
-            SDL_SendPenButton(0, pen, window, 2, (button & SDL_PEN_INPUT_BUTTON_2) != 0);
+        for (Uint8 i = 1; i <= 5; ++i) {
+            Uint8 mask = (1 << i);
+            if (diff & mask) {
+                SDL_SendPenButton(0, pen, window, i, (button & mask) != 0);
+            }
+        }
     }
 
     // button contains DOWN/ERASER_TIP on DOWN/UP regardless of pressed state, use action to distinguish
     // we don't compare tip flags above because MotionEvent.getButtonState doesn't return stylus tip/eraser state.
     switch (action) {
+    case ACTION_HOVER_ENTER:
+        SDL_SendPenProximity(0, pen, window, true, true);
+        break;
+
     case ACTION_CANCEL:
-    case ACTION_HOVER_EXIT:
-        SDL_RemovePenDevice(0, pen);
+    case ACTION_HOVER_EXIT:  // strictly speaking, this can mean both "proximity out" and "left the View" but close enough.
+        SDL_SendPenProximity(0, pen, window, false, false);
         break;
 
     case ACTION_DOWN:

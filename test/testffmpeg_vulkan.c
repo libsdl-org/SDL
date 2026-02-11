@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -938,12 +938,8 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
         if (context->device) {
             context->vkDeviceWaitIdle(context->device);
         }
-        if (context->instanceExtensions) {
-            SDL_free(context->instanceExtensions);
-        }
-        if (context->deviceExtensions) {
-            SDL_free(context->deviceExtensions);
-        }
+        SDL_free(context->instanceExtensions);
+        SDL_free(context->deviceExtensions);
         if (context->waitSemaphores) {
             for (uint32_t i = 0; i < context->waitSemaphoreCount; ++i) {
                 context->vkDestroySemaphore(context->device, context->waitSemaphores[i], NULL);

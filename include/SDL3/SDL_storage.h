@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -568,7 +568,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnumerateStorageDirectory(SDL_Storage *stor
  * Remove a file or an empty directory in a writable storage container.
  *
  * \param storage a storage container.
- * \param path the path of the directory to enumerate.
+ * \param path the path to remove from the filesystem.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *

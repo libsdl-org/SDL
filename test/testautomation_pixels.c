@@ -1077,6 +1077,108 @@ static int SDLCALL pixels_saveLoadBMP(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Call to SDL_SavePNG and SDL_LoadPNG
+ *
+ * \sa SDL_SavePNG
+ * \sa SDL_LoadPNG
+ */
+static int SDLCALL pixels_saveLoadPNG(void *arg)
+{
+    int i;
+    SDL_Surface *surface;
+    bool result;
+
+    for (i = 0; i < g_numAllFormats; i++) {
+        SDL_PixelFormat format = g_AllFormats[i];
+
+        if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+            continue;
+        }
+        if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+            /* We'll test PNG with palette another time */
+            continue;
+        }
+
+        SDLTest_Log("Pixel Format: %s (%d)", g_AllFormatsVerbose[i], format);
+
+        /* Create surface */
+        surface = SDL_CreateSurface(1, 1, format);
+        SDLTest_AssertCheck(surface != NULL, "Verify surface is not NULL");
+
+        /* Fill with white */
+        result = SDL_ClearSurface(surface, 1.0f, 1.0f, 1.0f, 1.0f);
+        SDLTest_AssertCheck(result, "Verify SDL_ClearSurface() succeeded");
+
+        /* Save as PNG */
+        result = SDL_SavePNG(surface, "test.png");
+        SDLTest_AssertCheck(result, "Verify SDL_SavePNG() succeeded");
+        SDL_DestroySurface(surface);
+
+        /* Load PNG */
+        surface = SDL_LoadPNG("test.png");
+        SDLTest_AssertCheck(surface != NULL, "Verify SDL_LoadPNG() succeeded");
+
+        /* Remove PNG */
+        result = SDL_RemovePath("test.png");
+        SDLTest_AssertCheck(result, "Verify SDL_RemovePath() succeeded");
+
+        /* Verify the PNG contents */
+        if (surface) {
+            Uint8 *pixels = (Uint8 *)surface->pixels;
+            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+            SDLTest_AssertCheck(pixels[0] == 255 &&
+                                pixels[1] == 255 &&
+                                pixels[2] == 255 &&
+                                pixels[3] == 255,
+                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            SDL_DestroySurface(surface);
+        }
+    }
+
+    /* Test large formats */
+    for (i = 0; i < SDL_arraysize(g_AllLargeFormats); i++) {
+        SDL_PixelFormat format = g_AllLargeFormats[i];
+
+        SDLTest_Log("Pixel Format: %s (%d)", SDL_GetPixelFormatName(format), format);
+
+        /* Create surface */
+        surface = SDL_CreateSurface(1, 1, format);
+        SDLTest_AssertCheck(surface != NULL, "Verify surface is not NULL");
+
+        /* Fill with white */
+        result = SDL_ClearSurface(surface, 1.0f, 1.0f, 1.0f, 1.0f);
+        SDLTest_AssertCheck(result, "Verify SDL_ClearSurface() succeeded");
+
+        /* Save as PNG */
+        result = SDL_SavePNG(surface, "test.png");
+        SDLTest_AssertCheck(result, "Verify SDL_SavePNG() succeeded");
+        SDL_DestroySurface(surface);
+
+        /* Load PNG */
+        surface = SDL_LoadPNG("test.png");
+        SDLTest_AssertCheck(surface != NULL, "Verify SDL_LoadPNG() succeeded");
+
+        /* Remove PNG */
+        result = SDL_RemovePath("test.png");
+        SDLTest_AssertCheck(result, "Verify SDL_RemovePath() succeeded");
+
+        /* Verify the PNG contents */
+        if (surface) {
+            Uint8 *pixels = (Uint8 *)surface->pixels;
+            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+            SDLTest_AssertCheck(pixels[0] == 255 &&
+                                pixels[1] == 255 &&
+                                pixels[2] == 255 &&
+                                pixels[3] == 255,
+                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            SDL_DestroySurface(surface);
+        }
+    }
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Pixels test cases */
@@ -1096,12 +1198,17 @@ static const SDLTest_TestCaseReference pixelsTestSaveLoadBMP = {
     pixels_saveLoadBMP, "pixels_saveLoadBMP", "Call to SDL_SaveBMP and SDL_LoadBMP", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference pixelsTestSaveLoadPNG = {
+    pixels_saveLoadPNG, "pixels_saveLoadPNG", "Call to SDL_SavePNG and SDL_LoadPNG", TEST_ENABLED
+};
+
 /* Sequence of Pixels test cases */
 static const SDLTest_TestCaseReference *pixelsTests[] = {
     &pixelsTestGetPixelFormatName,
     &pixelsTestGetPixelFormatDetails,
     &pixelsTestAllocFreePalette,
     &pixelsTestSaveLoadBMP,
+    &pixelsTestSaveLoadPNG,
     NULL
 };
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,11 +54,15 @@ static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NUL
 static const IID SDL_IID_IAudioRenderClient = { 0xf294acfc, 0x3146, 0x4483, { 0xa7, 0xbf, 0xad, 0xdc, 0xa7, 0xc2, 0x60, 0xe2 } };
 static const IID SDL_IID_IAudioCaptureClient = { 0xc8adbd64, 0xe71e, 0x48a0, { 0xa4, 0xde, 0x18, 0x5c, 0x39, 0x5c, 0xd3, 0x17 } };
 static const IID SDL_IID_IAudioClient = { 0x1cb9ad4c, 0xdbfa, 0x4c32, { 0xb1, 0x78, 0xc2, 0xf5, 0x68, 0xa7, 0x03, 0xb2 } };
+#ifdef __IAudioClient2_INTERFACE_DEFINED__
+static const IID SDL_IID_IAudioClient2 = { 0x726778cd, 0xf60a, 0x4EDA, { 0x82, 0xde, 0xe4, 0x76, 0x10, 0xcd, 0x78, 0xaa } };
+#endif //
 #ifdef __IAudioClient3_INTERFACE_DEFINED__
 static const IID SDL_IID_IAudioClient3 = { 0x7ed4ee07, 0x8e67, 0x4cd4, { 0x8c, 0x1a, 0x2b, 0x7a, 0x59, 0x87, 0xad, 0x42 } };
 #endif //
 
 static bool immdevice_initialized = false;
+static bool supports_recording_on_playback_devices = false;
 
 // WASAPI is _really_ particular about various things happening on the same thread, for COM and such,
 //  so we proxy various stuff to a single background thread to manage.
@@ -164,21 +168,10 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
     return true; // successfully added (and possibly executed)!
 }
 
-static bool mgmtthrtask_AudioDeviceDisconnected(void *userdata)
-{
-    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
-    SDL_AudioDeviceDisconnected(device);
-    UnrefPhysicalAudioDevice(device);  // make sure this lived until the task completes.
-    return true;
-}
 
 static void AudioDeviceDisconnected(SDL_AudioDevice *device)
 {
-    // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
-    if (device) {
-        RefPhysicalAudioDevice(device);  // make sure this lives until the task completes.
-        WASAPI_ProxyToManagementThread(mgmtthrtask_AudioDeviceDisconnected, device, NULL);
-    }
+    WASAPI_DisconnectDevice(device);
 }
 
 static bool mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
@@ -337,7 +330,7 @@ typedef struct
 static bool mgmtthrtask_DetectDevices(void *userdata)
 {
     mgmtthrtask_DetectDevicesData *data = (mgmtthrtask_DetectDevicesData *)userdata;
-    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording, SDL_AUDIO_F32);
+    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording, SDL_AUDIO_F32, supports_recording_on_playback_devices);
     return true;
 }
 
@@ -351,19 +344,11 @@ static void WASAPI_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDe
     WASAPI_ProxyToManagementThread(mgmtthrtask_DetectDevices, &data, &rc);
 }
 
-static bool mgmtthrtask_DisconnectDevice(void *userdata)
-{
-    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
-    SDL_AudioDeviceDisconnected(device);
-    UnrefPhysicalAudioDevice(device);
-    return true;
-}
-
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device)
 {
-    if (SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1)) {
-        RefPhysicalAudioDevice(device); // will unref when the task ends.
-        WASAPI_ProxyToManagementThread(mgmtthrtask_DisconnectDevice, device, NULL);
+    // don't block in here; IMMDevice's own thread needs to return or everything will deadlock.
+    if (device && (!device->hidden || SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1))) {
+        SDL_AudioDeviceDisconnected(device); // this proxies the work to the main thread now, so no point in proxying to the management thread.
     }
 }
 
@@ -461,6 +446,8 @@ static bool mgmtthrtask_ActivateDevice(void *userdata)
         device->hidden->client = NULL;
         return false; // This is already set by SDL_IMMDevice_Get
     }
+
+    device->hidden->isplayback = !SDL_IMMDevice_GetIsCapture(immdevice);
 
     // this is _not_ async in standard win32, yay!
     HRESULT ret = IMMDevice_Activate(immdevice, &SDL_IID_IAudioClient, CLSCTX_ALL, NULL, (void **)&device->hidden->client);
@@ -605,7 +592,7 @@ static int WASAPI_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     UINT32 frames = 0;
     DWORD flags = 0;
 
-    while (device->hidden->capture) {
+    while (device->hidden->capture && !SDL_GetAtomicInt(&device->hidden->device_disconnecting)) {
         const HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
             return 0;  // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL3.
@@ -741,10 +728,56 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
 
     newspec.freq = waveformat->nSamplesPerSec;
 
+    if (device->recording && device->hidden->isplayback) {
+        streamflags |= AUDCLNT_STREAMFLAGS_LOOPBACK;
+    }
+
     streamflags |= AUDCLNT_STREAMFLAGS_EVENTCALLBACK;
 
     int new_sample_frames = 0;
     bool iaudioclient3_initialized = false;
+
+#ifdef __IAudioClient2_INTERFACE_DEFINED__
+    IAudioClient2 *client2 = NULL;
+    ret = IAudioClient_QueryInterface(client, &SDL_IID_IAudioClient2, (void **)&client2);
+    if (SUCCEEDED(ret)) {
+        AudioClientProperties audioProps;
+
+        SDL_zero(audioProps);
+        audioProps.cbSize = sizeof(audioProps);
+
+// Setting AudioCategory_GameChat breaks audio on several devices, including Behringer U-PHORIA UM2 and RODE NT-USB Mini.
+// We'll disable this for now until we understand more about what's happening.
+#if 0
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
+        if (hint && *hint) {
+            if (SDL_strcasecmp(hint, "Communications") == 0) {
+                audioProps.eCategory = AudioCategory_Communications;
+            } else if (SDL_strcasecmp(hint, "Game") == 0) {
+                // We'll add support for GameEffects as distinct from GameMedia later when we add stream roles
+                audioProps.eCategory = AudioCategory_GameEffects;
+            } else if (SDL_strcasecmp(hint, "GameChat") == 0) {
+                audioProps.eCategory = AudioCategory_GameChat;
+            } else if (SDL_strcasecmp(hint, "Movie") == 0) {
+                audioProps.eCategory = AudioCategory_Movie;
+            } else if (SDL_strcasecmp(hint, "Media") == 0) {
+                audioProps.eCategory = AudioCategory_Media;
+            }
+        }
+#endif
+
+        if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
+            audioProps.Options = AUDCLNT_STREAMOPTIONS_RAW;
+        }
+
+        ret = IAudioClient2_SetClientProperties(client2, &audioProps);
+        if (FAILED(ret)) {
+            // This isn't fatal, let's log it instead of failing
+            SDL_LogWarn(SDL_LOG_CATEGORY_AUDIO, "IAudioClient2_SetClientProperties failed: 0x%lx", ret);
+        }
+        IAudioClient2_Release(client2);
+    }
+#endif
 
 #ifdef __IAudioClient3_INTERFACE_DEFINED__
     // Try querying IAudioClient3 if sharemode is AUDCLNT_SHAREMODE_SHARED
@@ -952,6 +985,7 @@ static bool WASAPI_Init(SDL_AudioDriverImpl *impl)
     impl->FreeDeviceHandle = WASAPI_FreeDeviceHandle;
 
     impl->HasRecordingSupport = true;
+    supports_recording_on_playback_devices = SDL_GetHintBoolean(SDL_HINT_AUDIO_INCLUDE_MONITORS, false);
 
     return true;
 }

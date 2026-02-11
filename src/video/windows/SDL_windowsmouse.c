@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,47 @@
 #include "../../joystick/usb_ids.h"
 #include "../../core/windows/SDL_windows.h" // for checking windows version
 
+#define RIFF_FOURCC(c0, c1, c2, c3)                 \
+    ((DWORD)(BYTE)(c0) | ((DWORD)(BYTE)(c1) << 8) | \
+     ((DWORD)(BYTE)(c2) << 16) | ((DWORD)(BYTE)(c3) << 24))
+
+#define ANI_FLAG_ICON 0x1
+
+#pragma pack(push, 1)
+
+typedef struct
+{
+    BYTE bWidth;
+    BYTE bHeight;
+    BYTE bColorCount;
+    BYTE bReserved;
+    WORD xHotspot;
+    WORD yHotspot;
+    DWORD dwImageSize;
+    DWORD dwImageOffset;
+} CURSORICONFILEDIRENTRY;
+
+typedef struct
+{
+    WORD idReserved;
+    WORD idType;
+    WORD idCount;
+} CURSORICONFILEDIR;
+
+typedef struct
+{
+    DWORD cbSizeof; // sizeof(ANIHEADER) = 36 bytes.
+    DWORD frames;   // Number of frames in the frame list.
+    DWORD steps;    // Number of steps in the animation loop.
+    DWORD width;    // Width
+    DWORD height;   // Height
+    DWORD bpp;      // bpp
+    DWORD planes;   // Not used
+    DWORD jifRate;  // Default display rate, in jiffies (1/60s)
+    DWORD fl;       // AF_ICON should be set. AF_SEQUENCE is optional
+} ANIHEADER;
+
+#pragma pack(pop)
 
 typedef struct CachedCursor
 {
@@ -41,11 +82,13 @@ typedef struct CachedCursor
 
 struct SDL_CursorData
 {
-    SDL_Surface *surface;
+    HCURSOR cursor;
+
+    CachedCursor *cache;
     int hot_x;
     int hot_y;
-    CachedCursor *cache;
-    HCURSOR cursor;
+    int num_frames;
+    SDL_CursorFrameInfo frames[1];
 };
 
 typedef struct
@@ -87,180 +130,325 @@ static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
     return cursor;
 }
 
-
-static bool IsMonochromeSurface(SDL_Surface *surface)
+static SDL_Cursor *WIN_CreateAnimatedCursorAndData(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
-    int x, y;
-    Uint8 r, g, b, a;
-
-    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
-
-    for (y = 0; y < surface->h; y++) {
-        for (x = 0; x < surface->w; x++) {
-            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
-
-            // Black or white pixel.
-            if (!((r == 0x00 && g == 0x00 && b == 0x00) || (r == 0xff && g == 0xff && b == 0xff))) {
-                return false;
-            }
-
-            // Transparent or opaque pixel.
-            if (!(a == 0x00 || a == 0xff)) {
-                return false;
-            }
-        }
+    // Dynamically generate cursors at the appropriate DPI
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+    if (!cursor) {
+        return NULL;
     }
 
+    SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data) + (sizeof(SDL_CursorFrameInfo) * (frame_count - 1)));
+    if (!data) {
+        SDL_free(cursor);
+        return NULL;
+    }
+
+    data->hot_x = hot_x;
+    data->hot_y = hot_y;
+    data->num_frames = frame_count;
+    for (int i = 0; i < frame_count; ++i) {
+        data->frames[i].surface = frames[i].surface;
+        data->frames[i].duration = frames[i].duration;
+        ++frames[i].surface->refcount;
+    }
+    cursor->internal = data;
+    return cursor;
+}
+
+static bool SaveChunkSize(SDL_IOStream* dst, Sint64 offset)
+{
+    Sint64 here = SDL_TellIO(dst);
+    if (here < 0) {
+        return false;
+    }
+    if (SDL_SeekIO(dst, offset, SDL_IO_SEEK_SET) < 0) {
+        return false;
+    }
+
+    DWORD size = (DWORD)(here - (offset + sizeof(DWORD)));
+    if (!SDL_WriteU32LE(dst, size)) {
+        return false;
+    }
+    return SDL_SeekIO(dst, here, SDL_IO_SEEK_SET);
+}
+
+static bool FillIconEntry(CURSORICONFILEDIRENTRY *entry, SDL_Surface *surface, int hot_x, int hot_y, DWORD dwImageSize, DWORD dwImageOffset)
+{
+    if (surface->props) {
+        hot_x = (int)SDL_GetNumberProperty(surface->props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, hot_x);
+        hot_y = (int)SDL_GetNumberProperty(surface->props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
+    }
+    hot_x = SDL_clamp(hot_x, 0, surface->w - 1);
+    hot_y = SDL_clamp(hot_y, 0, surface->h - 1);
+
+    SDL_zerop(entry);
+    entry->bWidth = surface->w < 256 ? surface->w : 0;  // 0 means a width of 256
+    entry->bHeight = surface->h < 256 ? surface->h : 0; // 0 means a height of 256
+    entry->xHotspot = hot_x;
+    entry->yHotspot = hot_y;
+    entry->dwImageSize = dwImageSize;
+    entry->dwImageOffset = dwImageOffset;
     return true;
 }
 
-static HBITMAP CreateColorBitmap(SDL_Surface *surface)
+#ifdef SAVE_ICON_PNG
+
+static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 {
-    HBITMAP bitmap;
-    BITMAPINFO bi;
-    void *pixels;
-
-    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
-
-    SDL_zero(bi);
-    bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bi.bmiHeader.biWidth = surface->w;
-    bi.bmiHeader.biHeight = -surface->h; // Invert height to make the top-down DIB.
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB;
-
-    bitmap = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, &pixels, NULL, 0);
-    if (!bitmap || !pixels) {
-        WIN_SetError("CreateDIBSection()");
-        if (bitmap) {
-            DeleteObject(bitmap);
-        }
-        return NULL;
+    if (!SDL_SavePNG_IO(surface, dst, false)) {
+        return false;
     }
 
-    SDL_memcpy(pixels, surface->pixels, surface->pitch * surface->h);
-
-    return bitmap;
+    // Image data offsets must be WORD aligned
+    Sint64 offset = SDL_TellIO(dst);
+    if (offset & 1) {
+        if (!SDL_WriteU8(dst, 0)) {
+            return false;
+        }
+    }
+    return true;
 }
 
-/* Generate bitmap with a mask and optional monochrome image data.
- *
- * For info on the expected mask format see:
+#else
+
+/* For info on the expected mask format see:
  * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
  */
-static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
+static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
 {
-    HBITMAP bitmap;
-    bool isstack;
-    void *pixels;
-    int x, y;
-    Uint8 r, g, b, a;
     Uint8 *dst;
     const int pitch = ((surface->w + 15) & ~15) / 8;
-    const int size = pitch * surface->h;
+    const size_t size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
-    SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
-
-    pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
-    if (!pixels) {
-        SDL_OutOfMemory();
+    void *mask = SDL_malloc(size);
+    if (!mask) {
         return NULL;
     }
 
-    dst = (Uint8 *)pixels;
+    dst = (Uint8 *)mask;
 
     // Make the mask completely transparent.
     SDL_memset(dst, 0xff, size);
-    if (is_monochrome) {
-        SDL_memset(dst + size, 0x00, size);
-    }
-
-    for (y = 0; y < surface->h; y++, dst += pitch) {
-        for (x = 0; x < surface->w; x++) {
+    for (int y = surface->h - 1; y >= 0; --y, dst += pitch) {
+        for (int x = 0; x < surface->w; ++x) {
+            Uint8 r, g, b, a;
             SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
 
             if (a != 0) {
                 // Reset bit of an opaque pixel.
                 dst[x >> 3] &= ~masks[x & 7];
             }
-
-            if (is_monochrome && !(r == 0x00 && g == 0x00 && b == 0x00)) {
-                // Set bit of white or inverted pixel.
-                dst[size + (x >> 3)] |= masks[x & 7];
-            }
         }
     }
+    *mask_size = size;
+    return mask;
+}
 
-    bitmap = CreateBitmap(surface->w, surface->h * (is_monochrome ? 2 : 1), 1, 1, pixels);
-    SDL_small_free(pixels, isstack);
-    if (!bitmap) {
-        WIN_SetError("CreateBitmap()");
+static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
+{
+    SDL_Surface *temp = NULL;
+
+    if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
+        temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+        if (!temp) {
+            return false;
+        }
+        surface = temp;
+    }
+
+    // Cursor data is double height (DIB and mask), stored bottom-up
+    bool ok = true;
+    size_t mask_size = 0;
+    void *mask = CreateIconMask(surface, &mask_size);
+    if (!mask) {
+        ok = false;
+        goto done;
+    }
+
+    BITMAPINFOHEADER bmih;
+    SDL_zero(bmih);
+    DWORD row_size = surface->w * 4;
+    bmih.biSize = sizeof(BITMAPINFOHEADER);
+    bmih.biWidth = surface->w;
+    bmih.biHeight = surface->h * 2;
+    bmih.biPlanes = 1;
+    bmih.biBitCount = 32;
+    bmih.biCompression = BI_RGB;
+    bmih.biSizeImage = (DWORD)(surface->h * row_size + mask_size);
+    ok &= (SDL_WriteIO(dst, &bmih, sizeof(bmih)) == sizeof(bmih));
+
+    const Uint8 *pix = surface->pixels;
+    pix += (surface->h - 1) * surface->pitch;
+    for (int i = 0; i < surface->h; ++i) {
+        ok &= (SDL_WriteIO(dst, pix, row_size) == row_size);
+        pix -= surface->pitch;
+    }
+    ok &= (SDL_WriteIO(dst, mask, mask_size) == mask_size);
+
+done:
+    SDL_free(mask);
+    SDL_DestroySurface(temp);
+    return ok;
+}
+
+#endif // SAVE_ICON_PNG
+
+static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, int hot_y, float scale)
+{
+#ifdef SAVE_MULTIPLE_ICONS
+    int count = 0;
+    SDL_Surface **surfaces = SDL_GetSurfaceImages(surface, &count);
+    if (!surfaces) {
+        return false;
+    }
+#else
+    surface = SDL_GetSurfaceImage(surface, scale);
+    if (!surface) {
+        return false;
+    }
+
+    int count = 1;
+    SDL_Surface **surfaces = &surface;
+#endif
+
+    // Raymond Chen has more insight into this format at:
+    // https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
+    bool ok = true;
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('i', 'c', 'o', 'n'));
+    Sint64 icon_size_offset = SDL_TellIO(dst);
+    ok &= SDL_WriteU32LE(dst, 0);
+    Sint64 base_offset = icon_size_offset + sizeof(DWORD);
+
+    CURSORICONFILEDIR dir;
+    dir.idReserved = 0;
+    dir.idType = 2; // Cursor
+    dir.idCount = count;
+    ok &= (SDL_WriteIO(dst, &dir, sizeof(dir)) == sizeof(dir));
+
+    DWORD entries_size = count * sizeof(CURSORICONFILEDIRENTRY);
+    CURSORICONFILEDIRENTRY *entries = (CURSORICONFILEDIRENTRY *)SDL_malloc(entries_size);
+    if (!entries) {
+        ok = false;
+        goto done;
+    }
+    ok &= (SDL_WriteIO(dst, entries, entries_size) == entries_size);
+
+    Sint64 image_offset = SDL_TellIO(dst);
+    for (int i = 0; i < count; ++i) {
+        ok &= WriteIconSurface(dst, surfaces[i]);
+
+        Sint64 next_offset = SDL_TellIO(dst);
+        DWORD dwImageSize = (DWORD)(next_offset - image_offset);
+        DWORD dwImageOffset = (DWORD)(image_offset - base_offset);
+
+        ok &= FillIconEntry(&entries[i], surfaces[i], hot_x, hot_y, dwImageSize, dwImageOffset);
+
+        image_offset = next_offset;
+    }
+
+    // Now that we have the icon entries filled out, rewrite them
+    ok &= (SDL_SeekIO(dst, base_offset + sizeof(dir), SDL_IO_SEEK_SET) >= 0);
+    ok &= (SDL_WriteIO(dst, entries, entries_size) == entries_size);
+    ok &= (SDL_SeekIO(dst, image_offset, SDL_IO_SEEK_SET) >= 0);
+    SDL_free(entries);
+
+    ok &= SaveChunkSize(dst, icon_size_offset);
+
+done:
+#ifdef SAVE_MULTIPLE_ICONS
+    SDL_free(surfaces);
+#else
+    SDL_DestroySurface(surface);
+#endif
+    return ok;
+}
+
+/* Windows doesn't have an API to easily create animated cursors from a sequence of images,
+ * so we have to build an animated cursor resource file in memory and load it.
+ */
+static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y, float scale)
+{
+    HCURSOR hcursor = NULL;
+    SDL_IOStream *dst = SDL_IOFromDynamicMem();
+    if (!dst) {
         return NULL;
     }
 
-    return bitmap;
-}
+    int w = (int)SDL_roundf(frames[0].surface->w * scale);
+    int h = (int)SDL_roundf(frames[0].surface->h * scale);
 
-static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
-{
-    HCURSOR hcursor = NULL;
-    bool is_monochrome = IsMonochromeSurface(surface);
-    ICONINFO ii = { 
-        .fIcon = FALSE, 
-        .xHotspot = (DWORD)hot_x, 
-        .yHotspot = (DWORD)hot_y,
-        .hbmMask = CreateMaskBitmap(surface, is_monochrome),
-        .hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface) 
-    };
+    bool ok = true;
+    // RIFF header
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('R', 'I', 'F', 'F'));
+    Sint64 riff_size_offset = SDL_TellIO(dst);
+    ok &= SDL_WriteU32LE(dst, 0);
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('A', 'C', 'O', 'N'));
 
-    if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
-        SDL_SetError("Couldn't create cursor bitmaps");
-        goto cleanup;
+    // anih header chunk
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('a', 'n', 'i', 'h'));
+    ok &= SDL_WriteU32LE(dst, sizeof(ANIHEADER));
+
+    ANIHEADER anih;
+    SDL_zero(anih);
+    anih.cbSizeof = sizeof(anih);
+    anih.frames = frame_count;
+    anih.steps = frame_count;
+    anih.jifRate = 1;
+    anih.fl = ANI_FLAG_ICON;
+    ok &= (SDL_WriteIO(dst, &anih, sizeof(anih)) == sizeof(anih));
+
+    // Rate chunk
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('r', 'a', 't', 'e'));
+    ok &= SDL_WriteU32LE(dst, sizeof(DWORD) * frame_count);
+    for (int i = 0; i < frame_count; ++i) {
+        // Animated Win32 cursors are in jiffy units, and one jiffy is 1/60 of a second.
+        const double WIN32_JIFFY = 1000.0 / 60.0;
+        DWORD duration = (frames[i].duration ? SDL_lround(frames[i].duration / WIN32_JIFFY) : 0xFFFFFFFF);
+        ok &= SDL_WriteU32LE(dst, duration);
     }
 
-    hcursor = CreateIconIndirect(&ii);
+    // Frame list
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('L', 'I', 'S', 'T'));
+    Sint64 frame_list_size_offset = SDL_TellIO(dst);
+    ok &= SDL_WriteU32LE(dst, 0);
+    ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('f', 'r', 'a', 'm'));
+
+    for (int i = 0; i < frame_count; ++i) {
+        ok &= WriteIconFrame(dst, frames[i].surface, hot_x, hot_y, scale);
+    }
+    ok &= SaveChunkSize(dst, frame_list_size_offset);
+
+    // All done!
+    ok &= SaveChunkSize(dst, riff_size_offset);
+    if (!ok) {
+        // The error has been set above
+        goto done;
+    }
+
+    BYTE *mem = (BYTE *)SDL_GetPointerProperty(SDL_GetIOProperties(dst), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
+    DWORD size = (DWORD)SDL_GetIOSize(dst);
+    hcursor = (HCURSOR)CreateIconFromResourceEx(mem, size, FALSE, 0x00030000, w, h, 0);
     if (!hcursor) {
-        WIN_SetError("CreateIconIndirect failed");
+        SDL_SetError("CreateIconFromResource failed");
     }
 
-cleanup:
-    if (ii.hbmMask) {
-        DeleteObject(ii.hbmMask);
-    }
-    if (ii.hbmColor) {
-        DeleteObject(ii.hbmColor);
-    }
+done:
+    SDL_CloseIO(dst);
 
     return hcursor;
 }
 
 static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    if (!SDL_SurfaceHasAlternateImages(surface)) {
-        HCURSOR hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
-        if (!hcursor) {
-            return NULL;
-        }
-        return WIN_CreateCursorAndData(hcursor);
-    }
+    SDL_CursorFrameInfo frame = { surface, 0 };
+    return WIN_CreateAnimatedCursorAndData(&frame, 1, hot_x, hot_y);
+}
 
-    // Dynamically generate cursors at the appropriate DPI
-    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
-        if (!data) {
-            SDL_free(cursor);
-            return NULL;
-        }
-        data->hot_x = hot_x;
-        data->hot_y = hot_y;
-        data->surface = surface;
-        ++surface->refcount;
-        cursor->internal = data;
-    }
-    return cursor;
+static SDL_Cursor *WIN_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
+{
+    return WIN_CreateAnimatedCursorAndData(frames, frame_count, hot_x, hot_y);
 }
 
 static SDL_Cursor *WIN_CreateBlankCursor(void)
@@ -356,8 +544,8 @@ static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
-    if (data->surface) {
-        SDL_DestroySurface(data->surface);
+    for (int i = 0; i < data->num_frames; ++i) {
+        SDL_DestroySurface(data->frames[i].surface);
     }
     while (data->cache) {
         CachedCursor *entry = data->cache;
@@ -378,12 +566,13 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
-    SDL_Window *focus = SDL_GetMouseFocus();
-    if (!focus) {
-        return NULL;
+    float scale = 1.0f;
+    if (SDL_GetHintBoolean(SDL_HINT_MOUSE_DPI_SCALE_CURSORS, false)) {
+        scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
+        if (scale == 0.0f) {
+            scale = 1.0f;
+        }
     }
-
-    float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(focus));
     for (CachedCursor *entry = data->cache; entry; entry = entry->next) {
         if (scale == entry->scale) {
             return entry->cursor;
@@ -391,44 +580,22 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
     }
 
     // Need to create a cursor for this content scale
-    SDL_Surface *surface = NULL;
-    HCURSOR hcursor = NULL;
-    CachedCursor *entry = NULL;
-
-    surface = SDL_GetSurfaceImage(data->surface, scale);
-    if (!surface) {
-        goto error;
-    }
-
-    int hot_x = (int)SDL_round(data->hot_x * scale);
-    int hot_y = (int)SDL_round(data->hot_y * scale);
-    hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
+    HCURSOR hcursor = WIN_CreateAnimatedCursorInternal(data->frames, data->num_frames, data->hot_x, data->hot_y, scale);
     if (!hcursor) {
-        goto error;
+        return NULL;
     }
 
-    entry = (CachedCursor *)SDL_malloc(sizeof(*entry));
+    CachedCursor *entry = (CachedCursor *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
-        goto error;
+        DestroyCursor(hcursor);
+        return NULL;
     }
     entry->cursor = hcursor;
     entry->scale = scale;
     entry->next = data->cache;
     data->cache = entry;
 
-    SDL_DestroySurface(surface);
-
     return hcursor;
-
-error:
-    if (surface) {
-        SDL_DestroySurface(surface);
-    }
-    if (hcursor) {
-        DestroyCursor(hcursor);
-    }
-    SDL_free(entry);
-    return NULL;
 }
 
 static bool WIN_ShowCursor(SDL_Cursor *cursor)
@@ -440,10 +607,11 @@ static bool WIN_ShowCursor(SDL_Cursor *cursor)
         }
     }
     if (cursor) {
-        if (cursor->internal->surface) {
+        SDL_CursorData *data = cursor->internal;
+        if (data->num_frames > 0) {
             SDL_cursor = GetCachedCursor(cursor);
         } else {
-            SDL_cursor = cursor->internal->cursor;
+            SDL_cursor = data->cursor;
         }
     } else {
         SDL_cursor = NULL;
@@ -644,6 +812,7 @@ void WIN_InitMouse(SDL_VideoDevice *_this)
     SDL_Mouse *mouse = SDL_GetMouse();
 
     mouse->CreateCursor = WIN_CreateCursor;
+    mouse->CreateAnimatedCursor = WIN_CreateAnimatedCursor;
     mouse->CreateSystemCursor = WIN_CreateSystemCursor;
     mouse->ShowCursor = WIN_ShowCursor;
     mouse->FreeCursor = WIN_FreeCursor;

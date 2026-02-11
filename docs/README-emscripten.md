@@ -101,7 +101,7 @@ don't want any shutdown code that might be sitting below this code
 to actually run if main() were to continue on, since we're just
 getting started.
 
-Another option is to use SDL' main callbacks, which handle this for you
+Another option is to use SDL's main callbacks, which handle this for you
 without platform-specific code in your app. Please refer to
 [the wiki](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
 or `docs/README-main-functions.md` in the SDL source code.
@@ -169,30 +169,32 @@ for several reasons, not the least of which being that no one likes when a
 random browser tab suddenly starts making noise and the user has to scramble
 to figure out which and silence it.
 
-SDL will allow you to open the audio device for playback in this
-circumstance, and your audio callback will fire, but SDL will throw the audio
-data away until the user interacts with the page. This helps apps that depend
-on the audio callback to make progress, and also keeps audio playback in sync
+SDL will allow you to open the audio device for playback in this circumstance,
+and your audio streams will consume data, but SDL will throw the audio data
+away until the user interacts with the page. This helps apps that depend on
+the audio callback to make progress, and also keeps audio playback in sync
 once the app is finally allowed to make noise.
 
 There are two reasonable ways to deal with the silence at the app level:
 if you are writing some sort of media player thing, where the user expects
 there to be a volume control when you mouseover the canvas, just default
 that control to a muted state; if the user clicks on the control to unmute
-it, on this first click, open the audio device. This allows the media to
+it, on this first click, adjust your app's volume appropriately, and SDL will
+also start actually feeding the data to the browser. This allows the media to
 play at start, and the user can reasonably opt-in to listening.
 
-Many games do not have this sort of UI, and are more rigid about starting
-audio along with everything else at the start of the process. For these, your
-best bet is to write a little Javascript that puts up a "Click here to play!"
-UI, and upon the user clicking, remove that UI and then call the Emscripten
-app's main() function. As far as the application knows, the audio device was
-available to be opened as soon as the program started, and since this magic
-happens in a little Javascript, you don't have to change your C/C++ code at
-all to make it happen.
+Many games do not have this sort of UI. For these, your best bet might be to
+write a little Javascript that puts up a "Click here to play!" UI, and upon
+the user clicking, remove that UI and then call the Emscripten app's main()
+function. As far as the application knows, audio was able to play as soon as
+the program started, and since this magic happens in a little Javascript, you
+don't have to change your C/C++ code at all to make it happen.
 
 Please see the discussion at https://github.com/libsdl-org/SDL/issues/6385
 for some Javascript code to steal for this approach.
+
+But if a game can just do without audio until the user clicks on the page,
+it will still operate correctly, as if the page was merely muted before then.
 
 
 ## Rendering
@@ -208,12 +210,35 @@ Calling SDL_RenderPresent (or SDL_GL_SwapWindow) will not actually
 present anything on the screen until your return from your mainloop
 function.
 
+Note that SDL attempts to default to vsync _off_ on all platforms. You almost
+certainly do _not_ want this in Emscripten, however, as it will affect the
+efficiency of the mainloop. If using OpenGL directly, you should call
+SDL_GL_SetSwapInterval(1) sometime near startup; if using the 2D render API,
+either create the renderer with with the property
+SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER set to 1, or call
+SDL_SetRenderVSync(renderer, 1). If you don't explicitly set vsync, you'll get
+a higher (but perhaps unstable) framerate, and use more power, but it will
+still work. Choosing a vsync of 1 will use requestAnimationFrame if possible.
+
+If you're using the SDL main callbacks, the mainloop defaults to using
+requestAnimationFrame (effectively vsync), because it calls
+emscripten_set_main_loop() with a zero fps. This is almost certainly what you
+want to do! Do this even if you aren't using the main callbacks!
+SDL will attempt to accommodate the app if it messes with vsync settings, or
+doesn't use requestAnimationFrame, but modern thinking is that this is the
+most efficient, consistent, and correct way to run a game in a web browser.
+
 
 ## Building SDL/emscripten
 
+Use the latest stable Emscripten release!
 
-SDL currently requires at least Emscripten 3.16.0 to build. Newer versions
-are likely to work, as well.
+It's possible to build SDL with older Emscripten releases, such as 3.x, but
+several things will be silently broken, as bugs got fixed and web standards
+solidified over time. At the time of this writing, Emscripten 4.0.x is the
+current stable release. You're encouraged to install the latest stable release
+(`emsdk install latest ; emsdk activate latest` if using Emscripten's setup
+script), and make sure you're reasonably up to date as time goes on.
 
 
 Build:
@@ -322,6 +347,22 @@ all has to live in memory at runtime.
 gives other options and details, and is worth a read.
 
 
+## Customizing index.html
+
+You don't have to use the HTML that Emscripten produces; the above examples
+use `emcc -o index.html`, but you can `-o index.js` instead to just output
+code without an HTML page, and then provide your own. This is desirable for
+shipping products, even though the Emscripten-provided HTML is fine for
+prototyping. Certain things _must_ be in the HTML file or your program will
+not function correctly (or function at all). The specifics are beyond the
+scope of this document, but it's likely best to start with the Emscripten HTML
+and customize it, instead of starting from scratch.
+
+The `<canvas>` element in the HTML _must not_ have a border or padding, or
+things will break in unexpected ways. This can be surprising when customizing
+the page's look. Plan accordingly.
+
+
 ## Debugging
 
 Debugging web apps is a mixed bag. You should compile and link with
@@ -336,9 +377,9 @@ If you try debugging in Firefox and it doesn't work well for no apparent
 reason, try Chrome, and vice-versa. These tools are still relatively new,
 and improving all the time.
 
-SDL_Log() (or even plain old printf) will write to the Javascript console,
-and honestly I find printf-style debugging to be easier than setting up a build
-for proper debugging, so use whatever tools work best for you.
+SDL_Log() (or printf) will write to the Javascript console,
+so printf-style debugging can be easier than setting up a build
+for proper debugging. Use whatever tools work best for you.
 
 
 ## Questions?

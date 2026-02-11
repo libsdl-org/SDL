@@ -265,7 +265,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
             SDL_RenderLine(renderer, hor_origin-10, ver_origin, hor_origin+10, ver_origin);
         }
     }
-    SDL_SetRenderClipRect(renderer, 0);
+    SDL_SetRenderClipRect(renderer, NULL);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDebugText(renderer, 0, 0, debug_string);
     SDL_RenderPresent(renderer);
@@ -347,7 +347,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return SDL_APP_FAILURE;
     }
-    if (!SDL_CreateWindowAndRenderer("examples/demo/woodeneye-008", 640, 480, 0, &as->window, &as->renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/demo/woodeneye-008", 640, 480, SDL_WINDOW_RESIZABLE, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
 
@@ -371,7 +371,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
         case SDL_EVENT_QUIT:
             return SDL_APP_SUCCESS;
-            break;
         case SDL_EVENT_MOUSE_REMOVED:
             for (i = 0; i < player_count; i++) {
                 if (players[i].mouse == event->mdevice.which) {

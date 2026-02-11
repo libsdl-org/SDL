@@ -175,9 +175,6 @@
     <Filter Include="render\direct3d12">
       <UniqueIdentifier>{f48c2b17-1bee-4fec-a7c8-24cf619abe08}</UniqueIdentifier>
     </Filter>
-    <Filter Include="video\intrin">
-      <UniqueIdentifier>{653672cc-90ae-4eba-a256-6479f2c31804}</UniqueIdentifier>
-    </Filter>
     <Filter Include="main">
       <UniqueIdentifier>{00001967ea2801028a046a722a070000}</UniqueIdentifier>
     </Filter>
@@ -220,21 +217,60 @@
     <Filter Include="io\windows">
       <UniqueIdentifier>{000028b2ea36d7190d13777a4dc70000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dialog\windows">
+      <UniqueIdentifier>{17a7dcfc-7c98-44a1-aea1-51bd6b3a256f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gpu\d3d12">
+      <UniqueIdentifier>{f494708a-3811-487d-8cf2-966fda54e0d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gpu\vulkan">
+      <UniqueIdentifier>{bec7962a-b390-479e-ae8b-1f8e0bb3359d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="joystick\hidapi\steam">
+      <UniqueIdentifier>{bbc0c9f4-712a-44d7-b6f4-dcc8439b4dff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="process">
+      <UniqueIdentifier>{9e1aeafc-6ecd-4573-8831-eb3469068ae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="process\windows">
+      <UniqueIdentifier>{fd90fd0f-e4d3-4d38-abc3-923dc7e87e9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\gpu">
+      <UniqueIdentifier>{a84f88af-9adc-4943-93f4-b67c13c77946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="storage">
+      <UniqueIdentifier>{171e10b7-6d72-41f0-b3f5-bb11bc5c936b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="storage\generic">
+      <UniqueIdentifier>{d37b0ad0-4dc4-400c-ad3c-d836f6e480e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="storage\steam">
+      <UniqueIdentifier>{ad368a0f-cba2-4628-879b-0fb5f40d483c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tray">
+      <UniqueIdentifier>{5f006bd4-662d-4648-88a5-58956c59ae41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tray\windows">
+      <UniqueIdentifier>{2cc701c5-d15a-442d-865d-caa6ded137a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="video\khronos\vk_video">
+      <UniqueIdentifier>{4da0dcf8-fff9-4673-ba57-7421436a8bff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hidapi\windows">
+      <UniqueIdentifier>{25581d35-16ca-483a-bff0-483b5428ff8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\gpu\shaders">
+      <UniqueIdentifier>{107d41e6-7c7e-4d9a-a3b3-b6f4abfde0c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_camera.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_assert.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_atomic.h">
@@ -243,19 +279,34 @@
     <ClInclude Include="..\..\include\SDL3\SDL_audio.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_bits.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_blendmode.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_camera.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_clipboard.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_copying.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_cpuinfo.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_dialog.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_dlopennote.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_egl.h">
@@ -276,19 +327,28 @@
     <ClInclude Include="..\..\include\SDL3\SDL_gamepad.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_gpu.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_hints.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h">
+    <ClInclude Include="..\..\include\SDL3\SDL_hints.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_init.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_intrin.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h">
@@ -312,13 +372,25 @@
     <ClInclude Include="..\..\include\SDL3\SDL_main.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_main_impl.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_messagebox.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_metal.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_misc.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_mouse.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_mutex.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_oldnames.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_opengl.h">
@@ -375,9 +447,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_revision.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -393,36 +462,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_system.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_assert.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_common.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_compare.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_crc32.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_font.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_fuzzer.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_harness.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_log.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -430,6 +469,9 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_touch.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_tray.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_version.h">
@@ -466,9 +508,6 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_misc.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h">
@@ -564,9 +603,6 @@
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h">
       <Filter>haptic</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\haptic\SDL_hidapihaptic.h">
-      <Filter>haptic</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
@@ -633,6 +669,9 @@
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h">
       <Filter>joystick\hidapi</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_report_descriptor.h">
+      <Filter>joystick\hidapi</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>joystick\windows</Filter>
     </ClInclude>
@@ -649,6 +688,9 @@
       <Filter>joystick\virtual</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_rotate.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_surface_c.h">
@@ -684,10 +726,13 @@
     <ClInclude Include="..\..\src\video\SDL_stb_c.h">
       <Filter>video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
+    <ClInclude Include="..\..\src\video\SDL_video_unsupported.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\dummy\SDL_nullevents_c.h">
@@ -707,9 +752,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h">
       <Filter>video\yuv2rgb</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\video\windows\SDL_surface_utils.h">
-      <Filter>video\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\windows\SDL_windowsclipboard.h">
       <Filter>video\windows</Filter>
@@ -840,9 +882,6 @@
     <ClInclude Include="..\..\src\render\software\SDL_render_sw_c.h">
       <Filter>render\software</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\render\software\SDL_rotate.h">
-      <Filter>render\software</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h">
       <Filter>render\software</Filter>
     </ClInclude>
@@ -859,9 +898,6 @@
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h">
-      <Filter>video\khronos\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\video\khronos\vulkan\vk_sdk_platform.h">
       <Filter>video\khronos\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan.h">
@@ -917,15 +953,7 @@
     <ClInclude Include="..\..\src\render\direct3d12\SDL_shaders_d3d12.h">
       <Filter>render\direct3d12</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
     <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
-    <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
-    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
     <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h">
       <Filter>render\vulkan</Filter>
     </ClInclude>
@@ -956,10 +984,355 @@
     <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
       <Filter>gpu</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h">
+      <Filter>gpu</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
-    <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
-    <ClInclude Include="..\..\src\events\SDL_eventwatch_c.h" />
+    <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_time.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\audio\SDL_audio_channel_converters.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\dialog\SDL_dialog.h">
+      <Filter>dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\dialog\SDL_dialog_utils.h">
+      <Filter>dialog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\imKStoUCS.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\scancodes_darwin.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\scancodes_linux.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\scancodes_xfree86.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_categories_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_eventwatch_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_keysym_to_keycode_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_keysym_to_scancode_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_pen_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_scancode_tables_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\filesystem\SDL_filesystem_c.h">
+      <Filter>filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\d3d12\D3D12_Blit.h">
+      <Filter>gpu\d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan_vkfuncs.h">
+      <Filter>gpu\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\SDL_hidapihaptic.h">
+      <Filter>haptic\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_windows.h">
+      <Filter>hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\io\SDL_iostream_c.h">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.h">
+      <Filter>joystick\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_nintendo.h">
+      <Filter>joystick\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_sinput.h">
+      <Filter>joystick\hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\steam\controller_constants.h">
+      <Filter>joystick\hidapi\steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\hidapi\steam\controller_structs.h">
+      <Filter>joystick\hidapi\steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\controller_list.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\misc\SDL_libusb.h">
+      <Filter>misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\process\SDL_sysprocess.h">
+      <Filter>process</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d\D3D9_PixelShader_Palette.h">
+      <Filter>render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d\D3D9_PixelShader_Palette_Linear.h">
+      <Filter>render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d\D3D9_PixelShader_Palette_Nearest.h">
+      <Filter>render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d\D3D9_PixelShader_YUV.h">
+      <Filter>render\direct3d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\D3D11_PixelShader_Advanced.h">
+      <Filter>render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\D3D11_PixelShader_Colors.h">
+      <Filter>render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\D3D11_PixelShader_Textures.h">
+      <Filter>render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\D3D11_VertexShader.h">
+      <Filter>render\direct3d11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_PixelShader_Advanced.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_PixelShader_Colors.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_PixelShader_Textures.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_RootSig_Texture.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_RootSig_Advanced.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_RootSig_Color.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_VertexShader_Texture.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_VertexShader_Advanced.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d12\D3D12_VertexShader_Color.h">
+      <Filter>render\direct3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\SDL_gpu_util.h">
+      <Filter>render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\SDL_pipeline_gpu.h">
+      <Filter>render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\SDL_shaders_gpu.h">
+      <Filter>render\gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Colors.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_VertexShader.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\SDL_render_debug_font.h">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\stdlib\SDL_casefolding.h">
+      <Filter>stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\stdlib\SDL_getenv_c.h">
+      <Filter>stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\stdlib\SDL_vacopy.h">
+      <Filter>stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\stdlib\SDL_sysstdlib.h">
+      <Filter>stdlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\storage\SDL_sysstorage.h">
+      <Filter>storage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\storage\steam\SDL_steamstorage_proc.h">
+      <Filter>storage\steam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\thread\generic\SDL_sysrwlock_c.h">
+      <Filter>thread\generic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\time\SDL_time_c.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tray\SDL_tray_utils.h">
+      <Filter>tray</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h">
+      <Filter>video\yuv2rgb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_av1std.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_av1std_decode.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h264std.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h264std_decode.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h264std_encode.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h265std.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h265std_decode.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codec_h265std_encode.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vk_video\vulkan_video_codecs_common.h">
+      <Filter>video\khronos\vk_video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\khronos\vulkan\vulkan_screen.h">
+      <Filter>video\khronos\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\miniz.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_rect_impl.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\stb_image.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h">
+      <Filter>hidapi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\SDL_utils_c.h" />
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_winapi.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_cfgmgr32.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_hidclass.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_hidsdi.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_descriptor_reconstruct.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hidapi\windows\hidapi_hidpi.h">
+      <Filter>hidapi\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_texture.vert.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\color.frag.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\color.frag.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\color.frag.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\linepoint.vert.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\linepoint.vert.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\linepoint.vert.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\spir-v.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_advanced.frag.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_advanced.frag.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_advanced.frag.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgb.frag.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgb.frag.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgb.frag.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgba.frag.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgba.frag.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\texture_rgba.frag.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_color.vert.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_color.vert.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_color.vert.spv.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_texture.vert.dxil.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\gpu\shaders\tri_texture.vert.msl.h">
+      <Filter>render\gpu\shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1064,9 +1437,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c">
       <Filter>cpuinfo</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c">
-      <Filter>dialog</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c">
       <Filter>dynapi</Filter>
@@ -1191,6 +1561,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamesir.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1260,6 +1633,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_report_descriptor.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
       <Filter>joystick\windows</Filter>
     </ClCompile>
@@ -1283,12 +1659,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\time\windows\SDL_systime.c">
       <Filter>time\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\tray\windows\SDL_tray.c">
-      <Filter>video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\tray\SDL_tray_utils.c">
-      <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c">
       <Filter>video</Filter>
@@ -1333,6 +1703,9 @@
       <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_rect.c">
+      <Filter>video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_rotate.c">
       <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_stb.c">
@@ -1491,9 +1864,6 @@
     <ClCompile Include="..\..\src\sensor\windows\SDL_windowssensor.c">
       <Filter>sensor\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\SDL_d3dmath.c">
-      <Filter>render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_render.c">
       <Filter>render</Filter>
     </ClCompile>
@@ -1545,9 +1915,6 @@
     <ClCompile Include="..\..\src\render\software\SDL_render_sw.c">
       <Filter>render\software</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\render\software\SDL_rotate.c">
-      <Filter>render\software</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\render\software\SDL_triangle.c">
       <Filter>render\software</Filter>
     </ClCompile>
@@ -1571,10 +1938,6 @@
       <Filter>stdlib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
-    <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c">
       <Filter>render\vulkan</Filter>
     </ClCompile>
@@ -1608,6 +1971,12 @@
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
       <Filter>gpu</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c">
+      <Filter>gpu</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\process\SDL_process.c" />
     <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c" />
     <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c" />
@@ -1616,12 +1985,82 @@
     <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
     <ClCompile Include="..\..\src\storage\steam\SDL_steamstorage.c" />
     <ClCompile Include="..\..\src\storage\SDL_storage.c" />
-    <ClCompile Include="..\..\src\events\SDL_eventwatch.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam_triton.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp">
       <Filter>core\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c">
+      <Filter>dialog\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\imKStoUCS.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_eventwatch.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_keysym_to_keycode.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_keysym_to_scancode.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_scancode_tables.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c">
+      <Filter>gpu\d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c">
+      <Filter>gpu\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\process\SDL_process.c">
+      <Filter>process</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\process\windows\SDL_windowsprocess.c">
+      <Filter>process\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c">
+      <Filter>render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c">
+      <Filter>render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c">
+      <Filter>render\gpu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\storage\SDL_storage.c">
+      <Filter>storage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c">
+      <Filter>storage\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\storage\steam\SDL_steamstorage.c">
+      <Filter>storage\steam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\generic\SDL_sysrwlock.c">
+      <Filter>thread\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tray\SDL_tray_utils.c">
+      <Filter>tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tray\windows\SDL_tray.c">
+      <Filter>tray\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c">
+      <Filter>video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c">
+      <Filter>video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c">
+      <Filter>video\yuv2rgb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\core\windows\version.rc" />
+    <ResourceCompile Include="..\..\src\core\windows\version.rc">
+      <Filter>core\windows</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

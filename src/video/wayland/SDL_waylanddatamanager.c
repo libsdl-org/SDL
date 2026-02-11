@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,10 +37,14 @@
 #include "SDL_waylanddatamanager.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 
-/* FIXME: This is arbitrary, but we want this to be less than a frame because
- * any longer can potentially spin an infinite loop of PumpEvents (!)
+/* This is arbitrary, but reading while polling should block for less than a frame, to
+ * prevent hanging while pumping events.
+ *
+ * When querying the clipboard data directly, a larger value is needed to avoid timing
+ * out if the source needs to process or transfer a large amount of data.
  */
-#define PIPE_TIMEOUT_NS SDL_MS_TO_NS(14)
+#define DEFAULT_PIPE_TIMEOUT_NS SDL_MS_TO_NS(14)
+#define EXTENDED_PIPE_TIMEOUT_NS SDL_MS_TO_NS(5000)
 
 /* sigtimedwait() is an optional part of POSIX.1-2001, and OpenBSD doesn't implement it.
  * Based on https://comp.unix.programmer.narkive.com/rEDH0sPT/sigtimedwait-implementation
@@ -60,7 +64,7 @@ static int sigtimedwait(const sigset_t *set, siginfo_t *info, const struct times
             if (sigismember(set, signo) && sigismember(&pending, signo)) {
                 if (!sigwait(set, &signo)) {
                     if (info) {
-                        SDL_memset(info, 0, sizeof *info);
+                        SDL_zerop(info);
                         info->si_signo = signo;
                     }
                     return signo;
@@ -94,7 +98,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
     sigset_t old_sig_set;
     struct timespec zerotime = { 0 };
 
-    ready = SDL_IOReady(fd, SDL_IOR_WRITE, PIPE_TIMEOUT_NS);
+    ready = SDL_IOReady(fd, SDL_IOR_WRITE, DEFAULT_PIPE_TIMEOUT_NS);
 
     sigemptyset(&sig_set);
     sigaddset(&sig_set, SIGPIPE);
@@ -130,7 +134,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
     return bytes_written;
 }
 
-static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
+static ssize_t read_pipe(int fd, void **buffer, size_t *total_length, Sint64 timeout_ns)
 {
     int ready = 0;
     void *output_buffer = NULL;
@@ -139,7 +143,7 @@ static ssize_t read_pipe(int fd, void **buffer, size_t *total_length)
     ssize_t bytes_read = 0;
     size_t pos = 0;
 
-    ready = SDL_IOReady(fd, SDL_IOR_READ, PIPE_TIMEOUT_NS);
+    ready = SDL_IOReady(fd, SDL_IOR_READ, timeout_ns);
 
     if (ready == 0) {
         bytes_read = SDL_SetError("Pipe timeout");
@@ -226,9 +230,7 @@ static bool mime_data_list_add(struct wl_list *list,
     }
 
     if (mime_data && buffer && length > 0) {
-        if (mime_data->data) {
-            SDL_free(mime_data->data);
-        }
+        SDL_free(mime_data->data);
         mime_data->data = internal_buffer;
         mime_data->length = length;
     } else {
@@ -244,12 +246,8 @@ static void mime_data_list_free(struct wl_list *list)
     SDL_MimeDataList *next = NULL;
 
     wl_list_for_each_safe (mime_data, next, list, link) {
-        if (mime_data->data) {
-            SDL_free(mime_data->data);
-        }
-        if (mime_data->mime_type) {
-            SDL_free(mime_data->mime_type);
-        }
+        SDL_free(mime_data->data);
+        SDL_free(mime_data->mime_type);
         SDL_free(mime_data);
     }
 }
@@ -410,7 +408,7 @@ static void offer_source_done_handler(void *data, struct wl_callback *callback, 
     wl_callback_destroy(offer->callback);
     offer->callback = NULL;
 
-    while (read_pipe(offer->read_fd, (void **)&id, &length) > 0) {
+    while (read_pipe(offer->read_fd, (void **)&id, &length, DEFAULT_PIPE_TIMEOUT_NS) > 0) {
     }
     close(offer->read_fd);
     offer->read_fd = -1;
@@ -505,10 +503,10 @@ void Wayland_data_offer_notify_from_mimes(SDL_WaylandDataOffer *offer, bool chec
     SDL_SendClipboardUpdate(false, new_mime_types, nformats);
 }
 
-void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
-                                 const char *mime_type, size_t *length)
+void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout)
 {
     SDL_WaylandDataDevice *data_device = NULL;
+    const Sint64 timeout = extended_timeout ? EXTENDED_PIPE_TIMEOUT_NS : DEFAULT_PIPE_TIMEOUT_NS;
 
     int pipefd[2];
     void *buffer = NULL;
@@ -529,7 +527,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 
         WAYLAND_wl_display_flush(data_device->seat->display->display);
 
-        while (read_pipe(pipefd[0], &buffer, length) > 0) {
+        while (read_pipe(pipefd[0], &buffer, length, timeout) > 0) {
         }
         close(pipefd[0]);
     }
@@ -563,7 +561,7 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
 
         WAYLAND_wl_display_flush(primary_selection_device->seat->display->display);
 
-        while (read_pipe(pipefd[0], &buffer, length) > 0) {
+        while (read_pipe(pipefd[0], &buffer, length, EXTENDED_PIPE_TIMEOUT_NS) > 0) {
         }
         close(pipefd[0]);
     }
@@ -638,7 +636,7 @@ bool Wayland_data_device_clear_selection(SDL_WaylandDataDevice *data_device)
     if (!data_device || !data_device->data_device) {
         result = SDL_SetError("Invalid Data Device");
     } else if (data_device->selection_source) {
-        wl_data_device_set_selection(data_device->data_device, NULL, 0);
+        wl_data_device_set_selection(data_device->data_device, NULL, data_device->seat->last_implicit_grab_serial);
         Wayland_data_source_destroy(data_device->selection_source);
         data_device->selection_source = NULL;
     }
@@ -653,7 +651,7 @@ bool Wayland_primary_selection_device_clear_selection(SDL_WaylandPrimarySelectio
         result = SDL_SetError("Invalid Primary Selection Device");
     } else if (primary_selection_device->selection_source) {
         zwp_primary_selection_device_v1_set_selection(primary_selection_device->primary_selection_device,
-                                                      NULL, 0);
+                                                      NULL, primary_selection_device->seat->last_implicit_grab_serial);
         Wayland_primary_selection_source_destroy(primary_selection_device->selection_source);
         primary_selection_device->selection_source = NULL;
     }

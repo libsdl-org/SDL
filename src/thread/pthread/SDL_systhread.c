@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -166,7 +166,7 @@ void SDL_SYS_SetupThread(const char *name)
     for (i = 0; sig_list[i]; ++i) {
         sigaddset(&mask, sig_list[i]);
     }
-    pthread_sigmask(SIG_BLOCK, &mask, 0);
+    pthread_sigmask(SIG_BLOCK, &mask, NULL);
 #endif
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
@@ -252,7 +252,12 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
     } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+#if defined(__QNX__)
+        /* io_snd complains about a client thread having priority >= 49 */
+        sched.sched_priority = 48;
+#else
         sched.sched_priority = sched_get_priority_max(policy);
+#endif
     } else {
         int min_priority = sched_get_priority_min(policy);
         int max_priority = sched_get_priority_max(policy);
@@ -284,7 +289,7 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
 {
-    pthread_join(thread->handle, 0);
+    pthread_join(thread->handle, NULL);
 }
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)

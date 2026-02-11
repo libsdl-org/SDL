@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -13,11 +13,12 @@
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #include "testutils.h"
 
 /* This font was created with:
- * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.bmp -csv msdf_font.csv
+ * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.png -csv msdf_font.csv
  */
 
 /* This is the distance field range in pixels used when generating the font atlas, defaults to 2 */
@@ -36,6 +37,7 @@ typedef struct
     float padding;
 } MSDFShaderUniforms;
 
+static SDLTest_CommonState *state = NULL;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *font_texture = NULL;
@@ -55,7 +57,7 @@ static GlyphInfo glyphs[128];
 
 static bool LoadFontTexture(void)
 {
-    font_texture = LoadTexture(renderer, "msdf_font.bmp", false);
+    font_texture = LoadTexture(renderer, "msdf_font.png", false);
     if (!font_texture) {
         SDL_Log("Failed to create font texture: %s", SDL_GetError());
         return false;
@@ -167,7 +169,7 @@ static bool InitGPURenderState(void)
     SDL_GPURenderStateCreateInfo createinfo;
     MSDFShaderUniforms uniforms;
 
-    device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    device = SDL_GetGPURendererDevice(renderer);
     if (!device) {
         SDL_Log("Couldn't get GPU device");
         return false;
@@ -244,6 +246,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_SetAppMetadata(description, "1.0", "com.example.testgpurender_msdf");
 
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        return SDL_APP_FAILURE;
+    }
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return SDL_APP_FAILURE;
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -255,7 +265,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateRenderer(window, "gpu");
+    renderer = SDL_CreateRenderer(window, SDL_GPU_RENDERER);
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -300,9 +310,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_GetCurrentRenderOutputSize(renderer, &output_width, &output_height);
     x = (output_width - text_width) / 2;
     y = (output_height - text_height) / 2;
-    SDL_SetRenderGPUState(renderer, render_state);
+    SDL_SetGPURenderState(renderer, render_state);
     RenderText("Hello World!", text_height, x, y);
-    SDL_SetRenderGPUState(renderer, NULL);
+    SDL_SetGPURenderState(renderer, NULL);
 
     SDL_RenderPresent(renderer);
 
@@ -314,5 +324,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     /* SDL will clean up the window/renderer for us. */
     QuitGPURenderState();
+    SDL_Quit();
+    SDLTest_CommonDestroyState(state);
 }
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,8 @@
 
 #ifndef SDL_x11modes_h_
 #define SDL_x11modes_h_
+
+#include "SDL_x11settings.h"
 
 struct SDL_DisplayData
 {
@@ -62,7 +64,8 @@ extern SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisua
 extern bool X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern bool X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 
-extern float X11_GetGlobalContentScale(SDL_VideoDevice *_this);
+extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client);
+extern float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);

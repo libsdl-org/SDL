@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{70B36605-D8E8-4679-A126-0869BA621778}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\input\03-gamepad-polling\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\input\03-gamepad-polling\gamepad-polling.c" />
+    <Content Include="$(SolutionDir)\..\test\gamepad_front.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

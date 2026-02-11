@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2025 Zuiki Inc.
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +32,7 @@
 #define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
 #define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
 #define FILTER_SIZE 11  // Must be an odd number
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
@@ -71,6 +72,7 @@ float median_filter_update(MedianFilter_t* mf, float input) {
     }
     return temp[mf->count / 2];
 }
+
 
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -141,6 +143,7 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
         default:
             break;
     }
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -172,6 +175,7 @@ static bool HIDAPI_DriverZUIKI_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, ctx->sensor_rate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, ctx->sensor_rate);
     }
+
     return true;
 }
 
@@ -411,6 +415,7 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
                 accel_values[0], accel_values[1], accel_values[2]);
 #endif
     }
+
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
@@ -443,6 +448,7 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
+
     if (size < 0) {
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);

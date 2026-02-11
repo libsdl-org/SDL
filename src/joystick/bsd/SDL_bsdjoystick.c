@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -710,10 +710,10 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     //default:
                         // no-op
                     }
-                    SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) |
-                                                   (dpad[1] * HAT_DOWN) |
-                                                   (dpad[2] * HAT_RIGHT) |
-                                                   (dpad[3] * HAT_LEFT) );
+                    SDL_SendJoystickHat(timestamp, joy, 0, (dpad[0] * HAT_UP) |
+                                                           (dpad[1] * HAT_DOWN) |
+                                                           (dpad[2] * HAT_RIGHT) |
+                                                           (dpad[3] * HAT_LEFT) );
 #endif
                     break;
                 }

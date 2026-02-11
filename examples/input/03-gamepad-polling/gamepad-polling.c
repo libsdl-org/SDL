@@ -36,7 +36,7 @@ static SDL_Gamepad *gamepad = NULL;
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-    char *bmp_path = NULL;
+    char *png_path = NULL;
     SDL_Surface *surface = NULL;
 
     SDL_SetAppMetadata("Example Input Gamepad Polling", "1.0", "com.example.input-gamepad-polling");
@@ -60,15 +60,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        times) with data from a bitmap file. */
 
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
-       Load a .bmp into a surface, move it to a texture from there. */
-    SDL_asprintf(&bmp_path, "%sgamepad_front.bmp", SDL_GetBasePath());  /* allocate a string of the full file path */
-    surface = SDL_LoadBMP(bmp_path);
+       Load a .png into a surface, move it to a texture from there. */
+    SDL_asprintf(&png_path, "%sgamepad_front.png", SDL_GetBasePath());  /* allocate a string of the full file path */
+    surface = SDL_LoadPNG(png_path);
     if (!surface) {
         SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    SDL_free(bmp_path);  /* done with this, the file is loaded. */
+    SDL_free(png_path);  /* done with this, the file is loaded. */
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {

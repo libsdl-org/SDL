@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,66 +24,28 @@ extern "C" {
 #include "../../core/gdk/SDL_gdk.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_main_callbacks.h"
 }
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
 #include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
 
-// Pop up an out of memory message, returns to Windows
-static BOOL OutOfMemory(void)
-{
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
-    return FALSE;
-}
-
-/* Gets the arguments with GetCommandLine, converts them to argc and argv
-   and calls SDL_main */
 extern "C"
-int SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved)
 {
-    LPWSTR *argvw;
-    char **argv;
-    int i, argc, result;
-    HRESULT hr;
+    (void)reserved;
+
+    void *heap_allocated = NULL;
+    const char *args_error = WIN_CheckDefaultArgcArgv(&argc, &argv, &heap_allocated);
+    if (args_error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", args_error, NULL);
+        return -1;
+    }
+
+    int result = -1;
     XTaskQueueHandle taskQueue;
-
-    argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (argvw == NULL) {
-        return OutOfMemory();
-    }
-
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
-
-    // Parse it into argv and argc
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    for (i = 0; i < argc; ++i) {
-        const int utf8size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL, NULL);
-        if (!utf8size) {  // uhoh?
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
-        }
-
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, utf8size);  // this size includes the null-terminator character.
-        if (!argv[i]) {
-            return OutOfMemory();
-        }
-
-        if (WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], utf8size, NULL, NULL) == 0) {  // failed? uhoh!
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-            return -1;
-        }
-    }
-    argv[i] = NULL;
-    LocalFree(argvw);
-
-    hr = XGameRuntimeInitialize();
+    HRESULT hr = XGameRuntimeInitialize();
 
     if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue)) {
         Uint32 titleid = 0;
@@ -104,14 +66,12 @@ int SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
             SDL_SetError("[GDK] Unable to get titleid. Will not call XblInitialize. Check MicrosoftGame.config!");
         }
 
-        SDL_SetMainReady();
-
         if (!GDK_RegisterChangeNotifications()) {
             return -1;
         }
 
         // Run the application main() code
-        result = mainFunction(argc, argv);
+        result = SDL_CallMainFunction(argc, argv, mainFunction);
 
         GDK_UnregisterChangeNotifications();
 
@@ -134,14 +94,11 @@ int SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
 #else
         SDL_assert_always(0 && "[GDK] Could not initialize - aborting");
 #endif
-        result = -1;
     }
 
-    // Free argv, to avoid memory leak
-    for (i = 0; i < argc; ++i) {
-        HeapFree(GetProcessHeap(), 0, argv[i]);
+    if (heap_allocated) {
+        HeapFree(GetProcessHeap(), 0, heap_allocated);
     }
-    HeapFree(GetProcessHeap(), 0, argv);
 
     return result;
 }

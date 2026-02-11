@@ -29,10 +29,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/streaming-textures", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/renderer/streaming-textures", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TEXTURE_SIZE, TEXTURE_SIZE);
     if (!texture) {
@@ -65,7 +66,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     /* To update a streaming texture, you need to lock it first. This gets you access to the pixels.
        Note that this is considered a _write-only_ operation: the buffer you get from locking
-       might not acutally have the existing contents of the texture, and you have to write to every
+       might not actually have the existing contents of the texture, and you have to write to every
        locked pixel! */
 
     /* You can use SDL_LockTexture() to get an array of raw pixels, but we're going to use

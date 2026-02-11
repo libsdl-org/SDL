@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -44,14 +44,14 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for vulkan on X11",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_VULKAN
-);
+)
 
 SDL_ELF_NOTE_DLOPEN(
     "x11-vulkan",
     "Support for vulkan on X11",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_X11_XCB
-);
+)
 
 /*
 typedef uint32_t xcb_window_t;
@@ -120,7 +120,7 @@ bool X11_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     if (hasXlibSurfaceExtension) {
         videoData->vulkan_xlib_xcb_library = NULL;
     } else if (!hasXCBSurfaceExtension) {
-        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME "extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
+        SDL_SetError("Installed Vulkan doesn't implement either the " VK_KHR_XCB_SURFACE_EXTENSION_NAME " extension or the " VK_KHR_XLIB_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else {
         const char *libX11XCBLibraryName = SDL_GetHint(SDL_HINT_X11_XCB_LIBRARY);

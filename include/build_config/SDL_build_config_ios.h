@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -214,7 +214,7 @@
 #define SDL_FSOPS_POSIX 1
 
 /* enable camera support */
-#ifndef SDL_PLATFORM_TVOS
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 #define SDL_CAMERA_DRIVER_COREMEDIA 1
 #endif
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,8 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
+
+#include "../SDL_main_callbacks.h"
 
 #include <emscripten/emscripten.h>
 
@@ -44,13 +46,13 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
                     //console.log("Setting SDL env var '" + key + "' to '" + value + "' ...");
                     dynCall('iiii', $0, [ckey, cvalue, 1]);
                 }
-                _free(ckey);  // these must use free(), not SDL_free()!
-                _free(cvalue);
+                _Emscripten_force_free(ckey);  // these must use free(), not SDL_free()!
+                _Emscripten_force_free(cvalue);
             }
         }
     }, SDL_setenv_unsafe);
 
-    return mainFunction(argc, argv);
+    return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
 #endif

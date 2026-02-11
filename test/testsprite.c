@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,7 +21,7 @@
 #define MAX_SPEED   1
 
 static SDLTest_CommonState *state;
-static const char *icon = "icon.bmp";
+static const char *icon = "icon.png";
 static int num_sprites;
 static SDL_Texture **sprites;
 static bool cycle_color;
@@ -51,12 +51,12 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     SDLTest_CommonQuit(state);
 }
 
-static int LoadSprite(const char *file)
+static bool LoadSprite(const char *file)
 {
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadPNG step repeatedly, but that's OK for test code. */
         if (sprites[i]) {
             SDL_DestroyTexture(sprites[i]);
         }
@@ -66,17 +66,17 @@ static int LoadSprite(const char *file)
             sprite_h = (float)sprites[i]->h;
         }
         if (!sprites[i]) {
-            return -1;
+            return false;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
-            return -1;
+            return false;
         }
     }
 
     /* We're ready to roll. :) */
-    return 0;
+    return true;
 }
 
 static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
@@ -119,7 +119,11 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     }
 
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0x00 /* used with --transparent */);
+    if (SDL_GetWindowFlags(SDL_GetRenderWindow(renderer)) & SDL_WINDOW_TRANSPARENT) {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_TRANSPARENT);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_OPAQUE);
+    }
     SDL_RenderClear(renderer);
 
     /* Test points */
@@ -488,7 +492,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                 "[--iterations N]",
                 "[--use-rendergeometry mode1|mode2]",
                 "[num_sprites]",
-                "[icon.bmp]",
+                "[icon.png]",
                 NULL
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
@@ -502,7 +506,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
-        (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
+        (SDL_Texture **)SDL_calloc(state->num_windows, sizeof(*sprites));
     if (!sprites) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_APP_FAILURE;
@@ -512,7 +516,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
-    if (LoadSprite(icon) < 0) {
+    if (!LoadSprite(icon)) {
         return SDL_APP_FAILURE;
     }
 

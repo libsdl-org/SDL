@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,12 @@
 #include "SDL_x11settings.h"
 #include "SDL_x11toolkit.h"
 #include "xsettings-client.h"
+#ifdef HAVE_FRIBIDI_H
+#include "../../core/unix/SDL_fribidi.h"
+#endif
+#ifdef HAVE_LIBTHAI_H
+#include "../../core/unix/SDL_libthai.h"
+#endif
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
@@ -46,6 +52,22 @@ typedef enum SDL_ToolkitChildModeX11
     SDL_TOOLKIT_WINDOW_MODE_X11_MENU,
     SDL_TOOLKIT_WINDOW_MODE_X11_TOOLTIP
 } SDL_ToolkitWindowModeX11;
+
+typedef enum SDL_ToolkitThaiEncodingX11
+{
+    SDL_TOOLKIT_THAI_ENCODING_X11_NONE,
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS, /* -0 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS_WIN, /* -2 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_TIS_MAC, /* -1 */
+    SDL_TOOLKIT_THAI_ENCODING_X11_8859,
+    SDL_TOOLKIT_THAI_ENCODING_X11_UNICODE
+} SDL_ToolkitThaiEncodingX11;
+
+typedef enum SDL_ToolkitThaiFontX11
+{
+    SDL_TOOLKIT_THAI_FONT_X11_OFFSET,
+    SDL_TOOLKIT_THAI_FONT_X11_CELL
+} SDL_ToolkitThaiFontX11;
 
 typedef struct SDL_ToolkitWindowX11
 {
@@ -69,9 +91,9 @@ typedef struct SDL_ToolkitWindowX11
     Window window;
     Drawable drawable;
 #ifndef NO_SHARED_MEMORY
-	XImage *image;
-	XShmSegmentInfo shm_info;
-	int shm_bytes_per_line;
+    XImage *image;
+    XShmSegmentInfo shm_info;
+    int shm_bytes_per_line;
 #endif
 
     /* Visuals and drawing */
@@ -91,11 +113,10 @@ typedef struct SDL_ToolkitWindowX11
     bool xrandr; // Whether Xrandr is present or not
 #endif
 #ifndef NO_SHARED_MEMORY
-	bool shm;
-	Bool shm_pixmap;
+    bool shm;
+    Bool shm_pixmap;
 #endif
     bool utf8;
-
     /* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
@@ -103,7 +124,7 @@ typedef struct SDL_ToolkitWindowX11
     /* Window and pixmap sizes */
     int window_width;  // Window width.
     int window_height; // Window height.
-    int pixmap_width;  
+    int pixmap_width;
     int pixmap_height;
     int window_x;
     int window_y;
@@ -117,7 +138,9 @@ typedef struct SDL_ToolkitWindowX11
     /* Font */
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
-
+    SDL_ToolkitThaiEncodingX11 thai_encoding;
+    SDL_ToolkitThaiFontX11 thai_font;
+    
     /* Control colors */
     const SDL_MessageBoxColor *color_hints;
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
@@ -129,10 +152,10 @@ typedef struct SDL_ToolkitWindowX11
 
     /* Control list */
     bool has_focus;
-    struct SDL_ToolkitControlX11 *focused_control;  
+    struct SDL_ToolkitControlX11 *focused_control;
     struct SDL_ToolkitControlX11 *fiddled_control;
     struct SDL_ToolkitControlX11 **controls;
-    size_t controls_sz;  
+    size_t controls_sz;
     struct SDL_ToolkitControlX11 **dyn_controls;
     size_t dyn_controls_sz;
 
@@ -155,6 +178,18 @@ typedef struct SDL_ToolkitWindowX11
     bool draw;
     bool close;
     long event_mask;
+
+#ifdef HAVE_FRIBIDI_H
+    /* BIDI engine */
+    SDL_FriBidi *fribidi;
+    bool do_shaping;
+#endif
+
+#ifdef HAVE_LIBTHAI_H
+    SDL_LibThai *th;
+#endif
+
+    bool flip_interface;
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
@@ -175,6 +210,7 @@ typedef struct SDL_ToolkitControlX11
     bool dynamic;
     bool is_default_enter;
     bool is_default_esc;
+    bool do_size;
 
     /* User data */
     void *data;
@@ -220,10 +256,10 @@ extern bool X11Toolkit_NotifyControlOfSizeChange(SDL_ToolkitControlX11 *control)
 
 /* ICON CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window, SDL_MessageBoxFlags flags);
-extern int X11Toolkit_GetIconControlCharY(SDL_ToolkitControlX11 *control);
 
 /* LABEL CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8);
+extern int X11Toolkit_GetLabelControlFirstLineHeight(SDL_ToolkitControlX11 *control);
 
 /* BUTTON CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *window, const SDL_MessageBoxButtonData *data);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -228,9 +228,6 @@ void Emscripten_InitMouse(void)
 
     // Add event listeners to track mouse events on the document
     MAIN_THREAD_EM_ASM({
-        if (!Module['SDL3']) {
-            Module['SDL3'] = {};
-        }
         var SDL3 = Module['SDL3'];
         SDL3['mouse_x'] = 0;
         SDL3['mouse_y'] = 0;

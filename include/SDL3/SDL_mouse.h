@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -131,6 +131,17 @@ typedef enum SDL_MouseWheelDirection
 } SDL_MouseWheelDirection;
 
 /**
+ * Animated cursor frame info.
+ *
+ * \since This struct is available since SDL 3.4.0.
+ */
+typedef struct SDL_CursorFrameInfo
+{
+    SDL_Surface *surface; /**< The surface data for this frame */
+    Uint32 duration;      /**< The frame duration in milliseconds (a duration of 0 is infinite) */
+} SDL_CursorFrameInfo;
+
+/**
  * A bitmask of pressed mouse buttons, as reported by SDL_GetMouseState, etc.
  *
  * - Button 1: Left mouse button
@@ -192,10 +203,10 @@ typedef Uint32 SDL_MouseButtonFlags;
  * \sa SDL_SetRelativeMouseTransform
  */
 typedef void (SDLCALL *SDL_MouseMotionTransformCallback)(
-    void *userdata, 
-    Uint64 timestamp, 
-    SDL_Window *window, 
-    SDL_MouseID mouseID, 
+    void *userdata,
+    Uint64 timestamp,
+    SDL_Window *window,
+    SDL_MouseID mouseID,
     float *x, float *y
 );
 
@@ -565,6 +576,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CreateAnimatedCursor
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateSystemCursor
  * \sa SDL_DestroyCursor
@@ -581,9 +593,10 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
  * If this function is passed a surface with alternate representations added
  * with SDL_AddSurfaceAlternateImage(), the surface will be interpreted as the
  * content to be used for 100% display scale, and the alternate
- * representations will be used for high DPI situations. For example, if the
- * original surface is 32x32, then on a 2x macOS display or 200% display scale
- * on Windows, a 64x64 version of the image will be used, if available. If a
+ * representations will be used for high DPI situations if
+ * SDL_HINT_MOUSE_DPI_SCALE_CURSORS is enabled. For example, if the original
+ * surface is 32x32, then on a 2x macOS display or 200% display scale on
+ * Windows, a 64x64 version of the image will be used, if available. If a
  * matching version of the image isn't available, the closest larger size
  * image will be downscaled to the appropriate size and be used instead, if
  * available. Otherwise, the closest smaller image will be upscaled and be
@@ -600,6 +613,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_AddSurfaceAlternateImage
+ * \sa SDL_CreateAnimatedCursor
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
  * \sa SDL_DestroyCursor
@@ -608,6 +622,57 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
 extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
                                                           int hot_x,
                                                           int hot_y);
+
+/**
+ * Create an animated color cursor.
+ *
+ * Animated cursors are composed of a sequential array of frames, specified as
+ * surfaces and durations in an array of SDL_CursorFrameInfo structs. The hot
+ * spot coordinates are universal to all frames, and all frames must have the
+ * same dimensions.
+ *
+ * Frame durations are specified in milliseconds. A duration of 0 implies an
+ * infinite frame time, and the animation will stop on that frame. To create a
+ * one-shot animation, set the duration of the last frame in the sequence to
+ * 0.
+ *
+ * If this function is passed surfaces with alternate representations added
+ * with SDL_AddSurfaceAlternateImage(), the surfaces will be interpreted as
+ * the content to be used for 100% display scale, and the alternate
+ * representations will be used for high DPI situations. For example, if the
+ * original surfaces are 32x32, then on a 2x macOS display or 200% display
+ * scale on Windows, a 64x64 version of the image will be used, if available.
+ * If a matching version of the image isn't available, the closest larger size
+ * image will be downscaled to the appropriate size and be used instead, if
+ * available. Otherwise, the closest smaller image will be upscaled and be
+ * used instead.
+ *
+ * If the underlying platform does not support animated cursors, this function
+ * will fall back to creating a static color cursor using the first frame in
+ * the sequence.
+ *
+ * \param frames an array of cursor images composing the animation.
+ * \param frame_count the number of frames in the sequence.
+ * \param hot_x the x position of the cursor hot spot.
+ * \param hot_y the y position of the cursor hot spot.
+ * \returns the new cursor on success or NULL on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
+ * \sa SDL_CreateCursor
+ * \sa SDL_CreateColorCursor
+ * \sa SDL_CreateSystemCursor
+ * \sa SDL_DestroyCursor
+ * \sa SDL_SetCursor
+ */
+extern SDL_DECLSPEC SDL_Cursor *SDLCALL SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames,
+                                                                 int frame_count,
+                                                                 int hot_x,
+                                                                 int hot_y);
 
 /**
  * Create a system cursor.
@@ -666,7 +731,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  * You do not have to call SDL_DestroyCursor() on the return value, but it is
  * safe to do so.
  *
- * \returns the default cursor on success or NULL on failuree; call
+ * \returns the default cursor on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
@@ -687,6 +752,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CreateAnimatedCursor
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor

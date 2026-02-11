@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -179,7 +179,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
     int i;
     SDL_KeyboardID *keyboards;
 
-    keyboards = (SDL_JoystickID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
+    keyboards = (SDL_KeyboardID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (keyboards) {
         if (count) {
             *count = SDL_keyboard_count;
@@ -325,7 +325,9 @@ SDL_Window *SDL_GetKeyboardFocus(void)
 
 bool SDL_SetKeyboardFocus(SDL_Window *window)
 {
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
     SDL_VideoDevice *video = SDL_GetVideoDevice();
+#endif
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -338,7 +340,23 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus && !window) {
         // We won't get anymore keyboard messages, so reset keyboard state
         SDL_ResetKeyboard();
+    }
 
+    // See if the current window has lost focus
+    if (keyboard->focus && keyboard->focus != window) {
+        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
+
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
+        // Ensures IME compositions are committed
+        if (SDL_TextInputActive(keyboard->focus)) {
+            if (video && video->StopTextInput) {
+                video->StopTextInput(video, keyboard->focus);
+            }
+        }
+#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
+    }
+
+    if (keyboard->focus && !window) {
         // Also leave mouse relative mode
         if (mouse->relative_mode) {
             SDL_SetRelativeMouseMode(false);
@@ -353,28 +371,18 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
         }
     }
 
-    // See if the current window has lost focus
-    if (keyboard->focus && keyboard->focus != window) {
-        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
-
-        // Ensures IME compositions are committed
-        if (SDL_TextInputActive(keyboard->focus)) {
-            if (video && video->StopTextInput) {
-                video->StopTextInput(video, keyboard->focus);
-            }
-        }
-    }
-
     keyboard->focus = window;
 
     if (keyboard->focus) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
 
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StartTextInput) {
                 video->StartTextInput(video, keyboard->focus, keyboard->focus->text_input_props);
             }
         }
+#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
     }
 
     SDL_UpdateRelativeMouseMode();
@@ -898,7 +906,7 @@ const bool *SDL_GetKeyboardState(int *numkeys)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (numkeys != (int *)0) {
+    if (numkeys) {
         *numkeys = SDL_SCANCODE_COUNT;
     }
     return keyboard->keystate;

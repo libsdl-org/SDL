@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,8 @@
 
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
+
+#include <SDL3/SDL_openxr.h>
 
 // GraphicsDevice Limits
 
@@ -669,6 +671,11 @@ struct SDL_GPUDevice
 
     void (*DestroyDevice)(SDL_GPUDevice *device);
 
+    XrResult (*DestroyXRSwapchain)(
+        SDL_GPURenderer *device,
+        XrSwapchain swapchain,
+        SDL_GPUTexture **swapchainImages);
+
     SDL_PropertiesID (*GetDeviceProperties)(SDL_GPUDevice *device);
 
     // State Creation
@@ -704,6 +711,24 @@ struct SDL_GPUDevice
         SDL_GPUTransferBufferUsage usage,
         Uint32 size,
         const char *debugName);
+
+    XrResult (*CreateXRSession)(
+        SDL_GPURenderer *driverData,
+        const XrSessionCreateInfo *createinfo,
+        XrSession *session);
+
+    SDL_GPUTextureFormat* (*GetXRSwapchainFormats)(
+        SDL_GPURenderer *driverData,
+        XrSession session,
+        int *num_formats);
+
+    XrResult (*CreateXRSwapchain)(
+        SDL_GPURenderer *driverData,
+        XrSession session,
+        const XrSwapchainCreateInfo *createinfo,
+        SDL_GPUTextureFormat format,
+        XrSwapchain *swapchain,
+        SDL_GPUTexture ***textures);
 
     // Debug Naming
 
@@ -1096,12 +1121,16 @@ struct SDL_GPUDevice
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
+    bool default_enable_depth_clip;
+    bool validate_feature_depth_clamp_disabled;
+    bool validate_feature_anisotropy_disabled;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
     result->func = name##_##func;
 #define ASSIGN_DRIVER(name)                                 \
     ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
+    ASSIGN_DRIVER_FUNC(DestroyXRSwapchain, name)            \
     ASSIGN_DRIVER_FUNC(GetDeviceProperties, name)      \
     ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
     ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
@@ -1110,6 +1139,9 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
     ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(CreateXRSession, name)               \
+    ASSIGN_DRIVER_FUNC(GetXRSwapchainFormats, name)         \
+    ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)             \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
     ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \

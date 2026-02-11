@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -183,13 +183,9 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
         (void)setlocale(LC_ALL, prev_locale);
         X11_XSetLocaleModifiers(prev_xmods);
 
-        if (prev_locale) {
-            SDL_free(prev_locale);
-        }
+        SDL_free(prev_locale);
 
-        if (prev_xmods) {
-            SDL_free(prev_xmods);
-        }
+        SDL_free(prev_xmods);
     }
 #endif
     // Try to determine which scancodes are being used based on fingerprint
@@ -766,6 +762,21 @@ void X11_CreateInputContext(SDL_WindowData *data)
 #endif // X_HAVE_UTF8_STRING
 }
 
+
+void X11_DestroyInputContext(SDL_WindowData *data)
+{
+#ifdef X_HAVE_UTF8_STRING
+    if (data->ic) {
+        X11_XDestroyIC(data->ic);
+        data->ic = NULL;
+    }
+    SDL_free(data->preedit_text);
+    SDL_free(data->preedit_feedback);
+    data->preedit_text = NULL;
+    data->preedit_feedback = NULL;
+#endif
+}
+
 static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef X_HAVE_UTF8_STRING
@@ -860,7 +871,7 @@ void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
                            window->text_input_rect.w, window->text_input_rect.h,
                            mode);
         SDL_OpenURL(deeplink);
-        videodata->steam_keyboard_open = true;
+        SDL_SendScreenKeyboardShown();
     }
 }
 
@@ -870,15 +881,8 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (videodata->is_steam_deck) {
         SDL_OpenURL("steam://close/keyboard");
-        videodata->steam_keyboard_open = false;
+        SDL_SendScreenKeyboardHidden();
     }
-}
-
-bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_VideoData *videodata = _this->internal;
-
-    return videodata->steam_keyboard_open;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11

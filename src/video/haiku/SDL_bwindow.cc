@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -55,7 +55,6 @@ static bool _InitWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         // TODO: Add support for this flag
-        printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }
     if (window->flags & SDL_WINDOW_OPENGL) {
         // TODO: Add support for this flag

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -114,7 +114,6 @@ extern bool VITA_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext conte
 extern bool VITA_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void VITA_PumpEvents(SDL_VideoDevice *_this);
 

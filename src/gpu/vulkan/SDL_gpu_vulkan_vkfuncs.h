@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,6 +50,9 @@ VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFormatProperties)
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceImageFormatProperties)
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties)
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties)
+
+// Vulkan 1.1 (Needed for opt-in feature checks)
+VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2)
 
 // VK_KHR_get_physical_device_properties2, needed for KHR_driver_properties
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,9 +31,12 @@ typedef enum
     SHADER_INVALID = -1,
     SHADER_NONE,
     SHADER_SOLID,
+    SHADER_PALETTE_NEAREST,
+    SHADER_PALETTE_LINEAR,
+    SHADER_PALETTE_PIXELART,
     SHADER_RGB,
-    SHADER_RGBA,
     SHADER_RGB_PIXELART,
+    SHADER_RGBA,
     SHADER_RGBA_PIXELART,
 #ifdef SDL_HAVE_YUV
     SHADER_YUV,
@@ -48,6 +51,7 @@ typedef enum
 typedef struct GL_ShaderContext GL_ShaderContext;
 
 extern GL_ShaderContext *GL_CreateShaderContext(void);
+extern bool GL_SupportsShader(GL_ShaderContext *ctx, GL_Shader shader);
 extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shader_params);
 extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
 

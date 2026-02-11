@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
+#define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x04
 
 typedef struct
 {
@@ -81,6 +82,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_KEYBOARD;
         devices[count].dwFlags = 0;
+        if (data->flags & RAW_KEYBOARD_FLAG_NOHOTKEYS) {
+            devices[count].dwFlags |= RIDEV_NOHOTKEYS;
+        }
         devices[count].hwndTarget = window;
         ++count;
     }
@@ -96,22 +100,27 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     // Tell the parent we're ready to go!
     SetEvent(data->ready_event);
 
-    while (!data->done) {
-        Uint64 idle_begin = SDL_GetTicksNS();
-        DWORD result = MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT);
+    Uint64 idle_begin = SDL_GetTicksNS();
+    while (!data->done &&
+            // The high-order word of GetQueueStatus() will let us know if there's currently raw input to be processed.
+            // If there isn't, then we'll wait for new data to arrive with MsgWaitForMultipleObjects().
+           ((HIWORD(GetQueueStatus(QS_RAWINPUT)) & QS_RAWINPUT) ||
+            (MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT) == WAIT_OBJECT_0 + 1))) {
+
         Uint64 idle_end = SDL_GetTicksNS();
-        if (result != (WAIT_OBJECT_0 + 1)) {
-            break;
-        }
-
-        // Clear the queue status so MsgWaitForMultipleObjects() will wait again
-        (void)GetQueueStatus(QS_RAWINPUT);
-
         Uint64 idle_time = idle_end - idle_begin;
         Uint64 usb_8khz_interval = SDL_US_TO_NS(125);
         Uint64 poll_start = idle_time < usb_8khz_interval ? _this->internal->last_rawinput_poll : idle_end;
 
         WIN_PollRawInput(_this, poll_start);
+
+        // Reset idle_begin for the next go-around
+        idle_begin = SDL_GetTicksNS();
+    }
+
+    if (_this->internal->raw_input_fake_pen_id) {
+        SDL_RemovePenDevice(0, SDL_GetKeyboardFocus(), _this->internal->raw_input_fake_pen_id);
+        _this->internal->raw_input_fake_pen_id = 0;
     }
 
     devices[0].dwFlags |= RIDEV_REMOVE;
@@ -203,6 +212,9 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
     }
     if (data->raw_keyboard_enabled) {
         flags |= ENABLE_RAW_KEYBOARD_INPUT;
+        if (data->raw_keyboard_flag_nohotkeys) {
+            flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
+        }
     }
     if (flags != data->raw_input_enabled) {
         if (WIN_SetRawInputEnabled(_this, flags)) {
@@ -250,6 +262,34 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
+typedef enum WIN_RawKeyboardFlag {
+    NOHOTKEYS
+} WIN_RawKeyboardFlag;
+
+static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+{
+    SDL_VideoData *data = _this->internal;
+
+    switch(flag) {
+        case NOHOTKEYS:
+            data->raw_keyboard_flag_nohotkeys = enabled;
+            break;
+        default:
+            return false;
+    }
+
+    if (data->gameinput_context) {
+        return true;
+    }
+
+    return WIN_UpdateRawInputEnabled(_this);
+}
+
+bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
+{
+    return WIN_SetRawKeyboardFlag(_this, NOHOTKEYS, enabled);
+}
+
 #else
 
 bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
@@ -258,6 +298,11 @@ bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 }
 
 bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
+{
+    return SDL_Unsupported();
+}
+
+bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }

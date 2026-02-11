@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,13 +62,17 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
-            if (!filename) {
+            if (SDL_strcmp(argv[i], "--role") == 0 && argv[i + 1]) {
+                SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE, argv[i + 1]);
+                ++i;
+                consumed = 1;
+            } else if (!filename) {
                 filename = argv[i];
                 consumed = 1;
             }
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[sample.wav]", NULL };
+            static const char *options[] = { "[--role ROLE]", "[sample.wav]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             exit(1);
         }
@@ -105,6 +109,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
+    SDL_Log("Current audio device name: %s", SDL_GetAudioDeviceName(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK));
 
     stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &wave.spec, NULL, NULL);
     if (!stream) {

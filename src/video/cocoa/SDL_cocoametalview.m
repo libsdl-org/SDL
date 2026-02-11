@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,7 +90,9 @@ static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
         self.layer.opaque = opaque;
 
-        SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE, true)) {
+            SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
+        }
 
         [self updateDrawableSize];
     }

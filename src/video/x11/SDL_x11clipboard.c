@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ Window GetWindow(SDL_VideoDevice *_this)
         XSetWindowAttributes xattr;
         data->clipboard_window = X11_XCreateWindow(dpy, parent, -10, -10, 1, 1, 0,
                                                    CopyFromParent, InputOnly,
-                                                   CopyFromParent, 0, &xattr);
+                                                   NULL, 0, &xattr);
 
         X11_XSelectInput(dpy, data->clipboard_window, PropertyChangeMask);
         X11_XFlush(data->display);
@@ -139,7 +139,7 @@ static bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, bool *
     waitStart = SDL_GetTicks();
     *flag = true;
     while (*flag) {
-        SDL_PumpEvents();
+        X11_PumpEvents(_this);
         waitElapsed = SDL_GetTicks() - waitStart;
         // Wait one second for a selection response.
         if (waitElapsed > 1000) {
@@ -248,7 +248,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
                 if (incr_success == false) {
                     SDL_free(data);
-                    data = 0;
+                    data = NULL;
                     *length = 0;
                 }
             }
@@ -273,6 +273,14 @@ bool X11_SetClipboardData(SDL_VideoDevice *_this)
 void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *videodata = _this->internal;
+
+    *length = 0;
+
+    if (!SDL_HasInternalClipboardData(_this, mime_type)) {
+        // This mime type wasn't advertised by the last selection owner.
+        // The atom might still have data, but it's stale, so ignore it.
+        return NULL;
+    }
     return GetSelectionData(_this, videodata->atoms.CLIPBOARD, mime_type, length);
 }
 
@@ -281,9 +289,7 @@ bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, mime_type, &length);
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     return length > 0;
 }
 

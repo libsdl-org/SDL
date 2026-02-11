@@ -411,6 +411,12 @@ typedef enum {
 	TRACKPAD_NUM_MODES
 } TrackpadDPadMode;
 
+typedef enum
+{
+	LIZARD_MODE_OFF,
+	LIZARD_MODE_ON,
+} LizardModeState_t;
+
 // Read-write controller settings (only add to this enum and never change the order)
 typedef enum 
 {
@@ -423,7 +429,7 @@ typedef enum
 	SETTING_USB_DEBUG_MODE,
 	SETTING_LEFT_TRACKPAD_MODE,
 	SETTING_RIGHT_TRACKPAD_MODE,
-	SETTING_MOUSE_POINTER_ENABLED,
+	SETTING_LIZARD_MODE,
 
 	// 10
 	SETTING_DPAD_DEADZONE,

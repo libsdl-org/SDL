@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,6 +76,9 @@ extern "C" {
  *   `/Applications/SDLApp/MyApp.app/`
  * - `parent`: the containing directory of the bundle. For example:
  *   `/Applications/SDLApp/`
+ *
+ * **Android Specific Functionality**: This function returns "./", which
+ * allows filesystem operations to use internal storage and the asset system.
  *
  * **Nintendo 3DS Specific Functionality**: This function returns "romfs"
  * directory of the application as it is uncommon to store resources outside

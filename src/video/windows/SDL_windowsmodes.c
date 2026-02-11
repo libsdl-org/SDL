@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -605,6 +605,9 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
             internal->MonitorHandle = hMonitor;
             internal->state = DisplayUnchanged;
 
+            SDL_PropertiesID props = SDL_GetDisplayProperties(_this->displays[i]->id);
+            SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
+
             if (!_this->setting_display_mode) {
                 SDL_VideoDisplay *existing_display = _this->displays[i];
                 SDL_Rect bounds;
@@ -662,9 +665,13 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 #ifdef HAVE_DXGI1_6_H
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
 #endif
-    if (SDL_AddVideoDisplay(&display, false)) {
+    SDL_DisplayID displayID = SDL_AddVideoDisplay(&display, false);
+    if (displayID) {
         // The mode is owned by the video subsystem
         mode.internal = NULL;
+
+        SDL_PropertiesID props = SDL_GetDisplayProperties(displayID);
+        SDL_SetPointerProperty(props, SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER, hMonitor);
     } else {
         SDL_free(displaydata);
     }
@@ -783,7 +790,8 @@ bool WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     dxgi_output = WIN_GetDXGIOutput(_this, data->DeviceName);
 
-    for (i = 0;; ++i) {
+    // Make sure we add the current mode to the list in case it's a custom mode that doesn't enumerate
+    for (i = ENUM_CURRENT_SETTINGS; ; ++i) {
         if (!WIN_GetDisplayMode(_this, dxgi_output, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
             break;
         }
@@ -929,6 +937,14 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
         if (internal->state == DisplayAdded) {
             SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ADDED, 0, 0);
         }
+    }
+}
+
+void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this)
+{
+    // This almost never happens, so just go ahead and send update events for all displays
+    for (int i = 0; i < _this->num_displays; ++i) {
+        SDL_SendDisplayEvent(_this->displays[i], SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, 0, 0);
     }
 }
 

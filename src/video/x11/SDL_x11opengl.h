@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,6 +47,7 @@ struct SDL_GLDriverData
     bool HAS_GLX_ARB_context_flush_control;
     bool HAS_GLX_ARB_create_context_robustness;
     bool HAS_GLX_ARB_create_context_no_error;
+    bool HAS_GLX_ARB_framebuffer_sRGB;
 
     /* Max version of OpenGL ES context that can be created if the
        implementation supports GLX_EXT_create_context_es2_profile.

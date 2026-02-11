@@ -63,6 +63,7 @@
 
 #define VALVE_USB_VID       0x28DE
 #define D0G_BLE2_PID        0x1106
+#define TRITON_BLE_PID	    0x1303
 
 typedef uint32_t uint32;
 typedef uint64_t uint64;
@@ -76,7 +77,8 @@ typedef uint64_t uint64;
 #define VALVE_SERVICE		@"100F6C32-1735-4313-B402-38567131E5F3"
 
 // (READ/NOTIFICATIONS)
-#define VALVE_INPUT_CHAR	@"100F6C33-1735-4313-B402-38567131E5F3"
+#define VALVE_INPUT_CHAR_0x1106	@"100F6C33-1735-4313-B402-38567131E5F3"
+#define VALVE_INPUT_CHAR_0x1303	@"100F6C77-1735-4313-B402-38567131E5F3"
 
 //  (READ/WRITE)
 #define VALVE_REPORT_CHAR	@"100F6C34-1735-4313-B402-38567131E5F3"
@@ -101,21 +103,7 @@ typedef struct
 
 typedef struct {
 	uint8_t		id;
-	union {
-		bluetoothSegment segment;
-		struct {
-			uint8_t		segmentHeader;
-			uint8_t		featureReportMessageID;
-			uint8_t		length;
-			uint8_t		settingIdentifier;
-			union {
-				uint16_t	usPayload;
-				uint32_t	uPayload;
-				uint64_t	ulPayload;
-				uint8_t		ucPayload[15];
-			};
-		};
-	};
+	bluetoothSegment segment;
 } hidFeatureReport;
 
 #pragma pack(pop)
@@ -125,34 +113,62 @@ size_t GetBluetoothSegmentSize(bluetoothSegment *segment)
     return segment->length + 3;
 }
 
-#define RingBuffer_cbElem   19
-#define RingBuffer_nElem    4096
+#define RingBuffer_nElem    256
 
 typedef struct {
 	int _first, _last;
-	uint8_t _data[ ( RingBuffer_nElem * RingBuffer_cbElem ) ];
+	int _cbElem;
+	uint8_t *_data;
 	pthread_mutex_t accessLock;
 } RingBuffer;
 
-static void RingBuffer_init( RingBuffer *this )
+static RingBuffer *RingBuffer_alloc( int cbElem )
 {
+    RingBuffer *this = (RingBuffer *)malloc( sizeof(*this) );
+    if (!this)
+{
+        return NULL;
+    }
+
     this->_first = -1;
     this->_last = 0;
+    this->_cbElem = cbElem;
+    this->_data = (uint8_t *)malloc(RingBuffer_nElem * cbElem);
+    if ( !this->_data )
+    {
+        free( this );
+        return NULL;
+    }
     pthread_mutex_init( &this->accessLock, 0 );
+    return this;
+}
+
+static void RingBuffer_free( RingBuffer *this )
+{
+    if ( this )
+    {
+        free( this->_data );
+        free( this );
+    }
 }
 
 static bool RingBuffer_write( RingBuffer *this, const uint8_t *src )
 {
+    if ( !this )
+    {
+        return false;
+    }
+
     pthread_mutex_lock( &this->accessLock );
-    memcpy( &this->_data[ this->_last ], src, RingBuffer_cbElem );
+    memcpy( &this->_data[ this->_last ], src, this->_cbElem );
     if ( this->_first == -1 )
     {
         this->_first = this->_last;
     }
-    this->_last = ( this->_last + RingBuffer_cbElem ) % (RingBuffer_nElem * RingBuffer_cbElem);
+    this->_last = ( this->_last + this->_cbElem ) % (RingBuffer_nElem * this->_cbElem);
     if ( this->_last == this->_first )
     {
-        this->_first = ( this->_first + RingBuffer_cbElem ) % (RingBuffer_nElem * RingBuffer_cbElem);
+        this->_first = ( this->_first + this->_cbElem ) % (RingBuffer_nElem * this->_cbElem);
         pthread_mutex_unlock( &this->accessLock );
         return false;
     }
@@ -162,14 +178,19 @@ static bool RingBuffer_write( RingBuffer *this, const uint8_t *src )
 
 static bool RingBuffer_read( RingBuffer *this, uint8_t *dst )
 {
+    if ( !this )
+    {
+        return false;
+    }
+
     pthread_mutex_lock( &this->accessLock );
     if ( this->_first == -1 )
     {
         pthread_mutex_unlock( &this->accessLock );
         return false;
     }
-    memcpy( dst, &this->_data[ this->_first ], RingBuffer_cbElem );
-    this->_first = ( this->_first + RingBuffer_cbElem ) % (RingBuffer_nElem * RingBuffer_cbElem);
+    memcpy( dst, &this->_data[ this->_first ], this->_cbElem );
+    this->_first = ( this->_first + this->_cbElem ) % (RingBuffer_nElem * this->_cbElem);
     if ( this->_first == this->_last )
     {
         this->_first = -1;
@@ -191,12 +212,14 @@ typedef enum
 
 @interface HIDBLEDevice : NSObject <CBPeripheralDelegate>
 {
-	RingBuffer _inputReports;
-	uint8_t	_featureReport[20];
+	RingBuffer *_inputReports;
+    NSData *_featureReport;
+	NSMutableDictionary *_outputReports;
 	BLEDeviceWaitState	_waitStateForReadFeatureReport;
 	BLEDeviceWaitState	_waitStateForWriteFeatureReport;
 }
 
+@property (nonatomic, readwrite) uint16_t pid;
 @property (nonatomic, readwrite) bool connected;
 @property (nonatomic, readwrite) bool ready;
 
@@ -205,6 +228,7 @@ typedef enum
 @property (nonatomic, strong) CBCharacteristic *bleCharacteristicReport;
 
 - (id)initWithPeripheral:(CBPeripheral *)peripheral;
+- (void)onDisconnect;
 
 @end
 
@@ -278,8 +302,7 @@ typedef enum
 		HIDBLEDevice *steamController = [self.deviceMap objectForKey:peripheral];
 		if ( steamController )
 		{
-			steamController.connected = NO;
-			steamController.ready = NO;
+            [steamController onDisconnect];
 			[self.centralManager cancelPeripheralConnection:peripheral];
 		}
 	}
@@ -474,8 +497,7 @@ typedef enum
 	HIDBLEDevice *steamController = [self.deviceMap objectForKey:peripheral];
 	if ( steamController )
 	{
-		steamController.connected = NO;
-		steamController.ready = NO;
+		[steamController onDisconnect];
 		[self.deviceMap removeObjectForKey:peripheral];
 	}
 }
@@ -500,12 +522,14 @@ static void process_pending_events(void)
 {
 	if ( self = [super init] )
 	{
-        RingBuffer_init( &_inputReports );
+		self.pid = 0;
+        _inputReports = NULL;
+		_outputReports = [[NSMutableDictionary alloc] init];
+		_connected = NO;
+		_ready = NO;
 		self.bleSteamController = nil;
 		self.bleCharacteristicInput = nil;
 		self.bleCharacteristicReport = nil;
-		_connected = NO;
-		_ready = NO;
 	}
 	return self;
 }
@@ -514,7 +538,9 @@ static void process_pending_events(void)
 {
 	if ( self = [super init] )
 	{
-        RingBuffer_init( &_inputReports );
+		self.pid = 0;
+        _inputReports = NULL;
+		_outputReports = [[NSMutableDictionary alloc] init];
 		_connected = NO;
 		_ready = NO;
 		self.bleSteamController = peripheral;
@@ -526,6 +552,18 @@ static void process_pending_events(void)
 		self.bleCharacteristicReport = nil;
 	}
 	return self;
+}
+
+- (void)onDisconnect
+{
+    self.connected = NO;
+    self.ready = NO;
+
+    if ( _inputReports )
+    {
+        RingBuffer_free( _inputReports );
+        _inputReports = NULL;
+    }
 }
 
 - (void)setConnected:(bool)connected
@@ -543,94 +581,134 @@ static void process_pending_events(void)
 
 - (size_t)read_input_report:(uint8_t *)dst
 {
-	if ( RingBuffer_read( &_inputReports, dst+1 ) )
+	if ( RingBuffer_read( _inputReports, dst+1 ) )
 	{
-		*dst = 0x03;
-		return 20;
+        switch ( self.pid )
+	{
+        case D0G_BLE2_PID:
+            *dst = 0x03;
+            break;
+        case TRITON_BLE_PID:
+            *dst = 0x42;
+            break;
+        default:
+            abort();
+        }
+		return _inputReports->_cbElem + 1;
 	}
 	return 0;
 }
 
 - (int)send_report:(const uint8_t *)data length:(size_t)length
 {
+	if ( self.pid == D0G_BLE2_PID )
+	{
 	[_bleSteamController writeValue:[NSData dataWithBytes:data length:length] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
 	return (int)length;
 }
 
-- (int)send_feature_report:(hidFeatureReport *)report
+	// We need to look up the correct characteristic for this output report
+	if ( length > 0 )
+	{
+		CBCharacteristic *aChar = [_outputReports objectForKey:[NSNumber numberWithInt:data[0]]];
+		if ( aChar != nil )
+		{
+			[_bleSteamController writeValue:[NSData dataWithBytes:&data[1] length:(length - 1)] forCharacteristic:aChar type:CBCharacteristicWriteWithResponse];
+			return (int)length;
+		}
+	}
+	return -1;
+}
+
+- (int)send_feature_report:(hidFeatureReport *)report length:(size_t)length
 {
 #if FEATURE_REPORT_LOGGING
 	uint8_t *reportBytes = (uint8_t *)report;
 
-	NSLog( @"HIDBLE:send_feature_report (%02zu/19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]", GetBluetoothSegmentSize( report->segment ),
+	NSLog( @"HIDBLE:send_feature_report (%02zu/19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]", length,
 		  reportBytes[1], reportBytes[2], reportBytes[3], reportBytes[4], reportBytes[5], reportBytes[6],
 		  reportBytes[7], reportBytes[8], reportBytes[9], reportBytes[10], reportBytes[11], reportBytes[12],
 		  reportBytes[13], reportBytes[14], reportBytes[15], reportBytes[16], reportBytes[17], reportBytes[18],
 		  reportBytes[19] );
 #endif
 
-	int sendSize = (int)GetBluetoothSegmentSize( &report->segment );
-	if ( sendSize > 20 )
-		sendSize = 20;
-
 #if 1
 	// fire-and-forget - we are going to not wait for the response here because all Steam Controller BLE send_feature_report's are ignored,
 	//  except errors.
-	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
+	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:MIN(length, 64)] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
 
 	// pretend we received a result anybody cares about
-	return 19;
+	return (int)length;
 
 #else
 	// this is technically the correct send_feature_report logic if you want to make sure it gets through and is
 	// acknowledged or errors out
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_Waiting;
-	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:sendSize
+	[_bleSteamController writeValue:[NSData dataWithBytes:&report->segment length:MIN(length, 64)
 									 ] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
 
-	while ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Waiting )
+	while ( _connected && _waitStateForWriteFeatureReport == BLEDeviceWaitState_Waiting )
 	{
 		process_pending_events();
 	}
 
-	if ( _waitStateForWriteFeatureReport == BLEDeviceWaitState_Error )
+	if ( !_connected || _waitStateForWriteFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
 
 	_waitStateForWriteFeatureReport = BLEDeviceWaitState_None;
-	return 19;
+	return (int)length;
 #endif
 }
 
-- (int)get_feature_report:(uint8_t)feature into:(uint8_t *)buffer
+- (int)get_feature_report:(uint8_t)feature into:(uint8_t *)buffer length:(size_t)length
 {
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_Waiting;
 	[_bleSteamController readValueForCharacteristic:_bleCharacteristicReport];
 
-	while ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Waiting )
-		process_pending_events();
+	while ( _connected && _waitStateForReadFeatureReport == BLEDeviceWaitState_Waiting )
+    {
+        process_pending_events();
+    }
 
-	if ( _waitStateForReadFeatureReport == BLEDeviceWaitState_Error )
+	if ( !_connected || _waitStateForReadFeatureReport == BLEDeviceWaitState_Error )
 	{
 		_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
 		return -1;
 	}
 
-	memcpy( buffer, _featureReport, sizeof(_featureReport) );
+    int amount = 0;
+    if ( _featureReport.length > 0 )
+    {
+        uint8_t *data = (uint8_t *)_featureReport.bytes;
+        if ( *data == *buffer )
+        {
+            amount = (int)MIN( length, _featureReport.length );
+            memcpy( buffer, _featureReport.bytes, amount );
+        }
+        else
+        {
+            // Leave the report in the buffer
+            amount = (int)MIN( length - 1, _featureReport.length );
+            memcpy( &buffer[ 1 ], _featureReport.bytes, amount );
+            ++amount;
+        }
+    }
 
 	_waitStateForReadFeatureReport = BLEDeviceWaitState_None;
 
 #if FEATURE_REPORT_LOGGING
-	NSLog( @"HIDBLE:get_feature_report (19) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]",
-		  buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
-		  buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], buffer[12],
-		  buffer[13], buffer[14], buffer[15], buffer[16], buffer[17], buffer[18],
-		  buffer[19] );
+    NSLog( @"HIDBLE:get_feature_report (%lu/%zu) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]",
+      _featureReport.length, length,
+      buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6],
+      buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], buffer[12],
+      buffer[13], buffer[14], buffer[15], buffer[16], buffer[17], buffer[18],
+      buffer[19] );
 #endif
 
-	return 19;
+	return amount;
 }
 
 #pragma mark CBPeripheralDelegate Implementation
@@ -667,14 +745,35 @@ static void process_pending_events(void)
 		{
 			NSLog( @"Found Characteristic %@", aChar );
 
-			if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR]] )
+			if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1106]] )
 			{
+				self.pid = D0G_BLE2_PID;
+				self.bleCharacteristicInput = aChar;
+			}
+			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1303]] )
+			{
+				self.pid = TRITON_BLE_PID;
 				self.bleCharacteristicInput = aChar;
 			}
 			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_REPORT_CHAR]] )
 			{
 				self.bleCharacteristicReport = aChar;
 				[self.bleSteamController discoverDescriptorsForCharacteristic: aChar];
+			}
+			else
+			{
+                NSString *UUIDString = [aChar.UUID UUIDString];
+                int report_id = 0;
+                if ( sscanf( UUIDString.UTF8String, "100F6C%x", &report_id ) == 1 && report_id > 0x35 )
+                {
+                    report_id -= 0x35;
+                    //NSLog( @"Found characteristic for output report 0x%.2x", report_id );
+
+					if (report_id >= 0x80) {
+						// An output report
+                        [_outputReports setObject:aChar forKey:[NSNumber numberWithInt:report_id]];
+					}
+                }
 			}
 		}
 	}
@@ -690,17 +789,33 @@ static void process_pending_events(void)
 	if ( self.ready == NO )
 	{
 		self.ready = YES;
+        if ( _inputReports == NULL )
+        {
+            int cbElem = 0;
+            switch ( self.pid )
+            {
+            case D0G_BLE2_PID:
+                cbElem = 19;
+                break;
+            case TRITON_BLE_PID:
+                cbElem = 53;
+                break;
+            default:
+                abort();
+            }
+            _inputReports = RingBuffer_alloc( cbElem );
+        }
 		HIDBLEManager.sharedInstance.nPendingPairs -= 1;
 	}
 
 	if ( [characteristic.UUID isEqual:_bleCharacteristicInput.UUID] )
 	{
 		NSData *data = [characteristic value];
-		if ( data.length != 19 )
+		if ( _inputReports && data.length != _inputReports->_cbElem )
 		{
-			NSLog( @"HIDBLE: incoming data is %lu bytes should be exactly 19", (unsigned long)data.length );
+            NSLog( @"HIDBLE: incoming data is %lu bytes should be exactly %d", (unsigned long)data.length, _inputReports->_cbElem );
 		}
-		if ( !RingBuffer_write( &_inputReports, (const uint8_t *)data.bytes ) )
+		if ( !RingBuffer_write( _inputReports, (const uint8_t *)data.bytes ) )
 		{
 			uint64_t ticksNow = mach_approximate_time();
 			if ( ticksNow - s_ticksLastOverflowReport > (5ull * NSEC_PER_SEC / 10) )
@@ -712,8 +827,6 @@ static void process_pending_events(void)
 	}
 	else if ( [characteristic.UUID isEqual:_bleCharacteristicReport.UUID] )
 	{
-		memset( _featureReport, 0, sizeof(_featureReport) );
-
 		if ( error != nil )
 		{
 			NSLog( @"HIDBLE: get_feature_report error: %@", error );
@@ -721,12 +834,7 @@ static void process_pending_events(void)
 		}
 		else
 		{
-			NSData *data = [characteristic value];
-			if ( data.length != 20 )
-			{
-				NSLog( @"HIDBLE: incoming data is %lu bytes should be exactly 20", (unsigned long)data.length );
-			}
-			memcpy( _featureReport, data.bytes, MIN( data.length, sizeof(_featureReport) ) );
+			_featureReport = [characteristic value];
 			_waitStateForReadFeatureReport = BLEDeviceWaitState_Complete;
 		}
 	}
@@ -850,7 +958,7 @@ static struct hid_device_info *create_device_info_for_hid_device(HIDBLEDevice *d
     memset( device_info, 0, sizeof(struct hid_device_info) );
     device_info->path = strdup( device.bleSteamController.identifier.UUIDString.UTF8String );
     device_info->vendor_id = VALVE_USB_VID;
-    device_info->product_id = D0G_BLE2_PID;
+    device_info->product_id = device.pid;
     device_info->product_string = wcsdup( L"Steam Controller" );
     device_info->manufacturer_string = wcsdup( L"Valve Corporation" );
     device_info->bus_type = HID_API_BUS_BLUETOOTH;
@@ -861,14 +969,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 { @autoreleasepool {
 	struct hid_device_info *root = NULL;
 
-	/* See if there are any devices we should skip in enumeration */
-	if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, D0G_BLE2_PID, 0, 0)) {
-		return NULL;
-	}
-
-	if ( ( vendor_id == 0 || vendor_id == VALVE_USB_VID ) &&
-	     ( product_id == 0 || product_id == D0G_BLE2_PID ) )
-	{
 		HIDBLEManager *bleManager = HIDBLEManager.sharedInstance;
 		[bleManager updateConnectedSteamControllers:false];
 		NSEnumerator<HIDBLEDevice *> *devices = [bleManager.deviceMap objectEnumerator];
@@ -891,11 +991,22 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 				}
 				continue;
 			}
+
+        if ( ( vendor_id != 0 && vendor_id != VALVE_USB_VID ) ||
+             ( product_id != 0 && product_id != device.pid ) )
+        {
+            continue;
+        }
+
+        /* See if there are any devices we should skip in enumeration */
+        if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, device.pid, 0, 0, false)) {
+            continue;
+        }
+
 			struct hid_device_info *device_info = create_device_info_for_hid_device(device);
 			device_info->next = root;
 			root = device_info;
 		}
-	}
 	return root;
 }}
 
@@ -975,7 +1086,7 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
 	if ( !device_handle.connected )
 		return -1;
 
-	return [device_handle send_feature_report:(hidFeatureReport *)(void *)data];
+    return [device_handle send_feature_report:(hidFeatureReport *)(void *)data length:length];
 }
 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)
@@ -985,7 +1096,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	if ( !device_handle.connected )
 		return -1;
 
-	size_t written = [device_handle get_feature_report:data[0] into:data];
+	size_t written = [device_handle get_feature_report:data[0] into:data length:length];
 
 	return written == length-1 ? (int)length : (int)written;
 }
@@ -1018,7 +1129,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
 		NSLog( @"hid_read_timeout with non-zero wait" );
 	}
 	int result = (int)[device_handle read_input_report:data];
-#if FEATURE_REPORT_LOGGING
+#if 0 //FEATURE_REPORT_LOGGING
 	NSLog( @"HIDBLE:hid_read_timeout (%d) [%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x]", result,
 		  data[1], data[2], data[3], data[4], data[5], data[6],
 		  data[7], data[8], data[9], data[10], data[11], data[12],

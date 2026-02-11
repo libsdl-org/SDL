@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -152,7 +152,8 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 
 bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
-    if (!ticks) {
+    CHECK_PARAM(!ticks)
+    {
         return SDL_InvalidParamError("ticks");
     }
 
@@ -165,6 +166,44 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
     Uint32 ns_high = interval_ns.High();
 
     *ticks = ((Uint64)ns_high << 32) | ns_low;
+
+    return true;
+}
+
+#define SYMBIAN_UNIX_EPOCH_OFFSET_US 62135596800000000LL
+
+bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
+{
+    CHECK_PARAM(!dt)
+    {
+        return SDL_InvalidParamError("dt");
+    }
+
+    long long unixMicros = ticks / 1000LL;
+
+    unixMicros += SYMBIAN_UNIX_EPOCH_OFFSET_US;
+
+    TInt32 high = (TInt32)(unixMicros >> 32);
+    TUint32 low = (TUint32)(unixMicros & 0xFFFFFFFFu);
+    TInt64 symbianTime(high, low);
+
+    TTime s60Time(symbianTime);
+
+    if (localTime) {
+        s60Time.HomeTime();
+    }
+
+    TDateTime dtSym = s60Time.DateTime();
+
+    dt->year = dtSym.Year();
+    dt->month = dtSym.Month() + 1; // Months are 0-11
+    dt->day = dtSym.Day() + 1;     // Days are 0-30
+    dt->hour = dtSym.Hour();
+    dt->minute = dtSym.Minute();
+    dt->second = dtSym.Second();
+    dt->nanosecond = (int)(ticks % 1000000000LL);
+    dt->day_of_week = s60Time.DayNoInWeek();
+    dt->utc_offset = 0;
 
     return true;
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,12 +30,22 @@
 
 // The shaders here were compiled with compile_shaders.bat
 
+#define g_ps20_main D3D9_PixelShader_Palette_Nearest
+#include "D3D9_PixelShader_Palette_Nearest.h"
+#undef g_ps20_main
+
+#define g_ps20_main D3D9_PixelShader_Palette_Linear
+#include "D3D9_PixelShader_Palette_Linear.h"
+#undef g_ps20_main
+
 #define g_ps20_main D3D9_PixelShader_YUV
 #include "D3D9_PixelShader_YUV.h"
 #undef g_ps20_main
 
 static const BYTE *D3D9_shaders[] = {
     NULL,
+    D3D9_PixelShader_Palette_Nearest,
+    D3D9_PixelShader_Palette_Linear,
     D3D9_PixelShader_YUV
 };
 SDL_COMPILE_TIME_ASSERT(D3D9_shaders, SDL_arraysize(D3D9_shaders) == NUM_SHADERS);

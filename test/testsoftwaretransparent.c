@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,6 +11,7 @@
 */
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
 #define SQUARE_SIZE 100.0f
 
@@ -54,8 +55,18 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer = NULL;
     bool done = false;
     SDL_Event event;
+    SDLTest_CommonState *state;
 
     int return_code = 1;
+
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        return 1;
+    }
+
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        goto quit;
+    }
 
     window = SDL_CreateWindow("SDL Software Renderer Transparent Test", 800, 600, SDL_WINDOW_TRANSPARENT | SDL_WINDOW_RESIZABLE);
     if (!window) {
@@ -106,5 +117,6 @@ quit:
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return return_code;
 }

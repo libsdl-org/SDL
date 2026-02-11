@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,6 @@ static bool NGAGE_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 
 static bool NGAGE_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect, void **pixels, int *pitch);
 static void NGAGE_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture);
-static void NGAGE_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
 static bool NGAGE_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture);
 static SDL_Surface *NGAGE_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
 static bool NGAGE_RenderPresent(SDL_Renderer *renderer);
@@ -99,25 +98,22 @@ static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->QueueCopy = NGAGE_QueueCopy;
     renderer->QueueCopyEx = NGAGE_QueueCopyEx;
     renderer->QueueGeometry = NGAGE_QueueGeometry;
-
     renderer->InvalidateCachedState = NGAGE_InvalidateCachedState;
     renderer->RunCommandQueue = NGAGE_RunCommandQueue;
     renderer->UpdateTexture = NGAGE_UpdateTexture;
     renderer->LockTexture = NGAGE_LockTexture;
     renderer->UnlockTexture = NGAGE_UnlockTexture;
-    // renderer->SetTextureScaleMode = NGAGE_SetTextureScaleMode;
     renderer->SetRenderTarget = NGAGE_SetRenderTarget;
     renderer->RenderReadPixels = NGAGE_RenderReadPixels;
     renderer->RenderPresent = NGAGE_RenderPresent;
     renderer->DestroyTexture = NGAGE_DestroyTexture;
-
     renderer->DestroyRenderer = NGAGE_DestroyRenderer;
-
     renderer->SetVSync = NGAGE_SetVSync;
 
     renderer->name = NGAGE_RenderDriver.name;
     renderer->window = window;
     renderer->internal = phdata;
+    renderer->npot_texture_wrap_unsupported = true;
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB4444);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
@@ -492,10 +488,6 @@ static bool NGAGE_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
 }
 
 static void NGAGE_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-}
-
-static void NGAGE_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
 }
 

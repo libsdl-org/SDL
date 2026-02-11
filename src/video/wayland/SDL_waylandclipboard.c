@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,8 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
 
+    video_data->last_incoming_data_offer_seat = seat;
+
     if (seat && seat->data_device) {
         SDL_WaylandDataDevice *data_device = seat->data_device;
 
@@ -70,7 +72,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
         if (data_device->selection_source) {
             buffer = SDL_GetInternalClipboardData(_this, mime_type, length);
         } else if (Wayland_data_offer_has_mime(data_device->selection_offer, mime_type)) {
-            buffer = Wayland_data_offer_receive(data_device->selection_offer, mime_type, length);
+            buffer = Wayland_data_offer_receive(data_device->selection_offer, mime_type, length, true);
         }
     }
 
@@ -118,6 +120,8 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
     if (!seat && !WAYLAND_wl_list_empty(&video_data->seat_list)) {
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
+
+    video_data->last_incoming_primary_selection_seat = seat;
 
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;

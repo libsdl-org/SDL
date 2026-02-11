@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,17 +29,25 @@
 #include "../audio/SDL_audio_c.h"
 #include "../camera/SDL_camera_c.h"
 #include "../timer/SDL_timer_c.h"
+#include "../core/linux/SDL_udev.h"
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
 #ifndef SDL_SENSOR_DISABLED
 #include "../sensor/SDL_sensor_c.h"
 #endif
+#ifdef HAVE_DBUS_DBUS_H
+#include "core/linux/SDL_dbus.h"
+#endif
 #include "../video/SDL_sysvideo.h"
 
 #ifdef SDL_PLATFORM_ANDROID
 #include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidevents.h"
+#endif
+
+#ifdef SDL_PLATFORM_UNIX
+#include "../tray/SDL_tray_utils.h"
 #endif
 
 // An arbitrary limit so we don't have unbounded growth
@@ -50,6 +58,12 @@
 
 // Determines how often to pump events if joysticks or sensors are actively being read
 #define EVENT_POLL_INTERVAL_NS SDL_MS_TO_NS(1)
+
+// Determines how often to pump events if tray items are active
+#define TRAY_POLL_INTERVAL_NS SDL_MS_TO_NS(50)
+
+// Determines how often to pump events if DBus is active
+#define DBUS_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
 
 // Make sure the type in the SDL_Event aligns properly across the union
 SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
@@ -458,8 +472,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         } else {
             plusstr[0] = '\0';
         }
-        (void)SDL_snprintf(details, sizeof(details), "%s (timestamp=%u windowid=%u code=%d data1=%p data2=%p)",
-                           plusstr, (uint)event->user.timestamp, (uint)event->user.windowID,
+        (void)SDL_snprintf(details, sizeof(details), "%s (timestamp=%" SDL_PRIu64 " windowid=%u code=%d data1=%p data2=%p)",
+                           plusstr, event->user.timestamp, (uint)event->user.windowID,
                            (int)event->user.code, event->user.data1, event->user.data2);
     }
 
@@ -471,7 +485,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_strlcpy(details, " (THIS IS PROBABLY A BUG!)", sizeof(details));
         break;
         SDL_EVENT_CASE(SDL_EVENT_QUIT)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u)", (uint)event->quit.timestamp);
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 ")", event->quit.timestamp);
         break;
         SDL_EVENT_CASE(SDL_EVENT_TERMINATING)
         break;
@@ -497,8 +511,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define SDL_RENDEREVENT_CASE(x)                \
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name));   \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u event=%s windowid=%u)", \
-                           (uint)event->display.timestamp, name, (uint)event->render.windowID); \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " event=%s windowid=%u)", \
+                           event->display.timestamp, name, (uint)event->render.windowID); \
         break
         SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_TARGETS_RESET);
         SDL_RENDEREVENT_CASE(SDL_EVENT_RENDER_DEVICE_RESET);
@@ -507,8 +521,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define SDL_DISPLAYEVENT_CASE(x)               \
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name));   \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u display=%u event=%s data1=%d, data2=%d)", \
-                           (uint)event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1, (int)event->display.data2); \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " display=%u event=%s data1=%d, data2=%d)", \
+                           event->display.timestamp, (uint)event->display.displayID, name, (int)event->display.data1, (int)event->display.data2); \
         break
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ORIENTATION);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_ADDED);
@@ -517,13 +531,14 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED);
         SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED);
+        SDL_DISPLAYEVENT_CASE(SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED);
 #undef SDL_DISPLAYEVENT_CASE
 
 #define SDL_WINDOWEVENT_CASE(x)                \
     case x:                                    \
         SDL_strlcpy(name, #x, sizeof(name)); \
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u event=%s data1=%d data2=%d)", \
-                           (uint)event->window.timestamp, (uint)event->window.windowID, name, (int)event->window.data1, (int)event->window.data2); \
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u event=%s data1=%d data2=%d)", \
+                           event->window.timestamp, (uint)event->window.windowID, name, (int)event->window.data1, (int)event->window.data2); \
         break
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SHOWN);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HIDDEN);
@@ -552,7 +567,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
 
-#define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->kdevice.timestamp, (uint)event->kdevice.which)
+#define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->kdevice.timestamp, (uint)event->kdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_KEYBOARD_ADDED)
         PRINT_KEYDEV_EVENT(event);
         break;
@@ -562,8 +577,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_KEYDEV_EVENT
 
 #define PRINT_KEY_EVENT(event)                                                                                                              \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%s repeat=%s scancode=%u keycode=%u mod=0x%x)", \
-                       (uint)event->key.timestamp, (uint)event->key.windowID, (uint)event->key.which,                                       \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u state=%s repeat=%s scancode=%u keycode=%u mod=0x%x)", \
+                       event->key.timestamp, (uint)event->key.windowID, (uint)event->key.which,                                       \
                        event->key.down ? "pressed" : "released",                                                            \
                        event->key.repeat ? "true" : "false",                                                                                \
                        (uint)event->key.scancode,                                                                                           \
@@ -578,22 +593,26 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_KEY_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_TEXT_EDITING)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s' start=%d length=%d)",
-                           (uint)event->edit.timestamp, (uint)event->edit.windowID,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u text='%s' start=%d length=%d)",
+                           event->edit.timestamp, (uint)event->edit.windowID,
                            event->edit.text, (int)event->edit.start, (int)event->edit.length);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_TEXT_EDITING_CANDIDATES)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u num_candidates=%d selected_candidate=%d)",
-                           (uint)event->edit_candidates.timestamp, (uint)event->edit_candidates.windowID,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u num_candidates=%d selected_candidate=%d)",
+                           event->edit_candidates.timestamp, (uint)event->edit_candidates.windowID,
                            (int)event->edit_candidates.num_candidates, (int)event->edit_candidates.selected_candidate);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_TEXT_INPUT)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s')", (uint)event->text.timestamp, (uint)event->text.windowID, event->text.text);
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u text='%s')", event->text.timestamp, (uint)event->text.windowID, event->text.text);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)
         break;
 
-#define PRINT_MOUSEDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->mdevice.timestamp, (uint)event->mdevice.which)
+#define PRINT_MOUSEDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->mdevice.timestamp, (uint)event->mdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_ADDED)
         PRINT_MOUSEDEV_EVENT(event);
         break;
@@ -603,16 +622,16 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_MOUSEDEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u state=%u x=%g y=%g xrel=%g yrel=%g)",
-                           (uint)event->motion.timestamp, (uint)event->motion.windowID,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u state=%u x=%g y=%g xrel=%g yrel=%g)",
+                           event->motion.timestamp, (uint)event->motion.windowID,
                            (uint)event->motion.which, (uint)event->motion.state,
                            event->motion.x, event->motion.y,
                            event->motion.xrel, event->motion.yrel);
         break;
 
 #define PRINT_MBUTTON_EVENT(event)                                                                                              \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
-                       (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
+                       event->button.timestamp, (uint)event->button.windowID,                                             \
                        (uint)event->button.which, (uint)event->button.button,                                                   \
                        event->button.down ? "pressed" : "released",                                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
@@ -625,34 +644,34 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_MBUTTON_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_WHEEL)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u x=%g y=%g integer_x=%d integer_y=%d direction=%s)",
-                           (uint)event->wheel.timestamp, (uint)event->wheel.windowID,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u x=%g y=%g integer_x=%d integer_y=%d direction=%s)",
+                           event->wheel.timestamp, (uint)event->wheel.windowID,
                            (uint)event->wheel.which, event->wheel.x, event->wheel.y,
                            (int)event->wheel.integer_x, (int)event->wheel.integer_y,
                            event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_AXIS_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d axis=%u value=%d)",
-                           (uint)event->jaxis.timestamp, (int)event->jaxis.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d axis=%u value=%d)",
+                           event->jaxis.timestamp, (int)event->jaxis.which,
                            (uint)event->jaxis.axis, (int)event->jaxis.value);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BALL_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d ball=%u xrel=%d yrel=%d)",
-                           (uint)event->jball.timestamp, (int)event->jball.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d ball=%u xrel=%d yrel=%d)",
+                           event->jball.timestamp, (int)event->jball.which,
                            (uint)event->jball.ball, (int)event->jball.xrel, (int)event->jball.yrel);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_HAT_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d hat=%u value=%u)",
-                           (uint)event->jhat.timestamp, (int)event->jhat.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d hat=%u value=%u)",
+                           event->jhat.timestamp, (int)event->jhat.which,
                            (uint)event->jhat.hat, (uint)event->jhat.value);
         break;
 
 #define PRINT_JBUTTON_EVENT(event)                                                              \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
-                       (uint)event->jbutton.timestamp, (int)event->jbutton.which,               \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d button=%u state=%s)", \
+                       event->jbutton.timestamp, (int)event->jbutton.which,               \
                        (uint)event->jbutton.button, event->jbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BUTTON_DOWN)
         PRINT_JBUTTON_EVENT(event);
@@ -663,12 +682,12 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_JBUTTON_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d state=%u percent=%d)",
-                           (uint)event->jbattery.timestamp, (int)event->jbattery.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d state=%u percent=%d)",
+                           event->jbattery.timestamp, (int)event->jbattery.which,
                            event->jbattery.state, event->jbattery.percent);
         break;
 
-#define PRINT_JOYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->jdevice.timestamp, (int)event->jdevice.which)
+#define PRINT_JOYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d)", event->jdevice.timestamp, (int)event->jdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_ADDED)
         PRINT_JOYDEV_EVENT(event);
         break;
@@ -681,14 +700,14 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_JOYDEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_AXIS_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d axis=%u value=%d)",
-                           (uint)event->gaxis.timestamp, (int)event->gaxis.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d axis=%u value=%d)",
+                           event->gaxis.timestamp, (int)event->gaxis.which,
                            (uint)event->gaxis.axis, (int)event->gaxis.value);
         break;
 
 #define PRINT_CBUTTON_EVENT(event)                                                              \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d button=%u state=%s)", \
-                       (uint)event->gbutton.timestamp, (int)event->gbutton.which,               \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d button=%u state=%s)", \
+                       event->gbutton.timestamp, (int)event->gbutton.which,               \
                        (uint)event->gbutton.button, event->gbutton.down ? "pressed" : "released")
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_BUTTON_DOWN)
         PRINT_CBUTTON_EVENT(event);
@@ -698,7 +717,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_CBUTTON_EVENT
 
-#define PRINT_GAMEPADDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d)", (uint)event->gdevice.timestamp, (int)event->gdevice.which)
+#define PRINT_GAMEPADDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d)", event->gdevice.timestamp, (int)event->gdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_ADDED)
         PRINT_GAMEPADDEV_EVENT(event);
         break;
@@ -717,8 +736,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_GAMEPADDEV_EVENT
 
 #define PRINT_CTOUCHPAD_EVENT(event)                                                                                     \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d touchpad=%d finger=%d x=%f y=%f pressure=%f)", \
-                       (uint)event->gtouchpad.timestamp, (int)event->gtouchpad.which,                                    \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d touchpad=%d finger=%d x=%f y=%f pressure=%f)", \
+                       event->gtouchpad.timestamp, (int)event->gtouchpad.which,                                    \
                        (int)event->gtouchpad.touchpad, (int)event->gtouchpad.finger,                                     \
                        event->gtouchpad.x, event->gtouchpad.y, event->gtouchpad.pressure)
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN)
@@ -733,14 +752,14 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_CTOUCHPAD_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_SENSOR_UPDATE)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d sensor=%d data[0]=%f data[1]=%f data[2]=%f)",
-                           (uint)event->gsensor.timestamp, (int)event->gsensor.which, (int)event->gsensor.sensor,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d sensor=%d data[0]=%f data[1]=%f data[2]=%f)",
+                           event->gsensor.timestamp, (int)event->gsensor.which, (int)event->gsensor.sensor,
                            event->gsensor.data[0], event->gsensor.data[1], event->gsensor.data[2]);
         break;
 
 #define PRINT_FINGER_EVENT(event)                                                                                                                      \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \
-                       (uint)event->tfinger.timestamp, event->tfinger.touchID,                                                              \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \
+                       event->tfinger.timestamp, event->tfinger.touchID,                                                              \
                        event->tfinger.fingerID, event->tfinger.x, event->tfinger.y,                                                         \
                        event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure)
         SDL_EVENT_CASE(SDL_EVENT_FINGER_DOWN)
@@ -757,10 +776,24 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_FINGER_EVENT
 
+#define PRINT_PINCH_EVENT(event)                                                                                                                      \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " scale=%f)", \
+                       event->pinch.timestamp, event->pinch.scale)
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_BEGIN)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_UPDATE)
+        PRINT_PINCH_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_PINCH_END)
+        PRINT_PINCH_EVENT(event);
+        break;
+#undef PRINT_PINCH_EVENT
+
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
-                       (uint)event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
-                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up");
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
+                       event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
+                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTOUCH_EVENT(event);
         break;
@@ -770,8 +803,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_PTOUCH_EVENT
 
 #define PRINT_PPROXIMITY_EVENT(event)                                                                             \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u)", \
-                       (uint)event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which);
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u)", \
+                       event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which)
         SDL_EVENT_CASE(SDL_EVENT_PEN_PROXIMITY_IN)
         PRINT_PPROXIMITY_EVENT(event);
         break;
@@ -781,20 +814,20 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_PPROXIMITY_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_PEN_AXIS)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g axis=%s value=%g)",
-                           (uint)event->paxis.timestamp, (uint)event->paxis.windowID, (uint)event->paxis.which, (uint)event->paxis.pen_state, event->paxis.x, event->paxis.y,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g axis=%s value=%g)",
+                           event->paxis.timestamp, (uint)event->paxis.windowID, (uint)event->paxis.which, (uint)event->paxis.pen_state, event->paxis.x, event->paxis.y,
                            ((((int) event->paxis.axis) >= 0) && (event->paxis.axis < SDL_arraysize(pen_axisnames))) ? pen_axisnames[event->paxis.axis] : "[UNKNOWN]", event->paxis.value);
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_PEN_MOTION)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g)",
-                           (uint)event->pmotion.timestamp, (uint)event->pmotion.windowID, (uint)event->pmotion.which, (uint)event->pmotion.pen_state, event->pmotion.x, event->pmotion.y);
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g)",
+                           event->pmotion.timestamp, (uint)event->pmotion.windowID, (uint)event->pmotion.which, (uint)event->pmotion.pen_state, event->pmotion.x, event->pmotion.y);
         break;
 
 #define PRINT_PBUTTON_EVENT(event)                                                                                                               \
-    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
-                       (uint)event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
-                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up");
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
+                       event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
+                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
         PRINT_PBUTTON_EVENT(event);
         break;
@@ -803,7 +836,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_PBUTTON_EVENT
 
-#define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (data='%s' timestamp=%u windowid=%u x=%f y=%f)", event->drop.data, (uint)event->drop.timestamp, (uint)event->drop.windowID, event->drop.x, event->drop.y)
+#define PRINT_DROP_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (data='%s' timestamp=%" SDL_PRIu64 " windowid=%u x=%f y=%f)", event->drop.data, event->drop.timestamp, (uint)event->drop.windowID, event->drop.x, event->drop.y)
         SDL_EVENT_CASE(SDL_EVENT_DROP_FILE)
         PRINT_DROP_EVENT(event);
         break;
@@ -821,7 +854,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_DROP_EVENT
 
-#define PRINT_AUDIODEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u recording=%s)", (uint)event->adevice.timestamp, (uint)event->adevice.which, event->adevice.recording ? "true" : "false")
+#define PRINT_AUDIODEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u recording=%s)", event->adevice.timestamp, (uint)event->adevice.which, event->adevice.recording ? "true" : "false")
         SDL_EVENT_CASE(SDL_EVENT_AUDIO_DEVICE_ADDED)
         PRINT_AUDIODEV_EVENT(event);
         break;
@@ -833,7 +866,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_AUDIODEV_EVENT
 
-#define PRINT_CAMERADEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->cdevice.timestamp, (uint)event->cdevice.which)
+#define PRINT_CAMERADEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->cdevice.timestamp, (uint)event->cdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_CAMERA_DEVICE_ADDED)
         PRINT_CAMERADEV_EVENT(event);
         break;
@@ -849,8 +882,8 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_CAMERADEV_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_SENSOR_UPDATE)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%d data[0]=%f data[1]=%f data[2]=%f data[3]=%f data[4]=%f data[5]=%f)",
-                           (uint)event->sensor.timestamp, (int)event->sensor.which,
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d data[0]=%f data[1]=%f data[2]=%f data[3]=%f data[4]=%f data[5]=%f)",
+                           event->sensor.timestamp, (int)event->sensor.which,
                            event->sensor.data[0], event->sensor.data[1], event->sensor.data[2],
                            event->sensor.data[3], event->sensor.data[4], event->sensor.data[5]);
         break;
@@ -889,12 +922,13 @@ static void SDL_LogEvent(const SDL_Event *event)
         return;
     }
 
-    // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
+    // sensor/mouse/pen/finger/pinch motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
+         (event->type == SDL_EVENT_PINCH_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_AXIS_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
@@ -1131,9 +1165,10 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
             return -1;
         }
         if (action == SDL_ADDEVENT) {
-            if (!events) {
+            CHECK_PARAM(!events) {
                 SDL_UnlockMutex(SDL_EventQ.lock);
-                return SDL_InvalidParamError("events");
+                SDL_InvalidParamError("events");
+                return -1;
             }
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
@@ -1423,6 +1458,10 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
 
 void SDL_PumpEventMaintenance(void)
 {
+#ifdef SDL_USE_LIBUDEV
+    SDL_UDEV_Poll();
+#endif
+
 #ifndef SDL_AUDIO_DISABLED
     SDL_UpdateAudio();
 #endif
@@ -1445,6 +1484,10 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_SendPendingPenProximity();
+
+    SDL_UpdateCursorAnimation();
+
     SDL_UpdateTrays();
 
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
@@ -1453,6 +1496,9 @@ void SDL_PumpEventMaintenance(void)
 // Run the system dependent event loops
 static void SDL_PumpEventsInternal(bool push_sentinel)
 {
+    // This should only be called on the main thread, check in debug builds
+    SDL_assert(SDL_IsMainThread());
+
     // Free any temporary memory from old events
     SDL_FreeTemporaryMemory();
 
@@ -1461,6 +1507,11 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
 
     // Run any pending main thread callbacks
     SDL_RunMainThreadCallbacks();
+
+#ifdef SDL_USE_LIBDBUS
+    // DBus event processing is independent of the video subsystem
+    SDL_DBus_PumpEvents();
+#endif
 
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
@@ -1526,6 +1577,17 @@ static Sint64 SDL_events_get_polling_interval(void)
     }
 #endif
 
+#ifdef SDL_PLATFORM_UNIX
+    if (SDL_HasActiveTrays()) {
+        // Tray events on *nix platforms run separately from window system events, and need periodic polling
+        poll_intervalNS = SDL_min(poll_intervalNS, TRAY_POLL_INTERVAL_NS);
+    }
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    // Wake periodically to pump DBus events
+    poll_intervalNS = SDL_min(poll_intervalNS, DBUS_POLL_INTERVAL_NS);
+#endif
     return poll_intervalNS;
 }
 
@@ -1671,6 +1733,8 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 
 #ifdef SDL_PLATFORM_ANDROID
     for (;;) {
+        SDL_PumpEventsInternal(true);
+
         if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
             return true;
         }

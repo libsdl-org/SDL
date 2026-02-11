@@ -659,9 +659,8 @@ xsettings_setting_copy (XSettingsSetting *setting)
   return result;
 
  err:
-  if (result->name)
-    free (result->name);
-  free (result);
+  free(result->name); // This should NOT be SDL_free()
+  free(result); // This should NOT be SDL_free()
 
   return NULL;
 }
@@ -741,10 +740,8 @@ xsettings_setting_free (XSettingsSetting *setting)
   if (setting->type == XSETTINGS_TYPE_STRING)
     free (setting->data.v_string);
 
-  if (setting->name)
-    free (setting->name);
-
-  free (setting);
+  free(setting->name); // This should NOT be SDL_free()
+  free(setting); // This should NOT be SDL_free()
 }
 
 void

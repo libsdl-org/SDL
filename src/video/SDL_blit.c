@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,17 +64,26 @@ static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
         SDL_BlitInfo *info = &src->map.info;
 
         // Set up the blit information
-        info->src = (Uint8 *)src->pixels +
-                    (Uint16)srcrect->y * src->pitch +
-                    (Uint16)srcrect->x * info->src_fmt->bytes_per_pixel;
+        if (info->src_fmt->bits_per_pixel >= 8) {
+            info->src = (Uint8 *)src->pixels +
+                        srcrect->y * src->pitch +
+                        srcrect->x * info->src_fmt->bytes_per_pixel;
+        } else {
+            info->src = (Uint8 *)src->pixels +
+                        srcrect->y * src->pitch +
+                        (srcrect->x * info->src_fmt->bits_per_pixel) / 8;
+            info->leading_skip =
+                        ((srcrect->x * info->src_fmt->bits_per_pixel) % 8) /
+                        info->src_fmt->bits_per_pixel;
+        }
         info->src_w = srcrect->w;
         info->src_h = srcrect->h;
         info->src_pitch = src->pitch;
         info->src_skip =
             info->src_pitch - info->src_w * info->src_fmt->bytes_per_pixel;
-        info->dst =
-            (Uint8 *)dst->pixels + (Uint16)dstrect->y * dst->pitch +
-            (Uint16)dstrect->x * info->dst_fmt->bytes_per_pixel;
+        info->dst = (Uint8 *)dst->pixels +
+                    dstrect->y * dst->pitch +
+                    dstrect->x * info->dst_fmt->bytes_per_pixel;
         info->dst_w = dstrect->w;
         info->dst_h = dstrect->h;
         info->dst_pitch = dst->pitch;
@@ -189,12 +198,8 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
         return SDL_SetError("Blit combination not supported");
     }
 
-#ifdef SDL_HAVE_RLE
-    // Clean everything out to start
-    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
-        SDL_UnRLESurface(surface, true);
-    }
-#endif
+    // We should have cleared out RLE at this point
+    SDL_assert(!(surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL));
 
     map->blit = SDL_SoftBlit;
     map->info.src_surface = surface;

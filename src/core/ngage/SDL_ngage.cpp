@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,34 +36,19 @@ bool NGAGE_IsClassicModel()
     return (0x101f8c19 == phone_id);
 }
 
-void NGAGE_printf(const char *fmt, ...)
+void NGAGE_DebugPrintf(const char *fmt, ...)
 {
     char buffer[512] = { 0 };
 
     va_list ap;
     va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
+    (void)SDL_vsnprintf(buffer, sizeof(buffer), fmt, ap);
     va_end(ap);
 
     TBuf<512> buf;
     buf.Copy(TPtrC8((TText8 *)buffer));
 
     RDebug::Print(_L("%S"), &buf);
-}
-
-void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap)
-{
-    char buffer[512] = { 0 };
-
-    vsprintf(buffer, fmt, ap);
-
-    TBuf<512> tbuf;
-    tbuf.Copy(TPtrC8((TText8 *)buffer));
-
-    RDebug::Print(_L("%S"), &tbuf);
-
-    strncpy(buf, buffer, size - 1);
-    buf[size - 1] = '\0';
 }
 
 TInt NGAGE_GetFreeHeapMemory()

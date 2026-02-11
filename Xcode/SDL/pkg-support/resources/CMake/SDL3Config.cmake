@@ -1,8 +1,9 @@
 # SDL3 CMake configuration file:
-# This file is meant to be placed in Resources/CMake of a SDL3 framework
+# This file is meant to be placed in Resources/CMake of a SDL3 framework for macOS,
+# or in the CMake directory of a SDL3 framework for iOS / tvOS / visionOS.
 
 # INTERFACE_LINK_OPTIONS needs CMake 3.12
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...4.0)
 
 include(FeatureSummary)
 set_package_properties(SDL3 PROPERTIES
@@ -31,16 +32,31 @@ endmacro()
 
 set(SDL3_FOUND TRUE)
 
-# Compute the installation prefix relative to this file.
-set(_sdl3_framework_path "${CMAKE_CURRENT_LIST_DIR}")                               # > /SDL3.framework/Resources/CMake/
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" REALPATH)     # > /SDL3.framework/Versions/Current/Resources/CMake
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" REALPATH)     # > /SDL3.framework/Versions/A/Resources/CMake/
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # > /SDL3.framework/Versions/A/Resources/
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # > /SDL3.framework/Versions/A/
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # > /SDL3.framework/Versions/
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" PATH)         # > /SDL3.framework/
-get_filename_component(_sdl3_framework_parent_path "${_sdl3_framework_path}" PATH)  # > /
+# Compute the installation prefix relative to this file:
+# search upwards for the .framework directory
+set(_current_path "${CMAKE_CURRENT_LIST_DIR}")
+get_filename_component(_current_path "${_current_path}" REALPATH)
+set(_sdl3_framework_path "")
 
+while(NOT _sdl3_framework_path)
+    if(IS_DIRECTORY "${_current_path}" AND "${_current_path}" MATCHES "/SDL3\\.framework$")
+        set(_sdl3_framework_path "${_current_path}")
+        break()
+    endif()
+    get_filename_component(_next_current_path "${_current_path}" DIRECTORY)
+    if("${_current_path}" STREQUAL "${_next_current_path}")
+        break()
+    endif()
+    set(_current_path "${_next_current_path}")
+endwhile()
+unset(_current_path)
+unset(_next_current_path)
+
+if(NOT _sdl3_framework_path)
+    message(FATAL_ERROR "Could not find SDL3.framework root from ${CMAKE_CURRENT_LIST_DIR}")
+endif()
+
+get_filename_component(_sdl3_framework_parent_path "${_sdl3_framework_path}" PATH)
 
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL3-target.cmake files.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -140,12 +140,6 @@ double SDL_copysign(double x, double y)
     return copysign(x, y);
 #elif defined(HAVE__COPYSIGN)
     return _copysign(x, y);
-#elif defined(__WATCOMC__) && defined(__386__)
-    // this is nasty as hell, but it works..
-    unsigned int *xi = (unsigned int *)&x,
-                 *yi = (unsigned int *)&y;
-    xi[1] = (yi[1] & 0x80000000) | (xi[1] & 0x7fffffff);
-    return x;
 #else
     return SDL_uclibc_copysign(x, y);
 #endif // HAVE_COPYSIGN

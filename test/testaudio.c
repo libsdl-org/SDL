@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1100,12 +1100,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SetDefaultTitleBar();
 
-    if ((physdev_texture = CreateTexture("physaudiodev.bmp")) == NULL) { return SDL_APP_FAILURE; }
-    if ((logdev_texture = CreateTexture("logaudiodev.bmp")) == NULL) { return SDL_APP_FAILURE; }
-    if ((audio_texture = CreateTexture("audiofile.bmp")) == NULL) { return SDL_APP_FAILURE; }
-    if ((trashcan_texture = CreateTexture("trashcan.bmp")) == NULL) { return SDL_APP_FAILURE; }
-    if ((soundboard_texture = CreateTexture("soundboard.bmp")) == NULL) { return SDL_APP_FAILURE; }
-    if ((soundboard_levels_texture = CreateTexture("soundboard_levels.bmp")) == NULL) { return SDL_APP_FAILURE; }
+    if ((physdev_texture = CreateTexture("physaudiodev.png")) == NULL) { return SDL_APP_FAILURE; }
+    if ((logdev_texture = CreateTexture("logaudiodev.png")) == NULL) { return SDL_APP_FAILURE; }
+    if ((audio_texture = CreateTexture("audiofile.png")) == NULL) { return SDL_APP_FAILURE; }
+    if ((trashcan_texture = CreateTexture("trashcan.png")) == NULL) { return SDL_APP_FAILURE; }
+    if ((soundboard_texture = CreateTexture("soundboard.png")) == NULL) { return SDL_APP_FAILURE; }
+    if ((soundboard_levels_texture = CreateTexture("soundboard_levels.png")) == NULL) { return SDL_APP_FAILURE; }
 
     LoadStockWavThings();
     CreateTrashcanThing();

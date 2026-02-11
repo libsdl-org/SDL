@@ -288,7 +288,7 @@ static int get_usage(uint8_t *report_descriptor, size_t size,
 	return -1; /* failure */
 }
 
-#if defined(__FreeBSD__) && __FreeBSD__ < 10
+#if defined(__FreeBSD__) && __FreeBSD__ < 10 && !defined(libusb_get_string_descriptor)
 /* The libusb version included in FreeBSD < 10 doesn't have this function. In
    mainline libusb, it's inlined in libusb.h. This function will bear a striking
    resemblance to that one, because there's about one way to code it.
@@ -671,6 +671,8 @@ static void fill_device_info_usage(struct hid_device_info *cur_dev, libusb_devic
 
 	cur_dev->usage_page = page;
 	cur_dev->usage = usage;
+
+	free(hid_report_descriptor);
 }
 
 #ifdef INVASIVE_GET_USAGE
@@ -980,7 +982,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0)) {
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true)) {
 			continue;
 		}
 #endif

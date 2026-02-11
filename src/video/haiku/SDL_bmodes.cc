@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -243,20 +243,24 @@ bool HAIKU_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     display_mode this_bmode;
     display_mode *bmodes;
     uint32 count, i;
+    bool retval = false;
 
     // Get graphics-hardware supported modes
-    bscreen.GetModeList(&bmodes, &count);
-    bscreen.GetMode(&this_bmode);
-
-    for (i = 0; i < count; ++i) {
-        // FIXME: Apparently there are errors with colorspace changes
-        if (bmodes[i].space == this_bmode.space) {
-            _BDisplayModeToSdlDisplayMode(&bmodes[i], &mode);
-            SDL_AddFullscreenDisplayMode(display, &mode);
+    if (bscreen.GetModeList(&bmodes, &count) == B_OK) {
+        if (bscreen.GetMode(&this_bmode) == B_OK) {
+            for (i = 0; i < count; ++i) {
+                // FIXME: Apparently there are errors with colorspace changes
+                if (bmodes[i].space == this_bmode.space) {
+                    _BDisplayModeToSdlDisplayMode(&bmodes[i], &mode);
+                    SDL_AddFullscreenDisplayMode(display, &mode);
+                }
+            }
+            retval = true;
         }
+        free(bmodes); // This should NOT be SDL_free()
     }
-    free(bmodes); // This should NOT be SDL_free()
-    return true;
+
+    return retval;
 }
 
 
@@ -265,7 +269,7 @@ bool HAIKU_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL
     // Get the current screen
     BScreen bscreen;
     if (!bscreen.IsValid()) {
-        printf(__FILE__": %d - ERROR: BAD SCREEN\n", __LINE__);
+        return SDL_SetError("Invalid screen");
     }
 
     // Set the mode using the driver data

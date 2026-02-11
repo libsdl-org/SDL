@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,11 @@
 #ifndef SDL_windowevents_c_h_
 #define SDL_windowevents_c_h_
 
+// Set up for C function definitions, even when using C++
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
     SDL_WINDOW_EVENT_WATCH_EARLY,
@@ -35,5 +40,10 @@ extern void SDL_AddWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_E
 extern void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata);
 
 extern bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data1, int data2);
+
+// Ends C function definitions when using C++
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SDL_windowevents_c_h_

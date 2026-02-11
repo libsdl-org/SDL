@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,10 @@
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "core/windows/SDL_windows.h"
+#endif
+
+#if defined(SDL_PLATFORM_NGAGE)
+#include "core/ngage/SDL_ngage.h"
 #endif
 
 // Simple log messages in SDL
@@ -461,7 +465,7 @@ bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     char *prefix_copy;
 
-    if (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
+    CHECK_PARAM(priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return SDL_InvalidParamError("priority");
     }
 
@@ -598,25 +602,6 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         return;
     }
 
-#if defined(SDL_PLATFORM_NGAGE)
-    extern void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap);
-    char buf[1024];
-    NGAGE_vnprintf(buf, sizeof(buf), fmt, ap);
-
-#ifdef ENABLE_FILE_LOG
-    FILE* file;
-    file = fopen("E:/SDL_Log.txt", "a");
-    if (file)
-    {
-        vfprintf(file, fmt, ap);
-        fprintf(file, "\n");
-        (void)fclose(file);
-    }
-#endif
-
-    return;
-#endif
-
     // Render into stack buffer
     va_copy(aq, ap);
     len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
@@ -627,15 +612,21 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 
     // If message truncated, allocate and re-render
-    if (len >= sizeof(stack_buf) && SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
-        // Allocate exactly what we need, including the zero-terminator
-        message = (char *)SDL_malloc(len_plus_term);
-        if (!message) {
-            return;
+    if (len >= sizeof(stack_buf)) {
+        if (SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
+            // Allocate exactly what we need, including the zero-terminator
+            message = (char *)SDL_malloc(len_plus_term);
+            if (!message) {
+                return;
+            }
+            va_copy(aq, ap);
+            len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
+            va_end(aq);
+        } else {
+            // Allocation would overflow, use truncated message
+            message = stack_buf;
+            len = sizeof(stack_buf);
         }
-        va_copy(aq, ap);
-        len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
-        va_end(aq);
     } else {
         message = stack_buf;
     }
@@ -799,7 +790,15 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     }
 #elif defined(SDL_PLATFORM_NGAGE)
     {
-        /* Nothing to do here. */
+        NGAGE_DebugPrintf("%s%s", GetLogPriorityPrefix(priority), message);
+#ifdef ENABLE_FILE_LOG
+        FILE *pFile;
+        pFile = fopen("E:/SDL_Log.txt", "a");
+        if (pFile) {
+            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
+            (void)fclose(pFile);
+        }
+#endif
     }
 #endif
 #if defined(HAVE_STDIO_H) && \

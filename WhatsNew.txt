@@ -2,14 +2,132 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+3.4.0:
+---------------------------------------------------------------------------
+
+General:
+* Added SDL_CreateAnimatedCursor() to create animated color cursors
+* Added SDL_HINT_MOUSE_DPI_SCALE_CURSORS to automatically scale cursors based on the display scale
+* Added SDL_SetWindowProgressState(), SDL_SetWindowProgressValue(), SDL_GetWindowProgressState(), and SDL_GetWindowProgressValue() to show progress in the window's taskbar icon on Windows and Linux
+* Added GPU device creation properties to enable the GPU API on older hardware if you're not using these features:
+  - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN
+  - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN
+  - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN
+  - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN
+  - SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN
+* Added SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER to enable configuring Vulkan features when creating a GPU device
+* Added SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN to allow requiring Vulkan hardware acceleration when creating a GPU device
+* Added SDL_GetGPUDeviceProperties() to query information from a GPU device:
+  - SDL_PROP_GPU_DEVICE_NAME_STRING
+  - SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING
+  - SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING
+  - SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING
+* Added SDL_GetPixelFormatFromGPUTextureFormat() and SDL_GetGPUTextureFormatFromPixelFormat()
+* Added SDL_CreateGPURenderer() and SDL_GetGPURendererDevice() to create a 2D renderer for use with GPU rendering.
+* Added SDL_CreateGPURenderState(), SDL_SetGPURenderStateFragmentUniforms(), SDL_SetGPURenderState(), and SDL_DestroyGPURenderState() to use fragment shaders with a GPU 2D renderer
+* Added SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER to create a 2D texture from an existing GPU texture
+* Added SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER to get the GPU texture from a 2D texture when using the GPU 2D renderer
+* Added support for YUV textures and HDR colorspaces to the GPU 2D renderer
+* Added support for textures with palettes, and SDL_GetTexturePalette() and SDL_SetTexturePalette() to interact with them
+* Added SDL_RenderTexture9GridTiled() to do tiled instead of stretched 9-grid texture rendering
+* Added SDL_GetDefaultTextureScaleMode() and SDL_SetDefaultTextureScaleMode() to set the texture scale mode for new textures
+* Added SDL_GetRenderTextureAddressMode() and SDL_SetRenderTextureAddressMode() to change the texture addressing mode
+* Added SDL_TEXTURE_ADDRESS_WRAP to allow wrapping of textures if the renderer has SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN set
+* The default YUV colorspace is BT.601 limited range, for compatibility with SDL2
+* Added SDL_SCALEMODE_PIXELART as an improved scaling algorithm for pixel art without introducing blurring
+* Added SDL_FLIP_HORIZONTAL_AND_VERTICAL to flip a surface both horizontally and vertically
+* Added SDL_LoadPNG(), SDL_LoadPNG_IO(), SDL_SavePNG(), and SDL_SavePNG_IO() to load and save PNG images
+* Added SDL_LoadSurface() and SDL_LoadSurface_IO() to detect BMP and PNG formats and load them as surfaces
+* Added SDL_PROP_SURFACE_ROTATION_FLOAT to indicate the rotation needed to display camera images upright
+* Added SDL_RotateSurface() to create a rotated copy of a surface
+* SDL_EVENT_WINDOW_EXPOSED now sets data1 to true if it is sent during live resizing
+* Added SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, which is sent when the usable desktop bounds change
+* Added SDL_EVENT_SCREEN_KEYBOARD_SHOWN, which is sent when the on-screen keyboard has been shown
+* Added SDL_EVENT_SCREEN_KEYBOARD_HIDDEN, which is sent when the on-screen keyboard has been hidden
+* Added pinch gesture events: SDL_EVENT_PINCH_BEGIN, SDL_EVENT_PINCH_UPDATE, SDL_EVENT_PINCH_END
+* SDL_EVENT_AUDIO_DEVICE_ADDED will be sent during initialization for each audio device
+* SDL_GetCameraPermissionState() returns SDL_CameraPermissionState instead of int
+* Added SDL_PutAudioStreamDataNoCopy() to do more efficient audio stream processing in some cases
+* Added SDL_PutAudioStreamPlanarData() to add planar audio data instead of interleaved data to an audio stream
+* Added SDL_HINT_AUDIO_DEVICE_RAW_STREAM to signal that the OS shouldn't do further audio processing, useful for applications that handle noise canceling, etc.
+* Added SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN to allow streams that persist beyond the audio subsystem lifetime.
+* Added enhanced support for 8BitDo controllers
+* Added enhanced support for FlyDigi controllers
+* Added enhanced support for Hand Held Legend SInput controllers
+* Added support for wired Nintendo Switch 2 controllers when built with libusb
+* Added SDL_hid_get_properties() to associate SDL properties with HID devices
+* Added SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER to query the libusb handle from an SDL_hid_device, if it's been opened with libusb
+* Added SDL_SetRelativeMouseTransform() to add custom mouse input transformation
+* Added SDL_GetPenDeviceType() to determine whether a pen is on the screen or on a separate touchpad
+* SDL_HINT_MAIN_CALLBACK_RATE may be set to a floating point callback rate
+* Added SDL_GetEventDescription() to get an English description of an event, suitable for logging
+* Added SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER to allow custom freeing of the memory used by SDL_IOFromMem() and SDL_IOFromConstMem()
+* Added SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING to set the working directory for new processes
+* Added verbose log output when the DEBUG_INVOCATION environment variable is set to "1"
+* Added SDL_AddAtomicU32()
+* Added SDL_GetSystemPageSize() to get the system page size
+* Added SDL_ALIGNED() to signal that data should have a specific alignment
+
+Windows:
+* Added SDL_HINT_RENDER_DIRECT3D11_WARP to enable D3D11 software rasterization
+* Using SDL_InsertGPUDebugLabel(), SDL_PushGPUDebugGroup(), and SDL_PopGPUDebugGroup() requires WinPixEventRuntime.dll to be in your PATH or in the same directory as your executable
+* Added SDL_PROP_DISPLAY_WINDOWS_HMONITOR_POINTER so you can query the HMONITOR associated with a display
+* SDL_HINT_AUDIO_DEVICE_STREAM_ROLE is used by the WASAPI audio driver to set the audio stream category
+* Added SDL_HINT_AUDIO_DEVICE_RAW_STREAM to signal whether the OS audio driver should do additional signal processing
+* Added SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS to allow disabling some system hotkeys when in raw input mode
+* SDL_HINT_WINDOWS_GAMEINPUT is disabled by default
+
+macOS:
+* Added SDL_HINT_MAC_PRESS_AND_HOLD to control whether holding down a key will repeat the pressed key or open the accents menu
+
+Linux:
+* Added atomic support for KMSDRM
+* Added SDL_HINT_KMSDRM_ATOMIC to control whether KMSDRM will use atomic functionality
+* Added SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER so you can query the wl_output associated with a display
+
+Emscripten:
+* Added SDL_WINDOW_FILL_DOCUMENT to indicate that windows expand to fill the whole browser window
+* Added SDL_SetWindowFillDocument() to change whether windows expand to fill the whole browser window
+* Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING to allow setting the SDL canvas ID, and SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING to query it on existing windows
+* Added SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to specify where keyboard input is bound, and SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING to query it on existing windows
+
+iOS:
+* SDL now supports window scenes, fixing the warning "CLIENT OF UIKIT REQUIRES UPDATE"
+* Added SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER to specify the window scene for a window
+
+visionOS:
+* The default refresh rate has been increased to 90Hz
+* SDL_SetWindowSize() changes the size of the window on Vision Pro headsets
+
+PlayStation 2:
+* Added the following hints to control the display parameters: SDL_HINT_PS2_GS_WIDTH, SDL_HINT_PS2_GS_HEIGHT, SDL_HINT_PS2_GS_PROGRESSIVE, SDL_HINT_PS2_GS_MODE
+
+Note: On Unix platforms SDL provides ELF notes describing its non-mandatory library dependencies in the format described by https://systemd.io/ELF_DLOPEN_METADATA/. Some of these libraries are quite important, so distribution vendors who package SDL should parse the ELF notes and consider generating dependencies at the packaging level, for example by using https://github.com/systemd/package-notes. Other libraries and games can add similar ELF notes to describe their own dependencies by using the SDL_ELF_NOTE_DLOPEN macro.
+
+
+---------------------------------------------------------------------------
+3.2.22:
+---------------------------------------------------------------------------
+* SDL_HINT_JOYSTICK_WGI is disabled by default
+
+
+---------------------------------------------------------------------------
+3.2.16:
+---------------------------------------------------------------------------
+* SDL_HINT_JOYSTICK_RAWINPUT is disabled by default
+
+
+---------------------------------------------------------------------------
 3.2.10:
 ---------------------------------------------------------------------------
 * Added SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT to control whether XSelectInput() should be called on external windows to enable input events.
+
 
 ---------------------------------------------------------------------------
 3.2.4:
 ---------------------------------------------------------------------------
 * Added SDL_StretchSurface()
+
 
 ---------------------------------------------------------------------------
 3.2.0:

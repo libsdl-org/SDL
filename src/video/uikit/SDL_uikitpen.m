@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ bool UIKit_InitPen(SDL_VideoDevice *_this)
 // we only have one Apple Pencil at a time, and it must be paired to the iOS device.
 // We only know about its existence when it first sends an event, so add an single SDL pen
 // device here if we haven't already.
-static SDL_PenID UIKit_AddPenIfNecesary()
+static SDL_PenID UIKit_AddPenIfNecesary(SDL_Window *window)
 {
     if (!apple_pencil_id) {
         SDL_PenInfo info;
@@ -72,6 +72,7 @@ static SDL_PenID UIKit_AddPenIfNecesary()
         info.max_tilt = 90.0f;
         info.num_buttons = 0;
         info.subtype = SDL_PEN_TYPE_PENCIL;
+        info.device_type = SDL_PEN_DEVICE_TYPE_DIRECT;  // Apple Pencil on iOS is always a direct device; it works on the tablet's screen.
 
         if (@available(iOS 17.5, *)) {  // need rollAngle method.
             info.capabilities |= SDL_PEN_CAPABILITY_ROTATION;
@@ -85,7 +86,7 @@ static SDL_PenID UIKit_AddPenIfNecesary()
         // so we can't use it for tangential pressure.
 
         // There's only ever one Apple Pencil at most, so we just pass a non-zero value for the handle.
-        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", &info, (void *) (size_t) 0x1);
+        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", window, &info, (void *) (size_t) 0x1, true);
     }
 
     return apple_pencil_id;
@@ -94,7 +95,7 @@ static SDL_PenID UIKit_AddPenIfNecesary()
 static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, float zOffset, const CGPoint *point, float force,
                                 float maximumPossibleForce, float azimuthAngleInView, float altitudeAngle, float rollAngle)
 {
-    const SDL_PenID penId = UIKit_AddPenIfNecesary();
+    const SDL_PenID penId = UIKit_AddPenIfNecesary(window);
     if (penId) {
         const Uint64 timestamp = UIKit_GetEventTimestamp(nstimestamp);
         const float radians_to_degrees = 180.0f / SDL_PI_F;
@@ -133,7 +134,7 @@ static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, 
 }
 
 #if !defined(SDL_PLATFORM_TVOS)
-extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer)
+void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer)
 {
     float zOffset = 0.0f;
     if (@available(iOS 16.1, *)) {
@@ -187,18 +188,20 @@ void UIKit_HandlePenMotion(SDL_uikitview *view, UITouch *pencil)
 
 void UIKit_HandlePenPress(SDL_uikitview *view, UITouch *pencil)
 {
-    const SDL_PenID penId = UIKit_AddPenIfNecesary();
+    SDL_Window *window = [view getSDLWindow];
+    const SDL_PenID penId = UIKit_AddPenIfNecesary(window);
     if (penId) {
         UIKit_HandlePenAxesFromUITouch(view, pencil);
-        SDL_SendPenTouch(UIKit_GetEventTimestamp([pencil timestamp]), penId, [view getSDLWindow], false, true);
+        SDL_SendPenTouch(UIKit_GetEventTimestamp([pencil timestamp]), penId, window, false, true);
     }
 }
 
 void UIKit_HandlePenRelease(SDL_uikitview *view, UITouch *pencil)
 {
-    const SDL_PenID penId = UIKit_AddPenIfNecesary();
+    SDL_Window *window = [view getSDLWindow];
+    const SDL_PenID penId = UIKit_AddPenIfNecesary(window);
     if (penId) {
-        SDL_SendPenTouch(UIKit_GetEventTimestamp([pencil timestamp]), penId, [view getSDLWindow], false, false);
+        SDL_SendPenTouch(UIKit_GetEventTimestamp([pencil timestamp]), penId, window, false, false);
         UIKit_HandlePenAxesFromUITouch(view, pencil);
     }
 }
@@ -206,7 +209,7 @@ void UIKit_HandlePenRelease(SDL_uikitview *view, UITouch *pencil)
 void UIKit_QuitPen(SDL_VideoDevice *_this)
 {
     if (apple_pencil_id) {
-        SDL_RemovePenDevice(0, apple_pencil_id);
+        SDL_RemovePenDevice(0, NULL, apple_pencil_id);
         apple_pencil_id = 0;
     }
 }

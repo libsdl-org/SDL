@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,8 +46,10 @@ static bool send_foregrounding_pending = false;
 
 static void SDL_HandleSIG(int sig)
 {
-    // Reset the signal handler
+#ifndef HAVE_SIGACTION
+    // Reset the signal handler if it was installed with signal()
     (void)signal(sig, SDL_HandleSIG);
+#endif
 
     // Send a quit event next time the event loop pumps.
     // We can't send it in signal handler; SDL_malloc() might be interrupted!

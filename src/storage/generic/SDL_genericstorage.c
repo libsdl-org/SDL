@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,8 +26,19 @@
 
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
+    const char *rel = relative;
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (rel) {
+        // Removes any leading slash
+        if (rel[0] == '/' || rel[0] == '\\') {
+            rel += 1;
+        }
+    }
+#endif
+
     char *result = NULL;
-    SDL_asprintf(&result, "%s%s", base ? base : "", relative);
+    SDL_asprintf(&result, "%s%s", base ? base : "", rel ? rel : "");
     return result;
 }
 
@@ -79,7 +90,7 @@ static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, 
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
-        wrap_data.base_len = SDL_strlen((char *)userdata);
+        wrap_data.base_len = userdata ? SDL_strlen((char *)userdata) : 0;
         wrap_data.real_callback = callback;
         wrap_data.real_userdata = callback_userdata;
 
@@ -239,11 +250,16 @@ static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID 
     char *basepath = NULL;
 
     if (override != NULL) {
-        // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
         const size_t slen = SDL_strlen(override);
-        const bool need_sep = (!slen || ((override[slen-1] != '/') && (override[slen-1] != '\\')));
-        if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
-            return NULL;
+        if (slen > 0) {
+            // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
+            const bool need_sep = ((override[slen - 1] != '/') && (override[slen - 1] != '\\'));
+            if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
+                return NULL;
+            }
+        } else {
+            // override == "" -> empty base (not "/")
+            basepath = SDL_strdup("");
         }
     } else {
         const char *base = SDL_GetBasePath();
@@ -320,29 +336,57 @@ static const SDL_StorageInterface GENERIC_file_iface = {
 SDL_Storage *GENERIC_OpenFileStorage(const char *path)
 {
     SDL_Storage *result;
-    size_t len = 0;
     char *basepath = NULL;
+    char *prepend = NULL;
 
-    if (path) {
-        len += SDL_strlen(path);
+#ifdef SDL_PLATFORM_ANDROID
+    // Use a base path of "." so the filesystem operations fall back to internal storage and the asset system
+    if (!path || !*path) {
+        path = "./";
     }
-    if (len > 0) {
-        #ifdef SDL_PLATFORM_WINDOWS
-        const bool appended_separator = (path[len-1] == '/') || (path[len-1] == '\\');
-        #else
-        const bool appended_separator = (path[len-1] == '/');
-        #endif
-        if (appended_separator) {
-            basepath = SDL_strdup(path);
-            if (!basepath) {
-                return NULL;
-            }
-        } else {
-            if (SDL_asprintf(&basepath, "%s/", path) < 0) {
-                return NULL;
-            }
+#else
+    if (!path || !*path) {
+#ifdef SDL_PLATFORM_WINDOWS
+        path = "C:/";
+#else
+        path = "/";
+#endif
+    }
+
+    bool is_absolute = false;
+#ifdef SDL_PLATFORM_WINDOWS
+    const char ch = (char) SDL_toupper(path[0]);
+    is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
+                  (ch == '\\') ||  // some sort of absolute Windows-style path.
+                  (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/')));  // an absolute path with a drive letter.
+#else
+    is_absolute = (path[0] == '/');   // some sort of absolute Unix-style path.
+#endif
+    if (!is_absolute) {
+        prepend = SDL_GetCurrentDirectory();
+        if (!prepend) {
+            return NULL;
         }
     }
+#endif // SDL_PLATFORM_ANDROID
+
+    const size_t len = SDL_strlen(path);
+    const char *appended_separator = "";
+#ifdef SDL_PLATFORM_WINDOWS
+    if ((path[len-1] != '/') && (path[len-1] != '\\')) {
+        appended_separator = "/";
+    }
+#else
+    if (path[len-1] != '/') {
+        appended_separator = "/";
+    }
+#endif
+    const int rc = SDL_asprintf(&basepath, "%s%s%s", prepend ? prepend : "", path, appended_separator);
+    SDL_free(prepend);
+    if (rc < 0) {
+        return NULL;
+    }
+
     result = SDL_OpenStorage(&GENERIC_file_iface, basepath);
     if (result == NULL) {
         SDL_free(basepath);

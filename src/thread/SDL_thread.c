@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,7 +41,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         SDL_InvalidParamError("id");
         return NULL;
     }
@@ -59,7 +59,7 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         return SDL_InvalidParamError("id");
     }
 
@@ -80,6 +80,15 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
          * will have the same storage index for this id.
          */
         storage_index = SDL_GetAtomicInt(id) - 1;
+    } else {
+        // Make sure we don't allocate an ID clobbering this one
+        int tls_id = SDL_GetAtomicInt(&SDL_tls_id);
+        while (storage_index >= tls_id) {
+            if (SDL_CompareAndSwapAtomicInt(&SDL_tls_id, tls_id, storage_index + 1)) {
+                break;
+            }
+            tls_id = SDL_GetAtomicInt(&SDL_tls_id);
+        }
     }
 
     // Get the storage for the current thread
@@ -90,7 +99,7 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
 
         oldlimit = storage ? storage->limit : 0;
         newlimit = (storage_index + TLS_ALLOC_CHUNKSIZE);
-        new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + (newlimit - 1) * sizeof(storage->array[0]));
+        new_storage = (SDL_TLSData *)SDL_realloc(storage, sizeof(*storage) + newlimit * sizeof(storage->array[0]));
         if (!new_storage) {
             return false;
         }

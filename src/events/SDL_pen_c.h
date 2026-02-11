@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,8 @@ typedef Uint32 SDL_PenCapabilityFlags;
 #define SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE (1u << 6)  /**< Provides barrel pressure on SDL_PEN_AXIS_TANGENTIAL_PRESSURE. */
 #define SDL_PEN_CAPABILITY_ERASER    (1u << 7)  /**< Pen also has an eraser tip. */
 
+// Rename before making this public as it clashes with SDL_PenDeviceType.
+// Prior art in Android calls this "tool type".
 typedef enum SDL_PenSubtype
 {
     SDL_PEN_TYPE_UNKNOWN,   /**< Unknown pen device */
@@ -53,15 +55,16 @@ typedef struct SDL_PenInfo
     Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
     int num_buttons; /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
     SDL_PenSubtype subtype;  /**< type of pen device */
+    SDL_PenDeviceType device_type;
 } SDL_PenInfo;
 
 // Backend calls this when a new pen device is hotplugged, plus once for each pen already connected at startup.
 // Note that name and info are copied but currently unused; this is placeholder for a potentially more robust API later.
 // Both are allowed to be NULL.
-extern SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, const SDL_PenInfo *info, void *handle);
+extern SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *window, const SDL_PenInfo *info, void *handle, bool in_proximity);
 
 // Backend calls this when an existing pen device is disconnected during runtime. They must free their own stuff separately.
-extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
+extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_Window *window, SDL_PenID instance_id);
 
 // Backend can call this to remove all pens, probably during shutdown, with a callback to let them free their own handle.
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
@@ -77,6 +80,12 @@ extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window 
 
 // Backend calls this when a pen's button changes, to generate events and update state.
 extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down);
+
+// Backend calls this when a pen's proximity changes, to generate events and update state.
+extern void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool in, bool immediate);
+
+// Pumping events calls this to generate pending pen proximity events
+extern void SDL_SendPendingPenProximity(void);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1775,6 +1775,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
     int result;
     Uint32 chunkcount = 0;
     Uint32 chunkcountlimit = 10000;
+    const Sint64 flen = SDL_GetIOSize(src);   // this might be -1 if the IOStream can't determine the total size.
     const char *hint;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
     bool RIFFlengthknown = false;
@@ -1883,6 +1884,14 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
                 fmtchunk = *chunk;
             }
         } else if (chunk->fourcc == DATA) {
+            /* If the data chunk is bigger than the file, it might be corrupt
+               or the file is truncated. Try to recover by clamping the file
+               size. This also means a malicious file can't allocate 4 gigabytes
+               for the chunks without actually supplying a 4 gigabyte file. */
+            if ((flen > 0) && ((chunk->position + chunk->length) > flen)) {
+                chunk->length = (Uint32) (flen - chunk->position);
+            }
+
             /* Only use the first data chunk. Handling the wavl list madness
              * may require a different approach.
              */
@@ -2092,16 +2101,19 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
     }
 
     // Make sure we are passed a valid data source
-    if (!src) {
+    CHECK_PARAM(!src) {
         SDL_InvalidParamError("src");
         goto done;
-    } else if (!spec) {
+    }
+    CHECK_PARAM(!spec) {
         SDL_InvalidParamError("spec");
         goto done;
-    } else if (!audio_buf) {
+    }
+    CHECK_PARAM(!audio_buf) {
         SDL_InvalidParamError("audio_buf");
         goto done;
-    } else if (!audio_len) {
+    }
+    CHECK_PARAM(!audio_len) {
         SDL_InvalidParamError("audio_len");
         goto done;
     }

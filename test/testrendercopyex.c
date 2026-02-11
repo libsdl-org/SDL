@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -135,8 +135,8 @@ int main(int argc, char *argv[])
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true);
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false);
+        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.png", true);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.png", false);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

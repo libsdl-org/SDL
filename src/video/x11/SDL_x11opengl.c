@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2021 NVIDIA Corporation
 
   This software is provided 'as-is', without any express or implied
@@ -25,6 +25,7 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11xsync.h"
+#include "../../SDL_hints_c.h"
 
 // GLX implementation of SDL OpenGL support
 
@@ -342,9 +343,9 @@ static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
-    GLXContext prev_ctx = 0;
+    GLXContext prev_ctx = NULL;
     GLXDrawable prev_drawable = 0;
-    GLXContext context = 0;
+    GLXContext context = NULL;
     const char *(*glXQueryExtensionsStringFunc)(Display *, int);
     const char *extensions;
 
@@ -466,6 +467,13 @@ static void X11_GL_InitExtensions(SDL_VideoDevice *_this)
         _this->gl_data->HAS_GLX_ARB_create_context_no_error = true;
     }
 
+    // Check for GLX_ARB_framebuffer_sRGB
+    if (HasExtension("GLX_ARB_framebuffer_sRGB", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB = true;
+    } else if (HasExtension("GLX_EXT_framebuffer_sRGB", extensions)) {   // same thing.
+        _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB = true;
+    }
+
     if (context) {
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
@@ -576,9 +584,19 @@ static int X11_GL_GetAttributes(SDL_VideoDevice *_this, Display *display, int sc
         attribs[i++] = GLX_RGBA_FLOAT_TYPE_ARB;
     }
 
-    if (_this->gl_config.framebuffer_srgb_capable) {
-        attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        attribs[i++] = True; // always needed, for_FBConfig or not!
+    if (_this->gl_data->HAS_GLX_ARB_framebuffer_sRGB) {
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                attribs[i++] = SDL_GetStringBoolean(srgbhint, false) ? True : False;  // always needed, for_FBConfig or not!
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
+            attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            attribs[i++] = True; // always needed, for_FBConfig or not!
+        }
     }
 
     if (_this->gl_config.accelerated >= 0 &&

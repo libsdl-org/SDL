@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -149,6 +149,7 @@ struct SDL_PrivateCameraData
     ACaptureRequest *request;
     ACameraCaptureSession *session;
     SDL_CameraSpec requested_spec;
+    int rotation;  // degrees to rotate clockwise to get from camera's static orientation to device's native orientation. Apply this plus current phone rotation to get upright image!
 };
 
 static bool SetErrorStr(const char *what, const char *errstr, const int rc)
@@ -295,7 +296,7 @@ static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
-static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     media_status_t res;
@@ -365,6 +366,21 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
     }
 
     pAImage_delete(image);
+
+    int dev_rotation = 0;
+    switch (Android_JNI_GetDisplayCurrentOrientation()) {
+        case SDL_ORIENTATION_PORTRAIT: dev_rotation = 0; break;
+        case SDL_ORIENTATION_LANDSCAPE: dev_rotation = 90; break;
+        case SDL_ORIENTATION_PORTRAIT_FLIPPED: dev_rotation = 180; break;
+        case SDL_ORIENTATION_LANDSCAPE_FLIPPED: dev_rotation = 270; break;
+        default: SDL_assert(!"Unexpected device rotation!"); dev_rotation = 0; break;
+    }
+
+    if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
+        dev_rotation = -dev_rotation;  // we want to subtract this value, instead of add, if back-facing.
+    }
+
+    *rotation = (float) (dev_rotation + device->hidden->rotation);   // current phone orientation, static camera orientation in relation to phone.
 
     return result;
 }
@@ -494,10 +510,23 @@ static bool PrepareCamera(SDL_Camera *device)
     imglistener.context = device;
     imglistener.onImageAvailable = onImageAvailable;
 
+
+    const char *devid = (const char *) device->handle;
+
+    device->hidden->rotation = 0;
+    ACameraMetadata *metadata = NULL;
+    ACameraMetadata_const_entry orientationentry;
+    if (pACameraManager_getCameraCharacteristics(cameraMgr, devid, &metadata) == ACAMERA_OK) {
+        if (pACameraMetadata_getConstEntry(metadata, ACAMERA_SENSOR_ORIENTATION, &orientationentry) == ACAMERA_OK) {
+            device->hidden->rotation = (int) (*orientationentry.data.i32 % 360);
+        }
+        pACameraMetadata_free(metadata);
+    }
+
     // just in case SDL_OpenCamera is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
     const SDL_CameraSpec *spec = &device->hidden->requested_spec;
 
-    if ((res = pACameraManager_openCamera(cameraMgr, (const char *) device->handle, &dev_callbacks, &device->hidden->device)) != ACAMERA_OK) {
+    if ((res = pACameraManager_openCamera(cameraMgr, devid, &dev_callbacks, &device->hidden->device)) != ACAMERA_OK) {
         return SetCameraError("Failed to open camera", res);
     } else if ((res2 = pAImageReader_new(spec->width, spec->height, format_sdl_to_android(spec->format), 10 /* nb buffers */, &device->hidden->reader)) != AMEDIA_OK) {
         return SetMediaError("Error AImageReader_new", res2);

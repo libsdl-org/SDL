@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,26 +48,26 @@ int main(int argc, char *argv[])
         } else if (!image_file) {
             image_file = argv[i];
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--resizable] [shape.bmp]", argv[0]);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--resizable] [shape.png]", argv[0]);
             goto quit;
         }
     }
 
     if (image_file) {
-        shape = SDL_LoadBMP(image_file);
+        shape = SDL_LoadSurface(image_file);
         if (!shape) {
             SDL_Log("Couldn't load %s: %s", image_file, SDL_GetError());
             goto quit;
         }
     } else {
-        SDL_IOStream *stream = SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp));
+        SDL_IOStream *stream = SDL_IOFromConstMem(glass_png, sizeof(glass_png));
         if (!stream) {
-            SDL_Log("Couldn't create iostream for glass.bmp: %s", SDL_GetError());
+            SDL_Log("Couldn't create iostream for glass.png: %s", SDL_GetError());
             goto quit;
         }
-        shape = SDL_LoadBMP_IO(stream, true);
+        shape = SDL_LoadPNG_IO(stream, true);
         if (!shape) {
-            SDL_Log("Couldn't load glass.bmp: %s", SDL_GetError());
+            SDL_Log("Couldn't load glass.png: %s", SDL_GetError());
             goto quit;
         }
     }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -289,6 +289,7 @@ typedef unsigned int uintptr_t;
 #endif
 #define SDL_GPU_D3D12 1
 #define SDL_GPU_VULKAN 1
+#define HAVE_GPU_OPENXR 1
 #define SDL_VIDEO_RENDER_GPU 1
 
 /* Enable system power support */

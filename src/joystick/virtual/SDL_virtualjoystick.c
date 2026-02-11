@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -138,11 +138,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
     SDL_AssertJoysticksLocked();
 
-    if (!desc) {
+    CHECK_PARAM(!desc) {
         SDL_InvalidParamError("desc");
         return 0;
     }
-    if (desc->version < sizeof(*desc)) {
+    CHECK_PARAM(desc->version < sizeof(*desc)) {
         // Update this to handle older versions of this interface
         SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
         return 0;

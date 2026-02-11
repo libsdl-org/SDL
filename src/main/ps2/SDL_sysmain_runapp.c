@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,8 @@
 #ifdef SDL_PLATFORM_PS2
 
 // SDL_RunApp() code for PS2 based on SDL_ps2_main.c, fjtrujy@gmail.com
+
+#include "../SDL_main_callbacks.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -66,19 +68,17 @@ static void deinit_drivers(void)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
-    int res;
+    int result;
     (void)reserved;
 
     prepare_IOP();
     init_drivers();
 
-    SDL_SetMainReady();
-
-    res = mainFunction(argc, argv);
+    result = SDL_CallMainFunction(argc, argv, mainFunction);
 
     deinit_drivers();
 
-    return res;
+    return result;
 }
 
 #endif // SDL_PLATFORM_PS2

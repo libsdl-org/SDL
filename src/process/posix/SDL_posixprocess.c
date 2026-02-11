@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -203,7 +203,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
 #ifdef HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR
 #ifdef SDL_PLATFORM_APPLE
         if (__builtin_available(macOS 10.15, *)) {
-            if (posix_spawn_file_actions_addchdir(&fa, working_directory) != 0) {
+            if (posix_spawn_file_actions_addchdir_np(&fa, working_directory) != 0) {
                 SDL_SetError("posix_spawn_file_actions_addchdir failed: %s", strerror(errno));
                 goto posix_spawn_fail_all;
             }

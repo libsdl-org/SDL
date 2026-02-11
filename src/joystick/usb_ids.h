@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,8 @@
 #define USB_VENDOR_BACKBONE     0x358a
 #define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
-#define USB_VENDOR_FLYDIGI      0x04b4
+#define USB_VENDOR_FLYDIGI_V1   0x04b4
+#define USB_VENDOR_FLYDIGI_V2   0x37d7
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
 #define USB_VENDOR_HP           0x03f0
@@ -81,7 +82,10 @@
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1            0x1843
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2            0x1844
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3            0x1846
-#define USB_PRODUCT_FLYDIGI_GAMEPAD                       0x2412
+#define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
+#define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
+#define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
+#define USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K             0x10B8 // Wired/2.4G/Bluetooth 8K mode
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4         0x011c
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
@@ -121,6 +125,8 @@
 #define USB_PRODUCT_RAZER_PANTHERA                        0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                    0x1008
 #define USB_PRODUCT_RAZER_RAIJU                           0x1000
+#define USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRED          0x1024
+#define USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRELESS       0x1026
 #define USB_PRODUCT_RAZER_TOURNAMENT_EDITION_USB          0x1007
 #define USB_PRODUCT_RAZER_TOURNAMENT_EDITION_BLUETOOTH    0x100a
 #define USB_PRODUCT_RAZER_ULTIMATE_EDITION_USB            0x1004
@@ -146,6 +152,8 @@
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e
 #define USB_PRODUCT_THRUSTMASTER_T_FLIGHT_HOTAS_ONE       0xb68c
 #define USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE         0x1142
+#define USB_PRODUCT_VALVE_STEAM_PROTEUS_DONGLE            0x1304
+#define USB_PRODUCT_VALVE_STEAM_NEREID_DONGLE             0x1305
 #define USB_PRODUCT_VICTRIX_FS_PRO                        0x0203
 #define USB_PRODUCT_VICTRIX_FS_PRO_V2                     0x0207
 #define USB_PRODUCT_XBOX360_XUSB_CONTROLLER               0x02a1 // XUSB driver software PID
@@ -171,7 +179,7 @@
 #define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6
 #define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10df
 #define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10dd
-#define USB_PRODUCT_BONZIRICHANNEL_FIREBIRD               0x10e0 
+#define USB_PRODUCT_BONZIRICHANNEL_FIREBIRD               0x10e0
 #define USB_PRODUCT_ZUIKI_MASCON_PRO                      0x0006
 #define USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT               0X001c
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT                0X001d
@@ -180,7 +188,10 @@
 
 // USB usage pages
 #define USB_USAGEPAGE_GENERIC_DESKTOP 0x0001
+#define USB_USAGEPAGE_SIMULATION      0x0002
+#define USB_USAGEPAGE_DEVICE_CONTROLS 0x0006
 #define USB_USAGEPAGE_BUTTON          0x0009
+#define USB_USAGEPAGE_CONSUMER        0x000C
 #define USB_USAGEPAGE_VENDOR_FLYDIGI  0xFFA0
 
 // USB usages for USAGE_PAGE_GENERIC_DESKTOP
@@ -201,6 +212,22 @@
 #define USB_USAGE_GENERIC_DIAL                0x0037
 #define USB_USAGE_GENERIC_WHEEL               0x0038
 #define USB_USAGE_GENERIC_HAT                 0x0039
+
+// USB usages for USB_USAGEPAGE_SIMULATION
+#define USB_USAGE_SIMULATION_ACCELERATOR      0x00C4
+#define USB_USAGE_SIMULATION_BRAKE            0x00C5
+
+// USB usages for USB_USAGEPAGE_DEVICE_CONTROLS
+#define USB_USAGE_DEVICE_CONTROLS_BATTERY_STRENGTH 0x0020
+
+// USB usages for USB_USAGEPAGE_CONSUMER
+#define USB_USAGE_CONSUMER_ASSIGN_SELECTION   0x0081
+#define USB_USAGE_CONSUMER_ORDER_MOVIE        0x0085
+#define USB_USAGE_CONSUMER_RECORD             0x00B2
+#define USB_USAGE_CONSUMER_AC_HOME            0x0223
+#define USB_USAGE_CONSUMER_AC_BACK            0x0224
+
+#define MAKE_USAGE(PAGE, USAGE) (((Uint32)PAGE) << 16 | USAGE)
 
 /* Bluetooth SIG assigned Company Identifiers
    https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers/ */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,10 +24,14 @@
 #ifndef SDL_waylandmouse_h_
 #define SDL_waylandmouse_h_
 
-extern void Wayland_InitMouse(void);
+extern void Wayland_InitMouse(SDL_VideoData *data);
 extern void Wayland_FiniMouse(SDL_VideoData *data);
-extern void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat);
+extern void Wayland_SeatUpdatePointerCursor(SDL_WaylandSeat *seat);
+extern void Wayland_TabletToolUpdateCursor(SDL_WaylandPenTool *tool);
 extern void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float x, float y);
+extern void Wayland_CursorStateSetFrameCallback(SDL_WaylandCursorState *state, void *userdata);
+extern void Wayland_CursorStateDestroyFrameCallback(SDL_WaylandCursorState *state);
+extern void Wayland_CursorStateRelease(SDL_WaylandCursorState *state);
 #if 0  // TODO RECONNECT: See waylandvideo.c for more information!
 extern void Wayland_RecreateCursors(void);
 #endif // 0

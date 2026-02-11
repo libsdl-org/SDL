@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,14 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
+
+#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+#define USE_UIKIT_DEVICE_ROTATION
+#endif
+
+#ifdef USE_UIKIT_DEVICE_ROTATION
+#import <UIKit/UIKit.h>
+#endif
 
 /*
  * Need to link with:: CoreMedia CoreVideo
@@ -77,6 +85,9 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 @property(nonatomic, retain) AVCaptureSession *session;
 @property(nonatomic, retain) SDLCaptureVideoDataOutputSampleBufferDelegate *delegate;
 @property(nonatomic, assign) CMSampleBufferRef current_sample;
+#ifdef USE_UIKIT_DEVICE_ROTATION
+@property(nonatomic, assign) UIDeviceOrientation last_device_orientation;
+#endif
 @end
 
 @implementation SDLPrivateCameraData
@@ -146,7 +157,7 @@ static bool COREMEDIA_WaitDevice(SDL_Camera *device)
     return true;  // this isn't used atm, since we run our own thread out of Grand Central Dispatch.
 }
 
-static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     SDLPrivateCameraData *hidden = (__bridge SDLPrivateCameraData *) device->hidden;
@@ -219,6 +230,37 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
 
     CVPixelBufferUnlockBaseAddress(image, 0);
 
+    #ifdef USE_UIKIT_DEVICE_ROTATION
+    UIDeviceOrientation device_orientation = [[UIDevice currentDevice] orientation];
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(device_orientation)) {
+        device_orientation = hidden.last_device_orientation;  // possible the phone is laying flat or something went wrong, just stay with the last known-good orientation.
+    } else {
+        hidden.last_device_orientation = device_orientation;  // update the last known-good orientation for later.
+    }
+
+    const UIInterfaceOrientation ui_orientation = [UIApplication sharedApplication].statusBarOrientation;
+
+    // there is probably math for this, but this is easy to slap into a table.
+    // rotation = rotations[uiorientation-1][devorientation-1];
+    if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
+        static const Uint16 back_rotations[4][4] = {
+            {   90,  90,  90,  90 },  // ui portrait
+            {  270, 270, 270, 270 },  // ui portrait upside down
+            {    0,   0,   0,   0 },  // ui landscape left
+            {  180, 180, 180, 180 }   // ui landscape right
+        };
+        *rotation = (float) back_rotations[ui_orientation - 1][device_orientation - 1];
+    } else {
+        static const Uint16 front_rotations[4][4] = {
+            {   90,  90, 270, 270 },  // ui portrait
+            {  270, 270,  90,  90 },  // ui portrait upside down
+            {    0,   0, 180, 180 },  // ui landscape left
+            {  180, 180,   0,   0 }   // ui landscape right
+        };
+        *rotation = (float) front_rotations[ui_orientation - 1][device_orientation - 1];
+    }
+    #endif
+
     return result;
 }
 
@@ -231,6 +273,10 @@ static void COREMEDIA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 static void COREMEDIA_CloseDevice(SDL_Camera *device)
 {
     if (device && device->hidden) {
+        #ifdef USE_UIKIT_DEVICE_ROTATION
+        [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+        #endif
+
         SDLPrivateCameraData *hidden = (SDLPrivateCameraData *) CFBridgingRelease(device->hidden);
         device->hidden = NULL;
 
@@ -274,10 +320,37 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
         const float FRAMERATE_EPSILON = 0.01f;
         for (AVFrameRateRange *framerate in format.videoSupportedFrameRateRanges) {
-            if (rate > (framerate.minFrameRate - FRAMERATE_EPSILON) &&
-                rate < (framerate.maxFrameRate + FRAMERATE_EPSILON)) {
-                spec_format = format;
-                break;
+            // Check if the requested rate is within the supported range
+            if (rate >= (framerate.minFrameRate - FRAMERATE_EPSILON) &&
+                rate <= (framerate.maxFrameRate + FRAMERATE_EPSILON)) {
+
+                // Prefer formats with narrower frame rate ranges that are closer to our target
+                // This helps avoid formats that support a wide range (like 10-60 FPS)
+                // when we want a specific rate (like 30 FPS)
+                bool should_select = false;
+                if (spec_format == nil) {
+                    should_select = true;
+                } else {
+                    AVFrameRateRange *current_range = spec_format.videoSupportedFrameRateRanges.firstObject;
+                    float current_range_width = current_range.maxFrameRate - current_range.minFrameRate;
+                    float new_range_width = framerate.maxFrameRate - framerate.minFrameRate;
+
+                    // Prefer formats with narrower ranges, or if ranges are similar, prefer closer to target
+                    if (new_range_width < current_range_width) {
+                        should_select = true;
+                    } else if (SDL_fabsf(new_range_width - current_range_width) < 0.1f) {
+                        // Similar range width, prefer the one closer to our target rate
+                        float current_distance = SDL_fabsf(rate - current_range.minFrameRate);
+                        float new_distance = SDL_fabsf(rate - framerate.minFrameRate);
+                        if (new_distance < current_distance) {
+                            should_select = true;
+                        }
+                    }
+                }
+
+                if (should_select) {
+                    spec_format = format;
+                }
             }
         }
 
@@ -293,6 +366,22 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
 
     avdevice.activeFormat = spec_format;
+
+    // Try to set the frame duration to enforce the requested frame rate
+    const float frameRate = (float)spec->framerate_numerator / spec->framerate_denominator;
+    const CMTime frameDuration = CMTimeMake(1, (int32_t)frameRate);
+
+    // Check if the device supports setting frame duration
+    if ([avdevice respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
+        [avdevice respondsToSelector:@selector(setActiveVideoMaxFrameDuration:)]) {
+        @try {
+            avdevice.activeVideoMinFrameDuration = frameDuration;
+            avdevice.activeVideoMaxFrameDuration = frameDuration;
+        } @catch (NSException *exception) {
+            // Some devices don't support setting frame duration, that's okay
+        }
+    }
+
     [avdevice unlockForConfiguration];
 
     AVCaptureSession *session = [[AVCaptureSession alloc] init];
@@ -348,6 +437,15 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
     [session addOutput:output];
 
+    // Try to set the frame rate on the connection
+    AVCaptureConnection *connection = [output connectionWithMediaType:AVMediaTypeVideo];
+    if (connection && connection.isVideoMinFrameDurationSupported) {
+        connection.videoMinFrameDuration = frameDuration;
+        if (connection.isVideoMaxFrameDurationSupported) {
+            connection.videoMaxFrameDuration = frameDuration;
+        }
+    }
+
     [session commitConfiguration];
 
     SDLPrivateCameraData *hidden = [[SDLPrivateCameraData alloc] init];
@@ -358,6 +456,28 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     hidden.session = session;
     hidden.delegate = delegate;
     hidden.current_sample = NULL;
+
+    #ifdef USE_UIKIT_DEVICE_ROTATION
+    // When using a camera, we turn on device orientation tracking. The docs note that this turns on
+    // the device's accelerometer, so I assume this burns power, so we don't leave this running all
+    // the time. These calls nest, so we just need to call the matching `end` message when we close.
+    // You _can_ get an actual events through this mechanism, but we just want to be able to call
+    // -[UIDevice orientation], which will update with real info while notifications are enabled.
+    UIDevice *uidevice = [UIDevice currentDevice];
+    [uidevice beginGeneratingDeviceOrientationNotifications];
+    hidden.last_device_orientation = uidevice.orientation;
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(hidden.last_device_orientation)) {
+        // accelerometer isn't ready yet or the phone is laying flat or something. Just try to guess from how the UI is oriented at the moment.
+        switch ([UIApplication sharedApplication].statusBarOrientation) {
+            case UIInterfaceOrientationPortrait: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;
+            case UIInterfaceOrientationPortraitUpsideDown: hidden.last_device_orientation = UIDeviceOrientationPortraitUpsideDown; break;
+            case UIInterfaceOrientationLandscapeLeft: hidden.last_device_orientation = UIDeviceOrientationLandscapeRight; break;  // Apple docs say UI and device orientations are reversed in landscape.
+            case UIInterfaceOrientationLandscapeRight: hidden.last_device_orientation = UIDeviceOrientationLandscapeLeft; break;
+            default: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;  // oh well.
+        }
+    }
+    #endif
+
     device->hidden = (struct SDL_PrivateCameraData *)CFBridgingRetain(hidden);
 
     [session startRunning];  // !!! FIXME: docs say this can block while camera warms up and shouldn't be done on main thread. Maybe push through `queue`?

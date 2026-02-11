@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,22 +31,6 @@ typedef void *SDL_WindowsMessageHook;
 #if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK))
 typedef struct ID3D11Device ID3D11Device;
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
-#endif
-
-#ifndef SDL_PLATFORM_GDK
-typedef struct XTaskQueueHandle XTaskQueueHandle;
-#endif
-
-#ifndef SDL_PLATFORM_GDK
-typedef struct XUserHandle XUserHandle;
-#endif
-
-#ifndef SDL_PLATFORM_ANDROID
-typedef void *SDL_RequestAndroidPermissionCallback;
-#endif
-
-#ifndef SDL_PLATFORM_IOS
-typedef void *SDL_iOSAnimationCallback;
 #endif
 
 #endif

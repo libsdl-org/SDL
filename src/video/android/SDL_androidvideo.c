@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -142,7 +142,6 @@ static SDL_VideoDevice *Android_CreateDevice(void)
     device->HasScreenKeyboardSupport = Android_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = Android_ShowScreenKeyboard;
     device->HideScreenKeyboard = Android_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = Android_IsScreenKeyboardShown;
 
     // Clipboard
     device->SetClipboardText = Android_SetClipboardText;

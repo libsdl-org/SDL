@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -105,10 +105,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 + (void)registerUserDefaults
 {
     BOOL momentumScrollSupported = (BOOL)SDL_GetHintBoolean(SDL_HINT_MAC_SCROLL_MOMENTUM, false);
+    BOOL pressAndHoldEnabled = (BOOL)SDL_GetHintBoolean(SDL_HINT_MAC_PRESS_AND_HOLD, true);
 
     NSDictionary *appDefaults = [[NSDictionary alloc] initWithObjectsAndKeys:
                                                           [NSNumber numberWithBool:momentumScrollSupported], @"AppleMomentumScrollSupported",
-                                                          [NSNumber numberWithBool:YES], @"ApplePressAndHoldEnabled",
+                                                          [NSNumber numberWithBool:pressAndHoldEnabled], @"ApplePressAndHoldEnabled",
                                                           [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
                                                           nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
@@ -261,11 +262,10 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         return;
     }
 
+    // Restore any fullscreen window
     device = SDL_GetVideoDevice();
     if (device && device->windows) {
-        SDL_Window *window = device->windows;
-        int i;
-        for (i = 0; i < device->num_displays; ++i) {
+        for (int i = 0; i < device->num_displays; ++i) {
             SDL_Window *fullscreen_window = device->displays[i]->fullscreen_window;
             if (fullscreen_window) {
                 if (fullscreen_window->flags & SDL_WINDOW_MINIMIZED) {
@@ -273,12 +273,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                 }
                 return;
             }
-        }
-
-        if (window->flags & SDL_WINDOW_MINIMIZED) {
-            SDL_RestoreWindow(window);
-        } else {
-            SDL_RaiseWindow(window);
         }
     }
 }
@@ -370,9 +364,9 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (IBAction)menu:(id)sender
 {
-	SDL_TrayEntry *entry = [[sender representedObject] pointerValue];
+    SDL_TrayEntry *entry = [[sender representedObject] pointerValue];
 
-	SDL_ClickTrayEntry(entry);
+    SDL_ClickTrayEntry(entry);
 }
 
 @end

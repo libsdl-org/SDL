@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -214,7 +214,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libalsa",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_ALSA_DYNAMIC
-);
+)
 
 static void UnloadALSALibrary(void)
 {
@@ -484,8 +484,6 @@ static void ALSA_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
         if (device->hidden->pcm) {
-            // Wait for the submitted audio to drain. ALSA_snd_pcm_drop() can hang, so don't use that.
-            SDL_Delay(((device->sample_frames * 1000) / device->spec.freq) * 2);
             ALSA_snd_pcm_close(device->hidden->pcm);
         }
         SDL_free(device->hidden->mixbuf);
@@ -1023,7 +1021,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             SDL_SetError("ALSA: Couldn't set the period size: %s", ALSA_snd_strerror(status));
             return -1;
         }
-        // let approximate the minimun number of periods per buffer (we target a double buffer)
+        // let approximate the minimum number of periods per buffer (we target a double buffer)
         ctx->periods = 2;
         status = ALSA_snd_pcm_hw_params_set_periods_min(ctx->device->hidden->pcm, ctx->hwparams, &(ctx->periods), NULL);
         if (status < 0) {

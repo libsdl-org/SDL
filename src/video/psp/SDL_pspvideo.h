@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,6 +76,5 @@ extern bool PSP_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context)
 extern bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void PSP_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool PSP_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 #endif // SDL_pspvideo_h_

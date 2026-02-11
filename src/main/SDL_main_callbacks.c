@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -147,3 +147,19 @@ void SDL_QuitMainCallbacks(SDL_AppResult result)
     SDL_Quit();
 }
 
+static void SDL_CheckDefaultArgcArgv(int *argc, char ***argv)
+{
+    if (!*argv) {
+        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+        static char *argvdummy[2] = { dummyargv0, NULL };
+        *argc = 1;
+        *argv = argvdummy;
+    }
+}
+
+int SDL_CallMainFunction(int argc, char *argv[], SDL_main_func mainFunction)
+{
+    SDL_CheckDefaultArgcArgv(&argc, &argv);
+    SDL_SetMainReady();
+    return mainFunction(argc, argv);
+}

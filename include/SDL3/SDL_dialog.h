@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -140,11 +140,11 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
  * \param filters a list of filters, may be NULL. See the
- *                [`SDL_DialogFileFilter` documentation for
- *                examples](SDL_DialogFileFilter#code-examples). Not all
- *                platforms support this option, and platforms that do support
- *                it may allow the user to ignore the filters. If non-NULL, it
- *                must remain valid at least until the callback is invoked.
+ *                [`SDL_DialogFileFilter`](SDL_DialogFileFilter#code-examples)
+ *                documentation for examples]. Not all platforms support this
+ *                option, and platforms that do support it may allow the user
+ *                to ignore the filters. If non-NULL, it must remain valid at
+ *                least until the callback is invoked.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.

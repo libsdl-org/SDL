@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,6 +72,7 @@ typedef struct SDL_UDEV_Symbols
     int (*udev_enumerate_scan_devices)(struct udev_enumerate *);
     void (*udev_enumerate_unref)(struct udev_enumerate *);
     const char *(*udev_list_entry_get_name)(struct udev_list_entry *);
+    const char *(*udev_list_entry_get_value)(struct udev_list_entry *);
     struct udev_list_entry *(*udev_list_entry_get_next)(struct udev_list_entry *);
     int (*udev_monitor_enable_receiving)(struct udev_monitor *);
     int (*udev_monitor_filter_add_match_subsystem_devtype)(struct udev_monitor *, const char *, const char *);
@@ -83,6 +84,11 @@ typedef struct SDL_UDEV_Symbols
     void (*udev_unref)(struct udev *);
     struct udev_device *(*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
     dev_t (*udev_device_get_devnum)(struct udev_device *udev_device);
+
+    struct udev_hwdb *(*udev_hwdb_new)(struct udev *udev);
+    struct udev_hwdb *(*udev_hwdb_unref)(struct udev_hwdb *hwdb);
+    struct udev_list_entry *(*udev_hwdb_get_properties_list_entry)(struct udev_hwdb *hwdb, const char *modalias, unsigned flags);
+
 } SDL_UDEV_Symbols;
 
 typedef struct SDL_UDEV_PrivateData
@@ -105,6 +111,7 @@ extern bool SDL_UDEV_LoadLibrary(void);
 extern void SDL_UDEV_Poll(void);
 extern bool SDL_UDEV_Scan(void);
 extern bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, int *class, char **driver);
+extern char *SDL_UDEV_GetProductSerial(const char *device_path);
 extern bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);

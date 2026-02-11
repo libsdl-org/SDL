@@ -1,6 +1,6 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+ Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../../joystick/SDL_joystick_c.h"
 
 #include "SDL_uikitappdelegate.h"
 #include "SDL_uikitevents.h"
@@ -38,9 +39,7 @@
 #define MAX_MOUSE_BUTTONS 5
 
 // This is defined in SDL_sysjoystick.m
-#ifndef SDL_JOYSTICK_DISABLED
 extern int SDL_AppleTVRemoteOpenedAsJoystick;
-#endif
 
 @implementation SDL_uikitview
 {
@@ -48,6 +47,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     SDL_TouchID directTouchId;
     SDL_TouchID indirectTouchId;
+    float pinch_scale;
 
 #if !defined(SDL_PLATFORM_TVOS)
     UIPointerInteraction *indirectPointerInteraction API_AVAILABLE(ios(13.4));
@@ -74,6 +74,15 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
+#endif
+
+#if !defined(SDL_PLATFORM_TVOS)
+        /* Pinch gestures */
+        UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(sdlPinchGesture:)];
+        pinchGesture.cancelsTouchesInView = NO;
+        pinchGesture.delaysTouchesBegan = NO;
+        pinchGesture.delaysTouchesEnded = NO;
+        [self addGestureRecognizer:pinchGesture];
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -470,15 +479,57 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 (int)SDL_ceilf(self.safeAreaInsets.bottom));
 }
 
+#if !defined(SDL_PLATFORM_TVOS)
+- (IBAction)sdlPinchGesture:(UIPinchGestureRecognizer *)sender
+{
+    CGFloat scale = sender.scale;
+    UIGestureRecognizerState state = sender.state;
+
+    switch (state) {
+
+        case UIGestureRecognizerStateBegan:
+            pinch_scale = 1.0f;
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+            break;
+
+        case UIGestureRecognizerStateChanged:
+            if (pinch_scale > 0.0f) {
+                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
+            }
+            pinch_scale = scale;
+            break;
+
+        case UIGestureRecognizerStateFailed:
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+            break;
+
+        default:
+            break;
+    }
+
+}
+#endif
+
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {
     if (press.key != nil) {
         return (SDL_Scancode)press.key.keyCode;
     }
 
-#ifndef SDL_JOYSTICK_DISABLED
-    // Presses from Apple TV remote
-    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+    // Presses from Apple TV remote or game controller
+    bool controller_opened = false;
+#ifdef SDL_PLATFORM_TVOS
+    // tvOS doesn't send these for game controllers, but does for the Siri remote
+    controller_opened = (SDL_AppleTVRemoteOpenedAsJoystick > 0);
+#else
+    // iOS doesn't have a Siri remote, but does send these for game controllers as of iOS 26
+    // We don't currently have any way of telling what controller sent this, so assume if any
+    // controllers are opened, that the application is handling the controller as a gamepad
+    controller_opened = SDL_JoysticksOpened();
+#endif
+    if (!controller_opened) {
         switch (press.type) {
         case UIPressTypeUpArrow:
             return SDL_SCANCODE_UP;
@@ -501,7 +552,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             break;
         }
     }
-#endif // !SDL_JOYSTICK_DISABLED
 
     return SDL_SCANCODE_UNKNOWN;
 }
@@ -558,8 +608,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     // Swipe gestures don't trigger begin states.
     if (gesture.state == UIGestureRecognizerStateEnded) {
-#ifndef SDL_JOYSTICK_DISABLED
-        if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+        // tvOS doesn't send these for game controllers, but does for the Siri remote
+        bool controller_opened = (SDL_AppleTVRemoteOpenedAsJoystick > 0);
+        if (!controller_opened) {
             /* Send arrow key presses for now, as we don't have an external API
              * which better maps to swipe gestures. */
             switch (gesture.direction) {
@@ -577,7 +628,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 break;
             }
         }
-#endif // !SDL_JOYSTICK_DISABLED
     }
 }
 #endif // SDL_PLATFORM_TVOS

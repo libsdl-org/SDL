@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,25 +19,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "SDL_main_callbacks.h"
 
-/* Most platforms that use/need SDL_main have their own SDL_RunApp() implementation.
- * If not, you can special case it here by appending || defined(__YOUR_PLATFORM__) */
-#if ( !defined(SDL_MAIN_NEEDED) && !defined(SDL_MAIN_AVAILABLE) ) || defined(SDL_PLATFORM_ANDROID)
+// Add your platform here if you define a custom SDL_RunApp() implementation
+#if !defined(SDL_PLATFORM_WIN32) && \
+    !defined(SDL_PLATFORM_GDK) && \
+    !defined(SDL_PLATFORM_IOS) && \
+    !defined(SDL_PLATFORM_TVOS) && \
+    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
+    !defined(SDL_PLATFORM_PSP) && \
+    !defined(SDL_PLATFORM_PS2) && \
+    !defined(SDL_PLATFORM_3DS)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
-
-    if(!argv)
-    {
-        // make sure argv isn't NULL, in case some user code doesn't like that
-        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
-        static char *argvdummy[2] = { dummyargv0, NULL };
-        argc = 1;
-        argv = argvdummy;
-    }
-
-    return mainFunction(argc, argv);
+    return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
 #endif

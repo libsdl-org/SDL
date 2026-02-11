@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -83,12 +83,12 @@ static FullscreenEffectData effects[] = {
     },
     {
         "Grayscale",
-        testgpu_effects_grayscale_frag_dxil,
-        sizeof(testgpu_effects_grayscale_frag_dxil),
-        testgpu_effects_grayscale_frag_msl,
-        sizeof(testgpu_effects_grayscale_frag_msl),
-        testgpu_effects_grayscale_frag_spv,
-        sizeof(testgpu_effects_grayscale_frag_spv),
+        testgpurender_effects_grayscale_frag_dxil,
+        sizeof(testgpurender_effects_grayscale_frag_dxil),
+        testgpurender_effects_grayscale_frag_msl,
+        sizeof(testgpurender_effects_grayscale_frag_msl),
+        testgpurender_effects_grayscale_frag_spv,
+        sizeof(testgpurender_effects_grayscale_frag_spv),
         1,
         0,
         NULL,
@@ -96,12 +96,12 @@ static FullscreenEffectData effects[] = {
     },
     {
         "CRT monitor",
-        testgpu_effects_CRT_frag_dxil,
-        sizeof(testgpu_effects_CRT_frag_dxil),
-        testgpu_effects_CRT_frag_msl,
-        sizeof(testgpu_effects_CRT_frag_msl),
-        testgpu_effects_CRT_frag_spv,
-        sizeof(testgpu_effects_CRT_frag_spv),
+        testgpurender_effects_CRT_frag_dxil,
+        sizeof(testgpurender_effects_CRT_frag_dxil),
+        testgpurender_effects_CRT_frag_msl,
+        sizeof(testgpurender_effects_CRT_frag_msl),
+        testgpurender_effects_CRT_frag_spv,
+        sizeof(testgpurender_effects_CRT_frag_spv),
         1,
         1,
         NULL,
@@ -147,6 +147,12 @@ static bool InitGPURenderState(void)
     SDL_GPUShaderCreateInfo info;
     SDL_GPURenderStateCreateInfo createinfo;
     int i;
+
+    device = SDL_GetGPURendererDevice(renderer);
+    if (!device) {
+        SDL_Log("Couldn't get GPU device");
+        return false;
+    }
 
     formats = SDL_GetGPUShaderFormats(device);
     if (formats == SDL_GPU_SHADERFORMAT_INVALID) {
@@ -244,8 +250,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateGPURenderer(window, SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL, &device);
-    if (!renderer || !device) {
+    renderer = SDL_CreateRenderer(window, SDL_GPU_RENDERER);
+    if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -257,13 +263,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    background = LoadTexture(renderer, "sample.bmp", false);
+    background = LoadTexture(renderer, "sample.png", false);
     if (!background) {
         SDL_Log("Couldn't create background: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    sprite = LoadTexture(renderer, "icon.bmp", true);
+    sprite = LoadTexture(renderer, "icon.png", true);
     if (!sprite) {
         SDL_Log("Couldn't create sprite: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -316,9 +322,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderTarget(renderer, NULL);
 
     /* Display the render target with the fullscreen effect */
-    SDL_SetRenderGPUState(renderer, effect->state);
+    SDL_SetGPURenderState(renderer, effect->state);
     SDL_RenderTexture(renderer, target, NULL, NULL);
-    SDL_SetRenderGPUState(renderer, NULL);
+    SDL_SetGPURenderState(renderer, NULL);
 
     /* Draw some help text */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);

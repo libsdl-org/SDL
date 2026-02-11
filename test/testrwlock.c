@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < nb_threads; ++i) {
         SDL_WaitThread(threads[i], NULL);
     }
+    SDL_free(threads);
 
     SDL_Log("Reader threads have terminated, quitting!");
     SDL_DestroyRWLock(rwlock);

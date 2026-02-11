@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -109,6 +109,16 @@ static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color, float color_scale)
     uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 255.0f);
+
+    return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
+}
+
+static gs_rgbaq float_color_to_RGBAQ_tex(const SDL_FColor *color, float color_scale)
+{
+    uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 63.0f);
 
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
@@ -281,7 +291,7 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             uv_ = (float *)((char *)uv + j * uv_stride);
 
             vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
-            vertices->rgbaq = float_color_to_RGBAQ(col_, color_scale);
+            vertices->rgbaq = float_color_to_RGBAQ_tex(col_, color_scale);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
             vertices++;
@@ -440,7 +450,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
     PS2_SetBlendMode(data, cmd->data.draw.blend);
 
     if (cmd->data.draw.texture) {
-        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
+        const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) ((Uint8*)vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
 
         switch (cmd->data.draw.texture_scale_mode) {
@@ -457,7 +467,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
         gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
-        const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+        const GSPRIMPOINT *verts = (GSPRIMPOINT *)((Uint8*)vertices + cmd->data.draw.first);
         gsKit_prim_list_triangle_gouraud_3d(data->gsGlobal, count, verts);
     }
 
@@ -468,7 +478,7 @@ static bool PS2_RenderLines(SDL_Renderer *renderer, void *vertices, SDL_RenderCo
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
-    const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *)((Uint8*)vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
     gsKit_prim_list_line_goraud_3d(data->gsGlobal, count, verts);
@@ -481,7 +491,7 @@ static bool PS2_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderC
 {
     PS2_RenderData *data = (PS2_RenderData *)renderer->internal;
     const size_t count = cmd->data.draw.count;
-    const GSPRIMPOINT *verts = (GSPRIMPOINT *)(vertices + cmd->data.draw.first);
+    const GSPRIMPOINT *verts = (GSPRIMPOINT *)((Uint8*)vertices + cmd->data.draw.first);
 
     PS2_SetBlendMode(data, cmd->data.draw.blend);
     gsKit_prim_list_points(data->gsGlobal, count, verts);
@@ -655,8 +665,42 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
-    gsGlobal->Mode = GS_MODE_NTSC;
-    gsGlobal->Height = 448;
+    // GS interlaced/progressive
+    if (SDL_GetHintBoolean(SDL_HINT_PS2_GS_PROGRESSIVE, false)) {
+        gsGlobal->Interlace = GS_NONINTERLACED;
+    } else {
+        gsGlobal->Interlace = GS_INTERLACED;
+    }
+    
+    // GS width/height
+    gsGlobal->Width = 0;
+    gsGlobal->Height = 0;
+    const char *hint = SDL_GetHint(SDL_HINT_PS2_GS_WIDTH);
+    if (hint) {
+        gsGlobal->Width = SDL_atoi(hint);
+    }
+    hint = SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT);
+    if (hint) {
+        gsGlobal->Height = SDL_atoi(hint);
+    }
+    if (gsGlobal->Width <= 0) {
+        gsGlobal->Width = 640;
+    }
+    if (gsGlobal->Height <= 0) {
+        gsGlobal->Height = 448;
+    }
+
+    // GS region
+    hint = SDL_GetHint(SDL_HINT_PS2_GS_MODE);
+    if (hint) {
+        if (SDL_strcasecmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE), "NTSC") == 0) {
+            gsGlobal->Mode = GS_MODE_NTSC;
+        }
+
+        if (SDL_strcasecmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE), "PAL") == 0) {
+            gsGlobal->Mode = GS_MODE_PAL;
+        }
+    }
 
     gsGlobal->PSM = GS_PSM_CT24;
     gsGlobal->PSMZ = GS_PSMZ_16S;
@@ -708,6 +752,7 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->window = window;
 
     renderer->name = PS2_RenderDriver.name;
+    renderer->npot_texture_wrap_unsupported = true;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -473,7 +473,7 @@ int main(int argc, char **argv)
             }
         }
         if (consumed <= 0) {
-            static const char *options[] = { "[icon.bmp]", NULL };
+            static const char *options[] = { "[icon.png]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
             exit(1);
         }
@@ -501,12 +501,12 @@ int main(int argc, char **argv)
         exit(2);
     }
 
-    filename = GetResourceFilename(NULL, "icon.bmp");
-    surface = SDL_LoadBMP(filename);
+    filename = GetResourceFilename(NULL, "icon.png");
+    surface = SDL_LoadPNG(filename);
     SDL_free(filename);
 
     if (!surface) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load icon.bmp: %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load icon.png: %s", SDL_GetError());
         SDL_Quit();
         exit(3);
     }

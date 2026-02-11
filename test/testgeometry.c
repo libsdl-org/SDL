@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
 static int translate_cx = 0;
 static int translate_cy = 0;
+static float pinch_scale = 1.0f;
 
 static int done;
 
@@ -50,7 +51,7 @@ static int LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadPNG step repeatedly, but that's OK for test code. */
         sprites[i] = LoadTexture(state->renderers[i], file, true);
         if (!sprites[i]) {
             return -1;
@@ -103,11 +104,14 @@ static void loop(void)
             } else if (event.key.key == SDLK_DOWN) {
                 translate_cy += 1;
             } else {
-                SDLTest_CommonEvent(state, &event, &done);
+
             }
-        } else {
-            SDLTest_CommonEvent(state, &event, &done);
+        } else if (event.type == SDL_EVENT_PINCH_BEGIN) {
+        } else if (event.type == SDL_EVENT_PINCH_UPDATE) {
+            pinch_scale *= event.pinch.scale;
+        } else if (event.type == SDL_EVENT_PINCH_END) {
         }
+        SDLTest_CommonEvent(state, &event, &done);
     }
 
     for (i = 0; i < state->num_windows; ++i) {
@@ -136,24 +140,24 @@ static void loop(void)
             cy += translate_cy;
 
             a = (angle * SDL_PI_F) / 180.0f;
-            verts[0].position.x = cx + d * SDL_cosf(a);
-            verts[0].position.y = cy + d * SDL_sinf(a);
+            verts[0].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[0].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[0].color.r = 1.0f;
             verts[0].color.g = 0;
             verts[0].color.b = 0;
             verts[0].color.a = 1.0f;
 
             a = ((angle + 120) * SDL_PI_F) / 180.0f;
-            verts[1].position.x = cx + d * SDL_cosf(a);
-            verts[1].position.y = cy + d * SDL_sinf(a);
+            verts[1].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[1].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[1].color.r = 0;
             verts[1].color.g = 1.0f;
             verts[1].color.b = 0;
             verts[1].color.a = 1.0f;
 
             a = ((angle + 240) * SDL_PI_F) / 180.0f;
-            verts[2].position.x = cx + d * SDL_cosf(a);
-            verts[2].position.y = cy + d * SDL_sinf(a);
+            verts[2].position.x = cx + (d * SDL_cosf(a)) * pinch_scale;
+            verts[2].position.y = cy + (d * SDL_sinf(a)) * pinch_scale;
             verts[2].color.r = 0;
             verts[2].color.g = 0;
             verts[2].color.b = 1.0f;
@@ -183,7 +187,7 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-    const char *icon = "icon.bmp";
+    const char *icon = "icon.png";
     Uint64 then, now;
     Uint32 frames;
 

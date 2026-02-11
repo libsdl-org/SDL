@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -138,7 +138,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libpulseaudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
-);
+)
 
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
 static SDL_SharedObject *pulseaudio_handle = NULL;
@@ -602,6 +602,71 @@ static void PulseStreamStateChangeCallback(pa_stream *stream, void *userdata)
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
 }
 
+// Channel maps that match the order in SDL_Audio.h
+static const pa_channel_position_t Pulse_map_1[] = { PA_CHANNEL_POSITION_MONO };
+static const pa_channel_position_t Pulse_map_2[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT };
+
+static const pa_channel_position_t Pulse_map_3[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_LFE };
+
+static const pa_channel_position_t Pulse_map_4[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_REAR_LEFT, PA_CHANNEL_POSITION_REAR_RIGHT };
+
+static const pa_channel_position_t Pulse_map_5[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_LFE,
+                                                     PA_CHANNEL_POSITION_REAR_LEFT, PA_CHANNEL_POSITION_REAR_RIGHT };
+
+static const pa_channel_position_t Pulse_map_6[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_FRONT_CENTER, PA_CHANNEL_POSITION_LFE,
+                                                     PA_CHANNEL_POSITION_REAR_LEFT, PA_CHANNEL_POSITION_REAR_RIGHT };
+
+static const pa_channel_position_t Pulse_map_7[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_FRONT_CENTER, PA_CHANNEL_POSITION_LFE,
+                                                     PA_CHANNEL_POSITION_REAR_CENTER,
+                                                     PA_CHANNEL_POSITION_SIDE_LEFT, PA_CHANNEL_POSITION_SIDE_RIGHT };
+
+static const pa_channel_position_t Pulse_map_8[] = { PA_CHANNEL_POSITION_FRONT_LEFT, PA_CHANNEL_POSITION_FRONT_RIGHT,
+                                                     PA_CHANNEL_POSITION_FRONT_CENTER, PA_CHANNEL_POSITION_LFE,
+                                                     PA_CHANNEL_POSITION_REAR_LEFT, PA_CHANNEL_POSITION_REAR_RIGHT,
+                                                     PA_CHANNEL_POSITION_SIDE_LEFT, PA_CHANNEL_POSITION_SIDE_RIGHT };
+
+#define COPY_CHANNEL_MAP(c) SDL_memcpy(pacmap->map, Pulse_map_##c, sizeof(Pulse_map_##c))
+
+static void PulseCreateChannelMap(pa_channel_map *pacmap, uint8_t channels)
+{
+    SDL_assert(channels <= PA_CHANNELS_MAX);
+
+    pacmap->channels = channels;
+
+    switch (channels) {
+    case 1:
+        COPY_CHANNEL_MAP(1);
+        break;
+    case 2:
+        COPY_CHANNEL_MAP(2);
+        break;
+    case 3:
+        COPY_CHANNEL_MAP(3);
+        break;
+    case 4:
+        COPY_CHANNEL_MAP(4);
+        break;
+    case 5:
+        COPY_CHANNEL_MAP(5);
+        break;
+    case 6:
+        COPY_CHANNEL_MAP(6);
+        break;
+    case 7:
+        COPY_CHANNEL_MAP(7);
+        break;
+    case 8:
+        COPY_CHANNEL_MAP(8);
+        break;
+    }
+
+}
+
 static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     const bool recording = device->recording;
@@ -690,9 +755,8 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
     const char *name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
-    // The SDL ALSA output hints us that we use Windows' channel mapping
-    // https://bugzilla.libsdl.org/show_bug.cgi?id=110
-    PULSEAUDIO_pa_channel_map_init_auto(&pacmap, device->spec.channels, PA_CHANNEL_MAP_WAVEEX);
+
+    PulseCreateChannelMap(&pacmap, device->spec.channels);
 
     h->stream = PULSEAUDIO_pa_stream_new(
         pulseaudio_context,

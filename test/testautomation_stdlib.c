@@ -265,6 +265,14 @@ static int SDLCALL stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
     SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
+    result = SDL_snprintf(text, sizeof(text), "%06.0f", ((double)SDL_MAX_SINT64) * 1.5);
+    predicted = SDL_snprintf(NULL, 0, "%06.0f", ((double)SDL_MAX_SINT64) * 1.5);
+    expected = "13835058055282163712";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%06.2f\", SDL_MAX_SINT64 * 1.5)");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+    SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), result);
+    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
+
     {
         static struct
         {
@@ -357,7 +365,8 @@ static int SDLCALL stdlib_snprintf(void *arg)
                         result == SDL_strlen(expected5),
         "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
 
-    if (sizeof(void *) >= 8) {
+    const bool is_at_least_64bit_system = sizeof(void *) >= 8;
+    if (is_at_least_64bit_system) {
         result = SDL_snprintf(text, sizeof(text), "%p", (void *)SDL_SINT64_C(0x1ba07bddf60));
         expected = "0x1ba07bddf60";
         expected2 = "000001BA07BDDF60";
@@ -1316,7 +1325,8 @@ static int SDLCALL stdlib_wcstol(void *arg)
     WCSTOL_TEST_CASE(L" - 1", 0, 0, 0); // invalid input
 
     // values near the bounds of the type
-    if (sizeof(long) == 4) {
+    const bool long_is_32bit = sizeof(long) == 4;
+    if (long_is_32bit) {
         WCSTOL_TEST_CASE(L"2147483647", 10, 2147483647, 10);
         WCSTOL_TEST_CASE(L"2147483648", 10, 2147483647, 10);
         WCSTOL_TEST_CASE(L"-2147483648", 10, -2147483647L - 1, 11);
@@ -1375,7 +1385,8 @@ static int SDLCALL stdlib_strtox(void *arg)
     // Suppressing warnings would be difficult otherwise.
     // Since the CI runs the tests against a variety of targets, this should be fine in practice.
 
-    if (sizeof(long) == 4) {
+    const bool long_is_32bit = sizeof(long) == 4;
+    if (long_is_32bit) {
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 0, 0, 1);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 10, 0, 1);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 0, 0, 2);
@@ -1391,7 +1402,8 @@ static int SDLCALL stdlib_strtox(void *arg)
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967295", 10, 1, 11);
     }
 
-    if (sizeof(long long) == 8) {
+    const bool long_long_is_64bit = sizeof(long long) == 8;
+    if (long_long_is_64bit) {
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 0, 0LL, 1);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 10, 0LL, 1);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 0, 0LL, 2);

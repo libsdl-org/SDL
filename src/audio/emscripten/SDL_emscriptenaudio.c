@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,13 +41,8 @@ static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buf
     const int framelen = SDL_AUDIO_FRAMESIZE(device->spec);
     MAIN_THREAD_EM_ASM({
         /* Convert incoming buf pointer to a HEAPF32 offset. */
-        #ifdef __wasm64__
-        var buf = $0 / 4;
-        #else
-        var buf = $0 >>> 2;
-        #endif
-
         var SDL3 = Module['SDL3'];
+        var buf = SDL3.CPtrToHeap32Index($0);
         var numChannels = SDL3.audio_playback.currentPlaybackBuffer['numberOfChannels'];
         for (var c = 0; c < numChannels; ++c) {
             var channelData = SDL3.audio_playback.currentPlaybackBuffer['getChannelData'](c);
@@ -151,13 +146,11 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // create context
     const bool result = MAIN_THREAD_EM_ASM_INT({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         var SDL3 = Module['SDL3'];
-        if (!$0) {
+        if (typeof(SDL3.audio_playback) === 'undefined') {
             SDL3.audio_playback = {};
-        } else {
+        }
+        if (typeof(SDL3.audio_recording) === 'undefined') {
             SDL3.audio_recording = {};
         }
 
@@ -174,7 +167,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             }
         }
         return (SDL3.audioContext !== undefined);
-    }, device->recording);
+    });
 
     if (!result) {
         return SDL_SetError("Web Audio API is not available!");

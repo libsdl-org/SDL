@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,6 +88,7 @@ typedef struct SDL_GtkContext
 		void (*main_context_push_thread_default)(GMainContext *context);
 		void (*main_context_pop_thread_default)(GMainContext *context);
 		GMainContext *(*main_context_new)(void);
+		void (*main_context_unref)(GMainContext *context);
 		gboolean (*main_context_acquire)(GMainContext *context);
 		gboolean (*main_context_iteration)(GMainContext *context, gboolean may_block);
 	} g;
@@ -115,6 +116,7 @@ typedef struct SDL_GtkContext
 	} gtk;
 } SDL_GtkContext;
 
+extern bool SDL_CanUseGtk(void);
 extern bool SDL_Gtk_Init(void);
 extern void SDL_Gtk_Quit(void);
 extern SDL_GtkContext *SDL_Gtk_EnterContext(void);

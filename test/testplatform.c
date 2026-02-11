@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -412,6 +412,7 @@ static int TestCPUInfo(bool verbose)
         SDL_Log("LSX %s", SDL_HasLSX() ? "detected" : "not detected");
         SDL_Log("LASX %s", SDL_HasLASX() ? "detected" : "not detected");
         SDL_Log("System RAM %d MB", SDL_GetSystemRAM());
+        SDL_Log("System memory page size %d bytes", SDL_GetSystemPageSize());
     }
     return 0;
 }

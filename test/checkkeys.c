@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -447,6 +447,9 @@ int main(int argc, char *argv[])
 {
     int i;
 
+    /* This is not necessary for text input handling, we just
+     * want to verify that input works with raw keyboard enabled.
+     */
     SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
 
     /* Initialize test framework */

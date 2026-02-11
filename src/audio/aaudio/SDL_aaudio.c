@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,7 +58,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through AAudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     LIB_AAUDIO_SO
-);
+)
 
 typedef struct AAUDIO_Data
 {
@@ -265,7 +265,7 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
 static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     if (hidden) {
         if (hidden->stream) {
@@ -353,7 +353,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
         ctx.AAudioStreamBuilder_delete(builder);
-        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        return SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
     }
     ctx.AAudioStreamBuilder_delete(builder);
 
@@ -403,7 +403,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     res = ctx.AAudioStream_requestStart(hidden->stream);
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStream_requestStart %d recording:%d", res, recording);
-        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        return SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
     }
 
     LOGI("SDL AAudioStream_requestStart OK");
@@ -423,7 +423,7 @@ static bool AAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_assert(device->handle);  // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
 #endif
 
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     if (device->recording) {
         // !!! FIXME: make this non-blocking!
@@ -467,7 +467,7 @@ static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 
             if (res != AAUDIO_OK) {
                 LOGI("SDL Failed AAudioStream_requestPause %d", res);
-                SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+                SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
             }
         }
     }
@@ -491,7 +491,7 @@ static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
             aaudio_result_t res = ctx.AAudioStream_requestStart(hidden->stream);
             if (res != AAUDIO_OK) {
                 LOGI("SDL Failed AAudioStream_requestStart %d", res);
-                SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+                SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
             }
         }
     }
@@ -509,7 +509,7 @@ static void AAUDIO_Deinitialize(void)
 {
     Android_StopAudioHotplug();
 
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
     if (ctx.handle) {
         SDL_UnloadObject(ctx.handle);
     }
@@ -520,7 +520,7 @@ static void AAUDIO_Deinitialize(void)
 
 static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
      * so don't use it until 8.1.

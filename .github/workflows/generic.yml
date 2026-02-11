@@ -30,6 +30,7 @@ jobs:
           install: >-
             ${{ matrix.platform.msys2-env }}-cc
             ${{ matrix.platform.msys2-env }}-cmake
+            ${{ matrix.platform.msys2-env }}-ffmpeg
             ${{ matrix.platform.msys2-env }}-ninja
             ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
             ${{ matrix.platform.msys2-env }}-pkg-config
@@ -75,7 +76,7 @@ jobs:
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
         with:
-          local-cache: true
+          local-cache: false
           ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
@@ -326,7 +327,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.27.0
+        uses: cross-platform-actions/action@v0.29.0
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'

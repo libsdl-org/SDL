@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -87,6 +87,7 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
     pci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
     pci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    pci.rasterizer_state.enable_depth_clip = true;
 
     SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_zero(vertex_buffer_desc);
@@ -95,16 +96,15 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     SDL_GPUVertexAttribute attribs[4];
     SDL_zero(attribs);
 
-    bool have_attr_color = false;
     bool have_attr_uv = false;
 
     switch (params->vert_shader) {
+    case VERT_SHADER_TRI_COLOR:
+        have_attr_uv = true;
+        break;
     case VERT_SHADER_TRI_TEXTURE:
         have_attr_uv = true;
-        SDL_FALLTHROUGH;
-    case VERT_SHADER_TRI_COLOR:
-        have_attr_color = true;
-        SDL_FALLTHROUGH;
+        break;
     default:
         break;
     }
@@ -116,14 +116,12 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     vertex_buffer_desc.pitch += 2 * sizeof(float);
     num_attribs++;
 
-    if (have_attr_color) {
-        // Color
-        attribs[num_attribs].location = num_attribs;
-        attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
-        attribs[num_attribs].offset = vertex_buffer_desc.pitch;
-        vertex_buffer_desc.pitch += 4 * sizeof(float);
-        num_attribs++;
-    }
+    // Color
+    attribs[num_attribs].location = num_attribs;
+    attribs[num_attribs].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4;
+    attribs[num_attribs].offset = vertex_buffer_desc.pitch;
+    vertex_buffer_desc.pitch += 4 * sizeof(float);
+    num_attribs++;
 
     if (have_attr_uv) {
         // UVs
