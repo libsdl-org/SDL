@@ -392,6 +392,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->videodata = videodata;
     data->initializing = true;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
+    data->dpi = _this->internal->GetDpiForWindow(hwnd);
 
 
     // WIN_WarpCursor() jitters by +1, and remote desktop warp wobble is +/- 1
@@ -2309,6 +2310,11 @@ bool WIN_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
     return true;
+}
+
+int WIN_GetWindowDpi(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    return window->internal->dpi;
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
