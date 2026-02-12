@@ -798,7 +798,7 @@ static void process_pending_events(void)
                 cbElem = 19;
                 break;
             case TRITON_BLE_PID:
-                cbElem = 53;
+                cbElem = 45;
                 break;
             default:
                 abort();
