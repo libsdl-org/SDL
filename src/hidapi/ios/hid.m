@@ -589,7 +589,7 @@ static void process_pending_events(void)
             *dst = 0x03;
             break;
         case TRITON_BLE_PID:
-            *dst = 0x42;
+            *dst = 0x45;
             break;
         default:
             abort();
