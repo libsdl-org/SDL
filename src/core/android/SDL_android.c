@@ -388,6 +388,7 @@ static jmethodID midSetSystemCursor;
 static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midShowTextInput;
+static jmethodID midUpdateTextInputArea;
 static jmethodID midSupportsRelativeMouse;
 static jmethodID midOpenFileDescriptor;
 static jmethodID midShowFileDialog;
@@ -678,6 +679,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midSetWindowStyle = (*env)->GetStaticMethodID(env, mActivityClass, "setWindowStyle", "(Z)V");
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss", "()Z");
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
+    midUpdateTextInputArea = (*env)->GetStaticMethodID(env, mActivityClass, "updateTextInputArea", "(IIII)V");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
@@ -710,6 +712,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSetWindowStyle ||
         !midShouldMinimizeOnFocusLoss ||
         !midShowTextInput ||
+        !midUpdateTextInputArea ||
         !midSupportsRelativeMouse ||
         !midOpenFileDescriptor ||
         !midShowFileDialog ||
@@ -2251,6 +2254,16 @@ void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect)
                                     inputRect->y,
                                     inputRect->w,
                                     inputRect->h);
+}
+
+void Android_JNI_UpdateTextInputArea(SDL_Rect *inputRect)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midUpdateTextInputArea,
+                                 inputRect->x,
+                                 inputRect->y,
+                                 inputRect->w,
+                                 inputRect->h);
 }
 
 void Android_JNI_HideScreenKeyboard(void)
