@@ -442,11 +442,55 @@ void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         }
     }
     Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
+
+    /* Reset the dedup cache so the next SDL_SetTextInputArea call
+     * will re-send the rect to Java with
+     * proper render-to-window coordinate conversion. */
+    Android_ResetTextInputArea();
 }
 
 void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Android_JNI_HideScreenKeyboard();
+    Android_ResetTextInputArea();
+}
+
+static SDL_Rect s_lastTextInputRect = {0, 0, 0, 0};
+
+void Android_ResetTextInputArea(void)
+{
+    SDL_zero(s_lastTextInputRect);
+}
+
+bool Android_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_Rect *r = &window->text_input_rect;
+
+    /* Only forward to JNI when the rect actually changes,
+       since SDL_SetTextInputArea() is called every frame. */
+    if (r->x != s_lastTextInputRect.x || r->y != s_lastTextInputRect.y ||
+        r->w != s_lastTextInputRect.w || r->h != s_lastTextInputRect.h) {
+        s_lastTextInputRect = *r;
+
+        /* Convert from render/logical coordinates to window (pixel) coordinates.
+         * Apps typically pass coordinates in the renderer's coordinate space
+         * (e.g. logical presentation), but the keyboard pan logic needs actual
+         * pixel positions.  When no renderer exists the rect is used as-is. */
+        SDL_Rect windowRect = *r;
+        SDL_Renderer *renderer = SDL_GetRenderer(window);
+        if (renderer) {
+            float wx, wy, wx2, wy2;
+            SDL_RenderCoordinatesToWindow(renderer, (float)r->x, (float)r->y, &wx, &wy);
+            SDL_RenderCoordinatesToWindow(renderer, (float)(r->x + r->w), (float)(r->y + r->h), &wx2, &wy2);
+            windowRect.x = (int)wx;
+            windowRect.y = (int)wy;
+            windowRect.w = (int)(wx2 - wx);
+            windowRect.h = (int)(wy2 - wy);
+        }
+
+        Android_JNI_UpdateTextInputArea(&windowRect);
+    }
+    return true;
 }
 
 void Android_RestoreScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)

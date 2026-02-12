@@ -38,12 +38,16 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.view.WindowManager;
+import android.graphics.Rect;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +55,7 @@ import android.widget.Toast;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -335,6 +340,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
+        mKeyboardHeight = 0;
+        mTextInputX = 0;
+        mTextInputY = 0;
+        mTextInputW = 0;
+        mTextInputH = 0;
     }
 
     protected SDLSurface createSDLSurface(Context context) {
@@ -488,6 +498,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         setWindowStyle(false);
 
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
+
+        // Set up keyboard height detection using a PopupWindow.
+        // The PopupWindow has its own window with SOFT_INPUT_ADJUST_RESIZE,
+        // so it is reliably resized every time the keyboard shows/hides,
+        // even when the main activity is in fullscreen/immersive mode.
+        setupKeyboardHeightDetector();
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
@@ -875,6 +891,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     protected static boolean mFullscreenModeActive;
 
+    /* Keyboard pan&scan support */
+    protected static int mKeyboardHeight;
+    protected static volatile int mTextInputX, mTextInputY, mTextInputW, mTextInputH;
+
     /**
      * This method is called by SDL if SDL did not handle a message itself.
      * This happens if a received message contains an unsupported command.
@@ -953,6 +973,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
 
                     onNativeScreenKeyboardHidden();
+
+                    mTextInputH = 0;
+                    updateViewPan();
 
                     mSurface.requestFocus();
                 }
@@ -1383,13 +1406,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     static class ShowTextInputTask implements Runnable {
-        /*
-         * This is used to regulate the pan&scan method to have some offset from
-         * the bottom edge of the input region and the top edge of an input
-         * method (soft keyboard)
-         */
-        static final int HEIGHT_PADDING = 15;
-
         public int input_type;
         public int x, y, w, h;
 
@@ -1404,14 +1420,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             if (this.w <= 0) {
                 this.w = 1;
             }
-            if (this.h + HEIGHT_PADDING <= 0) {
-                this.h = 1 - HEIGHT_PADDING;
+            if (this.h <= 0) {
+                this.h = 1;
             }
         }
 
         @Override
         public void run() {
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + HEIGHT_PADDING);
+            // Add PAN_PADDING to height for non-fullscreen apps so Android's auto-pan leaves breathing room.
+            // Fullscreen apps handle panning in updateViewPan() instead.
+            int heightPadding = mFullscreenModeActive ? 0 : PAN_PADDING;
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + heightPadding);
             params.leftMargin = x;
             params.topMargin = y;
 
@@ -1426,6 +1445,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
             mTextEdit.setVisibility(View.VISIBLE);
             mTextEdit.requestFocus();
+
+            /* Store the text input rect for keyboard pan calculations */
+            mTextInputX = x;
+            mTextInputY = y;
+            mTextInputW = w;
+            mTextInputH = h;
 
             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(mTextEdit, 0);
@@ -1442,6 +1467,227 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean showTextInput(int input_type, int x, int y, int w, int h) {
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(input_type, x, y, w, h));
+    }
+
+    /**
+     * Set up keyboard height detection.
+     *
+     * On API 30+ we use WindowInsetsAnimation which reliably reports IME
+     * (keyboard) insets even when the activity is in fullscreen / immersive
+     * mode.  The older PopupWindow + SOFT_INPUT_ADJUST_RESIZE trick no
+     * longer works because that flag was deprecated in API 30.
+     *
+     * On older APIs we fall back to the PopupWindow approach.
+     */
+    protected void setupKeyboardHeightDetector() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            setupKeyboardDetectorAPI30();
+        } else {
+            setupKeyboardDetectorLegacy();
+        }
+    }
+
+    /**
+     * API 30+ keyboard detection using WindowInsetsAnimation.
+     */
+    @SuppressWarnings("NewApi")
+    protected void setupKeyboardDetectorAPI30() {
+        mLayout.setWindowInsetsAnimationCallback(
+            new WindowInsetsAnimation.Callback(WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP) {
+                @Override
+                public WindowInsets onProgress(WindowInsets insets,
+                                               List<WindowInsetsAnimation> runningAnimations) {
+                    int newHeight = getKeyboardHeightFromInsets(insets);
+                    if (newHeight != mKeyboardHeight) {
+                        mKeyboardHeight = newHeight;
+                        updateViewPan();
+                    }
+                    return insets;
+                }
+
+                @Override
+                public void onEnd(WindowInsetsAnimation animation) {
+                    super.onEnd(animation);
+                    WindowInsets insets = mLayout.getRootWindowInsets();
+                    if (insets != null) {
+                        int newHeight = getKeyboardHeightFromInsets(insets);
+                        if (newHeight != mKeyboardHeight) {
+                            mKeyboardHeight = newHeight;
+                        }
+                    }
+                    /* Always re-evaluate pan at the end of the animation.
+                     * The text input rect may have arrived from the SDL
+                     * thread while the animation was running. */
+                    updateViewPan();
+                }
+            }
+        );
+
+        /* Fallback: OnApplyWindowInsetsListener catches insets even when
+         * WindowInsetsAnimation doesn't fire (e.g. non-fullscreen apps). */
+        mLayout.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                int newHeight = getKeyboardHeightFromInsets(insets);
+                if (newHeight != mKeyboardHeight) {
+                    mKeyboardHeight = newHeight;
+                    updateViewPan();
+                }
+                return v.onApplyWindowInsets(insets);
+            }
+        });
+    }
+
+    /**
+     * Extract the actual keyboard height from WindowInsets.
+     * The IME bottom inset includes the navigation bar area, so we
+     * subtract it to get the keyboard-only height.
+     *
+     * In fullscreen/immersive mode the navigation bar is hidden, so
+     * getInsets(navigationBars) returns 0.  We use
+     * getInsetsIgnoringVisibility() instead, which reports the nav bar
+     * size even when it is hidden.
+     */
+    @SuppressWarnings("NewApi")
+    protected static int getKeyboardHeightFromInsets(WindowInsets insets) {
+        boolean imeVisible = insets.isVisible(WindowInsets.Type.ime());
+        if (!imeVisible) {
+            return 0;
+        }
+        int imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom;
+        int navBottom = insets.getInsetsIgnoringVisibility(
+                WindowInsets.Type.navigationBars()).bottom;
+        int kbHeight = imeBottom - navBottom;
+        return (kbHeight > 0) ? kbHeight : 0;
+    }
+
+    /**
+     * Pre-API 30 keyboard detection using a PopupWindow with
+     * SOFT_INPUT_ADJUST_RESIZE.
+     */
+    protected void setupKeyboardDetectorLegacy() {
+        final View popupView = new View(this);
+        popupView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        final PopupWindow popupWindow = new PopupWindow(popupView, 1,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        popupWindow.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE |
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        popupWindow.setInputMethodMode(PopupWindow.INPUT_METHOD_NEEDED);
+
+        mLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mLayout != null && mLayout.getWindowToken() != null) {
+                    try {
+                        popupWindow.showAtLocation(mLayout, Gravity.NO_GRAVITY, 0, 0);
+                    } catch (Exception e) {
+                        Log.w(TAG, "PopupWindow keyboard detector failed: " + e.getMessage());
+                        return;
+                    }
+
+                    popupView.getViewTreeObserver().addOnGlobalLayoutListener(
+                        new android.view.ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                Rect popupRect = new Rect();
+                                popupView.getWindowVisibleDisplayFrame(popupRect);
+
+                                /* Use the real display height, not the popup's root view
+                                 * which can be inconsistent in fullscreen mode. */
+                                android.util.DisplayMetrics dm = new android.util.DisplayMetrics();
+                                mSingleton.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+                                int screenHeight = dm.heightPixels;
+                                int keyboardHeight = screenHeight - popupRect.bottom;
+
+                                int newHeight = (keyboardHeight > screenHeight * 0.15)
+                                        ? keyboardHeight : 0;
+
+
+                                if (newHeight != mKeyboardHeight) {
+                                    mKeyboardHeight = newHeight;
+                                    updateViewPan();
+                                }
+                            }
+                        });
+                }
+            }
+        });
+    }
+
+    /**
+     * Update the view pan/scroll to keep the text input area visible
+     * above the on-screen keyboard.
+     *
+     * The text input rect arrives in screen pixel coordinates (converted
+     * from render coordinates on the C side), so we compare directly
+     * against the keyboard position in pixels.
+     */
+    protected static final int PAN_PADDING = 15;
+
+    protected static void updateViewPan() {
+        if (mLayout == null || mSurface == null) {
+            return;
+        }
+
+        float panY = 0.0f;
+
+        if (mKeyboardHeight > 0 && mTextInputH > 0) {
+            int screenHeight = mSurface.getHeight();
+            int rectBottom = mTextInputY + mTextInputH + PAN_PADDING;
+            int keyboardTop = screenHeight - mKeyboardHeight;
+
+            if (rectBottom > keyboardTop) {
+                panY = keyboardTop - rectBottom;
+            }
+        }
+
+        /* On API 30+, WindowInsetsAnimation automatically handles shifting
+         * the view content when the keyboard appears. It shifts by the exact
+         * amount needed to avoid the keyboard, but doesn't account for our
+         * padding. Apply only the padding as additional translation.
+         * On older APIs we apply the full pan amount (which includes padding). */
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            mLayout.setTranslationY(panY);
+        } else if (panY < 0) {
+            mLayout.setTranslationY(-PAN_PADDING);
+        } else {
+            mLayout.setTranslationY(0);
+        }
+    }
+
+    /**
+     * This method is called by SDL using JNI to update the text input area.
+     */
+    public static void updateTextInputArea(int x, int y, int w, int h) {
+        /* Update fields immediately so that WindowInsetsAnimation
+         * callbacks (which run during view traversal, BEFORE any
+         * Handler messages) can see the current text input rect. */
+        mTextInputX = x;
+        mTextInputY = y;
+        mTextInputW = w;
+        mTextInputH = h;
+
+        // Post UI updates and pan recalculation to the main thread
+        mSingleton.commandHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mTextEdit != null) {
+                    int ew = (w > 0) ? w : 1;
+                    int eh = (h > 0) ? h : 1;
+                    // Add PAN_PADDING to height for non-fullscreen apps so Android's auto-pan leaves breathing room.
+                    // Fullscreen apps handle panning in updateViewPan() instead.
+                    int heightPadding = mFullscreenModeActive ? 0 : PAN_PADDING;
+                    RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ew, eh + heightPadding);
+                    params.leftMargin = x;
+                    params.topMargin = y;
+                    mTextEdit.setLayoutParams(params);
+                }
+
+                updateViewPan();
+            }
+        });
     }
 
     public static boolean isTextInputEvent(KeyEvent event) {
