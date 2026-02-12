@@ -629,6 +629,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         SDL_StopTextInput(window);
 }
 
+/* Extra padding above the on screen keyboard */
+#define PAN_PADDING 15
+
 - (void)updateKeyboard
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->internal;
@@ -642,7 +645,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight && self.textInputRect.h) {
-        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
+        /* PAN_PADDING is in pixels (matching Android). The text input rect
+         * and view bounds are in UIKit points, so divide by the scale factor
+         * to keep the visual gap consistent across platforms. */
+        int padding = (int)(PAN_PADDING / self.view.contentScaleFactor);
+        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h + padding);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {
             offset.y = keybottom - rectbottom;
@@ -751,7 +758,31 @@ bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         if (vc != nil) {
-            vc.textInputRect = window->text_input_rect;
+            SDL_Rect *r = &window->text_input_rect;
+
+            /* Convert from render/logical coordinates to UIKit view-point
+             * coordinates.  Apps pass coordinates in the renderer's
+             * coordinate space, but UIKit keyboard avoidance needs the
+             * rect in the same coordinate space as view.bounds (points).
+             *
+             * SDL_RenderCoordinatesToWindow already divides by dpi_scale
+             * (== contentScaleFactor on iOS), so the output is directly
+             * in window coordinates (UIKit points).  No further scaling
+             * is needed.
+             */
+            SDL_Rect pointRect = *r;
+            SDL_Renderer *renderer = SDL_GetRenderer(window);
+            if (renderer) {
+                float wx, wy, wx2, wy2;
+                SDL_RenderCoordinatesToWindow(renderer, (float)r->x, (float)r->y, &wx, &wy);
+                SDL_RenderCoordinatesToWindow(renderer, (float)(r->x + r->w), (float)(r->y + r->h), &wx2, &wy2);
+                pointRect.x = (int)wx;
+                pointRect.y = (int)wy;
+                pointRect.w = (int)(wx2 - wx);
+                pointRect.h = (int)(wy2 - wy);
+            }
+
+            vc.textInputRect = pointRect;
 
             if (vc.textFieldFocused) {
                 [vc updateKeyboard];
