@@ -273,8 +273,14 @@ static bool SendSerialRequest(SDL_DriverXboxOne_Context *ctx)
 
 static bool ControllerSendsAnnouncement(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_PDP && product_id == 0x0246) {
-        // The PDP Rock Candy (PID 0x0246) doesn't send the announce packet on Linux for some reason
+    // The PDP Rock Candy (PID 0x0246) and PowerA Fusion Pro 4 (PID 0x400b)
+    // don't send the announce packet on Linux for some reason.
+    //
+    // Just to be safe and cover future products, we'll always send the startup
+    // protocol sequence for PDP and PowerA controllers
+    if (vendor_id == USB_VENDOR_PDP ||
+        vendor_id == USB_VENDOR_POWERA ||
+        vendor_id == USB_VENDOR_POWERA_ALT) {
         return false;
     }
     return true;
