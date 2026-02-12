@@ -473,7 +473,8 @@ static WindowState *GetWindowStateForWindowID(SDL_WindowID windowID)
 static void InitInput(WindowState *ctx)
 {
     /* Prepare a rect for text input */
-    ctx->textRect.x = ctx->textRect.y = 100.0f;
+    ctx->textRect.x = 100.0f;
+	ctx->textRect.y = 250.0f;
     ctx->textRect.w = DEFAULT_WINDOW_WIDTH - 2 * ctx->textRect.x;
     ctx->textRect.h = 50.0f;
     ctx->markedRect = ctx->textRect;
