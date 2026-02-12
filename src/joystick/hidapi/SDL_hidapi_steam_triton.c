@@ -386,7 +386,7 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
 
         switch (data[0]) {
         case ID_TRITON_CONTROLLER_STATE:
-        case ID_TRITON_CONTROLLER_STATE_NO_QUATERNION:
+        case ID_TRITON_CONTROLLER_STATE_BLE:
             if (!joystick) {
                 HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
                 if (device->num_joysticks > 0) {
