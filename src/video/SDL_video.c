@@ -5411,10 +5411,10 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
     }
 
 #if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-    bool srgb_requested = (_this->gl_config.framebuffer_srgb_capable > 0);
+    int srgb_requested = -1;
     const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
     if (srgbhint && *srgbhint) {
-        srgb_requested = SDL_GetStringBoolean(srgbhint, false);
+        srgb_requested = SDL_GetStringBoolean(srgbhint, false) ? 1 : 0;
     }
 
 #endif
@@ -5430,21 +5430,22 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
     }
 
 #if defined(SDL_VIDEO_OPENGL) || defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-    // try to force the window framebuffer to the requested sRGB state.
-    PFNGLENABLEPROC glToggleFunc = (PFNGLENABLEPROC) SDL_GL_GetProcAddress(srgb_requested ? "glEnable" : "glDisable");
-    PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
-    if (glToggleFunc && glGetStringFunc) {
-        bool supported = isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION));  // no extensions needed in OpenGL 3+ or GLES 3+.
-        if (!supported) {
+    if (srgb_requested != -1) {
+        PFNGLENABLEPROC glToggleFunc = (PFNGLENABLEPROC) SDL_GL_GetProcAddress(srgb_requested ? "glEnable" : "glDisable");
+        PFNGLGETSTRINGPROC glGetStringFunc = (PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString");
+        if (glToggleFunc && glGetStringFunc) {
+            bool supported = false;
             if (_this->gl_config.profile_mask & SDL_GL_CONTEXT_PROFILE_ES) {
-                supported = SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control");
+                supported = SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control");  // GL_FRAMEBUFFER_SRGB is not core in any GLES version at the moment.
             } else {
-                supported = SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB");
+                supported = isAtLeastGL3((const char *)glGetStringFunc(GL_VERSION)) ||  // no extensions needed in OpenGL 3+.
+                            SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") ||
+                            SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB");
             }
-        }
 
-        if (supported) {
-            glToggleFunc(GL_FRAMEBUFFER_SRGB);
+            if (supported) {
+                glToggleFunc(GL_FRAMEBUFFER_SRGB);
+            }
         }
     }
 #endif
