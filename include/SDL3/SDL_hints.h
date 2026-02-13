@@ -1220,6 +1220,23 @@ extern "C" {
 #define SDL_HINT_IME_IMPLEMENTED_UI "SDL_IME_IMPLEMENTED_UI"
 
 /**
+ * A variable controlling the padding in pixels added above the on-screen
+ * keyboard to keep the text input area visible.
+ *
+ * This padding is used on platforms with on-screen keyboards (iOS, Android)
+ * to ensure there is extra breathing room between the text input area and
+ * the top of the keyboard when panning the view.
+ *
+ * The variable can be set to a number representing the padding in pixels.
+ * The default value is "0".
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_IME_PAN_PADDING "SDL_IME_PAN_PADDING"
+
+/**
  * A variable controlling whether the home indicator bar on iPhone X and later
  * should be hidden.
  *
