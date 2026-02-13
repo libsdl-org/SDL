@@ -3059,6 +3059,10 @@ extern "C" {
  * Note that some platforms cannot make this request at all, and on all
  * platforms this request can be denied by the operating system.
  *
+ * In addition to attempting to obtain the type of sRGB-capable OpenGL context
+ * requested by this hint, SDL will try to force the state of
+ * GL_FRAMEBUFFER_SRGB on the new context, if appropriate.
+ *
  * The variable can be set to the following values:
  *
  * - "0": Force a request for an OpenGL context that is _not_ sRGB-capable.
