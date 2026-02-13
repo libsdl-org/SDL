@@ -4157,6 +4157,20 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable controlling whether the X11 built in toolkit is prefered over Zenity.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Use Zenity if available.  (default)
+ * - "1": Always use the toolkit over Zenity.
+ *
+ * This hint should be set before a messagebox is created.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_X11_PREFER_TOOLKIT "SDL_VIDEO_X11_PREFER_TOOLKIT"
+
+/**
  * A variable controlling whether touch should be enabled on the back panel of
  * the PlayStation Vita.
  *
