@@ -1221,6 +1221,7 @@ struct VulkanRenderer
 
 static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static bool VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
+static void VULKAN_ReleaseTexture(SDL_GPURenderer *driverData, SDL_GPUTexture *texture);
 static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static bool VULKAN_Wait(SDL_GPURenderer *driverData);
 static bool VULKAN_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *fences, Uint32 numFences);
@@ -5605,7 +5606,6 @@ static void VULKAN_PopDebugGroup(
 
 static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     VulkanRenderer *renderer,
-    bool transitionToDefaultLayout,
     const SDL_GPUTextureCreateInfo *createinfo)
 {
     VkResult vulkanResult;
@@ -5833,21 +5833,6 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             &nameInfo);
     }
 
-    if (transitionToDefaultLayout) {
-        // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
-        VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
-        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
-            renderer,
-            barrierCommandBuffer,
-            VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
-            texture);
-        VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
-        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
-            VULKAN_INTERNAL_DestroyTexture(renderer, texture);
-            return NULL;
-        }
-    }
-
     return texture;
 }
 
@@ -5914,7 +5899,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     // No texture is available, generate a new one.
     texture = VULKAN_INTERNAL_CreateTexture(
         renderer,
-        false,
         &container->header.info);
 
     VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
@@ -6816,7 +6800,6 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 
     texture = VULKAN_INTERNAL_CreateTexture(
         renderer,
-        true,
         createinfo);
 
     if (texture == NULL) {
@@ -6847,6 +6830,23 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 
     texture->container = container;
     texture->containerIndex = 0;
+
+    // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
+    // Only do this after "container" is set, so the texture
+    // is fully initialized before any Submit that could trigger defrag.
+    {
+        VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+            renderer,
+            barrierCommandBuffer,
+            VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
+            texture);
+        VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
+        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
+            VULKAN_ReleaseTexture((SDL_GPURenderer *)renderer, (SDL_GPUTexture *)container);  
+            return NULL;
+        }
+    }
 
     return (SDL_GPUTexture *)container;
 }
@@ -10901,7 +10901,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         } else if (!currentRegion->isBuffer && !currentRegion->vulkanTexture->markedForDestroy) {
             VulkanTexture *newTexture = VULKAN_INTERNAL_CreateTexture(
                 renderer,
-                false,
                 &currentRegion->vulkanTexture->container->header.info);
 
             if (newTexture == NULL) {
