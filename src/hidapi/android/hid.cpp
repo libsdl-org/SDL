@@ -91,6 +91,9 @@ extern "C" {
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+#define D0G_BLE2_PID        0x1106
+#define TRITON_BLE_PID      0x1303
+
 
 struct hid_device_
 {
@@ -438,8 +441,7 @@ public:
 
 		// The Bluetooth Steam Controller needs special handling
 		const int VALVE_USB_VID	= 0x28DE;
-		const int D0G_BLE2_PID = 0x1106;
-		if ( pInfo->vendor_id == VALVE_USB_VID && pInfo->product_id == D0G_BLE2_PID )
+		if ( pInfo->vendor_id == VALVE_USB_VID && ( pInfo->product_id == D0G_BLE2_PID || pInfo->product_id == TRITON_BLE_PID ) )
 		{
 			m_bIsBLESteamController = true;
 		}
@@ -604,7 +606,14 @@ public:
 		size_t nDataLen = buffer.size() > length ? length : buffer.size();
 		if ( m_bIsBLESteamController )
 		{
-			data[0] = 0x03;
+			if ( m_pInfo->product_id == TRITON_BLE_PID )
+			{
+				data[0] = 0x45;
+			}
+			else
+			{
+				data[0] = 0x03;
+			}
 			SDL_memcpy( data + 1, buffer.data(), nDataLen );
 			++nDataLen;
 		}
