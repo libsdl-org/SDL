@@ -3078,7 +3078,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.4.2.
  */
-#define SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE "SDL_OPENGL_FORCE_SRGB_CAPABLE"
+#define SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER "SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"
 
 /**
  * Mechanism to specify openvr_api library location
