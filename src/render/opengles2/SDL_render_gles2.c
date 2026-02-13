@@ -45,6 +45,11 @@
 #define RENDERER_CONTEXT_MAJOR 2
 #define RENDERER_CONTEXT_MINOR 0
 
+// This is always the same number between the various EXT/ARB/GLES extensions.
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 /*************************************************************************************************
  * Context structures                                                                            *
  *************************************************************************************************/
@@ -2461,6 +2466,10 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     //  and an extension in GLES2.
     if ((major < 3) && !SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
         renderer->npot_texture_wrap_unsupported = true;
+    }
+
+    if (SDL_GL_ExtensionSupported("GL_EXT_sRGB_write_control")) {
+        data->glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     // Set up parameters for rendering
