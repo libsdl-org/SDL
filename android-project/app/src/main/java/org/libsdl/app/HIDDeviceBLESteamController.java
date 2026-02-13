@@ -490,8 +490,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
                 mIsConnected = false;
                 gatt.disconnect();
                 mGatt = connectGatt(false);
-            }
-            else {
+            } else {
                 if (getProductId() == TRITON_BLE_PID) {
                     // Android will not properly play well with Data Length Extensions without manually requesting a large MTU,
                     // and Triton controllers require DLE support.
@@ -562,8 +561,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
                     Log.v(TAG, "Registering Triton Steam Controller with ID: " + getId());
                     mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true);
                     setRegistered();
-                }
-                else {
+                } else {
                     // For the original controller, we need to manually enter Valve mode.
                     Log.v(TAG, "Writing report characteristic to enter valve mode");
                     reportChr.setValue(enterValveMode);
