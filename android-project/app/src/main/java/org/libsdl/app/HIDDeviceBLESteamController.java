@@ -614,8 +614,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         if (mDevice.getName().startsWith("Steam Ctrl")) {
             // We're a newer Triton device
             mProductId = TRITON_BLE_PID;
-        }
-        else {
+        } else {
             // We're an OG Steam Controller
             mProductId = D0G_BLE2_PID;
         }
@@ -626,8 +625,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     private UUID getInputCharacteristic() {
         if (getProductId() == TRITON_BLE_PID) {
             return inputCharacteristicTriton;
-        }
-        else {
+        } else {
             return inputCharacteristicD0G;
         }
     }
