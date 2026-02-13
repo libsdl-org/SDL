@@ -27,7 +27,9 @@
 /* WIKI CATEGORY: - */
 
 /* Add any platform that doesn't build using the configure system. */
-#if defined(__WIN32__)
+#if defined(PLAYDATE)
+#include "SDL_config_playdate.h"
+#elif defined(__WIN32__)
 #include "SDL_config_windows.h"
 #elif defined(__WINRT__)
 #include "SDL_config_winrt.h"

@@ -42,6 +42,7 @@ SDL_bool SDL_GetPowerInfo_VITA(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_N3DS(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
+SDL_bool SDL_GetPowerInfo_Playdate(SDL_PowerState *, int *, int *);
 
 /* this one is static in SDL_power.c */
 /* SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
