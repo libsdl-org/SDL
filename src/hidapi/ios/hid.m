@@ -858,7 +858,7 @@ static void process_pending_events(void)
 
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-	NSLog( @"didUpdateNotificationStateForCharacteristic %@ (%@)", characteristic, error );
+	//NSLog( @"didUpdateNotificationStateForCharacteristic %@ (%@)", characteristic, error );
 }
 
 @end
