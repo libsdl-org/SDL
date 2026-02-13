@@ -567,7 +567,7 @@ enum ETritonWirelessState
 
 typedef struct
 {
-    uint32_t uTimestamp;
+    uint32_t timestamp;
     short sAccelX;
     short sAccelY;
     short sAccelZ;
@@ -582,10 +582,21 @@ typedef struct
     short sGyroQuatZ;
 } TritonMTUIMU_t;
 
+typedef struct {
+	uint32_t timestamp;
+	short sAccelX;
+	short sAccelY;
+	short sAccelZ;
+
+	short sGyroX;
+	short sGyroY;
+	short sGyroZ;
+} TritonMTUIMUNoQuat_t;
+
 typedef struct
 {
-    uint8_t cSeq_num;
-    uint32_t uButtons;
+    uint8_t seq_num;
+    uint32_t buttons;
     short sTriggerLeft;
     short sTriggerRight;
 
@@ -603,6 +614,27 @@ typedef struct
     unsigned short ucPressureRight;
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
+
+typedef struct {
+	uint8_t seq_num;
+	uint32_t buttons;
+	short sTriggerLeft;
+	short sTriggerRight;
+
+	short sLeftStickX;
+	short sLeftStickY;
+	short sRightStickX;
+	short sRightStickY;
+
+	short sLeftPadX;
+	short sLeftPadY;
+	unsigned short ucPressureLeft;
+
+	short sRightPadX;
+	short sRightPadY;
+	unsigned short ucPressureRight;
+	TritonMTUIMUNoQuat_t imu;
+} TritonMTUNoQuat_t;
 
 enum EChargeState
 {
