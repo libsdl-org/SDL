@@ -1228,7 +1228,7 @@ extern "C" {
  * the top of the keyboard when panning the view.
  *
  * The variable can be set to a number representing the padding in pixels.
- * The default value is "0".
+ * The default value is "15".
  *
  * This hint can be set anytime.
  *

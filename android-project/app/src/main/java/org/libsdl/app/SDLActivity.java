@@ -1396,7 +1396,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             } catch (NumberFormatException ignored) {
             }
-            return 0;
+            return 15;
         }
 
         public int input_type;
