@@ -155,7 +155,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         }
 
         int srgb = _this->gl_config.framebuffer_srgb_capable;
-        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE);
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
         if (srgbhint && *srgbhint) {
             srgb = SDL_GetStringBoolean(srgbhint, false) ? 1 : 0;  // there is no "skip" here, since initWithFrame expects it, so we'll treat it as false.
         }
