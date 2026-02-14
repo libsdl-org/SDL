@@ -1227,8 +1227,10 @@ extern "C" {
  * to ensure there is extra breathing room between the text input area and
  * the top of the keyboard when panning the view.
  *
- * The variable can be set to a number representing the padding in pixels.
- * The default value is "15".
+ * The variable can be set to a number representing the padding in window
+ * coordinates.
+ * 
+ * The default value is "10".
  *
  * This hint can be set anytime.
  *

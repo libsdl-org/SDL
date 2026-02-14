@@ -642,12 +642,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight && self.textInputRect.h) {
-        /* Get the pan padding from the hint (in pixels). The text input rect
-         * and view bounds are in UIKit points, so divide by the scale factor
-         * to keep the visual gap consistent across platforms.*/
+        /// Get the pan padding from the hint (in window coordinates).
         const char *hint = SDL_GetHint(SDL_HINT_IME_PAN_PADDING);
-        int panPadding = (hint && *hint) ? SDL_atoi(hint) : 15;
-        int padding = (int)(panPadding / self.view.contentScaleFactor);
+        int padding = (hint && *hint) ? SDL_atoi(hint) : 10;
         int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h + padding);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {

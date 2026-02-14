@@ -1389,14 +1389,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
          * method (soft keyboard)
          */
         static int getPanPadding() {
+            /* The hint is in window coordinates. Convert to pixels by
+             * multiplying by density. */
+            int defaultPadding = 10;
             try {
                 String hint = nativeGetHint("SDL_IME_PAN_PADDING");
                 if (hint != null) {
-                    return Integer.parseInt(hint);
+                    defaultPadding = Integer.parseInt(hint);
                 }
             } catch (NumberFormatException ignored) {
             }
-            return 15;
+            float density = getContext().getResources().getDisplayMetrics().density;
+            return (int)(defaultPadding * density);
         }
 
         public int input_type;
