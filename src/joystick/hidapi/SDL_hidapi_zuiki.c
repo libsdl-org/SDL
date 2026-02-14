@@ -32,6 +32,7 @@
 #define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
 #define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
 #define FILTER_SIZE 11  // Must be an odd number
+#define MAX_RETRY_COUNT 10 // zuiki device initialization retry count
 
 // Define this if you want to log all packets from the controller
 #if 0
@@ -115,10 +116,18 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
     ctx->sensors_supported = false;
 
-    // Force reading of reported data once for device initialization
-    int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
-    while (!size) {
+    // Read report data once for device initialization
+    int size = -1;
+    Uint8 retry_count = 0;
+    while (retry_count < MAX_RETRY_COUNT) {
         size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 10);
+        if (size > 0) {
+            break;
+        }
+        retry_count++;
+    }
+    if (size <= 0) {
+        return false;
     }
 
     switch (device->product_id) {
@@ -397,9 +406,9 @@ static void HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(SDL_Joystick *joys
     if (ctx->sensors_supported) {
         Uint64 sensor_timestamp = timestamp;
         float gyro_values[3];
-        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[8], data[9]) * GYRO_SCALE);
-        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[12], data[13]) * GYRO_SCALE);
-        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[10], data[11]) * GYRO_SCALE);
+        gyro_values[0] = median_filter_update(&ctx->filter_gyro_x, LOAD16(data[17], data[18]) * GYRO_SCALE);
+        gyro_values[1] = median_filter_update(&ctx->filter_gyro_y, LOAD16(data[21], data[22]) * GYRO_SCALE);
+        gyro_values[2] = median_filter_update(&ctx->filter_gyro_z, -LOAD16(data[19], data[20]) * GYRO_SCALE);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_values, 3);
         float accel_values[3];
         accel_values[0] = LOAD16(data[23], data[24]) * ACCEL_SCALE;
