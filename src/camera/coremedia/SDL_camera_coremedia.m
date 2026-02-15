@@ -440,13 +440,11 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
     [session addOutput:output];
 
-    // Try to set the frame rate on the connection
-    AVCaptureConnection *connection = [output connectionWithMediaType:AVMediaTypeVideo];
-    if (connection && connection.isVideoMinFrameDurationSupported) {
-        connection.videoMinFrameDuration = frameDuration;
-        if (connection.isVideoMaxFrameDurationSupported) {
-            connection.videoMaxFrameDuration = frameDuration;
-        }
+    // Try to set the frame rate on the device (preferred modern approach)
+    if ([avdevice lockForConfiguration:nil]) {
+        avdevice.activeVideoMinFrameDuration = frameDuration;
+        avdevice.activeVideoMaxFrameDuration = frameDuration;
+        [avdevice unlockForConfiguration];
     }
 
     [session commitConfiguration];
