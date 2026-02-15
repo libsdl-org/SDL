@@ -3904,6 +3904,8 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
                     }
                 }
 
+#undef ADD_TRIANGLE
+
                 p = q;
                 cur_index += 4;
             }
