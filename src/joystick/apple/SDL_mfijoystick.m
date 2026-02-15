@@ -706,7 +706,10 @@ static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *
         // These were explicitly retained in the struct, so they should be explicitly released before freeing the struct.
         if (device->controller) {
             GCController *controller = CFBridgingRelease((__bridge CFTypeRef)(device->controller));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             controller.controllerPausedHandler = nil;
+#pragma clang diagnostic pop
             device->controller = nil;
         }
         if (device->axes) {
@@ -911,11 +914,14 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 #ifdef SDL_JOYSTICK_MFI
         if (device->pause_button_index >= 0) {
             GCController *controller = device->controller;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             controller.controllerPausedHandler = ^(GCController *c) {
               if (joystick->hwdata) {
                   joystick->hwdata->pause_button_pressed = SDL_GetTicks();
               }
             };
+#pragma clang diagnostic pop
         }
 
         if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
@@ -1559,7 +1565,10 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
 
         if (device->controller) {
             GCController *controller = device->controller;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             controller.controllerPausedHandler = nil;
+#pragma clang diagnostic pop
             controller.playerIndex = -1;
 
             if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
