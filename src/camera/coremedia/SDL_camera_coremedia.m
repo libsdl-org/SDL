@@ -238,7 +238,10 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
         hidden.last_device_orientation = device_orientation;  // update the last known-good orientation for later.
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     const UIInterfaceOrientation ui_orientation = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
 
     // there is probably math for this, but this is easy to slap into a table.
     // rotation = rotations[uiorientation-1][devorientation-1];
@@ -468,7 +471,10 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     hidden.last_device_orientation = uidevice.orientation;
     if (!UIDeviceOrientationIsValidInterfaceOrientation(hidden.last_device_orientation)) {
         // accelerometer isn't ready yet or the phone is laying flat or something. Just try to guess from how the UI is oriented at the moment.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         switch ([UIApplication sharedApplication].statusBarOrientation) {
+#pragma clang diagnostic pop
             case UIInterfaceOrientationPortrait: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;
             case UIInterfaceOrientationPortraitUpsideDown: hidden.last_device_orientation = UIDeviceOrientationPortraitUpsideDown; break;
             case UIInterfaceOrientationLandscapeLeft: hidden.last_device_orientation = UIDeviceOrientationLandscapeRight; break;  // Apple docs say UI and device orientations are reversed in landscape.
@@ -589,9 +595,13 @@ static void COREMEDIA_DetectDevices(void)
         devices = discoverySession.devices;
         // !!! FIXME: this can use Key Value Observation to get hotplug events.
     } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
         // this is deprecated but works back to macOS 10.7; 10.15 added AVCaptureDeviceDiscoverySession as a replacement.
         devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
         // !!! FIXME: this can use AVCaptureDeviceWasConnectedNotification and AVCaptureDeviceWasDisconnectedNotification with NSNotificationCenter to get hotplug events.
+#pragma clang diagnostic pop
     }
 
     for (AVCaptureDevice *device in devices) {
