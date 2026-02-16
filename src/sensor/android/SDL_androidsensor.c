@@ -53,7 +53,7 @@ static int SDL_ANDROID_SensorInit(void)
     int i, sensors_count;
     ASensorList sensors;
 
-    SDL_sensor_manager = ASensorManager_getInstance();
+    SDL_sensor_manager = ASensorManager_getInstanceForPackage("SDL");
     if (!SDL_sensor_manager) {
         return SDL_SetError("Couldn't create sensor manager");
     }
