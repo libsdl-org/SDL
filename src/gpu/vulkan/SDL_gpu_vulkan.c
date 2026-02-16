@@ -12744,7 +12744,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
-            /* SDL_GetError() already has the detailed message from SDL_OpenXR_LoadLibrary() */
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Vulkan: Failed to load OpenXR: %s", SDL_GetError());
             SDL_Vulkan_UnloadLibrary();
             return false;
         }
