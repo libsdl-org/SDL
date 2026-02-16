@@ -852,8 +852,6 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
     data->last_rawinput_poll = poll_finish;
 }
 
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
 static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
 {
     int new_count = (*count + 1);
@@ -878,7 +876,6 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
     return false;
 }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, Uint16 vendor, Uint16 product, const char *default_name, bool hid_loaded)
 {
     char *vendor_name = NULL;
@@ -964,8 +961,9 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
     return name;
 }
 
-void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check)
+void WIN_CheckKeyboardAndMouseHotplug(bool hid_loaded)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     PRAWINPUTDEVICELIST raw_devices = NULL;
     UINT raw_device_count = 0;
     int old_keyboard_count = 0;
@@ -977,17 +975,12 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
-    if (!_this->internal->detect_device_hotplug) {
+    if (!_this ||
+        SDL_strcmp(_this->name, "windows") != 0 ||
+        !_this->internal->detect_device_hotplug ||
+        _this->internal->gameinput_context) {
         return;
     }
-
-    // Check to see if anything has changed
-    static Uint64 s_last_device_change;
-    Uint64 last_device_change = WIN_GetLastDeviceNotification();
-    if (!initial_check && last_device_change == s_last_device_change) {
-        return;
-    }
-    s_last_device_change = last_device_change;
 
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
         return; // oh well.
@@ -1010,7 +1003,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     old_mice = SDL_GetMice(&old_mouse_count);
 
-    bool hid_loaded = WIN_LoadHIDDLL();
     for (UINT i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH] = { 0 };
@@ -1076,9 +1068,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
         default:
             break;
         }
-    }
-    if (hid_loaded) {
-        WIN_UnloadHIDDLL();
     }
 
     for (int i = old_keyboard_count; i--;) {
@@ -2716,10 +2705,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
                                     (GetAsyncKeyState(VK_XBUTTON2) & 0x8000) != 0);
             }
         }
-    }
-
-    if (!_this->internal->gameinput_context) {
-        WIN_CheckKeyboardAndMouseHotplug(_this, false);
     }
 
     WIN_UpdateIMECandidates(_this);
