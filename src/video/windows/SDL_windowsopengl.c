@@ -910,7 +910,7 @@ bool WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
         *interval = _this->gl_data->wglGetSwapIntervalEXT();
         return true;
     } else {
-        return false;
+        return SDL_Unsupported();
     }
 }
 
