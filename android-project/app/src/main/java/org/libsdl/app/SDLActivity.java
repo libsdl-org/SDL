@@ -1270,10 +1270,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (Build.MANUFACTURER.equals("MINIX") && Build.MODEL.equals("NEO-U1")) {
             return true;
         }
-        if (Build.MANUFACTURER.equals("Amlogic") && Build.MODEL.equals("X96-W")) {
-            return true;
-        }
-        if (Build.MANUFACTURER.equals("Amlogic") && Build.MODEL.startsWith("TV")) {
+        if (Build.MANUFACTURER.equals("Amlogic") &&
+            (Build.MODEL.startsWith("TV") ||
+             Build.MODEL.equals("X96-W") ||
+             Build.MODEL.equals("A95X-R1"))) {
             return true;
         }
         return false;
