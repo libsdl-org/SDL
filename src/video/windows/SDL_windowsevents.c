@@ -879,7 +879,7 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, const char *default_name, bool hid_loaded)
+static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, Uint16 vendor, Uint16 product, const char *default_name, bool hid_loaded)
 {
     char *vendor_name = NULL;
     char *product_name = NULL;
@@ -889,12 +889,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
     WCHAR vend[256], prod[256];
     vend[0] = 0;
     prod[0] = 0;
-
-
-    HIDD_ATTRIBUTES attr;
-    attr.VendorID = 0;
-    attr.ProductID = 0;
-    attr.Size = sizeof(attr);
 
     if (hid_loaded) {
         char devName[MAX_PATH + 1];
@@ -908,7 +902,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
             // they can only be opened with a desired access of none instead of generic read.
             HANDLE hFile = CreateFileA(devName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
             if (hFile != INVALID_HANDLE_VALUE) {
-                SDL_HidD_GetAttributes(hFile, &attr);
                 SDL_HidD_GetManufacturerString(hFile, vend, sizeof(vend));
                 SDL_HidD_GetProductString(hFile, prod, sizeof(prod));
                 CloseHandle(hFile);
@@ -950,8 +943,8 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
                     }
                     prod[size] = 0;
 
-                    if (attr.VendorID || attr.ProductID) {
-                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, attr.VendorID, attr.ProductID);
+                    if (vendor || product) {
+                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, vendor, product);
                     } else {
                         product_name = WIN_StringToUTF8W(prod);
                     }
@@ -961,10 +954,10 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
         }
     }
 
-    if (!product_name && (attr.VendorID || attr.ProductID)) {
-        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, attr.VendorID, attr.ProductID);
+    if (!product_name && (vendor || product)) {
+        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, vendor, product);
     }
-    name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name, default_name);
+    name = SDL_CreateDeviceName(vendor, product, vendor_name, product_name, default_name);
     SDL_free(vendor_name);
     SDL_free(product_name);
 
@@ -1063,7 +1056,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Keyboard", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Keyboard", hid_loaded);
                     SDL_AddKeyboard(keyboardID, name);
                     SDL_free(name);
                 }
@@ -1074,7 +1067,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Mouse", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Mouse", hid_loaded);
                     SDL_AddMouse(mouseID, name);
                     SDL_free(name);
                 }
