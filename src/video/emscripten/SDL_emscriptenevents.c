@@ -519,47 +519,48 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
 {
     SDL_WindowData *window_data = userData;
 
-    if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-        bool force = false;
+    bool force = false;
 
-        // update pixel ratio
-        if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-            if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
-                window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
-                force = true;
+    // update pixel ratio
+    if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+        if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
+            window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
+            force = true;
+        }
+    }
+
+    const bool fill_document = (Emscripten_fill_document_window == window_data->window);
+    const bool fullscreen = (window_data->window->flags & SDL_WINDOW_FULLSCREEN) != 0;  // fullscreen windows can resize on Emscripten, and the canvas should fill it.
+    const bool resizable = (window_data->window->flags & SDL_WINDOW_RESIZABLE) != 0;
+    if (fill_document || fullscreen || resizable) {
+        double w, h;
+        if (fill_document || fullscreen) {
+            w = (double) uiEvent->windowInnerWidth;
+            h = (double) uiEvent->windowInnerHeight;
+        } else {
+            SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
+            w = window_data->window->w;
+            h = window_data->window->h;
+            // this will only work if the canvas size is set through css
+            if (window_data->external_size) {
+                emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
             }
         }
-        const bool fill_document = (Emscripten_fill_document_window == window_data->window);
-        if (fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
-            double w, h;
-            if (fill_document) {
-                w = (double) uiEvent->windowInnerWidth;
-                h = (double) uiEvent->windowInnerHeight;
-            } else {
-                SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
-                w = window_data->window->w;
-                h = window_data->window->h;
-                // this will only work if the canvas size is set through css
-                if (window_data->external_size) {
-                    emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
-                }
-            }
 
-            emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
+        emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
 
-            // set_canvas_size unsets this
-            if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
-                emscripten_set_element_css_size(window_data->canvas_id, w, h);
-            }
-
-            if (force) {
-                // force the event to trigger, so pixel ratio changes can be handled
-                window_data->window->w = 0;
-                window_data->window->h = 0;
-            }
-
-            SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
+        // set_canvas_size unsets this
+        if (!window_data->external_size && window_data->pixel_ratio != 1.0f) {
+            emscripten_set_element_css_size(window_data->canvas_id, w, h);
         }
+
+        if (force) {
+            // force the event to trigger, so pixel ratio changes can be handled
+            window_data->window->w = 0;
+            window_data->window->h = 0;
+        }
+
+        SDL_SendWindowEvent(window_data->window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
     }
 
     return 0;
