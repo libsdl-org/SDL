@@ -103,6 +103,26 @@ typedef Uint32 SDL_WindowID;
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
+ * A boolean set to true if the windowing system supports the optional
+ * ext-zones protocol for positioning windows in Wayland. Requires that the
+ * `SDL_VIDEO_WAYLAND_ENABLE_ZONES` hint be set to enable. See
+ * docs/README-wayland.md for more information.
+ *
+ * Can be queried after video subsystem initialization.
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_HAS_ZONES_BOOLEAN "SDL.video.wayland.has_zones"
+
+/**
+ * A semicolon-separated list containing the mappings of outputs to zone handles, with
+ * list items in the form <display name>=<zone handle>.
+ *
+ * Can be set before the video subsystem is initialized to import a list of existing
+ * zone handles for outputs, or read after initialization to retrieve the current list of
+ * zone handles for outputs.
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_ZONE_MAPPING_STRING "SDL.video.wayland.zone_mapping"
+
+/**
  * System theme.
  *
  * \since This enum is available since SDL 3.2.0.
@@ -1441,6 +1461,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "SDL.window.create.wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_ZONE_LAYER_NUMBER           "SDL.window.create.wayland.zone_layer"
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"

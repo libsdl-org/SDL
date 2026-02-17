@@ -6,6 +6,22 @@ encounter limitations or behavior that is different from other windowing systems
 
 ## Common issues:
 
+### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
+
+- Wayland requires the `ext-zones-v1` extension to position windows programmatically. Otherwise, toplevel windows may
+  not be positioned programmatically.\
+  \
+  Enabling this protocol requires setting the `SDL_VIDEO_WAYLAND_ENABLE_ZONES` hint to `1`. After initializing the video
+  subsystem, compositor support for the required protocol may be queried via the
+  `SDL_PROP_GLOBAL_VIDEO_WAYLAND_HAS_ZONES_BOOLEAN` global video property.\
+  \
+  This protocol allows for positioning windows within the boundaries of desktop zones, the coordinates of which may not
+  correspond 1:1 to output display coordinates. This is primarily intended for clients with multi-window interfaces that
+  need to position windows relative to one another, development environments/workflows, and embedded scenarios where
+  positioning is desired and the underlying environment and its capabilities are known. Single window clients should
+  _not_ enable this by default, as it can override compositor window positioning, and tiling window managers in
+  particular may demonstrate undesirable behavior with it.
+
 ### Legacy, DPI-unaware applications are blurry
 
 - Wayland handles high-DPI displays by scaling the desktop, which causes applications that are not designed to be
@@ -33,10 +49,6 @@ encounter limitations or behavior that is different from other windowing systems
 - Wayland doesn't natively have the concept of a primary display, so SDL attempts to determine it by querying various
   system settings, and falling back to a selection algorithm if this fails. If it is incorrect, it can be manually
   overridden by setting the ```SDL_VIDEO_DISPLAY_PRIORITY``` hint.
-
-### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
-
-- Wayland does not allow toplevel windows to position themselves programmatically.
 
 ### Retrieving the global mouse cursor position when the cursor is outside a window doesn't work
 
