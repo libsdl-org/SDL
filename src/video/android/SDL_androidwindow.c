@@ -204,6 +204,13 @@ bool Android_nativeSurfaceChanged(SDL_Window *window)
             SDL_VideoDevice *_this = SDL_GetVideoDevice();
             SDL_WindowData *data = window->internal;
 
+            // Make sure native_window is valid
+            if (!data->native_window) {
+                if (!Android_nativeSurfaceCreated(window)) {
+                    return false;
+                }
+            }
+
             // If the surface has been previously destroyed by onNativeSurfaceDestroyed
             // or if it is the first time, recreate it.
             if (data->egl_surface == EGL_NO_SURFACE) {
