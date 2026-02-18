@@ -77,12 +77,12 @@ bool Android_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    if (!Android_nativeSurfaceCreated(window)) {
+    if (!Android_NativeSurfaceCreated(window)) {
         result = false;
         goto endfunction;
     }
 
-    if (!Android_nativeSurfaceChanged(window)) {
+    if (!Android_NativeSurfaceChanged(window)) {
         result = false;
         goto endfunction;
     }
@@ -167,7 +167,7 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 
     if (window->internal) {
-        Android_nativeSurfaceDestroyed(window);
+        Android_NativeSurfaceDestroyed(window);
         SDL_free(window->internal);
         window->internal = NULL;
     }
@@ -177,7 +177,7 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 // Those functions called from RPC onNativeSurface{Created,Changed,Destroyed}()
 // and SDL_{Create,Destroy}Window();
 
-bool Android_nativeSurfaceCreated(SDL_Window *window)
+bool Android_NativeSurfaceCreated(SDL_Window *window)
 {
     if (window) {
         SDL_WindowData *data = window->internal;
@@ -194,7 +194,7 @@ bool Android_nativeSurfaceCreated(SDL_Window *window)
     return false;
 }
 
-bool Android_nativeSurfaceChanged(SDL_Window *window)
+bool Android_NativeSurfaceChanged(SDL_Window *window)
 {
     if (window) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -206,7 +206,7 @@ bool Android_nativeSurfaceChanged(SDL_Window *window)
 
             // Make sure native_window is valid
             if (!data->native_window) {
-                if (!Android_nativeSurfaceCreated(window)) {
+                if (!Android_NativeSurfaceCreated(window)) {
                     return false;
                 }
             }
@@ -233,7 +233,7 @@ bool Android_nativeSurfaceChanged(SDL_Window *window)
     return false;
 }
 
-void Android_nativeSurfaceDestroyed(SDL_Window *window)
+void Android_NativeSurfaceDestroyed(SDL_Window *window)
 {
     if (window) {
         SDL_WindowData *data = window->internal;
