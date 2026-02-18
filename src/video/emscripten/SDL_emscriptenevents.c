@@ -667,14 +667,14 @@ typedef struct Emscripten_PointerEvent
 static void Emscripten_HandleMouseButton(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
     Uint8 sdl_button;
-    const bool down = (event->down != 0);
+    bool down = false;
     switch (event->button) {
-        #define CHECK_MOUSE_BUTTON(jsbutton, sdlbutton) case jsbutton: sdl_button = SDL_BUTTON_##sdlbutton; break
-        CHECK_MOUSE_BUTTON(0, LEFT);
-        CHECK_MOUSE_BUTTON(1, MIDDLE);
-        CHECK_MOUSE_BUTTON(2, RIGHT);
-        CHECK_MOUSE_BUTTON(3, X1);
-        CHECK_MOUSE_BUTTON(4, X2);
+        #define CHECK_MOUSE_BUTTON(jsbutton, downflag, sdlbutton) case jsbutton: sdl_button = SDL_BUTTON_##sdlbutton; down = (event->down != 0) || ((event->buttons & downflag) != 0); break
+        CHECK_MOUSE_BUTTON(0, 1, LEFT);
+        CHECK_MOUSE_BUTTON(1, 4, MIDDLE);
+        CHECK_MOUSE_BUTTON(2, 2, RIGHT);
+        CHECK_MOUSE_BUTTON(3, 8, X1);
+        CHECK_MOUSE_BUTTON(4, 16, X2);
         #undef CHECK_MOUSE_BUTTON
         default: sdl_button = 0; break;
     }
