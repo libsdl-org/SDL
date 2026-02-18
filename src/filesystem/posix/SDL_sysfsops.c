@@ -39,46 +39,44 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
+
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-#ifdef SDL_PLATFORM_ANDROID
-    if (*path != '/') {
-        char *apath = NULL;
-        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
-        if (!apath) {
-            return false;
-        }
-        const bool retval = SDL_SYS_EnumerateDirectory(apath, cb, userdata);
-        SDL_free(apath);
-        if (retval) {
-            return true;
-        }
-    }
-#endif
+    char *apath = NULL;  // absolute path (for Android, iOS, etc). Overrides `path`.
 
-#ifdef SDL_PLATFORM_IOS
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
     if (*path != '/') {
+        #ifdef SDL_PLATFORM_ANDROID
+        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        #elif defined(SDL_PLATFORM_IOS)
         char *base = SDL_GetPrefPath("", "");
         if (!base) {
             return false;
         }
 
-        char *apath = NULL;
         SDL_asprintf(&apath, "%s%s", base, path);
         SDL_free(base);
+        #endif
+
         if (!apath) {
             return false;
         }
-        const bool retval = SDL_SYS_EnumerateDirectory(apath, cb, userdata);
-        SDL_free(apath);
-        if (retval) {
-            return true;
+    }
+#elif 0  // this is just for testing that `apath` works when you aren't on iOS or Android.
+    if (*path != '/') {
+        char *c = SDL_SYS_GetCurrentDirectory();
+        SDL_asprintf(&apath, "%s%s", c, path);
+        SDL_free(c);
+        if (!apath) {
+            return false;
         }
     }
 #endif
 
     char *pathwithsep = NULL;
-    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", path);
+    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", apath ? apath : path);
+    const size_t extralen = apath ? (SDL_strlen(apath) - SDL_strlen(path)) : 0;
+    SDL_free(apath);
     if ((pathwithseplen == -1) || (!pathwithsep)) {
         return false;
     }
@@ -112,7 +110,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        result = cb(userdata, pathwithsep, name);
+        result = cb(userdata, pathwithsep + extralen, name);
     }
 
     closedir(dir);
