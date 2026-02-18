@@ -492,7 +492,7 @@ typedef enum {
     RPC_cmd_nativeGenerateScancodeForUnichar,
 
     // SDLControllerManager_tab
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_cmd_onNativePadDown,
     RPC_cmd_onNativePadUp,
     RPC_cmd_onNativeJoy,
@@ -556,7 +556,7 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     CASE(nativeAddAudioDevice);
     CASE(nativeRemoveAudioDevice);
 
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     // SDLControllerManager_tab
     CASE(onNativePadDown);
     CASE(onNativePadUp);
@@ -1364,7 +1364,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
 #ifdef SDL_JOYSTICK_ANDROID
     int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
         RPC_Prepare(onNativePadDown);
         RPC_Add(device_id);
         RPC_Add(keycode);
@@ -1395,7 +1395,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
 #ifdef SDL_JOYSTICK_ANDROID
     int button = Android_keycode_to_SDL(keycode);
     if (button >= 0) {
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
         RPC_Prepare(onNativePadUp);
         RPC_Add(device_id);
         RPC_Add(keycode);
@@ -1426,7 +1426,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     jint device_id, jint axis, jfloat value)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(onNativeJoy);
     RPC_Add(device_id);
     RPC_Add(axis);
@@ -1453,7 +1453,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     jint device_id, jint hat_id, jint x, jint y)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(onNativeHat);
     RPC_Add(device_id);
     RPC_Add(hat_id);
@@ -1490,7 +1490,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(nativeAddJoystick);
     RPC_Add(device_id);
     RPC_AddString(device_name);
@@ -1523,7 +1523,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     jint device_id)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(nativeRemoveJoystick);
     RPC_Add(device_id);
     RPC_Send;
@@ -1545,7 +1545,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
     JNIEnv *env, jclass jcls, jint device_id, jstring device_name)
 {
 #ifdef SDL_HAPTIC_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(nativeAddHaptic);
     RPC_Add(device_name);
     RPC_AddString(device_name);
@@ -1566,7 +1566,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     JNIEnv *env, jclass jcls, jint device_id)
 {
 #ifdef SDL_HAPTIC_ANDROID
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(nativeRemoveHaptic);
     RPC_Add(device_id);
     RPC_Send;
@@ -3726,7 +3726,7 @@ onNativeFileDialog_end:
                 }
                 break;
 
-#ifdef GAMEPAD_AS_RPC
+#ifdef SDL_ANDROID_GAMEPAD_AS_RPC
                 // ------------------------------
                 // SDLControllerManager_tab
                 // ------------------------------
