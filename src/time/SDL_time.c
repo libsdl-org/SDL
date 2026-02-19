@@ -32,7 +32,6 @@
  */
 Sint64 SDL_CivilToDays(int year, int month, int day, int *day_of_week, int *day_of_year)
 {
-
     year -= month <= 2;
     const int era = (year >= 0 ? year : year - 399) / 400;
     const unsigned yoe = (unsigned)(year - era * 400);                                  // [0, 399]

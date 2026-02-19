@@ -333,6 +333,8 @@ extern "C" {
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
+ * \threadsafety This function is called once by SDL, at startup, on a single thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_AppIterate
@@ -537,6 +539,8 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Init
@@ -629,6 +633,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
@@ -646,6 +652,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style,
  * deregistered when the registration counter in SDL_RegisterApp decrements to
  * zero through calls to this function.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
@@ -657,6 +665,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  *
  * This function is only needed for Xbox GDK support; all other platforms will
  * do nothing and set an "unsupported" error message.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.2.0.
  */
