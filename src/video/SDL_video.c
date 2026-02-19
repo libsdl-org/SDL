@@ -4055,7 +4055,7 @@ bool SDL_GetWindowMouseGrab(SDL_Window *window)
 
 SDL_Window *SDL_GetGrabbedWindow(void)
 {
-    if (_this->grabbed_window &&
+    if (_this && _this->grabbed_window &&
         (_this->grabbed_window->flags & (SDL_WINDOW_MOUSE_GRABBED | SDL_WINDOW_KEYBOARD_GRABBED)) != 0) {
         return _this->grabbed_window;
     } else {
