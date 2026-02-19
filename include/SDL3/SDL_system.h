@@ -370,6 +370,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
  *
  * \returns the Android API level.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
@@ -379,6 +381,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  *
  * \returns true if this is a Chromebook, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
@@ -387,6 +391,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
  * Query if the application is running on a Samsung DeX docking station.
  *
  * \returns true if this is a DeX docking station, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -605,6 +611,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
  *
  * \returns true if the device is a tablet, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
@@ -615,6 +623,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
  * If SDL can't determine this, it will return false.
  *
  * \returns true if the device is a TV, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
