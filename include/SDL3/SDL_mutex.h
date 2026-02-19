@@ -380,7 +380,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockMutex(SDL_Mutex *mutex) SDL_TRY_ACQU
  *
  * \param mutex the mutex to unlock.
  *
- * \threadsafety This call must be paired with a previous locking call on the same thread.
+ * \threadsafety This call must be paired with a previous locking call on the
+ *               same thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -627,7 +628,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
  *
  * \param rwlock the rwlock to unlock.
  *
- * \threadsafety This call must be paired with a previous locking call on the same thread.
+ * \threadsafety This call must be paired with a previous locking call on the
+ *               same thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

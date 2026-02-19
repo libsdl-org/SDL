@@ -461,8 +461,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
  *               function by its 'return', or -1 if the thread has been
  *               detached or isn't valid, may be NULL.
  *
- * \threadsafety It is safe to call this function from any thread, but only
- *               a single thread can wait any specific thread to finish.
+ * \threadsafety It is safe to call this function from any thread, but only a
+ *               single thread can wait any specific thread to finish.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -512,10 +512,10 @@ extern SDL_DECLSPEC SDL_ThreadState SDLCALL SDL_GetThreadState(SDL_Thread *threa
  *
  * It is safe to pass NULL to this function; it is a no-op.
  *
- * \threadsafety It is safe to call this function from any thread.
- *
  * \param thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
