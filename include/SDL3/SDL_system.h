@@ -86,6 +86,8 @@ typedef bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * \param callback the SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_WindowsMessageHook
@@ -169,6 +171,8 @@ typedef bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * \param callback the SDL_X11EventHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
@@ -186,6 +190,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
@@ -201,6 +207,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int
  *                    SCHED_OTHER, etc...).
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -264,6 +272,8 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetiOSEventPump
@@ -276,6 +286,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window,
  * This function is only available on Apple iOS.
  *
  * \param enabled true to enable the event pump, false to disable it.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
