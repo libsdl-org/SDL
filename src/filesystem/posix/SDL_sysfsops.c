@@ -83,25 +83,21 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     // trim down to a single path separator at the end, in case the caller added one or more.
     pathwithseplen--;
-    while ((pathwithseplen > 0) && (pathwithsep[pathwithseplen] == '/')) {
+    while ((pathwithseplen > 0) && (pathwithsep[pathwithseplen - 1] == '/')) {
         pathwithsep[pathwithseplen--] = '\0';
     }
 
     DIR *dir = opendir(pathwithsep);
     if (!dir) {
-        #ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
-        const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep, cb, userdata);
+#ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
+        const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
         SDL_free(pathwithsep);
         return retval;
-        #else
+#else
         SDL_free(pathwithsep);
         return SDL_SetError("Can't open directory: %s", strerror(errno));
-        #endif
+#endif
     }
-
-    // make sure there's a path separator at the end now for the actual callback.
-    pathwithsep[++pathwithseplen] = '/';
-    pathwithsep[++pathwithseplen] = '\0';
 
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     struct dirent *ent;
@@ -454,4 +450,3 @@ char *SDL_SYS_GetCurrentDirectory(void)
 }
 
 #endif // SDL_FSOPS_POSIX
-
