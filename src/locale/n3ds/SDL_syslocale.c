@@ -24,32 +24,35 @@
 
 #include <3ds.h>
 
-// Used when the CFGU fails to work.
-#define BAD_LOCALE 255
-
-static u8 GetLocaleIndex(void);
-
 bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     // The 3DS only supports these 12 languages, only one can be active at a time
     static const char AVAILABLE_LOCALES[][6] = { "ja_JP", "en_US", "fr_FR", "de_DE",
                                                  "it_IT", "es_ES", "zh_CN", "ko_KR",
                                                  "nl_NL", "pt_PT", "ru_RU", "zh_TW" };
-    u8 current_locale = GetLocaleIndex();
-    if (current_locale != BAD_LOCALE) {
-        SDL_strlcpy(buf, AVAILABLE_LOCALES[current_locale], buflen);
-    }
-    return true;
-}
+    CFG_CountryInfo info;
+    char str[3] = {0,0,0};
+    u8 language;
 
-static u8 GetLocaleIndex(void)
-{
-    u8 current_locale;
-    Result result;
     if (R_FAILED(cfguInit())) {
-        return BAD_LOCALE;
+        return false;
     }
-    result = CFGU_GetSystemLanguage(&current_locale);
+    if (R_FAILED(CFGU_GetSystemLanguage(&language))) {
+        cfguExit();
+        return false;
+    }
+
+    SDL_strlcpy(buf, AVAILABLE_LOCALES[language], buflen);
+
+    // Optionally get more detailed country info if available
+    if (R_SUCCEEDED(CFGU_GetSystemCountryInfo(&info))) {
+        if (R_SUCCEEDED(CFGU_GetCountryCodeString(info.country, str))) {
+            SDL_assert(buflen > 5);
+            buf[3] = str[0];
+            buf[4] = str[1];
+        }
+    }
+
     cfguExit();
-    return R_SUCCEEDED(result) ? current_locale : BAD_LOCALE;
+    return true;
 }
