@@ -1004,7 +1004,7 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
             payload = data + 2;
             payload_size = size - 2;
             HIDAPI_DriverGameSir_HandleStatePacket(joystick, ctx, payload, payload_size);
-        } else if (size >= 10 && data[0] == 0x07) {
+        } else if (size >= 10 && (data[0] == 0x02 || data[0] == 0x07)) {
             payload = data + 1;
             payload_size = size - 1;
             HIDAPI_DriverGameSir_HandleSimpleStatePacketBluetooth(joystick, ctx, payload, payload_size);
