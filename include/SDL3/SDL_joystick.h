@@ -46,8 +46,8 @@
  * and load appropriate drivers.
  *
  * If you would like to receive joystick updates while the application is in
- * the background, you should set the following hint before calling
- * SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
+ * the background, you should set the
+ * SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS hint.
  *
  * SDL can provide virtual joysticks as well: the app defines an imaginary
  * controller with SDL_AttachVirtualJoystick(), and then can provide inputs
@@ -1132,7 +1132,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_JoystickEventsEnabled(void);
  * Update the current state of the open joysticks.
  *
  * This is called automatically by the event loop if any joystick events are
- * enabled.
+ * enabled and SDL_HINT_AUTO_UPDATE_JOYSTICKS hasn't been set to "0".
  *
  * \threadsafety It is safe to call this function from any thread.
  *

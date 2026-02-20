@@ -349,25 +349,25 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
     if (length == pitch && length == dpitch) {
         SDL_memcpy(dst, pixels, length * rect->h);
-        pixels += pitch * rect->h;
+        pixels = (const Uint8 *)pixels + pitch * rect->h;
     } else {
         for (row = 0; row < rect->h; ++row) {
             SDL_memcpy(dst, pixels, length);
-            pixels += pitch;
+            pixels = (const Uint8 *)pixels + pitch;
             dst += dpitch;
         }
     }
 
 #ifdef SDL_HAVE_YUV
     if (vita_texture->yuv) {
-        void *Udst;
-        void *Vdst;
+        Uint8 *Udst;
+        Uint8 *Vdst;
         int uv_pitch = (dpitch + 1) / 2;
         int uv_src_pitch = (pitch + 1) / 2;
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // skip Y plane
-        Uint8 *Dpixels = gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
+        Uint8 *Dpixels = (Uint8*)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
 
         Udst = Dpixels + (UVrect.y * uv_pitch) + UVrect.x;
         Vdst = Dpixels + (uv_pitch * ((vita_texture->h + 1) / 2)) + (UVrect.y * uv_pitch) + UVrect.x;
@@ -377,11 +377,11 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // U plane
         if (length == uv_src_pitch && length == uv_pitch) {
             SDL_memcpy(Udst, pixels, length * UVrect.h);
-            pixels += uv_src_pitch * UVrect.h;
+            pixels = (const Uint8 *)pixels + uv_src_pitch * UVrect.h;
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(Udst, pixels, length);
-                pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 Udst += uv_pitch;
             }
         }
@@ -392,19 +392,19 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(Vdst, pixels, length);
-                pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 Vdst += uv_pitch;
             }
         }
 
     } else if (vita_texture->nv12) {
-        void *UVdst;
+        Uint8 *UVdst;
         int uv_pitch = 2 * ((dpitch + 1) / 2);
         int uv_src_pitch = 2 * ((pitch + 1) / 2);
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // skip Y plane
-        void *Dpixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        Uint8 *Dpixels = (Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
         UVdst = Dpixels + (UVrect.y * uv_pitch) + UVrect.x;
 
         length = UVrect.w * 2;
@@ -415,7 +415,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         } else {
             for (row = 0; row < UVrect.h; ++row) {
                 SDL_memcpy(UVdst, pixels, length);
-                pixels += uv_src_pitch;
+                pixels = (const Uint8 *)pixels + uv_src_pitch;
                 UVdst += uv_pitch;
             }
         }
@@ -456,13 +456,13 @@ static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textu
 
     // U/V planes
     {
-        void *Udst;
-        void *Vdst;
+        Uint8 *Udst;
+        Uint8 *Vdst;
         VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
         int uv_pitch = (dpitch + 1) / 2;
 
         // skip Y plane
-        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        Uint8 *pixels = (Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
 
         if (texture->format == SDL_PIXELFORMAT_YV12) { // YVU
             Vdst = pixels + (UVrect.y * uv_pitch) + UVrect.x;
@@ -529,12 +529,12 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
 
     // UV plane
     {
-        void *UVdst;
+        Uint8 *UVdst;
         VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
         int uv_pitch = 2 * ((dpitch + 1) / 2);
 
         // skip Y plane
-        void *pixels = (void *)((Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h));
+        Uint8 *pixels = (Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
 
         UVdst = pixels + (UVrect.y * uv_pitch) + UVrect.x;
 
@@ -821,6 +821,35 @@ static SceGxmTextureAddrMode TranslateAddressMode(SDL_TextureAddressMode mode)
     }
 }
 
+static void ClampCliprectToViewport(SDL_Rect *clip, const SDL_Rect *viewport)
+{
+    int max_x_v, max_y_v, max_x_c, max_y_c;
+
+    if (clip->x < 0) {
+        clip->w += clip->x;
+        clip->x = 0;
+    }
+
+    if (clip->y < 0) {
+        clip->h += clip->y;
+        clip->y = 0;
+    }
+
+    max_x_c = clip->x + clip->w;
+    max_y_c = clip->y + clip->h;
+
+    max_x_v = viewport->x + viewport->w;
+    max_y_v = viewport->y + viewport->h;
+
+    if (max_x_c > max_x_v) {
+        clip->w -= (max_x_v - max_x_c);
+    }
+
+    if (max_y_c > max_y_v) {
+        clip->h -= (max_y_v - max_y_c);
+    }
+}
+
 static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -863,9 +892,13 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
         data->drawstate.cliprect_enabled_dirty = false;
     }
 
-    if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
-        const SDL_Rect *rect = &data->drawstate.cliprect;
-        set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
+    if ((data->drawstate.cliprect_enabled || data->drawstate.viewport_is_set) && data->drawstate.cliprect_dirty) {
+        SDL_Rect rect;
+        SDL_copyp(&rect, &data->drawstate.cliprect);
+        if (data->drawstate.viewport_is_set) {
+            ClampCliprectToViewport(&rect, &data->drawstate.viewport);
+        }
+        set_clip_rectangle(data, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
         data->drawstate.cliprect_dirty = false;
     }
 
@@ -953,18 +986,29 @@ static void VITA_GXM_InvalidateCachedState(SDL_Renderer *renderer)
 static bool VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
+    int w, h;
+
     StartDrawing(renderer);
 
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
-        int w, h;
         SDL_GetWindowSizeInPixels(renderer->window, &w, &h);
-        if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
-            data->drawstate.viewport_dirty = true; // if the window dimensions changed, invalidate the current viewport, etc.
-            data->drawstate.cliprect_dirty = true;
-            data->drawstate.drawablew = w;
-            data->drawstate.drawableh = h;
+    } else {
+        float fw, fh;
+        if (!SDL_GetTextureSize(renderer->target, &fw, &fh)) {
+            w = data->drawstate.drawablew;
+            h = data->drawstate.drawableh;
+        } else {
+            w = (int)SDL_roundf(fw);
+            h = (int)SDL_roundf(fh);
         }
+    }
+
+    if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
+        data->drawstate.viewport_dirty = true; // if the window dimensions changed, invalidate the current viewport, etc.
+        data->drawstate.cliprect_dirty = true;
+        data->drawstate.drawablew = w;
+        data->drawstate.drawableh = h;
     }
 
     while (cmd) {
@@ -977,6 +1021,16 @@ static bool VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
                 data->drawstate.viewport_dirty = true;
                 data->drawstate.cliprect_dirty = true;
+                data->drawstate.viewport_is_set = viewport->x != 0 || viewport->y != 0 || viewport->w != data->drawstate.drawablew || viewport->h != data->drawstate.drawableh;
+                if (!data->drawstate.cliprect_enabled) {
+                    if (data->drawstate.viewport_is_set) {
+                        SDL_copyp(&data->drawstate.cliprect, viewport);
+                        data->drawstate.cliprect.x = 0;
+                        data->drawstate.cliprect.y = 0;
+                    } else {
+                        data->drawstate.cliprect_enabled_dirty = true;
+                    }
+                }
             }
             break;
         }
@@ -984,12 +1038,18 @@ static bool VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *
         case SDL_RENDERCMD_SETCLIPRECT:
         {
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
+            const SDL_Rect *viewport = &data->drawstate.viewport;
             if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                 data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
                 data->drawstate.cliprect_enabled_dirty = true;
+                if (!data->drawstate.cliprect_enabled && data->drawstate.viewport_is_set) {
+                    SDL_copyp(&data->drawstate.cliprect, viewport);
+                    data->drawstate.cliprect.x = 0;
+                    data->drawstate.cliprect.y = 0;
+                }
             }
 
-            if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
+            if ((data->drawstate.cliprect_enabled || !data->drawstate.viewport_is_set) && SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
                 SDL_copyp(&data->drawstate.cliprect, rect);
                 data->drawstate.cliprect_dirty = true;
             }

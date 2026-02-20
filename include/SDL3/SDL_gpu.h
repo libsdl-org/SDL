@@ -2307,6 +2307,21 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER`: Certain
+ *   feature checks are only possible on Windows 11 by default. By setting
+ *   this alongside `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING`
+ *   and vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make
+ *   those feature checks possible on older platforms. The version you provide
+ *   must match the one given in the DLL.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING`: Certain
+ *   feature checks are only possible on Windows 11 by default. By setting
+ *   this alongside
+ *   `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER` and
+ *   vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make those
+ *   feature checks possible on older platforms. The path you provide must be
+ *   relative to the executable path of your app. Be sure not to put the DLL
+ *   in the same directory as the exe; Microsoft strongly advises against
+ *   this!
  *
  * With the Vulkan backend:
  *
@@ -2361,6 +2376,8 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER             "SDL.gpu.device.create.d3d12.agility_sdk_version"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING                "SDL.gpu.device.create.d3d12.agility_sdk_path"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"

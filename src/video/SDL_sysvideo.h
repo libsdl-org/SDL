@@ -191,7 +191,8 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04,
     VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY = 0x08,
     VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES = 0x10,
-    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x20
+    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x20,
+    VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER = 0x40
 } DeviceCaps;
 
 // Fullscreen operations
@@ -330,7 +331,7 @@ struct SDL_VideoDevice
     bool (*GL_GetSwapInterval)(SDL_VideoDevice *_this, int *interval);
     bool (*GL_SwapWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*GL_DestroyContext)(SDL_VideoDevice *_this, SDL_GLContext context);
-    void (*GL_DefaultProfileConfig)(SDL_VideoDevice *_this, int *mask, int *major, int *minor);
+    void (*GL_SetDefaultProfileConfig)(SDL_VideoDevice *_this);
 
     /* * * */
     /*
@@ -404,7 +405,6 @@ struct SDL_VideoDevice
     // Data common to all drivers
     SDL_ThreadID thread;
     bool checked_texture_framebuffer;
-    bool is_dummy;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;

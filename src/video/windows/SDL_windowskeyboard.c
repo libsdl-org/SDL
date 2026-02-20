@@ -101,7 +101,7 @@ static void WIN_CacheKeymap(HKL layout, SDL_Keymap *keymap)
     ++keymap_cache_size;
 }
 
-static SDL_Keymap *WIN_BuildKeymap()
+static SDL_Keymap *WIN_BuildKeymap(void)
 {
     SDL_Scancode scancode;
     BYTE keyboardState[256] = { 0 };
@@ -1072,6 +1072,14 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         *lParam &= element_mask;
 
         return false;
+    } else if (msg == WM_IME_STARTCOMPOSITION) {
+        SDL_DebugIMELog("WM_IME_STARTCOMPOSITION");
+        if (videodata->ime_internal_composition) {
+            // Windows may still display a composition dialog even with
+            // ISC_SHOWUICOMPOSITIONWINDOW cleared, so trap the message
+            // here to prevent that (even when the IME is disabled).
+            return true;
+        }
     }
 
     if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
@@ -1098,12 +1106,6 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     case WM_INPUTLANGCHANGE:
         SDL_DebugIMELog("WM_INPUTLANGCHANGE");
         IME_InputLangChanged(videodata);
-        break;
-    case WM_IME_STARTCOMPOSITION:
-        SDL_DebugIMELog("WM_IME_STARTCOMPOSITION");
-        if (videodata->ime_internal_composition) {
-            trap = true;
-        }
         break;
     case WM_IME_COMPOSITION:
         SDL_DebugIMELog("WM_IME_COMPOSITION %x", lParam);

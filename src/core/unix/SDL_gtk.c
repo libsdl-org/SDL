@@ -78,7 +78,7 @@ static void QuitGtk(void)
     libgtk = NULL;
 }
 
-static bool IsGtkInit()
+static bool IsGtkInit(void)
 {
     return libgdk != NULL && libgtk != NULL;
 }

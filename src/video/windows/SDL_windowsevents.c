@@ -852,8 +852,6 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
     data->last_rawinput_poll = poll_finish;
 }
 
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
 static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
 {
     int new_count = (*count + 1);
@@ -878,8 +876,7 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
     return false;
 }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, const char *default_name, bool hid_loaded)
+static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, Uint16 vendor, Uint16 product, const char *default_name, bool hid_loaded)
 {
     char *vendor_name = NULL;
     char *product_name = NULL;
@@ -889,12 +886,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
     WCHAR vend[256], prod[256];
     vend[0] = 0;
     prod[0] = 0;
-
-
-    HIDD_ATTRIBUTES attr;
-    attr.VendorID = 0;
-    attr.ProductID = 0;
-    attr.Size = sizeof(attr);
 
     if (hid_loaded) {
         char devName[MAX_PATH + 1];
@@ -908,7 +899,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
             // they can only be opened with a desired access of none instead of generic read.
             HANDLE hFile = CreateFileA(devName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
             if (hFile != INVALID_HANDLE_VALUE) {
-                SDL_HidD_GetAttributes(hFile, &attr);
                 SDL_HidD_GetManufacturerString(hFile, vend, sizeof(vend));
                 SDL_HidD_GetProductString(hFile, prod, sizeof(prod));
                 CloseHandle(hFile);
@@ -950,8 +940,8 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
                     }
                     prod[size] = 0;
 
-                    if (attr.VendorID || attr.ProductID) {
-                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, attr.VendorID, attr.ProductID);
+                    if (vendor || product) {
+                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, vendor, product);
                     } else {
                         product_name = WIN_StringToUTF8W(prod);
                     }
@@ -961,18 +951,19 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
         }
     }
 
-    if (!product_name && (attr.VendorID || attr.ProductID)) {
-        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, attr.VendorID, attr.ProductID);
+    if (!product_name && (vendor || product)) {
+        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, vendor, product);
     }
-    name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name, default_name);
+    name = SDL_CreateDeviceName(vendor, product, vendor_name, product_name, default_name);
     SDL_free(vendor_name);
     SDL_free(product_name);
 
     return name;
 }
 
-void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check)
+void WIN_CheckKeyboardAndMouseHotplug(bool hid_loaded)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     PRAWINPUTDEVICELIST raw_devices = NULL;
     UINT raw_device_count = 0;
     int old_keyboard_count = 0;
@@ -984,17 +975,12 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
-    if (!_this->internal->detect_device_hotplug) {
+    if (!_this ||
+        SDL_strcmp(_this->name, "windows") != 0 ||
+        !_this->internal->detect_device_hotplug ||
+        _this->internal->gameinput_context) {
         return;
     }
-
-    // Check to see if anything has changed
-    static Uint64 s_last_device_change;
-    Uint64 last_device_change = WIN_GetLastDeviceNotification();
-    if (!initial_check && last_device_change == s_last_device_change) {
-        return;
-    }
-    s_last_device_change = last_device_change;
 
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
         return; // oh well.
@@ -1017,7 +1003,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     old_mice = SDL_GetMice(&old_mouse_count);
 
-    bool hid_loaded = WIN_LoadHIDDLL();
     for (UINT i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH] = { 0 };
@@ -1063,7 +1048,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Keyboard", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Keyboard", hid_loaded);
                     SDL_AddKeyboard(keyboardID, name);
                     SDL_free(name);
                 }
@@ -1074,7 +1059,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Mouse", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Mouse", hid_loaded);
                     SDL_AddMouse(mouseID, name);
                     SDL_free(name);
                 }
@@ -1083,9 +1068,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
         default:
             break;
         }
-    }
-    if (hid_loaded) {
-        WIN_UnloadHIDDLL();
     }
 
     for (int i = old_keyboard_count; i--;) {
@@ -1282,7 +1264,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen) {
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, true, true);
         } else {
             // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
             //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
@@ -1323,7 +1305,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
         if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
             // technically this isn't just _proximity_ but maybe just leaving the window. Good enough. WinTab apparently has real proximity info.
-            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false);
+            SDL_SendPenProximity(WIN_GetEventTimestamp(), pen, data->window, false, false);
         }
         returnCode = 0;
     } break;
@@ -2230,7 +2212,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_SendDropComplete(data->window);
         DragFinish(drop);
         return 0;
-    } break;
+    }
 
     case WM_DISPLAYCHANGE:
     {
@@ -2462,7 +2444,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->expected_resize = false;
             return 0;
         }
-        break;
 
     case WM_SETTINGCHANGE:
         if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
@@ -2724,10 +2705,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
                                     (GetAsyncKeyState(VK_XBUTTON2) & 0x8000) != 0);
             }
         }
-    }
-
-    if (!_this->internal->gameinput_context) {
-        WIN_CheckKeyboardAndMouseHotplug(_this, false);
     }
 
     WIN_UpdateIMECandidates(_this);

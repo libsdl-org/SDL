@@ -41,7 +41,7 @@
 #endif
 
 #ifdef DEBUG_COCOAWINDOW
-#define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
+#define DLog(fmt, ...) printf("%s: " fmt "\n", SDL_FUNCTION, ##__VA_ARGS__)
 #else
 #define DLog(...) \
     do {          \
@@ -1375,6 +1375,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)aNotification
 {
+    SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)_data.window->internal;
+    NSView *contentView = windata.sdlContentView;
     NSNumber *oldscale = [[aNotification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey];
 
     if (inFullscreenTransition) {
@@ -1382,6 +1384,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     }
 
     if ([oldscale doubleValue] != [_data.nswindow backingScaleFactor]) {
+        // Update the content scale on the window layer
+        // This is required to keep content scale in sync with ANGLE
+        contentView.layer.contentsScale = [_data.nswindow backingScaleFactor];
         // Send a resize event when the backing scale factor changes.
         [self windowDidResize:aNotification];
     }
@@ -1555,7 +1560,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         [self addPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
         [nswindow miniaturize:nil];
     } else {
-        // Adjust the fullscreen toggle button and readd menu now that we're here.
+        // Adjust the fullscreen toggle button and re-add menu now that we're here.
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -2482,12 +2487,12 @@ bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
             [nswindow setTabbingMode:NSWindowTabbingModeDisallowed];
 
-            if (videodata.allow_spaces) {
-                // we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later
-                if (window->flags & SDL_WINDOW_RESIZABLE) {
-                    // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
-                    [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-                }
+            // we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later
+            if ((window->flags & SDL_WINDOW_RESIZABLE) && videodata.allow_spaces) {
+                // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
+                [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+            } else {
+                [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenNone];
             }
 
             // Create a default view for this window
@@ -2947,13 +2952,12 @@ void Cocoa_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool r
         if (![listener isInFullscreenSpace] && ![listener isInFullscreenSpaceTransition]) {
             SetWindowStyle(window, GetWindowStyle(window));
         }
-        if (videodata.allow_spaces) {
-            if (resizable) {
-                // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
-                [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-            } else {
-                [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
-            }
+
+        if (resizable && videodata.allow_spaces) {
+            // resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar.
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        } else {
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenNone];
         }
     }
 }
@@ -3049,6 +3053,9 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
 
         [nswindow setContentSize:rect.size];
         [nswindow setFrameOrigin:rect.origin];
+
+        // Disable the window shadow in fullscreen to avoid a visible 1px border on Tahoe
+        nswindow.hasShadow = !fullscreen && !(window->flags & SDL_WINDOW_TRANSPARENT);
 
         // When the window style changes the title is cleared
         if (!fullscreen) {

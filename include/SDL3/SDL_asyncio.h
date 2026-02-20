@@ -213,6 +213,8 @@ typedef struct SDL_AsyncIOQueue SDL_AsyncIOQueue;
  * \returns a pointer to the SDL_AsyncIO structure that is created or NULL on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CloseAsyncIO
@@ -530,6 +532,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SignalAsyncIOQueue(SDL_AsyncIOQueue *queue)
  *                 results.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

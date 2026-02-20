@@ -53,12 +53,12 @@
  * doesn't seem to, it might actually be the operating system's fault. For
  * example, some platforms can manage multiple devices at the same time, but
  * others will make any connected pens look like a single logical device, much
- * how all USB mice connected to a computer will move the same system cursor.
- * Other platforms might not support pen buttons, or the distance axis, etc.
- * Very few platforms can even report _what_ functionality the pen supports in
- * the first place, so best practices is to either build UI to let the user
- * configure their pens, or be prepared to handle new functionality for a pen
- * the first time an event is reported.
+ * like how all USB mice connected to a computer will move the same system
+ * cursor. Other platforms might not support pen buttons, or the distance
+ * axis, etc. Very few platforms can even report _what_ functionality the pen
+ * supports in the first place, so best practices is to either build UI to let
+ * the user configure their pens, or be prepared to handle new functionality
+ * for a pen the first time an event is reported.
  */
 
 #ifndef SDL_pen_h_

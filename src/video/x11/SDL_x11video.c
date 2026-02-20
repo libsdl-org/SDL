@@ -77,6 +77,16 @@ static bool X11_IsXWayland(Display *d)
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
 }
 
+static bool X11_IsWSL(void)
+{
+#ifdef SDL_PLATFORM_LINUX
+    if (SDL_GetPathInfo("/proc/sys/fs/binfmt_misc/WSLInterop", NULL) || SDL_GetPathInfo("/run/WSL", NULL)) { // if either of these exist, we're on WSL.
+         return true;
+    }
+#endif
+    return false;
+}
+
 static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -255,7 +265,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
-    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                          VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
 
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
@@ -263,6 +274,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
         device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
                                VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+    }
+    if (X11_IsWSL()) {
+        // On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer.
+        device->device_caps &= ~VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
     }
 
     return device;

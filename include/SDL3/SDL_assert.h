@@ -136,7 +136,7 @@ extern "C" {
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif SDL_HAS_BUILTIN(__builtin_trap)
     #define SDL_TriggerBreakpoint() __builtin_trap()
-#elif (defined(__GNUC__) || defined(__clang__) || defined(__TINYC__)) && (defined(__i386__) || defined(__x86_64__))
+#elif (defined(__GNUC__) || defined(__clang__) || defined(__TINYC__) || defined(__slimcc__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "ebreak\n\t" )
@@ -160,7 +160,7 @@ extern "C" {
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
- * A macro that reports the current function being compiled.
+ * A constant that contains the current function being compiled.
  *
  * If SDL can't figure how the compiler reports this, it will use "???".
  *
@@ -168,12 +168,14 @@ extern "C" {
  */
 #define SDL_FUNCTION __FUNCTION__
 
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
+#elif !defined(SDL_FUNCTION)
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
 #   define SDL_FUNCTION __func__
 #elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))
 #   define SDL_FUNCTION __FUNCTION__
 #else
 #   define SDL_FUNCTION "???"
+#endif
 #endif
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION

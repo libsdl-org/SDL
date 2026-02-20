@@ -3314,6 +3314,15 @@ bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
     return false;
 }
 
+bool SDL_IsJoystickGameSirController(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id != USB_VENDOR_GAMESIR) {
+        return false;
+    }
+
+    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K);
+}
+
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);

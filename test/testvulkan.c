@@ -218,22 +218,74 @@ static void loadGlobalFunctions(void)
 #undef VULKAN_INSTANCE_FUNCTION
 }
 
+static bool checkVulkanPortability(void)
+{
+    Uint32 extensionCount, i;
+    VkExtensionProperties *availableExtensions;
+    bool supported = false;
+
+    vkEnumerateInstanceExtensionProperties(
+        NULL,
+        &extensionCount,
+        NULL);
+    availableExtensions = SDL_malloc(
+        extensionCount * sizeof(VkExtensionProperties));
+    vkEnumerateInstanceExtensionProperties(
+        NULL,
+        &extensionCount,
+        availableExtensions);
+
+    for (i = 0; i < extensionCount; i += 1) {
+        if (SDL_strcmp(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, availableExtensions[i].extensionName) == 0) {
+            supported = true;
+            break;
+        }
+    }
+
+    SDL_free(availableExtensions);
+    return supported;
+}
+
 static void createInstance(void)
 {
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
+    bool supportsPortabilityEnumeration;
+    const char **instanceExtensions;
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-#ifdef __APPLE__
-    instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-#endif
 
-    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    supportsPortabilityEnumeration = checkVulkanPortability();
+    if (supportsPortabilityEnumeration) {
+        // Allocate our own extension array so that we can add the KHR_portability extensions for MoltenVK
+        Uint32 count_instance_extensions;
+        const char * const *instance_extensions = SDL_Vulkan_GetInstanceExtensions(&count_instance_extensions);
+
+        int count_extensions = count_instance_extensions + 1;
+        instanceExtensions = SDL_malloc(count_extensions * sizeof(const char *));
+        instanceExtensions[0] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+        SDL_memcpy(&instanceExtensions[1], instance_extensions, count_instance_extensions * sizeof(const char*));
+
+        instanceCreateInfo.enabledExtensionCount = count_extensions;
+        instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions;
+        instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    } else {
+        // No need to allocate anything, just use SDL's array directly
+        instanceExtensions = NULL;
+        instanceCreateInfo.ppEnabledExtensionNames =
+            SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    }
+
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
+
+    if (instanceExtensions != NULL) {
+        SDL_free(instanceExtensions);
+    }
+
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

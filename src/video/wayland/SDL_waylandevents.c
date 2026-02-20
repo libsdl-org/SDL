@@ -126,7 +126,7 @@ static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed
 static void Wayland_SeatCancelTouch(SDL_WaylandSeat *seat, SDL_WaylandTouchPoint *tp)
 {
     if (tp->surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(tp->surface);
 
         if (window_data) {
             const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
@@ -421,7 +421,7 @@ static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint6
             const Uint64 timestamp = repeat_info->base_time_ns + repeat_info->next_repeat_ns;
             SDL_SendKeyboardKeyIgnoreModifiers(Wayland_AdjustEventTimestampBase(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, true);
         }
-        if (repeat_info->text[0]) {
+        if (repeat_info->text[0] && !(SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
             SDL_SendKeyboardText(repeat_info->text);
         }
         repeat_info->next_repeat_ns += SDL_NS_PER_SECOND / (Uint64)repeat_info->repeat_rate;
@@ -1066,7 +1066,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *pointer, uint32
         Wayland_UpdateImplicitGrabSerial(seat, serial);
     }
 
-    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);;
+    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);
 
     if (wl_seat_get_version(seat->wl_seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
         if (state_w) {
@@ -1467,7 +1467,7 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
     Wayland_SeatRemoveTouch(seat, id, &fx, &fy, &surface);
 
     if (surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
         if (window_data) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
@@ -1498,7 +1498,7 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
     Wayland_SeatUpdateTouch(seat, id, fx, fy, &surface);
 
     if (surface) {
-        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+        SDL_WindowData *window_data = Wayland_GetWindowDataForOwnedSurface(surface);
 
         if (window_data) {
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
@@ -2310,10 +2310,11 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     SDL_SendKeyboardKeyIgnoreModifiers(timestamp_ns, seat->keyboard.sdl_id, key, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        if (handled_by_ime) {
+            has_text = false;
+        }
         if (has_text && !(SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
-            if (!handled_by_ime) {
-                SDL_SendKeyboardText(text);
-            }
+            SDL_SendKeyboardText(text);
         }
         if (seat->keyboard.xkb.keymap && WAYLAND_xkb_keymap_key_repeats(seat->keyboard.xkb.keymap, key + 8)) {
             keyboard_repeat_set(&seat->keyboard.repeat, seat->keyboard.sdl_id, key, time, timestamp_ns, scancode, has_text, text);
@@ -3471,7 +3472,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
 
     if (sdltool->frame.have_proximity && sdltool->frame.in_proximity) {
-        SDL_SendPenProximity(timestamp, instance_id, window, true);
+        SDL_SendPenProximity(timestamp, instance_id, window, true, true);
         Wayland_TabletToolUpdateCursor(sdltool);
     }
 
@@ -3510,7 +3511,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     }
 
     if (sdltool->frame.have_proximity && !sdltool->frame.in_proximity) {
-        SDL_SendPenProximity(timestamp, instance_id, window, false);
+        SDL_SendPenProximity(timestamp, instance_id, window, false, false);
         sdltool->focus = NULL;
         Wayland_TabletToolUpdateCursor(sdltool);
     }

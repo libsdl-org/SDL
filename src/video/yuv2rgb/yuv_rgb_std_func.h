@@ -14,7 +14,7 @@
 		((((Uint16)clampU8(y_tmp+r_tmp)) << 8 ) & 0xF800) | \
 		((((Uint16)clampU8(y_tmp+g_tmp)) << 3) & 0x07E0) | \
 		(((Uint16)clampU8(y_tmp+b_tmp)) >> 3); \
-	rgb_ptr += 2; \
+	rgb_ptr += 2
 
 #elif RGB_FORMAT == RGB_FORMAT_RGB24
 
@@ -22,7 +22,7 @@
 	rgb_ptr[0] = clampU8(y_tmp+r_tmp); \
 	rgb_ptr[1] = clampU8(y_tmp+g_tmp); \
 	rgb_ptr[2] = clampU8(y_tmp+b_tmp); \
-	rgb_ptr += 3; \
+	rgb_ptr += 3
 
 #elif RGB_FORMAT == RGB_FORMAT_RGBA
 
@@ -32,7 +32,7 @@
 		(((Uint32)clampU8(y_tmp+g_tmp)) << 16) | \
 		(((Uint32)clampU8(y_tmp+b_tmp)) << 8) | \
 		0x000000FF; \
-	rgb_ptr += 4; \
+	rgb_ptr += 4
 
 #elif RGB_FORMAT == RGB_FORMAT_BGRA
 
@@ -42,7 +42,7 @@
 		(((Uint32)clampU8(y_tmp+g_tmp)) << 16) | \
 		(((Uint32)clampU8(y_tmp+r_tmp)) << 8) | \
 		0x000000FF; \
-	rgb_ptr += 4; \
+	rgb_ptr += 4
 
 #elif RGB_FORMAT == RGB_FORMAT_ARGB
 
@@ -52,7 +52,7 @@
 		(((Uint32)clampU8(y_tmp+r_tmp)) << 16) | \
 		(((Uint32)clampU8(y_tmp+g_tmp)) << 8) | \
 		(((Uint32)clampU8(y_tmp+b_tmp)) << 0); \
-	rgb_ptr += 4; \
+	rgb_ptr += 4
 
 #elif RGB_FORMAT == RGB_FORMAT_ABGR
 
@@ -62,7 +62,7 @@
 		(((Uint32)clampU8(y_tmp+b_tmp)) << 16) | \
 		(((Uint32)clampU8(y_tmp+g_tmp)) << 8) | \
 		(((Uint32)clampU8(y_tmp+r_tmp)) << 0); \
-	rgb_ptr += 4; \
+	rgb_ptr += 4
 
 #elif RGB_FORMAT == RGB_FORMAT_XBGR2101010
 
@@ -72,7 +72,7 @@
 		(((Uint32)clamp10(y_tmp+b_tmp)) << 20) | \
 		(((Uint32)clamp10(y_tmp+g_tmp)) << 10) | \
 		(((Uint32)clamp10(y_tmp+r_tmp)) << 0); \
-	rgb_ptr += 4; \
+	rgb_ptr += 4
 
 #else
 #error PACK_PIXEL unimplemented

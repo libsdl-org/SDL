@@ -278,7 +278,7 @@ void CAudio::MaoscPlayComplete(TInt aError)
     }
 
     // We shouldn't get here.
-    SDL_Log("%s: %d", __FUNCTION__, aError);
+    SDL_Log("%s: %d", SDL_FUNCTION, aError);
 }
 
 static TBool gAudioRunning;

@@ -49,13 +49,13 @@ static bool SDL_OPENXR_INTERNAL_InitializeAndroidLoader(void)
 }
 #endif /* SDL_PLATFORM_ANDROID */
 
-bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
+static bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable(void)
 {
 #ifdef SDL_PLATFORM_ANDROID
     /* On Android/Quest, the xrGetInstanceProcAddr obtained through runtime negotiation
      * crashes when used for pre-instance global functions. Skip validation layer check. */
     return false;
-#endif
+#else
 
     Uint32 apiLayerCount;
     if (XR_FAILED(xrEnumerateApiLayerProperties(0, &apiLayerCount, NULL))) {
@@ -84,6 +84,7 @@ bool SDL_OPENXR_INTERNAL_ValidationLayerAvailable()
 
     SDL_stack_free(apiLayerProperties);
     return found;
+#endif
 }
 
 XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
@@ -114,7 +115,7 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 
     // allocate enough space for the validation layer + the user's api layers
     const char **apiLayerNames = SDL_stack_alloc(const char *, userApiLayerCount + 1);
-    SDL_memcpy(apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
+    SDL_memcpy((void *)apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
     apiLayerNames[userApiLayerCount] = VALIDATION_LAYER_API_NAME;
 
     // On Android, we need an extra extension for android_create_instance
@@ -125,13 +126,15 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 #endif
 
     const char **extensionNames = SDL_stack_alloc(const char *, userExtensionCount + platformExtensionCount);
-    SDL_memcpy(extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
+    SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
     extensionNames[userExtensionCount] = gpuExtension.extensionName;
 #ifdef SDL_PLATFORM_ANDROID
     extensionNames[userExtensionCount + 1] = XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME;
 #endif
 
-    XrInstanceCreateInfo xrInstanceCreateInfo = { XR_TYPE_INSTANCE_CREATE_INFO };
+    XrInstanceCreateInfo xrInstanceCreateInfo;
+    SDL_zero(xrInstanceCreateInfo);
+    xrInstanceCreateInfo.type = XR_TYPE_INSTANCE_CREATE_INFO;
     xrInstanceCreateInfo.applicationInfo.apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER, XR_API_VERSION_1_0);
     xrInstanceCreateInfo.enabledApiLayerCount = userApiLayerCount + ((debugMode && validationLayersAvailable) ? 1 : 0); // in debug mode, we enable the validation layer
     xrInstanceCreateInfo.enabledApiLayerNames = apiLayerNames;
@@ -147,7 +150,8 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     }
     void *activity = SDL_GetAndroidActivity();
 
-    XrInstanceCreateInfoAndroidKHR instanceCreateInfoAndroid = { XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR };
+    XrInstanceCreateInfoAndroidKHR instanceCreateInfoAndroid = {};
+    instanceCreateInfoAndroid.type = XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR;
     instanceCreateInfoAndroid.applicationVM = vm;
     instanceCreateInfoAndroid.applicationActivity = activity;
     xrInstanceCreateInfo.next = &instanceCreateInfoAndroid;
@@ -184,7 +188,9 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
         return false;
     }
 
-    XrSystemGetInfo systemGetInfo = { XR_TYPE_SYSTEM_GET_INFO };
+    XrSystemGetInfo systemGetInfo;
+    SDL_zero(systemGetInfo);
+    systemGetInfo.type = XR_TYPE_SYSTEM_GET_INFO;
     systemGetInfo.formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY);
     if ((xrResult = (*xr)->xrGetSystem(*instance, &systemGetInfo, systemId)) != XR_SUCCESS) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");

@@ -92,7 +92,7 @@
 
       #output-container:hover,
       #output-container:focus-within {
-        top: 50%;
+        top: 20%;
       }
 
       #output-container:focus-within {
@@ -151,7 +151,7 @@
 
       #source-code:hover,
       #source-code:focus-within {
-        top: 50%;
+        top: 20%;
       }
 
       #source-code:focus-within {
@@ -241,7 +241,7 @@
           return function(text) {
             var elem = document.getElementById('output-container');
             if (elem.style['top'] == '') {
-                elem.style['top'] = '50%';
+                elem.style['top'] = '20%';
                 setTimeout(function() { elem.style['top'] = ''; }, 3000);
             }
 

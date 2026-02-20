@@ -212,6 +212,7 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
     {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
     {" Pen",            GAMEPAD_BLACKLIST_END}, // "Wacom One by Wacom S Pen"
     {" Finger",         GAMEPAD_BLACKLIST_END}, // "Wacom HID 495F Finger"
+    {" System Control", GAMEPAD_BLACKLIST_END}, // "hid-over-i2c 0107 System Control"
     {" LED ",           GAMEPAD_BLACKLIST_ANYWHERE}, // "ASRock LED Controller"
     {" Thelio ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "System76 Thelio Io 2"
 };
@@ -1266,6 +1267,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 // Apex 5 has additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
+        } else if (SDL_IsJoystickGameSirController(vendor, product)) {
+            SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b12,paddle3:b13,paddle4:b14,misc2:b15,misc3:b16,", sizeof(mapping_string));
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
         } else {
@@ -2360,7 +2363,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id
     return mapping;
 }
 
-bool SDL_PrivateIsGamepadPlatformMatch(const char *platform, size_t platform_len)
+static bool SDL_PrivateIsGamepadPlatformMatch(const char *platform, size_t platform_len)
 {
 #ifdef SDL_PLATFORM_MACOS
     // We also accept the older SDL2 platform name for macOS

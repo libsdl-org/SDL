@@ -14,7 +14,7 @@
 // is suboptimal for image quality, but by far the fastest method.
 
 // For all methods, width and height should be even, if not, the last row/column of the result image won't be affected.
-// For sse methods, if the width if not divisable by 32, the last (width%32) pixels of each line won't be affected.
+// For sse methods, if the width if not divisible by 32, the last (width%32) pixels of each line won't be affected.
 
 /*#include <stdint.h>*/
 

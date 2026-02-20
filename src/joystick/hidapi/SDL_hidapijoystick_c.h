@@ -47,6 +47,7 @@
 #define SDL_JOYSTICK_HIDAPI_LG4FF
 #define SDL_JOYSTICK_HIDAPI_8BITDO
 #define SDL_JOYSTICK_HIDAPI_FLYDIGI
+#define SDL_JOYSTICK_HIDAPI_GAMESIR
 #define SDL_JOYSTICK_HIDAPI_GIP
 #define SDL_JOYSTICK_HIDAPI_SINPUT
 #define SDL_JOYSTICK_HIDAPI_ZUIKI
@@ -99,7 +100,6 @@ typedef struct SDL_HIDAPI_Device
 
     struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;
@@ -107,9 +107,6 @@ typedef struct SDL_HIDAPI_Device
 
     // Used during scanning for device changes
     bool seen;
-
-    // Used to flag that the device is being updated
-    bool updating;
 
     // Used to flag devices that failed open
     // This can happen on Windows with Bluetooth devices that have turned off
@@ -173,6 +170,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
 

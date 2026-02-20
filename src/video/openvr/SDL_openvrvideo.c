@@ -74,7 +74,7 @@ SDL_ELF_NOTE_DLOPEN(
 // For access to functions that don't get the video data context.
 SDL_VideoData * global_openvr_driver;
 
-static void InitializeMouseFunctions();
+static void InitializeMouseFunctions(void);
 
 struct SDL_CursorData
 {
@@ -92,9 +92,9 @@ static void (APIENTRY *ov_glRenderbufferStorage)(GLenum target, GLenum internalf
 static void (APIENTRY *ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 static void (APIENTRY *ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
 static GLenum (APIENTRY *ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
-static GLenum (APIENTRY *ov_glGetError)();
-static void (APIENTRY *ov_glFlush)();
-static void (APIENTRY *ov_glFinish)();
+static GLenum (APIENTRY *ov_glGetError)(void);
+static void (APIENTRY *ov_glFlush)(void);
+static void (APIENTRY *ov_glFinish)(void);
 static void (APIENTRY *ov_glGenTextures)(GLsizei n, GLuint *textures);
 static void (APIENTRY *ov_glDeleteTextures)(GLsizei n, GLuint *textures);
 static void (APIENTRY *ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
@@ -1029,7 +1029,7 @@ static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 // Linux, EGL, etc.
 static bool OVR_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    return SDL_EGL_LoadLibrary(_this, path, /*displaydata->native_display*/0, 0);
+    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY);
 }
 
 static SDL_FunctionPointer OVR_EGL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
@@ -1038,7 +1038,7 @@ static SDL_FunctionPointer OVR_EGL_GetProcAddress(SDL_VideoDevice *_this, const 
 }
 static void OVR_EGL_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    return SDL_EGL_UnloadLibrary(_this);
+    SDL_EGL_UnloadLibrary(_this);
 }
 static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
 {
@@ -1431,7 +1431,7 @@ static bool OPENVR_ShowMessageBox(SDL_VideoDevice *_this,const SDL_MessageBoxDat
     return true;
 }
 
-static void InitializeMouseFunctions()
+static void InitializeMouseFunctions(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     mouse->CreateCursor = OPENVR_CreateCursor;

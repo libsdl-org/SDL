@@ -1722,7 +1722,7 @@ SDL_FORCE_INLINE void* win32direct_mmap(size_t size) {
   return (ptr != 0)? ptr: MFAIL;
 }
 
-/* This function supports releasing coalesed segments */
+/* This function supports releasing coalesced segments */
 SDL_FORCE_INLINE int win32munmap(void* ptr, size_t size) {
   MEMORY_BASIC_INFORMATION minfo;
   char* cptr = (char*)ptr;
@@ -1810,7 +1810,7 @@ SDL_FORCE_INLINE int win32munmap(void* ptr, size_t size) {
     #define CALL_MREMAP(addr, osz, nsz, mv)     MFAIL
 #endif /* HAVE_MMAP && HAVE_MREMAP */
 
-/* mstate bit set if continguous morecore disabled or failed */
+/* mstate bit set if contiguous morecore disabled or failed */
 #define USE_NONCONTIGUOUS_BIT (4U)
 
 /* segment bit set in create_mspace_with_base */
@@ -4725,7 +4725,7 @@ void* dlmalloc(size_t bytes) {
 
 void dlfree(void* mem) {
   /*
-     Consolidate freed chunks with preceeding or succeeding bordering
+     Consolidate freed chunks with preceding or succeeding bordering
      free chunks, if they exist, and then place in a bin.  Intermixed
      with special cases for top, dv, mmapped chunks, and usage errors.
   */
@@ -6259,10 +6259,10 @@ History:
         Wolfram Gloger (Gloger@lrz.uni-muenchen.de).
       * Use last_remainder in more cases.
       * Pack bins using idea from  colin@nyx10.cs.du.edu
-      * Use ordered bins instead of best-fit threshhold
+      * Use ordered bins instead of best-fit threshold
       * Eliminate block-local decls to simplify tracing and debugging.
       * Support another case of realloc via move into top
-      * Fix error occuring when initial sbrk_base not word-aligned.
+      * Fix error occurring when initial sbrk_base not word-aligned.
       * Rely on page size for units instead of SBRK_UNIT to
         avoid surprises about sbrk alignment conventions.
       * Add mallinfo, mallopt. Thanks to Raymond Nijssen
@@ -6330,7 +6330,125 @@ History:
 
 #endif /* !HAVE_MALLOC */
 
-#ifdef HAVE_MALLOC
+
+// Define WIN32_DETECT_OVERWRITE if you'd like guard pages around memory allocations on Windows
+#if 0
+#define WIN32_DETECT_OVERWRITE
+#endif
+#ifdef WIN32_DETECT_OVERWRITE
+
+#include <windows.h>
+
+typedef struct
+{
+    PBYTE pAddr;
+    ULONG ulSize;
+} SAFE_HEAP_POINTER;
+
+static DWORD GetPageSize()
+{
+    static DWORD page_size;
+
+    if (!page_size) {
+        SYSTEM_INFO si = { 0 };
+        GetSystemInfo(&si);
+        page_size = si.dwPageSize;
+    }
+    return page_size;
+}
+
+static ULONG SDLCALL real_msize(IN void *pPtr)
+{
+    PBYTE pVirtualAddr = (PBYTE)pPtr;
+    SAFE_HEAP_POINTER *pSafePtr = (SAFE_HEAP_POINTER *)(pVirtualAddr - sizeof(SAFE_HEAP_POINTER));
+    ULONG_PTR rvaOld = (ULONG_PTR)(pSafePtr + 1) - (ULONG_PTR)pSafePtr->pAddr;
+    return (ULONG)(pSafePtr->ulSize - GetPageSize() - rvaOld);
+}
+
+static void SDLCALL real_free(IN void *pPtr)
+{
+    if (!pPtr) {
+        return;
+    }
+
+    PBYTE pVirtualAddr = (PBYTE)pPtr;
+    SAFE_HEAP_POINTER *pSafePtr = (SAFE_HEAP_POINTER *)(pVirtualAddr - sizeof(SAFE_HEAP_POINTER));
+    ULONG ulOldProtect;
+    VirtualProtect(pSafePtr->pAddr + pSafePtr->ulSize - GetPageSize(), GetPageSize(), PAGE_READWRITE, &ulOldProtect);
+    _aligned_free(pSafePtr->pAddr);
+}
+
+static void *SDLCALL real_malloc(IN size_t dwBytes)
+{
+    DWORD dwTotalBytes = (DWORD)dwBytes + sizeof(SAFE_HEAP_POINTER);
+    DWORD dwPages = (dwTotalBytes / GetPageSize()) + 1;
+    DWORD dwAlignedBytesCount = (dwPages + 1) * GetPageSize();
+    PBYTE pPtr = (PBYTE)_aligned_malloc(dwAlignedBytesCount, GetPageSize());
+    if (!pPtr) {
+        return NULL;
+    }
+
+    ZeroMemory(pPtr, dwAlignedBytesCount);
+    PBYTE pLastPageStart = pPtr + dwPages * GetPageSize();
+    ULONG ulOldProtect;
+    PBYTE pBlock = (PBYTE)(pLastPageStart - dwBytes);
+    if (!VirtualProtect(pLastPageStart, GetPageSize(), PAGE_READWRITE | PAGE_GUARD, &ulOldProtect)) {
+        _aligned_free(pPtr);
+        return NULL;
+    }
+    SAFE_HEAP_POINTER *pSafePtr = (SAFE_HEAP_POINTER *)(pBlock - sizeof(SAFE_HEAP_POINTER));
+    pSafePtr->pAddr = pPtr;
+    pSafePtr->ulSize = dwAlignedBytesCount;
+    return pBlock;
+}
+
+static void *SDLCALL real_calloc(IN size_t dwElements, IN size_t dwElementSize)
+{
+    PVOID pPtr = real_malloc(dwElements * dwElementSize);
+    if (pPtr) {
+        ZeroMemory(pPtr, dwElements * dwElementSize);
+    }
+    return pPtr;
+}
+
+static void *SDLCALL real_realloc(IN void *pPtr, IN size_t dwBytes)
+{
+    if (!pPtr) {
+        return real_malloc(dwBytes);
+    }
+
+    PBYTE pVirtualAddr = (PBYTE)pPtr;
+    SAFE_HEAP_POINTER *pSafePtr = (SAFE_HEAP_POINTER *)(pVirtualAddr - sizeof(SAFE_HEAP_POINTER));
+    SAFE_HEAP_POINTER oldPtr = *pSafePtr;
+    ULONG ulPrevSize = real_msize(pPtr);
+    if (ulPrevSize == dwBytes) {
+        return pPtr;
+    }
+
+    // Start working on the addresses
+    DWORD dwTotalBytes = (DWORD)dwBytes + sizeof(SAFE_HEAP_POINTER);
+    DWORD dwNewPages = (dwTotalBytes / GetPageSize()) + 1;
+    DWORD dwAlignedBytesCount = (dwNewPages + 1) * GetPageSize();
+    PBYTE pBlock = 0;
+    PBYTE pLastPageStart = 0;
+    if ((dwAlignedBytesCount <= oldPtr.ulSize) && (dwAlignedBytesCount + GetPageSize() >= oldPtr.ulSize)) {
+        // No need to reallocate memory, the allocated pages R enough
+        pLastPageStart = pSafePtr->pAddr + dwNewPages * GetPageSize();
+        pBlock = (pLastPageStart - dwBytes);
+        MoveMemory(pBlock, pPtr, min(ulPrevSize, dwBytes));
+        pSafePtr = (SAFE_HEAP_POINTER *)(pBlock - sizeof(SAFE_HEAP_POINTER));
+        *pSafePtr = oldPtr;
+        return pBlock;
+    }
+
+    // Buffer was enlarged or reduced by more than PAGE_SIZE
+    PBYTE pNew = (PBYTE)real_malloc(dwBytes);
+    CopyMemory(pNew, pPtr, min(ulPrevSize, dwBytes));
+    real_free(pPtr);
+    return pNew;
+}
+
+#elif defined(HAVE_MALLOC)
 static void * SDLCALL real_malloc(size_t s) { return malloc(s); }
 static void * SDLCALL real_calloc(size_t n, size_t s) { return calloc(n, s); }
 static void * SDLCALL real_realloc(void *p, size_t s) { return realloc(p,s); }

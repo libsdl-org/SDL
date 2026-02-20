@@ -228,9 +228,6 @@ void Emscripten_InitMouse(void)
 
     // Add event listeners to track mouse events on the document
     MAIN_THREAD_EM_ASM({
-        if (!Module['SDL3']) {
-            Module['SDL3'] = {};
-        }
         var SDL3 = Module['SDL3'];
         SDL3['mouse_x'] = 0;
         SDL3['mouse_y'] = 0;

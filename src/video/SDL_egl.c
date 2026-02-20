@@ -38,6 +38,7 @@
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"
+#include "../SDL_hints_c.h"
 
 #ifdef EGL_KHR_create_context
 // EGL_OPENGL_ES3_BIT_KHR was added in version 13 of the extension.
@@ -66,11 +67,13 @@
 #ifdef SDL_VIDEO_DRIVER_RPI
 // Raspbian places the OpenGL ES/EGL binaries in a non standard path
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
-#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_EGL            "libEGL.so"
+#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_OGL_ES2        "libGLESv2.so"
+// The GLESv2 library also contains GLESv1 exports when using the dispmanx implementation
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
+#define ALT_OGL_ES         "libGLESv2.so"
 
 #elif defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_VIVANTE)
 // Android
@@ -106,8 +109,6 @@
 // QNX
 #define DEFAULT_EGL        "libEGL.so.1"
 #define DEFAULT_OGL_ES2    "libGLESv2.so.1"
-#define DEFAULT_OGL_ES_PVR "libGLESv2.so.1"
-#define DEFAULT_OGL_ES     "libGLESv2.so.1"
 
 #else
 // Desktop Linux/Unix-like
@@ -177,7 +178,7 @@ static const char *SDL_EGL_GetErrorName(EGLint eglErrorCode)
 {
 #define SDL_EGL_ERROR_TRANSLATE(e) \
     case e:                        \
-        return #e;
+        return #e
     switch (eglErrorCode) {
         SDL_EGL_ERROR_TRANSLATE(EGL_SUCCESS);
         SDL_EGL_ERROR_TRANSLATE(EGL_NOT_INITIALIZED);
@@ -388,34 +389,45 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
     if (!opengl_dll_handle) {
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             if (_this->gl_config.major_version > 1) {
-                path = DEFAULT_OGL_ES2;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES2
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES2;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
 #ifdef ALT_OGL_ES2
                 if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
-
             } else {
-                path = DEFAULT_OGL_ES;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
+#ifdef DEFAULT_OGL_ES_PVR
                 if (!opengl_dll_handle) {
                     path = DEFAULT_OGL_ES_PVR;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
-#ifdef ALT_OGL_ES2
+#endif
+#ifdef ALT_OGL_ES
                 if (!opengl_dll_handle && !vc4) {
-                    path = ALT_OGL_ES2;
+                    path = ALT_OGL_ES;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
             }
-        }
+        } else {
 #ifdef DEFAULT_OGL
-        else {
-            path = DEFAULT_OGL;
-            opengl_dll_handle = SDL_LoadObject(path);
+            if (!opengl_dll_handle) {
+                path = DEFAULT_OGL;
+                opengl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
 #ifdef ALT_OGL
             if (!opengl_dll_handle) {
                 path = ALT_OGL;
@@ -423,7 +435,6 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
             }
 #endif
         }
-#endif
     }
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 
@@ -539,7 +550,7 @@ static void SDL_EGL_GetVersion(SDL_VideoDevice *_this)
     }
 }
 
-bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
+bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display)
 {
     if (!SDL_EGL_LoadLibraryOnly(_this, egl_path)) {
         return false;
@@ -548,6 +559,7 @@ bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDis
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
 #ifndef SDL_VIDEO_DRIVER_VITA
+    EGLenum platform = _this->gl_config.egl_platform;
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
          * --
@@ -1277,18 +1289,22 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
 #endif
 
-    if (_this->gl_config.framebuffer_srgb_capable >= 0) {
 #ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+    if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+                attribs[attr++] = SDL_GetStringBoolean(srgbhint, false) ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable >= 0) {  // default behavior without the hint.
             attribs[attr++] = EGL_GL_COLORSPACE_KHR;
             attribs[attr++] = _this->gl_config.framebuffer_srgb_capable ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
-        } else
-#endif
-        if (_this->gl_config.framebuffer_srgb_capable > 0) {
-            SDL_SetError("EGL implementation does not support sRGB system framebuffers");
-            return EGL_NO_SURFACE;
         }
     }
+#endif
 
     int opaque_ext_idx = -1;
 

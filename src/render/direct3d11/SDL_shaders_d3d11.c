@@ -28,8 +28,6 @@
 
 #include "SDL_shaders_d3d11.h"
 
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
-
 #if SDL_WINAPI_FAMILY_PHONE
 #error Need to build shaders with level_9_3
 #endif
@@ -82,7 +80,7 @@ bool D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **ver
                                              NULL,
                                              vertexShader);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateVertexShader"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateVertexShader", result);
     }
 
     // Create an input layout for SDL's vertex shader:
@@ -93,7 +91,7 @@ bool D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **ver
                                             sizeof(D3D11_VertexShader),
                                             inputLayout);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateInputLayout"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreateInputLayout", result);
     }
     return true;
 }
@@ -108,7 +106,7 @@ bool D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D
                                             NULL,
                                             pixelShader);
     if (FAILED(result)) {
-        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreatePixelShader"), result);
+        return WIN_SetErrorFromHRESULT("ID3D11Device1::CreatePixelShader", result);
     }
     return true;
 }

@@ -31,6 +31,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../power/uikit/SDL_syspower.h"
+#include "../../SDL_hints_c.h"
 #include <dlfcn.h>
 
 @interface SDLEAGLContext : EAGLContext
@@ -153,6 +154,12 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             return NULL;
         }
 
+        int srgb = _this->gl_config.framebuffer_srgb_capable;
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        if (srgbhint && *srgbhint) {
+            srgb = SDL_GetStringBoolean(srgbhint, false) ? 1 : 0;  // there is no "skip" here, since initWithFrame expects it, so we'll treat it as false.
+        }
+
         // construct our view, passing in SDL's OpenGL configuration data
         view = [[SDL_uikitopenglview alloc] initWithFrame:frame
                                                     scale:scale
@@ -163,7 +170,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
                                                     aBits:_this->gl_config.alpha_size
                                                 depthBits:_this->gl_config.depth_size
                                               stencilBits:_this->gl_config.stencil_size
-                                                     sRGB:_this->gl_config.framebuffer_srgb_capable
+                                                     sRGB:srgb
                                              multisamples:samples
                                                   context:context];
 

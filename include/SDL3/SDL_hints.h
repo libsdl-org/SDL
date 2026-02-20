@@ -1894,6 +1894,23 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI "SDL_JOYSTICK_HIDAPI_FLYDIGI"
 
 /**
+ * A variable controlling whether the HIDAPI driver for GameSir controllers
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.5.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_GAMESIR "SDL_JOYSTICK_HIDAPI_GAMESIR"
+
+/**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch
  * controllers should be used.
  *
@@ -2997,11 +3014,13 @@ extern "C" {
  * whether SDL follows this default behaviour or will always load an OpenGL ES
  * library.
  *
- * Circumstances where this is useful include - Testing an app with a
- * particular OpenGL ES implementation, e.g ANGLE, or emulator, e.g. those
- * from ARM, Imagination or Qualcomm. - Resolving OpenGL ES function addresses
- * at link time by linking with the OpenGL ES library instead of querying them
- * at run time with SDL_GL_GetProcAddress().
+ * Circumstances where this is useful include:
+ *
+ * - Testing an app with a particular OpenGL ES implementation, e.g ANGLE, or
+ *   emulator, e.g. those from ARM, Imagination or Qualcomm.
+ * - Resolving OpenGL ES function addresses at link time by linking with the
+ *   OpenGL ES library instead of querying them at run time with
+ *   SDL_GL_GetProcAddress().
  *
  * Caution: for an application to work with the default behaviour across
  * different OpenGL drivers it must query the OpenGL ES function addresses at
@@ -3020,6 +3039,46 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_OPENGL_ES_DRIVER "SDL_OPENGL_ES_DRIVER"
+
+/**
+ * A variable controlling whether to force an sRGB-capable OpenGL context.
+ *
+ * At OpenGL context creation time, some platforms can request an sRGB-capable
+ * context. However, sometimes any form of the request can cause surprising
+ * results on some drivers, platforms, and hardware. Usually the surprise is
+ * in the form of rendering that is either a little darker or a little
+ * brighter than intended.
+ *
+ * This hint allows the user to override the app's sRGB requests and either
+ * force a specific value, or avoid requesting anything at all, depending on
+ * what makes things work correctly for their system.
+ *
+ * This is meant as a fail-safe; apps should probably not explicitly set this,
+ * and most users should not, either.
+ *
+ * Note that some platforms cannot make this request at all, and on all
+ * platforms this request can be denied by the operating system.
+ *
+ * In addition to attempting to obtain the type of sRGB-capable OpenGL context
+ * requested by this hint, SDL will try to force the state of
+ * GL_FRAMEBUFFER_SRGB on the new context, if appropriate.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Force a request for an OpenGL context that is _not_ sRGB-capable.
+ * - "1": Force a request for an OpenGL context that _is_ sRGB-capable.
+ * - "skip": Don't make any request for an sRGB-capable context (don't specify
+ *   the attribute at all during context creation time).
+ * - any other string is undefined behavior.
+ *
+ * If unset, or set to an empty string, SDL will make a request using the
+ * value the app specified with the SDL_GL_FRAMEBUFFER_SRGB_CAPABLE attribute.
+ *
+ * This hint should be set before an OpenGL context is created.
+ *
+ * \since This hint is available since SDL 3.4.2.
+ */
+#define SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER "SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"
 
 /**
  * Mechanism to specify openvr_api library location

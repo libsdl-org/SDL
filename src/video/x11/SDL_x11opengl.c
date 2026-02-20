@@ -25,6 +25,7 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11xsync.h"
+#include "../../SDL_hints_c.h"
 
 // GLX implementation of SDL OpenGL support
 
@@ -583,9 +584,19 @@ static int X11_GL_GetAttributes(SDL_VideoDevice *_this, Display *display, int sc
         attribs[i++] = GLX_RGBA_FLOAT_TYPE_ARB;
     }
 
-    if ((_this->gl_config.framebuffer_srgb_capable >= 0) && _this->gl_data->HAS_GLX_ARB_framebuffer_sRGB) {
-        attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        attribs[i++] = _this->gl_config.framebuffer_srgb_capable ? True : False; // always needed, for_FBConfig or not!
+    if (_this->gl_data->HAS_GLX_ARB_framebuffer_sRGB) {
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                attribs[i++] = SDL_GetStringBoolean(srgbhint, false) ? True : False;  // always needed, for_FBConfig or not!
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
+            attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            attribs[i++] = True; // always needed, for_FBConfig or not!
+        }
     }
 
     if (_this->gl_config.accelerated >= 0 &&

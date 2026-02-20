@@ -239,7 +239,7 @@ void SDL_UpdateTrays(void)
     }
 }
 
-SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
 {
     if (!SDL_IsMainThread()) {
         SDL_SetError("This function should be called on the main thread");
@@ -249,6 +249,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     if (!init_appindicator()) {
         return NULL;
     }
+
+    SDL_Surface *icon = (SDL_Surface *)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, NULL);
 
     SDL_Tray *tray = NULL;
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
@@ -325,6 +327,24 @@ tray_error:
     }
 
     return NULL;
+}
+
+SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
+{
+    SDL_Tray *tray;
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        return NULL;
+    }
+    if (icon) {
+        SDL_SetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, icon);
+    }
+    if (tooltip) {
+        SDL_SetStringProperty(props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, tooltip);
+    }
+    tray = SDL_CreateTrayWithProperties(props);
+    SDL_DestroyProperties(props);
+    return tray;
 }
 
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)

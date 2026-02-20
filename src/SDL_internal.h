@@ -307,6 +307,9 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
 
+// Return true if this thread has initialized video
+extern bool SDL_IsVideoThread(void);
+
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.
 */

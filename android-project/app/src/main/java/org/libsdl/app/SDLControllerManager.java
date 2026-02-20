@@ -211,7 +211,7 @@ class SDLJoystickHandler {
     /**
      * Handles adding and removing of input devices.
      */
-    void pollInputDevices() {
+    synchronized void pollInputDevices() {
         int[] deviceIds = InputDevice.getDeviceIds();
 
         for (int device_id : deviceIds) {
@@ -307,7 +307,7 @@ class SDLJoystickHandler {
         }
     }
 
-    protected SDLJoystick getJoystick(int device_id) {
+    synchronized protected SDLJoystick getJoystick(int device_id) {
         for (SDLJoystick joystick : mJoysticks) {
             if (joystick.device_id == device_id) {
                 return joystick;
@@ -642,7 +642,7 @@ class SDLHapticHandler {
         }
     }
 
-    void pollHapticDevices() {
+    synchronized void pollHapticDevices() {
 
         final int deviceId_VIBRATOR_SERVICE = 999999;
         boolean hasVibratorService = false;
@@ -690,7 +690,7 @@ class SDLHapticHandler {
         }
     }
 
-    protected SDLHaptic getHaptic(int device_id) {
+    synchronized protected SDLHaptic getHaptic(int device_id) {
         for (SDLHaptic haptic : mHaptics) {
             if (haptic.device_id == device_id) {
                 return haptic;
@@ -755,6 +755,9 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
 
                         // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
                         int buttons = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
+                        if ((event.getButtonState() & MotionEvent.BUTTON_TERTIARY) != 0) {
+                            buttons |= 0x08;
+                        }
 
                         SDLActivity.onNativePen(event.getPointerId(i), getPenDeviceType(event.getDevice()), buttons, action, x, y, p);
                         consumed = true;

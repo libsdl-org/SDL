@@ -112,6 +112,7 @@ static SDL_VideoDevice *VITA_Create(void)
 
     /*
         // Disabled, causes issues on high-framerate updates. SDL still emulates this.
+        // TODO: Is VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER needed?
         device->CreateWindowFramebuffer = VITA_CreateWindowFramebuffer;
         device->UpdateWindowFramebuffer = VITA_UpdateWindowFramebuffer;
         device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
