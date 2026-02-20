@@ -2292,7 +2292,7 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     SDL_VideoData *data = _this->driverdata;
     SDL_WindowData *wind = window->driverdata;
 
-    if (data) {
+    if (data && wind) {
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {
             SDL_EGL_DestroySurface(_this, wind->egl_surface);
