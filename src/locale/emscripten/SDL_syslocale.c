@@ -27,7 +27,7 @@
 bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* *INDENT-OFF* */ // clang-format off
-    EM_ASM({
+    MAIN_THREAD_EM_ASM({
         var buf = $0;
         var buflen = $1;
         var list = undefined;
