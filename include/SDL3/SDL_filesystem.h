@@ -242,8 +242,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
  * Types of filesystem entries.
  *
  * Note that there may be other sorts of items on a filesystem: devices,
- * symlinks, named pipes, etc. They are currently reported as
- * SDL_PATHTYPE_OTHER.
+ * named pipes, etc. They are currently reported as SDL_PATHTYPE_OTHER.
  *
  * \since This enum is available since SDL 3.2.0.
  *
@@ -456,6 +455,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CopyFile(const char *oldpath, const char *n
 
 /**
  * Get information about a filesystem path.
+ *
+ * Symlinks, on filesystems that support them, are always followed, so you will
+ * always get information on what the symlink eventually points to, and not the
+ * symlink itself.
  *
  * \param path the path to query.
  * \param info a pointer filled in with information about the path, or NULL to
