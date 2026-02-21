@@ -31,9 +31,9 @@ SDL3 provides OpenXR integration through the GPU API, allowing you to render to 
 ### Basic Usage
 
 ```c
+#include <openxr/openxr.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_openxr.h>
-#include <openxr/openxr.h>
 
 // These will be populated by SDL
 XrInstance xr_instance = XR_NULL_HANDLE;
