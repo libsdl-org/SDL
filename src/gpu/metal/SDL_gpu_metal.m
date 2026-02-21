@@ -453,7 +453,9 @@ typedef struct MetalTextureContainer
 
 typedef struct MetalFence
 {
-    SDL_AtomicInt complete;
+    bool complete;
+    SDL_Mutex *mutex;
+    SDL_Condition *condition;
     SDL_AtomicInt referenceCount;
 } MetalFence;
 
@@ -747,7 +749,10 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
 
     // Release fence infrastructure
     for (Uint32 i = 0; i < renderer->availableFenceCount; i += 1) {
-        SDL_free(renderer->availableFences[i]);
+        MetalFence *fence = (MetalFence *)renderer->availableFences[i];
+        SDL_DestroyMutex(fence->mutex);
+        SDL_DestroyCondition(fence->condition);
+        SDL_free(fence);
     }
     SDL_free(renderer->availableFences);
 
@@ -2093,7 +2098,9 @@ static Uint8 METAL_INTERNAL_CreateFence(
     MetalFence *fence;
 
     fence = SDL_calloc(1, sizeof(MetalFence));
-    SDL_SetAtomicInt(&fence->complete, 0);
+    fence->condition = SDL_CreateCondition();
+    fence->mutex = SDL_CreateMutex();
+    fence->complete = false;
     SDL_SetAtomicInt(&fence->referenceCount, 0);
 
     // Add it to the available pool
@@ -2136,7 +2143,7 @@ static bool METAL_INTERNAL_AcquireFence(
 
     // Associate the fence with the command buffer
     commandBuffer->fence = fence;
-    SDL_SetAtomicInt(&fence->complete, 0); // FIXME: Is this right?
+    fence->complete = false;
     (void)SDL_AtomicIncRef(&commandBuffer->fence->referenceCount);
 
     return true;
@@ -3583,6 +3590,14 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 }
 
 // Fences
+static bool METAL_INTERNAL_FenceComplete(MetalFence *fence)
+{
+    bool complete;
+    SDL_LockMutex(fence->mutex);
+    complete = fence->complete;
+    SDL_UnlockMutex(fence->mutex);
+    return complete;
+}
 
 static bool METAL_WaitForFences(
     SDL_GPURenderer *driverData,
@@ -3596,19 +3611,23 @@ static bool METAL_WaitForFences(
 
         if (waitAll) {
             for (Uint32 i = 0; i < numFences; i += 1) {
-                while (!SDL_GetAtomicInt(&((MetalFence *)fences[i])->complete)) {
-                    // Spin!
+                MetalFence *fence = (MetalFence *)fences[i];
+                SDL_LockMutex(fence->mutex);
+                while (!fence->complete) {
+                    SDL_WaitCondition(fence->condition, fence->mutex);
                 }
+                SDL_UnlockMutex(fence->mutex);
             }
         } else {
             waiting = 1;
             while (waiting) {
                 for (Uint32 i = 0; i < numFences; i += 1) {
-                    if (SDL_GetAtomicInt(&((MetalFence *)fences[i])->complete) > 0) {
+                    if (METAL_INTERNAL_FenceComplete((MetalFence *)fences[i])) {
                         waiting = 0;
                         break;
                     }
                 }
+                SDL_DelayNS(1000);
             }
         }
 
@@ -3623,7 +3642,7 @@ static bool METAL_QueryFence(
     SDL_GPUFence *fence)
 {
     MetalFence *metalFence = (MetalFence *)fence;
-    return SDL_GetAtomicInt(&metalFence->complete) == 1;
+    return METAL_INTERNAL_FenceComplete(metalFence);
 }
 
 // Window and Swapchain Management
@@ -4088,7 +4107,11 @@ static bool METAL_Submit(
 
         // Notify the fence when the command buffer has completed
         [metalCommandBuffer->handle addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-          SDL_AtomicIncRef(&metalCommandBuffer->fence->complete);
+            MetalFence *metalFence = (MetalFence *)metalCommandBuffer->fence;
+            SDL_LockMutex(metalFence->mutex);
+            metalFence->complete = true;
+            SDL_SignalCondition(metalFence->condition);
+            SDL_UnlockMutex(metalFence->mutex);
         }];
 
         // Submit the command buffer
@@ -4108,7 +4131,7 @@ static bool METAL_Submit(
 
         // Check if we can perform any cleanups
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
-            if (SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
+            if (METAL_INTERNAL_FenceComplete(renderer->submittedCommandBuffers[i]->fence)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
                     renderer->submittedCommandBuffers[i],
@@ -4161,9 +4184,7 @@ static bool METAL_Wait(
          * Sort of equivalent to vkDeviceWaitIdle.
          */
         for (Uint32 i = 0; i < renderer->submittedCommandBufferCount; i += 1) {
-            while (!SDL_GetAtomicInt(&renderer->submittedCommandBuffers[i]->fence->complete)) {
-                // Spin!
-            }
+            METAL_WaitForFences(driverData, true, (SDL_GPUFence **)&renderer->submittedCommandBuffers[i]->fence, 1);
         }
 
         SDL_LockMutex(renderer->submitLock);
