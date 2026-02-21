@@ -261,6 +261,7 @@ typedef enum SDL_PathType
  *
  * \since This datatype is available since SDL 3.2.0.
  *
+ * \sa SDL_PathType
  * \sa SDL_GetPathInfo
  * \sa SDL_GetStoragePathInfo
  */
