@@ -155,7 +155,7 @@ typedef struct SDL_ToolkitMenuControlX11
 } SDL_ToolkitMenuControlX11;
 
 /* Font for icon control */
-static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 88 105]";
+static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 88 105 63]";
 #define G_ICONFONT_SIZE 22
 
 /* General UI font */
@@ -1845,7 +1845,7 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
     X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_bg_shadow.pixel);
     X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x + (2 * control->window->iscale), control->rect.y + (2* control->window->iscale), control->rect.w, control->rect.h, 0, 360 * 64);
 
-    switch (icon_control->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+    switch (icon_control->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_QUESTION)) {
         case SDL_MESSAGEBOX_ERROR:
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_red_darker.pixel);
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x, control->rect.y, control->rect.w, control->rect.h, 0, 360 * 64);
@@ -1860,6 +1860,7 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+(1* control->window->iscale), control->rect.y+(1* control->window->iscale), control->rect.w-(2* control->window->iscale), control->rect.h-(2* control->window->iscale), 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_black.pixel);
                 break;
+        case SDL_MESSAGEBOX_QUESTION:
         case SDL_MESSAGEBOX_INFORMATION:
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_white.pixel);
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x, control->rect.y, control->rect.w, control->rect.h, 0, 360 * 64);
@@ -1956,7 +1957,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     }
 
     /* Set colors */
-    switch (flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+    switch (flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION | SDL_MESSAGEBOX_QUESTION)) {
     case SDL_MESSAGEBOX_ERROR:
         control->icon_char = 'X';
         control->xcolor_white.flags = DoRed|DoGreen|DoBlue;
@@ -1990,6 +1991,19 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
         break;
     case SDL_MESSAGEBOX_INFORMATION:
         control->icon_char = 'i';
+        control->xcolor_white.flags = DoRed|DoGreen|DoBlue;
+        control->xcolor_white.red = 65535;
+        control->xcolor_white.green = 65535;
+        control->xcolor_white.blue = 65535;
+        control->xcolor_blue.flags = DoRed|DoGreen|DoBlue;
+        control->xcolor_blue.red = 0;
+        control->xcolor_blue.green = 0;
+        control->xcolor_blue.blue = 65535;
+        X11_XAllocColor(window->display, window->cmap, &control->xcolor_white);
+        X11_XAllocColor(window->display, window->cmap, &control->xcolor_blue);
+        break;
+    case SDL_MESSAGEBOX_QUESTION:
+        control->icon_char = '?';
         control->xcolor_white.flags = DoRed|DoGreen|DoBlue;
         control->xcolor_white.red = 65535;
         control->xcolor_white.green = 65535;
