@@ -602,6 +602,7 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
             if (renderer->gpu_render_state) {
                 renderer->gpu_render_state->last_command_generation = renderer->render_command_generation;
             }
+            cmd->data.draw.tentatively_named_rendergeometry_position_coordinate_count = 2;
         }
     }
     return cmd;
@@ -789,7 +790,7 @@ static bool QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
-                            const float *xy, int xy_stride,
+                            const float *pos, int pos_stride, Uint8 pos_len,
                             const SDL_FColor *color, int color_stride,
                             const float *uv, int uv_stride,
                             int num_vertices,
@@ -801,10 +802,11 @@ static bool QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
     bool result = false;
     cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd) {
+        cmd->data.draw.tentatively_named_rendergeometry_position_coordinate_count = SDL_max(2, SDL_min(4, pos_len));
         cmd->data.draw.texture_address_mode_u = texture_address_mode_u;
         cmd->data.draw.texture_address_mode_v = texture_address_mode_v;
         result = renderer->QueueGeometry(renderer, cmd, texture,
-                                         xy, xy_stride,
+                                         pos, pos_stride,
                                          color, color_stride, uv, uv_stride,
                                          num_vertices, indices, num_indices, size_indices,
                                          scale_x, scale_y);
@@ -3911,7 +3913,8 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
             }
 
             result = QueueCmdGeometry(renderer, NULL,
-                                      xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
+                                      xy, xy_stride, 2,
+                                      &renderer->color, 0 /* color_stride */, NULL, 0,
                                       num_vertices, indices, num_indices, size_indices,
                                       1.0f, 1.0f, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         }
@@ -4094,7 +4097,8 @@ static bool SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *textu
         xy[7] = maxy;
 
         result = QueueCmdGeometry(renderer, texture,
-                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  xy, xy_stride, 2,
+                                  &texture->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
                                   scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
@@ -4262,7 +4266,7 @@ bool SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
 
         result = QueueCmdGeometry(
             renderer, texture,
-            xy, xy_stride,
+            xy, xy_stride, 2,
             &texture->color, 0 /* color_stride */,
             uv, uv_stride,
             num_vertices, indices, num_indices, size_indices,
@@ -4418,7 +4422,8 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         xy[7] = (s_minx + c_maxy) + centery;
 
         result = QueueCmdGeometry(renderer, texture,
-                                  xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                                  xy, xy_stride, 2,
+                                  &texture->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
                                   scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
@@ -4470,7 +4475,8 @@ static bool SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *tex
 
     const SDL_RenderViewState *view = renderer->view;
     return QueueCmdGeometry(renderer, texture,
-                            xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
+                            xy, xy_stride, 2,
+                            &texture->color, 0 /* color_stride */, uv, uv_stride,
                             num_vertices, indices, num_indices, size_indices,
                             view->current_scale.x, view->current_scale.y,
                             SDL_TEXTURE_ADDRESS_WRAP, SDL_TEXTURE_ADDRESS_WRAP);
@@ -5250,7 +5256,8 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 SDL_Log("Triangle %d %d %d - is_uniform:%d is_rectangle:%d", prev[0], prev[1], prev[2], is_uniform, is_rectangle);
 #endif
                 result = QueueCmdGeometry(renderer, texture,
-                                          xy, xy_stride, color, color_stride, uv, uv_stride,
+                                          xy, xy_stride, 2,
+                                          color, color_stride, uv, uv_stride,
                                           num_vertices, prev, 3, 4,
                                           scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
                 if (!result) {
@@ -5270,7 +5277,8 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         SDL_Log("Last triangle %d %d %d", prev[0], prev[1], prev[2]);
 #endif
         result = QueueCmdGeometry(renderer, texture,
-                                  xy, xy_stride, color, color_stride, uv, uv_stride,
+                                  xy, xy_stride, 2,
+                                  color, color_stride, uv, uv_stride,
                                   num_vertices, prev, 3, 4,
                                   scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (!result) {
@@ -5295,6 +5303,60 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           int num_vertices,
                           const void *indices, int num_indices, int size_indices)
 {
+    SDL_RenderGeometryEx_Arg arg;
+    arg.arg_size = sizeof(SDL_RenderGeometryEx_Arg);
+    arg.pos = xy;
+    arg.pos_stride = xy_stride;
+    arg.pos_len = 2;
+    arg.col = color;
+    arg.col_stride = color_stride;
+    arg.tex = uv;
+    arg.tex_stride = uv_stride;
+    arg.ver_len = num_vertices;
+    arg.map = indices;
+    arg.map_len = num_indices;
+    arg.map_size = size_indices;
+    return SDL_RenderGeometryEx(renderer, texture, &arg);
+}
+
+bool SDL_RenderGeometryEx(SDL_Renderer *renderer,
+                          SDL_Texture *texture,
+                          const SDL_RenderGeometryEx_Arg *arg)
+{
+    if (!arg) {
+        return false;
+    }
+
+    const float *xy;
+    int xy_stride;
+    int pos_len;
+    const SDL_FColor *color;
+    int color_stride;
+    const float *uv;
+    int uv_stride;
+    int num_vertices;
+    const void *indices;
+    int num_indices;
+    int size_indices;
+
+    if (arg->arg_size < sizeof(SDL_RenderGeometryEx_Arg)) {
+        // older ABI with fewer arguments, set fallback values
+        return false; // placeholder for now
+    } else {
+        xy           = arg->pos;
+        xy_stride    = arg->pos_stride;
+        pos_len      = arg->pos_len;
+        color        = arg->col;
+        color_stride = arg->col_stride;
+        uv           = arg->tex;
+        uv_stride    = arg->tex_stride;
+        num_vertices = arg->ver_len;
+        indices      = arg->map;
+        num_indices  = arg->map_len;
+        size_indices = arg->map_size;
+    }
+
+
     int i;
     int count = indices ? num_indices : num_vertices;
     SDL_TextureAddressMode texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
@@ -5437,7 +5499,8 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 
     const SDL_RenderViewState *view = renderer->view;
     return QueueCmdGeometry(renderer, texture,
-                            xy, xy_stride, color, color_stride, uv, uv_stride,
+                            xy, xy_stride, pos_len, 
+                            color, color_stride, uv, uv_stride,
                             num_vertices, indices, num_indices, size_indices,
                             view->current_scale.x, view->current_scale.y,
                             texture_address_mode_u, texture_address_mode_v);
