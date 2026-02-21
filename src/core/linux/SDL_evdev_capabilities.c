@@ -35,6 +35,9 @@
 #ifndef KEY_ALS_TOGGLE
 #define KEY_ALS_TOGGLE 0x230
 #endif
+#ifndef EV_BTN
+#define EV_BTN 0x06
+#endif
 
 extern int
 SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MAX)],
@@ -57,6 +60,11 @@ SDL_EVDEV_GuessDeviceClass(const unsigned long bitmask_props[NBITS(INPUT_PROP_MA
 
     int devclass = 0;
     unsigned long keyboard_mask;
+
+    // Only Joysticks (and maybe gamepads) have generic buttons
+    if (test_bit(EV_BTN, bitmask_ev)) {
+        return SDL_UDEV_DEVICE_JOYSTICK;
+    }
 
     // If the kernel specifically says it's an accelerometer, believe it
     if (test_bit(INPUT_PROP_ACCELEROMETER, bitmask_props)) {
