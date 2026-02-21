@@ -41,7 +41,8 @@ const char *defaultPaths[] = {
     "libvulkan.1.dylib",
     "libvulkan.dylib",
     "MoltenVK.framework/MoltenVK",
-    "libMoltenVK.dylib"
+    "libMoltenVK.dylib",
+    "/usr/local/lib/libvulkan.dylib"
 };
 
 // Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
