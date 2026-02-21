@@ -333,7 +333,8 @@ extern "C" {
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \threadsafety This function is called once by SDL, at startup, on a single thread.
+ * \threadsafety This function is called once by SDL, at startup, on a single
+ *               thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

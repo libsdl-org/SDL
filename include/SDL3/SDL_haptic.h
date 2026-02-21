@@ -1392,7 +1392,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ResumeHaptic(SDL_Haptic *haptic);
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RunHapticEffect
- * \sa SDL_StopHapticEffects
+ * \sa SDL_StopHapticEffect
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_StopHapticEffects(SDL_Haptic *haptic);
 
