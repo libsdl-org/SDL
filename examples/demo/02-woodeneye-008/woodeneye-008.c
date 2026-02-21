@@ -15,6 +15,7 @@
 typedef struct {
     SDL_MouseID mouse;
     SDL_KeyboardID keyboard;
+    SDL_Gamepad *gamepad;
     double pos[3];
     double vel[3];
     unsigned int yaw;
@@ -46,7 +47,9 @@ static int whoseMouse(SDL_MouseID mouse, const Player players[], int players_len
 {
     int i;
     for (i = 0; i < players_len; i++) {
-        if (players[i].mouse == mouse) return i;
+        if (players[i].mouse == mouse) {
+            return i;
+        }
     }
     return -1;
 }
@@ -55,7 +58,20 @@ static int whoseKeyboard(SDL_KeyboardID keyboard, const Player players[], int pl
 {
     int i;
     for (i = 0; i < players_len; i++) {
-        if (players[i].keyboard == keyboard) return i;
+        if (players[i].keyboard == keyboard) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static int whoseGamepad(SDL_JoystickID gamepad, const Player players[], int players_len)
+{
+    int i;
+    for (i = 0; i < players_len; i++) {
+        if (SDL_GetGamepadID(players[i].gamepad) == gamepad) {
+            return i;
+        }
     }
     return -1;
 }
@@ -101,9 +117,31 @@ static void shoot(int shooter, Player players[], int players_len)
     }
 }
 
+static void updatePlayerGamepad(Player *player)
+{
+    if (player->gamepad) {
+        const int rightx = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTX);
+        const int righty = (int)SDL_GetGamepadAxis(player->gamepad, SDL_GAMEPAD_AXIS_RIGHTY);
+        if ((SDL_abs(rightx) > 0x1000) || (SDL_abs(righty) > 0x1000)) {  /* ignore if stick is near center, since it might be noise and the user is actually using the mouse, etc. */
+            player->yaw -= rightx * 0x00000800;
+            player->pitch = SDL_max(-0x40000000, SDL_min(0x40000000, player->pitch - righty * 0x00000800));
+        }
+    }
+}
+
 static void update(Player *players, int players_len, Uint64 dt_ns)
 {
+    static int gamepad_update_ticks = 0;
+    const Uint64 now = SDL_GetTicks();
     int i;
+
+    if ((now - gamepad_update_ticks) >= 16) {  /* only update joysticks at about 60Hz so framerate doesn't matter. */
+        gamepad_update_ticks += 16;
+        for (i = 0; i < players_len; i++) {
+            updatePlayerGamepad(&players[i]);  /* check current gamepad state before we do any processing. */
+        }
+    }
+
     for (i = 0; i < players_len; i++) {
         Player *player = &players[i];
         double rate = 6.0;
@@ -288,6 +326,7 @@ static void initPlayers(Player *players, int len)
         players[i].wasd = 0;
         players[i].mouse = 0;
         players[i].keyboard = 0;
+        players[i].gamepad = NULL;
         players[i].color[0] = (1 << (i / 2)) & 2 ? 0 : 0xff;
         players[i].color[1] = (1 << (i / 2)) & 1 ? 0 : 0xff;
         players[i].color[2] = (1 << (i / 2)) & 4 ? 0 : 0xff;
@@ -344,7 +383,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         *appstate = as;
     }
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         return SDL_APP_FAILURE;
     }
     if (!SDL_CreateWindowAndRenderer("examples/demo/woodeneye-008", 640, 480, SDL_WINDOW_RESIZABLE, &as->window, &as->renderer)) {
@@ -382,6 +421,25 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             for (i = 0; i < player_count; i++) {
                 if (players[i].keyboard == event->kdevice.which) {
                     players[i].keyboard = 0;
+                }
+            }
+            break;
+        case SDL_EVENT_GAMEPAD_REMOVED:
+            for (i = 0; i < player_count; i++) {
+                if (players[i].gamepad && (SDL_GetGamepadID(players[i].gamepad) == event->gdevice.which)) {
+                    SDL_CloseGamepad(players[i].gamepad);
+                    players[i].gamepad = NULL;
+                }
+            }
+            break;
+        case SDL_EVENT_GAMEPAD_ADDED:
+            for (i = 0; i < player_count; i++) {
+                if (players[i].gamepad == NULL) {
+                    players[i].gamepad = SDL_OpenGamepad(event->gdevice.which);
+                    if (!players[i].gamepad)
+                        SDL_Log("Failed to open gamepad ID %u: %s", (unsigned int) event->gdevice.which, SDL_GetError());
+                    else
+                        as->player_count = SDL_max(as->player_count, i + 1);
                 }
             }
             break;
@@ -445,6 +503,36 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             }
             break;
         }
+
+        /* We query the gamepad sticks every frame, so we don't check for SDL_EVENT_GAMEPAD_AXIS_MOTION here. */
+
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
+            Uint8 button = event->gbutton.button;
+            SDL_JoystickID id = event->gbutton.which;
+            int index = whoseGamepad(id, players, player_count);
+            if (index >= 0) {
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_UP) players[index].wasd |= 1;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) players[index].wasd |= 2;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) players[index].wasd |= 4;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) players[index].wasd |= 8;
+                if (button == SDL_GAMEPAD_BUTTON_SOUTH) players[index].wasd |= 16;
+                if (button == SDL_GAMEPAD_BUTTON_EAST) shoot(index, players, player_count);
+            }
+            break;
+        }
+        case SDL_EVENT_GAMEPAD_BUTTON_UP: {
+            Uint8 button = event->gbutton.button;
+            SDL_JoystickID id = event->gbutton.which;
+            int index = whoseGamepad(id, players, player_count);
+            if (index >= 0) {
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_UP) players[index].wasd &= 30;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_LEFT) players[index].wasd &= 29;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_DOWN) players[index].wasd &= 27;
+                if (button == SDL_GAMEPAD_BUTTON_DPAD_RIGHT) players[index].wasd &= 23;
+                if (button == SDL_GAMEPAD_BUTTON_SOUTH) players[index].wasd &= 15;
+            }
+            break;
+        }
     }
     return SDL_APP_CONTINUE;
 }
@@ -475,5 +563,14 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
+    AppState *as = appstate;
+    Player *players = as->players;
+    int player_count = as->player_count;
+    int i;
+    for (i = 0; i < player_count; i++) {
+         if (players[i].gamepad) {
+             SDL_CloseGamepad(players[i].gamepad);
+         }
+    }
     SDL_free(appstate); // just free the memory, SDL will clean up the window/renderer for us.
 }
