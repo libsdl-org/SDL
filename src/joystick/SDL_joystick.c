@@ -3200,6 +3200,17 @@ bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id)
     return false;
 }
 
+bool SDL_IsJoystickPSMove(Uint16 vendor_id, Uint16 product_id)
+{
+    if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_PSMOVE) {
+        return true;
+    }
+    if (vendor_id == USB_VENDOR_SONY && product_id == USB_PRODUCT_SONY_PSMOVE_V2) {
+        return true;
+    }
+    return false;
+}
+
 bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
