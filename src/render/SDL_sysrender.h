@@ -135,6 +135,12 @@ typedef struct SDL_VertexSolid
 
 typedef enum
 {
+    SDL_RENDERPOINTMETHOD_POINTS,
+    SDL_RENDERPOINTMETHOD_GEOMETRY,
+} SDL_RenderPointMethod;
+
+typedef enum
+{
     SDL_RENDERLINEMETHOD_POINTS,
     SDL_RENDERLINEMETHOD_LINES,
     SDL_RENDERLINEMETHOD_GEOMETRY,
@@ -246,6 +252,9 @@ struct SDL_Renderer
     /* Whether or not to scale relative mouse motion */
     SDL_bool relative_scaling;
 
+    /* The method of drawing points */
+    SDL_RenderPointMethod point_method;
+
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
 
@@ -305,6 +314,7 @@ extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
+extern SDL_RenderDriver N3DS_RenderDriver;
 extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
