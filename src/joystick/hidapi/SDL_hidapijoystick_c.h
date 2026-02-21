@@ -174,6 +174,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
 
+
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 #define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
                             (((Uint32)(B)) << 8) |  \
