@@ -209,10 +209,14 @@ static bool Cocoa_VideoInit(SDL_VideoDevice *_this)
             return false;
         }
 
-        // Assume we have a mouse and keyboard
-        // We could use GCMouse and GCKeyboard if we needed to, as is done in SDL_uikitevents.m
+        // Initialize GCMouse for raw input on macOS 11.0+
+        Cocoa_InitGCMouse();
+
+        // Add default keyboard and mouse if GCMouse didn't provide any
         SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
-        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
+        if (!Cocoa_HasGCMouse()) {
+            SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
+        }
 
         data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, true);
         data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, false);
@@ -233,6 +237,7 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
+        Cocoa_QuitGCMouse();
         Cocoa_QuitMouse(_this);
         Cocoa_QuitPen(_this);
         SDL_DestroyMutex(data.swaplock);
