@@ -29,25 +29,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-/* OpenXR test requires platforms with full OpenXR header support.
- * On unsupported platforms (PSP, PS2, 3DS, Vita, 32-bit Windows), we compile
- * a stub that exits gracefully. */
-#if defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_PS2) || \
-    defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_VITA) || \
-    (defined(SDL_PLATFORM_WIN32) && !defined(_WIN64))
-
-int main(int argc, char *argv[])
-{
-    (void)argc;
-    (void)argv;
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenXR support on this system");
-    return 1;
-}
-
-#else /* HAVE_OPENXR */
-
 /* Include OpenXR headers BEFORE SDL_openxr.h to get full type definitions */
+#ifdef HAVE_OPENXR_H
 #include <openxr/openxr.h>
+#else
+/* SDL includes a copy for building on systems without the OpenXR SDK */
+#include "../src/video/khronos/openxr/openxr.h"
+#endif
 
 #include <SDL3/SDL_openxr.h>
 
@@ -683,7 +671,7 @@ static bool create_swapchains(void)
             return false;
         }
 
-        SDL_Log("Created swapchain %" SDL_PRIu32 ": %dx%d, %" SDL_PRIu32 " images, with depth buffer",
+        SDL_Log("Created swapchain %" SDL_PRIu32 ": %" SDL_PRIs32 "x%" SDL_PRIs32 ", %" SDL_PRIu32 " images, with depth buffer",
                 i, vr_swapchains[i].size.width, vr_swapchains[i].size.height,
                 vr_swapchains[i].image_count);
     }
@@ -1006,5 +994,3 @@ int main(int argc, char *argv[])
     quit(0);
     return 0;
 }
-
-#endif /* HAVE_OPENXR */
