@@ -704,7 +704,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
             // Just want sink and source
             if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
                 recording = false;
-            } else if (!SDL_strcasecmp(media_class, "Audio/Source")) {
+            } else if (!SDL_strcasecmp(media_class, "Audio/Source") || !SDL_strcasecmp(media_class, "Audio/Source/Virtual")) {
                 recording = true;
             } else {
                 return;
