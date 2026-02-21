@@ -952,6 +952,7 @@ enable_wasapi
 enable_hidapi_joystick
 enable_hidapi_libusb
 enable_clock_gettime
+enable_uclock
 enable_rpath
 enable_backgrounding_signal
 enable_foregrounding_signal
@@ -1671,9 +1672,9 @@ Optional Features:
   --enable-assembly       Enable assembly routines [default=yes]
   --enable-ssemath        Allow GCC to use SSE floating point math
                           [default=maybe]
-  --enable-mmx            use MMX assembly routines [default=yes]
-  --enable-3dnow          use 3DNow! assembly routines [default=no]
-  --enable-sse            use SSE assembly routines [default=yes]
+  --enable-mmx            use MMX assembly routines [default=maybe]
+  --enable-3dnow          use 3DNow! assembly routines [default=maybe]
+  --enable-sse            use SSE assembly routines [default=maybe]
   --enable-sse2           use SSE2 assembly routines [default=maybe]
   --enable-sse3           use SSE3 assembly routines [default=maybe]
   --enable-altivec        use Altivec assembly routines [default=yes]
@@ -1779,6 +1780,8 @@ Optional Features:
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [default=yes]
   --enable-rpath          use an rpath when linking SDL [default=yes]
+  --enable-uclock         use uclock() for performance counter on DOS
+                          [default=yes]
   --enable-backgrounding-signal
                           number to use for magic backgrounding signal or 'no'
                           [default=no]
@@ -19358,6 +19361,25 @@ printf "%s\n" "#define HAVE_MPROTECT 1" >>confdefs.h
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    case "$host" in
+    *-*-msdosdjgpp*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: skipping unfinished fseeko64 in DJGPP" >&5
+$as_echo "$as_me: skipping unfinished fseeko64 in DJGPP" >&6;}
+        ;;
+    *)
+        for ac_func in fseeko64
+do :
+  ac_fn_c_check_func "$LINENO" "fseeko64" "ac_cv_func_fseeko64"
+if test "x$ac_cv_func_fseeko64" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FSEEKO64 1
+_ACEOF
+
+fi
+done
+
+        ;;
+    esac
 fi
 
     ac_fn_c_check_func "$LINENO" "malloc" "ac_cv_func_malloc"
@@ -19742,12 +19764,6 @@ ac_fn_c_check_func "$LINENO" "fseeko" "ac_cv_func_fseeko"
 if test "x$ac_cv_func_fseeko" = xyes
 then :
   printf "%s\n" "#define HAVE_FSEEKO 1" >>confdefs.h
-
-fi
-ac_fn_c_check_func "$LINENO" "fseeko64" "ac_cv_func_fseeko64"
-if test "x$ac_cv_func_fseeko64" = xyes
-then :
-  printf "%s\n" "#define HAVE_FSEEKO64 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "sigaction" "ac_cv_func_sigaction"
@@ -20647,7 +20663,7 @@ if test ${enable_mmx+y}
 then :
   enableval=$enable_mmx;
 else $as_nop
-  enable_mmx=yes
+  enable_mmx=$default_ssemath
 fi
 
     if test x$enable_mmx = xyes; then
@@ -20703,7 +20719,7 @@ if test ${enable_3dnow+y}
 then :
   enableval=$enable_3dnow;
 else $as_nop
-  enable_3dnow=no
+  enable_3dnow=$default_ssemath
 fi
 
     if test x$enable_3dnow = xyes; then
@@ -20754,7 +20770,7 @@ if test ${enable_sse+y}
 then :
   enableval=$enable_sse;
 else $as_nop
-  enable_sse=yes
+  enable_sse=$default_ssemath
 fi
 
     if test x$enable_sse = xyes; then
@@ -25984,6 +26000,18 @@ printf "%s\n" "#define SDL_AUDIO_DRIVER_QSA 1" >>confdefs.h
     fi
 }
 
+CheckSVGAVideo()
+{
+    if test x$enable_video = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_SVGA 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/video/svga/*.c"
+        have_video=yes
+        SUMMARY_video="${SUMMARY_video} svga"
+    fi
+}
+
 # Check whether --enable-video-opengl was given.
 if test ${enable_video_opengl+y}
 then :
@@ -28553,6 +28581,30 @@ printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
     fi
 }
 
+CheckUCLOCK()
+{
+    # Check whether --enable-uclock was given.
+if test "${enable_uclock+set}" = set; then :
+  enableval=$enable_uclock;
+else
+  enable_uclock=yes
+fi
+
+    if test x$enable_uclock = xyes; then
+        for ac_func in uclock
+do :
+  ac_fn_c_check_func "$LINENO" "uclock" "ac_cv_func_uclock"
+if test "x$ac_cv_func_uclock" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UCLOCK 1
+_ACEOF
+
+fi
+done
+
+    fi
+}
+
 CheckLinuxVersion()
 {
     ac_fn_c_check_header_compile "$LINENO" "linux/version.h" "ac_cv_header_linux_version_h" "$ac_includes_default"
@@ -29761,6 +29813,29 @@ printf "%s\n" "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
             have_joystick=yes
         fi
+        ;;
+    *-*-msdosdjgpp*)
+        ARCH=dos
+        CheckVisibilityHidden
+        CheckDeclarationAfterStatement
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckSVGAVideo
+        CheckDLOPEN
+        CheckUCLOCK
+
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+
+$as_echo "#define SDL_TIMER_DOS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/dos/*.c"
+            have_timers=yes
+        fi
+
+        # Set up files for shared DOS utilities and event handling
+        SOURCES="$SOURCES $srcdir/src/core/dos/*.c"
         ;;
     *)
         as_fn_error $? "
