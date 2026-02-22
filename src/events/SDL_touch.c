@@ -619,7 +619,7 @@ void SDL_QuitTouch(void)
     SDL_touch_lock = NULL;
 }
 
-int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale)
+int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale, float span_x, float span_y, float focus_x, float focus_y)
 {
     /* Post the event, if desired */
     int posted = 0;
@@ -628,6 +628,10 @@ int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, floa
         event.type = type;
         event.common.timestamp = timestamp;
         event.pinch.scale = scale;
+        event.pinch.span_x = (span_x * (float)window->w);
+        event.pinch.span_y = (span_y * (float)window->h);
+        event.pinch.focus_x = (focus_x * (float)window->w);
+        event.pinch.focus_y = (focus_y * (float)window->h);
         event.pinch.windowID = window ? SDL_GetWindowID(window) : 0;
         posted = (SDL_PushEvent(&event) > 0);
     }

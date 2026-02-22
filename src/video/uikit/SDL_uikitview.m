@@ -489,12 +489,12 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
         case UIGestureRecognizerStateBegan:
             pinch_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0, 0, 0, 0, 0);
             break;
 
         case UIGestureRecognizerStateChanged:
             if (pinch_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
+                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale, 0, 0, 0, 0);
             }
             pinch_scale = scale;
             break;
@@ -502,7 +502,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, 0, 0, 0, 0);
             break;
 
         default:
