@@ -389,6 +389,50 @@ static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size
     return false;
 }
 
+static bool SDL_HIDAPI_Flydigi_SendInfoRequest(SDL_HIDAPI_Device *device)
+{
+    const Uint8 cmd[] = {
+        FLYDIGI_V2_CMD_REPORT_ID,
+        FLYDIGI_V2_MAGIC1,
+        FLYDIGI_V2_MAGIC2,
+        FLYDIGI_V2_GET_INFO_COMMAND,
+        2,
+        0
+    };
+    if (SDL_hid_write(device->dev, cmd, sizeof(cmd)) < 0) {
+        return SDL_SetError("Couldn't query controller info");
+    }
+    return true;
+}
+
+static void HIDAPI_DriverFlydigi_HandleInfoResponse(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
+{
+    SDL_PowerState state;
+    int percent;
+    Uint8 status = (data[11] >> 4) & 0x0F;
+    Uint8 level = (data[11] & 0x0F);
+
+    switch (status) {
+    case 0:
+        state = SDL_POWERSTATE_ON_BATTERY;
+        percent = SDL_min(level * 10 + 5, 100);
+        break;
+    case 1:
+        state = SDL_POWERSTATE_CHARGING;
+        percent = SDL_min(level * 10 + 5, 100);
+        break;
+    case 2:
+        state = SDL_POWERSTATE_CHARGED;
+        percent = 100;
+        break;
+    default:
+        state = SDL_POWERSTATE_UNKNOWN;
+        percent = 0;
+        break;
+    }
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
+}
+
 static bool SDL_HIDAPI_Flydigi_SendStatusRequest(SDL_HIDAPI_Device *device)
 {
     const Uint8 cmd[] = {
@@ -444,9 +488,8 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
     Uint8 data[USB_PACKET_LENGTH];
-    const Uint8 query_info[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_GET_INFO_COMMAND, 2, 0 };
-    if (SDL_hid_write(device->dev, query_info, sizeof(query_info)) < 0) {
-        return SDL_SetError("Couldn't query controller info");
+    if (!SDL_HIDAPI_Flydigi_SendInfoRequest(device)) {
+        return false;
     }
     if (!GetReply(device, FLYDIGI_V2_GET_INFO_COMMAND, data, sizeof(data))) {
         return SDL_SetError("Couldn't get controller info");
@@ -902,6 +945,11 @@ static void HIDAPI_DriverFlydigi_HandlePacketV2(SDL_Joystick *joystick, SDL_Driv
     }
 
     switch (data[2]) {
+    case FLYDIGI_V2_GET_INFO_COMMAND:
+        if (joystick) {
+            HIDAPI_DriverFlydigi_HandleInfoResponse(joystick, ctx, data, size);
+        }
+        break;
     case FLYDIGI_V2_SET_STATUS_COMMAND:
         HIDAPI_DriverFlydigi_HandleStatusUpdate(ctx->device, data, size);
         break;
@@ -937,6 +985,7 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && joystick) {
         if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
             SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
+            SDL_HIDAPI_Flydigi_SendInfoRequest(device);
             ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
         }
     }
