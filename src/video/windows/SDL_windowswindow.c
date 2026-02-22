@@ -1832,7 +1832,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         HRESULT hres;
         hres = pDataObject->lpVtbl->EnumFormatEtc(pDataObject, DATADIR_GET, &pEnumFormatEtc);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In Drop for EnumFormatEtc, HRESULT is %08lx", hres);
+                     ". In Drop for EnumFormatEtc, HRESULT is %08lx", (ULONG)hres);
         if (hres == S_OK) {
             FORMATETC fetc;
             while (pEnumFormatEtc->lpVtbl->Next(pEnumFormatEtc, 1, &fetc, NULL) == S_OK) {
@@ -1865,7 +1865,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx",
-                         fetc.cfFormat, format_mime, hres);
+                         fetc.cfFormat, format_mime, (ULONG)hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
@@ -1913,7 +1913,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
-                         fetc.cfFormat, format_mime, hres);
+                         fetc.cfFormat, format_mime, (ULONG)hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
@@ -1959,7 +1959,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
-                         fetc.cfFormat, format_mime, hres);
+                         fetc.cfFormat, format_mime, (ULONG)hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
@@ -2013,7 +2013,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
-                         fetc.cfFormat, format_mime, hres);
+                         fetc.cfFormat, format_mime, (ULONG)hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 const void *buffer = (void *)GlobalLock(med.hGlobal);
@@ -2059,7 +2059,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx",
-                         fetc.cfFormat, format_mime, hres);
+                         fetc.cfFormat, format_mime, (ULONG)hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
                 HDROP drop = (HDROP)GlobalLock(med.hGlobal);

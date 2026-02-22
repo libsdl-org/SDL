@@ -13269,7 +13269,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         (void)SDL_snprintf(
             driverVer,
             SDL_arraysize(driverVer),
-            "%d.%d.%d.%d",
+            "%u.%u.%u.%u",
             (rawDriverVer >> 22) & 0x3ff,
             (rawDriverVer >> 14) & 0xff,
             (rawDriverVer >> 6) & 0xff,
@@ -13281,7 +13281,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         (void)SDL_snprintf(
             driverVer,
             SDL_arraysize(driverVer),
-            "%d.%d",
+            "%u.%u",
             (rawDriverVer >> 14) & 0x3ffff,
             rawDriverVer & 0x3fff);
     }
@@ -13292,7 +13292,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         (void)SDL_snprintf(
             driverVer,
             SDL_arraysize(driverVer),
-            "%d.%d.%d",
+            "%u.%u.%u",
             (rawDriverVer >> 22) & 0x3ff,
             (rawDriverVer >> 12) & 0x3ff,
             rawDriverVer & 0xfff);

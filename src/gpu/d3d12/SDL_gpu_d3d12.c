@@ -1328,9 +1328,9 @@ static void D3D12_INTERNAL_SetError(
     // No message? Screw it, just post the code.
     if (dwChars == 0) {
         if (renderer->debug_mode) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: " HRESULT_FMT, msg, (ULONG)res);
         }
-        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, res);
+        SDL_SetError("%s! Error Code: " HRESULT_FMT, msg, (ULONG)res);
         return;
     }
 
@@ -1350,9 +1350,9 @@ static void D3D12_INTERNAL_SetError(
     wszMsgBuff[dwChars] = '\0';
 
     if (renderer->debug_mode) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, (ULONG)res);
     }
-    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, res);
+    SDL_SetError("%s! Error Code: %s " HRESULT_FMT, msg, wszMsgBuff, (ULONG)res);
 }
 
 // Release / Cleanup
@@ -7074,7 +7074,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
         SDL_LogWarn(
             SDL_LOG_CATEGORY_GPU,
             "Could not get swapchain parent! Error Code: " HRESULT_FMT,
-            res);
+            (ULONG)res);
     } else {
         // Disable DXGI window crap
         res = IDXGIFactory1_MakeWindowAssociation(
@@ -7085,7 +7085,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_GPU,
                 "MakeWindowAssociation failed! Error Code: " HRESULT_FMT,
-                res);
+                (ULONG)res);
         }
 
         // We're done with the parent now
@@ -9001,7 +9001,7 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         IDXGIAdapter1 *adapter;
         res = IDXGIFactory1_EnumAdapters1(factory, adapterIndex, &adapter);
         if (FAILED(res)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %d, res: %ld", adapterIndex, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %u, res: %ld", adapterIndex, res);
             return false;
         }
 
@@ -9009,7 +9009,7 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         res = IDXGIAdapter1_GetDesc1(adapter, &adapterDesc);
         if (FAILED(res)) {
             IDXGIAdapter1_Release(adapter);
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %d, res %ld", adapterIndex, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %u, res %ld", adapterIndex, res);
             return false;
         }
         if (SDL_memcmp(&adapterDesc.AdapterLuid, &luid, sizeof(luid)) == 0) {

@@ -705,12 +705,12 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadAdded(wgi_state.gamepad_statics, &gamepad_added.iface, &wgi_state.gamepad_added_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadAdded() failed: 0x%lx", hr);
+                        SDL_SetError("add_GamepadAdded() failed: 0x%lx", (ULONG)hr);
                     }
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadRemoved(wgi_state.gamepad_statics, &gamepad_removed.iface, &wgi_state.gamepad_removed_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx", hr);
+                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx", (ULONG)hr);
                     }
                 }
             }
@@ -1506,7 +1506,7 @@ static bool RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, ctx->vibration);
         if (!SUCCEEDED(hr)) {
-            return SDL_SetError("Setting vibration failed: 0x%lx", hr);
+            return SDL_SetError("Setting vibration failed: 0x%lx", (ULONG)hr);
         }
         ctx->triggers_rumbling = (left_rumble > 0 || right_rumble > 0);
         return true;

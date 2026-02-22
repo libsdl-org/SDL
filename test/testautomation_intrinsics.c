@@ -97,7 +97,7 @@ static void verify_uints_addition(const Uint32 *dest, const Uint32 *a, const Uin
     for (i = 0; i < size; ++i) {
         Uint32 expected = a[i] + b[i];
         if (dest[i] != expected) {
-            SDLTest_AssertCheck(false, "%" SDL_PRIs32 " + %" SDL_PRIs32 " = %" SDL_PRIs32 ", expected %" SDL_PRIs32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
+            SDLTest_AssertCheck(false, "%" SDL_PRIu32 " + %" SDL_PRIu32 " = %" SDL_PRIu32 ", expected %" SDL_PRIu32 " ([%" SDL_PRIu32 "/%" SDL_PRIu32 "] %s)",
                                 a[i], b[i], dest[i], expected, (Uint32)i, (Uint32)size, desc);
             all_good = 0;
         }
