@@ -28,6 +28,7 @@
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h" // For haptic hot plugging
 #include "../usb_ids.h"
+#include <IOKit/IOKitLib.h>
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
 
@@ -442,6 +443,16 @@ static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const
     return slot;
 }
 
+static bool IsControlledBy360ControllerDriver(IOHIDDeviceRef hidDevice)
+{
+    bool controlled_by_360controller = false;
+    io_service_t service = IOHIDDeviceGetService(hidDevice);
+    if (service != MACH_PORT_NULL) {
+        controlled_by_360controller = IOObjectConformsTo(service, "Xbox360ControllerClass");
+    }
+    return controlled_by_360controller;
+}
+
 static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
     Sint32 vendor = 0;
@@ -499,8 +510,8 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
     }
 
-    if (SDL_IsJoystickXboxOne(vendor, product)) {
-        // We can't actually use this API for Xbox controllers
+    if (!IsControlledBy360ControllerDriver(hidDevice) && SDL_IsJoystickXboxOne(vendor, product)) {
+        // We can't actually use this API for Xbox controllers without the 360Controller driver
         return false;
     }
 
@@ -550,7 +561,7 @@ static bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 
 #ifdef SDL_JOYSTICK_MFI
     extern bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
-    if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
+    if (!IsControlledBy360ControllerDriver(ioHIDDeviceObject) && IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return true;
     }
 #endif
