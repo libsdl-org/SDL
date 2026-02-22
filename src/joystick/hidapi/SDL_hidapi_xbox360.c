@@ -36,6 +36,10 @@
 /* Define this if you want to log all packets from the controller */
 /*#define DEBUG_XBOX_PROTOCOL*/
 
+#if defined(__MACOSX__)
+#include <IOKit/IOKitLib.h>
+#endif
+
 typedef struct
 {
     SDL_HIDAPI_Device *device;
@@ -43,6 +47,9 @@ typedef struct
     int player_index;
     SDL_bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
+#if defined(__MACOSX__)
+    SDL_bool controlled_by_360controller;
+#endif
 } SDL_DriverXbox360_Context;
 
 static void HIDAPI_DriverXbox360_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -62,6 +69,22 @@ static SDL_bool HIDAPI_DriverXbox360_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360,
                               SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT)));
 }
+
+#if defined(__MACOSX__)
+static SDL_bool IsControlledBy360ControllerDriverMacOS(SDL_HIDAPI_Device *device)
+{
+    bool controlled_by_360controller = false;
+    if (device && device->path && SDL_strncmp("DevSrvsID:", device->path, 10) == 0) {
+        uint64_t entry_id = SDL_strtoull(device->path + 10, NULL, 10);
+        io_service_t service = IOServiceGetMatchingService(0, IORegistryEntryIDMatching(entry_id));
+        if (service != MACH_PORT_NULL) {
+            controlled_by_360controller = IOObjectConformsTo(service, "Xbox360ControllerClass");
+            IOObjectRelease(service);
+        }
+    }
+    return controlled_by_360controller? SDL_TRUE : SDL_FALSE;
+}
+#endif
 
 static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
@@ -84,14 +107,22 @@ static SDL_bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device
         /* This is the chatpad or other input interface, not the Xbox 360 interface */
         return SDL_FALSE;
     }
+#if defined(__MACOSX__)
+    if (IsControlledBy360ControllerDriverMacOS(device)) {
+        // Wired Xbox controllers are handled by this driver, when they are
+        // controlled by the 360Controller driver available from:
+        // https://github.com/360Controller/360Controller/releases
+        return SDL_TRUE;
+    }
+#endif
 #if defined(__MACOSX__) && defined(SDL_JOYSTICK_MFI)
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         /* GCController support doesn't work with the Steam Virtual Gamepad */
         return SDL_TRUE;
     } else {
-        /* On macOS you can't write output reports to wired XBox controllers,
-           so we'll just use the GCController support instead.
-        */
+        // On macOS when it isn't controlled by the 360Controller driver and
+        // it doesn't look like a Steam virtual gamepad we should rely on
+        // GCController support instead.
         return SDL_FALSE;
     }
 #else
@@ -143,6 +174,9 @@ static SDL_bool HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
         return SDL_FALSE;
     }
     ctx->device = device;
+#if defined(__MACOSX__)
+    ctx->controlled_by_360controller = IsControlledBy360ControllerDriverMacOS(device);
+#endif
 
     device->context = ctx;
 
@@ -203,15 +237,30 @@ static SDL_bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 
 static int HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    Uint8 rumble_packet[] = { 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-    rumble_packet[3] = (low_frequency_rumble >> 8);
-    rumble_packet[4] = (high_frequency_rumble >> 8);
-
-    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
-        return SDL_SetError("Couldn't send rumble packet");
+#if defined(__MACOSX__)
+    if (((SDL_DriverXbox360_Context *)device->context)->controlled_by_360controller) {
+        // On macOS the 360Controller driver uses this short report,
+        // and we need to prefix it with a magic token so hidapi passes it through untouched
+        Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
+        rumble_packet[6 + 2] = (low_frequency_rumble >> 8);
+        rumble_packet[6 + 3] = (high_frequency_rumble >> 8);
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
+        return 0;
     }
-    return 0;
+#endif
+    {
+        Uint8 rumble_packet[] = { 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        rumble_packet[3] = (low_frequency_rumble >> 8);
+        rumble_packet[4] = (high_frequency_rumble >> 8);
+
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
+        return 0;
+    }
 }
 
 static int HIDAPI_DriverXbox360_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
