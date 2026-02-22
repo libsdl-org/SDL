@@ -28,6 +28,7 @@
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h" // For haptic hot plugging
 #include "../usb_ids.h"
+#include "../../SDL_hints_c.h"
 #include <IOKit/IOKitLib.h>
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
@@ -513,6 +514,16 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     if (!IsControlledBy360ControllerDriver(hidDevice) && SDL_IsJoystickXboxOne(vendor, product)) {
         // We can't actually use this API for Xbox controllers without the 360Controller driver
         return false;
+    }
+
+    if (IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVirtualHIDevice)) == kCFBooleanTrue) {
+        // Steam virtual gamepads always have kIOHIDVirtualHIDevice property unlike real devices
+        if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
+            const char *allow_steam_virtual_gamepad = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
+            if (!SDL_GetStringBoolean(allow_steam_virtual_gamepad, false)) {
+                return false;
+            }
+        }
     }
 
     // get device name
