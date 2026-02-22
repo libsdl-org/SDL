@@ -300,15 +300,15 @@ void Android_SendResize(SDL_Window *window)
     }
 }
 
-void Android_SetWindowSafeAreaInsets(int left, int right, int top, int bottom)
+void Android_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom)
 {
     Android_SafeInsetLeft = left;
     Android_SafeInsetRight = right;
     Android_SafeInsetTop = top;
     Android_SafeInsetBottom = bottom;
 
-    if (Android_Window) {
-        SDL_SetWindowSafeAreaInsets(Android_Window, left, right, top, bottom);
+    if (window) {
+        SDL_SetWindowSafeAreaInsets(window, left, right, top, bottom);
     }
 }
 
