@@ -44,10 +44,8 @@
 
 /* Include compiled shader bytecode for all backends */
 #include "testgpu/cube.frag.dxil.h"
-#include "testgpu/cube.frag.msl.h"
 #include "testgpu/cube.frag.spv.h"
 #include "testgpu/cube.vert.dxil.h"
-#include "testgpu/cube.vert.msl.h"
 #include "testgpu/cube.vert.spv.h"
 
 #define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s", thing, SDL_GetError()); return false; } }
@@ -317,17 +315,6 @@ static SDL_GPUShader *load_shader(bool is_vertex, Uint32 sampler_count, Uint32 u
             createinfo.code = cube_frag_spv;
             createinfo.code_size = cube_frag_spv_len;
             createinfo.entrypoint = "main";
-        }
-    } else if (format & SDL_GPU_SHADERFORMAT_MSL) {
-        createinfo.format = SDL_GPU_SHADERFORMAT_MSL;
-        if (is_vertex) {
-            createinfo.code = (const Uint8 *)cube_vert_msl;
-            createinfo.code_size = cube_vert_msl_len;
-            createinfo.entrypoint = "main0";
-        } else {
-            createinfo.code = (const Uint8 *)cube_frag_msl;
-            createinfo.code_size = cube_frag_msl_len;
-            createinfo.entrypoint = "main0";
         }
     } else {
         SDL_Log("No supported shader format found!");
