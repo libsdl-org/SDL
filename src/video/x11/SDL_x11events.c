@@ -547,6 +547,9 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
     X11_XQueryKeymap(display, keys);
 
+    int numkeys = 0;
+    const bool *keystate = SDL_GetKeyboardState(&numkeys);
+
     for (Uint32 keycode = 0; keycode < SDL_arraysize(videodata->keyboard.key_layout); ++keycode) {
         const SDL_Scancode scancode = videodata->keyboard.key_layout[keycode];
         const bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
@@ -564,8 +567,11 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_RGUI:
             case SDLK_MODE:
             case SDLK_LEVEL5_SHIFT:
-                X11_HandleModifierKeys(videodata, scancode, true);
-                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                // Don't send duplicate key events when reconciling.
+                if (keystate && scancode < numkeys && !keystate[scancode]) {
+                    X11_HandleModifierKeys(videodata, scancode, true);
+                    SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                }
                 break;
             default:
                 break;
