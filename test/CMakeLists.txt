@@ -383,7 +383,6 @@ add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
 add_sdl_test_executable(testgpu_spinning_cube_xr BUILD_DEPENDENT SOURCES testgpu_spinning_cube_xr.c)
-target_include_directories(testgpu_spinning_cube_xr PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
 
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
