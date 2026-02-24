@@ -469,7 +469,7 @@
 #define NULL ((void *)0)
 #endif
 #endif /* NULL */
-#endif /* ! macOS - breaks precompiled headers */
+#endif /* __MACH__ */
 
 #ifndef SDL_FALLTHROUGH
 #if (defined(__cplusplus) && __cplusplus >= 201703L) || \

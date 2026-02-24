@@ -208,7 +208,7 @@ _m_prefetch(void *__P)
 #else
 /* By default, assume that floats words follow the memory system mode. */
 #define SDL_FLOATWORDORDER   SDL_BYTEORDER
-#endif /* __FLOAT_WORD_ORDER__ */
+#endif /* SDL_WIKI_DOCUMENTATION_SECTION */
 #endif /* !SDL_FLOATWORDORDER */
 
 

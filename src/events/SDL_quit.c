@@ -106,7 +106,7 @@ static void SDL_EventSignal_Quit(const int sig)
     if (ohandler != SDL_HandleSIG) {
         signal(sig, ohandler);
     }
-#endif // HAVE_SIGNAL_H
+#endif // HAVE_SIGACTION
 }
 
 // Public functions

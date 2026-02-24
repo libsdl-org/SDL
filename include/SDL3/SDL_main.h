@@ -257,7 +257,7 @@
 #else
 /* usually this is empty */
 #define SDLMAIN_DECLSPEC
-#endif /* SDL_MAIN_EXPORTED */
+#endif /* SDL_WIKI_DOCUMENTATION_SECTION */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)
 #define main SDL_main

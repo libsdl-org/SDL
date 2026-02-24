@@ -25,4 +25,4 @@
 // Convert a keysym to an SDL key code
 extern SDL_Keycode SDL_GetKeyCodeFromKeySym(Uint32 keysym, Uint32 keycode, SDL_Keymod modifiers);
 
-#endif // SDL_keysym_to_scancode_c_h_
+#endif // SDL_keysym_to_keycode_c_h_

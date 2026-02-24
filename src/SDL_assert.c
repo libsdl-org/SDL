@@ -299,7 +299,7 @@ static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, v
         }
 #else
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Assertion Failed", message, window);
-#endif // HAVE_STDIO_H
+#endif // SDL_PLATFORM_PRIVATE_ASSERT
     }
 
     // Re-enter fullscreen mode

@@ -1135,7 +1135,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
 #else
     SDL_SetError("SDL not compiled with stdio support");
-#endif // !HAVE_STDIO_H
+#endif // SDL_PLATFORM_ANDROID
 
     return iostr;
 }

@@ -3694,7 +3694,7 @@ static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc 
 #define TARGETING_SSE2 SDL_TARGETING("sse2") /* Added by SDL */
 #else
 #define TARGETING_SSE2
-#endif /* Added by SDL */
+#endif // STBI_SSE2 /* Added by SDL */
 static stbi_uc *TARGETING_SSE2 stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs) /* Changed by SDL: TARGETING_SSE2 */
 {
    // need to generate 2x2 samples for every one in input

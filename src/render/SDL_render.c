@@ -1327,7 +1327,7 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
-#endif // !SDL_RENDER_DISABLED
+#endif // SDL_VIDEO_RENDER_SW
 }
 
 SDL_Renderer *SDL_GetRenderer(SDL_Window *window)
