@@ -790,6 +790,10 @@ static void SetViewportAndScissor(GPU_RenderData *data)
 
 static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
+    if(format == SDL_PIXELFORMAT_INDEX8) {
+        // We'll do linear sampling in the shader if needed
+        scale_mode = SDL_SCALEMODE_NEAREST;
+    }
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
     if (!data->samplers[key]) {
@@ -803,16 +807,9 @@ static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, 
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            if (format == SDL_PIXELFORMAT_INDEX8) {
-                // We'll do linear sampling in the shader
-                sci.min_filter = SDL_GPU_FILTER_NEAREST;
-                sci.mag_filter = SDL_GPU_FILTER_NEAREST;
-                sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
-            } else {
-                sci.min_filter = SDL_GPU_FILTER_LINEAR;
-                sci.mag_filter = SDL_GPU_FILTER_LINEAR;
-                sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
-            }
+            sci.min_filter = SDL_GPU_FILTER_LINEAR;
+            sci.mag_filter = SDL_GPU_FILTER_LINEAR;
+            sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
