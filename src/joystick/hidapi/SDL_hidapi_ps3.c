@@ -635,7 +635,14 @@ static bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *devi
                 // Supported third party controller
                 return true;
             } else {
-                return false;
+                // Some third party controllers don't have report ids
+                size = ReadFeatureReport(device->dev, 0x00, data, sizeof(data));
+                if (size == 9 && data[2] == 0x26) {
+                    // Supported third party controller
+                    return true;
+                } else {
+                    return false;
+                }
             }
         } else {
             // Might be supported by this driver, enumerate and find out
