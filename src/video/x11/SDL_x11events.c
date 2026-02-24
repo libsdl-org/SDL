@@ -547,14 +547,13 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 
     X11_XQueryKeymap(display, keys);
 
-    int numkeys = 0;
-    const bool *keystate = SDL_GetKeyboardState(&numkeys);
-
+    const bool *keystate = SDL_GetKeyboardState(NULL);
     for (Uint32 keycode = 0; keycode < SDL_arraysize(videodata->keyboard.key_layout); ++keycode) {
         const SDL_Scancode scancode = videodata->keyboard.key_layout[keycode];
         const bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
+        const bool sdlKeyPressed = keystate[scancode];
 
-        if (x11KeyPressed) {
+        if (x11KeyPressed && !sdlKeyPressed) {
             // Only update modifier state for keys that are pressed in another application
             switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false)) {
             case SDLK_LCTRL:
@@ -567,21 +566,21 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_RGUI:
             case SDLK_MODE:
             case SDLK_LEVEL5_SHIFT:
-                // Don't send duplicate key events when reconciling.
-                if (keystate && scancode < numkeys && !keystate[scancode]) {
-                    X11_HandleModifierKeys(videodata, scancode, true);
-                    SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
-                }
+                X11_HandleModifierKeys(videodata, scancode, true);
+                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
                 break;
             default:
                 break;
             }
+        } else if (!x11KeyPressed && sdlKeyPressed) {
+            X11_HandleModifierKeys(videodata, scancode, false);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
         }
     }
 
     // Update the latched/locked state for modifiers other than Caps, Num, and Scroll lock.
     X11_UpdateSystemKeyModifiers(videodata);
-    X11_ReconcileModifiers(videodata, false);
+    X11_ReconcileModifiers(videodata, true);
 }
 
 static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
@@ -1394,13 +1393,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             SDL_Log("window 0x%lx: KeymapNotify!", xevent->xany.window);
 #endif
-            if (!videodata->keyboard.xkb_enabled) {
-                if (SDL_GetKeyboardFocus() != NULL) {
+            if (SDL_GetKeyboardFocus() != NULL) {
+                if (!videodata->keyboard.xkb_enabled) {
                     X11_UpdateKeymap(_this, true);
                 }
+                X11_ReconcileKeyboardState(_this);
             }
-
-            X11_ReconcileKeyboardState(_this);
         } else if (xevent->type == MappingNotify) {
             const int request = xevent->xmapping.request;
 
