@@ -1584,10 +1584,11 @@ static bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
 
 static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
-    if(format == SDL_PIXELFORMAT_INDEX8) {
+    if (format == SDL_PIXELFORMAT_INDEX8) {
         // We'll do linear sampling in the shader if needed
         scale_mode = SDL_SCALEMODE_NEAREST;
     }
+
     NSNumber *key = [NSNumber numberWithInteger:RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v)];
     id<MTLSamplerState> mtlsampler = data.mtlsamplers[key];
     if (mtlsampler == nil) {
