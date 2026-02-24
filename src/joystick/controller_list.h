@@ -60,10 +60,33 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0088 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Stick mini 4
 	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller, NULL },	// Qanba Q1 fight stick
 	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller, NULL },	// SRXJ-PH2400
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0100 ), k_eControllerType_PS3Controller, NULL },	// PS3 Guitar Hero Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0140 ), k_eControllerType_PS3Controller, NULL },	// PS3 DJ Hero Turntable
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0200 ), k_eControllerType_PS3Controller, NULL },	// PS3 Rock Band Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0210 ), k_eControllerType_PS3Controller, NULL },	// PS3 Rock Band Drums
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0218 ), k_eControllerType_PS3Controller, NULL },	// PS3 Midi Pro Adapter - Drums Mode
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x074b ), k_eControllerType_PS3Controller, NULL },	// PS3 / Wii U Guitar Hero Live Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2330 ), k_eControllerType_PS3Controller, NULL },	// PS3 Rock Band Keyboard
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2338 ), k_eControllerType_PS3Controller, NULL },	// PS3 Midi Pro Adapter - Keyboard Mode
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2430 ), k_eControllerType_PS3Controller, NULL },	// PS3 Mustang Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2438 ), k_eControllerType_PS3Controller, NULL },	// PS3 Midi Pro Adapter - Mustang Guitar Mode
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2530 ), k_eControllerType_PS3Controller, NULL },	// PS3 Squire Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x2538 ), k_eControllerType_PS3Controller, NULL },	// PS3 Midi Pro Adapter - Squire Guitar Mode
 	{ MAKE_CONTROLLER_ID( 0x1345, 0x1000 ), k_eControllerType_PS3Controller, NULL },	// PS2 ACME GA-D5
 	{ MAKE_CONTROLLER_ID( 0x1345, 0x6005 ), k_eControllerType_PS3Controller, NULL },	// ps2 maybe break out later
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x5500 ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x1a34, 0x0836 ), k_eControllerType_PS3Controller, NULL },	// Afterglow PS3
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x0004 ), k_eControllerType_PS3Controller, NULL },	// Wii RB1 Guitar (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x0005 ), k_eControllerType_PS3Controller, NULL },	// Wii RB1 Drums (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3010 ), k_eControllerType_PS3Controller, NULL },	// Wii RB2 Guitar (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3110 ), k_eControllerType_PS3Controller, NULL },	// Wii RB2 Drums (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3138 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Midi Pro Adapter - Drums Mode (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3330 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Keyboard (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3338 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Midi Pro Adapter - Keyboard Mode (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3430 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Mustang Guitar (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3438 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Midi Pro Adapter - Mustang Guitar Mode (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3530 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Squire Guitar (Uses PS3 protocol)
+	{ MAKE_CONTROLLER_ID( 0x1BAD, 0x3538 ), k_eControllerType_PS3Controller, NULL },	// Wii RB3 Midi Pro Adapter - Squire Guitar Mode (Uses PS3 protocol)
 	{ MAKE_CONTROLLER_ID( 0x20bc, 0x5500 ), k_eControllerType_PS3Controller, NULL },	// ShanWan PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller, NULL },	// Power A PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller, NULL },	// BDA Pro Ex
