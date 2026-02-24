@@ -61,6 +61,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller, NULL },	// Qanba Q1 fight stick
 	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller, NULL },	// SRXJ-PH2400
 	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0100 ), k_eControllerType_PS3Controller, NULL },	// PS3 Guitar Hero Guitar
+	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0120 ), k_eControllerType_PS3Controller, NULL },	// PS3 Guitar Hero Drums
 	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0140 ), k_eControllerType_PS3Controller, NULL },	// PS3 DJ Hero Turntable
 	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0200 ), k_eControllerType_PS3Controller, NULL },	// PS3 Rock Band Guitar
 	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0210 ), k_eControllerType_PS3Controller, NULL },	// PS3 Rock Band Drums

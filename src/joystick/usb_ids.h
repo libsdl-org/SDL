@@ -153,6 +153,7 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V3_PRO                0x0a3f
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SCEA_PS3_GH_GUITAR                    0x0100
+#define USB_PRODUCT_SCEA_PS3_GH_DRUMS                     0x0120
 #define USB_PRODUCT_SCEA_PS3_DJH_TURNTABLE                0x0140
 #define USB_PRODUCT_SCEA_PS3_RB_GUITAR                    0x0200
 #define USB_PRODUCT_SCEA_PS3_RB_DRUMS                     0x0210
