@@ -52,7 +52,6 @@
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_SAITEK       0x06a3
-#define USB_VENDOR_SCEA         0x12ba
 #define USB_VENDOR_SHANWAN      0x2563
 #define USB_VENDOR_SHANWAN_ALT  0x20bc
 #define USB_VENDOR_SONY         0x054c
