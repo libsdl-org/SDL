@@ -2838,10 +2838,11 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
 static D3D12_CPU_DESCRIPTOR_HANDLE *D3D12_GetSamplerState(D3D12_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
-    if(format == SDL_PIXELFORMAT_INDEX8) {
+    if (format == SDL_PIXELFORMAT_INDEX8) {
         // We'll do linear sampling in the shader if needed
         scale_mode = SDL_SCALEMODE_NEAREST;
     }
+
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
     if (!data->samplers_created[key]) {
