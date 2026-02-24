@@ -698,7 +698,7 @@ static bool AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFo
                 return false;  // Probably out of memory; we'll go with what we have, if anything.
             }
             frmivalenum.index++;  // set up for the next one.
-        } else if ((frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) || (frmivalenum.type == V4L2_FRMIVAL_TYPE_CONTINUOUS)) {
+        } else if (frmivalenum.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
             int d = frmivalenum.stepwise.min.denominator;
             // !!! FIXME: should we step by the numerator...?
             for (int n = (int) frmivalenum.stepwise.min.numerator; n <= (int) frmivalenum.stepwise.max.numerator; n += (int) frmivalenum.stepwise.step.numerator) {
@@ -711,6 +711,50 @@ static bool AddCameraFormat(const int fd, CameraFormatAddData *data, SDL_PixelFo
                     return false;  // Probably out of memory; we'll go with what we have, if anything.
                 }
                 d += (int) frmivalenum.stepwise.step.denominator;
+            }
+            break;
+        } else if (frmivalenum.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
+            // FIXME: The current API does not enable exposing continuous ranges, so for now let's expose some common values that are within the range
+            const int min_numer = frmivalenum.stepwise.min.numerator;
+            const int min_denom = frmivalenum.stepwise.min.denominator;
+            const int max_numer = frmivalenum.stepwise.max.numerator;
+            const int max_denom = frmivalenum.stepwise.max.denominator;
+            const float minrate = (float) min_numer / (float) min_denom;
+            const float maxrate = (float) max_numer / (float) max_denom;
+            if (minrate <= 1.001 / 24 && maxrate >= 1.001 / 24) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 24000, 1001)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.000 / 24 && maxrate >= 1.000 / 24) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 24000, 1000)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.001 / 30 && maxrate >= 1.001 / 30) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 30000, 1001)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.000 / 30 && maxrate >= 1.000 / 30) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 30000, 1000)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.000 / 50 && maxrate >= 1.000 / 50) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 50000, 1000)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.001 / 60 && maxrate >= 1.001 / 60) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 60000, 1001)) {
+                    return false;
+                }
+            }
+            if (minrate <= 1.000 / 60 && maxrate >= 1.000 / 60) {
+                if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, w, h, 60000, 1000)) {
+                    return false;
+                }
             }
             break;
         }
