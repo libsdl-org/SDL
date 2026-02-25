@@ -35,7 +35,7 @@
 
 #define GAMESIR_PACKET_HEADER_0 0xA1
 #define GAMESIR_PACKET_HEADER_1_GAMEPAD 0xC8
-#define GAMESIR_IMU_RATE_HZ 1000
+#define GAMESIR_IMU_RATE_HZ 250
 
 #define BTN_A        0x01
 #define BTN_B        0x02
