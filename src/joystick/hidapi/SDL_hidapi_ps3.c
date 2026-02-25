@@ -742,6 +742,7 @@ static bool HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *dev
 
 static bool HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
+    
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     ctx->report_sensors = enabled;
@@ -987,9 +988,9 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     if (ctx->report_sensors) {
         float sensor_data[3];
 
-        sensor_data[0] = HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[22], data[21]));
-        sensor_data[1] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[24], data[23]));
-        sensor_data[2] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[26], data[25]));
+        sensor_data[0] = HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[20], data[19]));
+        sensor_data[1] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[22], data[21]));
+        sensor_data[2] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[24], data[23]));
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
 
