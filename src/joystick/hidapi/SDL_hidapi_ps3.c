@@ -988,7 +988,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     if (ctx->report_sensors) {
         float sensor_data[3];
 
-        sensor_data[0] = HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[20], data[19]));
+        sensor_data[0] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[20], data[19]));
         sensor_data[1] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[22], data[21]));
         sensor_data[2] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[24], data[23]));
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
