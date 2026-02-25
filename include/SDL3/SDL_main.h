@@ -664,7 +664,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 /**
  * Callback from the application to let the suspend continue.
  *
- * When using SDL_Render or SDL_GPU, this function should be called _after_
+ * This should be called from an event watch in response to an
+ * `SDL_EVENT_DID_ENTER_BACKGROUND` event.
+ *
+ * When using SDL_Render or SDL_GPU, your event watch should be added _after_
  * creating the `SDL_Renderer` or `SDL_GPUDevice`; this allows the timing of
  * the D3D12 command queue suspension to execute in the correct order.
  *
@@ -677,6 +680,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_AddEventWatch
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 
