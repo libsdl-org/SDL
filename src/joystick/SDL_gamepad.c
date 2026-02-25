@@ -1267,7 +1267,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 // Apex 5 has additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
-        } else if (SDL_IsJoystickGameSirController(vendor, product)) {
+        } else if (SDL_IsJoystickGameSirController(vendor, product) &&
+                   guid.data[0] == SDL_HARDWARE_BUS_USB) {
             // The GameSir-G7 Pro 8K has a set of paddles and shoulder macro buttons
             SDL_strlcat(mapping_string, "misc1:b11,paddle1:b13,paddle2:b12,misc2:b14,misc3:b15,", sizeof(mapping_string));
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {

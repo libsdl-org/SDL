@@ -359,7 +359,11 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
     switch (device->product_id) {
     case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K:
         HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K");
-        ctx->sensors_supported = true;
+        if (device->is_bluetooth) {
+            // Sensors are not supported over Bluetooth
+        } else {
+            ctx->sensors_supported = true;
+        }
         ctx->led_supported = false;
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K mode (PID 0x%04X)", device->product_id);
         break;
@@ -400,7 +404,12 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: failed to send SDL mode switch command (0xA2, 0x01)");
     }
 
-    joystick->nbuttons = SDL_GAMEPAD_NUM_GAMESIR_BUTTONS;
+    if (device->is_bluetooth) {
+        // Extended buttons are not supported over Bluetooth
+        joystick->nbuttons = 11;
+    } else {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_GAMESIR_BUTTONS;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
