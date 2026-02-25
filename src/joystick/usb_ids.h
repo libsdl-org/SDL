@@ -35,6 +35,7 @@
 #define USB_VENDOR_FLYDIGI_V1   0x04b4
 #define USB_VENDOR_FLYDIGI_V2   0x37d7
 #define USB_VENDOR_GOOGLE       0x18d1
+#define USB_VENDOR_HARMONIX     0x1bad
 #define USB_VENDOR_HORI         0x0f0d
 #define USB_VENDOR_HP           0x03f0
 #define USB_VENDOR_HYPERKIN     0x2e24
@@ -52,6 +53,7 @@
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_SAITEK       0x06a3
+#define USB_VENDOR_SCEA         0x12ba
 #define USB_VENDOR_SHANWAN      0x2563
 #define USB_VENDOR_SHANWAN_ALT  0x20bc
 #define USB_VENDOR_SONY         0x054c
@@ -85,6 +87,11 @@
 #define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
 #define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
+#define USB_PRODUCT_HARMONIX_WII_RB1_GUITAR               0x0004
+#define USB_PRODUCT_HARMONIX_WII_RB1_DRUMS                0x0005
+#define USB_PRODUCT_HARMONIX_WII_RB2_GUITAR               0x3010
+#define USB_PRODUCT_HARMONIX_WII_RB2_DRUMS                0x3110
+#define USB_PRODUCT_HARMONIX_WII_RB3_MPA_DRUMS_MODE       0x3138
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4         0x011c
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5         0x0184
@@ -138,6 +145,12 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
 #define USB_PRODUCT_RAZER_WOLVERINE_V3_PRO                0x0a3f
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
+#define USB_PRODUCT_SCEA_PS3_GH_GUITAR                    0x0100
+#define USB_PRODUCT_SCEA_PS3_GH_DRUMS                     0x0120
+#define USB_PRODUCT_SCEA_PS3_RB_GUITAR                    0x0200
+#define USB_PRODUCT_SCEA_PS3_RB_DRUMS                     0x0210
+#define USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE           0x0218
+#define USB_PRODUCT_SCEA_PS3WIIU_GHLIVE                   0x074b
 #define USB_PRODUCT_SHANWAN_DS3                           0x0523
 #define USB_PRODUCT_SONY_DS3                              0x0268
 #define USB_PRODUCT_SONY_DS4                              0x05c4
