@@ -1546,6 +1546,20 @@ static void GPU_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     texture->internal = NULL;
 }
 
+#ifdef SDL_PLATFORM_GDK
+static bool SDLCALL GPU_GDKEventFilter(void *userdata, SDL_Event *event)
+{
+    GPU_RenderData *data = (GPU_RenderData *)userdata;
+    SDL_assert(!data->external_device);
+    if (event->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
+        SDL_GDKSuspendGPU(data->device);
+    } else if (event->type == SDL_EVENT_WILL_ENTER_FOREGROUND) {
+        SDL_GDKResumeGPU(data->device);
+    }
+    return true;
+}
+#endif
+
 static void GPU_DestroyRenderer(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
@@ -1579,6 +1593,9 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     if (data->device) {
         GPU_ReleaseShaders(&data->shaders, data->device);
         if (!data->external_device) {
+#ifdef SDL_PLATFORM_GDK
+            SDL_RemoveEventWatch(GPU_GDKEventFilter, data);
+#endif
             SDL_DestroyGPUDevice(data->device);
         }
     }
@@ -1742,6 +1759,10 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         if (!data->device) {
             return false;
         }
+
+#ifdef SDL_PLATFORM_GDK
+        SDL_AddEventWatch(GPU_GDKEventFilter, data);
+#endif
     }
 
     if (!GPU_InitShaders(&data->shaders, data->device)) {
