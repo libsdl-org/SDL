@@ -742,7 +742,6 @@ static bool HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *dev
 
 static bool HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
     ctx->report_sensors = enabled;
