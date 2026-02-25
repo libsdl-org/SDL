@@ -676,6 +676,39 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "Logitech ChillStream");
     }
 
+    if (device->vendor_id == USB_VENDOR_HARMONIX) {
+        switch (device->product_id) {
+            case USB_PRODUCT_HARMONIX_WII_RB1_GUITAR:
+            case USB_PRODUCT_HARMONIX_WII_RB2_GUITAR:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_HARMONIX_WII_RB1_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB2_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (device->vendor_id == USB_VENDOR_SCEA) {
+        switch (device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+            case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
+    }
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
