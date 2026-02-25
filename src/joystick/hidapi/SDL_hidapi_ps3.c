@@ -743,6 +743,8 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     }
 
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+
     return true;
 }
 
@@ -773,7 +775,11 @@ static bool HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *dev
 
 static bool HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    ctx->report_sensors = enabled;
+
+    return true;
 }
 
 static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -1009,6 +1015,15 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
             SDL_SendJoystickAxis(timestamp, joystick, axis_index, axis);
             ++axis_index;
         }
+    }
+
+    if (ctx->report_sensors) {
+        float sensor_data[3];
+
+        sensor_data[0] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[20], data[19]));
+        sensor_data[1] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[22], data[21]));
+        sensor_data[2] = -HIDAPI_DriverPS3_ScaleAccel(LOAD16(data[24], data[23]));
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
