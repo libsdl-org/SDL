@@ -586,7 +586,7 @@ static HRESULT D3D12_IssueBatch(D3D12_RenderData *data)
     return result;
 }
 
-#ifdef SDL_PLATFORM_GDK
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
 static bool SDLCALL D3D12_GDKEventFilter(void* userdata, SDL_Event* event)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)userdata;
@@ -603,7 +603,7 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     if (data) {
-#ifdef SDL_PLATFORM_GDK
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         SDL_RemoveEventWatch(D3D12_GDKEventFilter, data);
 #endif
         D3D12_WaitForGPU(data);
@@ -1152,7 +1152,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
 
-#ifdef SDL_PLATFORM_GDK
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     SDL_AddEventWatch(D3D12_GDKEventFilter, data);
 #endif
 
