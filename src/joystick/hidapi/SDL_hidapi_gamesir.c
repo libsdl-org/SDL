@@ -390,9 +390,9 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         // GameSir SDL protocol packets currently don't expose an IMU timestamp.
         // Use a synthetic monotonic timestamp at the firmware's fixed IMU rate.
         ctx->sensor_timestamp_ns = SDL_GetTicksNS();
-        // Accelerometer scale factor: assume a range of ±2g, 16-bit signed values (-32768 to 32767)
-        // 32768 corresponds to 2g, so the scale factor = 2 * SDL_STANDARD_GRAVITY / 32768.0f
-        ctx->accelScale = 2.0f * SDL_STANDARD_GRAVITY / 32768.0f;
+        // Accelerometer scale factor: assume a range of ±4g, 16-bit signed values (-32768 to 32767)
+        // 32768 corresponds to 4g, so the scale factor = 4 * SDL_STANDARD_GRAVITY / 32768.0f
+        ctx->accelScale = 4.0f * SDL_STANDARD_GRAVITY / 32768.0f;
 
         // Gyro scale factor: based on the PS4 implementation
         // PS4 uses (gyro_numerator / gyro_denominator) * (π / 180)
