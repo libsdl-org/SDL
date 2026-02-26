@@ -56,7 +56,7 @@ typedef struct
     MedianFilter_t filter_gyro_z;
 } SDL_DriverZUIKI_Context;
 
-float median_filter_update(MedianFilter_t* mf, float input) {
+static float median_filter_update(MedianFilter_t* mf, float input) {
     mf->buffer[mf->index] = input;
     mf->index = (mf->index + 1) % FILTER_SIZE;
     if (mf->count < FILTER_SIZE) mf->count++;
