@@ -541,8 +541,8 @@ typedef unsigned __int128 Uint128;
 
 static Uint64 tick_start;
 #ifdef USE_128BIT_MATH
-static Uint128 tick_numerator_ns;
-static Uint128 tick_numerator_ms;
+static Uint64 tick_numerator_ns;
+static Uint64 tick_numerator_ms;
 #else
 static Uint32 tick_numerator_ns;
 static Uint32 tick_denominator_ns;
@@ -609,8 +609,8 @@ void SDL_InitTicks(void)
     SDL_assert(tick_freq > 0 && tick_freq <= (Uint64)SDL_MAX_UINT32);
 
 #ifdef USE_128BIT_MATH
-    tick_numerator_ns = ((Uint128)SDL_NS_PER_SECOND << 32) / tick_freq;
-    tick_numerator_ms = ((Uint128)SDL_MS_PER_SECOND << 32) / tick_freq;
+    tick_numerator_ns = ((Uint64)SDL_NS_PER_SECOND << 32) / tick_freq;
+    tick_numerator_ms = ((Uint64)SDL_MS_PER_SECOND << 32) / tick_freq;
 #else
     gcd = SDL_CalculateGCD(SDL_NS_PER_SECOND, (Uint32)tick_freq);
     tick_numerator_ns = (SDL_NS_PER_SECOND / gcd);
