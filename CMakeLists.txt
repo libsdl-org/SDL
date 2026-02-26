@@ -2473,9 +2473,6 @@ elseif(WINDOWS)
 
   enable_language(RC)
   sdl_glob_sources(SHARED "${SDL3_SOURCE_DIR}/src/core/windows/*.rc")
-  if(MINGW OR CYGWIN)
-    sdl_pc_link_options("-mwindows")
-  endif()
 
 elseif(APPLE)
   # TODO: rework this all for proper macOS, iOS and Darwin support
