@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xx_zones_v1">
+
+  <copyright>
+    Copyright © 2023-2026 Matthias Klumpp
+    Copyright © 2024-2025 Frank Praznik
+    Copyright ©      2024 Victoria Brekenfeld
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <description summary="protocol to manage client-specific zones for explicit window placement">
+    This protocol provides a way for clients to create and add toplevel windows
+    to "zones".
+
+    A zone is an environment with its own coordinate space where clients can
+    add and arrange windows that logically belong and relate to each other.
+    It provides means for, among other things, requesting that windows are
+    placed at specific coordinates within the zone coordinate space.
+    See the description of "xx_zone_v1" for more details.
+
+    This document adheres to RFC 2119 when using words like "must",
+    "should", "may", etc.
+
+    Warning! The protocol described in this file is currently in the testing
+    phase. Backward compatible changes may be added together with the
+    corresponding interface version bump. Backward incompatible changes can
+    only be done by creating a new major version of the extension.
+  </description>
+
+  <interface name="xx_zone_manager_v1" version="1">
+    <description summary="manage zones for clients">
+      The 'xx_zone_manager' interface defines base requests for obtaining and
+      managing zones for a client.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroy this object">
+       This has no effect other than to destroy the xx_zone_manager object.
+      </description>
+    </request>
+
+    <request name="get_zone_item">
+      <description summary="create a positionable item representing a toplevel">
+        Create a new positionable zone item from an 'xdg_toplevel'.
+        The resulting wrapper object can then be used to position the
+        toplevel window in a zone.
+      </description>
+      <arg name="id" type="new_id" interface="xx_zone_item_v1"/>
+      <arg name="toplevel" type="object" interface="xdg_toplevel" summary="the toplevel window"/>
+    </request>
+
+    <request name="get_zone">
+      <description summary="join a zone or request a new one">
+        Create a new zone. While the zone object exists, the compositor
+        must consider it "used" and keep track of it.
+
+        A zone is represented by a string 'handle'.
+
+        The compositor must keep zone handles valid while any client is
+        referencing the corresponding zone.
+        The compositor may always give a client the same zone for a given
+        output, and remember its position and size for the client, but
+        clients should not rely on this behavior.
+
+        A client can request a zone to be placed on a specific
+        output by passing a wl_output as 'output'. If a valid output
+        is set, the compositor should place the zone on that output.
+        If NULL is passed, the compositor decides the output.
+
+        The compositor should provide the biggest reasonable zone space
+        for the client, governed by its own policy.
+
+        If the compositor wants to deny zone creation (e.g. on a specific
+        output), the returned zone must be "invalid". A zone is invalid
+        if it has a negative size, in which case the client is forbidden
+        to place items in it.
+      </description>
+      <arg name="id" type="new_id" interface="xx_zone_v1"/>
+      <arg name="output" type="object" interface="wl_output"
+           summary="the preferred output to place the zone on, or NULL"
+           allow-null="true"/>
+    </request>
+
+    <request name="get_zone_from_handle">
+      <description summary="join a zone via its handle">
+        Create a new zone object using the zone's handle.
+        For the returned zone, the same rules as described in
+        'get_zone' apply.
+
+        This request returns a reference to an existing or remembered zone
+        that is represented by 'handle'.
+        The zone may potentially have been created by a different client.
+
+        This allows cooperating clients to share the same coordinate space.
+
+        If the zone handle was invalid or unknown, a new zone must
+        be created and returned instead, following the rules outlined
+        in 'get_zone' and assuming no output preference.
+
+        Every new zone object created by this request emits its initial event
+        sequence, including the 'handle' event, which must return a different
+        handle from the one passed to this request in case the existing zone
+        could not be joined.
+      </description>
+      <arg name="id" type="new_id" interface="xx_zone_v1"/>
+      <arg name="handle" type="string" summary="the handle of a zone"/>
+    </request>
+  </interface>
+
+  <interface name="xx_zone_item_v1" version="1">
+    <description summary="opaque surface object that can be positioned in a zone">
+      The zone item object is an opaque descriptor for a positionable
+      element, such as a toplevel window.
+      It currently can only be created from an 'xdg_toplevel' via the
+      'get_zone_item' request on a 'xx_zone_manager'.
+
+      The lifetime of a zone item is tied to its referenced item (usually
+      a toplevel).
+      When the reference is destroyed, the compositor must send a 'closed'
+      event and the zone item becomes inert.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="delete this object">
+        Destroys the zone item. This request may be sent at any time by the
+        client.
+        By destroying the object, the respective item surface remains at its
+        last position, but its association with its zone is lost.
+        This will also cause it to lose any other attached state described by
+        this protocol.
+
+        If the item was associated with a zone when this request is sent,
+        the compositor must emit 'item_left' on the respective zone, unless
+        it had already been emitted before a 'closed' event.
+      </description>
+    </request>
+
+    <event name="frame_extents">
+      <description summary="the extents of the frame bordering the item">
+        The 'frame_extents' event describes the current extents of the frame
+        bordering the item's content area.
+
+        This event is sent immediately after the item joins a zone, or if
+        the item frame extents have been changed by other means (e.g. toggled
+        by a client request, or compositor involvement). The dimensions are in
+        the same coordinate space as the item's zone (the surface coordinate
+        space).
+
+        This event must be followed by a 'position' event, even if the item's
+        coordinates did not change as a result of the frame extents changing.
+
+        If the item has no associated frame, the event should still be sent,
+        but extents must be set to zero.
+
+        This event can only be emitted if the item is currently associated
+        with a zone.
+      </description>
+      <arg name="top" type="int" summary="current height of the frame bordering the top of the item"/>
+      <arg name="bottom" type="int" summary="current height of the frame bordering the bottom of the item"/>
+      <arg name="left" type="int" summary="current width of the frame bordering the left of the item"/>
+      <arg name="right" type="int" summary="current width of the frame bordering the right of the item"/>
+    </event>
+
+    <request name="set_position">
+      <description summary="set a preferred item surface position">
+        Request a preferred position (x, y) for the specified item
+        surface to be placed at, relative to its associated zone.
+        This state is double-buffered and is applied on the next
+        wl_surface.commit of the surface represented by 'item'.
+
+        X and Y coordinates are relative to the zone this item is associated
+        with, and must not be larger than the dimensions set by the zone size.
+        They may be smaller than zero, if the item's top-left edge is to be
+        placed beyond the zone's top-left sides, but clients should expect the
+        compositor to more aggressively sanitize the coordinate values in that
+        case.
+        If a coordinate exceeds the zone's maximum bounds, the compositor must
+        sanitize it to more appropriate values (e.g. by clamping the values to
+        the maximum size).
+        For infinite zones, the client may pick any coordinate.
+
+        Compositors implementing this protocol should try to place an item
+        at the requested coordinates relative to the item's zone, unless doing
+        so is not allowed by compositor policy (because e.g. the user has set
+        custom rules for the surface represented by the respective item, the
+        surface overlaps with a protected shell component, session management
+        has loaded previous surface positions or the placement request would
+        send the item out of bounds).
+
+        Clients should be aware that their placement preferences might not
+        always be followed and must be prepared to handle the case where the
+        item is placed at a different position by the compositor.
+
+        Once an item has been mapped, a change to its preferred placement can
+        still be requested and should be applied, but must not be followed
+        by the compositor while the user is interacting with the affected item
+        surface (e.g. clicking &amp; dragging within the window, or resizing it).
+
+        After a call to this request, a 'position' event must be emitted with the
+        item's new actual position.
+        If the current item has no zone associated with it, a 'position_failed'
+        event must be emitted.
+        If the compositor did not move the item at all, not even with sanitized
+        values, a 'position_failed' event must be emitted as well.
+      </description>
+      <arg name="x" type="int" summary="x position relative to zone"/>
+      <arg name="y" type="int" summary="y position relative to zone"/>
+    </request>
+
+    <event name="position">
+      <description summary="notify about the position of an item">
+        This event notifies the client of the current position (x, y) of
+        the item relative to its zone.
+        Coordinates are relative to the zone this item belongs to, and only
+        valid within it.
+        Negative coordinates are possible, if the user has moved an item
+        surface beyond the zone's top-left boundary.
+
+        This event is sent in response to a 'set_position' request,
+        or if the item position has been changed by other means
+        (e.g. user interaction or compositor involvement).
+
+        This event can only be emitted if the item is currently associated
+        with a zone.
+      </description>
+      <arg name="x" type="int" summary="current x position relative to zone"/>
+      <arg name="y" type="int" summary="current y position relative to zone"/>
+    </event>
+
+    <event name="position_failed">
+      <description summary="a set_position request has failed">
+        The compositor was unable to set the position of this item entirely,
+        and could not even find sanitized coordinates to place the item at
+        instead.
+
+        This event will also be emitted if 'set_position' was called while the
+        item had no zone associated with it.
+      </description>
+    </event>
+
+    <event name="closed">
+      <description summary="the underlying surface has been destroyed">
+        This event indicates that the surface wrapped by this
+        zone item has been destroyed.
+
+        The 'xx_zone_item_v1' object becomes inert and the client should
+        destroy it. Any requests made on an inert zone item must be silently
+        ignored by the compositor, and no further events will be sent for this
+        item.
+
+        If the item was associated with a zone when this event is sent,
+        the compositor must also emit 'item_left' on the respective zone
+        before sending this event.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="xx_zone_v1" version="1">
+    <description summary="area for a client in which it can set window positioning preferences">
+      An 'xx_zone' describes a display area provided by the compositor in
+      which a client can place windows and move them around.
+
+      A zone's area could, for example, correspond to the space usable for
+      placing windows on a specific output (space without panels or other
+      restricted elements) or it could be an area of the output the compositor
+      has specifically chosen for a client to place its surfaces in.
+
+      Clients should make no assumptions about how a zone is presented to the
+      user (e.g. compositors may visually distinguish what makes up a zone).
+
+      Items are added to a zone as 'xx_zone_item' objects.
+
+      All item surface position coordinates (x, y) are relative to the selected
+      zone.
+      They are using the 'size' of the respective zone as coordinate system,
+      with (0, 0) being in the top left corner.
+
+      If a zone item is moved out of the top/left boundaries of the zone by
+      user interaction, its coordinates must become negative, relative to the
+      zone's top-left coordinate origin. A client may position an item at negative
+      coordinates.
+
+      The compositor must ensure that any item positioned by the client is
+      visible and accessible to the user, and is not moved into invisible space
+      outside of a zone.
+      Positioning requests may be rejected or altered by the compositor, depending
+      on its policy.
+
+      The absolute position of the zone within the compositor's coordinate space
+      is opaque to the client and the compositor may move the entire zone without
+      the client noticing it. A zone may also be arbitrarily resized, in which
+      case the respective 'size' event must be emitted again to notify the client.
+
+      A zone is always tied to an output and does not extend beyond it.
+
+      A zone may be "invalid". An invalid zone is created with a negative
+      'size' and must not be used for item arrangement.
+
+      Upon creation the compositor must emit 'size' and 'handle' events for the
+      newly created 'xx_zone', followed by 'done'.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the xx_zone object">
+        Using this request a client can tell the compositor that it is not
+        going to use the 'xx_zone' object anymore.
+        The zone itself must only be destroyed if no other client
+        is currently referencing it, so this request may only destroy the
+        object reference owned by the client.
+      </description>
+    </request>
+
+    <event name="size">
+      <description summary="size of the zone">
+        The 'size' event describes the size of this zone.
+
+        It is a rectangle with its origin in the top-left corner, using
+        the surface coordinate space (device pixels divided by the scaling
+        factor of the output this zone is attached to).
+
+        If a width or height value is zero, the zone is infinite
+        in that direction.
+
+        If the width and height values are negative, the zone is considered
+        "invalid" and must not be used.
+        A size event declaring the zone invalid may only be emitted immediately
+        after the zone was created.
+        A zone must not become invalid at a later time by sending a negative
+        'size' after the zone has been established.
+
+        The 'size' event is sent immediately after creating an 'xx_zone_v1',
+        and whenever the size of the zone changes. A zone size can change at
+        any time, for any reason, for example due to output size or scaling
+        changes, or by compositor policy.
+
+        Upon subsequent emissions of 'size' after 'xx_zone' has already
+        been created, the 'done' event does not have to be sent again.
+      </description>
+      <arg name="width" type="int"
+           summary="zone width in logical pixels"/>
+      <arg name="height" type="int"
+           summary="zone height in logical pixels"/>
+    </event>
+
+    <event name="handle">
+      <description summary="the zone handle">
+        The handle event provides the unique handle of this zone.
+        The handle may be shared with any client, which then can use it to
+        join this client's zone by calling
+        'xx_zone_manager.get_zone_from_handle'.
+
+        This event must only be emitted once after the zone was created.
+        If this zone is invalid, the handle must be an empty string.
+      </description>
+      <arg name="handle" type="string" summary="the exported zone handle"/>
+    </event>
+
+    <event name="done">
+      <description summary="all information about the zone has been sent">
+        This event is sent after all other properties (size, handle) of an
+        'xx_zone' have been sent.
+
+        This allows changes to the xx_zone properties to be seen as
+        atomic, even if they happen via multiple events.
+      </description>
+    </event>
+
+    <enum name="error">
+      <entry name="invalid" summary="an invalid value has been submitted"
+             value="0"/>
+    </enum>
+
+    <request name="add_item">
+      <description summary="associate an item with this zone">
+        Make 'item' a member of this zone.
+        This state is double-buffered and is applied on the next
+        'wl_surface.commit' of the surface represented by 'item'.
+
+        This request associates an item with this zone.
+        If this request is called on an item that already has a zone
+        association with a different zone, the item must leave its old zone
+        (with 'item_left' being emitted on its old zone) and will instead
+        be associated with this zone.
+
+        Upon receiving this request and if the target zone is allowed for 'item',
+        a compositor must emit 'item_entered' to confirm the zone association.
+        It must even emit this event if the item was already associated with this
+        zone before.
+
+        The compositor must move the surface represented by 'item' into the
+        boundary of this zone upon receiving this request and accepting it
+        (either by extending the zone size, or by moving the item surface).
+
+        If the compositor does not allow the item to switch zone associations,
+        and wants it to remain in its previous zone, it must emit
+        'item_blocked' instead.
+        Compositors might want to prevent zone associations if they
+        perform specialized window management (e.g. autotiling) that would
+        make clients moving items between certain zones undesirable.
+
+        Once the 'item' is added to its zone, the compositor must first send
+        a 'frame_extents' event on the item, followed by an initial 'position'
+        event with the item's current position.
+        The compositor must then send 'position' events when the position
+        of the item in its zone is changed, for as long as the item is
+        associated with a zone.
+
+        If the zone is invalid, an 'invalid' error must be raised and the item
+        must not be associated with the invalid zone.
+        If the referenced item is inert (its underlying surface has been
+        destroyed), the request must be silently ignored.
+      </description>
+      <arg name="item" type="object" interface="xx_zone_item_v1" summary="the zone item"/>
+    </request>
+
+    <request name="remove_item">
+      <description summary="disassociate an item from this zone">
+        Remove 'item' as a member of this zone.
+        This state is double-buffered and is applied on the next
+        'wl_surface.commit' of the surface represented by 'item'.
+
+        This request removes the item from this zone explicitly,
+        making the client unable to retrieve coordinates again.
+
+        Upon receiving this request, the compositor should not change the
+        item surface position on screen, and must emit 'item_left' to confirm
+        the item's removal. It must even emit this event if the
+        item was never associated with this zone.
+
+        If the referenced item is inert (its underlying surface has been
+        destroyed), the request must be silently ignored.
+      </description>
+      <arg name="item" type="object" interface="xx_zone_item_v1" summary="the zone item"/>
+    </request>
+
+    <event name="item_blocked">
+      <description summary="an item could not be associated with this zone">
+        This event notifies the client that an item was prevented from
+        joining this zone.
+
+        It is emitted as a response to 'add_item' if the compositor did not
+        allow the item to join this particular zone.
+      </description>
+      <arg name="item" type="object" interface="xx_zone_item_v1" summary="the item that was prevented from joining this zone"/>
+    </event>
+
+    <event name="item_entered">
+      <description summary="notify about an item having joined this zone">
+        This event notifies the client of an item joining this zone.
+
+        It is emitted as a response to 'add_item' or if the compositor
+        automatically had the item surface (re)join an existing zone.
+      </description>
+      <arg name="item" type="object" interface="xx_zone_item_v1" summary="the item that has joined the zone"/>
+    </event>
+
+    <event name="item_left">
+      <description summary="notify about an item having left this zone">
+        This event notifies the client of an item leaving this zone, and
+        therefore the client will no longer receive updated coordinates
+        or frame extents for this item.
+        If the client still wishes to adjust the item surface coordinates, it
+        may associate the item with a zone again by calling 'add_item'.
+
+        This event is emitted for example if the user moved an item surface out
+        of a smaller zone's boundaries, or onto a different screen where the
+        previous zone can not expand to. It is also emitted in response to
+        explicitly removing an item via 'remove_item'.
+      </description>
+      <arg name="item" type="object" interface="xx_zone_item_v1" summary="the item that has left the zone"/>
+    </event>
+
+  </interface>
+
+</protocol>
