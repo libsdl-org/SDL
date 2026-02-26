@@ -339,7 +339,7 @@ static bool SDLCALL GDKEventWatch(void* userdata, SDL_Event* event)
 int main(int argc, char *argv[])
 {
     int i;
-    const char *icon = "icon.bmp";
+    const char *icon = "icon.png";
     char *soundname = NULL;
     bool suppressdraw = false;
 
