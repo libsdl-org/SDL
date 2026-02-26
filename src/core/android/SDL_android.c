@@ -425,6 +425,9 @@ static jobject javaAssetManagerRef = 0;
 
 static SDL_Mutex *Android_LifecycleMutex = NULL;
 static SDL_Semaphore *Android_LifecycleEventSem = NULL;
+static SDL_Semaphore *Android_NativeSurfaceCreatedSem = NULL;
+static SDL_Semaphore *Android_NativeSurfaceChangedSem = NULL;
+static SDL_Semaphore *Android_NativeSurfaceDestroyedSem = NULL;
 static SDL_AndroidLifecycleEvent Android_LifecycleEvents[SDL_NUM_ANDROID_LIFECYCLE_EVENTS];
 static int Android_NumLifecycleEvents;
 
@@ -818,6 +821,21 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_LifecycleEventSem semaphore");
     }
 
+    Android_NativeSurfaceCreatedSem = SDL_CreateSemaphore(0);
+    if (!Android_NativeSurfaceCreatedSem) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceCreatedSem semaphore");
+    }
+
+    Android_NativeSurfaceChangedSem = SDL_CreateSemaphore(0);
+    if (!Android_NativeSurfaceChangedSem) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceChangedSem semaphore");
+    }
+
+    Android_NativeSurfaceDestroyedSem = SDL_CreateSemaphore(0);
+    if (!Android_NativeSurfaceDestroyedSem) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceDestroyedSem semaphore");
+    }
+
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midClipboardGetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardGetText", "()Ljava/lang/String;");
@@ -1078,6 +1096,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
+
+    // Signal semaphores so that onNativeSurface{Created,Changed,Destroyed} methods of SDLActivity are not blocked
+    SDL_SignalSemaphore(Android_NativeSurfaceCreatedSem);
+    SDL_SignalSemaphore(Android_NativeSurfaceChangedSem);
+    SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
 
     return status;
 }
@@ -1580,18 +1603,30 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, jclass jcls)
 {
     RPC_SendWithoutData(onNativeSurfaceCreated);
+
+    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceCreatedSem, SDL_MS_TO_NS(100))) {
+        SDL_Log("onNativeSurfaceCreated timeout expired");
+    }
 }
 
 // Called from surfaceChanged()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, jclass jcls)
 {
     RPC_SendWithoutData(onNativeSurfaceChanged);
+
+    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceChangedSem, SDL_MS_TO_NS(100))) {
+        SDL_Log("onNativeSurfaceChanged timeout expired");
+    }
 }
 
 // Called from surfaceDestroyed()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
     RPC_SendWithoutData(onNativeSurfaceDestroyed);
+
+    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceDestroyedSem, SDL_MS_TO_NS(100))) {
+        SDL_Log("onNativeSurfaceDestroyed timeout expired");
+    }
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardShown)(JNIEnv *env, jclass jcls)
@@ -1840,6 +1875,21 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
     if (Android_LifecycleEventSem) {
         SDL_DestroySemaphore(Android_LifecycleEventSem);
         Android_LifecycleEventSem = NULL;
+    }
+
+    if (Android_NativeSurfaceCreatedSem) {
+        SDL_DestroySemaphore(Android_NativeSurfaceCreatedSem);
+        Android_NativeSurfaceCreatedSem = NULL;
+    }
+
+    if (Android_NativeSurfaceChangedSem) {
+        SDL_DestroySemaphore(Android_NativeSurfaceChangedSem);
+        Android_NativeSurfaceChangedSem = NULL;
+    }
+
+    if (Android_NativeSurfaceDestroyedSem) {
+        SDL_DestroySemaphore(Android_NativeSurfaceDestroyedSem);
+        Android_NativeSurfaceDestroyedSem = NULL;
     }
 
     Android_NumLifecycleEvents = 0;
@@ -3405,6 +3455,8 @@ void Android_PumpRPC(SDL_Window *window)
                 {
                     RPC_GetNoData;
                     Android_NativeSurfaceCreated(window);
+
+                    SDL_SignalSemaphore(Android_NativeSurfaceCreatedSem);
                 }
                 break;
 
@@ -3414,6 +3466,8 @@ void Android_PumpRPC(SDL_Window *window)
                     Android_NativeSurfaceChanged(window);
 
                     Android_RestoreScreenKeyboard(SDL_GetVideoDevice(), window);
+
+                    SDL_SignalSemaphore(Android_NativeSurfaceChangedSem);
                 }
                 break;
 
@@ -3429,6 +3483,8 @@ void Android_PumpRPC(SDL_Window *window)
                     Android_PumpLifecycleEvents(window);
 
                     Android_NativeSurfaceDestroyed(window);
+
+                    SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
                 }
                 break;
 
