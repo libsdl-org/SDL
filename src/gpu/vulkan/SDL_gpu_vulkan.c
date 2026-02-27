@@ -1262,6 +1262,10 @@ struct VulkanRenderer
     SDL_Mutex *descriptorSetLayoutFetchLock;
     SDL_Mutex *windowLock;
 
+    // We don't want transfer commands to block each other,
+    // but we want all transfers to block during defrag.
+    SDL_RWLock *defragLock;
+
     Uint8 defragInProgress;
 
     VulkanMemoryAllocation **allocationsToDefrag;
@@ -8838,8 +8842,9 @@ static void VULKAN_UploadToTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VkBufferImageCopy imageCopy;
 
-    // Note that the transfer buffer does not need a barrier, as it is synced by the client
+    SDL_LockRWLockForReading(renderer->defragLock);
 
+    // Note that the transfer buffer does not need a barrier, as it is synced by the client
     vulkanTextureSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
         renderer,
         vulkanCommandBuffer,
@@ -8848,8 +8853,6 @@ static void VULKAN_UploadToTexture(
         destination->mip_level,
         cycle,
         VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION);
-
-    SDL_LockMutex(vulkanTextureSubresource->parent->usedRegion->allocation->memoryLock);
 
     imageCopy.imageExtent.width = destination->w;
     imageCopy.imageExtent.height = destination->h;
@@ -8883,7 +8886,7 @@ static void VULKAN_UploadToTexture(
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
 
-    SDL_UnlockMutex(vulkanTextureSubresource->parent->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_UploadToBuffer(
@@ -8898,8 +8901,9 @@ static void VULKAN_UploadToBuffer(
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
 
-    // Note that the transfer buffer does not need a barrier, as it is synced by the client
+    SDL_LockRWLockForReading(renderer->defragLock);
 
+    // Note that the transfer buffer does not need a barrier, as it is synced by the client
     VulkanBuffer *vulkanBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
         vulkanCommandBuffer,
@@ -8907,7 +8911,6 @@ static void VULKAN_UploadToBuffer(
         cycle,
         VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION);
 
-    SDL_LockMutex(vulkanBuffer->usedRegion->allocation->memoryLock);
 
     bufferCopy.srcOffset = source->offset;
     bufferCopy.dstOffset = destination->offset;
@@ -8930,7 +8933,7 @@ static void VULKAN_UploadToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, vulkanBuffer);
 
-    SDL_UnlockMutex(vulkanBuffer->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 // Readback
@@ -8946,13 +8949,13 @@ static void VULKAN_DownloadFromTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferImageCopy imageCopy;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     vulkanTextureSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         textureContainer,
         source->layer,
         source->mip_level);
-
-
-    SDL_LockMutex(vulkanTextureSubresource->parent->usedRegion->allocation->memoryLock);
 
     // Note that the transfer buffer does not need a barrier, as it is synced by the client
 
@@ -8994,7 +8997,7 @@ static void VULKAN_DownloadFromTexture(
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
 
-    SDL_UnlockMutex(vulkanTextureSubresource->parent->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_DownloadFromBuffer(
@@ -9008,10 +9011,9 @@ static void VULKAN_DownloadFromBuffer(
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferCopy bufferCopy;
 
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     // Note that transfer buffer does not need a barrier, as it is synced by the client
-
-    SDL_LockMutex(transferBufferContainer->activeBuffer->usedRegion->allocation->memoryLock);
-
     VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
         renderer,
         vulkanCommandBuffer,
@@ -9039,7 +9041,7 @@ static void VULKAN_DownloadFromBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, bufferContainer->activeBuffer);
 
-    SDL_UnlockMutex(transferBufferContainer->activeBuffer->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyTextureToTexture(
@@ -9057,6 +9059,8 @@ static void VULKAN_CopyTextureToTexture(
     VulkanTextureSubresource *dstSubresource;
     VkImageCopy imageCopy;
 
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         (VulkanTextureContainer *)source->texture,
         source->layer,
@@ -9070,9 +9074,6 @@ static void VULKAN_CopyTextureToTexture(
         destination->mip_level,
         cycle,
         VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION);
-
-    SDL_LockMutex(srcSubresource->parent->usedRegion->allocation->memoryLock);
-    SDL_LockMutex(dstSubresource->parent->usedRegion->allocation->memoryLock);
 
     VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
         renderer,
@@ -9124,8 +9125,7 @@ static void VULKAN_CopyTextureToTexture(
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstSubresource->parent);
 
-    SDL_UnlockMutex(srcSubresource->parent->usedRegion->allocation->memoryLock);
-    SDL_UnlockMutex(dstSubresource->parent->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyBufferToBuffer(
@@ -9141,6 +9141,8 @@ static void VULKAN_CopyBufferToBuffer(
     VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
 
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
         vulkanCommandBuffer,
@@ -9153,9 +9155,6 @@ static void VULKAN_CopyBufferToBuffer(
         vulkanCommandBuffer,
         VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
         srcContainer->activeBuffer);
-
-    SDL_LockMutex(dstBuffer->usedRegion->allocation->memoryLock);
-    SDL_LockMutex(srcContainer->activeBuffer->usedRegion->allocation->memoryLock);
 
     bufferCopy.srcOffset = source->offset;
     bufferCopy.dstOffset = destination->offset;
@@ -9185,8 +9184,7 @@ static void VULKAN_CopyBufferToBuffer(
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
 
-    SDL_UnlockMutex(dstBuffer->usedRegion->allocation->memoryLock);
-    SDL_UnlockMutex(srcContainer->activeBuffer->usedRegion->allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_GenerateMipmaps(
@@ -9200,8 +9198,10 @@ static void VULKAN_GenerateMipmaps(
     VulkanTextureSubresource *dstTextureSubresource;
     VkImageBlit blit;
 
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     // Blit each slice sequentially. Barriers, barriers everywhere!
-    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1)
+    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
         for (Uint32 level = 1; level < container->header.info.num_levels; level += 1) {
             Uint32 layer = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : layerOrDepthIndex;
             Uint32 depth = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? layerOrDepthIndex : 0;
@@ -9229,9 +9229,6 @@ static void VULKAN_GenerateMipmaps(
                 vulkanCommandBuffer,
                 VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
                 dstTextureSubresource);
-
-            SDL_LockMutex(srcTextureSubresource->parent->usedRegion->allocation->memoryLock);
-            SDL_LockMutex(dstTextureSubresource->parent->usedRegion->allocation->memoryLock);
 
             blit.srcOffsets[0].x = 0;
             blit.srcOffsets[0].y = 0;
@@ -9286,9 +9283,10 @@ static void VULKAN_GenerateMipmaps(
             VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcTextureSubresource->parent);
             VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstTextureSubresource->parent);
 
-            SDL_UnlockMutex(srcTextureSubresource->parent->usedRegion->allocation->memoryLock);
-            SDL_UnlockMutex(dstTextureSubresource->parent->usedRegion->allocation->memoryLock);
         }
+    }
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_EndCopyPass(
@@ -10980,6 +10978,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
+    SDL_LockRWLockForWriting(renderer->defragLock);
 
     // Find an allocation that doesn't have any pending transfer operations
     Sint32 indexToDefrag = -1;
@@ -10996,7 +10995,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     }
 
     VulkanMemoryAllocation *allocation = renderer->allocationsToDefrag[indexToDefrag];
-    SDL_LockMutex(allocation->memoryLock);
 
     // Plug the hole
     if ((Uint32) indexToDefrag != renderer->allocationsToDefragCount - 1) {
@@ -11021,7 +11019,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
-                SDL_UnlockMutex(allocation->memoryLock);
+                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11087,7 +11085,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 &currentRegion->vulkanTexture->container->header.info);
 
             if (newTexture == NULL) {
-                SDL_UnlockMutex(allocation->memoryLock);
+                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11162,7 +11160,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         }
     }
 
-    SDL_UnlockMutex(allocation->memoryLock);
+    SDL_UnlockRWLock(renderer->defragLock);
     SDL_UnlockMutex(renderer->allocatorLock);
 
     return true;
