@@ -10999,7 +10999,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     SDL_LockMutex(allocation->memoryLock);
 
     // Plug the hole
-    if (indexToDefrag != renderer->allocationsToDefragCount - 1) {
+    if ((Uint32) indexToDefrag != renderer->allocationsToDefragCount - 1) {
         renderer->allocationsToDefrag[indexToDefrag] = renderer->allocationsToDefrag[renderer->allocationsToDefragCount - 1];
     }
     renderer->allocationsToDefragCount -= 1;
