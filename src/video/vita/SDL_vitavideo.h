@@ -117,4 +117,4 @@ extern void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void VITA_PumpEvents(SDL_VideoDevice *_this);
 
-#endif // SDL_pspvideo_h
+#endif // SDL_vitavideo_h

@@ -25,4 +25,4 @@
 extern bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 extern bool SDL_get_zenity_version(int *major, int *minor);
 
-#endif // SDL_waylandmessagebox_h_
+#endif // SDL_zenitymessagebox_h_

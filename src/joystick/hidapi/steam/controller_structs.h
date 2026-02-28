@@ -664,4 +664,4 @@ typedef struct
 
 #pragma pack()
 
-#endif // _CONTROLLER_STRUCTS
+#endif // _CONTROLLER_STRUCTS_
