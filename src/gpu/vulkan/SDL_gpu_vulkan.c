@@ -10991,6 +10991,8 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
     if (indexToDefrag == -1) {
         // Nothing is available to defrag, but it's not an error
+        SDL_UnlockRWLock(renderer->defragLock);
+        SDL_UnlockMutex(renderer->allocatorLock);
         return true;
     }
 
