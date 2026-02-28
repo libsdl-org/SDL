@@ -268,7 +268,7 @@ static void createInstance(void)
         int count_extensions = count_instance_extensions + 1;
         instanceExtensions = SDL_malloc(count_extensions * sizeof(const char *));
         instanceExtensions[0] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
-        SDL_memcpy(&instanceExtensions[1], instance_extensions, count_instance_extensions * sizeof(const char*));
+        SDL_memcpy((char **) &instanceExtensions[1], instance_extensions, count_instance_extensions * sizeof(const char*));
 
         instanceCreateInfo.enabledExtensionCount = count_extensions;
         instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions;
@@ -283,7 +283,7 @@ static void createInstance(void)
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
 
     if (instanceExtensions != NULL) {
-        SDL_free(instanceExtensions);
+        SDL_free((char **) instanceExtensions);
     }
 
     if (result != VK_SUCCESS) {
@@ -500,9 +500,9 @@ static void createDevice(void)
     VkDeviceCreateInfo deviceCreateInfo = { 0 };
     static const char *const deviceExtensionNames[] = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-#ifdef __APPLE__        
+#ifdef __APPLE__
         "VK_KHR_portability_subset"
-#endif        
+#endif
     };
     VkResult result;
 
