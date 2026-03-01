@@ -976,6 +976,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
         if (window->origlocale) {
             window->origlocale = SDL_strdup(window->origlocale);
             if (!window->origlocale) {
+                SDL_free(window);
                 return NULL;
             }
             (void)setlocale(LC_ALL, "");
