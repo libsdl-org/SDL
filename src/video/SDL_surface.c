@@ -2311,6 +2311,11 @@ error:
 
 SDL_Surface *SDL_ConvertSurfaceRect(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format)
 {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
     return SDL_ConvertSurfaceRectAndColorspace(surface, NULL, format, NULL, SDL_GetDefaultColorspaceForFormat(format), surface->props);
 }
 
