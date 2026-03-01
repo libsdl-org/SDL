@@ -762,7 +762,6 @@
 #define SDL_RenderFillRects SDL_RenderFillRects_REAL
 #define SDL_RenderGeometry SDL_RenderGeometry_REAL
 #define SDL_RenderGeometryRaw SDL_RenderGeometryRaw_REAL
-#define SDL_RenderGeometryRawColor8Bits SDL_RenderGeometryRawColor8Bits_REAL
 #define SDL_RenderLine SDL_RenderLine_REAL
 #define SDL_RenderLines SDL_RenderLines_REAL
 #define SDL_RenderPoint SDL_RenderPoint_REAL
@@ -1307,3 +1306,4 @@
 #define SDL_OpenXR_UnloadLibrary SDL_OpenXR_UnloadLibrary_REAL
 #define SDL_OpenXR_GetXrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr_REAL
 #define SDL_CreateTrayWithProperties SDL_CreateTrayWithProperties_REAL
+#define SDL_RenderGeometryRawColor8Bits SDL_RenderGeometryRawColor8Bits_REAL
