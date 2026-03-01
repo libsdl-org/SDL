@@ -147,6 +147,7 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
             haptic->neffects = device->driver->NumEffects(device);
             haptic->effects = (struct haptic_effect *)SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
             if (haptic->effects == NULL) {
+                SDL_free(list_node);
                 device->driver->Close(device);
                 SDL_free(device);
                 return SDL_OutOfMemory();
