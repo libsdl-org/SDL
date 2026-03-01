@@ -5287,6 +5287,74 @@ end:
 }
 #endif // SDL_VIDEO_RENDER_SW
 
+bool SDL_RenderGeometryRawColor8Bits(SDL_Renderer *renderer,
+                          SDL_Texture *texture,
+                          const float *xy, int xy_stride,
+                          const SDL_Color *color, int color_stride,
+                          const float *uv, int uv_stride,
+                          int num_vertices,
+                          const void *indices, int num_indices, int size_indices)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (texture) {
+        CHECK_TEXTURE_MAGIC(texture, false);
+
+        CHECK_PARAM(renderer != texture->renderer) {
+            return SDL_SetError("Texture was not created with this renderer");
+        }
+    }
+
+    CHECK_PARAM(!xy) {
+        return SDL_InvalidParamError("xy");
+    }
+
+    CHECK_PARAM(!color) {
+        return SDL_InvalidParamError("color");
+    }
+
+    CHECK_PARAM(texture && !uv) {
+        return SDL_InvalidParamError("uv");
+    }
+
+    int count = indices ? num_indices : num_vertices;
+    CHECK_PARAM(count % 3 != 0) {
+        return SDL_InvalidParamError(indices ? "num_indices" : "num_vertices");
+    }
+
+    if (indices) {
+        CHECK_PARAM(size_indices != 1 && size_indices != 2 && size_indices != 4) {
+            return SDL_InvalidParamError("size_indices");
+        }
+    }
+
+    SDL_FColor *fcolors = (SDL_FColor *)SDL_stack_alloc(SDL_FColor, num_vertices);
+    if (!fcolors) {
+        return SDL_OutOfMemory();
+    }
+
+    const float inv255 = 1.0f / 255.0f;
+    const Uint8 *c = (const Uint8 *)color;
+    for (int i = 0; i < num_vertices; ++i) {
+        const SDL_Color *src = (const SDL_Color *)c;
+        fcolors[i].r = src->r * inv255;
+        fcolors[i].g = src->g * inv255;
+        fcolors[i].b = src->b * inv255;
+        fcolors[i].a = src->a * inv255;
+        c += color_stride;
+    }
+
+    bool result = SDL_RenderGeometryRaw(renderer, texture,
+                                        xy, xy_stride,
+                                        fcolors, sizeof(SDL_FColor),
+                                        uv, uv_stride,
+                                        num_vertices,
+                                        indices, num_indices, size_indices);
+
+    SDL_stack_free(fcolors);
+    return result;
+}
+
 bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           SDL_Texture *texture,
                           const float *xy, int xy_stride,
