@@ -868,7 +868,8 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             } else {
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, surface->format);
+                    SDL_PixelFormat tmp_format = SDL_ISPIXELFORMAT_ALPHA(src->format) ? SDL_PIXELFORMAT_ARGB8888 : surface->format;
+                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, tmp_format);
                     // Scale to an intermediate surface, then blit
                     if (tmp) {
                         SDL_Rect r;
