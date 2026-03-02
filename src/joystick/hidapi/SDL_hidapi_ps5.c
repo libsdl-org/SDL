@@ -1475,7 +1475,9 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     if (ctx->guitar_effects_selector_supported) {
         // Align pickup selector mappings with PS3 instruments
         static const int effects_mappings[] = {0xE000, 0xAB00, 0x7900, 0x4B00, 0x1700};
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, effects_mappings[packet->rgucDeviceSpecific[0] & 0x4]);
+        if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, effects_mappings[packet->rgucDeviceSpecific[0]]);
+        }
     }
 
     if (ctx->guitar_tilt_supported) {
