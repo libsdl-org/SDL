@@ -1668,6 +1668,9 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
                         case SDL_SCANCODE_DELETE:
                             keycode = SDLK_DELETE;
                             break;
+                        case SDL_SCANCODE_SPACE:
+                            keycode = SDLK_SPACE;
+                            break;
                         default:
                             keycode = SDL_SCANCODE_TO_KEYCODE(scancode);
                             break;
