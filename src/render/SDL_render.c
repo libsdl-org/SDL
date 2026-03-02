@@ -6221,7 +6221,7 @@ bool SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, int num_sam
     }
 
     Sint32 length = sizeof(SDL_GPUTextureSamplerBinding) * num_sampler_bindings;
-    SDL_GPUTextureSamplerBinding *new_sampler_bindings = (SDL_GPUTextureSamplerBinding*)SDL_realloc(state->sampler_bindings, length);
+    SDL_GPUTextureSamplerBinding *new_sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_realloc(state->sampler_bindings, length);
     if (!new_sampler_bindings) {
         return false;
     }
@@ -6242,8 +6242,8 @@ bool SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, int num_sto
         return false;
     }
 
-    Sint32 length = sizeof(SDL_GPUTexture*) * num_storage_textures;
-    SDL_GPUTexture **new_storage_textures = (SDL_GPUTexture**)SDL_realloc(state->storage_textures, length);
+    Sint32 length = sizeof(SDL_GPUTexture *) * num_storage_textures;
+    SDL_GPUTexture **new_storage_textures = (SDL_GPUTexture **)SDL_realloc(state->storage_textures, length);
     if (!new_storage_textures) {
         return false;
     }
@@ -6264,8 +6264,8 @@ bool SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, int num_stor
         return false;
     }
 
-    Sint32 length = sizeof(SDL_GPUBuffer*) * num_storage_buffers;
-    SDL_GPUBuffer **new_storage_buffers = (SDL_GPUBuffer**)SDL_realloc(state->storage_buffers, length);
+    Sint32 length = sizeof(SDL_GPUBuffer *) * num_storage_buffers;
+    SDL_GPUBuffer **new_storage_buffers = (SDL_GPUBuffer **)SDL_realloc(state->storage_buffers, length);
     if (!new_storage_buffers) {
         return false;
     }
