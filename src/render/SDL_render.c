@@ -6210,7 +6210,7 @@ SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_G
     return state;
 }
 
-bool SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, Sint32 num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings)
+bool SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, int num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings)
 {
     if (!state) {
         return SDL_InvalidParamError("state");
@@ -6221,8 +6221,8 @@ bool SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, Sint32 num_
     }
 
     Sint32 length = sizeof(SDL_GPUTextureSamplerBinding) * num_sampler_bindings;
-    SDL_GPUTextureSamplerBinding* new_sampler_bindings = (SDL_GPUTextureSamplerBinding*)SDL_realloc(state->sampler_bindings, length);
-    if(!new_sampler_bindings) {
+    SDL_GPUTextureSamplerBinding *new_sampler_bindings = (SDL_GPUTextureSamplerBinding*)SDL_realloc(state->sampler_bindings, length);
+    if (!new_sampler_bindings) {
         return false;
     }
     SDL_memcpy(new_sampler_bindings, sampler_bindings, length);
@@ -6232,7 +6232,7 @@ bool SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, Sint32 num_
     return true;
 }
 
-bool SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, Sint32 num_storage_textures, SDL_GPUTexture *const *storage_textures)
+bool SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, int num_storage_textures, SDL_GPUTexture *const *storage_textures)
 {
     if (!state) {
         return SDL_InvalidParamError("state");
@@ -6243,8 +6243,8 @@ bool SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, Sint32 num_
     }
 
     Sint32 length = sizeof(SDL_GPUTexture*) * num_storage_textures;
-    SDL_GPUTexture** new_storage_textures = (SDL_GPUTexture**)SDL_realloc(state->storage_textures, length);
-    if(!new_storage_textures) {
+    SDL_GPUTexture **new_storage_textures = (SDL_GPUTexture**)SDL_realloc(state->storage_textures, length);
+    if (!new_storage_textures) {
         return false;
     }
     SDL_memcpy(new_storage_textures, storage_textures, length);
@@ -6254,7 +6254,7 @@ bool SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, Sint32 num_
     return true;
 }
 
-bool SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, Sint32 num_storage_buffers, SDL_GPUBuffer *const *storage_buffers)
+bool SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, int num_storage_buffers, SDL_GPUBuffer *const *storage_buffers)
 {
     if (!state) {
         return SDL_InvalidParamError("state");
@@ -6265,8 +6265,8 @@ bool SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, Sint32 num_s
     }
 
     Sint32 length = sizeof(SDL_GPUBuffer*) * num_storage_buffers;
-    SDL_GPUBuffer** new_storage_buffers = (SDL_GPUBuffer**)SDL_realloc(state->storage_buffers, length);
-    if(!new_storage_buffers) {
+    SDL_GPUBuffer **new_storage_buffers = (SDL_GPUBuffer**)SDL_realloc(state->storage_buffers, length);
+    if (!new_storage_buffers) {
         return false;
     }
     SDL_memcpy(new_storage_buffers, storage_buffers, length);

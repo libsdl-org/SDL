@@ -2984,7 +2984,7 @@ extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Re
  *
  * \since This function is available since SDL 3.4.x.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, Sint32 num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, int num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings);
 
 /**
  * Set storage textures variables in a custom GPU render state.
@@ -3003,7 +3003,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateSamplerBindings(SDL_GPURen
  *
  * \since This function is available since SDL 3.4.x.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, Sint32 num_storage_textures, SDL_GPUTexture *const *storage_textures);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, int num_storage_textures, SDL_GPUTexture *const *storage_textures);
 
 /**
  * Set storage buffers variables in a custom GPU render state.
@@ -3022,7 +3022,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageTextures(SDL_GPURen
  *
  * \since This function is available since SDL 3.4.x.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, Sint32 num_storage_buffers, SDL_GPUBuffer *const *storage_buffers);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, int num_storage_buffers, SDL_GPUBuffer *const *storage_buffers);
 
 /**
  * Set fragment shader uniform variables in a custom GPU render state.
