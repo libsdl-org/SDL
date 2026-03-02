@@ -2211,6 +2211,11 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
 
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
 {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
     return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->palette, surface->colorspace, surface->props);
 }
 
