@@ -2968,6 +2968,63 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
 extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_GPURenderStateCreateInfo *createinfo);
 
 /**
+ * Set sampler bindings variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using
+ * SDL_BindGPUFragmentSamplers() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_sampler_bindings The number of additional fragment samplers to bind
+ * \param sampler_bindings Additional fragment samplers to bind
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.x.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, int num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings);
+
+/**
+ * Set storage textures variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using
+ * SDL_BindGPUFragmentStorageTextures() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_storage_textures The number of storage textures to bind
+ * \param storage_textures Storage textures to bind
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.x.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, int num_storage_textures, SDL_GPUTexture *const *storage_textures);
+
+/**
+ * Set storage buffers variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using
+ * SDL_BindGPUFragmentStorageBuffers() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_storage_buffers The number of storage buffers to bind
+ * \param storage_buffers Storage buffers to bind
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.x.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, int num_storage_buffers, SDL_GPUBuffer *const *storage_buffers);
+
+/**
  * Set fragment shader uniform variables in a custom GPU render state.
  *
  * The data is copied and will be pushed using
