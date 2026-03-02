@@ -1602,13 +1602,14 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     const xkb_keysym_t *syms;
+    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+
+    // Only the shift, alt, level 3, level 5 and caps lock modifiers affect SDL keymaps.
     const xkb_mod_mask_t xkb_valid_mod_mask = seat->keyboard.xkb.shift_mask |
                                               seat->keyboard.xkb.alt_mask |
-                                              seat->keyboard.xkb.gui_mask |
                                               seat->keyboard.xkb.level3_mask |
                                               seat->keyboard.xkb.level5_mask |
                                               seat->keyboard.xkb.caps_mask;
-    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
     // Look up the scancode for hardware keyboards. Virtual keyboards get the scancode from the keysym.
     if (!seat->keyboard.is_virtual) {
@@ -1647,7 +1648,6 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
 
                     const SDL_Keymod sdl_mod = (xkb_mod_masks[mask] & seat->keyboard.xkb.shift_mask ? SDL_KMOD_SHIFT : 0) |
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.alt_mask ? SDL_KMOD_ALT : 0) |
-                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.gui_mask ? SDL_KMOD_GUI : 0) |
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.level3_mask ? SDL_KMOD_MODE : 0) |
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.level5_mask ? SDL_KMOD_LEVEL5 : 0) |
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.caps_mask ? SDL_KMOD_CAPS : 0);
