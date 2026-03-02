@@ -349,8 +349,6 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
 
 static float HIDAPI_DriverPS3ThirdParty_ScaleAccel(Sint16 value)
 {
-    // Accelerometer values are in big endian order
-    value = SDL_Swap16BE(value);
     return ((float)(value - 512) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
@@ -1027,9 +1025,9 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     if (ctx->report_sensors) {
         float sensor_data[3];
 
-        sensor_data[0] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[20], data[19]));
-        sensor_data[1] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[22], data[21]));
-        sensor_data[2] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[24], data[23]));
+        sensor_data[0] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[19], data[20]));
+        sensor_data[1] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[21], data[22]));
+        sensor_data[2] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[23], data[24]));
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
 
