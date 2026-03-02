@@ -371,8 +371,7 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     avdevice.activeFormat = spec_format;
 
     // Try to set the frame duration to enforce the requested frame rate
-    const float frameRate = (float)spec->framerate_numerator / spec->framerate_denominator;
-    const CMTime frameDuration = CMTimeMake(1, (int32_t)frameRate);
+    const CMTime frameDuration = CMTimeMake(spec->framerate_denominator, spec->framerate_numerator);
 
     // Check if the device supports setting frame duration
     if ([avdevice respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
@@ -442,8 +441,12 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 
     // Try to set the frame rate on the device (preferred modern approach)
     if ([avdevice lockForConfiguration:nil]) {
-        avdevice.activeVideoMinFrameDuration = frameDuration;
-        avdevice.activeVideoMaxFrameDuration = frameDuration;
+        @try {
+            avdevice.activeVideoMinFrameDuration = frameDuration;
+            avdevice.activeVideoMaxFrameDuration = frameDuration;
+        } @catch (NSException *exception) {
+            // Some devices don't support setting frame duration, that's okay
+        }
         [avdevice unlockForConfiguration];
     }
 
