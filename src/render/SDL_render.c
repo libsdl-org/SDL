@@ -6177,6 +6177,36 @@ SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_G
     state->renderer = renderer;
     state->fragment_shader = createinfo->fragment_shader;
 
+    if (createinfo->num_sampler_bindings > 0) {
+        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(createinfo->num_sampler_bindings, sizeof(*state->sampler_bindings));
+        if (!state->sampler_bindings) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->sampler_bindings, createinfo->sampler_bindings, createinfo->num_sampler_bindings * sizeof(*state->sampler_bindings));
+        state->num_sampler_bindings = createinfo->num_sampler_bindings;
+    }
+
+    if (createinfo->num_storage_textures > 0) {
+        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(createinfo->num_storage_textures, sizeof(*state->storage_textures));
+        if (!state->storage_textures) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->storage_textures, createinfo->storage_textures, createinfo->num_storage_textures * sizeof(*state->storage_textures));
+        state->num_storage_textures = createinfo->num_storage_textures;
+    }
+
+    if (createinfo->num_storage_buffers > 0) {
+        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(createinfo->num_storage_buffers, sizeof(*state->storage_buffers));
+        if (!state->storage_buffers) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->storage_buffers, createinfo->storage_buffers, createinfo->num_storage_buffers * sizeof(*state->storage_buffers));
+        state->num_storage_buffers = createinfo->num_storage_buffers;
+    }
+
     return state;
 }
 
