@@ -1451,7 +1451,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     static const float TOUCHPAD_SCALEY = 9.34579439e-4f; // 1.0f / 1070
     bool touchpad_down;
     int touchpad_x, touchpad_y;
-    int axis;
+    Sint16 axis;
 
     if (ctx->report_touchpad) {
         touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
