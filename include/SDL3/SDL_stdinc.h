@@ -4684,7 +4684,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
- * Range: `-Pi <= y <= Pi`
+ * Range: `-Pi <= z <= Pi`
  *
  * This function operates on double-precision floating point values, use
  * SDL_atan2f for single-precision floats.
@@ -4698,8 +4698,8 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  *
  * \param y floating point value of the numerator (y coordinate).
  * \param x floating point value of the denominator (x coordinate).
- * \returns arc tangent of of `y / x` in radians, or, if `x = 0`, either
- *          `-Pi/2`, `0`, or `Pi/2`, depending on the value of `y`.
+ * \returns arc tangent of `y / x` in radians, or, if `x = 0`, either `-Pi/2`,
+ *          `0`, or `Pi/2`, depending on the value of `y`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
