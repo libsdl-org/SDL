@@ -4360,7 +4360,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf(void);
 /**
  * Generate 32 pseudo-random bits.
  *
- * You likely want to use SDL_rand() to get a psuedo-random number instead.
+ * You likely want to use SDL_rand() to get a pseudo-random number instead.
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
@@ -4445,7 +4445,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_randf_r(Uint64 *state);
 /**
  * Generate 32 pseudo-random bits.
  *
- * You likely want to use SDL_rand_r() to get a psuedo-random number instead.
+ * You likely want to use SDL_rand_r() to get a pseudo-random number instead.
  *
  * There are no guarantees as to the quality of the random sequence produced,
  * and this should not be used for security (cryptography, passwords) or where
