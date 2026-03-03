@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <wayland-util.h>
@@ -547,10 +548,11 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
                                                  SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
     bool display_is_external = !!display;
 
-    // Are we trying to connect to or are currently in a Wayland session?
+    // Are we trying to connect to, or are currently in, a Wayland session?
     if (!SDL_getenv("WAYLAND_DISPLAY")) {
         const char *session = SDL_getenv("XDG_SESSION_TYPE");
         if (session && SDL_strcasecmp(session, "wayland") != 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Wayland initialization failed: no Wayland session available");
             return NULL;
         }
     }
@@ -563,6 +565,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
         display = WAYLAND_wl_display_connect(NULL);
         if (!display) {
             SDL_WAYLAND_UnloadSymbols();
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to connect to the Wayland display server: %s", strerror(errno));
             return NULL;
         }
     }
@@ -609,7 +612,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 
     if (!display_is_external) {
         SDL_SetPointerProperty(SDL_GetGlobalProperties(),
-                        SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
+                               SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, display);
     }
 
     device->internal = data;
