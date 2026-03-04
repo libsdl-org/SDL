@@ -3681,12 +3681,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     uavDesc.Texture2DArray.MipSlice = levelIndex;
                     uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
                     uavDesc.Texture2DArray.ArraySize = 1;
-                    uavDesc.Texture2DArray.PlaneSlice = 0; //fix?
-                    //Apparently, because PlaneSlice wasn't initialized, 
-                    //we couldn't use SDL_GPU_TEXTURETYPE_2D_ARRAY and SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE together, 
-                    //as the error of d3d12:
-                    //"ID3D12Device::CreateUnorderedAccessView occurred: The PlaneSlice -858993460 is invalid when the resource format is R8G8B8A8_UNORM and the view format is R8G8B8A8_UNORM. 
-                    //Only Plane Slice 0 is valid when creating a view on a non-planar format. [ STATE_CREATION ERROR #344: CREATEUNORDEREDACCESSVIEW_INVALIDPLANESLICE]"
+                    uavDesc.Texture2DArray.PlaneSlice = 0;
                 } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
                     uavDesc.Texture3D.MipSlice = levelIndex;
