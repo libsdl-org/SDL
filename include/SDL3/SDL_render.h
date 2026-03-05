@@ -3082,6 +3082,40 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderState(SDL_Renderer *renderer, S
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPURenderState(SDL_GPURenderState *state);
 
+#ifdef SDL_PLATFORM_GDK
+
+/**
+ * Call this to suspend Render operations on Xbox when you receive the
+ * SDL_EVENT_DID_ENTER_BACKGROUND event.
+ *
+ * Do NOT call any SDL_Render functions after calling this function! This must
+ * also be called before calling SDL_GDKSuspendComplete.
+ *
+ * \param renderer the renderer which should suspend operation
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_AddEventWatch
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer);
+
+/**
+ * Call this to resume Render operations on Xbox when you receive the
+ * SDL_EVENT_WILL_ENTER_FOREGROUND event.
+ *
+ * When resuming, this function MUST be called before calling any other
+ * SDL_Render functions.
+ *
+ * \param renderer the renderer which should resume operation
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_AddEventWatch
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(SDL_Renderer *renderer);
+
+#endif /* SDL_PLATFORM_GDK */
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

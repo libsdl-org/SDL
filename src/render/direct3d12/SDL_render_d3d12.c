@@ -563,25 +563,25 @@ static HRESULT D3D12_IssueBatch(D3D12_RenderData *data)
 }
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-static bool SDLCALL D3D12_GDKEventFilter(void* userdata, SDL_Event* event)
+
+static void D3D12_GDKSuspendRenderer(SDL_Renderer *renderer)
 {
-    D3D12_RenderData *data = (D3D12_RenderData *)userdata;
-    if (event->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
-        data->commandQueue->SuspendX(0);
-    } else if (event->type == SDL_EVENT_WILL_ENTER_FOREGROUND) {
-        data->commandQueue->ResumeX();
-    }
-    return true;
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+    data->commandQueue->SuspendX(0);
 }
+
+static void D3D12_GDKResumeRenderer(SDL_Renderer *renderer)
+{
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+    data->commandQueue->ResumeX();
+}
+
 #endif
 
 static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     if (data) {
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-        SDL_RemoveEventWatch(D3D12_GDKEventFilter, data);
-#endif
         D3D12_WaitForGPU(data);
         D3D12_ReleaseAll(renderer);
         SDL_free(data);
@@ -1127,10 +1127,6 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_DEVICE_POINTER, data->d3dDevice);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER, data->commandQueue);
-
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_AddEventWatch(D3D12_GDKEventFilter, data);
-#endif
 
 done:
     D3D_SAFE_RELEASE(d3dDevice);
@@ -3517,6 +3513,10 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->SetVSync = D3D12_SetVSync;
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    renderer->GDKSuspendRenderer = D3D12_GDKSuspendRenderer;
+    renderer->GDKResumeRenderer = D3D12_GDKResumeRenderer;
+#endif
     renderer->internal = data;
     D3D12_InvalidateCachedState(renderer);
 

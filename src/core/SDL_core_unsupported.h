@@ -35,6 +35,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(SDL_Renderer *renderer);
 #endif /* !SDL_PLATFORM_GDK */
 
 #if !defined(SDL_PLATFORM_WINDOWS)

@@ -6347,3 +6347,23 @@ void SDL_DestroyGPURenderState(SDL_GPURenderState *state)
     SDL_free(state->storage_buffers);
     SDL_free(state);
 }
+
+#ifdef SDL_PLATFORM_GDK
+
+void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer,);
+    if (renderer->GDKSuspendRenderer != NULL) {
+        renderer->GDKSuspendRenderer(renderer);
+    }
+}
+
+void SDLCALL SDL_GDKResumeRenderer(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer,);
+    if (renderer->GDKResumeRenderer != NULL) {
+        renderer->GDKResumeRenderer(renderer);
+    }
+}
+
+#endif /* SDL_PLATFORM_GDK */
