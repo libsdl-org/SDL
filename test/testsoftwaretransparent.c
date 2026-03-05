@@ -15,6 +15,8 @@
 
 #define SQUARE_SIZE 100.0f
 
+static bool premult = false;
+
 /* Draw opaque red squares at the four corners of the form, and draw a red square with an alpha value of 180 in the center of the form */
 static void draw(SDL_Renderer *renderer)
 {
@@ -26,20 +28,24 @@ static void draw(SDL_Renderer *renderer)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
 
-    if (w >= 3 * SQUARE_SIZE && h >= 3 * SQUARE_SIZE) {
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawBlendMode(renderer, premult ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
 
+    if (w >= 3 * SQUARE_SIZE && h >= 3 * SQUARE_SIZE) {
         rect.x = 0.0f;
         rect.y = 0.0f;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.y = h - SQUARE_SIZE;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 170);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.x = w - SQUARE_SIZE;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 85);
         SDL_RenderFillRect(renderer, &rect);
 
         rect.y = 0.0f;
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderFillRect(renderer, &rect);
     }
 
@@ -47,6 +53,9 @@ static void draw(SDL_Renderer *renderer)
     rect.x = (w - SQUARE_SIZE) / 2;
     rect.y = (h - SQUARE_SIZE) / 2;
     SDL_RenderFillRect(renderer, &rect);
+
+    SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+    SDL_RenderDebugText(renderer, 0, 0, premult ? "Premult'd" : "Straight");
 }
 
 int main(int argc, char *argv[])
@@ -59,7 +68,7 @@ int main(int argc, char *argv[])
 
     int return_code = 1;
 
-    state = SDLTest_CommonCreateState(argv, 0);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
         return 1;
     }
@@ -81,11 +90,10 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    /* Make sure we're setting the alpha channel while drawing */
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
     /* We're ready to go! */
     while (!done) {
+        bool renderNeeded = false;
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
@@ -95,7 +103,15 @@ int main(int argc, char *argv[])
                 break;
             case SDL_EVENT_WINDOW_EXPOSED:
                 /* The software renderer is persistent, so only redraw as-needed */
-                draw(renderer);
+                renderNeeded = true;
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                if (event.button.button == 1) {
+                    // switch between premultiplied alpha and straight alpha
+                    premult = !premult;
+
+                    renderNeeded = true;
+                }
                 break;
             case SDL_EVENT_QUIT:
                 done = true;
@@ -104,6 +120,9 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+
+        if (renderNeeded)
+            draw(renderer);
 
         /* Show everything on the screen and wait a bit */
         SDL_RenderPresent(renderer);
@@ -120,3 +139,5 @@ quit:
     SDLTest_CommonDestroyState(state);
     return return_code;
 }
+
+
