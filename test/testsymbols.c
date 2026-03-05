@@ -40,6 +40,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetGDKDefaultUser(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetGDKTaskQueue(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(void);
 #endif
 
 #if !defined(SDL_PLATFORM_IOS)
