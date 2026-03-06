@@ -3576,8 +3576,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         D3D12_INTERNAL_DestroyTexture(texture);
         return NULL;
     }
-    for (Uint32 layerIndex = 0; layerIndex < layerCount; layerIndex += 1) {
-        for (Uint32 levelIndex = 0; levelIndex < createinfo->num_levels; levelIndex += 1) {
+    for (Uint32 levelIndex = 0; levelIndex < createinfo->num_levels; levelIndex += 1) { //First we go through num_levels
+        for (Uint32 layerIndex = 0; layerIndex < layerCount; layerIndex += 1) { //And then by layerCount
             Uint32 subresourceIndex = D3D12_INTERNAL_CalcSubresource(
                 levelIndex,
                 layerIndex,
@@ -3646,12 +3646,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                 dsvDesc.Format = SDLToD3D12_DepthFormat[createinfo->format];
                 dsvDesc.Flags = (D3D12_DSV_FLAGS)0;
 
-                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
-                    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-                    dsvDesc.Texture2DArray.MipSlice = levelIndex;
-                    dsvDesc.Texture2DArray.FirstArraySlice = layerIndex;
-                    dsvDesc.Texture2DArray.ArraySize = 1;
-                } else if (isMultisample) {
+                if (isMultisample) {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
                 } else {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -3678,10 +3673,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
                 if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
-                    uavDesc.Texture2DArray.MipSlice = levelIndex;
-                    uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
-                    uavDesc.Texture2DArray.ArraySize = createinfo->layer_count_or_depth;
-                    uavDesc.Texture2DArray.PlaneSlice = 0;
+                    uavDesc.Texture2DArray.MipSlice = levelIndex; //Curent num_level 
+                    uavDesc.Texture2DArray.FirstArraySlice = 0;
+                    uavDesc.Texture2DArray.ArraySize = layerCount; //How many layers(slice) we have
+                    uavDesc.Texture2DArray.PlaneSlice = 0; 
                 } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
                     uavDesc.Texture3D.MipSlice = levelIndex;
@@ -3699,6 +3694,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     NULL,
                     &uavDesc,
                     texture->subresources[subresourceIndex].uavHandle.cpuHandle);
+                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY)
+                   break; //We're breaking this because SDL_GPU_TEXTURETYPE_2D_ARRAY must have one UAV for all layers - We will not go further through the layers.
             }
         }
     }
