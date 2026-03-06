@@ -387,6 +387,7 @@ dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" O
 dep_option(SDL_HIDAPI_LIBUSB_SHARED "Dynamically load libusb support" ON "SDL_HIDAPI_LIBUSB;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
+dep_option(SDL_DSU_JOYSTICK         "Enable DSU client joystick support" ON SDL_JOYSTICK OFF)
 set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
@@ -1411,6 +1412,27 @@ if(SDL_JOYSTICK)
       "${SDL3_SOURCE_DIR}/src/joystick/virtual/*.c"
       "${SDL3_SOURCE_DIR}/src/joystick/virtual/*.h"
     )
+  endif()
+
+  # DSU (DualShock UDP) client support
+  # Supported on platforms with UDP socket support (BSD sockets or WinSock)
+  # Disabled on platforms without UDP support or where not yet implemented
+  if(SDL_DSU_JOYSTICK AND NOT (EMSCRIPTEN OR VITA OR PSP OR PS2 OR N3DS))
+    set(SDL_JOYSTICK_DSU 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.c"
+      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.h"
+    )
+
+    # DSU requires network libraries
+    if(WIN32)
+      sdl_link_dependency(dsu LIBS ws2_32)
+    elseif(HAIKU)
+      sdl_link_dependency(dsu LIBS network)
+    elseif(QNX)
+      # QNX needs socket library
+      sdl_link_dependency(dsu LIBS socket)
+    endif()
   endif()
 endif()
 
