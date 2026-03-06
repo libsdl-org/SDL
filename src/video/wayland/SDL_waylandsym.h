@@ -33,10 +33,6 @@
 #define SDL_WAYLAND_SYM_OPT(rc,fn,params)
 #endif
 
-#ifndef SDL_WAYLAND_INTERFACE
-#define SDL_WAYLAND_INTERFACE(iface)
-#endif
-
 SDL_WAYLAND_MODULE(WAYLAND_CLIENT)
 SDL_WAYLAND_SYM(void, wl_proxy_marshal, (struct wl_proxy *, uint32_t, ...))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_create, (struct wl_proxy *, const struct wl_interface *))
@@ -97,22 +93,6 @@ SDL_WAYLAND_SYM_OPT(struct wl_event_queue *, wl_display_create_queue_with_name, 
 SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display *))
 #endif
 #endif // 0
-
-SDL_WAYLAND_INTERFACE(wl_seat_interface)
-SDL_WAYLAND_INTERFACE(wl_surface_interface)
-SDL_WAYLAND_INTERFACE(wl_shm_pool_interface)
-SDL_WAYLAND_INTERFACE(wl_buffer_interface)
-SDL_WAYLAND_INTERFACE(wl_registry_interface)
-SDL_WAYLAND_INTERFACE(wl_region_interface)
-SDL_WAYLAND_INTERFACE(wl_pointer_interface)
-SDL_WAYLAND_INTERFACE(wl_keyboard_interface)
-SDL_WAYLAND_INTERFACE(wl_compositor_interface)
-SDL_WAYLAND_INTERFACE(wl_output_interface)
-SDL_WAYLAND_INTERFACE(wl_shm_interface)
-SDL_WAYLAND_INTERFACE(wl_data_device_interface)
-SDL_WAYLAND_INTERFACE(wl_data_source_interface)
-SDL_WAYLAND_INTERFACE(wl_data_offer_interface)
-SDL_WAYLAND_INTERFACE(wl_data_device_manager_interface)
 
 SDL_WAYLAND_MODULE(WAYLAND_EGL)
 SDL_WAYLAND_SYM(struct wl_egl_window *, wl_egl_window_create, (struct wl_surface *, int, int))
@@ -259,6 +239,5 @@ SDL_WAYLAND_SYM_OPT(enum libdecor_wm_capabilities, libdecor_frame_get_wm_capabil
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM
 #undef SDL_WAYLAND_SYM_OPT
-#undef SDL_WAYLAND_INTERFACE
 
 /* *INDENT-ON* */ // clang-format on
