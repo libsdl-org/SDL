@@ -380,7 +380,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
             return NULL;
         }
         char *ptr = &pathcpy[pathlen-1];
-        while ((ptr >= pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
+        while ((ptr > pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
             *(ptr--) = '\0';
         }
         path = pathcpy;
