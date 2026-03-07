@@ -38,20 +38,6 @@ extern "C" {
 // this appears to be broken right now (on Android, not SDL, I think...?).
 #define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
 
-// Life cycle
-typedef enum
-{
-    SDL_ANDROID_LIFECYCLE_WAKE,
-    SDL_ANDROID_LIFECYCLE_PAUSE,
-    SDL_ANDROID_LIFECYCLE_RESUME,
-    SDL_ANDROID_LIFECYCLE_LOWMEMORY,
-    SDL_ANDROID_LIFECYCLE_DESTROY,
-    SDL_NUM_ANDROID_LIFECYCLE_EVENTS
-} SDL_AndroidLifecycleEvent;
-
-void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
-bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
-
 void Android_LockActivityState(void);
 void Android_UnlockActivityState(void);
 
@@ -159,6 +145,7 @@ bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
 
 // Pump RPC commands
 void Android_PumpRPC(SDL_Window *window);
+void Android_WaitForResume(void);
 
 
 // Ends C function definitions when using C++
