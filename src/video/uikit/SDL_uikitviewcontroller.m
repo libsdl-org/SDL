@@ -642,7 +642,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight && self.textInputRect.h) {
-        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
+        /// Get the pan padding from the hint (in window coordinates).
+        const char *hint = SDL_GetHint(SDL_HINT_IME_PAN_PADDING);
+        int padding = (hint && *hint) ? SDL_atoi(hint) : 10;
+        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h + padding);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {
             offset.y = keybottom - rectbottom;
