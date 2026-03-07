@@ -105,6 +105,7 @@ static void Android_PauseAudio(void)
 
 static void Android_ResumeAudio(void)
 {
+
     if (Android_PausedAudio) {
         OPENSLES_ResumeDevices();
         AAUDIO_ResumeDevices();
@@ -112,7 +113,7 @@ static void Android_ResumeAudio(void)
     }
 }
 
-static void Android_OnPause(SDL_Window *window)
+void Android_OnPause(SDL_Window *window)
 {
     SDL_OnApplicationWillEnterBackground();
     SDL_OnApplicationDidEnterBackground();
@@ -136,7 +137,7 @@ static void Android_OnPause(SDL_Window *window)
     Android_Paused = true;
 }
 
-static void Android_OnResume(SDL_Window *window)
+void Android_OnResume(SDL_Window *window)
 {
     Android_Paused = false;
 
@@ -154,12 +155,7 @@ static void Android_OnResume(SDL_Window *window)
     SDL_OnApplicationDidEnterForeground();
 }
 
-static void Android_OnLowMemory(void)
-{
-    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
-}
-
-static void Android_OnDestroy(void)
+void Android_OnDestroy(void)
 {
     // Make sure we unblock any audio processing before we quit
     Android_ResumeAudio();
@@ -174,82 +170,46 @@ static void Android_OnDestroy(void)
     Android_Destroyed = true;
 }
 
-static void Android_HandleLifecycleEvent(SDL_Window *window, SDL_AndroidLifecycleEvent event)
+void Android_PumpEvents()
 {
-    switch (event) {
-    case SDL_ANDROID_LIFECYCLE_WAKE:
-        // Nothing to do, just return
-        break;
-    case SDL_ANDROID_LIFECYCLE_PAUSE:
-        Android_OnPause(window);
-        break;
-    case SDL_ANDROID_LIFECYCLE_RESUME:
-        Android_OnResume(window);
-        break;
-    case SDL_ANDROID_LIFECYCLE_LOWMEMORY:
-        Android_OnLowMemory();
-        break;
-    case SDL_ANDROID_LIFECYCLE_DESTROY:
-        Android_OnDestroy();
-        break;
-    default:
-        break;
-    }
-}
-
-static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
-{
-    if (Android_Paused) {
-        if (Android_BlockOnPause) {
-            timeoutNS = -1;
-        } else if (timeoutNS == 0) {
-            timeoutNS = SDL_MS_TO_NS(100);
-        }
-    }
-    return timeoutNS;
-}
-
-void Android_PumpEvents(Sint64 timeoutNS)
-{
-    SDL_AndroidLifecycleEvent event;
-    bool paused = Android_Paused;
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window = _this ? _this->windows : NULL;
 
-    while (!Android_Destroyed &&
-           Android_WaitLifecycleEvent(&event, GetLifecycleEventTimeout(paused, timeoutNS))) {
+    if (Android_Destroyed) {
+        return;
+    }
 
-        Android_PumpRPC(window);
+    Android_PumpRPC(window);
+}
 
-        Android_HandleLifecycleEvent(window, event);
 
-        switch (event) {
-        case SDL_ANDROID_LIFECYCLE_WAKE:
-            // Finish handling events quickly if we're not paused
-            timeoutNS = 0;
-            break;
-        case SDL_ANDROID_LIFECYCLE_PAUSE:
-            // Finish handling events at the current timeout and return to process events one more time before blocking.
-            break;
-        case SDL_ANDROID_LIFECYCLE_RESUME:
-            // Finish handling events at the resume state timeout
-            paused = false;
-            break;
-        default:
-            break;
+// return 'true' if app has been blocked
+bool Android_BlockEventLoop()
+{
+    if (Android_Destroyed) {
+        return false;
+    }
+
+    if (Android_Paused) {
+        if (Android_BlockOnPause) {
+            SDL_Log("BlockOnPause");
+            Android_WaitForResume();
+            SDL_Log("BlockOnPause...resume");
+
+            // app has been blocked. now we're unblocked.
+            // pump to get 'resume' command (eg RPC_cmd_nativeResume).
+
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
+            SDL_Window *window = _this ? _this->windows : NULL;
+            Android_PumpRPC(window);
+
+            return true;
         }
     }
+
+    return false;
 }
 
-
-void Android_PumpLifecycleEvents(SDL_Window *window)
-{
-    // Make sure we have pumped all events so that Android_Paused state is correct
-    SDL_AndroidLifecycleEvent event;
-    while (!Android_Destroyed && Android_WaitLifecycleEvent(&event, 0)) {
-        Android_HandleLifecycleEvent(window, event);
-    }
-}
 
 bool Android_WaitActiveAndLockActivity(SDL_Window *window)
 {
@@ -260,8 +220,8 @@ retry:
     // Hence SDLActivity won't change state.
     Android_LockActivityState();
 
-    // Make sure we have pumped all events so that Android_Paused state is correct
-    Android_PumpLifecycleEvents(window);
+    // Pump all events so that Android_Paused state is correct
+    Android_PumpRPC(window);
 
     if (Android_Destroyed) {
         SDL_SetError("Android activity has been destroyed");
@@ -271,7 +231,6 @@ retry:
 
     if (!Android_Paused) {
         // SDLActivity is Active. return lock'ed
-        Android_PumpRPC(window);
         return true;
     } else {
         // Still Paused

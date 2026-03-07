@@ -423,13 +423,12 @@ static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
-static SDL_Mutex *Android_LifecycleMutex = NULL;
-static SDL_Semaphore *Android_LifecycleEventSem = NULL;
 static SDL_Semaphore *Android_NativeSurfaceCreatedSem = NULL;
 static SDL_Semaphore *Android_NativeSurfaceChangedSem = NULL;
 static SDL_Semaphore *Android_NativeSurfaceDestroyedSem = NULL;
-static SDL_AndroidLifecycleEvent Android_LifecycleEvents[SDL_NUM_ANDROID_LIFECYCLE_EVENTS];
-static int Android_NumLifecycleEvents;
+static SDL_Semaphore *Android_PauseSem = NULL;
+static SDL_Semaphore *Android_ResumeSem = NULL;
+static SDL_Semaphore *Android_BlockOnPauseSem = NULL;
 
 // RPC commands. from SDLActivity thread to C Thread
 typedef enum {
@@ -460,17 +459,15 @@ typedef enum {
     RPC_cmd_onNativePen,
     RPC_cmd_onNativeAccel,
     RPC_cmd_onNativeClipboardChanged,
-// lifecycle event
-//    RPC_cmd_nativeLowMemory,
+    RPC_cmd_nativeLowMemory,
     RPC_cmd_onNativeLocaleChanged,
     RPC_cmd_onNativeDarkModeChanged,
-// lifecycle event
-//    RPC_cmd_nativeSendQuit,
+    RPC_cmd_nativeSendQuit,
 // onDestroy / inverse of nativeSetupJNI
 //    RPC_cmd_nativeQuit,
-// lifecycle event
-//    RPC_cmd_nativePause,
-//    RPC_cmd_nativeResume,
+    RPC_cmd_nativePause,
+    RPC_cmd_nativeResume,
+    RPC_cmd_WakeUp,
     RPC_cmd_nativeFocusChanged,
 // there are not returned void and so, they cannot really be defered to C Thread:
 //    RPC_cmd_nativeGetHint,
@@ -541,8 +538,13 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     CASE(onNativePen);
     CASE(onNativeAccel);
     CASE(onNativeClipboardChanged);
+    CASE(nativeLowMemory);
     CASE(onNativeLocaleChanged);
     CASE(onNativeDarkModeChanged);
+    CASE(nativeSendQuit);
+    CASE(nativePause);
+    CASE(nativeResume);
+    CASE(WakeUp);
     CASE(nativeFocusChanged);
     CASE(nativeSetNaturalOrientation);
     CASE(onNativeRotationChanged);
@@ -811,30 +813,20 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to found a JavaVM");
     }
 
-    Android_LifecycleMutex = SDL_CreateMutex();
-    if (!Android_LifecycleMutex) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_LifecycleMutex mutex");
-    }
+#define ALLOC_SEM(foo)                                                                          \
+    foo = SDL_CreateSemaphore(0);                                                               \
+    if (! foo) {                                                                                \
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create " #foo "semaphore");    \
+    }                                                                                           \
 
-    Android_LifecycleEventSem = SDL_CreateSemaphore(0);
-    if (!Android_LifecycleEventSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_LifecycleEventSem semaphore");
-    }
+    ALLOC_SEM(Android_NativeSurfaceCreatedSem);
+    ALLOC_SEM(Android_NativeSurfaceChangedSem);
+    ALLOC_SEM(Android_NativeSurfaceDestroyedSem);
+    ALLOC_SEM(Android_PauseSem);
+    ALLOC_SEM(Android_ResumeSem);
+    ALLOC_SEM(Android_BlockOnPauseSem);
 
-    Android_NativeSurfaceCreatedSem = SDL_CreateSemaphore(0);
-    if (!Android_NativeSurfaceCreatedSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceCreatedSem semaphore");
-    }
-
-    Android_NativeSurfaceChangedSem = SDL_CreateSemaphore(0);
-    if (!Android_NativeSurfaceChangedSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceChangedSem semaphore");
-    }
-
-    Android_NativeSurfaceDestroyedSem = SDL_CreateSemaphore(0);
-    if (!Android_NativeSurfaceDestroyedSem) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_NativeSurfaceDestroyedSem semaphore");
-    }
+#undef ALLOC_SEM
 
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
@@ -1101,114 +1093,12 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     SDL_SignalSemaphore(Android_NativeSurfaceCreatedSem);
     SDL_SignalSemaphore(Android_NativeSurfaceChangedSem);
     SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
+    SDL_SignalSemaphore(Android_PauseSem);
+    SDL_SignalSemaphore(Android_ResumeSem);
 
     return status;
 }
 
-static int FindLifecycleEvent(SDL_AndroidLifecycleEvent event)
-{
-    for (int index = 0; index < Android_NumLifecycleEvents; ++index) {
-        if (Android_LifecycleEvents[index] == event) {
-            return index;
-        }
-    }
-    return -1;
-}
-
-static void RemoveLifecycleEvent(int index)
-{
-    if (index < Android_NumLifecycleEvents - 1) {
-        SDL_memmove(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
-    }
-    --Android_NumLifecycleEvents;
-}
-
-void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event)
-{
-    SDL_LockMutex(Android_LifecycleMutex);
-    {
-        int index;
-        bool add_event = true;
-
-        switch (event) {
-        case SDL_ANDROID_LIFECYCLE_WAKE:
-            // We don't need more than one wake queued
-            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_WAKE);
-            if (index >= 0) {
-                add_event = false;
-            }
-            break;
-        case SDL_ANDROID_LIFECYCLE_PAUSE:
-            // If we have a resume queued, just stay in the paused state
-            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_RESUME);
-            if (index >= 0) {
-                RemoveLifecycleEvent(index);
-                add_event = false;
-            }
-            break;
-        case SDL_ANDROID_LIFECYCLE_RESUME:
-            // If we have a pause queued, just stay in the resumed state
-            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_PAUSE);
-            if (index >= 0) {
-                RemoveLifecycleEvent(index);
-                add_event = false;
-            }
-            break;
-        case SDL_ANDROID_LIFECYCLE_LOWMEMORY:
-            // We don't need more than one low memory event queued
-            index = FindLifecycleEvent(SDL_ANDROID_LIFECYCLE_LOWMEMORY);
-            if (index >= 0) {
-                add_event = false;
-            }
-            break;
-        case SDL_ANDROID_LIFECYCLE_DESTROY:
-            // Remove all other events, we're done!
-            while (Android_NumLifecycleEvents > 0) {
-                RemoveLifecycleEvent(0);
-            }
-            break;
-        default:
-            SDL_assert(!"Sending unexpected lifecycle event");
-            add_event = false;
-            break;
-        }
-
-        if (add_event) {
-            SDL_assert(Android_NumLifecycleEvents < SDL_arraysize(Android_LifecycleEvents));
-            Android_LifecycleEvents[Android_NumLifecycleEvents++] = event;
-            SDL_SignalSemaphore(Android_LifecycleEventSem);
-        }
-    }
-    SDL_UnlockMutex(Android_LifecycleMutex);
-}
-
-bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS)
-{
-    bool got_event = false;
-
-    while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS)) {
-        SDL_LockMutex(Android_LifecycleMutex);
-        {
-            if (Android_NumLifecycleEvents > 0) {
-                *event = Android_LifecycleEvents[0];
-                RemoveLifecycleEvent(0);
-                got_event = true;
-            }
-        }
-        SDL_UnlockMutex(Android_LifecycleMutex);
-    }
-    return got_event;
-}
-
-void Android_LockActivityState(void)
-{
-    SDL_LockMutex(Android_LifecycleMutex);
-}
-
-void Android_UnlockActivityState(void)
-{
-    SDL_UnlockMutex(Android_LifecycleMutex);
-}
 
 // Drop file
 
@@ -1602,6 +1492,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 // Called from surfaceCreated()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, jclass jcls)
 {
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceCreated");
+
     RPC_SendWithoutData(onNativeSurfaceCreated);
 
     if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceCreatedSem, SDL_MS_TO_NS(100))) {
@@ -1612,6 +1504,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
 // Called from surfaceChanged()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, jclass jcls)
 {
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceChanged");
+
     RPC_SendWithoutData(onNativeSurfaceChanged);
 
     if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceChangedSem, SDL_MS_TO_NS(100))) {
@@ -1622,10 +1516,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 // Called from surfaceDestroyed()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceDestroyed");
+
     RPC_SendWithoutData(onNativeSurfaceDestroyed);
 
+    // Timeout usally expires here, because the EventLoop is already paused.
     if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceDestroyedSem, SDL_MS_TO_NS(100))) {
-        SDL_Log("onNativeSurfaceDestroyed timeout expired");
+        SDL_Log("onNativeSurfaceDestroyed timeout expired (expected!)");
     }
 }
 
@@ -1828,7 +1725,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     JNIEnv *env, jclass cls)
 {
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_LOWMEMORY);
+    RPC_SendWithoutData(nativeLowMemory);
 }
 
 /* Locale
@@ -1858,7 +1755,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDarkModeChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     JNIEnv *env, jclass cls)
 {
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_DESTROY);
+    RPC_SendWithoutData(nativeSendQuit);
+
+    // Un-block main C thread. Can be needed
+    SDL_SignalSemaphore(Android_BlockOnPauseSem);
 }
 
 // Activity ends
@@ -1867,32 +1767,20 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 {
     const char *str;
 
-    if (Android_LifecycleMutex) {
-        SDL_DestroyMutex(Android_LifecycleMutex);
-        Android_LifecycleMutex = NULL;
-    }
+#define DESTROY_SEM(foo)                                    \
+    if (foo) {                                              \
+        SDL_DestroySemaphore(foo);                          \
+        foo = NULL;                                         \
+    }                                                       \
 
-    if (Android_LifecycleEventSem) {
-        SDL_DestroySemaphore(Android_LifecycleEventSem);
-        Android_LifecycleEventSem = NULL;
-    }
+    DESTROY_SEM(Android_NativeSurfaceCreatedSem);
+    DESTROY_SEM(Android_NativeSurfaceChangedSem);
+    DESTROY_SEM(Android_NativeSurfaceDestroyedSem);
+    DESTROY_SEM(Android_PauseSem);
+    DESTROY_SEM(Android_ResumeSem);
+    DESTROY_SEM(Android_BlockOnPauseSem);
 
-    if (Android_NativeSurfaceCreatedSem) {
-        SDL_DestroySemaphore(Android_NativeSurfaceCreatedSem);
-        Android_NativeSurfaceCreatedSem = NULL;
-    }
-
-    if (Android_NativeSurfaceChangedSem) {
-        SDL_DestroySemaphore(Android_NativeSurfaceChangedSem);
-        Android_NativeSurfaceChangedSem = NULL;
-    }
-
-    if (Android_NativeSurfaceDestroyedSem) {
-        SDL_DestroySemaphore(Android_NativeSurfaceDestroyedSem);
-        Android_NativeSurfaceDestroyedSem = NULL;
-    }
-
-    Android_NumLifecycleEvents = 0;
+#undef DESTROY_SEM
 
     Internal_Android_Destroy_AssetManager();
 
@@ -1910,7 +1798,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_PAUSE);
+    RPC_SendWithoutData(nativePause);
+
+    // Wait for completion
+    if (!SDL_WaitSemaphoreTimeoutNS(Android_PauseSem, -1)) {
+        SDL_Log("nativePause timeout expired");
+    }
 }
 
 // Resume
@@ -1919,7 +1812,30 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
 
-    Android_SendLifecycleEvent(SDL_ANDROID_LIFECYCLE_RESUME);
+    // First: send the resume CMD.
+
+    RPC_SendWithoutData(nativeResume);
+
+    // Un-block main C thread.
+    SDL_SignalSemaphore(Android_BlockOnPauseSem);
+
+    // It will consume the Resume CMD and get out of the PAUSE
+
+    // Wait for completion
+    if (!SDL_WaitSemaphoreTimeoutNS(Android_ResumeSem, -1)) {
+        SDL_Log("nativeResume timeout expired");
+    }
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume() done");
+}
+
+void Android_WaitForResume()
+{
+    SDL_WaitSemaphoreTimeoutNS(Android_BlockOnPauseSem, -1);
+}
+
+void Android_WakeUp()
+{
+    RPC_SendWithoutData(WakeUp);
 }
 
 typedef struct {
@@ -3377,6 +3293,16 @@ static void RPC_Send__(void *data, int len)
     SDL_UnlockMutex(RPC_Mutex);
 }
 
+void Android_LockActivityState(void)
+{
+    SDL_LockMutex(RPC_Mutex);
+}
+
+void Android_UnlockActivityState(void)
+{
+    SDL_UnlockMutex(RPC_Mutex);
+}
+
 void Android_PumpRPC(SDL_Window *window)
 {
     int nb_cmd = 0;
@@ -3475,16 +3401,49 @@ void Android_PumpRPC(SDL_Window *window)
                 {
                     RPC_GetNoData;
 
-                    // Pumped all events, so that we enter the Pause state.
-                    // and the GL context is backed up, before we destroy EGL Surface and native_window
-                    //
-                    // That's how it was before. Doesn't seem to make a big difference...
-
-                    Android_PumpLifecycleEvents(window);
+                    // onNativeSurfaceDestroyed comes always after nativePause
+                    // (see SDLActivity.java), so Paused has already been notified
 
                     Android_NativeSurfaceDestroyed(window);
 
                     SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
+                }
+                break;
+
+            case RPC_cmd_nativeSendQuit:
+                {
+                    RPC_GetNoData;
+                    Android_OnDestroy();
+                }
+                break;
+
+            case RPC_cmd_nativePause:
+                {
+                    RPC_GetNoData;
+                    Android_OnPause(window);
+
+                    SDL_SignalSemaphore(Android_PauseSem);
+                }
+                break;
+
+            case RPC_cmd_nativeResume:
+                {
+                    RPC_GetNoData;
+                    Android_OnResume(window);
+
+                    SDL_SignalSemaphore(Android_ResumeSem);
+                }
+                break;
+
+            case RPC_cmd_WakeUp:
+                {
+                    RPC_GetNoData;
+
+                    // TODO: something here ? what's the use case ? clear blocOnPause ?
+                    //
+                    // this is not sent by SDLActivity.
+
+                    // Finish handling events quickly if we're not paused
                 }
                 break;
 
@@ -3590,6 +3549,14 @@ void Android_PumpRPC(SDL_Window *window)
 
                     // TODO: compute new mime types
                     SDL_SendClipboardUpdate(false, NULL, 0);
+                }
+                break;
+
+            case RPC_cmd_nativeLowMemory:
+                {
+                    RPC_GetNoData;
+
+                    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
                 }
                 break;
 
