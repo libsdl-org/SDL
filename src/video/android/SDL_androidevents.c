@@ -33,10 +33,14 @@
 
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-static void android_egl_context_restore(SDL_Window *window)
+// Restore EGL context when we have both:
+// nativeSurfaceCreated()
+// and SDLActivity hasFocus();
+void Android_egl_context_restore(SDL_Window *window)
 {
-    if (window) {
-        SDL_WindowData *data = window->internal;
+    SDL_WindowData *data = window->internal;
+
+    if (data->backup_done && data->hasFocus && data->egl_surface != EGL_NO_SURFACE) {
         SDL_GL_MakeCurrent(window, NULL);
         if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
             // The context is no longer valid, create a new one
@@ -54,24 +58,22 @@ static void android_egl_context_restore(SDL_Window *window)
     }
 }
 
-static void android_egl_context_backup(SDL_Window *window)
+static void Android_egl_context_backup(SDL_Window *window)
 {
-    if (window) {
-        int interval = 0;
-        // Keep a copy of the EGL Context so we can try to restore it when we resume
-        SDL_WindowData *data = window->internal;
-        data->egl_context = SDL_GL_GetCurrentContext();
+    int interval = 0;
+    // Keep a copy of the EGL Context so we can try to restore it when we resume
+    SDL_WindowData *data = window->internal;
+    data->egl_context = SDL_GL_GetCurrentContext();
 
-        // Save/Restore the swap interval / vsync
-        if (SDL_GL_GetSwapInterval(&interval)) {
-            data->has_swap_interval = 1;
-            data->swap_interval = interval;
-        }
-
-        // We need to do this so the EGLSurface can be freed
-        SDL_GL_MakeCurrent(window, NULL);
-        data->backup_done = true;
+    // Save/Restore the swap interval / vsync
+    if (SDL_GL_GetSwapInterval(&interval)) {
+        data->has_swap_interval = 1;
+        data->swap_interval = interval;
     }
+
+    // We need to do this so the EGLSurface can be freed
+    SDL_GL_MakeCurrent(window, NULL);
+    data->backup_done = true;
 }
 #endif
 
@@ -103,6 +105,7 @@ static void Android_PauseAudio(void)
 
 static void Android_ResumeAudio(void)
 {
+
     if (Android_PausedAudio) {
         OPENSLES_ResumeDevices();
         AAUDIO_ResumeDevices();
@@ -110,7 +113,7 @@ static void Android_ResumeAudio(void)
     }
 }
 
-static void Android_OnPause(void)
+void Android_OnPause(SDL_Window *window)
 {
     SDL_OnApplicationWillEnterBackground();
     SDL_OnApplicationDidEnterBackground();
@@ -121,10 +124,8 @@ static void Android_OnPause(void)
      * was being queued.
      */
 #ifdef SDL_VIDEO_OPENGL_EGL
-    if (Android_Window && !Android_Window->external_graphics_context) {
-        Android_LockActivityMutex();
-        android_egl_context_backup(Android_Window);
-        Android_UnlockActivityMutex();
+    if (window && !window->external_graphics_context) {
+        Android_egl_context_backup(window);
     }
 #endif
 
@@ -136,7 +137,7 @@ static void Android_OnPause(void)
     Android_Paused = true;
 }
 
-static void Android_OnResume(void)
+void Android_OnResume(SDL_Window *window)
 {
     Android_Paused = false;
 
@@ -146,22 +147,15 @@ static void Android_OnResume(void)
 
 #ifdef SDL_VIDEO_OPENGL_EGL
     // Restore the GL Context from here, as this operation is thread dependent
-    if (Android_Window && !Android_Window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
-        Android_LockActivityMutex();
-        android_egl_context_restore(Android_Window);
-        Android_UnlockActivityMutex();
+    if (window && !window->external_graphics_context && !SDL_HasEvent(SDL_EVENT_QUIT)) {
+        Android_egl_context_restore(window);
     }
 #endif
 
     SDL_OnApplicationDidEnterForeground();
 }
 
-static void Android_OnLowMemory(void)
-{
-    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
-}
-
-static void Android_OnDestroy(void)
+void Android_OnDestroy(void)
 {
     // Make sure we unblock any audio processing before we quit
     Android_ResumeAudio();
@@ -176,86 +170,77 @@ static void Android_OnDestroy(void)
     Android_Destroyed = true;
 }
 
-static void Android_HandleLifecycleEvent(SDL_AndroidLifecycleEvent event)
+void Android_PumpEvents()
 {
-    switch (event) {
-    case SDL_ANDROID_LIFECYCLE_WAKE:
-        // Nothing to do, just return
-        break;
-    case SDL_ANDROID_LIFECYCLE_PAUSE:
-        Android_OnPause();
-        break;
-    case SDL_ANDROID_LIFECYCLE_RESUME:
-        Android_OnResume();
-        break;
-    case SDL_ANDROID_LIFECYCLE_LOWMEMORY:
-        Android_OnLowMemory();
-        break;
-    case SDL_ANDROID_LIFECYCLE_DESTROY:
-        Android_OnDestroy();
-        break;
-    default:
-        break;
-    }
-}
-
-static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
-{
-    if (Android_Paused) {
-        if (Android_BlockOnPause) {
-            timeoutNS = -1;
-        } else if (timeoutNS == 0) {
-            timeoutNS = SDL_MS_TO_NS(100);
-        }
-    }
-    return timeoutNS;
-}
-
-void Android_PumpEvents(Sint64 timeoutNS)
-{
-    SDL_AndroidLifecycleEvent event;
-    bool paused = Android_Paused;
-
-    while (!Android_Destroyed &&
-           Android_WaitLifecycleEvent(&event, GetLifecycleEventTimeout(paused, timeoutNS))) {
-        Android_HandleLifecycleEvent(event);
-
-        switch (event) {
-        case SDL_ANDROID_LIFECYCLE_WAKE:
-            // Finish handling events quickly if we're not paused
-            timeoutNS = 0;
-            break;
-        case SDL_ANDROID_LIFECYCLE_PAUSE:
-            // Finish handling events at the current timeout and return to process events one more time before blocking.
-            break;
-        case SDL_ANDROID_LIFECYCLE_RESUME:
-            // Finish handling events at the resume state timeout
-            paused = false;
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-bool Android_WaitActiveAndLockActivity(void)
-{
-    /* Make sure we have pumped all events so that Android_Paused state is correct */
-    SDL_AndroidLifecycleEvent event;
-    while (!Android_Destroyed && Android_WaitLifecycleEvent(&event, 0)) {
-        Android_HandleLifecycleEvent(event);
-    }
-
-    while (Android_Paused && !Android_Destroyed) {
-        Android_PumpEvents(-1);
-    }
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *window = _this ? _this->windows : NULL;
 
     if (Android_Destroyed) {
-        SDL_SetError("Android activity has been destroyed");
+        return;
+    }
+
+    Android_PumpRPC(window);
+}
+
+
+// return 'true' if app has been blocked
+bool Android_BlockEventLoop()
+{
+    if (Android_Destroyed) {
         return false;
     }
 
-    Android_LockActivityMutex();
+    if (Android_Paused) {
+        if (Android_BlockOnPause) {
+            SDL_Log("BlockOnPause");
+            Android_WaitForResume();
+            SDL_Log("BlockOnPause...resume");
+
+            // app has been blocked. now we're unblocked.
+            // pump to get 'resume' command (eg RPC_cmd_nativeResume).
+
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
+            SDL_Window *window = _this ? _this->windows : NULL;
+            Android_PumpRPC(window);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool Android_WaitActiveAndLockActivity(SDL_Window *window)
+{
+retry:
+
+    // Lock first.
+    // So no new lifecycle event comes in the meantimes from the SDLActivity,
+    // Hence SDLActivity won't change state.
+    Android_LockActivityState();
+
+    // Pump all events so that Android_Paused state is correct
+    Android_PumpRPC(window);
+
+    if (Android_Destroyed) {
+        SDL_SetError("Android activity has been destroyed");
+        Android_UnlockActivityState();
+        return false;
+    }
+
+    if (!Android_Paused) {
+        // SDLActivity is Active. return lock'ed
+        return true;
+    } else {
+        // Still Paused
+        // Unlock and wait for the SDLActivity to send new cycle events
+        // or for the user to move the app to foreground.
+        Android_UnlockActivityState();
+        SDL_Delay(10);
+        goto retry;
+    }
+
     return true;
 }
 
