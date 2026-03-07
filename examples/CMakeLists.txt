@@ -126,6 +126,7 @@ macro(add_sdl_example_executable TARGET)
     endif()
 endmacro()
 
+add_sdl_example_executable(video-menubar SOURCES video/01-menubar/menubar.c)
 add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/clear.c)
 add_sdl_example_executable(renderer-primitives SOURCES renderer/02-primitives/primitives.c)
 add_sdl_example_executable(renderer-lines SOURCES renderer/03-lines/lines.c)

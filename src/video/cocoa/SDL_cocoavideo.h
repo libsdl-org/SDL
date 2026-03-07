@@ -65,6 +65,19 @@ typedef enum
 @property(nonatomic) CGFloat mainDisplayHeight;
 @end
 
+@interface PlatformMenuData : NSObject {
+@public
+    SDL_MenuBar *menu_bar;
+    NSMenu *menu;
+    NSMenuItem *menu_item;
+    Uint16 user_event_type;
+}
+
+- (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;
+
+@end
+
+
 // Utility functions
 extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
