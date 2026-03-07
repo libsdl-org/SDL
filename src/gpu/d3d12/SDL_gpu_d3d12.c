@@ -8107,7 +8107,10 @@ static bool D3D12_Submit(
 
         windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
         (void)SDL_AtomicIncRef(&d3d12CommandBuffer->inFlightFence->referenceCount);
-        windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
+
+        // Normally this is '% allowedFramesInFlight', but the value gets clamped
+        // at swapchain creation time, so use swapchainTextureCount instead
+        windowData->frameCounter = (windowData->frameCounter + 1) % windowData->swapchainTextureCount;
     }
 
     // Check for cleanups
