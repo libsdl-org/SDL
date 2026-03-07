@@ -35,6 +35,7 @@
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
 #define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x04
+#define RAW_KEYBOARD_FLAG_INPUTSINK 0x08
 
 typedef struct
 {
@@ -84,6 +85,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         devices[count].dwFlags = 0;
         if (data->flags & RAW_KEYBOARD_FLAG_NOHOTKEYS) {
             devices[count].dwFlags |= RIDEV_NOHOTKEYS;
+        }
+        if (data->flags & RAW_KEYBOARD_FLAG_INPUTSINK) {
+            devices[count].dwFlags |= RIDEV_INPUTSINK;
         }
         devices[count].hwndTarget = window;
         ++count;
@@ -215,6 +219,9 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
         if (data->raw_keyboard_flag_nohotkeys) {
             flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
         }
+        if (data->raw_keyboard_flag_inputsink) {
+            flags |= RAW_KEYBOARD_FLAG_INPUTSINK;
+        }
     }
     if (flags != data->raw_input_enabled) {
         if (WIN_SetRawInputEnabled(_this, flags)) {
@@ -263,7 +270,8 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 }
 
 typedef enum WIN_RawKeyboardFlag {
-    NOHOTKEYS
+    NOHOTKEYS,
+    INPUTSINK,
 } WIN_RawKeyboardFlag;
 
 static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
@@ -273,6 +281,9 @@ static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag f
     switch(flag) {
         case NOHOTKEYS:
             data->raw_keyboard_flag_nohotkeys = enabled;
+            break;
+        case INPUTSINK:
+            data->raw_keyboard_flag_inputsink = enabled;
             break;
         default:
             return false;
@@ -288,6 +299,11 @@ static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag f
 bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
 {
     return WIN_SetRawKeyboardFlag(_this, NOHOTKEYS, enabled);
+}
+
+bool WIN_SetRawKeyboardFlag_Inputsink(SDL_VideoDevice *_this, bool enabled)
+{
+    return WIN_SetRawKeyboardFlag(_this, INPUTSINK, enabled);
 }
 
 #else
