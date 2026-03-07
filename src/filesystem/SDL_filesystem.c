@@ -382,6 +382,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
         char *ptr = &pathcpy[pathlen-1];
         while ((ptr > pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
             *(ptr--) = '\0';
+            --pathlen;
         }
         path = pathcpy;
     }
@@ -425,7 +426,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     data.enumerator = enumerator;
     data.getpathinfo = getpathinfo;
     data.fsuserdata = userdata;
-    data.basedirlen = *path ? (SDL_strlen(path) + 1) : 0;  // +1 for the '/' we'll be adding.
+    data.basedirlen = *path ? (pathlen + 1) : 0;  // +1 for the '/' we'll be adding.
 
 
     char **result = NULL;
