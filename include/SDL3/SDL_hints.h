@@ -4552,6 +4552,9 @@ extern "C" {
  */
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
 
+
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
+
 /**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *

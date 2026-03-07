@@ -774,7 +774,8 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
 
     if (down) {
         SDL_Window *focus = SDL_GetKeyboardFocus();
-        if (!focus || focus->text_input_active) {
+        // With input sink flag we want to receive input even if not focused
+        if ((!data->raw_keyboard_flag_inputsink && !focus) || (focus && focus->text_input_active)) {
             return;
         }
     }
