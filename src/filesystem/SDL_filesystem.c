@@ -426,8 +426,15 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     data.enumerator = enumerator;
     data.getpathinfo = getpathinfo;
     data.fsuserdata = userdata;
-    data.basedirlen = *path ? (pathlen + 1) : 0;  // +1 for the '/' we'll be adding.
 
+    data.basedirlen = 0;
+    if (*path) {
+        if (SDL_strcmp(path, "/") == 0 || SDL_strcmp(path, "\\") == 0) {
+            data.basedirlen = 1;
+        } else {
+            data.basedirlen = pathlen + 1; // +1 for the '/' we'll be adding.
+        }
+    }
 
     char **result = NULL;
     if (data.enumerator(path, GlobDirectoryCallback, &data, data.fsuserdata)) {
