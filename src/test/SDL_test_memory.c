@@ -433,7 +433,7 @@ void SDLTest_LogAllocations(void)
                         }
                         dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line);
                     }
-                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
+                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%" SDL_PRIx64 " %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
                 }
 #endif
                 (void)SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], stack_entry_description);

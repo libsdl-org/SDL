@@ -88,10 +88,10 @@ static int SDLCALL timer_delayAndGetTicks(void *arg)
     SDLTest_AssertPass("Call to SDL_GetTicks()");
     SDLTest_AssertCheck(result2 > 0, "Check result value, expected: >0, got: %" SDL_PRIu64, result2);
     difference = result2 - result;
-    SDLTest_AssertCheck(difference > (testDelay - marginOfError), "Check difference, expected: >%d, got: %" SDL_PRIu64, testDelay - marginOfError, difference);
+    SDLTest_AssertCheck(difference > (testDelay - marginOfError), "Check difference, expected: >%d, got: %" SDL_PRIs64, testDelay - marginOfError, difference);
 #if 0
     /* Disabled because this might fail on non-interactive systems. Moved to testtimer. */
-    SDLTest_AssertCheck(difference < (testDelay + marginOfError), "Check difference, expected: <%d, got: %" SDL_PRIu64, testDelay + marginOfError, difference);
+    SDLTest_AssertCheck(difference < (testDelay + marginOfError), "Check difference, expected: <%d, got: %" SDL_PRIs64, testDelay + marginOfError, difference);
 #endif
 
     return TEST_COMPLETED;

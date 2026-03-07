@@ -554,7 +554,7 @@ dump_monitor_info (MonitorInfo *info)
     printf ("Checksum: %d (%s)\n",
 	    info->checksum, info->checksum? "incorrect" : "correct");
     printf ("Manufacturer Code: %s\n", info->manufacturer_code);
-    printf ("Product Code: 0x%x\n", info->product_code);
+    printf ("Product Code: 0x%x\n", (unsigned int)info->product_code);
     printf ("Serial Number: %u\n", info->serial_number);
     
     if (info->production_week != -1)

@@ -1040,7 +1040,7 @@ void WIN_CheckKeyboardAndMouseHotplug(bool hid_loaded)
         }
         *ptr = '\0';
 
-        SDL_sscanf(instance, "HID\\VID_%X&PID_%X&", &vendor, &product);
+        SDL_sscanf(instance, "HID\\VID_%X&PID_%X&", (unsigned int*)&vendor, (unsigned int*)&product);
 
         switch (dwType) {
         case RIM_TYPEKEYBOARD:

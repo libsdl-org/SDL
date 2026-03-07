@@ -223,7 +223,7 @@ static int unifont_init(const char *fontname)
             return -1;
         }
         if (codepoint > UNIFONT_MAX_CODEPOINT) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.", lineNumber, UNIFONT_MAX_CODEPOINT);
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.", lineNumber, (unsigned int)UNIFONT_MAX_CODEPOINT);
         }
 
         /* If there was glyph data read in the last file read, move it to the front of the buffer. */

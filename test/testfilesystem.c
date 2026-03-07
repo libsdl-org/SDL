@@ -36,7 +36,7 @@ static SDL_EnumerationResult SDLCALL enum_callback(void *userdata, const char *o
         } else {
             type = "OTHER";
         }
-        SDL_Log("DIRECTORY %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
+        SDL_Log("DIRECTORY %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIs64 ", mod=%" SDL_PRIs64 ", access=%" SDL_PRIs64 ")",
                 fullpath, type, info.size, info.modify_time, info.create_time, info.access_time);
 
         if (info.type == SDL_PATHTYPE_DIRECTORY) {
@@ -73,7 +73,7 @@ static SDL_EnumerationResult SDLCALL enum_storage_callback(void *userdata, const
         } else {
             type = "OTHER";
         }
-        SDL_Log("STORAGE %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
+        SDL_Log("STORAGE %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIs64 ", mod=%" SDL_PRIs64 ", access=%" SDL_PRIs64 ")",
                 fullpath, type, info.size, info.modify_time, info.create_time, info.access_time);
 
         if (info.type == SDL_PATHTYPE_DIRECTORY) {

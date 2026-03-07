@@ -2292,27 +2292,27 @@ char *GetJoystickDisplayElementAt(JoystickDisplay *ctx, SDL_Joystick *joystick, 
             dst.w = ctx->button_width;
             dst.h = ctx->button_height;
             if (SDL_PointInRectFloat(&point, &dst)) {
-                SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_LEFT);
+                SDL_asprintf(&element, "h%d.%u", i, SDL_HAT_LEFT);
                 return element;
             }
 
             dst.x += ctx->button_width;
             dst.y -= ctx->button_height;
             if (SDL_PointInRectFloat(&point, &dst)) {
-                SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_UP);
+                SDL_asprintf(&element, "h%d.%u", i, SDL_HAT_UP);
                 return element;
             }
 
             dst.y += ctx->button_height * 2;
             if (SDL_PointInRectFloat(&point, &dst)) {
-                SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_DOWN);
+                SDL_asprintf(&element, "h%d.%u", i, SDL_HAT_DOWN);
                 return element;
             }
 
             dst.x += ctx->button_width;
             dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
             if (SDL_PointInRectFloat(&point, &dst)) {
-                SDL_asprintf(&element, "h%d.%d", i, SDL_HAT_RIGHT);
+                SDL_asprintf(&element, "h%d.%u", i, SDL_HAT_RIGHT);
                 return element;
             }
 

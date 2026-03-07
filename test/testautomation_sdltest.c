@@ -152,63 +152,63 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
-        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
-        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
-        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
-        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
-        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
-        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xff, false) returns 0 (no error) */
     uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(1, 255, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters (1,255,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,255,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -218,7 +218,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xff,
-        "Validate result value for parameters (0,254,false); expected: 0xff, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,254,false); expected: 0xff, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -228,7 +228,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint8(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint8BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters(0,255,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters(0,255,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,
@@ -261,63 +261,63 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
-        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
-        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
-        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
-        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
-        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
-        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xffff, false) returns 0 (no error) */
     uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(1, 0xffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters (1,0xffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,0xffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -327,7 +327,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xffff,
-        "Validate result value for parameters (0,0xfffe,false); expected: 0xffff, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,0xfffe,false); expected: 0xffff, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -337,7 +337,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint16(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint16BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters(0,0xffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters(0,0xffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,
@@ -370,63 +370,63 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
-        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
-        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
-        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
-        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
-        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
-        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xffffffff, false) returns 0 (no error) */
     uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(1, 0xffffffff, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters (1,0xffffffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,0xffffffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -436,7 +436,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xffffffff,
-        "Validate result value for parameters (0,0xfffffffe,false); expected: 0xffffffff, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,0xfffffffe,false); expected: 0xffffffff, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -446,7 +446,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint32(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint32BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters(0,0xffffffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters(0,0xffffffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,
@@ -479,63 +479,63 @@ static int SDLCALL sdltest_randomBoundaryNumberUint64(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10,
-        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,10,true); expected: 10, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 11, true) returns 10, 11 */
     uresult = SDLTest_RandomUint64BoundaryValue(10, 11, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11,
-        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,11,true); expected: 10|11, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 12, true) returns 10, 11, 12 */
     uresult = SDLTest_RandomUint64BoundaryValue(10, 12, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12,
-        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,12,true); expected: 10|11|12, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 13, true) returns 10, 11, 12, 13 */
     uresult = SDLTest_RandomUint64BoundaryValue(10, 13, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 12 || uresult == 13,
-        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,13,true); expected: 10|11|12|13, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(10, 20, true) returns 10, 11, 19 or 20 */
     uresult = SDLTest_RandomUint64BoundaryValue(10, 20, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (10,20,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(20, 10, true) returns 10, 11, 19 or 20 */
     uresult = SDLTest_RandomUint64BoundaryValue(20, 10, true);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 10 || uresult == 11 || uresult == 19 || uresult == 20,
-        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (20,10,true); expected: 10|11|19|20, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 20, false) returns 0, 21 */
     uresult = SDLTest_RandomUint64BoundaryValue(1, 20, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0 || uresult == 21,
-        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,20,false); expected: 0|21, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(0, 99, false) returns 100 */
     uresult = SDLTest_RandomUint64BoundaryValue(0, 99, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 100,
-        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,99,false); expected: 100, got: %" SDL_PRIu64, uresult);
 
     /* RandomUintXBoundaryValue(1, 0xffffffffffffffff, false) returns 0 (no error) */
     uresult = SDLTest_RandomUint64BoundaryValue(1, 0xffffffffffffffffULL, false);
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters (1,0xffffffffffffffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (1,0xffffffffffffffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -545,7 +545,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint64(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0xffffffffffffffffULL,
-        "Validate result value for parameters (0,0xfffffffffffffffe,false); expected: 0xffffffffffffffff, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters (0,0xfffffffffffffffe,false); expected: 0xffffffffffffffff, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
@@ -555,7 +555,7 @@ static int SDLCALL sdltest_randomBoundaryNumberUint64(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomUint64BoundaryValue");
     SDLTest_AssertCheck(
         uresult == 0,
-        "Validate result value for parameters(0,0xffffffffffffffff,false); expected: 0, got: %" SDL_PRIs64, uresult);
+        "Validate result value for parameters(0,0xffffffffffffffff,false); expected: 0, got: %" SDL_PRIu64, uresult);
     lastError = SDL_GetError();
     SDLTest_AssertPass("SDL_GetError()");
     SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,

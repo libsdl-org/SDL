@@ -1132,7 +1132,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
 
     //device->spec.channels = 8;
     //SDL_SetLogPriority(SDL_LOG_CATEGORY_AUDIO, SDL_LOG_PRIORITY_VERBOSE);
-    LOGDEBUG("channels requested %u",device->spec.channels);
+    LOGDEBUG("channels requested %d",device->spec.channels);
     // XXX: We do not use the SDL internal swizzler yet.
     device->chmap = NULL;
 
@@ -1178,7 +1178,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
     snd_pcm_uframes_t bufsize;
     ALSA_snd_pcm_hw_params_get_buffer_size(cfg_ctx.hwparams, &bufsize);
     SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO,
-                     "ALSA: period size = %ld, periods = %u, buffer size = %lu",
+                     "ALSA: period size = %lu, periods = %u, buffer size = %lu",
                      cfg_ctx.persize, cfg_ctx.periods, bufsize);
     #endif
 
