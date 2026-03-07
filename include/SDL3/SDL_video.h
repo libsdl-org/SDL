@@ -3019,7 +3019,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressValue(SDL_Window *window, 
 extern SDL_DECLSPEC float SDLCALL SDL_GetWindowProgressValue(SDL_Window *window);
 
 /**
- * Assigns a menu_bar to the given window, which will take ownership of it's destruction. NULL
+ * Assigns a menu_bar to the given window, which will take ownership of its destruction. NULL
  * releases the menu_bar without destroying it.
  */
 
@@ -3133,7 +3133,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 /**
  * Creates an empty menu bar, on platforms that support it, also creates an empty app menu.
  *
- * \returns a pointer to a menu bar, or -1 on failure; call SDL_GetError() for more
+ * \returns a pointer to a menu bar, or NULL on failure; call SDL_GetError() for more
  *          information.
  *
  * \threadsafety This function should only be called on the main thread.
@@ -3212,9 +3212,9 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetMenuChildItems(SDL_MenuItem *menu_as_i
  * SDL_MENUITEM_SUBMENU.
  *
  * \param menu_as_item the menu item to get the child of.
- * \param index of the child to get.
- * \returns the number of children of the given menu, or -1 on failure; call SDL_GetError() for more
- *          information.
+ * \param index index of the child to get.
+ * \returns the child SDL_MenuItem at the given index under the given SDL_MenuItem, or NULL on failure; 
+ *          call SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -3244,7 +3244,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMenuItemLabel(SDL_MenuItem *menu
  * Cannot set the label of a SDL_MENUITEM_MENUBAR or an App Menu.
  *
  * \param menu_item the menu item to set the label of.
- * \param label the string to set for the menu_items label..
+ * \param label the string to set for the menu_items label.
  * \returns a pointer to the label of the given menu_item, or NULL on failure;
  *          call SDL_GetError() for more information.
  *
@@ -3296,8 +3296,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetMenuItemChecked(SDL_MenuItem *menu_item,
 /**
  * Sets the given menu_item (which must be an SDL_MENUITEM_CHECKABLE) to be checked or unchecked.
  * 
- * \param menu_item the menu item to have it's state changed.
- * \param checked the value to set for if the menu_item is checked or unchecked.
+ * \param menu_item the menu item to have its state changed.
+ * \param checked the value to set the menu_item to; checked or unchecked.
  * \returns true on success, or false on failure; call SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
@@ -3323,7 +3323,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetMenuItemEnabled(SDL_MenuItem *menu_item,
  * Sets the given menu_item to be enabled or disabled.
  * 
  * \param menu_item the menu item to have it's state changed.
- * \param enabled the value to set for if the menu_item is enabled or disabled.
+ * \param enabled the value to set the menu_item to; enabled or disabled.
  * \returns true on success, or false on failure; call SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
@@ -3333,11 +3333,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetMenuItemEnabled(SDL_MenuItem *menu_item,
 extern SDL_DECLSPEC bool SDLCALL SDL_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
 
 /**
- * Destroys the given menu_item and all of it's children.
+ * Destroys the given menu_item and all of its children.
  * 
  * If called on an SDL_MENUITEM_MENUBAR, the menu bar will be unset from a window it may be 
  * set to. If called on an SDL_MENUITEM_SUBMENU that happens to be the AppMenu for a menu
- * bar, only it's children will be destroyed, not the AppMenu itself. If called on anything
+ * bar, only its children will be destroyed, not the AppMenu itself. If called on anything
  * else, the item will be removed from menu tree it's part of.
  * 
  * \param menu_item the menu item to be destroyed.
