@@ -1181,7 +1181,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         // Align pickup selector mappings with PS3 instruments
         static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
         if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, effects_mappings[packet->rgucDeviceSpecific[0]]);
+            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
         }
     }
 
