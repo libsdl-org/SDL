@@ -3345,6 +3345,11 @@ bool SDL_IsJoystickWGI(SDL_GUID guid)
     return (guid.data[14] == 'w') ? true : false;
 }
 
+bool SDL_IsJoystickGameInput(SDL_GUID guid)
+{
+    return (guid.data[14] == 'g') ? true : false;
+}
+
 bool SDL_IsJoystickHIDAPI(SDL_GUID guid)
 {
     return (guid.data[14] == 'h') ? true : false;
@@ -3435,6 +3440,10 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     }
 
     if (SDL_IsJoystickWGI(guid)) {
+        return (SDL_JoystickType)guid.data[15];
+    }
+
+    if (SDL_IsJoystickGameInput(guid)) {
         return (SDL_JoystickType)guid.data[15];
     }
 
