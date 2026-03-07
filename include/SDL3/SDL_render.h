@@ -169,6 +169,7 @@ struct SDL_Texture
 
 typedef struct SDL_Texture SDL_Texture;
 
+
 /* Function prototypes */
 
 /**
@@ -2434,8 +2435,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *rende
 
 /**
  * Render a list of triangles, optionally using a texture and indices into the
- * vertex array Color and alpha modulation is done per vertex
- * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ * vertex array.
+ *
+ * Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and
+ * SDL_SetTextureAlphaMod are ignored).
  *
  * \param renderer the rendering context.
  * \param texture (optional) The SDL texture to use.
@@ -2463,6 +2466,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
 /**
  * Render a list of triangles, optionally using a texture and indices into the
  * vertex arrays.
+ *
+ * Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and
+ * SDL_SetTextureAlphaMod are ignored).
  *
  * \param renderer the rendering context.
  * \param texture (optional) The SDL texture to use.
