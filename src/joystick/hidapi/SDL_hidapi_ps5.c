@@ -474,6 +474,10 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->playerled_supported = true;
             }
 
+            if (capabilities2 & 0x01) {
+                ctx->report_battery = true;
+            }
+
             switch (device_type) {
             case 0x00:
                 joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
@@ -508,6 +512,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             }
 
             ctx->use_alternate_report = true;
+            ctx->report_battery = true;
 
             if (device->vendor_id == USB_VENDOR_NACON_ALT &&
                 (device->product_id == USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRED ||
@@ -1463,6 +1468,36 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
         touchpad_x = packet->rgucTouchpadData2[0] | (((int)packet->rgucTouchpadData2[1] & 0x0F) << 8);
         touchpad_y = (packet->rgucTouchpadData2[1] >> 4) | ((int)packet->rgucTouchpadData2[2] << 4);
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
+    }
+
+    if (ctx->report_battery) {
+        SDL_PowerState state;
+        int percent;
+        Uint8 status = (packet->ucBatteryLevel >> 4) & 0x0F;
+        Uint8 level = (packet->ucBatteryLevel & 0x0F);
+
+        // 0x0C means a controller isn't reporting battery levels
+        if (level != 0x0C) {
+            switch (status) {
+            case 0:
+                state = SDL_POWERSTATE_ON_BATTERY;
+                percent = SDL_min(level * 10 + 5, 100);
+                break;
+            case 1:
+                state = SDL_POWERSTATE_CHARGING;
+                percent = SDL_min(level * 10 + 5, 100);
+                break;
+            case 2:
+                state = SDL_POWERSTATE_CHARGED;
+                percent = 100;
+                break;
+            default:
+                state = SDL_POWERSTATE_UNKNOWN;
+                percent = 0;
+                break;
+            }
+            SDL_SendJoystickPowerInfo(joystick, state, percent);
+        }
     }
 
     HIDAPI_DriverPS5_HandleStatePacketCommon(joystick, dev, ctx, (PS5StatePacketCommon_t *)packet, timestamp);
