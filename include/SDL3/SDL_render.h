@@ -3093,7 +3093,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPURenderState(SDL_GPURenderState *s
  *
  * This function MUST be called on the application's render thread.
  *
- * \param renderer the renderer which should suspend operation
+ * \param renderer the renderer which should suspend operation.
  *
  * \since This function is available since SDL 3.6.0.
  *
@@ -3110,7 +3110,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer);
  *
  * This function MUST be called on the application's render thread.
  *
- * \param renderer the renderer which should resume operation
+ * \param renderer the renderer which should resume operation.
  *
  * \since This function is available since SDL 3.6.0.
  *
