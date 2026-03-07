@@ -2038,17 +2038,17 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 {
     switch ([theEvent phase]) {
     case NSEventPhaseBegan:
-        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0, 0, 0, 0, 0);
         break;
     case NSEventPhaseChanged:
         {
             CGFloat scale = 1.0f + [theEvent magnification];
-            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale);
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale, 0, 0, 0, 0);
         }
         break;
     case NSEventPhaseEnded:
     case NSEventPhaseCancelled:
-        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0, 0, 0, 0, 0);
         break;
     default:
         break;
