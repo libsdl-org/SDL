@@ -1221,6 +1221,24 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             pipelineDescriptor.vertexDescriptor = vertexDescriptor;
         }
 
+        // Primitive
+
+        switch (createinfo->primitive_type) {
+            case SDL_GPU_PRIMITIVETYPE_TRIANGLELIST:
+            case SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP:
+                pipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassTriangle;
+                break;
+            case SDL_GPU_PRIMITIVETYPE_LINELIST:
+            case SDL_GPU_PRIMITIVETYPE_LINESTRIP:
+                pipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassLine;
+                break;
+            case SDL_GPU_PRIMITIVETYPE_POINTLIST:
+                pipelineDescriptor.inputPrimitiveTopology = MTLPrimitiveTopologyClassPoint;
+                break;
+        }
+
+        // Props
+
         if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
             const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
             pipelineDescriptor.label = @(name);
