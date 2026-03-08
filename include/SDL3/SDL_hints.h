@@ -4565,6 +4565,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  *
+ * \since This hint is available since SDL 3.4.4.
  */
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
 
