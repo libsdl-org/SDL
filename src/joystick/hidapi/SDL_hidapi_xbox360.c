@@ -147,14 +147,14 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
             unsigned char buf[20];
             int ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
             if (ret == sizeof(buf)) {
-                ctx->capabilities.flags = buf[18] << 8 | buf[19];
-                ctx->capabilities.gamepad.wButtons = (buf[3] << 8) | buf[2];
+                ctx->capabilities.flags = LOAD16(buf[18], buf[19]);
+                ctx->capabilities.gamepad.wButtons = LOAD16(buf[2], buf[3]);
                 ctx->capabilities.gamepad.bLeftTrigger = buf[4];
                 ctx->capabilities.gamepad.bRightTrigger = buf[5];
-                ctx->capabilities.gamepad.sThumbLX = (buf[7] << 8) | buf[6];
-                ctx->capabilities.gamepad.sThumbLY = (buf[9] << 8) | buf[8];
-                ctx->capabilities.gamepad.sThumbRX = (buf[11] << 8) | buf[10];
-                ctx->capabilities.gamepad.sThumbRY = (buf[13] << 8) | buf[12];
+                ctx->capabilities.gamepad.sThumbLX = LOAD16(buf[6], buf[7]);
+                ctx->capabilities.gamepad.sThumbLY = LOAD16(buf[8], buf[9]);
+                ctx->capabilities.gamepad.sThumbRX = LOAD16(buf[10], buf[11]);
+                ctx->capabilities.gamepad.sThumbRY = LOAD16(buf[12], buf[13]);
             }
             ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x00, 0x0, buf, 8, 100);
             if (ret == 8) {
@@ -165,7 +165,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
             SDL_Log("Xbox 360 capabilities:");
             SDL_Log("   type: %02x", ctx->capabilities.type);
             SDL_Log("   subType: %02x", ctx->capabilities.subType);
-            SDL_Log("   flags: %02x", ctx->capabilities.flags);
+            SDL_Log("   flags: %04x", ctx->capabilities.flags);
             SDL_Log("   wButtons: %02x", ctx->capabilities.gamepad.wButtons);
             SDL_Log("   bLeftTrigger: %02x", ctx->capabilities.gamepad.bLeftTrigger);
             SDL_Log("   bRightTrigger: %02x", ctx->capabilities.gamepad.bRightTrigger);

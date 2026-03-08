@@ -386,13 +386,13 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                 UpdatePowerLevel(joystick, data[4]);
             }
         } else if (data[0] == 0x00 && data[1] == 0x05 && data[5] == 0x12) {
-            ctx->capabilities.gamepad.wButtons = (data[7] << 8) | data[6];
+            ctx->capabilities.gamepad.wButtons = LOAD16(data[6], data[7]);
             ctx->capabilities.gamepad.bLeftTrigger = data[8];
             ctx->capabilities.gamepad.bRightTrigger = data[9];
-            ctx->capabilities.gamepad.sThumbLX = (data[11] << 8) | data[10];
-            ctx->capabilities.gamepad.sThumbLY = (data[13] << 8) | data[12];
-            ctx->capabilities.gamepad.sThumbRX = (data[15] << 8) | data[14];
-            ctx->capabilities.gamepad.sThumbRY = (data[17] << 8) | data[16];
+            ctx->capabilities.gamepad.sThumbLX = LOAD16(data[10], data[11]);
+            ctx->capabilities.gamepad.sThumbLY = LOAD16(data[12], data[13]);
+            ctx->capabilities.gamepad.sThumbRX = LOAD16(data[14], data[15]);
+            ctx->capabilities.gamepad.sThumbRY = LOAD16(data[16], data[17]);
             ctx->capabilities.flags |= data[20];
             ctx->capabilities.vibration.wLeftMotorSpeed = data[18] << 8;
             ctx->capabilities.vibration.wRightMotorSpeed = data[19] << 8;
