@@ -174,6 +174,8 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     }
 
     switch (vendor) {
+    case USB_VENDOR_CRKD:
+        return true;
     case USB_VENDOR_DRAGONRISE:
         return true;
     case USB_VENDOR_HORI:
