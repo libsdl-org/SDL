@@ -91,6 +91,26 @@ struct input_report {
 	struct input_report *next;
 };
 
+struct xinput_capabilities {
+  uint8_t type;
+  uint8_t subType;
+  uint16_t flags;
+  struct {
+	uint16_t  wButtons;
+	uint8_t  bLeftTrigger;
+	uint8_t  bRightTrigger;
+	int16_t sThumbLX;
+	int16_t sThumbLY;
+	int16_t sThumbRX;
+	int16_t sThumbRY;
+  } gamepad;
+
+  struct {
+	uint16_t wLeftMotorSpeed;
+	uint16_t wRightMotorSpeed;
+  } vibration;
+};
+
 
 struct hid_device_ {
 	/* Handle to the actual device. */
@@ -103,6 +123,9 @@ struct hid_device_ {
 	int interface_class;
 	int interface_subclass;
 	int interface_protocol;
+
+	int xinput_type;
+	int xinput_subtype;
 
 	uint16_t report_descriptor_size;
 
@@ -1382,6 +1405,10 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 	if (is_xbox360(desc.idVendor, intf_desc)) {
 		dev->no_skip_output_report_id = 1;
 		init_xbox360(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
+		if (intf_desc->extra_length > 5 && intf_desc->extra[1] == LIBUSB_DT_HID) {
+			dev->xinput_type = intf_desc->extra[3];
+			dev->xinput_subtype = intf_desc->extra[4];
+		}
 	}
 
 	/* Initialize XBox One controllers */
@@ -1804,6 +1831,31 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 	int res = -1;
 	int skipped_report_id = 0;
 	int report_number = data[0];
+
+	// For wired xinput devices, expose capabilities as a feature report
+	static const int xb360_iface_subclass = 93;
+	static const int xb360_iface_protocol = 1; /* Wired */
+	if (dev->interface_class == LIBUSB_CLASS_VENDOR_SPEC &&
+	    dev->interface_subclass == xb360_iface_subclass &&
+	    dev->interface_protocol == xb360_iface_protocol ) {
+		struct xinput_capabilities capabilities;
+		memset(&capabilities, 0, sizeof(capabilities));
+		unsigned char buf[20];
+		memset(buf, 0, sizeof(buf));
+		res = libusb_control_transfer(dev->device_handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
+		capabilities.flags = buf[18] << 8 | buf[19];
+		capabilities.type = dev->xinput_type;
+		capabilities.subType = dev->xinput_subtype;
+		memcpy(&capabilities.gamepad, buf+2, 12);
+		res = libusb_control_transfer(dev->device_handle, 0xC1, 0x01, 0x00, 0x0, buf, 8, 100);
+		capabilities.vibration.wLeftMotorSpeed = buf[3] << 8;
+		capabilities.vibration.wRightMotorSpeed = buf[4] << 8;
+		if (length > sizeof(capabilities)) {
+			length = sizeof(capabilities);
+		}
+		memcpy(data, &capabilities, length);
+		return (int)length;
+	}
 
 	if (report_number == 0x0) {
 		/* Offset the return buffer by 1, so that the report ID

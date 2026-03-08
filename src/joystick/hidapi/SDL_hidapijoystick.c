@@ -1372,7 +1372,6 @@ SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid)
 {
     SDL_HIDAPI_Device *device;
     SDL_JoystickType type = SDL_JOYSTICK_TYPE_UNKNOWN;
-
     SDL_LockJoysticks();
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
         if (SDL_memcmp(&guid, &device->guid, sizeof(guid)) == 0) {
@@ -1381,7 +1380,6 @@ SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid)
         }
     }
     SDL_UnlockJoysticks();
-
     return type;
 }
 

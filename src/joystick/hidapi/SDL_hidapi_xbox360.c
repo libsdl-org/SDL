@@ -26,6 +26,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -40,6 +41,7 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
+    SDL_xinput_capabilities capabilities;
     int player_index;
     bool player_lights;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -85,7 +87,6 @@ static bool IsControlledBy360ControllerDriverMacOS(SDL_HIDAPI_Device *device)
 static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     const int XB360W_IFACE_PROTOCOL = 129; // Wireless
-
     if (vendor_id == USB_VENDOR_ASTRO && product_id == USB_PRODUCT_ASTRO_C40_XBOX360) {
         // This is the ASTRO C40 in Xbox 360 mode
         return true;
@@ -227,7 +228,38 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
-
+    SDL_hid_get_feature_report(device->dev, (uint8_t*)&ctx->capabilities, sizeof(ctx->capabilities));
+    switch (ctx->capabilities.subType) {
+        case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
+            device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+            break;
+        case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
+            device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+            break;
+        case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
+            device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+            break;
+        case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
+            device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+            break;
+        case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
+            device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
+            break;
+        case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
+        case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
+        case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
+            device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+            break;
+        case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
+            device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+            break;
+        case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
+            device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
+            break;
+        default:
+            device->joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
+            break;
+        }
     return true;
 }
 
