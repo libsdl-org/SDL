@@ -276,7 +276,7 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
             unsigned char buf[20];
             libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
             ctx->capabilities.flags = buf[18] << 8 | buf[19];
-            memcpy(&ctx->capabilities.gamepad, buf+2, 12);
+            SDL_memcpy(&ctx->capabilities.gamepad, buf+2, 12);
             libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x00, 0x0, buf, 8, 100);
             ctx->capabilities.vibration.wLeftMotorSpeed = buf[3] << 8;
             ctx->capabilities.vibration.wRightMotorSpeed = buf[4] << 8;
