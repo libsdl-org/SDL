@@ -4558,7 +4558,8 @@ extern "C" {
  *
  * This enables the window to still receive input even if not in foreground.
  *
- * Focused windows that receive text input will still prevent input events from triggering.
+ * Focused windows that receive text input will still prevent input events
+ * from triggering.
  *
  * - "0": Input is not received when not in focus or foreground. (default)
  * - "1": Input will be received even when not in focus or foreground.
