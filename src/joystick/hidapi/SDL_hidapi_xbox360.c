@@ -231,8 +231,7 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
-    #ifdef HAVE_LIBUSB
-
+#ifdef HAVE_LIBUSB
     // Fetch capabilities from the controller
     SDL_LibUSBContext *libusb_ctx;
     if (SDL_InitLibUSB(&libusb_ctx)) {
