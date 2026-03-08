@@ -26,6 +26,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -38,6 +39,7 @@ typedef struct
     bool connected;
     int player_index;
     bool player_lights;
+    SDL_xinput_capabilities capabilities;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverXbox360W_Context;
 
@@ -328,6 +330,47 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             if (joystick) {
                 UpdatePowerLevel(joystick, data[17]);
             }
+            ctx->capabilities.type = 1;
+            ctx->capabilities.subType = data[17];
+            ctx->capabilities.flags = FLAG_WIRELESS;
+            if ((data[25] & 0x80) != 0)
+                ctx->capabilities.flags |= FLAG_FORCE_FEEDBACK;
+            switch (data[25] & 0x7f) {
+                case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                    break;
+                case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
+                    device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                    break;
+                case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+                    break;
+                case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+                    break;
+                case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
+                    break;
+                case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
+                case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
+                case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                    break;
+                case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                    break;
+                case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
+                    break;
+                default:
+                    device->joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
+                    break;
+            }
+            const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+            if (SDL_hid_write(device->dev, capabilities_packet, sizeof(capabilities_packet)) != sizeof(capabilities_packet)) {
+                SDL_SetError("Couldn't write capabilities_packet packet");
+            }
         } else if (size == 29 && data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x00 && data[3] == 0x13) {
 #ifdef DEBUG_JOYSTICK
             SDL_Log("Battery status: %d", data[4]);
@@ -335,11 +378,22 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             if (joystick) {
                 UpdatePowerLevel(joystick, data[4]);
             }
+        } else  if (data[0] == 0x00 && data[1] == 0x05 && data[5] == 0x12) {
+            ctx->capabilities.gamepad.wButtons = (data[7] << 8) | data[6];
+            ctx->capabilities.gamepad.bLeftTrigger = data[8];
+            ctx->capabilities.gamepad.bRightTrigger = data[9];
+            ctx->capabilities.gamepad.sThumbLX = (data[11] << 8) | data[10];
+            ctx->capabilities.gamepad.sThumbLY = (data[13] << 8) | data[12];
+            ctx->capabilities.gamepad.sThumbRX = (data[15] << 8) | data[14];
+            ctx->capabilities.gamepad.sThumbRY = (data[17] << 8) | data[16];
+            ctx->capabilities.flags |= data[20];
+            ctx->capabilities.vibration.wLeftMotorSpeed = data[18] << 8;
+            ctx->capabilities.vibration.wRightMotorSpeed = data[19] << 8;
         } else if (size == 29 && data[0] == 0x00 && (data[1] & 0x01) == 0x01) {
             if (joystick) {
                 HIDAPI_DriverXbox360W_HandleStatePacket(joystick, device->dev, ctx, data + 4, size - 4);
             }
-        }
+        } 
     }
 
     if (size < 0 && device->num_joysticks > 0) {
