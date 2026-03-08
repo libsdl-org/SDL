@@ -107,7 +107,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         }
         const struct libusb_interface *intf = &conf_desc->interface[device->interface_number];
         intf_desc = &intf->altsetting[0];
-        if (intf_desc->extra_length > 5 && intf_desc->extra[1] == 0x21) {
+        if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
 			ctx->capabilities.type = intf_desc->extra[3];
 			ctx->capabilities.subType = intf_desc->extra[4];
             switch (ctx->capabilities.subType) {
