@@ -191,6 +191,8 @@ static bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     ctx->capabilities.gamepad.sThumbLY = 0xFFC0;
     ctx->capabilities.gamepad.sThumbRX = 0xFFC0;
     ctx->capabilities.gamepad.sThumbRY = 0xFFC0;
+    ctx->capabilities.vibration.wLeftMotorSpeed = 0xFFFF;
+    ctx->capabilities.vibration.wRightMotorSpeed = 0xFFFF;
 
     return true;
 }
