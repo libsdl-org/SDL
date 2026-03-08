@@ -373,6 +373,7 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                     device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
                     break;
             }
+            device->guid.data[15] = ctx->capabilities.subType;
             const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             if (SDL_hid_write(device->dev, capabilities_packet, sizeof(capabilities_packet)) != sizeof(capabilities_packet)) {
                 SDL_SetError("Couldn't write capabilities_packet packet");

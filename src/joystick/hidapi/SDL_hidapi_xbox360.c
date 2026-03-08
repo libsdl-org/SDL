@@ -273,6 +273,7 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
                     device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
                     break;
             }
+            device->guid.data[15] = ctx->capabilities.subType;
             unsigned char buf[20];
             libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
             ctx->capabilities.flags = buf[18] << 8 | buf[19];
