@@ -4553,6 +4553,23 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
 
 /**
+ * A variable controlling whether the RIDEV_INPUTSINK flag is set when
+ * enabling Windows raw keyboard events.
+ *
+ * This enables the window to still receive input even if not in foreground.
+ *
+ * Focused windows that receive text input will still prevent input events from triggering.
+ *
+ * - "0": Input is not received when not in focus or foreground. (default)
+ * - "1": Input will be received even when not in focus or foreground.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.4.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
+
+/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every
