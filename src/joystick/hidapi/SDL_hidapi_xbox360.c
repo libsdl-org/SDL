@@ -137,6 +137,8 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
                 case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
                     device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
                     break;
+                default:
+                    break;
             }
             device->guid.data[15] = ctx->capabilities.subType;
             unsigned char buf[20];
