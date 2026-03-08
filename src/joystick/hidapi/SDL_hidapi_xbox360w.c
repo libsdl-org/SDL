@@ -181,6 +181,16 @@ static bool HIDAPI_DriverXbox360W_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
     joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    ctx->capabilities.type = 1;
+    ctx->capabilities.flags = FLAG_WIRELESS;
+    ctx->capabilities.subType = SDL_JOYSTICK_TYPE_GAMEPAD;
+    ctx->capabilities.gamepad.wButtons = 0xFFFF;
+    ctx->capabilities.gamepad.bLeftTrigger = 0xFF;
+    ctx->capabilities.gamepad.bRightTrigger = 0xFF;
+    ctx->capabilities.gamepad.sThumbLX = 0xFFC0;
+    ctx->capabilities.gamepad.sThumbLY = 0xFFC0;
+    ctx->capabilities.gamepad.sThumbRX = 0xFFC0;
+    ctx->capabilities.gamepad.sThumbRY = 0xFFC0;
 
     return true;
 }
@@ -332,7 +342,6 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             ctx->capabilities.type = 1;
             ctx->capabilities.subType = data[25] & 0x7f;
-            ctx->capabilities.flags = FLAG_WIRELESS;
             if ((data[25] & 0x80) != 0) {
                 ctx->capabilities.flags |= FLAG_FORCE_FEEDBACK;
             }
