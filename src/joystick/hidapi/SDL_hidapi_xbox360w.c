@@ -397,7 +397,19 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             ctx->capabilities.vibration.wLeftMotorSpeed = data[18] << 8;
             ctx->capabilities.vibration.wRightMotorSpeed = data[19] << 8;
 #ifdef DEBUG_XBOX_PROTOCOL
-        HIDAPI_DumpPacket("Xbox 360 capabilities: size = %d", (uint8_t*)&ctx->capabilities, sizeof(ctx->capabilities));
+            SDL_Log("Xbox 360 capabilities:");
+            SDL_Log("   type: %02x", ctx->capabilities.type);
+            SDL_Log("   subType: %02x", ctx->capabilities.subType);
+            SDL_Log("   flags: %02x", ctx->capabilities.flags);
+            SDL_Log("   wButtons: %02x", ctx->capabilities.gamepad.wButtons);
+            SDL_Log("   bLeftTrigger: %02x", ctx->capabilities.gamepad.bLeftTrigger);
+            SDL_Log("   bRightTrigger: %02x", ctx->capabilities.gamepad.bRightTrigger);
+            SDL_Log("   sThumbLX: %02x", ctx->capabilities.gamepad.sThumbLX);
+            SDL_Log("   sThumbLY: %02x", ctx->capabilities.gamepad.sThumbLY);
+            SDL_Log("   sThumbRX: %02x", ctx->capabilities.gamepad.sThumbRX);
+            SDL_Log("   sThumbRY: %02x", ctx->capabilities.gamepad.sThumbRY);
+            SDL_Log("   wLeftMotorSpeed: %02x", ctx->capabilities.vibration.wLeftMotorSpeed);
+            SDL_Log("   wRightMotorSpeed: %02x", ctx->capabilities.vibration.wRightMotorSpeed);
 #endif
         } else if (size == 29 && data[0] == 0x00 && (data[1] & 0x01) == 0x01) {
             if (joystick) {

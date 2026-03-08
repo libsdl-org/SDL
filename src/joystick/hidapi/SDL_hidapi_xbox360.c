@@ -276,12 +276,30 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
             unsigned char buf[20];
             libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
             ctx->capabilities.flags = buf[18] << 8 | buf[19];
-            SDL_memcpy(&ctx->capabilities.gamepad, buf+2, 12);
+            ctx->capabilities.gamepad.wButtons = (buf[3] << 8) | buf[2];
+            ctx->capabilities.gamepad.bLeftTrigger = buf[4];
+            ctx->capabilities.gamepad.bRightTrigger = buf[5];
+            ctx->capabilities.gamepad.sThumbLX = (buf[7] << 8) | buf[6];
+            ctx->capabilities.gamepad.sThumbLY = (buf[9] << 8) | buf[8];
+            ctx->capabilities.gamepad.sThumbRX = (buf[11] << 8) | buf[10];
+            ctx->capabilities.gamepad.sThumbRY = (buf[13] << 8) | buf[12];
             libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x00, 0x0, buf, 8, 100);
             ctx->capabilities.vibration.wLeftMotorSpeed = buf[3] << 8;
             ctx->capabilities.vibration.wRightMotorSpeed = buf[4] << 8;
 #ifdef DEBUG_XBOX_PROTOCOL
-            HIDAPI_DumpPacket("Xbox 360 capabilities: size = %d", (uint8_t*)&ctx->capabilities, sizeof(ctx->capabilities));
+            SDL_Log("Xbox 360 capabilities:");
+            SDL_Log("   type: %02x", ctx->capabilities.type);
+            SDL_Log("   subType: %02x", ctx->capabilities.subType);
+            SDL_Log("   flags: %02x", ctx->capabilities.flags);
+            SDL_Log("   wButtons: %02x", ctx->capabilities.gamepad.wButtons);
+            SDL_Log("   bLeftTrigger: %02x", ctx->capabilities.gamepad.bLeftTrigger);
+            SDL_Log("   bRightTrigger: %02x", ctx->capabilities.gamepad.bRightTrigger);
+            SDL_Log("   sThumbLX: %02x", ctx->capabilities.gamepad.sThumbLX);
+            SDL_Log("   sThumbLY: %02x", ctx->capabilities.gamepad.sThumbLY);
+            SDL_Log("   sThumbRX: %02x", ctx->capabilities.gamepad.sThumbRX);
+            SDL_Log("   sThumbRY: %02x", ctx->capabilities.gamepad.sThumbRY);
+            SDL_Log("   wLeftMotorSpeed: %02x", ctx->capabilities.vibration.wLeftMotorSpeed);
+            SDL_Log("   wRightMotorSpeed: %02x", ctx->capabilities.vibration.wRightMotorSpeed);
 #endif
 		}
         SDL_QuitLibUSB();
