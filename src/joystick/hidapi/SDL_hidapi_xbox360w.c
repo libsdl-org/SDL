@@ -363,9 +363,6 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                 case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
                     device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
                     break;
-                default:
-                    device->joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
-                    break;
             }
 
             const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
