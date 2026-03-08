@@ -93,16 +93,19 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
     if (SDL_InitLibUSB(&libusb_ctx)) {
         libusb_device_handle *handle = (libusb_device_handle *)SDL_GetPointerProperty(SDL_hid_get_properties(device->dev), SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER, NULL);
         if (handle == NULL) {
+            SDL_QuitLibUSB();
             return;
         }
         libusb_device *dev = libusb_ctx->get_device(handle);
         if (dev == NULL) {
+            SDL_QuitLibUSB();
             return;
         }
         struct libusb_config_descriptor *conf_desc = NULL;
         const struct libusb_interface_descriptor *intf_desc;
         libusb_ctx->get_active_config_descriptor(dev, &conf_desc);
         if (conf_desc == NULL || conf_desc->bNumInterfaces < device->interface_number) {
+            SDL_QuitLibUSB();
             return;
         }
         const struct libusb_interface *intf = &conf_desc->interface[device->interface_number];
