@@ -95,7 +95,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         if (handle == NULL) {
             return;
         }
-        libusb_device* dev = libusb_ctx->get_device(handle);
+        libusb_device *dev = libusb_ctx->get_device(handle);
         if (dev == NULL) {
             return;
         }
