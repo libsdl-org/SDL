@@ -30,6 +30,7 @@
 #define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_ASUS         0x0b05
 #define USB_VENDOR_BACKBONE     0x358a
+#define USB_VENDOR_CRKD         0x3651
 #define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_FLYDIGI_V1   0x04b4
