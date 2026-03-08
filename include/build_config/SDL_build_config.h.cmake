@@ -458,6 +458,7 @@
 #cmakedefine SDL_VIDEO_RENDER_METAL 1
 #cmakedefine SDL_VIDEO_RENDER_VULKAN 1
 #cmakedefine SDL_VIDEO_RENDER_OGL 1
+#cmakedefine SDL_VIDEO_RENDER_OGL_ES 1
 #cmakedefine SDL_VIDEO_RENDER_OGL_ES2 1
 #cmakedefine SDL_VIDEO_RENDER_NGAGE 1
 #cmakedefine SDL_VIDEO_RENDER_PS2 1
