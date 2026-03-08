@@ -287,7 +287,6 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         SDL_QuitLibUSB();
     }
 #endif // HAVE_LIBUSB
-
     return true;
 }
 
