@@ -2371,6 +2371,19 @@ static void METAL_BeginRenderPass(
             METAL_INTERNAL_TrackTexture(metalCommandBuffer, texture);
         }
 
+        Uint32 layerCount = 0;
+        for (Uint32 i = 0; i < numColorTargets; i += 1) {
+            MetalTextureContainer *container = (MetalTextureContainer *)colorTargetInfos[i].texture;
+            if (container->header.info.type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+                layerCount = SDL_max(layerCount, container->header.info.layer_count_or_depth);
+            } else if (container->header.info.type == SDL_GPU_TEXTURETYPE_CUBE) {
+                layerCount = SDL_max(layerCount, 6);
+            } else if (container->header.info.type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+                layerCount = SDL_max(layerCount, 6 * container->header.info.layer_count_or_depth);
+            }
+        }
+        passDescriptor.renderTargetArrayLength = layerCount;
+
         metalCommandBuffer->renderEncoder = [metalCommandBuffer->handle renderCommandEncoderWithDescriptor:passDescriptor];
 
         // The viewport cannot be larger than the smallest target.
