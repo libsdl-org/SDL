@@ -84,6 +84,25 @@ static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
     return false;
 }
 
+static Uint8 GAMEINPUT_GetDeviceSubtype(const GameInputDeviceInfo *info)
+{
+    GameInputKind supportedInput = info->supportedInput;
+    if (supportedInput & GameInputKindRacingWheel) {
+        return SDL_JOYSTICK_TYPE_WHEEL;
+    }
+    if (supportedInput & GameInputKindArcadeStick) {
+        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
+    }
+    if (supportedInput & GameInputKindFlightStick) {
+        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    }
+    if (supportedInput & (GameInputKindGamepad | GameInputKindController)) {
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    }
+    // Other device subtypes don't have their own GameInputKind enum entries.
+    return 0;
+}
+
 #if GAMEINPUT_API_VERSION >= 1
 static int GetSteamVirtualGamepadSlot(const char *device_path)
 {
@@ -105,8 +124,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    const char *manufacturer_string = NULL;
     const char *product_string = NULL;
+    Uint8 driver_signature = 'g';
+    Uint8 subtype = 0;
     char tmp[4];
     int idx = 0;
 
@@ -128,9 +148,39 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     vendor = info->vendorId;
     product = info->productId;
     //version = (info->firmwareVersion.major << 8) | info->firmwareVersion.minor;
+    subtype = GAMEINPUT_GetDeviceSubtype(info);
 
-    if (SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, "")) {
+#if GAMEINPUT_API_VERSION >= 1
+    if (info->displayName) {
+        product_string = info->displayName;
+    }
+#else
+    if (info->displayName) {
+        product_string = info->displayName->data;
+    }
+#endif
+
+    if (SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
+        SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
         return true;
+    }
+
+#if defined(SDL_JOYSTICK_DINPUT) && defined(SDL_HAPTIC_DINPUT)
+    // This joystick backend currently doesn't provide a haptic backend, so fallback to DirectInput for haptic-capable devices.
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) && info->forceFeedbackMotorCount > 0 && pDevice->IsForceFeedbackMotorPoweredOn(0)) {
+        return true;
+    }
+#endif
+
+    if (!GAMEINPUT_InternalIsGamepad(info)) {
+        if (info->supportedInput & GameInputKindController) {
+            // Maintain GUID compatibility with DirectInput controller mappings.
+            driver_signature = 0;
+            subtype = 0;
+        } else {
+            // This joystick backend currently doesn't provide proper reading of other joystick types.
+            return true;
+        }
     }
 
     for (idx = 0; idx < g_GameInputList.count; ++idx) {
@@ -159,20 +209,10 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         SDL_strlcat(elem->path, tmp, SDL_arraysize(elem->path));
     }
 
-#if GAMEINPUT_API_VERSION >= 1
-    if (info->displayName) {
-        product_string = info->displayName;
-    }
-#else
-    if (info->displayName) {
-        product_string = info->displayName->data;
-    }
-#endif
-
     pDevice->AddRef();
     elem->device = pDevice;
-    elem->name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
-    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, 'g', 0);
+    elem->name = SDL_CreateJoystickName(vendor, product, NULL, product_string);
+    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, product_string, driver_signature, subtype);
     elem->device_instance = SDL_GetNextObjectID();
     elem->info = info;
 #if GAMEINPUT_API_VERSION >= 1
