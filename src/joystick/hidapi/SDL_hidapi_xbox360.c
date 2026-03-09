@@ -23,9 +23,11 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../../SDL_hints_c.h"
+#include "../../misc/SDL_libusb.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -42,6 +44,7 @@ typedef struct
     SDL_Joystick *joystick;
     int player_index;
     bool player_lights;
+    SDL_xinput_capabilities capabilities;
     Uint8 last_state[USB_PACKET_LENGTH];
 #ifdef SDL_PLATFORM_MACOS
     bool controlled_by_360controller;
@@ -79,6 +82,103 @@ static bool IsControlledBy360ControllerDriverMacOS(SDL_HIDAPI_Device *device)
         }
     }
     return controlled_by_360controller;
+}
+#endif
+
+#ifdef HAVE_LIBUSB
+static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
+    SDL_LibUSBContext *libusb_ctx;
+    if (SDL_InitLibUSB(&libusb_ctx)) {
+        libusb_device_handle *handle = (libusb_device_handle *)SDL_GetPointerProperty(SDL_hid_get_properties(device->dev), SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER, NULL);
+        if (handle == NULL) {
+            SDL_QuitLibUSB();
+            return;
+        }
+        libusb_device *dev = libusb_ctx->get_device(handle);
+        if (dev == NULL) {
+            SDL_QuitLibUSB();
+            return;
+        }
+        struct libusb_config_descriptor *conf_desc = NULL;
+        const struct libusb_interface_descriptor *intf_desc;
+        libusb_ctx->get_active_config_descriptor(dev, &conf_desc);
+        if (conf_desc == NULL || conf_desc->bNumInterfaces < device->interface_number) {
+            SDL_QuitLibUSB();
+            return;
+        }
+        const struct libusb_interface *intf = &conf_desc->interface[device->interface_number];
+        intf_desc = &intf->altsetting[0];
+        if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
+			ctx->capabilities.type = intf_desc->extra[3];
+			ctx->capabilities.subType = intf_desc->extra[4];
+            switch (ctx->capabilities.subType) {
+                case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                    break;
+                case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
+                    device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                    break;
+                case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+                    break;
+                case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+                    break;
+                case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
+                    break;
+                case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
+                case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
+                case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                    break;
+                case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                    break;
+                case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
+                    break;
+                default:
+                    break;
+            }
+            device->guid.data[15] = ctx->capabilities.subType;
+            unsigned char buf[20];
+            int ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
+            if (ret == sizeof(buf)) {
+                ctx->capabilities.flags = LOAD16(buf[18], buf[19]);
+                ctx->capabilities.gamepad.wButtons = LOAD16(buf[2], buf[3]);
+                ctx->capabilities.gamepad.bLeftTrigger = buf[4];
+                ctx->capabilities.gamepad.bRightTrigger = buf[5];
+                ctx->capabilities.gamepad.sThumbLX = LOAD16(buf[6], buf[7]);
+                ctx->capabilities.gamepad.sThumbLY = LOAD16(buf[8], buf[9]);
+                ctx->capabilities.gamepad.sThumbRX = LOAD16(buf[10], buf[11]);
+                ctx->capabilities.gamepad.sThumbRY = LOAD16(buf[12], buf[13]);
+            }
+            ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x00, 0x0, buf, 8, 100);
+            if (ret == 8) {
+                ctx->capabilities.vibration.wLeftMotorSpeed = buf[3] << 8;
+                ctx->capabilities.vibration.wRightMotorSpeed = buf[4] << 8;
+            }
+#ifdef DEBUG_XBOX_PROTOCOL
+            SDL_Log("Xbox 360 capabilities:");
+            SDL_Log("   type: %02x", ctx->capabilities.type);
+            SDL_Log("   subType: %02x", ctx->capabilities.subType);
+            SDL_Log("   flags: %04x", ctx->capabilities.flags);
+            SDL_Log("   wButtons: %02x", ctx->capabilities.gamepad.wButtons);
+            SDL_Log("   bLeftTrigger: %02x", ctx->capabilities.gamepad.bLeftTrigger);
+            SDL_Log("   bRightTrigger: %02x", ctx->capabilities.gamepad.bRightTrigger);
+            SDL_Log("   sThumbLX: %02x", ctx->capabilities.gamepad.sThumbLX);
+            SDL_Log("   sThumbLY: %02x", ctx->capabilities.gamepad.sThumbLY);
+            SDL_Log("   sThumbRX: %02x", ctx->capabilities.gamepad.sThumbRX);
+            SDL_Log("   sThumbRY: %02x", ctx->capabilities.gamepad.sThumbRY);
+            SDL_Log("   wLeftMotorSpeed: %02x", ctx->capabilities.vibration.wLeftMotorSpeed);
+            SDL_Log("   wRightMotorSpeed: %02x", ctx->capabilities.vibration.wRightMotorSpeed);
+#endif
+		}
+        SDL_QuitLibUSB();
+    }
 }
 #endif
 
@@ -227,7 +327,9 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
-
+#ifdef HAVE_LIBUSB
+    FetchXInputCapabilities(device);
+#endif
     return true;
 }
 
