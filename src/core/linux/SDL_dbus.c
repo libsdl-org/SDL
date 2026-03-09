@@ -104,6 +104,14 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(void (*)(char **), free_string_array);
     SDL_DBUS_SYM(void (*)(void), shutdown);
 
+    /* New symbols for SNI and menu export */
+    SDL_DBUS_SYM(int (*)(DBusConnection *, const char *, unsigned int, DBusError *), bus_request_name);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_method_call);
+    SDL_DBUS_SYM(DBusMessage *(*)(DBusMessage *, const char *, const char *), message_new_error);
+    SDL_DBUS_SYM(DBusMessage *(*)(DBusMessage *), message_new_method_return);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const void *, int), message_iter_append_fixed_array);
+    SDL_DBUS_SYM(void (*)(DBusMessageIter *, void *, int *), message_iter_get_fixed_array);
+
 #undef SDL_DBUS_SYM
 #undef SDL_DBUS_SYM2
 

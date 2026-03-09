@@ -37,6 +37,9 @@
 #ifndef DBUS_TYPE_UNIX_FD
 #define DBUS_TYPE_UNIX_FD ((int) 'h')
 #endif
+#ifndef DBUS_ERROR_UNKNOWN_PROPERTY
+#define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
+#endif
 
 typedef struct SDL_DBusContext
 {
@@ -95,6 +98,13 @@ typedef struct SDL_DBusContext
     void (*free_string_array)(char **);
     void (*shutdown)(void);
 
+    /* New symbols for SNI and menu export */
+    int (*bus_request_name)(DBusConnection *, const char *, unsigned int, DBusError *);
+    dbus_bool_t (*message_is_method_call)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_error)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_method_return)(DBusMessage *);
+    dbus_bool_t (*message_iter_append_fixed_array)(DBusMessageIter *, int, const void *, int);
+    void (*message_iter_get_fixed_array)(DBusMessageIter *, void *, int *);
 } SDL_DBusContext;
 
 extern void SDL_DBus_Init(void);
