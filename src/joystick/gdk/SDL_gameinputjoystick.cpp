@@ -76,6 +76,11 @@ static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = 0;
 static Uint64 g_GameInputTimestampOffset;
 
+extern "C"
+{
+    extern bool SDL_XINPUT_Enabled(void);
+}
+
 static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
 {
     if (info->supportedInput & GameInputKindGamepad) {
@@ -173,6 +178,12 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #endif
 
     if (!GAMEINPUT_InternalIsGamepad(info)) {
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
+        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) || SDL_XINPUT_Enabled()) {
+            // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
+            return true;
+        }
+#endif
         if (info->supportedInput & GameInputKindController) {
             // Maintain GUID compatibility with DirectInput controller mappings.
             driver_signature = 0;
