@@ -21,8 +21,8 @@
 
 #include "SDL_internal.h"
 
-#include "SDL_unixtray.h"
 #include "../SDL_tray_utils.h"
+#include "SDL_unixtray.h"
 
 static SDL_TrayDriver *driver = NULL;
 
@@ -68,7 +68,7 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
 
     if (driver) {
         tray = driver->CreateTray(driver, props);
-        
+
         if (tray) {
             SDL_RegisterTray(tray);
         }
@@ -83,21 +83,21 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Tray *tray;
     SDL_PropertiesID props;
-    
+
     props = SDL_CreateProperties();
-    
+
     if (!props) {
         return NULL;
     }
-    
+
     if (icon) {
         SDL_SetPointerProperty(props, SDL_PROP_TRAY_CREATE_ICON_POINTER, icon);
     }
-    
+
     if (tooltip) {
         SDL_SetStringProperty(props, SDL_PROP_TRAY_CREATE_TOOLTIP_STRING, tooltip);
     }
-    
+
     tray = SDL_CreateTrayWithProperties(props);
     SDL_DestroyProperties(props);
     return tray;
@@ -226,7 +226,7 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     tray->driver->DestroyTray(tray);
     SDL_UnregisterTray(tray);
-    
+
     if (!SDL_GetActiveTrayCount()) {
         driver->DestroyDriver(driver);
     }

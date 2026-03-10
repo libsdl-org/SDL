@@ -43,18 +43,18 @@ typedef enum SDL_MenuItemFlags
 /* This struct is meant to be in an SDL_List just like sub_menu */
 typedef struct SDL_MenuItem
 {
-	/* Basic properties */
+    /* Basic properties */
     const char *utf8;
     SDL_MenuItemType type;
     SDL_MenuItemFlags flags;
-    
+
     /* Callback */
     void *cb_data;
     void (*cb)(struct SDL_MenuItem *, void *);
-    
+
     /* Submenu, set to NULL if none */
     SDL_ListNode *sub_menu;
-    
+
     /* User data slots */
     void *udata;
     void *udata2;

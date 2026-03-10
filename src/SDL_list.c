@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "SDL_internal.h"
 
 #include "./SDL_list.h"
@@ -115,14 +116,15 @@ void SDL_ListClear(SDL_ListNode **head)
     }
 }
 
-int SDL_ListCountEntries(SDL_ListNode **head) {
+int SDL_ListCountEntries(SDL_ListNode **head)
+{
     SDL_ListNode *l;
     int i;
 
     i = 0;
     l = *head;
     while (l) {
-        i++;    
+        i++;
         l = l->next;
     }
 

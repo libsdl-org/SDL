@@ -32,10 +32,10 @@
 #define DBUS_TIMEOUT_USE_DEFAULT -1
 #endif
 #ifndef DBUS_TIMEOUT_INFINITE
-#define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
+#define DBUS_TIMEOUT_INFINITE ((int)0x7fffffff)
 #endif
 #ifndef DBUS_TYPE_UNIX_FD
-#define DBUS_TYPE_UNIX_FD ((int) 'h')
+#define DBUS_TYPE_UNIX_FD ((int)'h')
 #endif
 #ifndef DBUS_ERROR_UNKNOWN_PROPERTY
 #define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"

@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 #include "SDL_dbus.h"
 #include "../../stdlib/SDL_vacopy.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
@@ -35,17 +35,16 @@ SDL_ELF_NOTE_DLOPEN(
     "core-libdbus",
     "Support for D-Bus IPC",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_DRIVER_DBUS_DYNAMIC
-)
+    SDL_DRIVER_DBUS_DYNAMIC)
 
 static bool LoadDBUSSyms(void)
 {
-#define SDL_DBUS_SYM2_OPTIONAL(TYPE, x, y)                   \
+#define SDL_DBUS_SYM2_OPTIONAL(TYPE, x, y) \
     dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y)
 
 #define SDL_DBUS_SYM2(TYPE, x, y)                            \
     if (!(dbus.x = (TYPE)SDL_LoadFunction(dbus_handle, #y))) \
-        return false
+    return false
 
 #define SDL_DBUS_SYM_OPTIONAL(TYPE, x) \
     SDL_DBUS_SYM2_OPTIONAL(TYPE, x, dbus_##x)
@@ -53,50 +52,50 @@ static bool LoadDBUSSyms(void)
 #define SDL_DBUS_SYM(TYPE, x) \
     SDL_DBUS_SYM2(TYPE, x, dbus_##x)
 
-    SDL_DBUS_SYM(DBusConnection *(*)(DBusBusType, DBusError *), bus_get_private);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusError *), bus_register);
+    SDL_DBUS_SYM(DBusConnection * (*)(DBusBusType, DBusError *), bus_get_private);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusError *), bus_register);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_add_match);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_remove_match);
     SDL_DBUS_SYM(const char *(*)(DBusConnection *), bus_get_unique_name);
-    SDL_DBUS_SYM(DBusConnection *(*)(const char *, DBusError *), connection_open_private);
+    SDL_DBUS_SYM(DBusConnection * (*)(const char *, DBusError *), connection_open_private);
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction), connection_add_filter);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusHandleMessageFunction, void *), connection_remove_filter);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, const char *, const DBusObjectPathVTable *, void *, DBusError *), connection_try_register_object_path);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusMessage *, dbus_uint32_t *), connection_send);
-    SDL_DBUS_SYM(DBusMessage *(*)(DBusConnection *, DBusMessage *, int, DBusError *), connection_send_with_reply_and_block);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *), connection_get_is_connected);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusHandleMessageFunction, void *, DBusFreeFunction), connection_add_filter);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusHandleMessageFunction, void *), connection_remove_filter);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, const char *, const DBusObjectPathVTable *, void *, DBusError *), connection_try_register_object_path);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, DBusMessage *, dbus_uint32_t *), connection_send);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusConnection *, DBusMessage *, int, DBusError *), connection_send_with_reply_and_block);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_close);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_ref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_unref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_flush);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write_dispatch);
-    SDL_DBUS_SYM(DBusDispatchStatus (*)(DBusConnection *), connection_dispatch);
-    SDL_DBUS_SYM(dbus_bool_t (*)(int), type_is_fixed);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_signal);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
-    SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *, const char *), message_new_method_call);
-    SDL_DBUS_SYM(DBusMessage *(*)(const char *, const char *, const char *), message_new_signal);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, int), connection_read_write);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusConnection *, int), connection_read_write_dispatch);
+    SDL_DBUS_SYM(DBusDispatchStatus(*)(DBusConnection *), connection_dispatch);
+    SDL_DBUS_SYM(dbus_bool_t(*)(int), type_is_fixed);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *, const char *), message_is_signal);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *), message_has_path);
+    SDL_DBUS_SYM(DBusMessage * (*)(const char *, const char *, const char *, const char *), message_new_method_call);
+    SDL_DBUS_SYM(DBusMessage * (*)(const char *, const char *, const char *), message_new_signal);
     SDL_DBUS_SYM(void (*)(DBusMessage *, dbus_bool_t), message_set_no_reply);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, ...), message_append_args);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, int, va_list), message_append_args_valist);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, int, ...), message_append_args);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, int, va_list), message_append_args_valist);
     SDL_DBUS_SYM(void (*)(DBusMessage *, DBusMessageIter *), message_iter_init_append);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const char *, DBusMessageIter *), message_iter_open_container);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const void *), message_iter_append_basic);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, DBusMessageIter *), message_iter_close_container);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusError *, int, ...), message_get_args);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusError *, int, va_list), message_get_args_valist);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, DBusMessageIter *), message_iter_init);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *), message_iter_next);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const char *, DBusMessageIter *), message_iter_open_container);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const void *), message_iter_append_basic);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, DBusMessageIter *), message_iter_close_container);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusError *, int, ...), message_get_args);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusError *, int, va_list), message_get_args_valist);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, DBusMessageIter *), message_iter_init);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *), message_iter_next);
     SDL_DBUS_SYM(void (*)(DBusMessageIter *, void *), message_iter_get_basic);
     SDL_DBUS_SYM(int (*)(DBusMessageIter *), message_iter_get_arg_type);
     SDL_DBUS_SYM(void (*)(DBusMessageIter *, DBusMessageIter *), message_iter_recurse);
     SDL_DBUS_SYM(void (*)(DBusMessage *), message_unref);
-    SDL_DBUS_SYM(dbus_bool_t (*)(void), threads_init_default);
+    SDL_DBUS_SYM(dbus_bool_t(*)(void), threads_init_default);
     SDL_DBUS_SYM(void (*)(DBusError *), error_init);
-    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *), error_is_set);
-    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *, const char *), error_has_name);
+    SDL_DBUS_SYM(dbus_bool_t(*)(const DBusError *), error_is_set);
+    SDL_DBUS_SYM(dbus_bool_t(*)(const DBusError *, const char *), error_has_name);
     SDL_DBUS_SYM(void (*)(DBusError *), error_free);
     SDL_DBUS_SYM(char *(*)(void), get_local_machine_id);
     SDL_DBUS_SYM_OPTIONAL(char *(*)(DBusError *), try_get_local_machine_id);
@@ -106,10 +105,10 @@ static bool LoadDBUSSyms(void)
 
     /* New symbols for SNI and menu export */
     SDL_DBUS_SYM(int (*)(DBusConnection *, const char *, unsigned int, DBusError *), bus_request_name);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_method_call);
-    SDL_DBUS_SYM(DBusMessage *(*)(DBusMessage *, const char *, const char *), message_new_error);
-    SDL_DBUS_SYM(DBusMessage *(*)(DBusMessage *), message_new_method_return);
-    SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessageIter *, int, const void *, int), message_iter_append_fixed_array);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessage *, const char *, const char *), message_is_method_call);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusMessage *, const char *, const char *), message_new_error);
+    SDL_DBUS_SYM(DBusMessage * (*)(DBusMessage *), message_new_method_return);
+    SDL_DBUS_SYM(dbus_bool_t(*)(DBusMessageIter *, int, const void *, int), message_iter_append_fixed_array);
     SDL_DBUS_SYM(void (*)(DBusMessageIter *, void *, int *), message_iter_get_fixed_array);
 
 #undef SDL_DBUS_SYM
@@ -471,12 +470,12 @@ failed:
 
 static bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const char *key, const char *value)
 {
-   const char *keys[1];
-   const char *values[1];
+    const char *keys[1];
+    const char *values[1];
 
-   keys[0] = key;
-   values[0] = value;
-   return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
+    keys[0] = key;
+    values[0] = value;
+    return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
@@ -655,7 +654,7 @@ char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *path_count)
      * The spec doesn't define any entries yet so it's empty. */
     dbus.message_iter_init_append(msg, &iter);
     if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
-        !dbus.message_iter_close_container(&iter,  &iterDict)) {
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
         SDL_OutOfMemory();
         dbus.message_unref(msg);
         goto failed;
@@ -699,10 +698,10 @@ static DBusHandlerResult SDL_DBus_CameraPortalMessageHandler(DBusConnection *con
 
     if (dbus.message_is_signal(msg, "org.freedesktop.DBus", "NameOwnerChanged")) {
         if (!dbus.message_get_args(msg, data->err,
-                DBUS_TYPE_STRING, &name,
-                DBUS_TYPE_STRING, &old,
-                DBUS_TYPE_STRING, &new,
-                DBUS_TYPE_INVALID)) {
+                                   DBUS_TYPE_STRING, &name,
+                                   DBUS_TYPE_STRING, &old,
+                                   DBUS_TYPE_STRING, &new,
+                                   DBUS_TYPE_INVALID)) {
             data->done = true;
             return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
         }
