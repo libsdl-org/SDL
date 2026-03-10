@@ -629,7 +629,7 @@ int main(int argc, char **argv)
 #define CHECK(name) \
     if (!name) { \
         SDL_Log("Couldn't create " #name ": %s", SDL_GetError()); \
-        /*goto clean_all;*/ \
+        goto clean_all; \
     }
 
     SDL_TrayMenu *menu = SDL_CreateTrayMenu(tray);

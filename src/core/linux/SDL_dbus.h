@@ -28,6 +28,9 @@
 #define SDL_USE_LIBDBUS 1
 #include <dbus/dbus.h>
 
+#include "../../SDL_list.h"
+#include "../../SDL_menu.h"
+
 #ifndef DBUS_TIMEOUT_USE_DEFAULT
 #define DBUS_TIMEOUT_USE_DEFAULT -1
 #endif
@@ -135,6 +138,11 @@ extern char *SDL_DBus_GetLocalMachineId(void);
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
 extern int SDL_DBus_CameraPortalRequestAccess(void);
+
+// Menu export functions
+extern SDL_MenuItem *SDL_DBus_CreateMenuItem(void);
+extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
+extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
 
 #endif // HAVE_DBUS_DBUS_H
 
