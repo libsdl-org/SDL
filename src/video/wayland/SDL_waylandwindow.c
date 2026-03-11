@@ -695,7 +695,11 @@ static void Wayland_move_window(SDL_Window *window)
                 if (wind->last_displayID != displays[i]) {
                     wind->last_displayID = displays[i];
                     if (wind->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
-                        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->x, display->y);
+                        if (!wind->waylandData->scale_to_display_enabled) {
+                            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->logical.x, display->logical.y);
+                        } else {
+                            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, display->pixel.x, display->pixel.y);
+                        }
                         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DISPLAY_CHANGED, wind->last_displayID, 0);
                     }
                 }

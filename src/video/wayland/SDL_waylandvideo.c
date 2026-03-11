@@ -231,9 +231,8 @@ static int SDLCALL Wayland_DisplayPositionCompare(const void *a, const void *b)
 {
     const SDL_DisplayData *da = *(SDL_DisplayData **)a;
     const SDL_DisplayData *db = *(SDL_DisplayData **)b;
-
-    const bool a_at_origin = da->x == 0 && da->y == 0;
-    const bool b_at_origin = db->x == 0 && db->y == 0;
+    const bool a_at_origin = da->logical.x == 0 && da->logical.y == 0;
+    const bool b_at_origin = db->logical.x == 0 && db->logical.y == 0;
 
     // Sort the display at 0,0 to be beginning of the list, as that will be the fallback primary.
     if (a_at_origin && !b_at_origin) {
@@ -242,16 +241,17 @@ static int SDLCALL Wayland_DisplayPositionCompare(const void *a, const void *b)
     if (b_at_origin && !a_at_origin) {
         return 1;
     }
-    if (da->x < db->x) {
+
+    if (da->logical.x < db->logical.x) {
         return -1;
     }
-    if (da->x > db->x) {
+    if (da->logical.x > db->logical.x) {
         return 1;
     }
-    if (da->y < db->y) {
+    if (da->logical.y < db->logical.y) {
         return -1;
     }
-    if (da->y > db->y) {
+    if (da->logical.y > db->logical.y) {
         return 1;
     }
 
@@ -285,7 +285,7 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
     int x, y;
     if (Wayland_GetGNOMEPrimaryDisplayCoordinates(&x, &y)) {
         for (int i = 0; i < vid->output_count; ++i) {
-            if (vid->output_list[i]->x == x && vid->output_list[i]->y == y) {
+            if (vid->output_list[i]->logical.x == x && vid->output_list[i]->logical.y == y) {
                 return i;
             }
         }
@@ -308,9 +308,9 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
         if (!best_is_landscape && is_landscape) { // Favor landscape over portrait displays.
             have_new_best = true;
         } else if (!best_is_landscape || is_landscape) { // Ignore portrait displays if a landscape was already found.
-            if (d->pixel_width > best_width || d->pixel_height > best_height) {
+            if (d->pixel.width > best_width || d->pixel.height > best_height) {
                 have_new_best = true;
-            } else if (d->pixel_width == best_width && d->pixel_height == best_height) {
+            } else if (d->pixel.width == best_width && d->pixel.height == best_height) {
                 if (d->HDR.HDR_headroom > best_headroom) { // Favor a higher HDR luminance range
                     have_new_best = true;
                 } else if (d->HDR.HDR_headroom == best_headroom) {
@@ -325,8 +325,8 @@ static int Wayland_GetPrimaryDisplay(SDL_VideoData *vid)
         }
 
         if (have_new_best) {
-            best_width = d->pixel_width;
-            best_height = d->pixel_height;
+            best_width = d->pixel.width;
+            best_height = d->pixel.height;
             best_scale = d->scale_factor;
             best_headroom = d->HDR.HDR_headroom;
             best_refresh = d->refresh;
@@ -381,10 +381,54 @@ static void Wayland_SortOutputsByPriorityHint(SDL_VideoData *vid)
     }
 }
 
+static void Wayland_DeriveOutputPixelCoordinates(SDL_VideoData *vid)
+{
+    /* Ensure outputs are not overlapping in the pixel coordinate space.
+     *
+     * This is a simple algorithm that offsets display positions by the
+     * logical/pixel difference if they are to the right of and/or below a scaled
+     * display. It can leave gaps in certain scenarios, but it works well enough
+     * in most cases.
+     *
+     * Patches for a more sophisticated algorithm are welcome.
+     */
+    for ( int i = 0; i < vid->output_count; ++i) {
+        SDL_DisplayData *d = vid->output_list[i];
+        d->pixel.x = d->logical.x;
+        d->pixel.y = d->logical.y;
+    }
+
+    for (int i = 0; i < vid->output_count; ++i) {
+        SDL_DisplayData *d1 = vid->output_list[i];
+        if (d1->logical.width != d1->pixel.width || d1->logical.height != d1->pixel.height) {
+            const int x_adj = d1->pixel.width - d1->logical.width;
+            const int y_adj = d1->pixel.height - d1->logical.height;
+
+            // Don't adjust for scale values less than 1.0.
+            if (x_adj > 0 && y_adj > 0) {
+                for (int j = 0; j < vid->output_count; ++j) {
+                    SDL_DisplayData *d2 = vid->output_list[j];
+                    if (d2->logical.x > d1->logical.x) {
+                        d2->pixel.x += x_adj;
+                    }
+                    if (d2->logical.y > d1->logical.y) {
+                        d2->pixel.y += y_adj;
+                    }
+                }
+            }
+        }
+    }
+}
+
 static void Wayland_SortOutputs(SDL_VideoData *vid)
 {
     // Sort by position or connector name, so the order of outputs is deterministic.
     SDL_qsort(vid->output_list, vid->output_count, sizeof(SDL_DisplayData *), Wayland_DisplayPositionCompare);
+
+    // Derive the output pixel coordinates if scale to display is enabled.
+    if (vid->scale_to_display_enabled) {
+        Wayland_DeriveOutputPixelCoordinates(vid);
+    }
 
     // Find a suitable primary display and move it to the front of the list.
     const int primary_index = Wayland_GetPrimaryDisplay(vid);
@@ -742,8 +786,8 @@ static void handle_xdg_output_logical_position(void *data, struct zxdg_output_v1
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
-    internal->x = x;
-    internal->y = y;
+    internal->logical.x = x;
+    internal->logical.y = y;
     internal->has_logical_position = true;
 }
 
@@ -751,8 +795,8 @@ static void handle_xdg_output_logical_size(void *data, struct zxdg_output_v1 *xd
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
-    internal->logical_width = width;
-    internal->logical_height = height;
+    internal->logical.width = width;
+    internal->logical.height = height;
     internal->has_logical_size = true;
 }
 
@@ -888,11 +932,11 @@ static void handle_wl_output_geometry(void *data, struct wl_output *output, int 
 
     // Apply the change from wl-output only if xdg-output is not supported
     if (!internal->has_logical_position) {
-        internal->x = x;
-        internal->y = y;
+        internal->logical.x = x;
+        internal->logical.y = y;
     }
-    internal->physical_width_mm = physical_width;
-    internal->physical_height_mm = physical_height;
+    internal->physical.width_mm = physical_width;
+    internal->physical.height_mm = physical_height;
 
     // The model is only used for the output name if wl_output or xdg-output haven't provided a description.
     if (internal->display == 0 && !internal->placeholder.name) {
@@ -904,7 +948,7 @@ static void handle_wl_output_geometry(void *data, struct wl_output *output, int 
     case WL_OUTPUT_TRANSFORM_##in:                       \
         internal->orientation = SDL_ORIENTATION_##out; \
         break;
-    if (internal->physical_width_mm >= internal->physical_height_mm) {
+    if (internal->physical.width_mm >= internal->physical.height_mm) {
         switch (transform) {
             TF_CASE(NORMAL, LANDSCAPE)
             TF_CASE(90, PORTRAIT)
@@ -936,16 +980,16 @@ static void handle_wl_output_mode(void *data, struct wl_output *output, uint32_t
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
-        internal->pixel_width = width;
-        internal->pixel_height = height;
+        internal->pixel.width = width;
+        internal->pixel.height = height;
 
         /*
          * Don't rotate this yet, wl-output coordinates are transformed in
          * handle_done and xdg-output coordinates are pre-transformed.
          */
         if (!internal->has_logical_size) {
-            internal->logical_width = width;
-            internal->logical_height = height;
+            internal->logical.width = width;
+            internal->logical.height = height;
         }
 
         internal->refresh = refresh;
@@ -985,39 +1029,39 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
 
     // Transform the pixel values, if necessary.
     if (internal->transform & WL_OUTPUT_TRANSFORM_90) {
-        native_mode.w = internal->pixel_height;
-        native_mode.h = internal->pixel_width;
+        native_mode.w = internal->pixel.height;
+        native_mode.h = internal->pixel.width;
     } else {
-        native_mode.w = internal->pixel_width;
-        native_mode.h = internal->pixel_height;
+        native_mode.w = internal->pixel.width;
+        native_mode.h = internal->pixel.height;
     }
     native_mode.refresh_rate_numerator = internal->refresh;
     native_mode.refresh_rate_denominator = 1000;
 
     if (internal->has_logical_size) { // If xdg-output is present...
-        if (native_mode.w != internal->logical_width || native_mode.h != internal->logical_height) {
+        if (native_mode.w != internal->logical.width || native_mode.h != internal->logical.height) {
             // ...and the compositor scales the logical viewport...
             if (video->viewporter) {
                 // ...and viewports are supported, calculate the true scale of the output.
-                internal->scale_factor = (double)native_mode.w / (double)internal->logical_width;
+                internal->scale_factor = (double)native_mode.w / (double)internal->logical.width;
             } else {
                 // ...otherwise, the 'native' pixel values are a multiple of the logical screen size.
-                internal->pixel_width = internal->logical_width * (int)internal->scale_factor;
-                internal->pixel_height = internal->logical_height * (int)internal->scale_factor;
+                internal->pixel.width = internal->logical.width * (int)internal->scale_factor;
+                internal->pixel.height = internal->logical.height * (int)internal->scale_factor;
             }
         } else {
             /* ...and the output viewport is not scaled in the global compositing
              * space, the output dimensions need to be divided by the scale factor.
              */
-            internal->logical_width /= (int)internal->scale_factor;
-            internal->logical_height /= (int)internal->scale_factor;
+            internal->logical.width /= (int)internal->scale_factor;
+            internal->logical.height /= (int)internal->scale_factor;
         }
     } else {
         /* Calculate the points from the pixel values, if xdg-output isn't present.
          * Use the native mode pixel values since they are pre-transformed.
          */
-        internal->logical_width = native_mode.w / (int)internal->scale_factor;
-        internal->logical_height = native_mode.h / (int)internal->scale_factor;
+        internal->logical.width = native_mode.w / (int)internal->scale_factor;
+        internal->logical.height = native_mode.h / (int)internal->scale_factor;
     }
 
     // The scaled desktop mode
@@ -1025,8 +1069,8 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
     desktop_mode.format = SDL_PIXELFORMAT_XRGB8888;
 
     if (!video->scale_to_display_enabled) {
-        desktop_mode.w = internal->logical_width;
-        desktop_mode.h = internal->logical_height;
+        desktop_mode.w = internal->logical.width;
+        desktop_mode.h = internal->logical.height;
         desktop_mode.pixel_density = (float)internal->scale_factor;
     } else {
         desktop_mode.w = native_mode.w;
@@ -1064,8 +1108,8 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
         desktop_mode.pixel_density = 1.0f;
 
         for (i = (int)internal->scale_factor; i > 0; --i) {
-            desktop_mode.w = internal->logical_width * i;
-            desktop_mode.h = internal->logical_height * i;
+            desktop_mode.w = internal->logical.width * i;
+            desktop_mode.h = internal->logical.height * i;
             SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
         }
     }
@@ -1078,7 +1122,7 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
 
     if (internal->display == 0) {
         // First time getting display info, initialize the VideoDisplay
-        if (internal->physical_width_mm >= internal->physical_height_mm) {
+        if (internal->physical.width_mm >= internal->physical.height_mm) {
             internal->placeholder.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
         } else {
             internal->placeholder.natural_orientation = SDL_ORIENTATION_PORTRAIT;
@@ -1093,6 +1137,9 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
         if (!video->initializing) {
             if (video->wp_color_manager_v1) {
                 Wayland_GetColorInfoForOutput(internal, false);
+            }
+            if (video->scale_to_display_enabled) {
+                Wayland_DeriveOutputPixelCoordinates(video);
             }
             internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
             SDL_free(internal->placeholder.name);
@@ -1225,6 +1272,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display, bool send_event)
 static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 {
     Wayland_SortOutputs(vid);
+
     for(int i = 0; i < vid->output_count; ++i) {
         SDL_DisplayData *d = vid->output_list[i];
         d->display = SDL_AddVideoDisplay(&d->placeholder, false);
@@ -1516,8 +1564,14 @@ static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *d
 {
     SDL_VideoData *viddata = _this->internal;
     SDL_DisplayData *internal = display->internal;
-    rect->x = internal->x;
-    rect->y = internal->y;
+
+    if (!viddata->scale_to_display_enabled) {
+        rect->x = internal->logical.x;
+        rect->y = internal->logical.y;
+    } else {
+        rect->x = internal->pixel.x;
+        rect->y = internal->pixel.y;
+    }
 
     // When an emulated, exclusive fullscreen window has focus, treat the mode dimensions as the display bounds.
     if (display->fullscreen_window &&
@@ -1532,11 +1586,11 @@ static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *d
             rect->w = display->current_mode->w;
             rect->h = display->current_mode->h;
         } else if (internal->transform & WL_OUTPUT_TRANSFORM_90) {
-            rect->w = internal->pixel_height;
-            rect->h = internal->pixel_width;
+            rect->w = internal->pixel.height;
+            rect->h = internal->pixel.width;
         } else {
-            rect->w = internal->pixel_width;
-            rect->h = internal->pixel_height;
+            rect->w = internal->pixel.width;
+            rect->h = internal->pixel.height;
         }
     }
     return true;

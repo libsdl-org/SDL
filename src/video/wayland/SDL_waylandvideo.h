@@ -111,20 +111,45 @@ struct SDL_DisplayData
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
     struct wp_color_management_output_v1 *wp_color_management_output;
+    struct Wayland_ColorInfoState *color_info_state;
     char *wl_output_name;
     double scale_factor;
-    uint32_t registry_id;
-    int logical_width, logical_height;
-    int pixel_width, pixel_height;
-    int x, y, refresh, transform;
+    Uint32 registry_id;
+
+    struct
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+    } logical;
+
+    struct
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+    } pixel;
+
+    struct
+    {
+        int width_mm;  // Physical width in millimeters.
+        int height_mm; // Physical height in millimeters.
+    } physical;
+
+    int refresh;   // Refresh in mHz
+    int transform; // wl_output_transform enum
     SDL_DisplayOrientation orientation;
-    int physical_width_mm, physical_height_mm;
-    bool has_logical_position, has_logical_size;
+
     SDL_HDROutputProperties HDR;
+
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
+
     int wl_output_done_count;
-    struct Wayland_ColorInfoState *color_info_state;
+    bool has_logical_position;
+    bool has_logical_size;
 };
 
 // Needed here to get wl_surface declaration, fixes GitHub#4594
