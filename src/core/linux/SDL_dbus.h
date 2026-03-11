@@ -143,6 +143,7 @@ extern int SDL_DBus_CameraPortalRequestAccess(void);
 extern SDL_MenuItem *SDL_DBus_CreateMenuItem(void);
 extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
 extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
+extern void SDL_DBus_RegisterMenuOpenCallback(SDL_ListNode *menu, bool (*cb)(SDL_ListNode *, void *), void *cbdata);
 
 #endif // HAVE_DBUS_DBUS_H
 

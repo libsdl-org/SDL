@@ -53,6 +53,52 @@ bool SDL_ListAppend(SDL_ListNode **head, void *ent)
     return true;
 }
 
+bool SDL_ListInsertAtPosition(SDL_ListNode **head, int pos, void *ent)
+{
+    SDL_ListNode *cursor;
+    SDL_ListNode *node;
+    int i;
+
+    if (pos == -1) {
+        return SDL_ListAppend(head, ent);
+    }
+
+    if (!pos) {
+        node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
+        if (!node) {
+            return false;
+        }
+        node->entry = ent;
+
+        if (*head) {
+            node->next = *head;
+        } else {
+            node->next = NULL;
+        }
+
+        *head = node;
+    }
+
+    cursor = *head;
+    for (i = 1; i < pos - 1 && cursor; i++) {
+        cursor = cursor->next;
+    }
+
+    if (!cursor) {
+        return SDL_ListAppend(head, ent);
+    }
+
+    node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
+    if (!node) {
+        return false;
+    }
+    node->entry = ent;
+    node->next = cursor->next;
+    cursor->next = node;
+
+    return true;
+}
+
 // Push
 bool SDL_ListAdd(SDL_ListNode **head, void *ent)
 {

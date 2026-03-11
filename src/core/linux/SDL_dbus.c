@@ -34,6 +34,10 @@ typedef struct SDL_DBusMenuItem
     SDL_DBusContext *dbus;
     long id;
     unsigned long revision;
+
+    /* Right click event handler */
+    void *cbdata;
+    bool (*cb)(SDL_ListNode *, void *);
 } SDL_DBusMenuItem;
 
 // we never link directly to libdbus.
@@ -1502,12 +1506,15 @@ SDL_MenuItem *SDL_DBus_CreateMenuItem(void)
     SDL_DBusMenuItem *item;
     item = SDL_malloc(sizeof(SDL_DBusMenuItem));
     item->id = 0;
+    item->cb = NULL;
+    item->cbdata = NULL;
     return (SDL_MenuItem *)item;
 }
 
 static DBusHandlerResult MenuMessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_ListNode *menu;
+    SDL_DBusMenuItem *item;
     SDL_DBusContext *ctx;
 
     menu = user_data;
@@ -1515,7 +1522,9 @@ static DBusHandlerResult MenuMessageHandler(DBusConnection *conn, DBusMessage *m
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
-    ctx = ((SDL_DBusMenuItem *)menu->entry)->dbus;
+    item = (SDL_DBusMenuItem *)menu->entry;
+    ctx = item->dbus;
+
     if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "GetLayout")) {
         return MenuHandleGetLayout(ctx, menu, conn, msg);
     } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "Event")) {
@@ -1523,6 +1532,10 @@ static DBusHandlerResult MenuMessageHandler(DBusConnection *conn, DBusMessage *m
     } else if (ctx->message_is_method_call(msg, DBUS_MENU_INTERFACE, "AboutToShow")) {
         DBusMessage *reply;
         dbus_bool_t need_update;
+
+        if (item->cb) {
+            item->cb(menu, item->cbdata);
+        }
 
         need_update = TRUE;
         reply = ctx->message_new_method_return(msg);
@@ -1668,6 +1681,15 @@ void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNod
         ctx->connection_send(conn, signal, NULL);
         ctx->message_unref(signal);
     }
+}
+
+void SDL_DBus_RegisterMenuOpenCallback(SDL_ListNode *menu, bool (*cb)(SDL_ListNode *, void *), void *cbdata)
+{
+    SDL_DBusMenuItem *item;
+
+    item = (SDL_DBusMenuItem *)menu->entry;
+    item->cb = cb;
+    item->cbdata = cbdata;
 }
 
 #endif

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../core/linux/SDL_dbus.h"
 #include "SDL_internal.h"
+#include "../../core/linux/SDL_dbus.h"
 
 #ifdef SDL_USE_LIBDBUS
 
@@ -45,6 +45,11 @@ typedef struct SDL_TrayDBus
 
     char *tooltip;
     SDL_Surface *surface;
+
+    SDL_TrayClickCallback l_cb;
+    SDL_TrayClickCallback r_cb;
+    SDL_TrayClickCallback m_cb;
+    void *udata;
 
     bool being_destroyed;
 } SDL_TrayDBus;
@@ -333,16 +338,18 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
 static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMessage *msg, void *user_data)
 {
     SDL_Tray *tray;
+    SDL_TrayDBus *tray_dbus;
     SDL_TrayDriverDBus *driver;
     DBusMessage *reply;
 
     tray = user_data;
+    tray_dbus = (SDL_TrayDBus *)tray;
     driver = (SDL_TrayDriverDBus *)tray->driver;
 
     if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "Get")) {
-        return TrayHandleGetProp(tray, (SDL_TrayDBus *)tray, driver, msg);
+        return TrayHandleGetProp(tray, tray_dbus, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Properties", "GetAll")) {
-        return TrayHandleGetAllProps(tray, (SDL_TrayDBus *)tray, driver, msg);
+        return TrayHandleGetAllProps(tray, tray_dbus, driver, msg);
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->message_append_args(reply, DBUS_TYPE_STRING, &sni_introspect, DBUS_TYPE_INVALID);
@@ -350,18 +357,28 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
-        printf("ContextMenu: %p\n", tray);
+        if (tray_dbus->r_cb) {
+            tray_dbus->r_cb(tray_dbus->udata, tray);
+        }
+
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
-        printf("Activate: %p\n", tray);
+        if (tray_dbus->l_cb) {
+            tray_dbus->l_cb(tray_dbus->udata, tray);
+        }
+
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "SecondaryActivate")) {
+        if (tray_dbus->m_cb) {
+            tray_dbus->m_cb(tray_dbus->udata, tray);
+        }
+
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
         driver->dbus->message_unref(reply);
@@ -475,6 +492,12 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
         return NULL;
     }
 
+    /* Icon mouse event callbacks */
+    tray_dbus->l_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->r_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->m_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->udata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
+
     return tray;
 }
 
@@ -482,6 +505,41 @@ void DestroyDriver(SDL_TrayDriver *driver)
 {
     SDL_DBus_Quit();
     SDL_free(driver);
+}
+
+void DestroyMenu(SDL_TrayMenu *menu)
+{
+    SDL_TrayMenuDBus *menu_dbus;
+
+    menu_dbus = (SDL_TrayMenuDBus *)menu;
+
+    if (menu_dbus->menu) {
+        SDL_ListNode *cursor;
+
+        cursor = menu_dbus->menu;
+        while (cursor) {
+            SDL_MenuItem *item;
+            SDL_TrayEntryDBus *entry;
+
+            item = cursor->entry;
+            entry = item->udata;
+
+            if (entry->sub_menu) {
+                DestroyMenu((SDL_TrayMenu *)entry->sub_menu);
+            }
+            SDL_free(item);
+            SDL_free(entry);
+
+            cursor = cursor->next;
+        }
+        SDL_ListClear(&menu_dbus->menu);
+    }
+
+    if (menu_dbus->array_representation) {
+        SDL_free(menu_dbus->array_representation);
+    }
+
+    SDL_free(menu_dbus);
 }
 
 void DestroyTray(SDL_Tray *tray)
@@ -502,7 +560,10 @@ void DestroyTray(SDL_Tray *tray)
     SDL_free(tray_dbus->tooltip);
     SDL_DestroySurface(tray_dbus->surface);
 
-    /* TODO: destroy the menus and entries!!! */
+    /* Destroy the menus and entries */
+    if (tray->menu) {
+        DestroyMenu(tray->menu);
+    }
 
     /* Free the tray */
     SDL_free(tray);
@@ -627,6 +688,15 @@ SDL_TrayMenu *GetTraySubmenu(SDL_TrayEntry *entry)
     return (SDL_TrayMenu *)entry_dbus->sub_menu;
 }
 
+bool TrayRightClickHandler(SDL_ListNode *menu, void *udata)
+{
+    SDL_TrayDBus *tray_dbus;
+
+    tray_dbus = (SDL_TrayDBus *)udata;
+
+    return tray_dbus->r_cb(tray_dbus->udata, (SDL_Tray *)tray_dbus);
+}
+
 SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
     SDL_Tray *tray;
@@ -642,7 +712,6 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     tray_dbus = (SDL_TrayDBus *)tray;
     driver = (SDL_TrayDriverDBus *)tray->driver;
 
-    /* TODD: pos */
     entry_dbus = SDL_malloc(sizeof(SDL_TrayEntryDBus));
     entry = (SDL_TrayEntry *)entry_dbus;
     if (!entry_dbus) {
@@ -677,7 +746,7 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         update = true;
     }
 
-    SDL_ListAppend(&menu_dbus->menu, entry_dbus->item);
+    SDL_ListInsertAtPosition(&menu_dbus->menu, pos, entry_dbus->item);
 
     if (menu->parent_entry) {
         SDL_TrayEntryDBus *parent_entry_dbus;
@@ -744,6 +813,10 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         }
     }
 
+    if (menu->parent_tray && !menu->parent_entry && tray_dbus->r_cb) {
+        SDL_DBus_RegisterMenuOpenCallback(menu_dbus->menu, TrayRightClickHandler, tray);
+    }
+
     return entry;
 }
 
@@ -799,8 +872,8 @@ void RemoveTrayEntry(SDL_TrayEntry *entry)
     menu_dbus = (SDL_TrayMenuDBus *)entry->parent;
 
     SDL_ListRemove(&menu_dbus->menu, entry_dbus->item);
+    DestroyMenu((SDL_TrayMenu *)entry_dbus->sub_menu);
     SDL_free(entry_dbus->item);
-    /* TODO: destroy submenu */
     SDL_free(entry);
 
     SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);

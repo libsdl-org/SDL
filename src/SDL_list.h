@@ -29,6 +29,7 @@ typedef struct SDL_ListNode
 } SDL_ListNode;
 
 bool SDL_ListAppend(SDL_ListNode **head, void *ent);
+bool SDL_ListInsertAtPosition(SDL_ListNode **head, int pos, void *ent);
 bool SDL_ListAdd(SDL_ListNode **head, void *ent);
 void SDL_ListPop(SDL_ListNode **head, void **ent);
 void SDL_ListRemove(SDL_ListNode **head, void *ent);
