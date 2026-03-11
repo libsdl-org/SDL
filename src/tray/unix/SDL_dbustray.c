@@ -675,6 +675,7 @@ SDL_TrayMenu *CreateTraySubmenu(SDL_TrayEntry *entry)
     menu->parent_tray = entry->parent->parent_tray;
     menu->parent_entry = entry;
     entry_dbus->sub_menu = menu_dbus;
+    menu_dbus->array_representation = NULL;
 
     return menu;
 }
