@@ -298,6 +298,11 @@ void Android_SendResize(SDL_Window *window)
     if (window) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
     }
+
+    // onNativeResize() should probably merged in to onNativeSurfaceChanged() so that
+    // both RPC commands are executed atomically without user app trying to render inbetween
+    // (and so Android_NativeSurfaceResized is called from Android_NativeSurfaceChanged())
+    Android_NativeSurfaceResized(window);
 }
 
 void Android_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom)

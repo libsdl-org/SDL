@@ -22,6 +22,8 @@
 
 #ifdef SDL_PLATFORM_ANDROID
 
+// #define SDL_ANDROID_GAMEPAD_AS_RPC
+
 #include "SDL_android.h"
 
 #include "../../events/SDL_events_c.h"
@@ -423,9 +425,6 @@ static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
-static SDL_Semaphore *Android_NativeSurfaceCreatedSem = NULL;
-static SDL_Semaphore *Android_NativeSurfaceChangedSem = NULL;
-static SDL_Semaphore *Android_NativeSurfaceDestroyedSem = NULL;
 static SDL_Semaphore *Android_PauseSem = NULL;
 static SDL_Semaphore *Android_ResumeSem = NULL;
 static SDL_Semaphore *Android_BlockOnPauseSem = NULL;
@@ -584,7 +583,7 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
 // RPC TODO: enable timestamp ?
 #define RPC_Send                                \
     /* data.timestamp = SDL_GetTicks(); */      \
-    RPC_Send__(&data, sizeof(data));            \
+    RPC_Send__(&data, data.cmd, sizeof(data));            \
 
 #define RPC_Add(foo)    data.foo = foo;
 
@@ -601,9 +600,9 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     RPC_data_t data;                    \
     data.cmd = RPC_cmd_##foo;           \
     data.timestamp = SDL_GetTicks();    \
-    RPC_Send__(&data, sizeof(data));    \
+    RPC_Send__(&data, data.cmd, sizeof(data));    \
 
-static void RPC_Send__(void *data, int len);
+static void RPC_Send__(void *data, RPC_cmd_t cmd, int len);
 static void RPC_Init();
 
 // header for command without data needed
@@ -819,9 +818,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create " #foo "semaphore");    \
     }                                                                                           \
 
-    ALLOC_SEM(Android_NativeSurfaceCreatedSem);
-    ALLOC_SEM(Android_NativeSurfaceChangedSem);
-    ALLOC_SEM(Android_NativeSurfaceDestroyedSem);
     ALLOC_SEM(Android_PauseSem);
     ALLOC_SEM(Android_ResumeSem);
     ALLOC_SEM(Android_BlockOnPauseSem);
@@ -1089,10 +1085,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
 
-    // Signal semaphores so that onNativeSurface{Created,Changed,Destroyed} methods of SDLActivity are not blocked
-    SDL_SignalSemaphore(Android_NativeSurfaceCreatedSem);
-    SDL_SignalSemaphore(Android_NativeSurfaceChangedSem);
-    SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
+    // Signal semaphores so that SDLActivity thread is not blocked
     SDL_SignalSemaphore(Android_PauseSem);
     SDL_SignalSemaphore(Android_ResumeSem);
 
@@ -1495,10 +1488,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceCreated");
 
     RPC_SendWithoutData(onNativeSurfaceCreated);
-
-    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceCreatedSem, SDL_MS_TO_NS(100))) {
-        SDL_Log("onNativeSurfaceCreated timeout expired");
-    }
 }
 
 // Called from surfaceChanged()
@@ -1507,10 +1496,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceChanged");
 
     RPC_SendWithoutData(onNativeSurfaceChanged);
-
-    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceChangedSem, SDL_MS_TO_NS(100))) {
-        SDL_Log("onNativeSurfaceChanged timeout expired");
-    }
 }
 
 // Called from surfaceDestroyed()
@@ -1519,11 +1504,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env,
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceDestroyed");
 
     RPC_SendWithoutData(onNativeSurfaceDestroyed);
-
-    // Timeout usally expires here, because the EventLoop is already paused.
-    if (!SDL_WaitSemaphoreTimeoutNS(Android_NativeSurfaceDestroyedSem, SDL_MS_TO_NS(100))) {
-        SDL_Log("onNativeSurfaceDestroyed timeout expired (expected!)");
-    }
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardShown)(JNIEnv *env, jclass jcls)
@@ -1773,9 +1753,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
         foo = NULL;                                         \
     }                                                       \
 
-    DESTROY_SEM(Android_NativeSurfaceCreatedSem);
-    DESTROY_SEM(Android_NativeSurfaceChangedSem);
-    DESTROY_SEM(Android_NativeSurfaceDestroyedSem);
     DESTROY_SEM(Android_PauseSem);
     DESTROY_SEM(Android_ResumeSem);
     DESTROY_SEM(Android_BlockOnPauseSem);
@@ -3278,7 +3255,7 @@ static void RPC_Init()
 
 }
 
-static void RPC_Send__(void *data, int len)
+static void RPC_Send__(void *data, RPC_cmd_t cmd, int len)
 {
     SDL_LockMutex(RPC_Mutex);
 
@@ -3286,8 +3263,15 @@ static void RPC_Send__(void *data, int len)
         SDL_memcpy(RPC_cmd_buffer + RPC_cur_size, data, len);
         RPC_cur_size += len;
         RPC_cur_nb_cmd += 1;
+#ifdef DEBUG_RPC
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "send RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+#endif
     } else {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "cannot add RPC of len %d", len);
+#ifdef DEBUG_RPC
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "cannot add RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+#else
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "cannot add RPC of len %d, cmd=%d", len, cmd);
+#endif
     }
 
     SDL_UnlockMutex(RPC_Mutex);
@@ -3339,6 +3323,11 @@ void Android_PumpRPC(SDL_Window *window)
 #define RPC_GetNoData               \
     len = sizeof (RPC_data_t);      \
 
+#ifdef DEBUG_RPC
+    if (nb_cmd) {
+        SDL_Log("------------New set of RPC cmds, nb: %d", nb_cmd);
+    }
+#endif
 
     while (nb_cmd--) {
         RPC_cmd_t cmd;
@@ -3381,8 +3370,6 @@ void Android_PumpRPC(SDL_Window *window)
                 {
                     RPC_GetNoData;
                     Android_NativeSurfaceCreated(window);
-
-                    SDL_SignalSemaphore(Android_NativeSurfaceCreatedSem);
                 }
                 break;
 
@@ -3392,8 +3379,6 @@ void Android_PumpRPC(SDL_Window *window)
                     Android_NativeSurfaceChanged(window);
 
                     Android_RestoreScreenKeyboard(SDL_GetVideoDevice(), window);
-
-                    SDL_SignalSemaphore(Android_NativeSurfaceChangedSem);
                 }
                 break;
 
@@ -3405,8 +3390,6 @@ void Android_PumpRPC(SDL_Window *window)
                     // (see SDLActivity.java), so Paused has already been notified
 
                     Android_NativeSurfaceDestroyed(window);
-
-                    SDL_SignalSemaphore(Android_NativeSurfaceDestroyedSem);
                 }
                 break;
 

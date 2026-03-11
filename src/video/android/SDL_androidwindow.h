@@ -51,5 +51,6 @@ struct SDL_WindowData
 bool Android_NativeSurfaceCreated(SDL_Window *window);
 bool Android_NativeSurfaceChanged(SDL_Window *window);
 void Android_NativeSurfaceDestroyed(SDL_Window *window);
+void Android_NativeSurfaceResized(SDL_Window *window);
 
 #endif // SDL_androidwindow_h_
