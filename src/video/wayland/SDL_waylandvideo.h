@@ -150,6 +150,7 @@ struct SDL_DisplayData
     int wl_output_done_count;
     bool has_logical_position;
     bool has_logical_size;
+    bool geometry_changed;
 };
 
 // Needed here to get wl_surface declaration, fixes GitHub#4594

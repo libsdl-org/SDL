@@ -278,5 +278,6 @@ extern bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
 extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data);
+extern void Wayland_UpdateWindowPosition(SDL_Window *window);
 
 #endif // SDL_waylandwindow_h_

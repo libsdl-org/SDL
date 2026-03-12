@@ -442,6 +442,15 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
     Wayland_SortOutputsByPriorityHint(vid);
 }
 
+static void Wayland_RefreshWindowPositions()
+{
+    SDL_VideoDevice *vid = SDL_GetVideoDevice();
+
+    for (SDL_Window *w = vid->windows; w; w = w->next) {
+        Wayland_UpdateWindowPosition(w);
+    }
+}
+
 static void handle_wl_output_done(void *data, struct wl_output *output);
 
 // Initialization/Query functions
@@ -786,6 +795,7 @@ static void handle_xdg_output_logical_position(void *data, struct zxdg_output_v1
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
+    internal->geometry_changed |= internal->logical.x != x || internal->logical.y != y;
     internal->logical.x = x;
     internal->logical.y = y;
     internal->has_logical_position = true;
@@ -795,6 +805,7 @@ static void handle_xdg_output_logical_size(void *data, struct zxdg_output_v1 *xd
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
+    internal->geometry_changed |= internal->logical.width != width || internal->logical.height != height;
     internal->logical.width = width;
     internal->logical.height = height;
     internal->has_logical_size = true;
@@ -932,6 +943,7 @@ static void handle_wl_output_geometry(void *data, struct wl_output *output, int 
 
     // Apply the change from wl-output only if xdg-output is not supported
     if (!internal->has_logical_position) {
+        internal->geometry_changed |= internal->logical.x != x || internal->logical.y != y;
         internal->logical.x = x;
         internal->logical.y = y;
     }
@@ -980,6 +992,7 @@ static void handle_wl_output_mode(void *data, struct wl_output *output, uint32_t
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
+        internal->geometry_changed |= internal->pixel.width != width || internal->pixel.height != height;
         internal->pixel.width = width;
         internal->pixel.height = height;
 
@@ -988,6 +1001,7 @@ static void handle_wl_output_mode(void *data, struct wl_output *output, uint32_t
          * handle_done and xdg-output coordinates are pre-transformed.
          */
         if (!internal->has_logical_size) {
+            internal->geometry_changed |= internal->logical.width != width || internal->logical.height != height;
             internal->logical.width = width;
             internal->logical.height = height;
         }
@@ -1103,11 +1117,9 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
         }
     } else {
         // ...otherwise expose the integer scaled variants of the desktop resolution down to 1.
-        int i;
-
         desktop_mode.pixel_density = 1.0f;
 
-        for (i = (int)internal->scale_factor; i > 0; --i) {
+        for (int i = (int)internal->scale_factor; i > 0; --i) {
             desktop_mode.w = internal->logical.width * i;
             desktop_mode.h = internal->logical.height * i;
             SDL_AddFullscreenDisplayMode(dpy, &desktop_mode);
@@ -1141,13 +1153,27 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
             if (video->scale_to_display_enabled) {
                 Wayland_DeriveOutputPixelCoordinates(video);
             }
+
             internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
+            Wayland_RefreshWindowPositions();
+
             SDL_free(internal->placeholder.name);
             SDL_zero(internal->placeholder);
         }
     } else {
         SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_ORIENTATION, internal->orientation, 0);
+
+        if (internal->geometry_changed) {
+            if (video->scale_to_display_enabled) {
+                Wayland_DeriveOutputPixelCoordinates(video);
+            }
+
+            SDL_SendDisplayEvent(dpy, SDL_EVENT_DISPLAY_MOVED, 0, 0);
+            Wayland_RefreshWindowPositions();
+        }
     }
+
+    internal->geometry_changed = false;
 }
 
 static void handle_wl_output_scale(void *data, struct wl_output *output, int32_t factor)
