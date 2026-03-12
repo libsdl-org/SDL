@@ -301,6 +301,21 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     Uint8 subtype = 0;
     const char *name = NULL;
 
+    // Technically we only want to do this when the controller is opened, but we ALSO
+    // want to do this when the controller is opened via HIDAPI or IOKit, and we don't
+    // have an easy way to know if those devices correspond to a specific GCController.
+    //
+    // Since the fact that we're initializing means that the application is likely to
+    // be opening available controllers, this is probably the right thing to do for now.
+    if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+        for (id key in controller.physicalInputProfile.buttons) {
+            GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
+            if ([button isBoundToSystemGesture]) {
+                button.preferredSystemGestureState = GCSystemGestureStateDisabled;
+            }
+        }
+    }
+
     if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
         if (!GCController.shouldMonitorBackgroundEvents) {
             GCController.shouldMonitorBackgroundEvents = YES;
@@ -367,10 +382,10 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         (device->is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
         (device->is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, "")) ||
         (SDL_strstr(name, "GameCube Controller Adapter") &&
-			(HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
-			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
-			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
-			 HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
+            (HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
+             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
+             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
+             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
         (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
         (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
         (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, ""))) {
