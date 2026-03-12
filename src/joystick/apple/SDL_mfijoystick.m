@@ -642,16 +642,11 @@ static void IOS_AddJoystickDevice(GCController *controller)
     device->pause_button_index = -1;
 
     if (controller) {
-#ifdef SDL_JOYSTICK_MFI
         if (!IOS_AddMFIJoystickDevice(device, controller)) {
             SDL_free(device->name);
             SDL_free(device);
             return;
         }
-#else
-        SDL_free(device);
-        return;
-#endif // SDL_JOYSTICK_MFI
     }
 
     if (deviceList == NULL) {
