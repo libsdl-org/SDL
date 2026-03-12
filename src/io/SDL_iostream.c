@@ -964,18 +964,22 @@ static bool SDLCALL mem_close(void *userdata)
 
 // Functions to create SDL_IOStream structures from various data sources
 
-#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
+// private platforms might define SKIP_STDIO_DIR_TEST in their build configs, too.
+#if defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_EMSCRIPTEN)
+#define SKIP_STDIO_DIR_TEST 1
+#endif
+
+#if defined(HAVE_STDIO_H) && !defined(SKIP_STDIO_DIR_TEST)
 static bool IsRegularFileOrPipe(FILE *f)
 {
-#ifndef SDL_PLATFORM_EMSCRIPTEN
     struct stat st;
     if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
         return false;
     }
-#endif // !SDL_PLATFORM_EMSCRIPTEN
-
     return true;
 }
+#else
+#define IsRegularFileOrPipe(f) false
 #endif
 
 SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
