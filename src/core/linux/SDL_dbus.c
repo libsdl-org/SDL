@@ -56,7 +56,8 @@ SDL_ELF_NOTE_DLOPEN(
     "core-libdbus",
     "Support for D-Bus IPC",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_DRIVER_DBUS_DYNAMIC)
+    SDL_DRIVER_DBUS_DYNAMIC
+)
 
 static bool LoadDBUSSyms(void)
 {
@@ -1310,7 +1311,7 @@ static DBusHandlerResult MenuHandleGetProperty(SDL_DBusContext *ctx, SDL_ListNod
 
 static DBusHandlerResult MenuHandleGetGroupProperties(SDL_DBusContext *ctx, SDL_ListNode *menu, DBusConnection *conn, DBusMessage *msg)
 {
-#define FILTER_PROPS_SZ 32
+    #define FILTER_PROPS_SZ 32
     DBusMessage *reply;
     DBusMessageIter args, array_iter, prop_iter;
     DBusMessageIter iter, reply_array_iter;

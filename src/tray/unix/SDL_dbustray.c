@@ -147,8 +147,8 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     uint32_val = 0;
     driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
     driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
-    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
-    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &uint32_val);
+    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "i", &variant_iter);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_INT32, &uint32_val);
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
@@ -176,6 +176,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
         driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
         driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
     } else {
+        key = "Menu";
         value = "/NO_DBUSMENU";
         driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
         driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
@@ -322,8 +323,8 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
         dbus_uint32_t uint32_val;
 
         uint32_val = 0;
-        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "u", &variant_iter);
-        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_UINT32, &uint32_val);
+        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "i", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_INT32, &uint32_val);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else {
         driver->dbus->message_unref(reply);
