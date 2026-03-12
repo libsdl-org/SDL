@@ -178,6 +178,7 @@
 #define SDL_TIMER_UNIX 1
 
 /* Enable various video drivers */
+#ifndef SDL_VIDEO_DISABLED
 #define SDL_VIDEO_DRIVER_ANDROID 1
 
 /* Enable OpenGL ES */
@@ -196,6 +197,7 @@
 #define HAVE_GPU_OPENXR 1
 #define SDL_VIDEO_RENDER_GPU 1
 #endif
+#endif /* SDL_VIDEO_DISABLED */
 
 /* Enable system power support */
 #define SDL_POWER_ANDROID 1

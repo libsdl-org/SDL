@@ -1499,6 +1499,9 @@ if(ANDROID)
     "${SDL3_SOURCE_DIR}/src/core/android/*.h"
   )
 
+  # Core Android code (asset I/O, logging, sensors) needs these regardless of the video subsystem.
+  sdl_link_dependency(android_core LIBS dl log android)
+
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/misc/android/*.c"
     "${SDL3_SOURCE_DIR}/src/misc/android/*.h"
@@ -1629,10 +1632,6 @@ if(ANDROID)
     )
     set(HAVE_SDL_VIDEO TRUE)
 
-    # Core stuff
-    # find_library(ANDROID_DL_LIBRARY dl)
-    # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
-    sdl_link_dependency(android_video LIBS dl log android)
     sdl_compile_definitions(PRIVATE "GL_GLEXT_PROTOTYPES")
 
     #enable gles
@@ -1663,6 +1662,9 @@ if(ANDROID)
         endif()
       endif()
     endif()
+  else()
+    # SDL_events.c pumps Android events even with video disabled; this TU supplies the stub implementations.
+    sdl_sources("${SDL3_SOURCE_DIR}/src/video/android/SDL_androidevents.c")
   endif()
 
   CheckPTHREAD()
