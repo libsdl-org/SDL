@@ -379,7 +379,6 @@ typedef struct IOStreamFDData
 {
     int fd;
     bool autoclose;
-    bool regular_file;
 } IOStreamFDData;
 
 static int SDL_fdatasync(int fd)
@@ -552,9 +551,6 @@ SDL_IOStream *SDL_IOFromFD(int fd, bool autoclose)
     iodata->fd = fd;
     iodata->autoclose = autoclose;
 
-    struct stat st;
-    iodata->regular_file = ((fstat(fd, &st) == 0) && S_ISREG(st.st_mode));
-
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
         iface.close(iodata);
@@ -577,7 +573,6 @@ typedef struct IOStreamStdioData
 {
     FILE *fp;
     bool autoclose;
-    bool regular_file;
 } IOStreamStdioData;
 
 #ifdef HAVE_FOPEN64
@@ -753,9 +748,6 @@ SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
 
     iodata->fp = fp;
     iodata->autoclose = autoclose;
-
-    struct stat st;
-    iodata->regular_file = ((fstat(fileno(fp), &st) == 0) && S_ISREG(st.st_mode));
 
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
