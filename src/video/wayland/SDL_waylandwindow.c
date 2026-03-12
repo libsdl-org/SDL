@@ -1471,6 +1471,16 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, dou
              * the new backbuffer dimensions.
              */
             if (window_data->floating) {
+                /* Some compositors will send a configure event immediately after a scale event, however,
+                 * this event can contain the old logical size, and should be ignored, or the window can
+                 * incorrectly change size when moved between displays with differing scale factors.
+                 *
+                 * Store the last requested logical size as the last configure size, so a configure event
+                 * with the old size will be ignored.
+                 */
+                window_data->last_configure.width = window_data->requested.logical_width;
+                window_data->last_configure.height = window_data->requested.logical_height;
+
                 window_data->requested.logical_width = PixelToPoint(window_data->sdlwindow, window_data->requested.pixel_width);
                 window_data->requested.logical_height = PixelToPoint(window_data->sdlwindow, window_data->requested.pixel_height);
             } else {
