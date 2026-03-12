@@ -10,26 +10,68 @@ import java.lang.reflect.Method;
 */
 public class SDL {
 
-    // This function should be called first and sets up the native code
-    // so it can call into the Java classes
+    // Subsystem flags matching SDL_INIT_* values for selective initialization.
+    // When using SDL as an embedded library (e.g. for joystick-only support),
+    // pass only the flags you need to setupJNI()/initialize() to avoid
+    // requiring stub Java classes for unused subsystems.
+    public static final int SDL_INIT_AUDIO      = 0x00000010;
+    public static final int SDL_INIT_VIDEO      = 0x00000020;
+    public static final int SDL_INIT_JOYSTICK   = 0x00000200;
+    public static final int SDL_INIT_HAPTIC     = 0x00001000;
+    public static final int SDL_INIT_GAMEPAD    = 0x00002000;
+    public static final int SDL_INIT_SENSOR     = 0x00008000;
+    public static final int SDL_INIT_CAMERA     = 0x00010000;
+
+    // All subsystems (default behavior, backwards compatible)
+    public static final int SDL_INIT_EVERYTHING = SDL_INIT_AUDIO | SDL_INIT_VIDEO |
+        SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | SDL_INIT_CAMERA;
+
+    // Track which subsystems were initialized
+    private static int mInitializedSubsystems = 0;
+
+    // Full initialization (backwards compatible)
     static public void setupJNI() {
+        setupJNI(SDL_INIT_EVERYTHING);
+    }
+
+    // Selective initialization: only set up JNI for requested subsystems
+    static public void setupJNI(int subsystems) {
+        mInitializedSubsystems = subsystems;
+
         SDLActivity.nativeSetupJNI();
-        SDLAudioManager.nativeSetupJNI();
+
+        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.nativeSetupJNI();
+        }
+
         SDLControllerManager.nativeSetupJNI();
     }
 
-    // This function should be called each time the activity is started
+    // Full initialization (backwards compatible)
     static public void initialize() {
+        initialize(mInitializedSubsystems != 0 ? mInitializedSubsystems : SDL_INIT_EVERYTHING);
+    }
+
+    // Selective initialization: only initialize requested subsystems
+    static public void initialize(int subsystems) {
         setContext(null);
 
-        SDLActivity.initialize();
-        SDLAudioManager.initialize();
+        if ((subsystems & SDL_INIT_VIDEO) != 0) {
+            SDLActivity.initialize();
+        }
+
+        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.initialize();
+        }
+
         SDLControllerManager.initialize();
     }
 
     // This function stores the current activity (SDL or not)
     static public void setContext(Activity context) {
-        SDLAudioManager.setContext(context);
+        if ((mInitializedSubsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.setContext(context);
+        }
         mContext = context;
     }
 

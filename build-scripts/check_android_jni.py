@@ -94,8 +94,10 @@ def collect_jni_bindings_from_c() -> dict[str, set[JniMethodBinding]]:
 
         assert not in_struct
 
-        assert kls not in bindings, f"{kls} must be unique in C sources"
-        bindings[kls] = methods
+        existing_methods = bindings.setdefault(kls, set())
+        duplicate_methods = existing_methods.intersection(methods)
+        assert not duplicate_methods, f"{kls} has duplicate JNI bindings in C sources: {duplicate_methods}"
+        existing_methods.update(methods)
     return bindings
 
 def collect_jni_bindings_from_java() -> dict[str, set[JniMethodBinding]]:
