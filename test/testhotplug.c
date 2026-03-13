@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
                 break;
             case SDL_EVENT_JOYSTICK_REMOVED:
                 if (instance == event.jdevice.which) {
-                    SDL_Log("Joy Removed: %" SDL_PRIs32, event.jdevice.which);
+                    SDL_Log("Joy Removed: %" SDL_PRIu32, event.jdevice.which);
                     instance = 0;
                     if (enable_haptic && haptic) {
                         SDL_CloseHaptic(haptic);

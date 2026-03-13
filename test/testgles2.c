@@ -124,7 +124,7 @@ quit(int rc)
     {                                                                                       \
         GLenum glError = ctx.glGetError();                                                  \
         if (glError != GL_NO_ERROR) {                                                       \
-            SDL_Log("glGetError() = %i (0x%.8x) at line %i", glError, glError, __LINE__); \
+            SDL_Log("glGetError() = %u (0x%.8x) at line %i", glError, glError, __LINE__); \
             quit(1);                                                                        \
         }                                                                                   \
     }

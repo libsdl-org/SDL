@@ -730,7 +730,7 @@ static bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 
             EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
             if (image == EGL_NO_IMAGE) {
-                SDL_Log("Couldn't create image: %d", glGetError());
+                SDL_Log("Couldn't create image: %u", glGetError());
                 return false;
             }
 
@@ -916,7 +916,7 @@ static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 
     EGLImage image = eglCreateImage(display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attr);
     if (image == EGL_NO_IMAGE) {
-        SDL_Log("Couldn't create image: %d", glGetError());
+        SDL_Log("Couldn't create image: %u", glGetError());
         return false;
     }
 
