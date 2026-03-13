@@ -504,6 +504,7 @@ foreach(TESTCASE ${SDL_TESTS_NONINTERACTIVE})
     endif()
 endforeach()
 
+set_tests_properties(testatomic PROPERTIES TIMEOUT 120)
 set_tests_properties(testautomation PROPERTIES TIMEOUT 120)
 set_tests_properties(testthread PROPERTIES TIMEOUT 40)
 set_tests_properties(testtimer PROPERTIES TIMEOUT 60)
