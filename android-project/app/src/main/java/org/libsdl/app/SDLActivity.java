@@ -1388,10 +1388,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
          * the bottom edge of the input region and the top edge of an input
          * method (soft keyboard)
          */
-        static final int HEIGHT_PADDING = 15;
+        static int getPanPadding() {
+            /* The hint is in window coordinates. Convert to pixels by
+             * multiplying by density. */
+            int defaultPadding = 10;
+            try {
+                String hint = nativeGetHint("SDL_IME_PAN_PADDING");
+                if (hint != null) {
+                    defaultPadding = Integer.parseInt(hint);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            float density = getContext().getResources().getDisplayMetrics().density;
+            return (int)(defaultPadding * density);
+        }
 
         public int input_type;
         public int x, y, w, h;
+        private final int panPadding;
 
         public ShowTextInputTask(int input_type, int x, int y, int w, int h) {
             this.input_type = input_type;
@@ -1399,19 +1413,20 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             this.y = y;
             this.w = w;
             this.h = h;
+            this.panPadding = getPanPadding();
 
             /* Minimum size of 1 pixel, so it takes focus. */
             if (this.w <= 0) {
                 this.w = 1;
             }
-            if (this.h + HEIGHT_PADDING <= 0) {
-                this.h = 1 - HEIGHT_PADDING;
+            if (this.h + panPadding <= 0) {
+                this.h = 1 - panPadding;
             }
         }
 
         @Override
         public void run() {
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + HEIGHT_PADDING);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + panPadding);
             params.leftMargin = x;
             params.topMargin = y;
 
