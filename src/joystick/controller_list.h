@@ -188,6 +188,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS
+	{ MAKE_CONTROLLER_ID( 0x358a, 0x0304 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition Gen 2
 
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x0006 ), k_eControllerType_UnknownNonSteamController, NULL },	// DragonRise Generic USB PCB, sometimes configured as a PC Twin Shock Controller - looks like a DS3 but the face buttons are 1-4 instead of symbols
 
