@@ -39,6 +39,10 @@
 #include <fcntl.h>
 #endif
 
+#if !defined(HAVE_LIBC) && !defined(SDL_PLATFORM_WINDOWS)
+#include <errno.h>
+#endif
+
 #include "SDL_iostream_c.h"
 
 /* This file provides a general interface for SDL to read and write
