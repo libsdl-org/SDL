@@ -223,7 +223,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
         driver->dbus->message_iter_close_container(&iter, &dict_iter);
     }
 
-    driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+    driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
     driver->dbus->message_unref(reply);
     return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -331,7 +331,7 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
         reply = driver->dbus->message_new_error(msg, DBUS_ERROR_UNKNOWN_PROPERTY, "Unknown property");
     }
 
-    driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+    driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
     driver->dbus->message_unref(reply);
     return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -354,7 +354,7 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
     } else if (driver->dbus->message_is_method_call(msg, "org.freedesktop.DBus.Introspectable", "Introspect")) {
         reply = driver->dbus->message_new_method_return(msg);
         driver->dbus->message_append_args(reply, DBUS_TYPE_STRING, &sni_introspect, DBUS_TYPE_INVALID);
-        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
@@ -363,7 +363,7 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         }
 
         reply = driver->dbus->message_new_method_return(msg);
-        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
@@ -372,7 +372,7 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         }
 
         reply = driver->dbus->message_new_method_return(msg);
-        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "SecondaryActivate")) {
@@ -381,12 +381,12 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         }
 
         reply = driver->dbus->message_new_method_return(msg);
-        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Scroll")) {
         reply = driver->dbus->message_new_method_return(msg);
-        driver->dbus->connection_send(driver->dbus->session_conn, reply, NULL);
+        driver->dbus->connection_send(tray_dbus->connection, reply, NULL);
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     }
