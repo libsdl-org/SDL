@@ -156,6 +156,7 @@ static SDL_bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device,
 static SDL_bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)SDL_calloc(1, sizeof(*ctx));
+    int attempt;
     if (!ctx) {
         return SDL_FALSE;
     }
@@ -166,7 +167,7 @@ static SDL_bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
         const int MAX_ATTEMPTS = 3;
 
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+        for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
             Uint8 data[USB_PACKET_LENGTH];
             int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
             if (size == 0) {
@@ -183,7 +184,7 @@ static SDL_bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     } else {
         Uint8 data[USB_PACKET_LENGTH];
         const int MAX_ATTEMPTS = 5;
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+        for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
             int size = ReadFeatureReport(device->dev, SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID, data, sizeof(data));
             if (size > 0) {
 #ifdef DEBUG_8BITDO_PROTOCOL
