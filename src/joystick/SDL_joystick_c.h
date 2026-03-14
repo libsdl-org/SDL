@@ -156,6 +156,9 @@ extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 // Function to return whether a joystick guid comes from the WGI driver
 extern bool SDL_IsJoystickWGI(SDL_GUID guid);
 
+// Function to return whether a joystick guid comes from the GameInput driver
+extern bool SDL_IsJoystickGameInput(SDL_GUID guid);
+
 // Function to return whether a joystick guid comes from the HIDAPI driver
 extern bool SDL_IsJoystickHIDAPI(SDL_GUID guid);
 
