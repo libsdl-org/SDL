@@ -95,6 +95,10 @@
 #include <kernel/OS.h>
 #endif
 
+#if !defined(HAVE_LIBC) && defined(SDL_PLATFORM_LINUX)
+#include <stdio.h>
+#endif
+
 #define CPU_HAS_ALTIVEC  (1 << 0)
 #define CPU_HAS_MMX      (1 << 1)
 #define CPU_HAS_SSE      (1 << 2)
