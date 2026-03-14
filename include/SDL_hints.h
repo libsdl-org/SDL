@@ -828,6 +828,19 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI "SDL_JOYSTICK_HIDAPI"
 
 /**
+ * A variable controlling whether the HIDAPI driver for 8BitDo controllers
+ * should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_8BITDO "SDL_JOYSTICK_HIDAPI_8BITDO"
+
+/**
  * A variable controlling whether the HIDAPI driver for Nintendo GameCube
  * controllers should be used.
  *
