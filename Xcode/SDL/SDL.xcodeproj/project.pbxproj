@@ -75,6 +75,15 @@
 		56C5237F1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; };
 		56C523811D8F498C001F2F30 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; };
 		5C2EF7011FC9EF10003F5197 /* SDL_egl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */; };
+		6313CD422F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD432F8EF7AE00D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD442F8EF7B000D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD452F8EF7B100D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD462F8EF7B200D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD472F8EF7B300D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD482F8EF7B400D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD492F8EF7B400D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
+		6313CD4A2F8EF7B500D1AF35 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = 6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */; };
 		75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75E09158241EA924004729E1 /* SDL_virtualjoystick.c */; };
 		75E0915B241EA924004729E1 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75E09158241EA924004729E1 /* SDL_virtualjoystick.c */; };
 		75E0915C241EA924004729E1 /* SDL_virtualjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = 75E09158241EA924004729E1 /* SDL_virtualjoystick.c */; };
@@ -3785,6 +3794,7 @@
 		566E26CE246274CC00718109 /* SDL_syslocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syslocale.h; path = locale/SDL_syslocale.h; sourceTree = "<group>"; };
 		567E2F2017C44C35005F1892 /* SDL_filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_filesystem.h; sourceTree = "<group>"; };
 		5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_egl.h; sourceTree = "<group>"; };
+		6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_8bitdo.c; sourceTree = "<group>"; };
 		75E09158241EA924004729E1 /* SDL_virtualjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_virtualjoystick.c; sourceTree = "<group>"; };
 		75E09159241EA924004729E1 /* SDL_virtualjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_virtualjoystick_c.h; sourceTree = "<group>"; };
 		9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_shield.c; sourceTree = "<group>"; };
@@ -5099,6 +5109,7 @@
 		A7D8A7BE23E2513E00DCD162 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
+				6313CD412F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
@@ -8082,6 +8093,7 @@
 				A75FCEA223E25AB700529352 /* SDL_uikitappdelegate.m in Sources */,
 				A75FCEA323E25AB700529352 /* SDL_offscreenwindow.c in Sources */,
 				F316ABB92B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
+				6313CD492F8EF7B400D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8282,6 +8294,7 @@
 				A75FD05B23E25AC700529352 /* SDL_uikitappdelegate.m in Sources */,
 				A75FD05C23E25AC700529352 /* SDL_offscreenwindow.c in Sources */,
 				F316ABBA2B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
+				6313CD4A2F8EF7B500D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8483,6 +8496,7 @@
 				A769B22C23E259AE00872273 /* SDL_uikitappdelegate.m in Sources */,
 				A1626A432617006A003F1973 /* SDL_triangle.c in Sources */,
 				A769B22D23E259AE00872273 /* SDL_offscreenwindow.c in Sources */,
+				6313CD472F8EF7B300D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8683,6 +8697,7 @@
 				A7D8AC6423E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6223E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 				F316ABB32B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
+				6313CD432F8EF7AE00D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8883,6 +8898,7 @@
 				A7D8AC6523E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6323E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 				F316ABB42B5A02C3002EF551 /* yuv_rgb_lsx.c in Sources */,
+				6313CD442F8EF7B000D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9084,6 +9100,7 @@
 				A7D8AC6723E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A1626A422617006A003F1973 /* SDL_triangle.c in Sources */,
 				A7D8AB6523E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
+				6313CD462F8EF7B200D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9283,6 +9300,7 @@
 				A7D8AEA023E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AB6123E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
 				566E26D8246274CC00718109 /* SDL_locale.c in Sources */,
+				6313CD422F8EF77E00D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9482,6 +9500,7 @@
 				A7D8BBF823E2574800DCD162 /* SDL_uikitmodes.m in Sources */,
 				A7D8AEA323E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AB6423E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
+				6313CD452F8EF7B100D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9681,6 +9700,7 @@
 				A7D8AEA523E2514100DCD162 /* SDL_cocoavulkan.m in Sources */,
 				A7D8AC6823E2514100DCD162 /* SDL_uikitappdelegate.m in Sources */,
 				A7D8AB6623E2514100DCD162 /* SDL_offscreenwindow.c in Sources */,
+				6313CD482F8EF7B400D1AF35 /* SDL_hidapi_8bitdo.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
