@@ -1218,6 +1218,15 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     return true;
 }
 
+static SDL_INLINE wl_fixed_t SDL_wl_fixed_from_double(double d)
+{
+#ifndef HAVE_LIBC
+        return (wl_fixed_t) (SDL_round(d * 256.0)); // Use SDL's rounding function.
+#else
+        return wl_fixed_from_double(d);
+#endif
+}
+
 void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -1226,8 +1235,8 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
     if (seat->pointer.wl_pointer) {
         if (d->wp_pointer_warp_v1) {
             // It's a protocol error to warp the pointer outside of the surface, so clamp the position.
-            const wl_fixed_t f_x = wl_fixed_from_double(SDL_clamp(x / window->pointer_scale.x, 0, window->current.logical_width));
-            const wl_fixed_t f_y = wl_fixed_from_double(SDL_clamp(y / window->pointer_scale.y, 0, window->current.logical_height));
+            const wl_fixed_t f_x = SDL_wl_fixed_from_double(SDL_clamp(x / window->pointer_scale.x, 0, window->current.logical_width));
+            const wl_fixed_t f_y = SDL_wl_fixed_from_double(SDL_clamp(y / window->pointer_scale.y, 0, window->current.logical_height));
             wp_pointer_warp_v1_warp_pointer(d->wp_pointer_warp_v1, window->surface, seat->pointer.wl_pointer, f_x, f_y, seat->pointer.enter_serial);
         } else {
             bool update_grabs = false;
@@ -1254,8 +1263,8 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
                                                         seat->pointer.wl_pointer, NULL,
                                                         ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
-            const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
-            const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
+            const wl_fixed_t f_x = SDL_wl_fixed_from_double(x / window->pointer_scale.x);
+            const wl_fixed_t f_y = SDL_wl_fixed_from_double(y / window->pointer_scale.y);
             zwp_locked_pointer_v1_set_cursor_position_hint(warp_lock, f_x, f_y);
             wl_surface_commit(window->surface);
 
