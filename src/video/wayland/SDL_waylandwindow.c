@@ -3084,10 +3084,12 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
      */
     FlushPendingEvents(window);
 
+    const bool resizable_state = !(window->flags & (SDL_WINDOW_MAXIMIZED || SDL_WINDOW_FULLSCREEN));
+
     /* Maximized and fullscreen windows don't get resized, and the new size is ignored
      * if this is just to recalculate the min/max or aspect limits on a tiled window.
      */
-    if (wind->floating || (window->tiled && !wind->limits_changed) ||
+    if (resizable_state || (window->tiled && !wind->limits_changed) ||
         wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
         if (!wind->scale_to_display) {
             wind->requested.logical_width = window->pending.w;
