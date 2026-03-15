@@ -3422,7 +3422,7 @@ bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
     return (guid.data[14] == 'v') ? true : false;
 }
 
-bool SDL_IsJoystickDrum(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_VIDPIDInList(vendor_id, product_id, &drum_devices);
 }
@@ -3459,7 +3459,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
-    if (SDL_IsJoystickDrum(vendor, product)) {
+    if (SDL_IsJoystickDrumKit(vendor, product)) {
         return SDL_JOYSTICK_TYPE_DRUM_KIT;
     }
     if (SDL_IsJoystickGuitar(vendor, product)) {
