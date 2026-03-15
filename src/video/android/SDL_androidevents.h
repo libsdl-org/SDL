@@ -21,6 +21,15 @@
 #include "SDL_internal.h"
 
 extern void Android_InitEvents(void);
-extern void Android_PumpEvents(Sint64 timeoutNS);
-extern bool Android_WaitActiveAndLockActivity(void);
+extern void Android_PumpEvents(void);
+extern bool Android_BlockEventLoop(void);
+extern bool Android_WaitActiveAndLockActivity(SDL_Window *window);
 extern void Android_QuitEvents(void);
+#ifdef SDL_VIDEO_OPENGL_EGL
+void Android_egl_context_restore(SDL_Window *window);
+#endif
+
+void Android_OnPause(SDL_Window *window);
+void Android_OnResume(SDL_Window *window);
+void Android_OnDestroy(void);
+void Android_WakeUp(void);

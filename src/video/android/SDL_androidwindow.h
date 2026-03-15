@@ -33,7 +33,6 @@ extern void Android_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Android_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 
 extern void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern SDL_Window *Android_Window;
 
 struct SDL_WindowData
 {
@@ -44,8 +43,14 @@ struct SDL_WindowData
     int swap_interval;
 #endif
     bool backup_done;
+    bool hasFocus;
     ANativeWindow *native_window;
 
 };
+
+bool Android_NativeSurfaceCreated(SDL_Window *window);
+bool Android_NativeSurfaceChanged(SDL_Window *window);
+void Android_NativeSurfaceDestroyed(SDL_Window *window);
+void Android_NativeSurfaceResized(SDL_Window *window);
 
 #endif // SDL_androidwindow_h_
