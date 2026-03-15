@@ -1728,7 +1728,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetEnvironmentVariable(SDL_Environm
  *
  * \sa SDL_GetEnvironment
  * \sa SDL_CreateEnvironment
- * \sa SDL_GetEnvironmentVariables
+ * \sa SDL_GetEnvironmentVariable
  * \sa SDL_SetEnvironmentVariable
  * \sa SDL_UnsetEnvironmentVariable
  */
