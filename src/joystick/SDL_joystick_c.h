@@ -172,7 +172,13 @@ extern bool SDL_IsJoystickRAWINPUT(SDL_GUID guid);
 extern bool SDL_IsJoystickVIRTUAL(SDL_GUID guid);
 
 // Function to return whether a joystick is a wheel
-bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id);
+
+// Function to return whether a joystick is a guitar
+extern bool SDL_IsJoystickGuitar(Uint16 vendor_id, Uint16 product_id);
+
+// Function to return whether a joystick is a drum kit
+extern bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick should be ignored
 extern bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
