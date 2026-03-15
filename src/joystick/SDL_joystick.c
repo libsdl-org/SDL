@@ -2335,8 +2335,10 @@ void SDL_QuitJoysticks(void)
     SDL_FreeVIDPIDList(&old_xboxone_controllers);
     SDL_FreeVIDPIDList(&arcadestick_devices);
     SDL_FreeVIDPIDList(&blacklist_devices);
+    SDL_FreeVIDPIDList(&drum_devices);
     SDL_FreeVIDPIDList(&flightstick_devices);
     SDL_FreeVIDPIDList(&gamecube_devices);
+    SDL_FreeVIDPIDList(&guitar_devices);
     SDL_FreeVIDPIDList(&rog_gamepad_mice);
     SDL_FreeVIDPIDList(&throttle_devices);
     SDL_FreeVIDPIDList(&wheel_devices);
