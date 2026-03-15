@@ -172,6 +172,16 @@ const char *SDL_GetAppMetadataProperty(const char *name)
         value = SDL_GetStringProperty(SDL_GetGlobalProperties(), name, NULL);
     }
     if (!value || !*value) {
+#ifdef SDL_PLATFORM_LINUX
+        if (SDL_IsUbuntuTouch()) {
+            if (SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0) {
+                value = SDL_GetUbuntuTouchAppID();
+            } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0) {
+                value = SDL_GetUbuntuTouchAppVersion();
+            }
+        }
+#endif
+
         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
             value = "SDL Application";
         } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
@@ -863,6 +873,12 @@ static SDL_Sandbox SDL_DetectSandbox(void)
      * unrelated reasons. This is the same thing WebKitGTK does. */
     if (SDL_getenv("SNAP") && SDL_getenv("SNAP_NAME") && SDL_getenv("SNAP_REVISION")) {
         return SDL_SANDBOX_SNAP;
+    }
+
+    /* Ubuntu Touch also supports Snap; check for classic sandboxing only if
+     * Snap hasn't been detected. */
+    if (SDL_getenv("LOMIRI_APPLICATION_ISOLATION") || SDL_getenv("CLICKABLE_DESKTOP_MODE")) {
+        return SDL_SANDBOX_LOMIRI;
     }
 
     if (access("/run/host/container-manager", F_OK) == 0) {

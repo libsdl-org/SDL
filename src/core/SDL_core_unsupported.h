@@ -65,3 +65,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
 extern SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(JavaVM *vm, void *reserved);
 #endif /* !SDL_PLATFORM_ANDROID */
+
+#if !defined(SDL_PLATFORM_LINUX)
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppID(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppHook(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppVersion(void);
+#endif /* !SDL_PLATFORM_LINUX */
