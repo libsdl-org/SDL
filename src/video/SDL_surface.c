@@ -3104,6 +3104,11 @@ void SDL_DestroySurface(SDL_Surface *surface)
 
 SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
 {
+    CHECK_PARAM(!src) {
+        SDL_InvalidParamError("src");
+        return NULL;
+    }
+
     if (SDL_IsBMP(src)) {
         return SDL_LoadBMP_IO(src, closeio);
     } else if (SDL_IsPNG(src)) {
