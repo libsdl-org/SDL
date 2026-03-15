@@ -25,12 +25,14 @@
 #include "SDL_android.h"
 
 #include "../../events/SDL_events_c.h"
+#ifndef SDL_VIDEO_DISABLED
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidpen.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
+#endif
 #include "../../joystick/android/SDL_sysjoystick_c.h"
 #include "../../haptic/android/SDL_syshaptic_c.h"
 #include "../../hidapi/android/hid.h"
@@ -75,6 +77,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(
     JNIEnv *env, jclass cls,
     jstring library, jstring function, jobject array);
 
+#ifndef SDL_VIDEO_DISABLED
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     JNIEnv *env, jclass jcls,
     jstring filename);
@@ -145,6 +148,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     JNIEnv *env, jclass jcls);
+#endif // !SDL_VIDEO_DISABLED
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
     JNIEnv *env, jclass cls);
@@ -182,6 +186,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     JNIEnv *env, jclass cls,
     jstring name, jstring value);
 
+#ifndef SDL_VIDEO_DISABLED
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetNaturalOrientation)(
     JNIEnv *env, jclass cls,
     jint orientation);
@@ -197,6 +202,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeInsetsChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
     JNIEnv *env, jclass cls,
     jint touchId, jstring name);
+#endif // !SDL_VIDEO_DISABLED
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     JNIEnv *env, jclass cls,
@@ -212,12 +218,33 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     JNIEnv *env, jclass jcls,
     jint requestCode, jobjectArray fileList, jint filter);
 
+// Core methods always registered (lifecycle, hints, env, permissions)
 static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()V", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeInitMainThread", "()V", SDL_JAVA_INTERFACE(nativeInitMainThread) },
     { "nativeCleanupMainThread", "()V", SDL_JAVA_INTERFACE(nativeCleanupMainThread) },
     { "nativeRunMain", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
+    { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
+    { "onNativeLocaleChanged", "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
+    { "onNativeDarkModeChanged", "(Z)V", SDL_JAVA_INTERFACE(onNativeDarkModeChanged) },
+    { "nativeSendQuit", "()V", SDL_JAVA_INTERFACE(nativeSendQuit) },
+    { "nativeQuit", "()V", SDL_JAVA_INTERFACE(nativeQuit) },
+    { "nativePause", "()V", SDL_JAVA_INTERFACE(nativePause) },
+    { "nativeResume", "()V", SDL_JAVA_INTERFACE(nativeResume) },
+    { "nativeFocusChanged", "(Z)V", SDL_JAVA_INTERFACE(nativeFocusChanged) },
+    { "nativeGetHint", "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
+    { "nativeGetHintBoolean", "(Ljava/lang/String;Z)Z", SDL_JAVA_INTERFACE(nativeGetHintBoolean) },
+    { "nativeSetenv", "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
+    { "nativePermissionResult", "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) },
+    { "nativeAllowRecreateActivity", "()Z", SDL_JAVA_INTERFACE(nativeAllowRecreateActivity) },
+    { "nativeCheckSDLThreadCounter", "()I", SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter) },
+    { "onNativeFileDialog", "(I[Ljava/lang/String;I)V", SDL_JAVA_INTERFACE(onNativeFileDialog) }
+};
+
+#ifndef SDL_VIDEO_DISABLED
+// Video/input methods only registered when video subsystem is enabled
+static JNINativeMethod SDLActivity_video_tab[] = {
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
@@ -238,27 +265,14 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativePen", "(IIIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
     { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
-    { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
-    { "onNativeLocaleChanged", "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
-    { "onNativeDarkModeChanged", "(Z)V", SDL_JAVA_INTERFACE(onNativeDarkModeChanged) },
-    { "nativeSendQuit", "()V", SDL_JAVA_INTERFACE(nativeSendQuit) },
-    { "nativeQuit", "()V", SDL_JAVA_INTERFACE(nativeQuit) },
-    { "nativePause", "()V", SDL_JAVA_INTERFACE(nativePause) },
-    { "nativeResume", "()V", SDL_JAVA_INTERFACE(nativeResume) },
-    { "nativeFocusChanged", "(Z)V", SDL_JAVA_INTERFACE(nativeFocusChanged) },
-    { "nativeGetHint", "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
-    { "nativeGetHintBoolean", "(Ljava/lang/String;Z)Z", SDL_JAVA_INTERFACE(nativeGetHintBoolean) },
-    { "nativeSetenv", "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
     { "nativeSetNaturalOrientation", "(I)V", SDL_JAVA_INTERFACE(nativeSetNaturalOrientation) },
     { "onNativeRotationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeRotationChanged) },
     { "onNativeInsetsChanged", "(IIII)V", SDL_JAVA_INTERFACE(onNativeInsetsChanged) },
-    { "nativeAddTouch", "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
-    { "nativePermissionResult", "(IZ)V", SDL_JAVA_INTERFACE(nativePermissionResult) },
-    { "nativeAllowRecreateActivity", "()Z", SDL_JAVA_INTERFACE(nativeAllowRecreateActivity) },
-    { "nativeCheckSDLThreadCounter", "()I", SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter) },
-    { "onNativeFileDialog", "(I[Ljava/lang/String;I)V", SDL_JAVA_INTERFACE(onNativeFileDialog) }
+    { "nativeAddTouch", "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) }
 };
+#endif // !SDL_VIDEO_DISABLED
 
+#ifndef SDL_VIDEO_DISABLED
 // Java class SDLInputConnection
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
     JNIEnv *env, jclass cls,
@@ -272,7 +286,9 @@ static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeCommitText", "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
     { "nativeGenerateScancodeForUnichar", "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
+#endif // !SDL_VIDEO_DISABLED
 
+#ifndef SDL_AUDIO_DISABLED
 // Java class SDLAudioManager
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass jcls);
@@ -290,6 +306,7 @@ static JNINativeMethod SDLAudioManager_tab[] = {
     { "nativeAddAudioDevice", "(ZLjava/lang/String;I)V", SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice) },
     { "nativeRemoveAudioDevice", "(ZI)V", SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice) }
 };
+#endif // !SDL_AUDIO_DISABLED
 
 // Java class SDLControllerManager
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
@@ -360,26 +377,32 @@ static JavaVM *mJavaVM = NULL;
 // Main activity
 static jclass mActivityClass;
 
-// method signatures
+// Core method signatures (always needed)
+static jmethodID midGetContext;
+static jmethodID midGetManifestEnvironmentVariables;
+static jmethodID midIsAndroidTV;
+static jmethodID midIsChromebook;
+static jmethodID midIsDeXMode;
+static jmethodID midIsTablet;
+static jmethodID midOpenURL;
+static jmethodID midRequestPermission;
+static jmethodID midShowToast;
+static jmethodID midSendMessage;
+static jmethodID midOpenFileDescriptor;
+static jmethodID midShowFileDialog;
+static jmethodID midGetPreferredLocales;
+
+#ifndef SDL_VIDEO_DISABLED
+// Video/surface method signatures
 static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midClipboardSetText;
 static jmethodID midCreateCustomCursor;
 static jmethodID midDestroyCustomCursor;
-static jmethodID midGetContext;
-static jmethodID midGetManifestEnvironmentVariables;
 static jmethodID midGetNativeSurface;
 static jmethodID midInitTouch;
-static jmethodID midIsAndroidTV;
-static jmethodID midIsChromebook;
-static jmethodID midIsDeXMode;
-static jmethodID midIsTablet;
 static jmethodID midManualBackButton;
 static jmethodID midMinimizeWindow;
-static jmethodID midOpenURL;
-static jmethodID midRequestPermission;
-static jmethodID midShowToast;
-static jmethodID midSendMessage;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
 static jmethodID midSetOrientation;
@@ -389,10 +412,9 @@ static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midShowTextInput;
 static jmethodID midSupportsRelativeMouse;
-static jmethodID midOpenFileDescriptor;
-static jmethodID midShowFileDialog;
-static jmethodID midGetPreferredLocales;
+#endif // !SDL_VIDEO_DISABLED
 
+#ifndef SDL_AUDIO_DISABLED
 // audio manager
 static jclass mAudioManagerClass;
 
@@ -400,6 +422,7 @@ static jclass mAudioManagerClass;
 static jmethodID midRegisterAudioDeviceCallback;
 static jmethodID midUnregisterAudioDeviceCallback;
 static jmethodID midAudioSetThreadPriority;
+#endif // !SDL_AUDIO_DISABLED
 
 // controller manager
 static jclass mControllerManagerClass;
@@ -415,8 +438,10 @@ static jmethodID midHapticStop;
 // Accelerometer data storage
 static SDL_DisplayOrientation displayNaturalOrientation;
 static SDL_DisplayOrientation displayCurrentOrientation;
+#ifndef SDL_VIDEO_DISABLED
 static float fLastAccelerometer[3];
 static bool bHasNewData;
+#endif
 
 static bool bHasEnvironmentVariables;
 
@@ -579,8 +604,13 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     }
 
     register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
+#ifndef SDL_VIDEO_DISABLED
+    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_video_tab, SDL_arraysize(SDLActivity_video_tab));
     register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
+#endif
+#ifndef SDL_AUDIO_DISABLED
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
+#endif
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
 
@@ -589,10 +619,16 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 
 void checkJNIReady(void)
 {
-    if (!mActivityClass || !mAudioManagerClass || !mControllerManagerClass) {
+    if (!mActivityClass || !mControllerManagerClass) {
         // We aren't fully initialized, let's just return.
         return;
     }
+
+#ifndef SDL_AUDIO_DISABLED
+    if (!mAudioManagerClass) {
+        return;
+    }
+#endif
 
     SDL_SetMainReady();
 }
@@ -651,25 +687,48 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
+    // Core methods (always needed)
+    midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/app/Activity;");
+    midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
+    midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass, "isAndroidTV", "()Z");
+    midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass, "isChromebook", "()Z");
+    midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass, "isDeXMode", "()Z");
+    midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
+    midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)Z");
+    midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
+    midShowToast = (*env)->GetStaticMethodID(env, mActivityClass, "showToast", "(Ljava/lang/String;IIII)Z");
+    midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
+    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
+
+    if (!midGetContext ||
+        !midGetManifestEnvironmentVariables ||
+        !midIsAndroidTV ||
+        !midIsChromebook ||
+        !midIsDeXMode ||
+        !midIsTablet ||
+        !midOpenURL ||
+        !midRequestPermission ||
+        !midShowToast ||
+        !midSendMessage ||
+        !midOpenFileDescriptor ||
+        !midShowFileDialog ||
+        !midGetPreferredLocales) {
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some core Java callbacks, do you have the latest version of SDLActivity.java?");
+    }
+
+#ifndef SDL_VIDEO_DISABLED
+    // Video/surface methods (only needed when video is enabled)
     midClipboardGetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardGetText", "()Ljava/lang/String;");
     midClipboardHasText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardHasText", "()Z");
     midClipboardSetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardSetText", "(Ljava/lang/String;)V");
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
     midDestroyCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "destroyCustomCursor", "(I)V");
-    midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/app/Activity;");
-    midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
     midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass, "getNativeSurface", "()Landroid/view/Surface;");
     midInitTouch = (*env)->GetStaticMethodID(env, mActivityClass, "initTouch", "()V");
-    midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass, "isAndroidTV", "()Z");
-    midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass, "isChromebook", "()Z");
-    midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass, "isDeXMode", "()Z");
-    midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
     midManualBackButton = (*env)->GetStaticMethodID(env, mActivityClass, "manualBackButton", "()V");
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow", "()V");
-    midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)Z");
-    midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
-    midShowToast = (*env)->GetStaticMethodID(env, mActivityClass, "showToast", "(Ljava/lang/String;IIII)Z");
-    midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle", "(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation", "(IIZLjava/lang/String;)V");
@@ -679,29 +738,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss", "()Z");
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
-    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
-    midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
         !midClipboardHasText ||
         !midClipboardSetText ||
         !midCreateCustomCursor ||
         !midDestroyCustomCursor ||
-        !midGetContext ||
-        !midGetManifestEnvironmentVariables ||
         !midGetNativeSurface ||
         !midInitTouch ||
-        !midIsAndroidTV ||
-        !midIsChromebook ||
-        !midIsDeXMode ||
-        !midIsTablet ||
         !midManualBackButton ||
         !midMinimizeWindow ||
-        !midOpenURL ||
-        !midRequestPermission ||
-        !midShowToast ||
-        !midSendMessage ||
         !midSetActivityTitle ||
         !midSetCustomCursor ||
         !midSetOrientation ||
@@ -710,16 +756,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSetWindowStyle ||
         !midShouldMinimizeOnFocusLoss ||
         !midShowTextInput ||
-        !midSupportsRelativeMouse ||
-        !midOpenFileDescriptor ||
-        !midShowFileDialog ||
-        !midGetPreferredLocales) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
+        !midSupportsRelativeMouse) {
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some video Java callbacks, do you have the latest version of SDLActivity.java?");
     }
+#endif // !SDL_VIDEO_DISABLED
 
     checkJNIReady();
 }
 
+#ifndef SDL_AUDIO_DISABLED
 // Audio initialization -- called before SDL_main() to initialize JNI bindings
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
 {
@@ -743,6 +788,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
 
     checkJNIReady();
 }
+#endif // !SDL_AUDIO_DISABLED
 
 // Controller initialization -- called before SDL_main() to initialize JNI bindings
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
@@ -1018,6 +1064,7 @@ void Android_UnlockActivityMutex(void)
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
+#ifndef SDL_VIDEO_DISABLED
 // Drop file
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     JNIEnv *env, jclass jcls,
@@ -1117,7 +1164,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 }
+#endif // !SDL_VIDEO_DISABLED
 
+#ifndef SDL_AUDIO_DISABLED
 JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                          jstring name, jint device_id)
@@ -1145,6 +1194,7 @@ SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboo
     }
 #endif
 }
+#endif // !SDL_AUDIO_DISABLED
 
 // Paddown
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
@@ -1236,6 +1286,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 #endif
 }
 
+#ifndef SDL_VIDEO_DISABLED
 // Called from surfaceCreated()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, jclass jcls)
 {
@@ -1472,6 +1523,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     // TODO: compute new mime types
     SDL_SendClipboardUpdate(false, NULL, 0);
 }
+#endif // !SDL_VIDEO_DISABLED
 
 // Low memory
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
@@ -1492,7 +1544,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDarkModeChanged)(
     JNIEnv *env, jclass cls, jboolean enabled)
 {
+#ifndef SDL_VIDEO_DISABLED
     Android_SetDarkMode(enabled);
+#else
+    (void)enabled;
+#endif
 }
 
 // Send Quit event to "SDLThread" thread
@@ -1558,10 +1614,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
 {
     SDL_LockMutex(Android_ActivityMutex);
 
+#ifndef SDL_VIDEO_DISABLED
     if (Android_Window) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
         SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST), 0, 0);
     }
+#else
+    (void)hasFocus;
+#endif
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1679,6 +1739,7 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     }
 }
 
+#ifndef SDL_VIDEO_DISABLED
 ANativeWindow *Android_JNI_GetNativeWindow(void)
 {
     ANativeWindow *anw = NULL;
@@ -1718,6 +1779,10 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     (*env)->DeleteLocalRef(env, jhint);
 }
 
+// Display orientation accessors are not video-specific; they return cached
+// state and are needed by other subsystems (e.g. camera).
+#endif // !SDL_VIDEO_DISABLED
+
 SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void)
 {
     return displayNaturalOrientation;
@@ -1728,6 +1793,7 @@ SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void)
     return displayCurrentOrientation;
 }
 
+#ifndef SDL_VIDEO_DISABLED
 void Android_JNI_MinimizeWindow(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -1755,7 +1821,14 @@ bool Android_JNI_GetAccelerometerValues(float values[3])
 
     return result;
 }
+#else
+bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
+{
+    return false;
+}
+#endif // !SDL_VIDEO_DISABLED
 
+#ifndef SDL_AUDIO_DISABLED
 /*
  * Audio support
  */
@@ -1783,6 +1856,7 @@ void Android_AudioThreadInit(SDL_AudioDevice *device)
 {
     Android_JNI_AudioSetThreadPriority((int) device->recording, (int)device->instance_id);
 }
+#endif // !SDL_AUDIO_DISABLED
 
 // Test for an exception and call SDL_SetError with its detail if one occurs
 // If the parameter silent is truthy then SDL_SetError() will not be called.
@@ -2022,6 +2096,7 @@ bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_SetError("Couldn't open asset '%s'", path);
 }
 
+#ifndef SDL_VIDEO_DISABLED
 bool Android_JNI_SetClipboardText(const char *text)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2055,6 +2130,7 @@ bool Android_JNI_HasClipboardText(void)
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
 }
+#endif // !SDL_VIDEO_DISABLED
 
 /* returns 0 on success or -1 on error (others undefined then)
  * returns truthy or falsy value in plugged, charged and battery
@@ -2176,12 +2252,14 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
     return 0;
 }
 
+#ifndef SDL_VIDEO_DISABLED
 // Add all touch devices
 void Android_JNI_InitTouch(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
 }
+#endif // !SDL_VIDEO_DISABLED
 
 void Android_JNI_PollInputDevices(void)
 {
@@ -2242,6 +2320,7 @@ bool Android_JNI_SuspendScreenSaver(bool suspend)
     return Android_JNI_SendMessage(COMMAND_SET_KEEP_SCREEN_ON, (suspend == false) ? 0 : 1);
 }
 
+#ifndef SDL_VIDEO_DISABLED
 void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2259,6 +2338,7 @@ void Android_JNI_HideScreenKeyboard(void)
     const int COMMAND_TEXTEDIT_HIDE = 3;
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
+#endif // !SDL_VIDEO_DISABLED
 
 bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
@@ -2416,8 +2496,10 @@ bool SDL_IsDeXMode(void)
 
 void SDL_SendAndroidBackButton(void)
 {
+#ifndef SDL_VIDEO_DISABLED
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midManualBackButton);
+#endif
 }
 
 const char *SDL_GetAndroidInternalStoragePath(void)
@@ -2626,6 +2708,7 @@ void Android_JNI_GetManifestEnvironmentVariables(void)
     }
 }
 
+#ifndef SDL_VIDEO_DISABLED
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2671,6 +2754,7 @@ bool Android_JNI_SetRelativeMouseEnabled(bool enabled)
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
 }
+#endif // !SDL_VIDEO_DISABLED
 
 typedef struct NativePermissionRequestInfo
 {
