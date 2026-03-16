@@ -601,6 +601,7 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x346e, 0x0004), // Moza R5 Wheelbase
     MAKE_VIDPID(0x346e, 0x0005), // Moza R3 Wheelbase
     MAKE_VIDPID(0x346e, 0x0006), // Moza R12 Wheelbase
+    MAKE_VIDPID(0x36e6, 0x400f), // PXN VD6 Wheelbase
 };
 static SDL_vidpid_list wheel_devices = {
     SDL_HINT_JOYSTICK_WHEEL_DEVICES, 0, 0, NULL,
