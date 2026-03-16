@@ -256,6 +256,7 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2c22, // Qanba
             0x2dc8, // 8BitDo
+            0x37d7, // Flydigi
             0x9886, // ASTRO Gaming
         };
 
@@ -528,7 +529,13 @@ public class HIDDeviceManager {
             return false;
         }
 
-        return bluetoothDevice.getName().equals("SteamController") && ((bluetoothDevice.getType() & BluetoothDevice.DEVICE_TYPE_LE) != 0);
+        // Steam Controllers will always support Bluetooth Low Energy
+        if ((bluetoothDevice.getType() & BluetoothDevice.DEVICE_TYPE_LE) == 0) {
+            return false;
+        }
+
+        // Match on the name either the original Steam Controller or the new second-generation one advertise with.
+        return bluetoothDevice.getName().equals("SteamController") || bluetoothDevice.getName().startsWith("Steam Ctrl");
     }
 
     private void close() {

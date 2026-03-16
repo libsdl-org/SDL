@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -160,9 +160,9 @@ typedef struct SDL_hid_device_info
  * Initialize the HIDAPI library.
  *
  * This function initializes the HIDAPI library. Calling it is not strictly
- * necessary, as it will be called automatically by SDL_hid_enumerate() and
- * any of the SDL_hid_open_*() functions if it is needed. This function should
- * be called at the beginning of execution however, if there is a chance of
+ * necessary, as it will be called automatically by SDL_hid_enumerate(),
+ * SDL_hid_open(), and SDL_hid_open_path() if needed. This function should be
+ * called at the beginning of execution however, if there is a chance of
  * HIDAPI handles being opened by different threads simultaneously.
  *
  * Each call to this function should have a matching call to SDL_hid_exit()

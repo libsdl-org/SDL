@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
@@ -97,6 +98,22 @@ typedef Uint32 SDL_TrayEntryFlags;
 typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
 /**
+ * A callback that is invoked when the tray icon is clicked.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked. May be NULL.
+ * \param tray the tray that was clicked.
+ * \returns true to show the tray menu after the callback returns, false to
+ *          skip showing the menu. This return value is only used for left and
+ *          right click callbacks; other mouse events ignore the return value.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayWithProperties
+ */
+typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
+
+/**
  * Create an icon to be placed in the operating system's tray, or equivalent.
  *
  * Many platforms advise not using a system tray unless persistence is a
@@ -114,11 +131,63 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CreateTrayWithProperties
  * \sa SDL_CreateTrayMenu
  * \sa SDL_GetTrayMenu
  * \sa SDL_DestroyTray
  */
 extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);
+
+/**
+ * Create an icon to be placed in the operating system's tray, or equivalent.
+ *
+ * Many platforms advise not using a system tray unless persistence is a
+ * necessary feature. Avoid needlessly creating a tray icon, as the user may
+ * feel like it clutters their interface.
+ *
+ * Using tray icons require the video subsystem.
+ *
+ * These are the supported properties:
+ *
+ * - `SDL_PROP_TRAY_CREATE_ICON_POINTER`: an SDL_Surface to be used as the
+ *   tray icon. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_TOOLTIP_STRING`: a tooltip to be displayed when the
+ *   mouse hovers the icon in UTF-8 encoding. Not supported on all platforms.
+ *   May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_USERDATA_POINTER`: an optional pointer to associate
+ *   with the tray, which will be passed to click callbacks. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is left-clicked.
+ *   Not supported on all platforms. The callback should return true to show
+ *   the default menu, or false to skip showing it. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
+ *   Not supported on all platforms. The callback should return true to show
+ *   the default menu, or false to skip showing it. May be NULL.
+ * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
+ *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
+ *   Not supported on all platforms. May be NULL.
+ *
+ * \param props the properties to use.
+ * \returns The newly created system tray icon.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTray
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_GetTrayMenu
+ * \sa SDL_DestroyTray
+ */
+extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTrayWithProperties(SDL_PropertiesID props);
+
+#define SDL_PROP_TRAY_CREATE_ICON_POINTER                 "SDL.tray.create.icon"
+#define SDL_PROP_TRAY_CREATE_TOOLTIP_STRING               "SDL.tray.create.tooltip"
+#define SDL_PROP_TRAY_CREATE_USERDATA_POINTER             "SDL.tray.create.userdata"
+#define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
+#define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
+#define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
 
 /**
  * Updates the system tray icon's icon.

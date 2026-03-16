@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -94,7 +94,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_DOWN,             // AKEYCODE_DPAD_DOWN
     SDL_SCANCODE_LEFT,             // AKEYCODE_DPAD_LEFT
     SDL_SCANCODE_RIGHT,            // AKEYCODE_DPAD_RIGHT
-    SDL_SCANCODE_SELECT,           // AKEYCODE_DPAD_CENTER
+    SDL_SCANCODE_RETURN,           // AKEYCODE_DPAD_CENTER
     SDL_SCANCODE_VOLUMEUP,         // AKEYCODE_VOLUME_UP
     SDL_SCANCODE_VOLUMEDOWN,       // AKEYCODE_VOLUME_DOWN
     SDL_SCANCODE_POWER,            // AKEYCODE_POWER
@@ -238,7 +238,7 @@ static SDL_Scancode Android_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,          // AKEYCODE_VOLUME_MUTE
     SDL_SCANCODE_UNKNOWN,          // AKEYCODE_INFO
     SDL_SCANCODE_CHANNEL_INCREMENT, // AKEYCODE_CHANNEL_UP
-    SDL_SCANCODE_CHANNEL_INCREMENT, // AKEYCODE_CHANNEL_DOWN
+    SDL_SCANCODE_CHANNEL_DECREMENT, // AKEYCODE_CHANNEL_DOWN
     SDL_SCANCODE_UNKNOWN,          // AKEYCODE_ZOOM_IN
     SDL_SCANCODE_UNKNOWN,          // AKEYCODE_ZOOM_OUT
     SDL_SCANCODE_UNKNOWN,          // AKEYCODE_TV

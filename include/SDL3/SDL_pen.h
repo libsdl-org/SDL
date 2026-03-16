@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@
  * doesn't seem to, it might actually be the operating system's fault. For
  * example, some platforms can manage multiple devices at the same time, but
  * others will make any connected pens look like a single logical device, much
- * how all USB mice connected to a computer will move the same system cursor.
+ * like how all USB mice connected to a computer will move the same system
  * cursor. Other platforms might not support pen buttons, or the distance
  * axis, etc. Very few platforms can even report _what_ functionality the pen
  * supports in the first place, so best practices is to either build UI to let

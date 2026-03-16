@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -92,5 +92,12 @@ extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *ven
 
 // Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
 extern void SDL_DebugLogBackend(const char *subsystem, const char *backend);
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+// even though we reference the C runtime's free() in other places, it appears
+// to be inlined more aggressively in Emscripten 4, so we need a reference to
+// it here, too, so inlined Javascript doesn't fail to find it.
+extern void Emscripten_force_free(void *ptr);
+#endif
 
 #endif // SDL_utils_h_

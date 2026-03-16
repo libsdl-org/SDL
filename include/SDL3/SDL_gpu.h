@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1398,11 +1398,12 @@ typedef struct SDL_GPUViewport
  * SDL_DownloadFromGPUTexture are used as default values respectively and data
  * is considered to be tightly packed.
  *
- * **WARNING**: Direct3D 12 requires texture data row pitch to be 256 byte
- * aligned, and offsets to be aligned to 512 bytes. If they are not, SDL will
- * make a temporary copy of the data that is properly aligned, but this adds
- * overhead to the transfer process. Apps can avoid this by aligning their
- * data appropriately, or using a different GPU backend than Direct3D 12.
+ * **WARNING**: On some older/integrated hardware, Direct3D 12 requires
+ * texture data row pitch to be 256 byte aligned, and offsets to be aligned to
+ * 512 bytes. If they are not, SDL will make a temporary copy of the data that
+ * is properly aligned, but this adds overhead to the transfer process. Apps
+ * can avoid this by aligning their data appropriately, or using a different
+ * GPU backend than Direct3D 12.
  *
  * \since This struct is available since SDL 3.2.0.
  *
@@ -1804,6 +1805,7 @@ typedef struct SDL_GPUBufferCreateInfo
  *
  * \since This struct is available since SDL 3.2.0.
  *
+ * \sa SDL_GPUTransferBufferUsage
  * \sa SDL_CreateGPUTransferBuffer
  */
 typedef struct SDL_GPUTransferBufferCreateInfo
@@ -2306,6 +2308,21 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER`: Certain
+ *   feature checks are only possible on Windows 11 by default. By setting
+ *   this alongside `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING`
+ *   and vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make
+ *   those feature checks possible on older platforms. The version you provide
+ *   must match the one given in the DLL.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING`: Certain
+ *   feature checks are only possible on Windows 11 by default. By setting
+ *   this alongside
+ *   `SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER` and
+ *   vendoring D3D12Core.dll from the D3D12 Agility SDK, you can make those
+ *   feature checks possible on older platforms. The path you provide must be
+ *   relative to the executable path of your app. Be sure not to put the DLL
+ *   in the same directory as the exe; Microsoft strongly advises against
+ *   this!
  *
  * With the Vulkan backend:
  *
@@ -2320,6 +2337,15 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   This allows configuring a variety of Vulkan-specific options such as
  *   increasing the API version and opting into extensions aside from the
  *   minimal set SDL requires.
+ *
+ * With the Metal backend: -
+ * `SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN`: By default,
+ * macOS support requires what Apple calls "MTLGPUFamilyMac2" hardware or
+ * newer. However, an application can set this property to true to enable
+ * support for "MTLGPUFamilyMac1" hardware, if (and only if) the application
+ * does not write to sRGB textures. (For history's sake: MacFamily1 also does
+ * not support indirect command buffers, MSAA depth resolve, and stencil
+ * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
@@ -2351,8 +2377,25 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN         "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER             "SDL.gpu.device.create.d3d12.agility_sdk_version"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING                "SDL.gpu.device.create.d3d12.agility_sdk_path"
+#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
+#define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
+
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER                            "SDL.gpu.device.create.xr.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER                        "SDL.gpu.device.create.xr.form_factor"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT_NUMBER                    "SDL.gpu.device.create.xr.extensions.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES_POINTER                   "SDL.gpu.device.create.xr.extensions.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT_NUMBER                        "SDL.gpu.device.create.xr.layers.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES_POINTER                       "SDL.gpu.device.create.xr.layers.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING                   "SDL.gpu.device.create.xr.application.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER                "SDL.gpu.device.create.xr.application.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME_STRING                        "SDL.gpu.device.create.xr.engine.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION_NUMBER                     "SDL.gpu.device.create.xr.engine.version"
 
 
 /**
@@ -2361,7 +2404,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
  * When no such structure is provided, SDL will use Vulkan API version 1.0 and
  * a minimal set of features. The requested API version influences how the
  * feature_list is processed by SDL. When requesting API version 1.0, the
- * feature_list is ignored. Only the vulkan_10_phyisical_device_features and
+ * feature_list is ignored. Only the vulkan_10_physical_device_features and
  * the extension lists are used. When requesting API version 1.1, the
  * feature_list is scanned for feature structures introduced in Vulkan 1.1.
  * When requesting Vulkan 1.2 or higher, the feature_list is additionally
@@ -2945,6 +2988,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUTextureName(
  *
  * Useful for debugging.
  *
+ * On Direct3D 12, using SDL_InsertGPUDebugLabel requires
+ * WinPixEventRuntime.dll to be in your PATH or in the same directory as your
+ * executable. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
+ *
  * \param command_buffer a command buffer.
  * \param text a UTF-8 string constant to insert as the label.
  *
@@ -2962,6 +3011,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGPUDebugLabel(
  *
  * Each call to SDL_PushGPUDebugGroup must have a corresponding call to
  * SDL_PopGPUDebugGroup.
+ *
+ * On Direct3D 12, using SDL_PushGPUDebugGroup requires WinPixEventRuntime.dll
+ * to be in your PATH or in the same directory as your executable. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
  *
  * On some backends (e.g. Metal), pushing a debug group during a
  * render/blit/compute pass will create a group that is scoped to the native
@@ -2981,6 +3035,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUDebugGroup(
 
 /**
  * Ends the most-recently pushed debug group.
+ *
+ * On Direct3D 12, using SDL_PopGPUDebugGroup requires WinPixEventRuntime.dll
+ * to be in your PATH or in the same directory as your executable. See
+ * [here](https://devblogs.microsoft.com/pix/winpixeventruntime/)
+ * for instructions on how to obtain it.
  *
  * \param command_buffer a command buffer.
  *
@@ -3123,7 +3182,7 @@ extern SDL_DECLSPEC SDL_GPUCommandBuffer * SDLCALL SDL_AcquireGPUCommandBuffer(
 /**
  * Pushes data to a vertex uniform slot on the command buffer.
  *
- * Subsequent draw calls will use this uniform data.
+ * Subsequent draw calls in this command buffer will use this uniform data.
  *
  * The data being pushed must respect std140 layout conventions. In practical
  * terms this means you must ensure that vec3 and vec4 fields are 16-byte
@@ -3148,7 +3207,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUVertexUniformData(
 /**
  * Pushes data to a fragment uniform slot on the command buffer.
  *
- * Subsequent draw calls will use this uniform data.
+ * Subsequent draw calls in this command buffer will use this uniform data.
  *
  * The data being pushed must respect std140 layout conventions. In practical
  * terms this means you must ensure that vec3 and vec4 fields are 16-byte
@@ -3170,7 +3229,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUFragmentUniformData(
 /**
  * Pushes data to a uniform slot on the command buffer.
  *
- * Subsequent draw calls will use this uniform data.
+ * Subsequent draw calls in this command buffer will use this uniform data.
  *
  * The data being pushed must respect std140 layout conventions. In practical
  * terms this means you must ensure that vec3 and vec4 fields are 16-byte
@@ -3656,7 +3715,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
  * Be sure your shader is set up according to the requirements documented in
- * SDL_CreateGPUShader().
+ * SDL_CreateGPUComputePipeline().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute sampler slot to begin binding from.
@@ -3667,7 +3726,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeSamplers(
     SDL_GPUComputePass *compute_pass,
@@ -3682,7 +3741,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeSamplers(
  * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ.
  *
  * Be sure your shader is set up according to the requirements documented in
- * SDL_CreateGPUShader().
+ * SDL_CreateGPUComputePipeline().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute storage texture slot to begin binding from.
@@ -3691,7 +3750,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeSamplers(
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
     SDL_GPUComputePass *compute_pass,
@@ -3706,7 +3765,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ.
  *
  * Be sure your shader is set up according to the requirements documented in
- * SDL_CreateGPUShader().
+ * SDL_CreateGPUComputePipeline().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute storage buffer slot to begin binding from.
@@ -3715,7 +3774,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPUComputePipeline
  */
 extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageBuffers(
     SDL_GPUComputePass *compute_pass,
@@ -3886,6 +3945,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUBuffer(
  *
  * This copy occurs on the GPU timeline. You may assume the copy has finished
  * in subsequent commands.
+ *
+ * This function does not support copying between depth and color textures.
+ * For those, copy the texture to a buffer and then to the destination
+ * texture.
  *
  * \param copy_pass a copy pass handle.
  * \param source a source texture region.
@@ -4519,11 +4582,13 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUTextureFormatFromPixe
 #ifdef SDL_PLATFORM_GDK
 
 /**
- * Call this to suspend GPU operation on Xbox when you receive the
+ * Call this to suspend GPU operation on Xbox after receiving the
  * SDL_EVENT_DID_ENTER_BACKGROUND event.
  *
  * Do NOT call any SDL_GPU functions after calling this function! This must
  * also be called before calling SDL_GDKSuspendComplete.
+ *
+ * This function MUST be called from the application's render thread.
  *
  * \param device a GPU context.
  *
@@ -4534,11 +4599,13 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUTextureFormatFromPixe
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
 
 /**
- * Call this to resume GPU operation on Xbox when you receive the
+ * Call this to resume GPU operation on Xbox after receiving the
  * SDL_EVENT_WILL_ENTER_FOREGROUND event.
  *
  * When resuming, this function MUST be called before calling any other
  * SDL_GPU functions.
+ *
+ * This function MUST be called from the application's render thread.
  *
  * \param device a GPU context.
  *

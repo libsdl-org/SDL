@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2024 Wim Taymans <wtaymans@redhat.com>
 
   This software is provided 'as-is', without any express or implied
@@ -114,7 +114,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for camera through libpipewire",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
-);
+)
 
 static const char *pipewire_library = SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC;
 static SDL_SharedObject *pipewire_handle = NULL;
@@ -330,7 +330,7 @@ static struct param *param_add(struct spa_list *params,
         id = SPA_POD_OBJECT_ID(param);
     }
 
-    p = malloc(sizeof(*p) + (param != NULL ? SPA_POD_SIZE(param) : 0));
+    p = malloc(sizeof(*p) + (param != NULL ? SPA_POD_SIZE(param) : 0)); // This should NOT be SDL_malloc()
     if (p == NULL)
         return NULL;
 
@@ -577,7 +577,7 @@ static bool PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
     return true;
 }
 
-static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
+static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
     struct pw_buffer *b;
 
@@ -950,7 +950,7 @@ static void hotplug_registry_global_callback(void *object, uint32_t id,
         g->permissions = permissions;
         g->props = props ? PIPEWIRE_pw_properties_new_dict(props) : NULL;
         g->proxy = proxy;
-        g->name = strdup(name);
+        g->name = strdup(name); // This should NOT be SDL_strdup()
         spa_list_init(&g->pending_list);
         spa_list_init(&g->param_list);
         spa_list_append(&hotplug.global_list, &g->link);

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,53 +168,35 @@ static SDL_Surface *load_image(const char *file)
     return surface;
 }
 
-static SDL_Cursor *init_color_cursor(const char *file)
+static SDL_Cursor *init_color_cursor(char **files, int num_frames)
 {
     SDL_Cursor *cursor = NULL;
-    SDL_CursorFrameInfo *frames = NULL;
-    int frame_cnt = 0;
+    SDL_CursorFrameInfo *frames = (SDL_CursorFrameInfo *)SDL_calloc(num_frames, sizeof(SDL_CursorFrameInfo));
     int i;
 
-    char *str = SDL_strdup(file);
-    if (!str) {
-        return NULL;
-    }
-
-    char *saveptr = NULL;
-    char *token = SDL_strtok_r(str, ";", &saveptr);
-    while(token != NULL) {
-        SDL_Surface *img = load_image(token);
+    for (i = 0; i < num_frames; i++) {
+        SDL_Surface *img = load_image(files[i]);
         if (!img) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_TEST, "Failed to load %s", files[i]);
             goto cleanup;
         }
-
-        frames = SDL_realloc(frames, (frame_cnt + 1) * sizeof(SDL_CursorFrameInfo));
-        if (!frames) {
-            goto cleanup;
+        frames[i].surface = img;
+        if (i > 0) {
+            frames[i].duration = 150;
         }
-
-        frames[frame_cnt].surface = img;
-        frames[frame_cnt++].duration = 150;
-
-        token = SDL_strtok_r(NULL, ";", &saveptr);
     }
 
-    if (frame_cnt == 1) {
+    if (num_frames == 1) {
         cursor = SDL_CreateColorCursor(frames[0].surface, 0, 0);
     } else {
-        cursor = SDL_CreateAnimatedCursor(frames, frame_cnt, 0, 0);
+        cursor = SDL_CreateAnimatedCursor(frames, num_frames, 0, 0);
     }
 
 cleanup:
-    if (frames) {
-        for (i = 0; i < frame_cnt; ++i) {
-            SDL_DestroySurface(frames[i].surface);
-        }
-
-        SDL_free(frames);
+    for (i = 0; i < num_frames; ++i) {
+        SDL_DestroySurface(frames[i].surface);
     }
-
-    SDL_free(str);
+    SDL_free(frames);
 
     return cursor;
 }
@@ -322,7 +304,12 @@ static SDL_Cursor *init_animated_cursor(const char *image[], bool oneshot)
         frame_count = 6;
     }
 
-    return SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+    SDL_Cursor *cursor = SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+
+    SDL_DestroySurface(surface);
+    SDL_DestroySurface(invsurface);
+
+    return cursor;
 }
 
 static SDLTest_CommonState *state;
@@ -488,7 +475,8 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-    const char *color_cursor = NULL;
+    char **frames = NULL;
+    int num_frames = -1;
     SDL_Cursor *cursor;
 
     /* Initialize test framework */
@@ -502,11 +490,18 @@ int main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
-            color_cursor = argv[i];
-            break;
+            if (SDL_strcmp(argv[i], "--frames") == 0 && frames == NULL) {
+                num_frames = 0;
+                while (i + 1 + num_frames < argc && argv[i + 1 + num_frames][0] != '-') {
+                    num_frames += 1;
+                }
+                frames = &argv[i + 1];
+                consumed = num_frames + 1;
+            }
         }
-        if (consumed < 0) {
-            SDLTest_CommonLogUsage(state, argv[0], NULL);
+        if (consumed <= 0) {
+            static const char *options[] = { "[--frames frame0.bmp [frame1.bmp [frame2.bmp ...]]]", NULL};
+            SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
         i += consumed;
@@ -518,25 +513,17 @@ int main(int argc, char *argv[])
 
     num_cursors = 0;
 
-    if (color_cursor) {
+    if (num_frames > 0) {
         /* Only load the first file in the list for the icon. */
-        char *icon_str = SDL_strdup(color_cursor);
-        if (icon_str) {
-            char *tok = SDL_strchr(icon_str, ';');
-            if (tok) {
-                *tok = '\0';
+        SDL_Surface *icon = load_image(frames[0]);
+        if (icon) {
+            for (i = 0; i < state->num_windows; ++i) {
+                SDL_SetWindowIcon(state->windows[i], icon);
             }
-            SDL_Surface *icon = load_image(icon_str);
-            SDL_free(icon_str);
-            if (icon) {
-                for (i = 0; i < state->num_windows; ++i) {
-                    SDL_SetWindowIcon(state->windows[i], icon);
-                }
-                SDL_DestroySurface(icon);
-            }
+            SDL_DestroySurface(icon);
         }
 
-        cursor = init_color_cursor(color_cursor);
+        cursor = init_color_cursor(frames, num_frames);
         if (cursor) {
             cursors[num_cursors] = cursor;
             cursor_types[num_cursors] = (SDL_SystemCursor)-1;

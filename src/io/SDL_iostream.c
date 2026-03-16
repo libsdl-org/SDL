@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,6 +70,9 @@ typedef struct IOStreamWindowsData
     void *data;
     size_t size;
     size_t left;
+    void *write_data;
+    size_t write_pos;
+    bool writable;
     bool append;
     bool autoclose;
 } IOStreamWindowsData;
@@ -80,7 +83,8 @@ typedef struct IOStreamWindowsData
 #define INVALID_SET_FILE_POINTER 0xFFFFFFFF
 #endif
 
-#define READAHEAD_BUFFER_SIZE 1024
+#define READAHEAD_BUFFER_SIZE   1024
+#define WRITEBEHIND_BUFFER_SIZE 1024
 
 static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
 {
@@ -150,6 +154,41 @@ static HANDLE SDLCALL windows_file_open(const char *filename, const char *mode)
     return h;
 }
 
+static bool windows_flush_write_buffer(IOStreamWindowsData *iodata,
+                                        SDL_IOStatus *status)
+{
+    if (iodata->write_pos == 0) {
+        return true;  // Nothing to flush
+    }
+
+    // In append mode, seek to EOF before writing
+    if (iodata->append) {
+        LARGE_INTEGER windowsoffset;
+        windowsoffset.QuadPart = 0;
+        if (!SetFilePointerEx(iodata->h, windowsoffset,
+                              &windowsoffset, FILE_END)) {
+            if (status) {
+                *status = SDL_IO_STATUS_ERROR;
+            }
+            WIN_SetError("Error seeking in datastream");
+            return false;
+        }
+    }
+
+    DWORD bytes;
+    if (!WriteFile(iodata->h, iodata->write_data,
+                   (DWORD)iodata->write_pos, &bytes, NULL)) {
+        if (status) {
+            *status = SDL_IO_STATUS_ERROR;
+        }
+        WIN_SetError("Error writing to datastream");
+        return false;
+    }
+
+    iodata->write_pos = 0;
+    return true;
+}
+
 static Sint64 SDLCALL windows_file_size(void *userdata)
 {
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
@@ -167,6 +206,10 @@ static Sint64 SDLCALL windows_file_seek(void *userdata, Sint64 offset, SDL_IOWhe
     IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
     DWORD windowswhence;
     LARGE_INTEGER windowsoffset;
+
+    if (!windows_flush_write_buffer(iodata, NULL)) {
+        return -1;
+    }
 
     // FIXME: We may be able to satisfy the seek within buffered data
     if ((whence == SDL_IO_SEEK_CUR) && (iodata->left)) {
@@ -203,6 +246,10 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
     size_t total_read = 0;
     size_t read_ahead;
     DWORD bytes;
+
+    if (!windows_flush_write_buffer(iodata, status)) {
+        return 0;
+    }
 
     if (iodata->left > 0) {
         void *data = (char *)iodata->data +
@@ -270,11 +317,20 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
 
 static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
-    IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
-    DWORD bytes;
+    IOStreamWindowsData *iodata = (IOStreamWindowsData *)userdata;
+    const Uint8 *src = (const Uint8 *)ptr;
+    size_t remaining = size;
+    size_t total_written = 0;
 
+    if (!iodata->writable) {
+        *status = SDL_IO_STATUS_READONLY;
+        return 0;
+    }
+
+    // Invalidate read-ahead buffer if it has data
     if (iodata->left) {
-        if (!SetFilePointer(iodata->h, -(LONG)iodata->left, NULL, FILE_CURRENT)) {
+        if (!SetFilePointer(iodata->h, -(LONG)iodata->left,
+                            NULL, FILE_CURRENT)) {
             *status = SDL_IO_STATUS_ERROR;
             WIN_SetError("Error seeking in datastream");
             return 0;
@@ -282,30 +338,66 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
         iodata->left = 0;
     }
 
-    // if in append mode, we must go to the EOF before write
-    if (iodata->append) {
-        LARGE_INTEGER windowsoffset;
-        windowsoffset.QuadPart = 0;
-        if (!SetFilePointerEx(iodata->h, windowsoffset, &windowsoffset, FILE_END)) {
-            *status = SDL_IO_STATUS_ERROR;
-            WIN_SetError("Error seeking in datastream");
+    // For large writes, flush buffer and write directly
+    if (size >= WRITEBEHIND_BUFFER_SIZE) {
+        if (!windows_flush_write_buffer(iodata, status)) {
             return 0;
+        }
+
+        // In append mode, seek to EOF before direct write
+        if (iodata->append) {
+            LARGE_INTEGER windowsoffset;
+            windowsoffset.QuadPart = 0;
+            if (!SetFilePointerEx(iodata->h, windowsoffset,
+                                  &windowsoffset, FILE_END)) {
+                *status = SDL_IO_STATUS_ERROR;
+                WIN_SetError("Error seeking in datastream");
+                return 0;
+            }
+        }
+
+        DWORD bytes;
+        if (!WriteFile(iodata->h, ptr, (DWORD)size, &bytes, NULL)) {
+            *status = SDL_IO_STATUS_ERROR;
+            WIN_SetError("Error writing to datastream");
+            return 0;
+        } else if (bytes == 0 && size > 0) {
+            *status = SDL_IO_STATUS_NOT_READY;
+        }
+        return bytes;
+    }
+
+    // Buffer small writes
+    while (remaining > 0) {
+        size_t space = WRITEBEHIND_BUFFER_SIZE - iodata->write_pos;
+        size_t to_buffer = SDL_min(remaining, space);
+
+        SDL_memcpy((char *)iodata->write_data + iodata->write_pos,
+                   src, to_buffer);
+        iodata->write_pos += to_buffer;
+        src += to_buffer;
+        remaining -= to_buffer;
+        total_written += to_buffer;
+
+        if (iodata->write_pos == WRITEBEHIND_BUFFER_SIZE) {
+            if (!windows_flush_write_buffer(iodata, status)) {
+                return total_written;
+            }
         }
     }
 
-    if (!WriteFile(iodata->h, ptr, (DWORD)size, &bytes, NULL)) {
-        *status = SDL_IO_STATUS_ERROR;
-        WIN_SetError("Error writing to datastream");
-        return 0;
-    } else if (bytes == 0 && size > 0) {
-        *status = SDL_IO_STATUS_NOT_READY;
-    }
-    return bytes;
+    return total_written;
 }
 
 static bool SDLCALL windows_file_flush(void *userdata, SDL_IOStatus *status)
 {
-    IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
+    IOStreamWindowsData *iodata = (IOStreamWindowsData *)userdata;
+
+    if (!windows_flush_write_buffer(iodata, status)) {
+        return false;
+    }
+
+    // Sync to disk
     if (!FlushFileBuffers(iodata->h)) {
         return WIN_SetError("Error flushing datastream");
     }
@@ -314,16 +406,23 @@ static bool SDLCALL windows_file_flush(void *userdata, SDL_IOStatus *status)
 
 static bool SDLCALL windows_file_close(void *userdata)
 {
-    IOStreamWindowsData *iodata = (IOStreamWindowsData *) userdata;
+    IOStreamWindowsData *iodata = (IOStreamWindowsData *)userdata;
+    bool result = true;
+
+    if (!windows_flush_write_buffer(iodata, NULL)) {
+        result = false;
+    }
+
     if (iodata->h != INVALID_HANDLE_VALUE) {
         if (iodata->autoclose) {
             CloseHandle(iodata->h);
         }
-        iodata->h = INVALID_HANDLE_VALUE; // to be sure
+        iodata->h = INVALID_HANDLE_VALUE;
     }
     SDL_free(iodata->data);
+    SDL_free(iodata->write_data);
     SDL_free(iodata);
-    return true;
+    return result;
 }
 
 SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
@@ -348,6 +447,9 @@ SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
     iface.close = windows_file_close;
 
     iodata->h = handle;
+    iodata->writable = (SDL_strchr(mode, 'w') != NULL) ||
+                       (SDL_strchr(mode, 'a') != NULL) ||
+                       (SDL_strchr(mode, '+') != NULL);
     iodata->append = (SDL_strchr(mode, 'a') != NULL);
     iodata->autoclose = autoclose;
 
@@ -356,6 +458,13 @@ SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose)
         iface.close(iodata);
         return NULL;
     }
+
+    iodata->write_data = (char *)SDL_malloc(WRITEBEHIND_BUFFER_SIZE);
+    if (!iodata->write_data) {
+        iface.close(iodata);
+        return NULL;
+    }
+    iodata->write_pos = 0;
 
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
@@ -379,7 +488,6 @@ typedef struct IOStreamFDData
 {
     int fd;
     bool autoclose;
-    bool regular_file;
 } IOStreamFDData;
 
 static int SDL_fdatasync(int fd)
@@ -552,9 +660,6 @@ SDL_IOStream *SDL_IOFromFD(int fd, bool autoclose)
     iodata->fd = fd;
     iodata->autoclose = autoclose;
 
-    struct stat st;
-    iodata->regular_file = ((fstat(fd, &st) == 0) && S_ISREG(st.st_mode));
-
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
         iface.close(iodata);
@@ -577,7 +682,6 @@ typedef struct IOStreamStdioData
 {
     FILE *fp;
     bool autoclose;
-    bool regular_file;
 } IOStreamStdioData;
 
 #ifdef HAVE_FOPEN64
@@ -754,9 +858,6 @@ SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
     iodata->fp = fp;
     iodata->autoclose = autoclose;
 
-    struct stat st;
-    iodata->regular_file = ((fstat(fileno(fp), &st) == 0) && S_ISREG(st.st_mode));
-
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
         iface.close(iodata);
@@ -863,18 +964,19 @@ static bool SDLCALL mem_close(void *userdata)
 
 // Functions to create SDL_IOStream structures from various data sources
 
-#if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
-static bool IsRegularFileOrPipe(FILE *f)
-{
-#ifndef SDL_PLATFORM_EMSCRIPTEN
-    struct stat st;
-    if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
-        return false;
-    }
-#endif // !SDL_PLATFORM_EMSCRIPTEN
+// private platforms might define SKIP_STDIO_DIR_TEST in their build configs, too.
+#if defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_EMSCRIPTEN)
+#define SKIP_STDIO_DIR_TEST 1
+#endif
 
-    return true;
+#if defined(HAVE_STDIO_H) && !defined(SKIP_STDIO_DIR_TEST)
+static bool IsStdioFileADirectory(FILE *f)
+{
+    struct stat st;
+    return ((fstat(fileno(f), &st) == 0) && (S_ISDIR(st.st_mode)));
 }
+#else
+#define IsStdioFileADirectory(f) false
 #endif
 
 SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
@@ -896,9 +998,9 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
         if (fp) {
-            if (!IsRegularFileOrPipe(fp)) {
+            if (IsStdioFileADirectory(fp)) {
                 fclose(fp);
-                SDL_SetError("%s is not a regular file or pipe", file);
+                SDL_SetError("%s is a directory", file);
                 return NULL;
             }
             return SDL_IOFromFP(fp, true);
@@ -927,9 +1029,9 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
             FILE *fp = fopen(path, mode);
             SDL_free(path);
             if (fp) {
-                if (!IsRegularFileOrPipe(fp)) {
+                if (IsStdioFileADirectory(fp)) {
                     fclose(fp);
-                    SDL_SetError("%s is not a regular file or pipe", path);
+                    SDL_SetError("%s is a directory", path);
                     return NULL;
                 }
                 return SDL_IOFromFP(fp, true);
@@ -985,13 +1087,17 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
         fp = fopen(path, mode);
         SDL_free(path);
+
+        if (!fp) {
+            fp = fopen(file, mode);
+        }
     }
 
     if (!fp) {
         SDL_SetError("Couldn't open %s: %s", file, strerror(errno));
-    } else if (!IsRegularFileOrPipe(fp)) {
+    } else if (IsStdioFileADirectory(fp)) {
         fclose(fp);
-        SDL_SetError("%s is not a regular file or pipe", file);
+        SDL_SetError("%s is a directory", file);
     } else {
         iostr = SDL_IOFromFP(fp, true);
     }
@@ -1012,9 +1118,9 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
         if (!fp) {
             SDL_SetError("Couldn't open %s: %s", file, strerror(errno));
-        } else if (!IsRegularFileOrPipe(fp)) {
+        } else if (IsStdioFileADirectory(fp)) {
             fclose(fp);
-            SDL_SetError("%s is not a regular file or pipe", file);
+            SDL_SetError("%s is a directory", file);
         } else {
             iostr = SDL_IOFromFP(fp, true);
         }
@@ -1022,7 +1128,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
 #else
     SDL_SetError("SDL not compiled with stdio support");
-#endif // !HAVE_STDIO_H
+#endif // SDL_PLATFORM_ANDROID
 
     return iostr;
 }
@@ -1400,7 +1506,8 @@ SDL_PropertiesID SDL_GetIOProperties(SDL_IOStream *context)
 Sint64 SDL_GetIOSize(SDL_IOStream *context)
 {
     CHECK_PARAM(!context) {
-        return SDL_InvalidParamError("context");
+        SDL_InvalidParamError("context");
+        return -1;
     }
 
     if (!context->iface.size) {

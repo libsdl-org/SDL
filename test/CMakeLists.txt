@@ -4,6 +4,10 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_C_STANDARD)
+    set(CMAKE_C_STANDARD 99)
+endif()
+
 set(SDL3_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
@@ -44,7 +48,6 @@ option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 if(WIN32)
     option(SDLTEST_PROCDUMP "Run tests using sdlprocdump for minidump generation" OFF)
     add_executable(sdlprocdump win32/sdlprocdump.c)
-    set_property(TARGET sdlprocdump PROPERTY C_STANDARD "90")
     SDL_AddCommonCompilerFlags(sdlprocdump)
     if(SDLTEST_PROCDUMP)
         set(CMAKE_TEST_LAUNCHER "$<TARGET_FILE:sdlprocdump>;--")
@@ -85,9 +88,13 @@ foreach(resource_file IN LISTS RESOURCE_FILES)
     get_filename_component(res_file_name ${resource_file} NAME)
     list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
     set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    set(depends_resource_file "${resource_file}")
+    if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+        set(depends_resource_file "${CMAKE_CURRENT_LIST_FILE}")
+    endif()
     add_custom_command(OUTPUT "${resource_file_bindir}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
-        DEPENDS "${resource_file}"
+        DEPENDS "${depends_resource_file}"
     )
     list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
 endforeach()
@@ -99,8 +106,23 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target i
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
+if(HAVE_X11)
+    find_package(X11 QUIET)
+    if(NOT TARGET X11::X11)
+        set(HAVE_X11 OFF)
+    endif()
+endif()
+
+if(HAVE_WAYLAND)
+    find_package(PkgConfig QUIET)
+    pkg_check_modules(PkgWaylandClient QUIET IMPORTED_TARGET wayland-client)
+    if(NOT TARGET PkgConfig::PkgWaylandClient)
+        set(HAVE_WAYLAND OFF)
+    endif()
+endif()
+
 function(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;MAIN_CALLBACKS;NOTRACKMEM" "" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -123,10 +145,6 @@ function(add_sdl_test_executable TARGET)
     SDL_AddCommonCompilerFlags(${TARGET})
     target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
     target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
-    if(NOT AST_NO_C90 AND NOT SDL_CMAKE_PLATFORM MATCHES "^(n3ds|ps2|psp)$")
-        set_property(TARGET ${TARGET} PROPERTY C_STANDARD 90)
-        set_property(TARGET ${TARGET} PROPERTY C_EXTENSIONS FALSE)
-    endif()
     if(AST_DEPENDS)
         add_dependencies(${TARGET} ${AST_DEPENDS})
     endif()
@@ -279,7 +297,7 @@ if(FFmpeg_FOUND)
     cmake_pop_check_state()
 endif()
 if(FFmpeg_FOUND AND LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
-    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_png_header} DEPENDS generate-icon_png_header)
+    add_sdl_test_executable(testffmpeg SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_png_header} DEPENDS generate-icon_png_header)
     if(LIBAVUTIL_AVFULKANFRAMESCONTEXT_HAS_FORMAT)
       target_compile_definitions(testffmpeg PRIVATE FFMPEG_VULKAN_SUPPORT)
     endif()
@@ -305,7 +323,7 @@ add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
 add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
-add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES BUILD_DEPENDENT NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
+add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES BUILD_DEPENDENT SOURCES ${TESTAUTOMATION_SOURCE_FILES})
 if(EMSCRIPTEN)
     target_link_options(testautomation PRIVATE -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=1gb)
 endif()
@@ -324,7 +342,7 @@ add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARG
 
 set(build_options_dependent_tests )
 
-add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE NO_C90 SOURCES testevdev.c)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c)
 
 if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
@@ -336,18 +354,18 @@ if(MACOS)
 elseif(WINDOWS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
-    add_sdl_test_executable(testnative BUILD_DEPENDENT NO_C90 NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
     if(HAVE_X11)
         target_sources(testnative PRIVATE testnativex11.c)
-        target_link_libraries(testnative PRIVATE X11)
+        target_link_libraries(testnative PRIVATE X11::X11)
     endif()
     if(HAVE_WAYLAND)
         set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
-        target_sources(testnative PRIVATE testnativewayland.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+        target_sources(testnative PRIVATE testnativewayland.c "${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c")
 
         # Needed to silence the documentation warning in the generated header file
         target_compile_options(testnative PRIVATE -Wno-documentation-unknown-command)
-        target_link_libraries(testnative PRIVATE wayland-client)
+        target_link_libraries(testnative PRIVATE PkgConfig::PkgWaylandClient)
     endif ()
 endif()
 
@@ -364,6 +382,8 @@ add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
 add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
+add_sdl_test_executable(testgpu_spinning_cube_xr SOURCES testgpu_spinning_cube_xr.c)
+
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
 elseif(IOS OR TVOS)
@@ -381,7 +401,7 @@ add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS SOURCES testime.c)
 add_sdl_test_executable(testkeys SOURCES testkeys.c)
 add_sdl_test_executable(testloadso SOURCES testloadso.c)
 add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c)
-add_sdl_test_executable(testlock NO_C90 SOURCES testlock.c)
+add_sdl_test_executable(testlock SOURCES testlock.c)
 add_sdl_test_executable(testrwlock SOURCES testrwlock.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 20)
 add_sdl_test_executable(testmouse SOURCES testmouse.c)
 
@@ -410,6 +430,7 @@ add_sdl_test_executable(testpalette SOURCES testpalette.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c)
+set_property(TARGET testver PROPERTY C_STANDARD 90)
 add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c)
 add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_png_header} DEPENDS generate-icon_png_header)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
@@ -425,7 +446,7 @@ if(EMSCRIPTEN)
 endif()
 add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c)
 add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c)
-add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
+add_sdl_test_executable(testvulkan SOURCES testvulkan.c)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
 add_sdl_test_executable(testpopup SOURCES testpopup.c)
 add_sdl_test_executable(testdialog SOURCES testdialog.c)
@@ -449,10 +470,10 @@ get_property(SDL_TEST_EXECUTABLES DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPER
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time
     set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
-    add_sdl_test_executable(testwaylandcustom NO_C90 NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+    add_sdl_test_executable(testwaylandcustom NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
     # Needed to silence the documentation warning in the generated header file
     target_compile_options(testwaylandcustom PRIVATE -Wno-documentation-unknown-command)
-    target_link_libraries(testwaylandcustom PRIVATE wayland-client)
+    target_link_libraries(testwaylandcustom PRIVATE PkgConfig::PkgWaylandClient)
 endif()
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
@@ -731,7 +752,35 @@ if(ANDROID AND TARGET SDL3::Jar)
             configure_file(android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
             configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
             configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
-            configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            # Use XR-specific manifest for XR tests, standard manifest for others
+            if("${TEST}" MATCHES "_xr$")
+                # Meta Quest-specific manifest sections (enabled by default, set to empty to disable)
+                # These are ignored by non-Meta runtimes but required for proper Quest integration
+                if(NOT DEFINED SDL_ANDROID_XR_META_SUPPORT OR SDL_ANDROID_XR_META_SUPPORT)
+                    set(ANDROID_XR_META_FEATURES
+"    <!-- Meta Quest hand tracking support -->
+    <uses-feature android:name=\"oculus.software.handtracking\" android:required=\"false\" />
+")
+                    set(ANDROID_XR_META_METADATA
+"        <!-- Meta Quest supported devices -->
+        <meta-data android:name=\"com.oculus.supportedDevices\" android:value=\"quest|quest2|questpro|quest3|quest3s\" />
+        <meta-data android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />
+        <!-- Hand tracking support level (V2 allows launching without controllers) -->
+        <meta-data android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />
+        <meta-data android:name=\"com.oculus.handtracking.frequency\" android:value=\"HIGH\" />
+")
+                    set(ANDROID_XR_META_INTENT_CATEGORY
+"                <!-- VR intent category for Meta Quest -->
+                <category android:name=\"com.oculus.intent.category.VR\" />")
+                else()
+                    set(ANDROID_XR_META_FEATURES "")
+                    set(ANDROID_XR_META_METADATA "")
+                    set(ANDROID_XR_META_INTENT_CATEGORY "")
+                endif()
+                configure_file(android/cmake/AndroidManifest.xr.xml.cmake "${generated_manifest_path}" @ONLY)
+            else()
+                configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            endif()
             file(GENERATE
                 OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
                 INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${TEST}.xml"

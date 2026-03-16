@@ -3,7 +3,7 @@
 #include "yuv_rgb_common.h"
 
 // yuv to rgb, sse implementation
-// pointers must be 16 byte aligned, and strides must be divisable by 16
+// pointers must be 16 byte aligned, and strides must be divisible by 16
 void yuv420_rgb565_sse(
         uint32_t width, uint32_t height,
         const uint8_t *y, const uint8_t *u, const uint8_t *v, uint32_t y_stride, uint32_t uv_stride,

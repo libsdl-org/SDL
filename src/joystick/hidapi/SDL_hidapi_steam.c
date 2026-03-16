@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -221,7 +221,7 @@ static void hexdump(const uint8_t *ptr, int len)
 
 static void ResetSteamControllerPacketAssembler(SteamControllerPacketAssembler *pAssembler)
 {
-    SDL_memset(pAssembler->uBuffer, 0, sizeof(pAssembler->uBuffer));
+    SDL_zeroa(pAssembler->uBuffer);
     pAssembler->nExpectedSegmentNumber = 0;
 }
 
@@ -320,7 +320,7 @@ static int SetFeatureReport(SDL_HIDAPI_Device *dev, const unsigned char uBuffer[
             nActualDataLen -= nBytesInPacket;
 
             // Construct packet
-            SDL_memset(uPacketBuffer, 0, sizeof(uPacketBuffer));
+            SDL_zeroa(uPacketBuffer);
             uPacketBuffer[0] = BLE_REPORT_NUMBER;
             uPacketBuffer[1] = GetSegmentHeader(nSegmentNumber, nActualDataLen == 0);
             SDL_memcpy(&uPacketBuffer[2], pBufferPtr, nBytesInPacket);
@@ -370,7 +370,7 @@ static int GetFeatureReport(SDL_HIDAPI_Device *dev, unsigned char uBuffer[65])
 #endif
 
         while (nRetries < BLE_MAX_READ_RETRIES) {
-            SDL_memset(uSegmentBuffer, 0, sizeof(uSegmentBuffer));
+            SDL_zeroa(uSegmentBuffer);
             uSegmentBuffer[0] = BLE_REPORT_NUMBER;
             nRet = SDL_hid_get_feature_report(dev->dev, uSegmentBuffer, ucBytesToRead);
 
@@ -539,7 +539,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     buf[3 + nSettings * 3] = SETTING;                      \
     buf[3 + nSettings * 3 + 1] = ((uint16_t)VALUE) & 0xFF; \
     buf[3 + nSettings * 3 + 2] = ((uint16_t)VALUE) >> 8;   \
-    ++nSettings;
+    ++nSettings
 
     SDL_zero(buf);
     buf[1] = ID_SET_SETTINGS_VALUES;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -118,6 +118,7 @@ struct SDL_WindowData
     bool was_shown;
     bool emit_size_move_after_property_notify;
     SDL_HitTestResult hit_test_result;
+    bool pending_grab;
 
     XPoint xim_spot;
     char *preedit_text;

@@ -142,7 +142,7 @@ int main(int argc, char **argv)
         efx[nefx].type = SDL_HAPTIC_SINE;
         efx[nefx].periodic.period = 1000;
         efx[nefx].periodic.magnitude = -0x2000; /* Negative magnitude and ...                      */
-        efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel eachother */
+        efx[nefx].periodic.phase = 18000;       /* ... 180 degrees phase shift => cancel each other */
         efx[nefx].periodic.length = 5000;
         efx[nefx].periodic.attack_length = 1000;
         efx[nefx].periodic.fade_length = 1000;
@@ -319,7 +319,7 @@ int main(int argc, char **argv)
 /**
  * Cleans up a bit.
  */
-static void
+static SDL_NORETURN void
 abort_execution(void)
 {
     SDL_Log("%s", "");

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -218,7 +218,9 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
 {
     Uint8 *dst;
-    const int pitch = ((surface->w + 15) & ~15) / 8;
+    const int w = (surface->w + 7) / 8;
+    const int pad = (((w) % 4) ? (4 - ((w) % 4)) : 0);
+    const int pitch = (w + pad);
     const size_t size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
@@ -566,9 +568,12 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
-    float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
-    if (scale == 0.0f) {
-        scale = 1.0f;
+    float scale = 1.0f;
+    if (SDL_GetHintBoolean(SDL_HINT_MOUSE_DPI_SCALE_CURSORS, false)) {
+        scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
+        if (scale == 0.0f) {
+            scale = 1.0f;
+        }
     }
     for (CachedCursor *entry = data->cache; entry; entry = entry->next) {
         if (scale == entry->scale) {

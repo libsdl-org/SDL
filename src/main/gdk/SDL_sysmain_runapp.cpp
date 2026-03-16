@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,60 +24,23 @@ extern "C" {
 #include "../../core/gdk/SDL_gdk.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_main_callbacks.h"
 }
 #include <XGameRuntime.h>
 #include <xsapi-c/services_c.h>
 #include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
 
-// Pop up an out of memory message, returns to Windows
-static BOOL OutOfMemory(void)
-{
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
-    return FALSE;
-}
-
 extern "C"
-int SDL_RunApp(int _argc, char **_argv, SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved)
 {
-    char **allocated_argv = NULL;
-    char **argv = _argv;
-    int argc = _argc;
+    (void)reserved;
 
-    if (!argv) {
-        // Get the arguments with GetCommandLine, convert them to argc and argv
-        LPWSTR *argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-        if (argvw == NULL) {
-            return OutOfMemory();
-        }
-
-        // Note that we need to be careful about how we allocate/free memory here.
-        // If the application calls SDL_SetMemoryFunctions(), we can't rely on
-        // SDL_free() to use the same allocator after SDL_main() returns.
-
-        argv = allocated_argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-        if (argv == NULL) {
-            return OutOfMemory();
-        }
-        for (int i = 0; i < argc; ++i) {
-            const int utf8size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL, NULL);
-            if (!utf8size) {  // uhoh?
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-                return -1;
-            }
-
-            argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, utf8size);  // this size includes the null-terminator character.
-            if (!argv[i]) {
-                return OutOfMemory();
-            }
-
-            if (WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], utf8size, NULL, NULL) == 0) {  // failed? uhoh!
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Error processing command line arguments", NULL);
-                return -1;
-            }
-        }
-        argv[argc] = NULL;
-        LocalFree(argvw);
+    void *heap_allocated = NULL;
+    const char *args_error = WIN_CheckDefaultArgcArgv(&argc, &argv, &heap_allocated);
+    if (args_error) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", args_error, NULL);
+        return -1;
     }
 
     int result = -1;
@@ -103,14 +66,12 @@ int SDL_RunApp(int _argc, char **_argv, SDL_main_func mainFunction, void *reserv
             SDL_SetError("[GDK] Unable to get titleid. Will not call XblInitialize. Check MicrosoftGame.config!");
         }
 
-        SDL_SetMainReady();
-
         if (!GDK_RegisterChangeNotifications()) {
             return -1;
         }
 
         // Run the application main() code
-        result = mainFunction(argc, argv);
+        result = SDL_CallMainFunction(argc, argv, mainFunction);
 
         GDK_UnregisterChangeNotifications();
 
@@ -135,12 +96,8 @@ int SDL_RunApp(int _argc, char **_argv, SDL_main_func mainFunction, void *reserv
 #endif
     }
 
-    // Free argv, to avoid memory leak
-    if (allocated_argv) {
-        for (int i = 0; i < argc; ++i) {
-            HeapFree(GetProcessHeap(), 0, allocated_argv[i]);
-        }
-        HeapFree(GetProcessHeap(), 0, allocated_argv);
+    if (heap_allocated) {
+        HeapFree(GetProcessHeap(), 0, heap_allocated);
     }
 
     return result;

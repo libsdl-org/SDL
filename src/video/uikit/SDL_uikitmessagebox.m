@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,11 +98,19 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     }
 
     if (window == nil || window.rootViewController == nil) {
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            UIWindowScene *scene = UIKit_GetActiveWindowScene();
+            if (scene) {
+                alertwindow = [[UIWindow alloc] initWithWindowScene:scene];
+            }
+        }
+        if (!alertwindow) {
 #ifdef SDL_PLATFORM_VISIONOS
-        alertwindow = [[UIWindow alloc] init];
+            alertwindow = [[UIWindow alloc] init];
 #else
-        alertwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            alertwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 #endif
+        }
         alertwindow.rootViewController = [UIViewController new];
         alertwindow.windowLevel = UIWindowLevelAlert;
 

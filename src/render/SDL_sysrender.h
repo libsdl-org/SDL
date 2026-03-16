@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -279,6 +279,11 @@ struct SDL_Renderer
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
     bool (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+
+#ifdef SDL_PLATFORM_GDK
+    void (*GDKSuspendRenderer)(SDL_Renderer *renderer);
+    void (*GDKResumeRenderer)(SDL_Renderer *renderer);
+#endif
 
     // The current renderer info
     const char *name;

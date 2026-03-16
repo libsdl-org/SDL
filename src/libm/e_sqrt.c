@@ -38,7 +38,7 @@
  *	If (2) is false, then q   = q ; otherwise q   = q  + 2      .
  *		 	       i+1   i             i+1   i
  *
- *	With some algebric manipulation, it is not difficult to see
+ *	With some algebraic manipulation, it is not difficult to see
  *	that (2) is equivalent to
  *                             -(i+1)
  *			s  +  2       <= y			(3)
@@ -281,7 +281,7 @@ A.  sqrt(x) by Newton Iteration
 	This formula has one division fewer than the one above; however,
 	it requires more multiplications and additions. Also x must be
 	scaled in advance to avoid spurious overflow in evaluating the
-	expression 3y*y+x. Hence it is not recommended uless division
+	expression 3y*y+x. Hence it is not recommended unless division
 	is slow. If division is very slow, then one should use the
 	reciproot algorithm given in section B.
 

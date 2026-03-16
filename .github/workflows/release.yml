@@ -95,9 +95,17 @@ jobs:
             libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
       - name: 'CMake (configure + build + tests + examples)'
         run: |
+          set -e
           cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE -DSDL_EXAMPLES=TRUE
           cmake --build /tmp/build --verbose
           ctest --test-dir /tmp/build --no-tests=error --output-on-failure
+      - name: 'Verify SDL_REVISION contains SDL-'
+        run: |
+          set -e
+          if test "x$(strings /tmp/build/libSDL3.so.0 | grep SDL- | wc -l)" != x1; then
+            echo "SDL- string not found: must be present in SDL_REVISION"
+            exit 1
+          fi
 
   dmg:
     needs: [src]

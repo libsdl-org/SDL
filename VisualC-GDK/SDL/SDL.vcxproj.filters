@@ -52,6 +52,9 @@
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c" />
     <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c" />
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_openxr_internal.h" />
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
@@ -65,6 +68,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_8bitdo.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamesir.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gip.c" />
@@ -88,6 +92,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_zuiki.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_report_descriptor.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
@@ -372,6 +377,7 @@
     <ClInclude Include="..\..\src\joystick\controller_type.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.h" />
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_report_descriptor.h" />
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />

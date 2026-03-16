@@ -906,7 +906,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 
 		cur_dev = root;
 		while (cur_dev) {
-			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage)) {
+			if (HIDAPI_IGNORE_DEVICE(cur_dev->bus_type, cur_dev->vendor_id, cur_dev->product_id, cur_dev->usage_page, cur_dev->usage, false)) {
 				struct hid_device_info *tmp = cur_dev;
 
 				cur_dev = tmp->next;
@@ -916,7 +916,7 @@ static struct hid_device_info * create_device_info_for_device(struct udev_device
 					root = cur_dev;
 				}
 				tmp->next = NULL;
-			
+
 				hid_free_enumeration(tmp);
 			} else {
 				prev_dev = cur_dev;
@@ -1008,6 +1008,13 @@ int HID_API_EXPORT hid_exit(void)
 
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
+	struct udev_hwdb *hwdb = NULL;
+	struct udev_list_entry *entry;
+
+	char modalias[64];
+	const char *key;
+	const char *manufacturer_string;
+
 	struct udev *udev;
 	struct udev_enumerate *enumerate;
 	struct udev_list_entry *devices, *dev_list_entry;
@@ -1060,8 +1067,30 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (!raw_dev)
 			continue;
 
+
 		tmp = create_device_info_for_device(raw_dev);
+
 		if (tmp) {
+			if (!tmp->manufacturer_string && udev_hwdb_new) {
+				key = "ID_VENDOR_FROM_DATABASE";
+
+				if ((hwdb = udev_hwdb_new(udev)) != NULL) {
+					snprintf(modalias, sizeof(modalias), "usb:v%04X*", vendor_id);
+
+					udev_list_entry_foreach(entry, udev_hwdb_get_properties_list_entry(hwdb, modalias, 0)) {
+						if (strcmp(udev_list_entry_get_name(entry), key) == 0) {
+							manufacturer_string = udev_list_entry_get_value(entry);
+							if (manufacturer_string) {
+								tmp->manufacturer_string = utf8_to_wchar_t(manufacturer_string);
+							}
+							break;
+						}
+					}
+
+					hwdb = udev_hwdb_unref(hwdb);
+				}
+			}
+
 			if (cur_dev) {
 				cur_dev->next = tmp;
 			}

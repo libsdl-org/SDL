@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -545,37 +545,29 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 
 void Wayland_CursorStateSetFrameCallback(SDL_WaylandCursorState *state, void *userdata)
 {
-    if (cursor_thread_context.lock) {
-        SDL_LockMutex(cursor_thread_context.lock);
-    }
+    SDL_LockMutex(cursor_thread_context.lock);
 
     state->frame_callback = wl_surface_frame(state->surface);
     wl_callback_add_listener(state->frame_callback, &cursor_frame_listener, userdata);
 
-    if (cursor_thread_context.lock) {
-        SDL_UnlockMutex(cursor_thread_context.lock);
-    }
+    SDL_UnlockMutex(cursor_thread_context.lock);
 }
 
 void Wayland_CursorStateDestroyFrameCallback(SDL_WaylandCursorState *state)
 {
-    if (cursor_thread_context.lock) {
-        SDL_LockMutex(cursor_thread_context.lock);
-    }
+    SDL_LockMutex(cursor_thread_context.lock);
 
     if (state->frame_callback) {
         wl_callback_destroy(state->frame_callback);
         state->frame_callback = NULL;
     }
 
-    if (cursor_thread_context.lock) {
-        SDL_UnlockMutex(cursor_thread_context.lock);
-    }
+    SDL_UnlockMutex(cursor_thread_context.lock);
 }
 
 static void Wayland_CursorStateResetAnimation(SDL_WaylandCursorState *state, bool lock)
 {
-    if (lock && cursor_thread_context.lock) {
+    if (lock) {
         SDL_LockMutex(cursor_thread_context.lock);
     }
 
@@ -583,7 +575,7 @@ static void Wayland_CursorStateResetAnimation(SDL_WaylandCursorState *state, boo
     state->current_frame_time_ms = 0;
     state->current_frame = 0;
 
-    if (lock && cursor_thread_context.lock) {
+    if (lock) {
         SDL_UnlockMutex(cursor_thread_context.lock);
     }
 }
@@ -905,14 +897,29 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
     // Stop any frame callbacks and detach buffers associated with the cursor being destroyed.
     wl_list_for_each (seat, &video_data->seat_list, link)
     {
-        if (seat->pointer.current_cursor == d) {
+        if (seat->pointer.cursor_state.current_cursor == d) {
             Wayland_CursorStateDestroyFrameCallback(&seat->pointer.cursor_state);
 
-            if (seat->pointer.cursor_state.surface) {
+            // Custom cursor buffers are about to be destroyed, so ensure they are detached.
+            if (!d->is_system_cursor && seat->pointer.cursor_state.surface) {
                 wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
             }
 
-            seat->pointer.current_cursor = NULL;
+            seat->pointer.cursor_state.current_cursor = NULL;
+        }
+
+        SDL_WaylandPenTool *tool;
+        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+            if (tool->cursor_state.current_cursor == d) {
+                Wayland_CursorStateDestroyFrameCallback(&tool->cursor_state);
+
+                // Custom cursor buffers are about to be destroyed, so ensure they are detached.
+                if (!d->is_system_cursor && tool->cursor_state.surface) {
+                    wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
+                }
+
+                tool->cursor_state.current_cursor = NULL;
+            }
         }
     }
 
@@ -1048,7 +1055,7 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
     }
 
     if (cursor) {
-        if (cursor_data == state->current_cursor) {
+        if (cursor_data == state->current_cursor && state->current_frame >= 0) {
             // Restart the animation sequence if the cursor didn't change.
             if (cursor_data->num_frames > 1) {
                 Wayland_CursorStateResetAnimation(state, true);
@@ -1083,6 +1090,7 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
                 const enum wp_cursor_shape_device_v1_shape shape = Wayland_GetSystemCursorShape(cursor_data->cursor_data.system.id);
                 wp_cursor_shape_device_v1_set_shape(state->cursor_shape, serial, shape);
                 state->current_cursor = cursor_data;
+                state->current_frame = 0;
 
                 return;
             }
@@ -1115,6 +1123,7 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
 
         struct wl_buffer *buffer = Wayland_CursorStateGetFrame(state, 0);
         wl_surface_attach(state->surface, buffer, 0, 0);
+        state->current_frame = 0;
 
         if (state->scale != 1.0) {
             if (!state->viewport) {
@@ -1164,6 +1173,13 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
     }
 }
 
+static void Wayland_CursorStateResetCursor(SDL_WaylandCursorState *state)
+{
+    // Stop the frame callback and set the reset status.
+    Wayland_CursorStateDestroyFrameCallback(state);
+    state->current_frame = -1;
+}
+
 static bool Wayland_ShowCursor(SDL_Cursor *cursor)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -1173,12 +1189,14 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     Wayland_PointerObject obj;
 
     wl_list_for_each (seat, &d->seat_list, link) {
-        obj.wl_pointer = seat->pointer.wl_pointer;
-        obj.is_pointer = true;
-        if (mouse->focus && mouse->focus->internal == seat->pointer.focus) {
-            Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, seat->pointer.focus, seat->pointer.enter_serial, cursor);
-        } else if (!seat->pointer.focus) {
-            Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, seat->pointer.focus, seat->pointer.enter_serial, NULL);
+        if (seat->pointer.wl_pointer) {
+            obj.wl_pointer = seat->pointer.wl_pointer;
+            obj.is_pointer = true;
+            if (mouse->focus && mouse->focus->internal == seat->pointer.focus) {
+                Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, seat->pointer.focus, seat->pointer.enter_serial, cursor);
+            } else if (!seat->pointer.focus) {
+                Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
+            }
         }
 
         SDL_WaylandPenTool *tool;
@@ -1192,7 +1210,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
             if (tool->focus && (!mouse->focus || mouse->focus->internal == tool->focus)) {
                 Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool->focus, tool->proximity_serial, mouse->cur_cursor);
             } else if (!tool->focus) {
-                Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool->focus, tool->proximity_serial, NULL);
+                Wayland_CursorStateResetCursor(&tool->cursor_state);
             }
         }
     }
@@ -1246,12 +1264,12 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
             if (update_grabs) {
                 Wayland_SeatUpdatePointerGrab(seat);
             }
-
-            /* NOTE: There is a pending warp event under discussion that should replace this when available.
-             * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
-             */
-            SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
         }
+
+        /* NOTE: There is a pending warp event under discussion that should replace this when available.
+         * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
+         */
+        SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
     }
 }
 
@@ -1505,6 +1523,23 @@ void Wayland_FiniMouse(SDL_VideoData *data)
 #endif
 }
 
+void Wayland_SeatResetCursor(SDL_WaylandSeat *seat)
+{
+    Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
+}
+
+void Wayland_SeatSetDefaultCursor(SDL_WaylandSeat *seat)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_WindowData *pointer_focus = seat->pointer.focus;
+    const Wayland_PointerObject obj = {
+        .wl_pointer = seat->pointer.wl_pointer,
+        .is_pointer = true
+    };
+
+    Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, mouse->def_cursor);
+}
+
 void Wayland_SeatUpdatePointerCursor(SDL_WaylandSeat *seat)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1514,24 +1549,25 @@ void Wayland_SeatUpdatePointerCursor(SDL_WaylandSeat *seat)
         .is_pointer = true
     };
 
-    if (pointer_focus && mouse->cursor_visible) {
-        if (!seat->pointer.relative_pointer || !mouse->relative_mode_hide_cursor) {
-            const SDL_HitTestResult rc = pointer_focus->hit_test_result;
+    if (pointer_focus) {
+        if (mouse->cursor_visible) {
+            if (!seat->pointer.relative_pointer || !mouse->relative_mode_hide_cursor) {
+                const SDL_HitTestResult rc = pointer_focus->hit_test_result;
 
-            if (seat->pointer.relative_pointer || rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
-                Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, mouse->cur_cursor);
+                if (seat->pointer.relative_pointer || rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+                    Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, mouse->cur_cursor);
+                } else {
+                    Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, sys_cursors[rc]);
+                }
             } else {
-                Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, sys_cursors[rc]);
+                // Hide the cursor in relative mode, unless requested otherwise by the hint.
+                Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, NULL);
             }
         } else {
-            // Hide the cursor in relative mode, unless requested otherwise by the hint.
             Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, NULL);
         }
     } else {
-        /* The spec states "The cursor actually changes only if the input device focus is one of the
-         * requesting client's surfaces", so just clear the cursor if the seat has no pointer focus.
-         */
-        Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, NULL);
+        Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
     }
 }
 
@@ -1544,18 +1580,22 @@ void Wayland_TabletToolUpdateCursor(SDL_WaylandPenTool *tool)
         .is_pointer = false
     };
 
-    if (tool_focus && mouse->cursor_visible) {
-        // Relative mode is only relevant if the tool sends pointer events.
-        const bool relative = mouse->pen_mouse_events && (tool_focus->sdlwindow->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE);
+    if (tool_focus) {
+        if (mouse->cursor_visible) {
+            // Relative mode is only relevant if the tool sends pointer events.
+            const bool relative = mouse->pen_mouse_events && (tool_focus->sdlwindow->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE);
 
-        if (!relative || !mouse->relative_mode_hide_cursor) {
-            Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool_focus, tool->proximity_serial, mouse->cur_cursor);
+            if (!relative || !mouse->relative_mode_hide_cursor) {
+                Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool_focus, tool->proximity_serial, mouse->cur_cursor);
+            } else {
+                // Hide the cursor in relative mode, unless requested otherwise by the hint.
+                Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool_focus, tool->proximity_serial, NULL);
+            }
         } else {
-            // Hide the cursor in relative mode, unless requested otherwise by the hint.
             Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool_focus, tool->proximity_serial, NULL);
         }
     } else {
-        Wayland_CursorStateSetCursor(&tool->cursor_state, &obj, tool_focus, tool->proximity_serial, NULL);
+        Wayland_CursorStateResetCursor(&tool->cursor_state);
     }
 }
 

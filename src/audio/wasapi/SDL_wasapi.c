@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -592,7 +592,7 @@ static int WASAPI_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     UINT32 frames = 0;
     DWORD flags = 0;
 
-    while (device->hidden->capture) {
+    while (device->hidden->capture && !SDL_GetAtomicInt(&device->hidden->device_disconnecting)) {
         const HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
             return 0;  // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL3.

@@ -735,12 +735,12 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         joystick->nhats = 1;
     }
 
-    if (ctx->accelerometer_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000000.0f / ctx->polling_rate_us);
-    }
-
     if (ctx->gyroscope_supported) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000000.0f / ctx->polling_rate_us);
+    }
+
+    if (ctx->accelerometer_supported) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000000.0f / ctx->polling_rate_us);
     }
 
     if (ctx->touchpad_supported) {
@@ -995,21 +995,6 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // Update last timestamp
         ctx->last_imu_timestamp_us = imu_timestamp_us;
 
-        // Process Accelerometer
-        if (ctx->accelerometer_supported) {
-
-            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Y);
-            imu_values[2] = -(float)accel * ctx->accelScale; // Y-axis acceleration
-
-            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Z);
-            imu_values[1] = (float)accel * ctx->accelScale; // Z-axis acceleration
-
-            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_X);
-            imu_values[0] = -(float)accel * ctx->accelScale; // X-axis acceleration
-
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->imu_timestamp_ns, imu_values, 3);
-        }
-
         // Process Gyroscope
         if (ctx->gyroscope_supported) {
 
@@ -1023,6 +1008,21 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
             imu_values[0] = -(float)gyro * ctx->gyroScale; // X-axis rotation
 
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->imu_timestamp_ns, imu_values, 3);
+        }
+
+        // Process Accelerometer
+        if (ctx->accelerometer_supported) {
+
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Y);
+            imu_values[2] = -(float)accel * ctx->accelScale; // Y-axis acceleration
+
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Z);
+            imu_values[1] = (float)accel * ctx->accelScale; // Z-axis acceleration
+
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_X);
+            imu_values[0] = -(float)accel * ctx->accelScale; // X-axis acceleration
+
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->imu_timestamp_ns, imu_values, 3);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetGDKDefaultUser(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetGDKTaskQueue(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(void);
 #endif
 
 #if !defined(SDL_PLATFORM_IOS)
@@ -66,7 +68,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void);
 
 extern SDL_DECLSPEC void SDLCALL JNI_OnLoad(void);
 
-const static struct {
+#include <SDL3/SDL_openxr.h>
+
+static const struct {
     const char *name;
     SDL_FunctionPointer address;
 } sdl_symbols[] = {

@@ -164,6 +164,22 @@ function(get_git_head_revision _refspecvar _hashvar)
                    "${GIT_DATA}/grabRef.cmake" @ONLY)
     include("${GIT_DATA}/grabRef.cmake")
 
+    # Fallback for reftable or other storage formats
+    if(NOT HEAD_HASH OR HEAD_HASH STREQUAL "")
+        find_package(Git QUIET)
+        if(GIT_FOUND)
+            execute_process(
+                COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                RESULT_VARIABLE res
+                OUTPUT_VARIABLE HEAD_HASH
+                ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+            if(NOT res EQUAL 0)
+                set(HEAD_HASH "")
+            endif()
+        endif()
+    endif()
+
     set(${_refspecvar}
         "${HEAD_REF}"
         PARENT_SCOPE)

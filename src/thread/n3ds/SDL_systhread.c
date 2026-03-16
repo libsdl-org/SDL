@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,6 @@ static void ThreadEntry(void *arg)
     threadExit(0);
 }
 
-
 bool SDL_SYS_CreateThread(SDL_Thread *thread,
                           SDL_FunctionPointer pfnBeginThread,
                           SDL_FunctionPointer pfnEndThread)
@@ -53,9 +52,13 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
 
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
 
-    // prefer putting audio thread on system core
-    if (thread->name && (SDL_strncmp(thread->name, "SDLAudioP", 9) == 0) && R_SUCCEEDED(APT_SetAppCpuTimeLimit(30))) {
-        cpu = 1;
+    // on New 3DS, prefer putting audio thread on system core
+    if (thread->name && (SDL_strncmp(thread->name, "SDLAudioP", 9) == 0)) {
+        bool new3ds = false;
+        APT_CheckNew3DS(&new3ds);
+        if (new3ds && R_SUCCEEDED(APT_SetAppCpuTimeLimit(30))) {
+            cpu = 1;
+        }
     }
 
     thread->handle = threadCreate(ThreadEntry,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,7 @@ extern HWND SDL_HelperWindow;
 // local variables
 static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
+static bool has_broken_EZFRD64DLL = false;
 
 // Taken from Wine - Thanks!
 static DIOBJECTDATAFORMAT dfDIJoystick2[] = {
@@ -437,6 +438,29 @@ bool SDL_DINPUT_JoystickInit(void)
         dinput = NULL;
         return SetDIerror("IDirectInput::Initialize", result);
     }
+
+#ifdef _WIN64
+    if (SDL_GetHintBoolean("SDL_JOYSTICK_CHECK_EZFRD64", true)) {
+        // The 64-bit version of EZFRD64.DLL crashes after being loaded,
+        // which happens implicitly when querying the device capabilities,
+        // so make sure we don't do that if there's a possibility of crashing
+        static const char *directories[] = {
+            "C:/Windows/USB_Vibration",
+            "C:/Windows/USB Vibration"
+        };
+        for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64DLL; ++i) {
+            int count = 0;
+            char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
+            if (count > 0) {
+                has_broken_EZFRD64DLL = true;
+            }
+            SDL_free(files);
+        }
+        if (has_broken_EZFRD64DLL) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Broken EZFRD64.DLL detected, disabling DirectInput force feedback");
+        }
+    }
+#endif
     return true;
 }
 
@@ -778,12 +802,14 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
         return SetDIerror("IDirectInputDevice8::SetDataFormat", result);
     }
 
-    // Get device capabilities
-    result =
-        IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
-                                            &joystick->hwdata->Capabilities);
-    if (FAILED(result)) {
-        return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+    if (!has_broken_EZFRD64DLL) {
+        // Get device capabilities to see if we are force feedback capable
+        result =
+            IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
+                                                &joystick->hwdata->Capabilities);
+        if (FAILED(result)) {
+            return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+        }
     }
 
     // Force capable?

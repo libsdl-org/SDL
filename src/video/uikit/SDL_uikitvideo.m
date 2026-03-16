@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -237,7 +237,10 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
      * https://forums.developer.apple.com/thread/65337 */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
     BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
                     !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
     BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
@@ -294,20 +297,24 @@ UIWindowScene *UIKit_GetActiveWindowScene(void)
 void UIKit_SetGameControllerInteraction(bool enabled)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
-        UIWindowScene *scene = UIKit_GetActiveWindowScene();
-        if (scene == nil) {
-            return;
-        }
+        NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+        for (UIScene *scene in connectedScenes) {
+            if (![scene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
 
-        for (UIWindow *window in scene.windows) {
-            UIKit_SetViewGameControllerInteraction(window, enabled);
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                UIKit_SetViewGameControllerInteraction(window, enabled);
+            }
         }
     }
 }
 
 void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled)
 {
-#ifndef SDL_PLATFORM_TVOS
+#if defined(SDL_PLATFORM_VISIONOS) || \
+       (defined(SDL_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000)
     if (@available(iOS 18.0, visionOS 2.0, *)) {
         if (enabled) {
             GCEventInteraction *interaction = [[GCEventInteraction alloc] init];

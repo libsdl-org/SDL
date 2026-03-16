@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -331,9 +331,12 @@ static bool Cocoa_GetUsableBounds(CGDirectDisplayID displayID, SDL_Rect *rect)
         return false;
     }
 
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)device->internal;
+
     const NSRect frame = [screen visibleFrame];
     rect->x = (int)frame.origin.x;
-    rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
+    rect->y = (int)(data.mainDisplayHeight - frame.origin.y - frame.size.height);
     rect->w = (int)frame.size.width;
     rect->h = (int)frame.size.height;
     return true;
@@ -493,13 +496,19 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
     if (flags & kCGDisplayDesktopShapeChangedFlag) {
         SDL_UpdateDesktopBounds();
     }
+
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
+    data.mainDisplayHeight = CGDisplayPixelsHigh(kCGDirectMainDisplay);
 }
 
 void Cocoa_InitModes(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         CGDisplayErr result;
         CGDisplayCount numDisplays = 0;
+
+        data.mainDisplayHeight = CGDisplayPixelsHigh(kCGDirectMainDisplay);
 
         result = CGGetOnlineDisplayList(0, NULL, &numDisplays);
         if (result != kCGErrorSuccess) {

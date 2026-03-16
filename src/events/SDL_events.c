@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -793,7 +793,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
-                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up");
+                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTOUCH_EVENT(event);
         break;
@@ -804,7 +804,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 
 #define PRINT_PPROXIMITY_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u)", \
-                       event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which);
+                       event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which)
         SDL_EVENT_CASE(SDL_EVENT_PEN_PROXIMITY_IN)
         PRINT_PPROXIMITY_EVENT(event);
         break;
@@ -827,7 +827,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define PRINT_PBUTTON_EVENT(event)                                                                                                               \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
                        event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
-                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up");
+                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
         PRINT_PBUTTON_EVENT(event);
         break;
@@ -1167,7 +1167,8 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
         if (action == SDL_ADDEVENT) {
             CHECK_PARAM(!events) {
                 SDL_UnlockMutex(SDL_EventQ.lock);
-                return SDL_InvalidParamError("events");
+                SDL_InvalidParamError("events");
+                return -1;
             }
             for (i = 0; i < numevents; ++i) {
                 used += SDL_AddEvent(&events[i]);
@@ -1483,6 +1484,8 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_SendPendingPenProximity();
+
     SDL_UpdateCursorAnimation();
 
     SDL_UpdateTrays();
@@ -1493,6 +1496,9 @@ void SDL_PumpEventMaintenance(void)
 // Run the system dependent event loops
 static void SDL_PumpEventsInternal(bool push_sentinel)
 {
+    // This should only be called on the main thread, check in debug builds
+    SDL_assert(SDL_IsMainThread());
+
     // Free any temporary memory from old events
     SDL_FreeTemporaryMemory();
 

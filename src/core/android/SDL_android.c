@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -314,7 +314,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble);
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
@@ -334,7 +334,7 @@ static JNINativeMethod SDLControllerManager_tab[] = {
     { "onNativePadUp", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
     { "nativeAddHaptic", "(ILjava/lang/String;)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
     { "nativeRemoveHaptic", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
@@ -406,6 +406,7 @@ static jclass mControllerManagerClass;
 
 // method signatures
 static jmethodID midPollInputDevices;
+static jmethodID midJoystickSetLED;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticRumble;
@@ -752,6 +753,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 
     midPollInputDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                     "pollInputDevices", "()V");
+    midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                              "joystickSetLED", "(IIII)V");
     midPollHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                      "pollHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -761,15 +764,12 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midPollInputDevices || !midJoystickSetLED || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
     checkJNIReady();
 }
-
-// SDL main function prototype
-typedef int (*SDL_main_func)(int argc, char *argv[]);
 
 static int run_count = 0;
 static bool allow_recreate_activity;
@@ -840,47 +840,61 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         function_name = (*env)->GetStringUTFChars(env, function, NULL);
         SDL_main = (SDL_main_func)dlsym(library_handle, function_name);
         if (SDL_main) {
-            int i;
-            int argc;
-            int len;
-            char **argv;
-            bool isstack;
+            // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
+            //   https://github.com/love2d/love-android/issues/24
+            // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
+            const char *argv0 = "app_process";
+            const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
 
-            // Prepare the arguments.
-            len = (*env)->GetArrayLength(env, array);
-            argv = SDL_small_alloc(char *, 1 + len + 1, &isstack); // !!! FIXME: check for NULL
-            argc = 0;
-            /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
-               https://github.com/love2d/love-android/issues/24
-             */
-            argv[argc++] = SDL_strdup("app_process");
-            for (i = 0; i < len; ++i) {
-                char *arg = NULL;
+            size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
+            for (int i = 0; i < len; ++i) {
+                total_alloc_len++;  // null terminator.
                 jstring string = (*env)->GetObjectArrayElement(env, array, i);
                 if (string) {
                     const char *utf = (*env)->GetStringUTFChars(env, string, 0);
                     if (utf) {
-                        arg = SDL_strdup(utf);
+                        total_alloc_len += SDL_strlen(utf) + 1;
                         (*env)->ReleaseStringUTFChars(env, string, utf);
                     }
                     (*env)->DeleteLocalRef(env, string);
                 }
-                if (arg == NULL) {
-                    arg = SDL_strdup("");
+            }
+
+            void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
+            if (!args) { // uhoh.
+                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
+            } else {
+                size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
+                int argc = 0;
+                char **argv = (char **) args;
+                char *ptr = (char *) &argv[len + 2];
+                size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
+                argv[argc++] = ptr;
+                SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
+                for (int i = 0; i < len; ++i) {
+                    jstring string = (*env)->GetObjectArrayElement(env, array, i);
+                    const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
+                    cpy = SDL_strlcpy(ptr, utf ? utf : "", remain) + 1;
+                    if (cpy < remain) {
+                        argv[argc++] = ptr;
+                        remain -= cpy;
+                        ptr += cpy;
+                    }
+                    if (utf) {
+                        (*env)->ReleaseStringUTFChars(env, string, utf);
+                    }
+                    if (string) {
+                        (*env)->DeleteLocalRef(env, string);
+                    }
                 }
-                argv[argc++] = arg;
+                argv[argc] = NULL;
+
+                // Run the application.
+                status = SDL_RunApp(argc, argv, SDL_main, NULL);
+
+                // Release the arguments.
+                free(args);  // This should NOT be SDL_free()
             }
-            argv[argc] = NULL;
-
-            // Run the application.
-            status = SDL_main(argc, argv);
-
-            // Release the arguments.
-            for (i = 0; i < argc; ++i) {
-                SDL_free(argv[i]);
-            }
-            SDL_small_free(argv, isstack);
-
         } else {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
         }
@@ -1180,13 +1194,13 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble)
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble);
+    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble, has_rgb_led);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -1827,7 +1841,7 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
 static void Internal_Android_Create_AssetManager(void)
 {
 
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
     jobject context;
@@ -2048,7 +2062,7 @@ bool Android_JNI_HasClipboardText(void)
  */
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent)
 {
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
     jobject context;
@@ -2173,6 +2187,12 @@ void Android_JNI_PollInputDevices(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollInputDevices);
+}
+
+void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetLED, device_id, red, green, blue);
 }
 
 void Android_JNI_PollHapticDevices(void)
@@ -2405,7 +2425,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
     static char *s_AndroidInternalFilesPath = NULL;
 
     if (!s_AndroidInternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;
@@ -2456,7 +2476,7 @@ const char *SDL_GetAndroidInternalStoragePath(void)
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
 {
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     jmethodID mid;
     jclass cls;
     jstring stateString;
@@ -2499,7 +2519,7 @@ const char *SDL_GetAndroidExternalStoragePath(void)
     static char *s_AndroidExternalFilesPath = NULL;
 
     if (!s_AndroidExternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;
@@ -2545,7 +2565,7 @@ const char *SDL_GetAndroidCachePath(void)
     static char *s_AndroidCachePath = NULL;
 
     if (!s_AndroidCachePath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
         jmethodID mid;
         jobject context;
         jobject fileObject;

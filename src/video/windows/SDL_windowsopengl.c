@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
+#include "../../SDL_hints_c.h"
 
 // WGL implementation of SDL OpenGL support
 
@@ -429,7 +430,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     if (!hwnd) {
         return;
     }
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     hdc = GetDC(hwnd);
 
@@ -527,7 +528,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     _this->gl_data->wglDeleteContext(hglrc);
     ReleaseDC(hwnd, hdc);
     DestroyWindow(hwnd);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 }
 
 static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, float *fAttribs)
@@ -542,7 +543,7 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     hwnd =
         CreateWindow(SDL_Appname, SDL_Appname, (WS_POPUP | WS_DISABLED), 0, 0,
                      10, 10, NULL, NULL, SDL_Instance, NULL);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     hdc = GetDC(hwnd);
 
@@ -573,7 +574,7 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
     }
     ReleaseDC(hwnd, hdc);
     DestroyWindow(hwnd);
-    WIN_PumpEvents(_this);
+    WIN_PumpEventsForHWND(_this, hwnd);
 
     return pixel_format;
 }
@@ -660,8 +661,18 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
     }
 
     if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
-        *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                *iAttr++ = SDL_GetStringBoolean(srgbhint, false) ? GL_TRUE : GL_FALSE;
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
+            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+            *iAttr++ = GL_TRUE;
+        }
     }
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
@@ -899,7 +910,7 @@ bool WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
         *interval = _this->gl_data->wglGetSwapIntervalEXT();
         return true;
     } else {
-        return false;
+        return SDL_Unsupported();
     }
 }
 

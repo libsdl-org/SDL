@@ -853,6 +853,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x24c6, /* PowerA */
 		0x2c22, /* Qanba */
 		0x2dc8, /* 8BitDo */
+		0x37d7, /* Flydigi */
 		0x9886, /* ASTRO Gaming */
 	};
 
@@ -982,7 +983,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0)) {
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true)) {
 			continue;
 		}
 #endif
@@ -1267,6 +1268,7 @@ static void init_xbox360(libusb_device_handle *device_handle, unsigned short idV
 
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
 	    (idVendor == 0x20d6 && idProduct == 0x4010) /* PowerA Battle Dragon Advanced Wireless Controller */ ||
+	    (idVendor == 0x20d6 && idProduct == 0x4025) /* PowerA OPS v1 Wireless Controller */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
 

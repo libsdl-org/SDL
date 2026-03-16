@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,21 +42,10 @@ static int exit_status;
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
-    SDL_CheckDefaultArgcArgv(&argc, &argv);
-
     // store arguments
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
     forward_main = mainFunction;
     forward_argc = argc;
-    forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); // This should NOT be SDL_malloc()
-    for (int i = 0; i < argc; i++) {
-        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
-        strcpy(forward_argv[i], argv[i]);
-    }
-    forward_argv[argc] = NULL;
+    forward_argv = argv;
 
     // Give over control to run loop, SDLUIKitDelegate will handle most things from here
     @autoreleasepool {
@@ -71,12 +60,6 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
         UIApplicationMain(argc, argv, nil, name);
     }
 
-    // free the memory we used to hold copies of argc and argv
-    for (int i = 0; i < forward_argc; i++) {
-        free(forward_argv[i]); // This should NOT be SDL_free()
-    }
-    free(forward_argv); // This should NOT be SDL_free()
-
     return exit_status;
 }
 
@@ -84,7 +67,10 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
 // Load a launch image using the old UILaunchImageFile-era naming rules.
 static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
     UIImage *image = nil;
 
@@ -144,8 +130,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     [self.storyboardViewController didMoveToParentViewController:self];
 
 #ifndef SDL_PLATFORM_VISIONOS
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIApplication.sharedApplication.statusBarHidden = self.prefersStatusBarHidden;
     UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
+#pragma clang diagnostic pop
 #endif
 }
 
@@ -224,7 +213,10 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
 
         // We always want portrait-oriented size, to match UILaunchImageSize.
         if (screenw > screenh) {
@@ -498,7 +490,7 @@ API_AVAILABLE(ios(13.0))
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
 
     SDL_SetiOSEventPump(true);
-    exit_status = forward_main(forward_argc, forward_argv);
+    exit_status = SDL_CallMainFunction(forward_argc, forward_argv, forward_main);
     SDL_SetiOSEventPump(false);
 
     if (launchWindow) {
@@ -568,7 +560,7 @@ API_AVAILABLE(ios(13.0))
 
     // run the user's application, passing argc and argv
     SDL_SetiOSEventPump(true);
-    exit_status = forward_main(forward_argc, forward_argv);
+    exit_status = SDL_CallMainFunction(forward_argc, forward_argv, forward_main);
     SDL_SetiOSEventPump(false);
 
     if (launchWindow) {

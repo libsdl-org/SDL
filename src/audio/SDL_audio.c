@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1579,6 +1579,14 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
         // remains valid (in case the device is unplugged at the wrong moment), we hold the
         // subsystem_rwlock while we copy the string.
         SDL_LockRWLockForReading(current_audio.subsystem_rwlock);
+
+        // Allow default device IDs to be used, just return the current default physical device's name.
+        if (devid == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) {
+            devid = current_audio.default_playback_device_id;
+        } else if (devid == SDL_AUDIO_DEVICE_DEFAULT_RECORDING) {
+            devid = current_audio.default_recording_device_id;
+        }
+
         SDL_FindInHashTable(islogical ? current_audio.device_hash_logical : current_audio.device_hash_physical, (const void *) (uintptr_t) devid, &vdev);
         if (!vdev) {
             SDL_SetError("Invalid audio device instance ID");
@@ -2456,11 +2464,9 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 
                 SDL_SetAudioPostmixCallback(logdev->instance_id, logdev->postmix, logdev->postmix_userdata);
 
-                SDL_PendingAudioDeviceEvent *p;
-
                 // Queue an event for each logical device we moved.
                 if (spec_changed) {
-                    p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
+                    SDL_PendingAudioDeviceEvent *p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
                     if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
                         p->type = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED;
                         p->devid = logdev->instance_id;
