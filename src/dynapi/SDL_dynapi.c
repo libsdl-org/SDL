@@ -448,17 +448,27 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 }
 #endif
 
+// The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
+#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+static HMODULE lib = NULL;
+#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
+static void *lib = NULL;
+#else
+#error Please define your platform.
+#endif
+
 // Obviously we can't use SDL_LoadObject() to load SDL.  :)
 // Also obviously, we never close the loaded library.
 #if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    HMODULE lib = LoadLibraryA(fname);
+    lib = LoadLibraryA(fname);
     void *result = NULL;
     if (lib) {
         result = (void *) GetProcAddress(lib, sym);
         if (!result) {
             FreeLibrary(lib);
+            lib = NULL;
         }
     }
     return result;
@@ -468,19 +478,17 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 #include <dlfcn.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    void *lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
+    lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
     void *result = NULL;
     if (lib) {
         result = dlsym(lib, sym);
         if (!result) {
             dlclose(lib);
+            lib = NULL;
         }
     }
     return result;
 }
-
-#else
-#error Please define your platform.
 #endif
 
 static void dynapi_warn(const char *msg)
@@ -548,6 +556,16 @@ static void SDL_InitDynamicAPILocked(void)
     if (entry) {
         if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof(jump_table)) < 0) {
             dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
+
+            // unload the other SDL library
+#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+            FreeLibrary(lib);
+            lib = NULL;
+#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
+            dlclose(lib);
+            lib = NULL;
+#endif
+
             // Just fill in the function pointers from this library, later.
         } else {
             use_internal = false; // We overrode SDL! Don't use the internal version!
