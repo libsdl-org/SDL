@@ -786,7 +786,7 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, down);
 }
 
-void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
+void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start, bool process_input)
 {
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
@@ -832,7 +832,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
         }
     }
 
-    if (total > 0) {
+    if (total > 0 && process_input) {
         Uint64 delta = poll_finish - poll_start;
         UINT mouse_total = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {

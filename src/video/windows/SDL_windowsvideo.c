@@ -671,8 +671,7 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     SDL_RemoveHintCallback(SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS, UpdateWindowsEnableMenuMnemonics, NULL);
     SDL_RemoveHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
 
-    WIN_SetRawMouseEnabled(_this, false);
-    WIN_SetRawKeyboardEnabled(_this, false);
+    WIN_SetRawInputEnabled(_this, 0, true);
     WIN_QuitGameInput(_this);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
