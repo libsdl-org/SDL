@@ -106,9 +106,34 @@ typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC,
 #define SetPixelFormat       _this->gl_data->wglSetPixelFormat
 #endif
 
+static bool WIN_GL_LoadLibrary_EGLFallback(SDL_VideoDevice *_this, const char *path)
+{
+#ifdef SDL_VIDEO_OPENGL_EGL
+    WIN_GL_UnloadLibrary(_this);
+    _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
+    _this->GL_GetProcAddress = WIN_GLES_GetProcAddress;
+    _this->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
+    _this->GL_CreateContext = WIN_GLES_CreateContext;
+    _this->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+    _this->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
+    _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
+    _this->GL_SwapWindow = WIN_GLES_SwapWindow;
+    _this->GL_DestroyContext = WIN_GLES_DestroyContext;
+    _this->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
+    return WIN_GLES_LoadLibrary(_this, path);
+#else
+    return SDL_SetError("SDL not configured with EGL support");
+#endif
+}
+
 bool WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     void *handle;
+
+    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) &&
+        SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false)) {
+        return WIN_GL_LoadLibrary_EGLFallback(_this, path);
+    }
 
     if (path == NULL) {
         path = SDL_GetHint(SDL_HINT_OPENGL_LIBRARY);
@@ -740,19 +765,8 @@ SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && WIN_GL_UseEGL(_this)) {
 #ifdef SDL_VIDEO_OPENGL_EGL
         // Switch to EGL based functions
-        WIN_GL_UnloadLibrary(_this);
-        _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
-        _this->GL_GetProcAddress = WIN_GLES_GetProcAddress;
-        _this->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
-        _this->GL_CreateContext = WIN_GLES_CreateContext;
-        _this->GL_MakeCurrent = WIN_GLES_MakeCurrent;
-        _this->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
-        _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
-        _this->GL_SwapWindow = WIN_GLES_SwapWindow;
-        _this->GL_DestroyContext = WIN_GLES_DestroyContext;
-        _this->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
 
-        if (!WIN_GLES_LoadLibrary(_this, NULL)) {
+        if (!WIN_GL_LoadLibrary_EGLFallback(_this, NULL)) {
             return NULL;
         }
 
