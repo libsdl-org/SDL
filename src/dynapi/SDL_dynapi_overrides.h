@@ -1313,3 +1313,8 @@
 #define SDL_GDKResumeRenderer SDL_GDKResumeRenderer_REAL
 #define SDL_GetProcessIPC SDL_GetProcessIPC_REAL
 #define SDL_GetParentIPC SDL_GetParentIPC_REAL
+#define SDL_ReceiveSharedResource SDL_ReceiveSharedResource_REAL
+#define SDL_CreateSharedSurface SDL_CreateSharedSurface_REAL
+#define SDL_DestroySharedSurface SDL_DestroySharedSurface_REAL
+#define SDL_SendSharedSurface SDL_SendSharedSurface_REAL
+#define SDL_GetSurfaceFromSharedSurface SDL_GetSurfaceFromSharedSurface_REAL

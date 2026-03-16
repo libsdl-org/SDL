@@ -36,9 +36,13 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <limits.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "../SDL_sysprocess.h"
 #include "../../io/SDL_iostream_c.h"
+#include "../../video/SDL_surface_c.h"
 
 
 #if defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP) && \
@@ -69,6 +73,56 @@ struct SDL_ProcessData {
     pid_t pid;
     SDL_IPC ipc;
 };
+
+typedef struct SDL_SurfaceData {
+    int width;
+    int height;
+    SDL_PixelFormat format;
+    int has_palette;
+    int ncolors;
+} SDL_SurfaceData;
+
+struct SDL_SharedSurface {
+    SDL_Surface *surface;
+    int shared_memory_fd;
+};
+
+static int shm_open_anon(off_t length)
+{
+    // I'm surprised this isn't already POSIX...
+    // everyone kinda does their own thing, with
+    // BSDs having a special SHM_ANON arg for shm_open()
+    // and Linux having a separate memfd_create() function
+#define TEMPNAME_PREFIX "/sdl-shared-memory-"
+#define RANDOM_SUFFIX_SIZE 6
+    int random_suffix, fd;
+    char tempname[sizeof(TEMPNAME_PREFIX) + RANDOM_SUFFIX_SIZE + 1];
+
+    for (int i = 0; i < 100; i++) {
+        random_suffix = rand();
+        if (SDL_snprintf(tempname, sizeof(tempname), TEMPNAME_PREFIX "%*d", RANDOM_SUFFIX_SIZE, random_suffix) < 0)
+            return -1;
+
+        fd = shm_open(tempname, O_RDWR | O_CREAT | O_EXCL, 0600);
+        const int error = fd < 0;
+        if (error)
+            continue;
+
+        shm_unlink(tempname);
+
+        if (ftruncate(fd, length) < 0) {
+            SDL_SetError("Error resizing shared memory fd %d: %s", fd, strerror(errno));
+            close(fd);
+            return -1;
+        }
+        return fd;
+    }
+    // give up
+    SDL_SetError("Error creating shared memory file descriptor: %s", strerror(errno));
+    return -1;
+#undef TEMPNAME_PREFIX
+#undef RANDOM_SUFFIX_SIZE
+}
 
 static void CleanupStream(void *userdata, void *value)
 {
@@ -114,9 +168,8 @@ static bool CreateSockets(int fds[2])
         return false;
     }
 
-    // Make sure the pipe isn't accidentally inherited by another thread creating a process
-    fcntl(fds[READ_END], F_SETFD, fcntl(fds[READ_END], F_GETFD) | FD_CLOEXEC);
-    fcntl(fds[WRITE_END], F_SETFD, fcntl(fds[WRITE_END], F_GETFD) | FD_CLOEXEC);
+    fcntl(fds[PARENT_END], F_SETFD, fcntl(fds[PARENT_END], F_GETFD) | FD_CLOEXEC);
+    fcntl(fds[CHILD_END], F_SETFD, fcntl(fds[CHILD_END], F_GETFD) | FD_CLOEXEC);
 
     return true;
 }
@@ -607,7 +660,7 @@ SDL_IPC * SDL_SYS_GetParentIPC(void)
         }
 
         char *end = NULL;
-        long result = strtol(env_fd, &end, 10);
+        long result = SDL_strtol(env_fd, &end, 10);
 
         const bool error = end == NULL
             || end == env_fd
@@ -627,6 +680,277 @@ destroy_environment:
     SDL_DestroyEnvironment(env);
 return_null:
     return NULL;
+}
+
+static SDL_SharedSurface *SDL_SYS_CreateSharedSurfaceFrom(int shared_memory_fd, size_t size, size_t pitch, int width, int height, SDL_PixelFormat format)
+{
+    void *pixels;
+    SDL_SharedSurface *result = (SDL_SharedSurface *)SDL_malloc(sizeof(*result));
+    if (!result) {
+        return NULL;
+    }
+
+    result->shared_memory_fd = shared_memory_fd;
+
+    pixels = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shared_memory_fd, 0);
+    if (pixels == MAP_FAILED) {
+        SDL_SetError("Failed to memory map shared memory: %s", strerror(errno));
+        goto error_mmap_failed;
+    }
+
+    result->surface = SDL_CreateSurfaceFrom(width, height, format, pixels, (int)pitch);
+    if (result->surface == NULL) {
+        // SDL_CreateSurfaceFrom already does SDL_SetError()
+        goto error_create_surface_failed;
+    }
+
+    return result;
+
+error_create_surface_failed:
+    munmap(pixels, size);
+error_mmap_failed:
+    close(shared_memory_fd);
+    SDL_free(result);
+    return NULL;
+}
+
+static SDL_SharedResource SDL_SYS_ReceiveSharedSurface(SDL_IPC *ipc, struct msghdr hdr)
+{
+    static const SDL_SharedResource error = {
+        .type = SDL_SHARED_RESOURCE_ERROR,
+        .surface = NULL,
+    };
+
+    size_t size, pitch;
+    int shared_resource_fd = -1;
+    ssize_t amount_read = -1;
+    SDL_SharedSurface *result = NULL;
+    SDL_SurfaceData network_data = { 0 };
+    struct iovec vec = {
+        .iov_base = &network_data,
+        .iov_len = sizeof(network_data),
+    };
+    struct msghdr datahdr = {
+        .msg_iov = &vec,
+        .msg_iovlen = 1,
+        .msg_control = NULL,
+        .msg_controllen = 0,
+    };
+    SDL_Palette *palette = NULL;
+
+    struct cmsghdr *cmsg = CMSG_FIRSTHDR(&hdr);
+
+    // There should never be a reason this branch is taken
+    if (!(cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS))
+        return error;
+
+    SDL_memcpy(&shared_resource_fd, CMSG_DATA(cmsg), sizeof(shared_resource_fd));
+
+    amount_read = recvmsg(ipc->socket, &datahdr, 0);
+    if (amount_read < 0)
+        return error;
+
+    if (network_data.has_palette) {
+        // this is starting to get unwieldy
+        palette = SDL_CreatePalette(network_data.ncolors);
+        if (!palette)
+            return error;
+
+        amount_read = read(
+            ipc->socket,
+            palette->colors,
+            (size_t)network_data.ncolors * sizeof(*palette->colors)
+        );
+        if (amount_read < 0) {
+            SDL_DestroyPalette(palette);
+            return error;
+        }
+    }
+
+    if (!SDL_CalculateSurfaceSize(network_data.format, network_data.width, network_data.height, &size, &pitch, false)) {
+        // We should never really end up here
+        SDL_DestroyPalette(palette);
+        return error;
+    }
+    result = SDL_SYS_CreateSharedSurfaceFrom(shared_resource_fd, size, pitch, network_data.width, network_data.height, network_data.format);
+
+    if (result == NULL) {
+        SDL_DestroyPalette(palette);
+        return error;
+    }
+
+    if (palette) {
+        if (!SDL_SetSurfacePalette(result->surface, palette)) {
+            SDL_DestroyPalette(palette);
+            SDL_SYS_DestroySharedSurface(result);
+            return error;
+        }
+
+        // surface takes ownership of the palette
+        SDL_DestroyPalette(palette);
+    }
+
+    return (SDL_SharedResource) {
+        .type = SDL_SHARED_SURFACE,
+        .surface = result,
+    };
+}
+
+SDL_SharedResource SDL_SYS_ReceiveSharedResource(SDL_IPC *ipc)
+{
+    static const SDL_SharedResource error = {
+        .type = SDL_SHARED_RESOURCE_ERROR,
+        .surface = NULL,
+    };
+    union {
+        char buf[CMSG_SPACE(sizeof(int))];
+        struct cmsghdr align;
+    } cmsgbuf;
+    SDL_SHARED_RESOURCE_TYPE type = SDL_SHARED_RESOURCE_ERROR;
+    ssize_t amount_read = -1;
+    struct iovec vec = {
+        .iov_base = &type,
+        .iov_len = sizeof(type),
+    };
+    struct msghdr hdr = {
+        .msg_iov = &vec,
+        .msg_iovlen = 1,
+        .msg_control = &cmsgbuf.buf,
+        .msg_controllen = sizeof(cmsgbuf.buf),
+    };
+
+    amount_read = recvmsg(ipc->socket, &hdr, 0);
+
+    if (amount_read < 0)
+        return error;
+
+    switch (type) {
+        case SDL_SHARED_SURFACE:
+            return SDL_SYS_ReceiveSharedSurface(ipc, hdr);
+        default:
+            return error;
+    }
+}
+
+SDL_SharedSurface *SDL_SYS_CreateSharedSurface(int width, int height, SDL_PixelFormat format)
+{
+    size_t pitch, size;
+    int shared_memory_fd;
+
+    CHECK_PARAM(width < 0) {
+        SDL_InvalidParamError("width");
+        return NULL;
+    }
+
+    CHECK_PARAM(height < 0) {
+        SDL_InvalidParamError("height");
+        return NULL;
+    }
+
+    CHECK_PARAM(format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_InvalidParamError("format");
+        return NULL;
+    }
+
+    if (!SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, false /* not minimal pitch */)) {
+        // overflow...
+        return NULL;
+    }
+
+    shared_memory_fd = shm_open_anon((off_t)size);
+    if (shared_memory_fd < 0) {
+        return NULL;
+    }
+
+    return SDL_SYS_CreateSharedSurfaceFrom(shared_memory_fd, size, pitch, width, height, format);
+}
+
+void SDL_SYS_DestroySharedSurface(SDL_SharedSurface *surface)
+{
+    if (!surface)
+        return;
+
+    size_t size;
+
+    if (!SDL_CalculateSurfaceSize(surface->surface->format, surface->surface->w, surface->surface->h, &size, NULL, false)) {
+        // How did we even get here?
+        // How do we even recover without leaking?
+    }
+
+    munmap(surface->surface->pixels, size);
+    SDL_DestroySurface(surface->surface);
+    close(surface->shared_memory_fd);
+    SDL_free(surface);
+}
+
+bool SDL_SYS_SendSharedSurface(SDL_IPC *ipc, SDL_SharedSurface *surface)
+{
+    static const SDL_SHARED_RESOURCE_TYPE type = SDL_SHARED_SURFACE;
+    ssize_t sent;
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    SDL_Palette *palette = SDL_GetSurfacePalette(surface->surface);
+
+    CHECK_PARAM(ipc == NULL) {
+        SDL_InvalidParamError("ipc");
+        return false;
+    }
+
+    CHECK_PARAM(surface == NULL) {
+        SDL_InvalidParamError("surface");
+        return false;
+    }
+
+    struct SDL_SurfaceData surface_data = {
+        .width = surface->surface->w,
+        .height = surface->surface->h,
+        .format = surface->surface->format,
+        .has_palette = !!palette,
+        .ncolors = palette ? palette->ncolors : 0
+    };
+
+    struct iovec data[] = {
+        {
+            .iov_base = (void*)&type,
+            .iov_len = sizeof(type),
+        },
+        {
+            .iov_base = &surface_data,
+            .iov_len = sizeof(surface_data),
+        },
+        {
+            .iov_base = palette ? palette->colors : NULL,
+            .iov_len = palette ? (size_t)palette->ncolors * sizeof(*palette->colors) : 0,
+        },
+    };
+
+    // ripped straight from cmsg(3)
+    union {
+        char buf[CMSG_SPACE(sizeof(surface->shared_memory_fd))];
+        struct cmsghdr align;
+    } cmsgbuf;
+
+    msg = (struct msghdr) {
+        .msg_iov = data,
+        .msg_iovlen = SDL_arraysize(data),
+        .msg_control = cmsgbuf.buf,
+        .msg_controllen = sizeof(cmsgbuf.buf),
+    };
+
+    cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_RIGHTS;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(surface->shared_memory_fd));
+    SDL_memcpy(CMSG_DATA(cmsg), &surface->shared_memory_fd, sizeof(surface->shared_memory_fd));
+
+    sent = sendmsg(ipc->socket, &msg, 0);
+    const size_t expected = data[0].iov_len + data[1].iov_len + data[2].iov_len;
+    return sent == (ssize_t)expected;
+}
+
+SDL_Surface *SDL_SYS_GetSurfaceFromSharedSurface(SDL_SharedSurface *surface)
+{
+    return surface->surface;
 }
 
 #endif // SDL_PROCESS_POSIX

@@ -9,6 +9,9 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
+
+#include "testutils.h"
 
 int main(int argc, char *argv[]) {
     SDLTest_CommonState *state;
@@ -19,6 +22,7 @@ int main(int argc, char *argv[]) {
     bool read_stdin = false;
     bool stdin_to_stderr = false;
     bool sdl_ipc = false;
+    bool sdl_ipc_shared_surface = false;
     SDL_IOStream *log_stdin = NULL;
     int exit_code = 0;
 
@@ -64,6 +68,9 @@ int main(int argc, char *argv[]) {
             } else if (SDL_strcmp(argv[i], "--sdl-ipc") == 0) {
                 sdl_ipc = true;
                 consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--sdl-ipc-shared-surface") == 0) {
+                sdl_ipc_shared_surface = true;
+                consumed = 1;
             } else if (SDL_strcmp(argv[i], "--exit-code") == 0) {
                 if (i + 1 < argc) {
                     char *endptr = NULL;
@@ -100,6 +107,7 @@ int main(int argc, char *argv[]) {
                 "[--stdin-to-stderr]",
                 "[--stderr TEXT]",
                 "[--sdl-ipc]",
+                "[--sdl-ipc-shared-surface]",
                 "[--exit-code EXIT_CODE]",
                 "[--] [ARG [ARG ...]]",
                 NULL
@@ -186,6 +194,60 @@ int main(int argc, char *argv[]) {
         } else {
             puts("SDL IPC opened successfully");
         }
+    }
+
+    if (sdl_ipc_shared_surface) {
+        SDL_IPC *ipc = SDL_GetParentIPC();
+        if (!ipc) {
+            SDL_Log("SDL IPC was requested but was not opened");
+            return EXIT_FAILURE;
+        } else {
+            puts("SDL IPC opened successfully");
+        }
+
+        char *filename = GetNearbyFilename("icon.png");
+        if (!filename) {
+            SDL_Log("failed to allocate file name: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        SDL_Surface *png_tmp = SDL_LoadPNG(filename);
+        if (!png_tmp) {
+            SDL_Log("failed to load PNG: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        SDL_SharedSurface *shared_surface = SDL_CreateSharedSurface(
+            png_tmp->w,
+            png_tmp->h,
+            png_tmp->format
+        );
+
+        if (!shared_surface) {
+            SDL_Log("failed to create shared surface: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        SDL_Surface *surface = SDL_GetSurfaceFromSharedSurface(shared_surface);
+
+        if (!SDL_BlitSurface(png_tmp, NULL, surface, NULL)) {
+            SDL_Log("failed to blit shared surface: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        if (!SDL_SetSurfacePalette(surface, SDL_GetSurfacePalette(png_tmp))) {
+            SDL_Log("failed to set shared surface palette: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        if (!SDL_SendSharedSurface(ipc, shared_surface)) {
+            SDL_Log("failed to send shared surface: %s", SDL_GetError());
+            return EXIT_FAILURE;
+        }
+
+        SDL_DestroySharedSurface(shared_surface);
+        SDL_DestroySurface(png_tmp);
+        SDL_free(filename);
     }
 
     SDLTest_CommonDestroyState(state);

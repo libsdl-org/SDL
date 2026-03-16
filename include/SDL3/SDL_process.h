@@ -55,6 +55,17 @@ extern "C" {
 #endif
 
 /**
+ * Indicates the type of shared resource returned by a
+ * call to SDL_ReceiveSharedResource.
+ *
+ * \sa SDL_ReceiveSharedResource
+ */
+typedef enum SDL_SHARED_RESOURCE_TYPE {
+    SDL_SHARED_RESOURCE_ERROR,
+    SDL_SHARED_SURFACE,
+} SDL_SHARED_RESOURCE_TYPE;
+
+/**
  * An opaque handle representing a system process.
  *
  * \since This datatype is available since SDL 3.2.0.
@@ -67,6 +78,19 @@ typedef struct SDL_Process SDL_Process;
  * An opaque handle representing an IPC channel.
  */
 typedef struct SDL_IPC SDL_IPC;
+
+/**
+ * A type representing a surface that can be shared
+ * via IPC.
+ */
+typedef struct SDL_SharedSurface SDL_SharedSurface;
+
+typedef struct SDL_SharedResource {
+    SDL_SHARED_RESOURCE_TYPE type;
+    union {
+        SDL_SharedSurface *surface;
+    };
+} SDL_SharedResource;
 
 /**
  * Create a new process.
@@ -462,7 +486,60 @@ extern SDL_DECLSPEC SDL_IPC * SDLCALL SDL_GetProcessIPC(SDL_Process *process);
  */
 extern SDL_DECLSPEC SDL_IPC * SDLCALL SDL_GetParentIPC(void);
 
-/* Ends C function definitions when using C++ */
+/**
+ * Blocks on the given SDL_IPC for a new shared resource to arrive.
+ *
+ * \param ipc The IPC to wait on the shared resource for.
+ * \returns The type of resource and a pointer to access the new resource,
+ * or a type of SDL_SHARED_RESOURCE_ERROR if there was an error retrieving
+ * the new resource.
+ */
+extern SDL_DECLSPEC SDL_SharedResource SDLCALL SDL_ReceiveSharedResource(
+    SDL_IPC *ipc
+);
+
+/**
+ * Allocates a new SDL_SharedSurface, ready to be shared with other processes
+ * via an SDL_IPC.
+ *
+ * Takes the same parameters as SDL_CreateSurface().
+ *
+ * \param width the width of the surface.
+ * \param height the height of the surface.
+ * \param format the SDL_PixelFormat for the new surface's pixel format.
+ * \returns the new SDL_SharedSurface structure that is created or NULL on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ */
+extern SDL_DECLSPEC SDL_SharedSurface * SDLCALL SDL_CreateSharedSurface(int width, int height, SDL_PixelFormat format);
+
+/**
+ * Frees all resources associated with an existing SDL_SharedSurface. It is safe
+ * to pass NULL to this function.
+ *
+ * \param surface the surface to free.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_DestroySharedSurface(SDL_SharedSurface *surface);
+
+/**
+ * Sends the given SDL_SharedSurface on the given IPC.
+ *
+ * \param ipc The SDL_IPC to send the shared surface across.
+ * \param surface The surface to send.
+ * \returns True if the surface was sent successfully, false otherwise.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SendSharedSurface(SDL_IPC *ipc, SDL_SharedSurface *surface);
+
+/**
+ * Provides unsynchronized access to the underlying SDL_Surface of an
+ * SDL_SharedSurface.
+ *
+ * \param surface The shared surface to return the SDL_Surface for.
+ * \returns A pointer to the SDL_Surface.
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_GetSurfaceFromSharedSurface(SDL_SharedSurface *surface);
+
 #ifdef __cplusplus
 }
 #endif

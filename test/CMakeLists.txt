@@ -462,7 +462,7 @@ add_sdl_test_executable(testprocess
     INSTALLED_ARGS "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3/childprocess${CMAKE_EXECUTABLE_SUFFIX}"
     SOURCES testprocess.c
 )
-add_sdl_test_executable(childprocess SOURCES childprocess.c)
+add_sdl_test_executable(childprocess NEEDS_RESOURCES TESTUTILS SOURCES childprocess.c)
 add_dependencies(testprocess childprocess)
 
 get_property(SDL_TEST_EXECUTABLES DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY SDL_TEST_EXECUTABLES)

@@ -212,3 +212,28 @@ SDL_IPC * SDL_GetParentIPC(void)
 {
     return SDL_SYS_GetParentIPC();
 }
+
+SDL_SharedResource SDL_ReceiveSharedResource(SDL_IPC *ipc)
+{
+    return SDL_SYS_ReceiveSharedResource(ipc);
+}
+
+SDL_SharedSurface *SDL_CreateSharedSurface(int width, int height, SDL_PixelFormat format)
+{
+    return SDL_SYS_CreateSharedSurface(width, height, format);
+}
+
+void SDL_DestroySharedSurface(SDL_SharedSurface *surface)
+{
+    SDL_SYS_DestroySharedSurface(surface);
+}
+
+bool SDL_SendSharedSurface(SDL_IPC *ipc, SDL_SharedSurface *surface)
+{
+    return SDL_SYS_SendSharedSurface(ipc, surface);
+}
+
+SDL_Surface *SDL_GetSurfaceFromSharedSurface(SDL_SharedSurface *surface)
+{
+    return SDL_SYS_GetSurfaceFromSharedSurface(surface);
+}
