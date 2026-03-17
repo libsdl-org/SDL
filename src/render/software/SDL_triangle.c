@@ -330,12 +330,12 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
 
     {
         int val;
-        PRECOMP(d2d1_y, d1->y - d2->y)
-        PRECOMP(d0d2_y, d2->y - d0->y)
-        PRECOMP(d1d0_y, d0->y - d1->y)
-        PRECOMP(d1d2_x, d2->x - d1->x)
-        PRECOMP(d2d0_x, d0->x - d2->x)
-        PRECOMP(d0d1_x, d1->x - d0->x)
+        PRECOMP(d2d1_y, d1->y - d2->y);
+        PRECOMP(d0d2_y, d2->y - d0->y);
+        PRECOMP(d1d0_y, d0->y - d1->y);
+        PRECOMP(d1d2_x, d2->x - d1->x);
+        PRECOMP(d2d0_x, d0->x - d2->x);
+        PRECOMP(d0d1_x, d1->x - d0->x);
     }
 
     // Starting point for rendering, at the middle of a pixel
@@ -572,12 +572,12 @@ bool SDL_SW_BlitTriangle(
 
     {
         int val;
-        PRECOMP(d2d1_y, d1->y - d2->y)
-        PRECOMP(d0d2_y, d2->y - d0->y)
-        PRECOMP(d1d0_y, d0->y - d1->y)
-        PRECOMP(d1d2_x, d2->x - d1->x)
-        PRECOMP(d2d0_x, d0->x - d2->x)
-        PRECOMP(d0d1_x, d1->x - d0->x)
+        PRECOMP(d2d1_y, d1->y - d2->y);
+        PRECOMP(d0d2_y, d2->y - d0->y);
+        PRECOMP(d1d0_y, d0->y - d1->y);
+        PRECOMP(d1d2_x, d2->x - d1->x);
+        PRECOMP(d2d0_x, d0->x - d2->x);
+        PRECOMP(d0d1_x, d1->x - d0->x);
     }
 
     s2s0_x = s0->x - s2->x;

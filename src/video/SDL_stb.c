@@ -23,6 +23,11 @@
 #include "SDL_stb_c.h"
 #include "SDL_surface_c.h"
 
+/* STB image conversion */
+#ifndef SDL_DISABLE_STB
+#define SDL_HAVE_STB
+#endif
+
 #ifdef SDL_HAVE_STB
 ////////////////////////////////////////////////////////////////////////////
 #define malloc SDL_malloc

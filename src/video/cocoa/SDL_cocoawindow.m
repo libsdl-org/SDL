@@ -3054,6 +3054,9 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
         [nswindow setContentSize:rect.size];
         [nswindow setFrameOrigin:rect.origin];
 
+        // Disable the window shadow in fullscreen to avoid a visible 1px border on Tahoe
+        nswindow.hasShadow = !fullscreen && !(window->flags & SDL_WINDOW_TRANSPARENT);
+
         // When the window style changes the title is cleared
         if (!fullscreen) {
             Cocoa_SetWindowTitle(_this, window);

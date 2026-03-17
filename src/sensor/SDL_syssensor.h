@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_syssensor_c_h_
-#define SDL_syssensor_c_h_
+#ifndef SDL_syssensor_h_
+#define SDL_syssensor_h_
 
 // This is the system specific header for the SDL sensor API
 

@@ -35,6 +35,7 @@
 
 #define GAMESIR_PACKET_HEADER_0 0xA1
 #define GAMESIR_PACKET_HEADER_1_GAMEPAD 0xC8
+#define GAMESIR_IMU_RATE_HZ 250
 
 #define BTN_A        0x01
 #define BTN_B        0x02
@@ -77,6 +78,24 @@
 #define BTN_L8       0x40
 #define BTN_R8       0x80
 
+enum
+{
+    SDL_GAMEPAD_BUTTON_GAMESIR_SHARE = 11,
+    SDL_GAMEPAD_BUTTON_GAMESIR_L4,
+    SDL_GAMEPAD_BUTTON_GAMESIR_R4,
+    SDL_GAMEPAD_BUTTON_GAMESIR_L5,
+    SDL_GAMEPAD_BUTTON_GAMESIR_R5,
+    //SDL_GAMEPAD_BUTTON_GAMESIR_L6,    // This button doesn't exist?
+    //SDL_GAMEPAD_BUTTON_GAMESIR_R6,    // This button doesn't exist?
+    //SDL_GAMEPAD_BUTTON_GAMESIR_L7,    // This button doesn't exist?
+    //SDL_GAMEPAD_BUTTON_GAMESIR_R7,    // This button doesn't exist?
+    //SDL_GAMEPAD_BUTTON_GAMESIR_L8,    // This button doesn't exist?
+    //SDL_GAMEPAD_BUTTON_GAMESIR_R8,    // This button doesn't exist?
+    SDL_GAMEPAD_BUTTON_GAMESIR_MUTE,    // This button controls the audio mute LED
+    //SDL_GAMEPAD_BUTTON_GAMESIR_M      // This button is for internal use by the firmware
+    SDL_GAMEPAD_NUM_GAMESIR_BUTTONS
+};
+
 typedef struct {
     Uint8 cmd;
     Uint8 mode;
@@ -110,9 +129,7 @@ static void HIDAPI_DriverGameSir_UnregisterHints(SDL_HintCallback callback, void
 
 static bool HIDAPI_DriverGameSir_IsEnabled(void)
 {
-    // Temporarily disabled by default until response from GameSir
-    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, false);
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GAMESIR, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
 
@@ -161,25 +178,10 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
 
     for (int attempt = 0; attempt < 3; ++attempt) {
         int result = SDL_hid_write(handle, buf, sizeof(buf));
-        if (result < 0) {
-            return false;
+        if (result >= 0) {
+            return true;
         }
-        for (int i = 0; i < 10; ++i) {
-            SDL_Delay(1);
-
-            Uint8 data[USB_PACKET_LENGTH] = {0};
-            int size = SDL_hid_read_timeout(handle, data, sizeof(data), 0);
-            if (size < 0) {
-                break;
-            }
-            if (size == 0) {
-                continue;
-            }
-
-            if (size == 64 && data[0] == 0xA1 && data[1] == 0x43 && data[2] == 0x01) {
-                return true;
-            }
-        }
+        SDL_Delay(1);
     }
     return false;
 }
@@ -352,19 +354,18 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx->led_supported = true;
     ctx->output_handle = GetOutputHandle(device);
+    ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / GAMESIR_IMU_RATE_HZ;
 
     switch (device->product_id) {
-    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_HID:
-        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro (HID)");
-        ctx->sensors_supported = true;
+    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K:
+        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K");
+        if (device->is_bluetooth) {
+            // Sensors are not supported over Bluetooth
+        } else {
+            ctx->sensors_supported = true;
+        }
         ctx->led_supported = false;
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro HID mode (PID 0x%04X)", device->product_id);
-        break;
-    case USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K_HID:
-        HIDAPI_SetDeviceName(device, "GameSir-G7 Pro 8K (HID)");
-        ctx->sensors_supported = true;
-        ctx->led_supported = false;
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K HID mode (PID 0x%04X)", device->product_id);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: Device detected - G7 Pro 8K mode (PID 0x%04X)", device->product_id);
         break;
     default:
         HIDAPI_SetDeviceName(device, "GameSir Controller");
@@ -399,25 +400,26 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_zeroa(ctx->last_state);
     ctx->last_state_initialized = false;
 
-    bool extended_report_mode = SendGameSirModeSwitch(device);
-    if (!extended_report_mode) {
-        ctx->sensors_supported = false;
-        ctx->led_supported = false;
+    if (!SendGameSirModeSwitch(device)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GameSir: failed to send SDL mode switch command (0xA2, 0x01)");
     }
 
-    if (extended_report_mode) {
-        joystick->nbuttons = 35;
-    } else {
+    if (device->is_bluetooth) {
+        // Extended buttons are not supported over Bluetooth
         joystick->nbuttons = 11;
+    } else {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_GAMESIR_BUTTONS;
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-        ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
-        // Accelerometer scale factor: assume a range of ±2g, 16-bit signed values (-32768 to 32767)
-        // 32768 corresponds to 2g, so the scale factor = 2 * SDL_STANDARD_GRAVITY / 32768.0f
-        ctx->accelScale = 2.0f * SDL_STANDARD_GRAVITY / 32768.0f;
+        // GameSir SDL protocol packets currently don't expose an IMU timestamp.
+        // Use a synthetic monotonic timestamp at the firmware's fixed IMU rate.
+        ctx->sensor_timestamp_ns = SDL_GetTicksNS();
+        // Accelerometer scale factor: assume a range of ±4g, 16-bit signed values (-32768 to 32767)
+        // 32768 corresponds to 4g, so the scale factor = 4 * SDL_STANDARD_GRAVITY / 32768.0f
+        ctx->accelScale = 4.0f * SDL_STANDARD_GRAVITY / 32768.0f;
 
         // Gyro scale factor: based on the PS4 implementation
         // PS4 uses (gyro_numerator / gyro_denominator) * (π / 180)
@@ -427,7 +429,7 @@ static bool HIDAPI_DriverGameSir_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         const float gyro_denominator = 16.0f;
         ctx->gyroScale = (gyro_numerator / gyro_denominator) * (SDL_PI_F / 180.0f);
 
-        const float flSensorRate = 1000.0f;
+        const float flSensorRate = (float)GAMESIR_IMU_RATE_HZ;
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
@@ -442,8 +444,8 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     SDL_zero(buf);
     buf[0] = 0xA2;
     buf[1] = 0x03;
-    buf[2] = (Uint8)(low_frequency_rumble / 256);
-    buf[3] = (Uint8)(high_frequency_rumble / 256);
+    buf[2] = (Uint8)(low_frequency_rumble >> 8);
+    buf[3] = (Uint8)(high_frequency_rumble >> 8);
 
     SDL_hid_device *handle = HIDAPI_DriverGameSir_GetOutputHandle(device);
     if (handle == NULL) {
@@ -514,6 +516,9 @@ static bool HIDAPI_DriverGameSir_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
     if (ctx->sensors_supported) {
         ctx->sensors_enabled = enabled;
+        if (enabled) {
+            ctx->sensor_timestamp_ns = SDL_GetTicksNS();
+        }
         return true;
     }
     return SDL_Unsupported();
@@ -582,7 +587,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, buttons & BTN_HOME);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, buttons & BTN_L3);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, buttons & BTN_R3);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, buttons & BTN_CAPTURE);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_SHARE, buttons & BTN_CAPTURE);
     }
 
     if (last[2] != data[2]) {
@@ -614,20 +619,23 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
         // Handle other buttons
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, buttons & BTN_L4);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1, buttons & BTN_R4);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, buttons & BTN_MUTE);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_M, buttons & BTN_M);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L4, buttons & BTN_L4);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R4, buttons & BTN_R4);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_MUTE, buttons & BTN_MUTE);
     }
 
     if (last[3] != data[3]) {
         Uint8 buttons = data[3];
         // BTN4: L5 R5 L6 R6 L7 R7 L8 R8
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE2, buttons & BTN_L5);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, buttons & BTN_R5);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC3, buttons & BTN_L6);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC4, buttons & BTN_R6);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC5, buttons & BTN_L7);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC6, buttons & BTN_R7);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L5, buttons & BTN_L5);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R5, buttons & BTN_R5);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L6, buttons & BTN_L6);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R6, buttons & BTN_R6);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L7, buttons & BTN_L7);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R7, buttons & BTN_R7);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L8, buttons & BTN_L8);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R8, buttons & BTN_R8);
     }
 
     if (is_initial_packet) {
@@ -652,8 +660,9 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
             Sint16 left_x, left_y;
             // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
+            // Clamp -(-32768) to 32767 to avoid Sint16 overflow wrapping back to -32768
             left_x = raw_x;
-            left_y = -raw_y;
+            left_y = (raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -raw_y;
 
             Uint16 last_raw_x_unsigned = ((Uint16)last[4] << 8) | last[5];
             Uint16 last_raw_y_unsigned = ((Uint16)last[6] << 8) | last[7];
@@ -667,7 +676,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_left_x, last_left_y;
                 last_left_x = last_raw_x;
-                last_left_y = -last_raw_y;  // invert Y axis
+                last_left_y = (last_raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -last_raw_y;  // invert Y axis, clamp overflow
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_left_x, last_left_y, &last_deadzone_x, &last_deadzone_y);
@@ -695,8 +704,9 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
             Sint16 right_x, right_y;
             // Use signed 16-bit values directly; invert Y-axis (SDL convention: up is negative)
+            // Clamp -(-32768) to 32767 to avoid Sint16 overflow wrapping back to -32768
             right_x = raw_x;
-            right_y = -raw_y;
+            right_y = (raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -raw_y;
 
             Uint16 last_raw_x_unsigned = ((Uint16)last[8] << 8) | last[9];
             Uint16 last_raw_y_unsigned = ((Uint16)last[10] << 8) | last[11];
@@ -710,7 +720,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
                 Sint16 last_right_x, last_right_y;
                 last_right_x = last_raw_x;
-                last_right_y = -last_raw_y;  // invert Y axis
+                last_right_y = (last_raw_y == SDL_MIN_SINT16) ? SDL_MAX_SINT16 : -last_raw_y;  // invert Y axis, clamp overflow
 
                 Sint16 last_deadzone_x, last_deadzone_y;
                 ApplyCircularDeadzone(last_right_x, last_right_y, &last_deadzone_x, &last_deadzone_y);
@@ -723,17 +733,17 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         }
 
         // Handle trigger axes
-        // Protocol: L2 (payload byte 12) - analog left trigger 0-255, 0 = released, 255 = pressed
-        //           R2 (payload byte 13) - analog right trigger 0-255, 0 = released, 255 = pressed
-        // SDL range: 0-32767 (0 = released, 32767 = fully pressed)
-        // Linear mapping: 0-255 -> 0-32767
+        // Protocol: L2 (payload byte 12) - analog left trigger 0-255, 0 = released, 255 = fully pressed
+        //           R2 (payload byte 13) - analog right trigger 0-255, 0 = released, 255 = fully pressed
+        // SDL range: -32768 to 32767 (-32768 = released, 32767 = fully pressed)
+        // Linear mapping: 0-255 -> -32768..32767, formula: data * 257 - 32768 (same as PS4)
         if (last[12] != data[12]) {
-            axis = (Sint16)(((int)data[12] * 255) - 32767);
+            axis = ((int)data[12] * 257) - 32768;
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
         }
 
         if (last[13] != data[13]) {
-            axis = (Sint16)(((int)data[13] * 255) - 32767);
+            axis = ((int)data[13] * 257) - 32768;
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
         }
     }
@@ -1024,7 +1034,7 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
             payload = data + 2;
             payload_size = size - 2;
             HIDAPI_DriverGameSir_HandleStatePacket(joystick, ctx, payload, payload_size);
-        } else if (size >= 10 && data[0] == 0x07) {
+        } else if (size >= 10 && (data[0] == 0x02 || data[0] == 0x07)) {
             payload = data + 1;
             payload_size = size - 1;
             HIDAPI_DriverGameSir_HandleSimpleStatePacketBluetooth(joystick, ctx, payload, payload_size);

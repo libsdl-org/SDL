@@ -125,67 +125,67 @@ static bool DisableSteamTritonLizardMode(SDL_hid_device *dev)
 
 static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
                                                SDL_Joystick *joystick,
-                                               TritonMTUFull_t *pTritonReport)
+                                               TritonMTUNoQuat_t *pTritonReport)
 {
     float values[3];
     SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    if (pTritonReport->uButtons != ctx->last_button_state) {
+    if (pTritonReport->buttons != ctx->last_button_state) {
         Uint8 hat = 0;
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_A) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_A) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_B) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_B) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_X) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_X) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_Y) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_Y) != 0));
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_L) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_L) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_R) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_R) != 0));
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_MENU) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_MENU) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_VIEW) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_VIEW) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_STEAM) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_STEAM) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_QAM,
-                               ((pTritonReport->uButtons & TRITON_HBUTTON_QAM) != 0));
+                               ((pTritonReport->buttons & TRITON_HBUTTON_QAM) != 0));
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_L3) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_L3) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_R3) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_R3) != 0));
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE1,
-                               ((pTritonReport->uButtons & TRITON_HBUTTON_R4) != 0));
+                               ((pTritonReport->buttons & TRITON_HBUTTON_R4) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE1,
-                               ((pTritonReport->uButtons & TRITON_HBUTTON_L4) != 0));
+                               ((pTritonReport->buttons & TRITON_HBUTTON_L4) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE2,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_R5) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_R5) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE2,
-                               ((pTritonReport->uButtons & TRITON_LBUTTON_L5) != 0));
+                               ((pTritonReport->buttons & TRITON_LBUTTON_L5) != 0));
 
-        if (pTritonReport->uButtons & TRITON_LBUTTON_DPAD_UP) {
+        if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_UP) {
             hat |= SDL_HAT_UP;
         }
-        if (pTritonReport->uButtons & TRITON_LBUTTON_DPAD_DOWN) {
+        if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_DOWN) {
             hat |= SDL_HAT_DOWN;
         }
-        if (pTritonReport->uButtons & TRITON_LBUTTON_DPAD_LEFT) {
+        if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_LEFT) {
             hat |= SDL_HAT_LEFT;
         }
-        if (pTritonReport->uButtons & TRITON_LBUTTON_DPAD_RIGHT) {
+        if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_RIGHT) {
             hat |= SDL_HAT_RIGHT;
         }
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
-        ctx->last_button_state = pTritonReport->uButtons;
+        ctx->last_button_state = pTritonReport->buttons;
     }
 
     // RKRK There're button bits for this if you so choose.
@@ -203,8 +203,8 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY,
                          -pTritonReport->sRightStickY);
 
-    if (ctx->report_sensors && pTritonReport->imu.uTimestamp != ctx->last_sensor_tick) {
-        Uint32 delta_us = (pTritonReport->imu.uTimestamp - ctx->last_sensor_tick);
+    if (ctx->report_sensors && pTritonReport->imu.timestamp != ctx->last_sensor_tick) {
+        Uint32 delta_us = (pTritonReport->imu.timestamp - ctx->last_sensor_tick);
 
         ctx->sensor_timestamp_ns += SDL_US_TO_NS(delta_us);
 
@@ -218,7 +218,7 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
         values[2] = (-pTritonReport->imu.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp_ns, values, 3);
 
-        ctx->last_sensor_tick = pTritonReport->imu.uTimestamp;
+        ctx->last_sensor_tick = pTritonReport->imu.timestamp;
     }
 }
 
@@ -386,14 +386,15 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
 
         switch (data[0]) {
         case ID_TRITON_CONTROLLER_STATE:
+        case ID_TRITON_CONTROLLER_STATE_BLE:
             if (!joystick) {
                 HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
                 if (device->num_joysticks > 0) {
                     joystick = SDL_GetJoystickFromID(device->joysticks[0]);
                 }
             }
-            if (joystick && r >= (1 + sizeof(TritonMTUFull_t))) {
-                TritonMTUFull_t *pTritonReport = (TritonMTUFull_t *)&data[1];
+            if (joystick && r >= (1 + sizeof(TritonMTUNoQuat_t))) {
+                TritonMTUNoQuat_t *pTritonReport = (TritonMTUNoQuat_t *)&data[1];
                 HIDAPI_DriverSteamTriton_HandleState(device, joystick, pTritonReport);
             }
             break;

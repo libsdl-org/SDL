@@ -234,7 +234,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
             goto done;
-        };
+        }
 
         hr = pSHGetKnownFolderPath(&type, 0x00008000 /* KF_FLAG_CREATE */, NULL, &path);
         if (SUCCEEDED(hr)) {
@@ -296,7 +296,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d", (int)folder);
             goto done;
-        };
+        }
 
         // Create the OS-specific folder if it doesn't already exist
         type |= CSIDL_FLAG_CREATE;

@@ -1287,5 +1287,5 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     case SDL_FILEDIALOG_OPENFOLDER:
         ShowFolderDialog(callback, userdata, window, default_location, allow_many, title, accept, cancel);
         break;
-    };
+    }
 }

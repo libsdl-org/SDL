@@ -151,7 +151,7 @@ typedef enum SDL_EventType
     SDL_EVENT_WINDOW_FOCUS_LOST,        /**< Window has lost keyboard focus */
     SDL_EVENT_WINDOW_CLOSE_REQUESTED,   /**< The window manager requests that the window be closed */
     SDL_EVENT_WINDOW_HIT_TEST,          /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL */
-    SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
+    SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The window's ICC profile has changed */
     SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
     SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED, /**< Window display scale has been changed */
     SDL_EVENT_WINDOW_SAFE_AREA_CHANGED, /**< The window safe area has been changed */

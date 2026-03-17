@@ -73,6 +73,7 @@ Embedding the SDL3 Xcode project makes SDL3.framework a target of your app, so i
     fi
 ```
 3. Below the script entry uncheck the "Run Script:" options "For install builds only" and "Based on dependency analysis"
+4. Edit the Build Settings and set "User Script Sandboxing" to "No".
 
 TODO: Add information regarding App Store requirements such as icons, etc.
 

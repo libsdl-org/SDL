@@ -3870,6 +3870,11 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
 
 static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
+    if (format == SDL_PIXELFORMAT_INDEX8) {
+        // We'll do linear sampling in the shader if needed
+        scale_mode = SDL_SCALEMODE_NEAREST;
+    }
+
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
     if (!data->samplers[key]) {
@@ -3889,14 +3894,8 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat form
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            if (format == SDL_PIXELFORMAT_INDEX8) {
-                // We'll do linear sampling in the shader
-                samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-                samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-            } else {
-                samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-                samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-            }
+            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);

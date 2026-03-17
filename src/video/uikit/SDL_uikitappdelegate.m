@@ -67,7 +67,10 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
 // Load a launch image using the old UILaunchImageFile-era naming rules.
 static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
     UIImage *image = nil;
 
@@ -127,8 +130,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     [self.storyboardViewController didMoveToParentViewController:self];
 
 #ifndef SDL_PLATFORM_VISIONOS
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIApplication.sharedApplication.statusBarHidden = self.prefersStatusBarHidden;
     UIApplication.sharedApplication.statusBarStyle = self.preferredStatusBarStyle;
+#pragma clang diagnostic pop
 #endif
 }
 
@@ -207,7 +213,10 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
 
         // We always want portrait-oriented size, to match UILaunchImageSize.
         if (screenw > screenh) {

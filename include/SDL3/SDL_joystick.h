@@ -1132,7 +1132,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_JoystickEventsEnabled(void);
  * Update the current state of the open joysticks.
  *
  * This is called automatically by the event loop if any joystick events are
- * enabled.
+ * enabled and SDL_HINT_AUTO_UPDATE_JOYSTICKS hasn't been set to "0".
  *
  * \threadsafety It is safe to call this function from any thread.
  *

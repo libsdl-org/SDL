@@ -2726,17 +2726,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
             Uint64 now = SDL_GetTicks();
 
             if (now >= (ctx->m_ulLastIMUReset + IMU_RESET_DELAY_MS)) {
-                SDL_HIDAPI_Device *device = ctx->device;
-
-                if (device->updating) {
-                    SDL_UnlockMutex(device->dev_lock);
-                }
-
                 SetIMUEnabled(ctx, true);
-
-                if (device->updating) {
-                    SDL_LockMutex(device->dev_lock);
-                }
                 ctx->m_ulLastIMUReset = now;
             }
 

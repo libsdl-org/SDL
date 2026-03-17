@@ -2211,6 +2211,11 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
 
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
 {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
     return SDL_ConvertSurfaceAndColorspace(surface, surface->format, surface->palette, surface->colorspace, surface->props);
 }
 
@@ -2311,6 +2316,11 @@ error:
 
 SDL_Surface *SDL_ConvertSurfaceRect(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format)
 {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
     return SDL_ConvertSurfaceRectAndColorspace(surface, NULL, format, NULL, SDL_GetDefaultColorspaceForFormat(format), surface->props);
 }
 
@@ -3094,6 +3104,11 @@ void SDL_DestroySurface(SDL_Surface *surface)
 
 SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
 {
+    CHECK_PARAM(!src) {
+        SDL_InvalidParamError("src");
+        return NULL;
+    }
+
     if (SDL_IsBMP(src)) {
         return SDL_LoadBMP_IO(src, closeio);
     } else if (SDL_IsPNG(src)) {

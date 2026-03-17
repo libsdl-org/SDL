@@ -102,6 +102,8 @@ typedef struct SDL_Locale
  *          allocation that should be freed with SDL_free() when it is no
  *          longer needed.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Locale ** SDLCALL SDL_GetPreferredLocales(int *count);

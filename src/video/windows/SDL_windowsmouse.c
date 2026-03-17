@@ -218,7 +218,9 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
 {
     Uint8 *dst;
-    const int pitch = ((surface->w + 15) & ~15) / 8;
+    const int w = (surface->w + 7) / 8;
+    const int pad = (((w) % 4) ? (4 - ((w) % 4)) : 0);
+    const int pitch = (w + pad);
     const size_t size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 

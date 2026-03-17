@@ -211,7 +211,7 @@ class SDLJoystickHandler {
     /**
      * Handles adding and removing of input devices.
      */
-    void pollInputDevices() {
+    synchronized void pollInputDevices() {
         int[] deviceIds = InputDevice.getDeviceIds();
 
         for (int device_id : deviceIds) {
@@ -307,7 +307,7 @@ class SDLJoystickHandler {
         }
     }
 
-    protected SDLJoystick getJoystick(int device_id) {
+    synchronized protected SDLJoystick getJoystick(int device_id) {
         for (SDLJoystick joystick : mJoysticks) {
             if (joystick.device_id == device_id) {
                 return joystick;
@@ -642,7 +642,7 @@ class SDLHapticHandler {
         }
     }
 
-    void pollHapticDevices() {
+    synchronized void pollHapticDevices() {
 
         final int deviceId_VIBRATOR_SERVICE = 999999;
         boolean hasVibratorService = false;
@@ -690,7 +690,7 @@ class SDLHapticHandler {
         }
     }
 
-    protected SDLHaptic getHaptic(int device_id) {
+    synchronized protected SDLHaptic getHaptic(int device_id) {
         for (SDLHaptic haptic : mHaptics) {
             if (haptic.device_id == device_id) {
                 return haptic;

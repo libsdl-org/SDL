@@ -538,6 +538,7 @@ struct VulkanMemoryAllocation
     VkDeviceSize usedSpace;
     Uint8 *mapPointer;
     SDL_Mutex *memoryLock;
+    SDL_AtomicInt referenceCount; // Used to avoid defrag races
 };
 
 typedef struct VulkanMemoryAllocator
@@ -1080,9 +1081,17 @@ typedef struct VulkanCommandBuffer
     Sint32 usedBufferCount;
     Sint32 usedBufferCapacity;
 
+    VulkanBuffer **buffersUsedInPendingTransfers;
+    Sint32 buffersUsedInPendingTransfersCount;
+    Sint32 buffersUsedInPendingTransfersCapacity;
+
     VulkanTexture **usedTextures;
     Sint32 usedTextureCount;
     Sint32 usedTextureCapacity;
+
+    VulkanTexture **texturesUsedInPendingTransfers;
+    Sint32 texturesUsedInPendingTransfersCount;
+    Sint32 texturesUsedInPendingTransfersCapacity;
 
     VulkanSampler **usedSamplers;
     Sint32 usedSamplerCount;
@@ -1171,6 +1180,7 @@ struct VulkanRenderer
     bool supportsDebugUtils;
     bool supportsColorspace;
     bool supportsPhysicalDeviceProperties2;
+    bool supportsPortabilityEnumeration;
     bool supportsFillModeNonSolid;
     bool supportsMultiDrawIndirect;
 
@@ -1252,6 +1262,10 @@ struct VulkanRenderer
     SDL_Mutex *descriptorSetLayoutFetchLock;
     SDL_Mutex *windowLock;
 
+    // We don't want transfer commands to block each other,
+    // but we want all transfers to block during defrag.
+    SDL_RWLock *defragLock;
+
     Uint8 defragInProgress;
 
     VulkanMemoryAllocation **allocationsToDefrag;
@@ -1269,6 +1283,7 @@ struct VulkanRenderer
 
 static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static bool VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
+static void VULKAN_ReleaseTexture(SDL_GPURenderer *driverData, SDL_GPUTexture *texture);
 static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static bool VULKAN_Wait(SDL_GPURenderer *driverData);
 static bool VULKAN_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *fences, Uint32 numFences);
@@ -1882,6 +1897,8 @@ static Uint8 VULKAN_INTERNAL_AllocateMemory(
     allocation->freeRegionCount = 0;
     allocation->freeRegionCapacity = 1;
 
+    SDL_SetAtomicInt(&allocation->referenceCount, 0);
+
     allocation->allocator = allocator;
 
     result = renderer->vkAllocateMemory(
@@ -2419,7 +2436,7 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
 
 // Resource tracking
 
-#define TRACK_RESOURCE(resource, type, array, count, capacity)  \
+#define TRACK_RESOURCE(resource, type, array, count, capacity, refcountvar)  \
     for (Sint32 i = commandBuffer->count - 1; i >= 0; i -= 1) { \
         if (commandBuffer->array[i] == resource) {              \
             return;                                             \
@@ -2434,7 +2451,8 @@ static Uint8 VULKAN_INTERNAL_BindMemoryForBuffer(
     }                                                           \
     commandBuffer->array[commandBuffer->count] = resource;      \
     commandBuffer->count += 1;                                  \
-    SDL_AtomicIncRef(&resource->referenceCount);
+    SDL_AtomicIncRef(&refcountvar)
+
 
 static void VULKAN_INTERNAL_TrackBuffer(
     VulkanCommandBuffer *commandBuffer,
@@ -2445,7 +2463,23 @@ static void VULKAN_INTERNAL_TrackBuffer(
         VulkanBuffer *,
         usedBuffers,
         usedBufferCount,
-        usedBufferCapacity)
+        usedBufferCapacity,
+        buffer->referenceCount);
+}
+
+// Use this function when a GPU buffer is part of a transfer operation.
+// Note that this isn't for transfer buffers, those don't need to refcount their allocations.
+static void VULKAN_INTERNAL_TrackBufferTransfer(
+    VulkanCommandBuffer *commandBuffer,
+    VulkanBuffer *buffer)
+{
+    TRACK_RESOURCE(
+        buffer,
+        VulkanBuffer *,
+        buffersUsedInPendingTransfers,
+        buffersUsedInPendingTransfersCount,
+        buffersUsedInPendingTransfersCapacity,
+        buffer->usedRegion->allocation->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackTexture(
@@ -2457,7 +2491,22 @@ static void VULKAN_INTERNAL_TrackTexture(
         VulkanTexture *,
         usedTextures,
         usedTextureCount,
-        usedTextureCapacity)
+        usedTextureCapacity,
+        texture->referenceCount);
+}
+
+// Use this when a texture is part of a transfer operation.
+static void VULKAN_INTERNAL_TrackTextureTransfer(
+    VulkanCommandBuffer *commandBuffer,
+    VulkanTexture *texture)
+{
+    TRACK_RESOURCE(
+        texture,
+        VulkanTexture *,
+        texturesUsedInPendingTransfers,
+        texturesUsedInPendingTransfersCount,
+        texturesUsedInPendingTransfersCapacity,
+        texture->usedRegion->allocation->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackSampler(
@@ -2469,7 +2518,8 @@ static void VULKAN_INTERNAL_TrackSampler(
         VulkanSampler *,
         usedSamplers,
         usedSamplerCount,
-        usedSamplerCapacity)
+        usedSamplerCapacity,
+        sampler->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackGraphicsPipeline(
@@ -2481,7 +2531,8 @@ static void VULKAN_INTERNAL_TrackGraphicsPipeline(
         VulkanGraphicsPipeline *,
         usedGraphicsPipelines,
         usedGraphicsPipelineCount,
-        usedGraphicsPipelineCapacity)
+        usedGraphicsPipelineCapacity,
+        graphicsPipeline->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackComputePipeline(
@@ -2493,7 +2544,8 @@ static void VULKAN_INTERNAL_TrackComputePipeline(
         VulkanComputePipeline *,
         usedComputePipelines,
         usedComputePipelineCount,
-        usedComputePipelineCapacity)
+        usedComputePipelineCapacity,
+        computePipeline->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackFramebuffer(
@@ -2505,7 +2557,8 @@ static void VULKAN_INTERNAL_TrackFramebuffer(
         VulkanFramebuffer *,
         usedFramebuffers,
         usedFramebufferCount,
-        usedFramebufferCapacity);
+        usedFramebufferCapacity,
+        framebuffer->referenceCount);
 }
 
 static void VULKAN_INTERNAL_TrackUniformBuffer(
@@ -5654,7 +5707,6 @@ static void VULKAN_PopDebugGroup(
 
 static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     VulkanRenderer *renderer,
-    bool transitionToDefaultLayout,
     const SDL_GPUTextureCreateInfo *createinfo)
 {
     VkResult vulkanResult;
@@ -5882,21 +5934,6 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             &nameInfo);
     }
 
-    if (transitionToDefaultLayout) {
-        // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
-        VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
-        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
-            renderer,
-            barrierCommandBuffer,
-            VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
-            texture);
-        VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
-        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
-            VULKAN_INTERNAL_DestroyTexture(renderer, texture);
-            return NULL;
-        }
-    }
-
     return texture;
 }
 
@@ -5963,7 +6000,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     // No texture is available, generate a new one.
     texture = VULKAN_INTERNAL_CreateTexture(
         renderer,
-        false,
         &container->header.info);
 
     VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
@@ -6865,7 +6901,6 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 
     texture = VULKAN_INTERNAL_CreateTexture(
         renderer,
-        true,
         createinfo);
 
     if (texture == NULL) {
@@ -6896,6 +6931,23 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 
     texture->container = container;
     texture->containerIndex = 0;
+
+    // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
+    // Only do this after "container" is set, so the texture
+    // is fully initialized before any Submit that could trigger defrag.
+    {
+        VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+            renderer,
+            barrierCommandBuffer,
+            VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
+            texture);
+        VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
+        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
+            VULKAN_ReleaseTexture((SDL_GPURenderer *)renderer, (SDL_GPUTexture *)container);
+            return NULL;
+        }
+    }
 
     return (SDL_GPUTexture *)container;
 }
@@ -8790,8 +8842,9 @@ static void VULKAN_UploadToTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VkBufferImageCopy imageCopy;
 
-    // Note that the transfer buffer does not need a barrier, as it is synced by the client
+    SDL_LockRWLockForReading(renderer->defragLock);
 
+    // Note that the transfer buffer does not need a barrier, as it is synced by the client
     vulkanTextureSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
         renderer,
         vulkanCommandBuffer,
@@ -8831,6 +8884,9 @@ static void VULKAN_UploadToTexture(
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_UploadToBuffer(
@@ -8845,14 +8901,16 @@ static void VULKAN_UploadToBuffer(
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
 
-    // Note that the transfer buffer does not need a barrier, as it is synced by the client
+    SDL_LockRWLockForReading(renderer->defragLock);
 
+    // Note that the transfer buffer does not need a barrier, as it is synced by the client
     VulkanBuffer *vulkanBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
         vulkanCommandBuffer,
         bufferContainer,
         cycle,
         VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION);
+
 
     bufferCopy.srcOffset = source->offset;
     bufferCopy.dstOffset = destination->offset;
@@ -8873,6 +8931,9 @@ static void VULKAN_UploadToBuffer(
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, vulkanBuffer);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 // Readback
@@ -8888,6 +8949,9 @@ static void VULKAN_DownloadFromTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferImageCopy imageCopy;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     vulkanTextureSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         textureContainer,
         source->layer,
@@ -8931,6 +8995,9 @@ static void VULKAN_DownloadFromTexture(
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_DownloadFromBuffer(
@@ -8944,8 +9011,9 @@ static void VULKAN_DownloadFromBuffer(
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferCopy bufferCopy;
 
-    // Note that transfer buffer does not need a barrier, as it is synced by the client
+    SDL_LockRWLockForReading(renderer->defragLock);
 
+    // Note that transfer buffer does not need a barrier, as it is synced by the client
     VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
         renderer,
         vulkanCommandBuffer,
@@ -8971,6 +9039,9 @@ static void VULKAN_DownloadFromBuffer(
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBuffer);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, bufferContainer->activeBuffer);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyTextureToTexture(
@@ -8987,6 +9058,8 @@ static void VULKAN_CopyTextureToTexture(
     VulkanTextureSubresource *srcSubresource;
     VulkanTextureSubresource *dstSubresource;
     VkImageCopy imageCopy;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
 
     srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         (VulkanTextureContainer *)source->texture,
@@ -9049,6 +9122,10 @@ static void VULKAN_CopyTextureToTexture(
 
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, srcSubresource->parent);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, dstSubresource->parent);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcSubresource->parent);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstSubresource->parent);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyBufferToBuffer(
@@ -9063,6 +9140,8 @@ static void VULKAN_CopyBufferToBuffer(
     VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
 
     VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
@@ -9102,6 +9181,10 @@ static void VULKAN_CopyBufferToBuffer(
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcContainer->activeBuffer);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_GenerateMipmaps(
@@ -9115,8 +9198,10 @@ static void VULKAN_GenerateMipmaps(
     VulkanTextureSubresource *dstTextureSubresource;
     VkImageBlit blit;
 
+    SDL_LockRWLockForReading(renderer->defragLock);
+
     // Blit each slice sequentially. Barriers, barriers everywhere!
-    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1)
+    for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
         for (Uint32 level = 1; level < container->header.info.num_levels; level += 1) {
             Uint32 layer = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : layerOrDepthIndex;
             Uint32 depth = container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? layerOrDepthIndex : 0;
@@ -9195,7 +9280,13 @@ static void VULKAN_GenerateMipmaps(
 
             VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, srcTextureSubresource->parent);
             VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, dstTextureSubresource->parent);
+            VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcTextureSubresource->parent);
+            VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstTextureSubresource->parent);
+
         }
+    }
+
+    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_EndCopyPass(
@@ -9405,10 +9496,20 @@ static bool VULKAN_INTERNAL_AllocateCommandBuffer(
     commandBuffer->usedBuffers = SDL_malloc(
         commandBuffer->usedBufferCapacity * sizeof(VulkanBuffer *));
 
+    commandBuffer->buffersUsedInPendingTransfersCapacity = 4;
+    commandBuffer->buffersUsedInPendingTransfersCount = 0;
+    commandBuffer->buffersUsedInPendingTransfers = SDL_malloc(
+        commandBuffer->buffersUsedInPendingTransfersCapacity * sizeof(VulkanBuffer *));
+
     commandBuffer->usedTextureCapacity = 4;
     commandBuffer->usedTextureCount = 0;
     commandBuffer->usedTextures = SDL_malloc(
         commandBuffer->usedTextureCapacity * sizeof(VulkanTexture *));
+
+    commandBuffer->texturesUsedInPendingTransfersCapacity = 4;
+    commandBuffer->texturesUsedInPendingTransfersCount = 0;
+    commandBuffer->texturesUsedInPendingTransfers = SDL_malloc(
+        commandBuffer->texturesUsedInPendingTransfersCapacity * sizeof(VulkanTexture *));
 
     commandBuffer->usedSamplerCapacity = 4;
     commandBuffer->usedSamplerCount = 0;
@@ -9547,14 +9648,15 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     VulkanCommandBuffer *commandBuffer =
         VULKAN_INTERNAL_GetInactiveCommandBufferFromPool(renderer, threadID);
 
+    if (commandBuffer == NULL) {
+        SDL_UnlockMutex(renderer->acquireCommandBufferLock);
+        return NULL;
+    }
+
     DescriptorSetCache *descriptorSetCache =
         VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
 
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
-
-    if (commandBuffer == NULL) {
-        return NULL;
-    }
 
     commandBuffer->descriptorSetCache = descriptorSetCache;
 
@@ -10477,10 +10579,20 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     }
     commandBuffer->usedBufferCount = 0;
 
+    for (Sint32 i = 0; i < commandBuffer->buffersUsedInPendingTransfersCount; i += 1) {
+        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->usedRegion->allocation->referenceCount);
+    }
+    commandBuffer->buffersUsedInPendingTransfersCount = 0;
+
     for (Sint32 i = 0; i < commandBuffer->usedTextureCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->referenceCount);
     }
     commandBuffer->usedTextureCount = 0;
+
+    for (Sint32 i = 0; i < commandBuffer->texturesUsedInPendingTransfersCount; i += 1){
+        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->usedRegion->allocation->referenceCount);
+    }
+    commandBuffer->texturesUsedInPendingTransfersCount = 0;
 
     for (Sint32 i = 0; i < commandBuffer->usedSamplerCount; i += 1) {
         (void)SDL_AtomicDecRef(&commandBuffer->usedSamplers[i]->referenceCount);
@@ -10867,8 +10979,30 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
+    SDL_LockRWLockForWriting(renderer->defragLock);
 
-    VulkanMemoryAllocation *allocation = renderer->allocationsToDefrag[renderer->allocationsToDefragCount - 1];
+    // Find an allocation that doesn't have any pending transfer operations
+    Sint32 indexToDefrag = -1;
+    for (Sint32 i = renderer->allocationsToDefragCount - 1; i >= 0; i -= 1) {
+        if (SDL_GetAtomicInt(&renderer->allocationsToDefrag[i]->referenceCount) == 0) {
+            indexToDefrag = i;
+            break;
+        }
+    }
+
+    if (indexToDefrag == -1) {
+        // Nothing is available to defrag, but it's not an error
+        SDL_UnlockRWLock(renderer->defragLock);
+        SDL_UnlockMutex(renderer->allocatorLock);
+        return true;
+    }
+
+    VulkanMemoryAllocation *allocation = renderer->allocationsToDefrag[indexToDefrag];
+
+    // Plug the hole
+    if ((Uint32) indexToDefrag != renderer->allocationsToDefragCount - 1) {
+        renderer->allocationsToDefrag[indexToDefrag] = renderer->allocationsToDefrag[renderer->allocationsToDefragCount - 1];
+    }
     renderer->allocationsToDefragCount -= 1;
 
     /* For each used region in the allocation
@@ -10888,6 +11022,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
+                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -10950,10 +11085,10 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         } else if (!currentRegion->isBuffer && !currentRegion->vulkanTexture->markedForDestroy) {
             VulkanTexture *newTexture = VULKAN_INTERNAL_CreateTexture(
                 renderer,
-                false,
                 &currentRegion->vulkanTexture->container->header.info);
 
             if (newTexture == NULL) {
+                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11028,6 +11163,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         }
     }
 
+    SDL_UnlockRWLock(renderer->defragLock);
     SDL_UnlockMutex(renderer->allocatorLock);
 
     return true;
@@ -11154,6 +11290,7 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     bool *supportsDebugUtils,
     bool *supportsColorspace,
     bool *supportsPhysicalDeviceProperties2,
+    bool *supportsPortabilityEnumeration,
     int *firstUnsupportedExtensionIndex)
 {
     Uint32 extensionCount, i;
@@ -11197,6 +11334,12 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     // Only needed for KHR_driver_properties!
     *supportsPhysicalDeviceProperties2 = SupportsInstanceExtension(
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+        availableExtensions,
+        extensionCount);
+
+    // Only needed for MoltenVK!
+    *supportsPortabilityEnumeration = SupportsInstanceExtension(
+        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
         availableExtensions,
         extensionCount);
 
@@ -11825,13 +11968,6 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
         nextInstanceExtensionNamePtr += extraInstanceExtensionCount;
     }
 
-
-#ifdef SDL_PLATFORM_APPLE
-    *nextInstanceExtensionNamePtr++ = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
-    instanceExtensionCount++;
-    createFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-#endif
-
     int firstUnsupportedExtensionIndex = 0;
     if (!VULKAN_INTERNAL_CheckInstanceExtensions(
             instanceExtensionNames,
@@ -11839,6 +11975,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
             &renderer->supportsDebugUtils,
             &renderer->supportsColorspace,
             &renderer->supportsPhysicalDeviceProperties2,
+            &renderer->supportsPortabilityEnumeration,
             &firstUnsupportedExtensionIndex)) {
         if (renderer->debugMode) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU,
@@ -11872,6 +12009,12 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
         // Append KHR_physical_device_properties2 extension
         *nextInstanceExtensionNamePtr++ = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
         instanceExtensionCount++;
+    }
+
+    if (renderer->supportsPortabilityEnumeration) {
+        *nextInstanceExtensionNamePtr++ = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+        instanceExtensionCount++;
+        createFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
 
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -12744,7 +12887,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     if (xr) {
         if (!SDL_OpenXR_LoadLibrary()) {
-            /* SDL_GetError() already has the detailed message from SDL_OpenXR_LoadLibrary() */
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Vulkan: Failed to load OpenXR: %s", SDL_GetError());
             SDL_Vulkan_UnloadLibrary();
             return false;
         }

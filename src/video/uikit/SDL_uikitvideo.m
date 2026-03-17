@@ -237,7 +237,10 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
      * https://forums.developer.apple.com/thread/65337 */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
     BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
                     !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
     BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);

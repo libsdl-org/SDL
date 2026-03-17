@@ -236,8 +236,8 @@ typedef struct SDL_WaylandSeat
                 SDL_MouseWheelDirection direction;
             } axis;
 
-            SDL_WindowData *enter_window;
-            SDL_WindowData *leave_window;
+            struct wl_surface *enter_surface;
+            struct wl_surface *leave_surface;
 
             // Event timestamp in nanoseconds
             Uint64 timestamp_ns;

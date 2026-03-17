@@ -273,8 +273,14 @@ static bool SendSerialRequest(SDL_DriverXboxOne_Context *ctx)
 
 static bool ControllerSendsAnnouncement(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_PDP && product_id == 0x0246) {
-        // The PDP Rock Candy (PID 0x0246) doesn't send the announce packet on Linux for some reason
+    // The PDP Rock Candy (PID 0x0246) and PowerA Fusion Pro 4 (PID 0x400b)
+    // don't send the announce packet on Linux for some reason.
+    //
+    // Just to be safe and cover future products, we'll always send the startup
+    // protocol sequence for PDP and PowerA controllers
+    if (vendor_id == USB_VENDOR_PDP ||
+        vendor_id == USB_VENDOR_POWERA ||
+        vendor_id == USB_VENDOR_POWERA_ALT) {
         return false;
     }
     return true;
@@ -357,6 +363,10 @@ static bool HIDAPI_DriverXboxOne_IsEnabled(void)
 
 static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
+    static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
+    static const int XBONE_IFACE_SUBCLASS = 71;
+    static const int XBONE_IFACE_PROTOCOL = 208;
+
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
     if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         // On macOS we get a shortened version of the real report and
@@ -365,6 +375,13 @@ static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         return false;
     }
 #endif
+    if (interface_class &&
+        (interface_class != LIBUSB_CLASS_VENDOR_SPEC ||
+         interface_subclass != XBONE_IFACE_SUBCLASS ||
+         interface_protocol != XBONE_IFACE_PROTOCOL)) {
+        // This isn't the Xbox gamepad interface
+        return false;
+    }
     return (type == SDL_GAMEPAD_TYPE_XBOXONE);
 }
 

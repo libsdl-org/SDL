@@ -49,7 +49,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         SDL_Unsupported();
         callback(userdata, NULL, -1);
         return;
-    };
+    }
 
     if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, is_save, allow_many)) {
         // SDL_SetError is already called when it fails

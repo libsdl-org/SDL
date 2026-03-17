@@ -497,6 +497,9 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     case VK_RCONTROL:
         scanCode = SDL_SCANCODE_RCTRL;
         break;
+    case VK_SNAPSHOT:
+        scanCode = SDL_SCANCODE_PRINTSCREEN;
+        break;
 
     // These are required to intercept Alt+Tab and Alt+Esc on Windows 7
     case VK_TAB:
@@ -774,7 +777,8 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
 
     if (down) {
         SDL_Window *focus = SDL_GetKeyboardFocus();
-        if (!focus || focus->text_input_active) {
+        // With input sink flag we want to receive input even if not focused
+        if ((!data->raw_keyboard_flag_inputsink && !focus) || (focus && focus->text_input_active)) {
             return;
         }
     }
@@ -782,7 +786,7 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, down);
 }
 
-void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
+void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start, bool process_input)
 {
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
@@ -828,7 +832,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
         }
     }
 
-    if (total > 0) {
+    if (total > 0 && process_input) {
         Uint64 delta = poll_finish - poll_start;
         UINT mouse_total = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
@@ -851,8 +855,6 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
     }
     data->last_rawinput_poll = poll_finish;
 }
-
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 static void AddDeviceID(Uint32 deviceID, Uint32 **list, int *count)
 {
@@ -878,8 +880,7 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
     return false;
 }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, const char *default_name, bool hid_loaded)
+static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, Uint16 vendor, Uint16 product, const char *default_name, bool hid_loaded)
 {
     char *vendor_name = NULL;
     char *product_name = NULL;
@@ -889,12 +890,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
     WCHAR vend[256], prod[256];
     vend[0] = 0;
     prod[0] = 0;
-
-
-    HIDD_ATTRIBUTES attr;
-    attr.VendorID = 0;
-    attr.ProductID = 0;
-    attr.Size = sizeof(attr);
 
     if (hid_loaded) {
         char devName[MAX_PATH + 1];
@@ -908,7 +903,6 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
             // they can only be opened with a desired access of none instead of generic read.
             HANDLE hFile = CreateFileA(devName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
             if (hFile != INVALID_HANDLE_VALUE) {
-                SDL_HidD_GetAttributes(hFile, &attr);
                 SDL_HidD_GetManufacturerString(hFile, vend, sizeof(vend));
                 SDL_HidD_GetProductString(hFile, prod, sizeof(prod));
                 CloseHandle(hFile);
@@ -950,8 +944,8 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
                     }
                     prod[size] = 0;
 
-                    if (attr.VendorID || attr.ProductID) {
-                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, attr.VendorID, attr.ProductID);
+                    if (vendor || product) {
+                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, vendor, product);
                     } else {
                         product_name = WIN_StringToUTF8W(prod);
                     }
@@ -961,18 +955,19 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
         }
     }
 
-    if (!product_name && (attr.VendorID || attr.ProductID)) {
-        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, attr.VendorID, attr.ProductID);
+    if (!product_name && (vendor || product)) {
+        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, vendor, product);
     }
-    name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name, default_name);
+    name = SDL_CreateDeviceName(vendor, product, vendor_name, product_name, default_name);
     SDL_free(vendor_name);
     SDL_free(product_name);
 
     return name;
 }
 
-void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check)
+void WIN_CheckKeyboardAndMouseHotplug(bool hid_loaded)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     PRAWINPUTDEVICELIST raw_devices = NULL;
     UINT raw_device_count = 0;
     int old_keyboard_count = 0;
@@ -984,17 +979,12 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
 
-    if (!_this->internal->detect_device_hotplug) {
+    if (!_this ||
+        SDL_strcmp(_this->name, "windows") != 0 ||
+        !_this->internal->detect_device_hotplug ||
+        _this->internal->gameinput_context) {
         return;
     }
-
-    // Check to see if anything has changed
-    static Uint64 s_last_device_change;
-    Uint64 last_device_change = WIN_GetLastDeviceNotification();
-    if (!initial_check && last_device_change == s_last_device_change) {
-        return;
-    }
-    s_last_device_change = last_device_change;
 
     if ((GetRawInputDeviceList(NULL, &raw_device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!raw_device_count)) {
         return; // oh well.
@@ -1017,7 +1007,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     old_mice = SDL_GetMice(&old_mouse_count);
 
-    bool hid_loaded = WIN_LoadHIDDLL();
     for (UINT i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH] = { 0 };
@@ -1063,7 +1052,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Keyboard", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Keyboard", hid_loaded);
                     SDL_AddKeyboard(keyboardID, name);
                     SDL_free(name);
                 }
@@ -1074,7 +1063,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Mouse", hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, (Uint16)vendor, (Uint16)product, "Mouse", hid_loaded);
                     SDL_AddMouse(mouseID, name);
                     SDL_free(name);
                 }
@@ -1083,9 +1072,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
         default:
             break;
         }
-    }
-    if (hid_loaded) {
-        WIN_UnloadHIDDLL();
     }
 
     for (int i = old_keyboard_count; i--;) {
@@ -2723,10 +2709,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
                                     (GetAsyncKeyState(VK_XBUTTON2) & 0x8000) != 0);
             }
         }
-    }
-
-    if (!_this->internal->gameinput_context) {
-        WIN_CheckKeyboardAndMouseHotplug(_this, false);
     }
 
     WIN_UpdateIMECandidates(_this);

@@ -46,7 +46,7 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
 /* As of Clang 11, '_m_prefetchw' is conflicting with the winnt.h's version,
    so we define the needed '_m_prefetch' here as a pseudo-header, until the issue is fixed. */
-#if defined(__clang__) &&  !SDL_HAS_BUILTIN(_m_prefetch)
+#if defined(__clang__) && !SDL_HAS_BUILTIN(_m_prefetch)
 #ifndef __PRFCHWINTRIN_H
 #define __PRFCHWINTRIN_H
 static __inline__ void __attribute__((__always_inline__, __nodebug__))
@@ -208,7 +208,7 @@ _m_prefetch(void *__P)
 #else
 /* By default, assume that floats words follow the memory system mode. */
 #define SDL_FLOATWORDORDER   SDL_BYTEORDER
-#endif /* __FLOAT_WORD_ORDER__ */
+#endif /* SDL_WIKI_DOCUMENTATION_SECTION */
 #endif /* !SDL_FLOATWORDORDER */
 
 

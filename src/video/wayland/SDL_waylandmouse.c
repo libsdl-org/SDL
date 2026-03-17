@@ -1523,6 +1523,23 @@ void Wayland_FiniMouse(SDL_VideoData *data)
 #endif
 }
 
+void Wayland_SeatResetCursor(SDL_WaylandSeat *seat)
+{
+    Wayland_CursorStateResetCursor(&seat->pointer.cursor_state);
+}
+
+void Wayland_SeatSetDefaultCursor(SDL_WaylandSeat *seat)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_WindowData *pointer_focus = seat->pointer.focus;
+    const Wayland_PointerObject obj = {
+        .wl_pointer = seat->pointer.wl_pointer,
+        .is_pointer = true
+    };
+
+    Wayland_CursorStateSetCursor(&seat->pointer.cursor_state, &obj, pointer_focus, seat->pointer.enter_serial, mouse->def_cursor);
+}
+
 void Wayland_SeatUpdatePointerCursor(SDL_WaylandSeat *seat)
 {
     SDL_Mouse *mouse = SDL_GetMouse();

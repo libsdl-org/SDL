@@ -43,6 +43,11 @@
 #define RENDERER_CONTEXT_MAJOR 2
 #define RENDERER_CONTEXT_MINOR 1
 
+// This is always the same number between the various EXT/ARB/GLES extensions.
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
+
 // OpenGL renderer implementation
 
 /* Details on optimizing the texture path on macOS:
@@ -2007,6 +2012,10 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     } else {
         SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
         goto error;
+    }
+
+    if ((real_major >= 3) || SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB")) {
+        data->glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     // Set up parameters for rendering

@@ -44,12 +44,12 @@ static const char *openxr_library_names[] = { "openxr_loader.dll", NULL };
  * negotiation crashes on pre-instance calls (e.g., xrEnumerateApiLayerProperties). */
 static const char *openxr_library_names[] = { "libopenxr_loader.so", NULL };
 #else
-static const char *openxr_library_names[] = { "libopenxr_loader.so.1", "libopenxr_loader.so", NULL };
+static const char *openxr_library_names[] = { "libopenxr_loader.so.1", NULL };
 SDL_ELF_NOTE_DLOPEN(
     "gpu-openxr",
     "Support for OpenXR with SDL_GPU rendering",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    "libopenxr_loader.so.1", "libopenxr_loader.so"
+    "libopenxr_loader.so.1"
 )
 #endif
 

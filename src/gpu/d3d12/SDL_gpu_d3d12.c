@@ -3646,7 +3646,12 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                 dsvDesc.Format = SDLToD3D12_DepthFormat[createinfo->format];
                 dsvDesc.Flags = (D3D12_DSV_FLAGS)0;
 
-                if (isMultisample) {
+                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+                    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+                    dsvDesc.Texture2DArray.MipSlice = levelIndex;
+                    dsvDesc.Texture2DArray.FirstArraySlice = layerIndex;
+                    dsvDesc.Texture2DArray.ArraySize = 1;
+                } else if (isMultisample) {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
                 } else {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -3676,6 +3681,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     uavDesc.Texture2DArray.MipSlice = levelIndex;
                     uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
                     uavDesc.Texture2DArray.ArraySize = 1;
+                    uavDesc.Texture2DArray.PlaneSlice = 0;
                 } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
                     uavDesc.Texture3D.MipSlice = levelIndex;
@@ -8101,7 +8107,10 @@ static bool D3D12_Submit(
 
         windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
         (void)SDL_AtomicIncRef(&d3d12CommandBuffer->inFlightFence->referenceCount);
-        windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
+
+        // Normally this is '% allowedFramesInFlight', but the value gets clamped
+        // at swapchain creation time, so use swapchainTextureCount instead
+        windowData->frameCounter = (windowData->frameCounter + 1) % windowData->swapchainTextureCount;
     }
 
     // Check for cleanups

@@ -35,10 +35,12 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     static const char AVAILABLE_LOCALES[][6] = { "ja_JP", "en_US", "fr_FR", "de_DE",
                                                  "it_IT", "es_ES", "zh_CN", "ko_KR",
                                                  "nl_NL", "pt_PT", "ru_RU", "zh_TW" };
-    u8 current_locale = GetLocaleIndex();
-    if (current_locale != BAD_LOCALE) {
-        SDL_strlcpy(buf, AVAILABLE_LOCALES[current_locale], buflen);
+    const u8 current_locale = GetLocaleIndex();
+    if ((current_locale == BAD_LOCALE) || (current_locale >= SDL_arraysize(AVAILABLE_LOCALES))) {
+        return SDL_SetError("Could not obtain system locale");
     }
+
+    SDL_strlcpy(buf, AVAILABLE_LOCALES[current_locale], buflen);
     return true;
 }
 

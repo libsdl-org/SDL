@@ -146,7 +146,7 @@ static int lookup_functions(void)
 		goto err;
 	}
 
-#define RESOLVE(lib_handle, x) x = (x##_)GetProcAddress(lib_handle, #x); if (!x) goto err;
+#define RESOLVE(lib_handle, x) x = (x##_)GetProcAddress(lib_handle, #x); if (!x) goto err
 
 	RESOLVE(hid_lib_handle, HidD_GetHidGuid);
 	RESOLVE(hid_lib_handle, HidD_GetAttributes);

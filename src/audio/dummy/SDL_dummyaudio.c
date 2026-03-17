@@ -25,7 +25,7 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_dummyaudio.h"
 
-#if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+#if defined(SDL_PLATFORM_EMSCRIPTEN)
 #include <emscripten/emscripten.h>
 #endif
 
@@ -59,8 +59,8 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
     }
 
-    // on Emscripten without threads, we just fire a repeating timer to consume audio.
-    #if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+    // on Emscripten, we just fire a repeating timer to consume audio.
+    #if defined(SDL_PLATFORM_EMSCRIPTEN)
     MAIN_THREAD_EM_ASM({
         var a = Module['SDL3'].dummy_audio;
         if (a.timers[$0] !== undefined) { clearInterval(a.timers[$0]); }
@@ -74,8 +74,8 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        // on Emscripten without threads, we just fire a repeating timer to consume audio.
-        #if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+        // on Emscripten, we just fire a repeating timer to consume audio.
+        #if defined(SDL_PLATFORM_EMSCRIPTEN)
         MAIN_THREAD_EM_ASM({
             var a = Module['SDL3'].dummy_audio;
             if (a.timers[$0] !== undefined) { clearInterval(a.timers[$0]); }
@@ -113,8 +113,8 @@ static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->OnlyHasDefaultRecordingDevice = true;
     impl->HasRecordingSupport = true;
 
-    // on Emscripten without threads, we just fire a repeating timer to consume audio.
-    #if defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+    // on Emscripten, we just fire a repeating timer to consume audio.
+    #if defined(SDL_PLATFORM_EMSCRIPTEN)
     MAIN_THREAD_EM_ASM({
         Module['SDL3'].dummy_audio = {};
         Module['SDL3'].dummy_audio.timers = [];

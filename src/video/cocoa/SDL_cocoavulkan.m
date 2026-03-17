@@ -165,7 +165,7 @@ void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 char const * const *Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForCocoa[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
     if(count) {
         *count = SDL_arraysize(extensionsForCocoa);

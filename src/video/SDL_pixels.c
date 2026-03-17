@@ -259,30 +259,98 @@ bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask,
     }
     *Rmask = *Gmask = *Bmask = *Amask = 0;
 
-    if (format == SDL_PIXELFORMAT_RGB24) {
+    if (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) {
+        switch (SDL_BYTESPERPIXEL(format)) {
+        case 3:
+            switch (SDL_PIXELORDER(format)) {
+            case SDL_ARRAYORDER_RGB:
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        *Rmask = 0x00FF0000;
-        *Gmask = 0x0000FF00;
-        *Bmask = 0x000000FF;
+                *Rmask = 0x00FF0000;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x000000FF;
 #else
-        *Rmask = 0x000000FF;
-        *Gmask = 0x0000FF00;
-        *Bmask = 0x00FF0000;
+                *Rmask = 0x000000FF;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x00FF0000;
 #endif
-        return true;
-    }
-
-    if (format == SDL_PIXELFORMAT_BGR24) {
+                return true;
+            case SDL_ARRAYORDER_BGR:
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        *Rmask = 0x000000FF;
-        *Gmask = 0x0000FF00;
-        *Bmask = 0x00FF0000;
+                *Rmask = 0x000000FF;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x00FF0000;
 #else
-        *Rmask = 0x00FF0000;
-        *Gmask = 0x0000FF00;
-        *Bmask = 0x000000FF;
+                *Rmask = 0x00FF0000;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x000000FF;
 #endif
-        return true;
+                return true;
+            default:
+                break;
+            }
+            break;
+        case 4:
+            switch (SDL_PIXELORDER(format)) {
+            case SDL_ARRAYORDER_RGBA:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                *Rmask = 0xFF000000;
+                *Gmask = 0x00FF0000;
+                *Bmask = 0x0000FF00;
+                *Amask = 0x000000FF;
+#else
+                *Rmask = 0x000000FF;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x00FF0000;
+                *Amask = 0xFF000000;
+#endif
+                return true;
+            case SDL_ARRAYORDER_ARGB:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                *Rmask = 0x00FF0000;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x000000FF;
+                *Amask = 0xFF000000;
+#else
+                *Rmask = 0x0000FF00;
+                *Gmask = 0x00FF0000;
+                *Bmask = 0xFF000000;
+                *Amask = 0x000000FF;
+#endif
+                return true;
+            case SDL_ARRAYORDER_BGRA:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                *Rmask = 0x0000FF00;
+                *Gmask = 0x00FF0000;
+                *Bmask = 0xFF000000;
+                *Amask = 0x000000FF;
+#else
+                *Rmask = 0x00FF0000;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x000000FF;
+                *Amask = 0xFF000000;
+#endif
+                return true;
+            case SDL_ARRAYORDER_ABGR:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+                *Rmask = 0x000000FF;
+                *Gmask = 0x0000FF00;
+                *Bmask = 0x00FF0000;
+                *Amask = 0xFF000000;
+#else
+                *Rmask = 0xFF000000;
+                *Gmask = 0x00FF0000;
+                *Bmask = 0x0000FF00;
+                *Amask = 0x000000FF;
+#endif
+                return true;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        return SDL_SetError("Unknown pixel format");
     }
 
     if (SDL_PIXELTYPE(format) != SDL_PIXELTYPE_PACKED8 &&

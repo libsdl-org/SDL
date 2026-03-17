@@ -69,6 +69,14 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
 {
 }
 
+void SDL_GDKSuspendRenderer(SDL_Renderer *renderer)
+{
+}
+
+void SDL_GDKResumeRenderer(SDL_Renderer *renderer)
+{
+}
+
 #endif /* !SDL_PLATFORM_GDK */
 
 #if !defined(SDL_PLATFORM_WINDOWS)

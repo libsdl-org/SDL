@@ -329,7 +329,7 @@ static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
             result = (test); \
             checked = true; \
         } \
-        return result;
+        return result
 #endif
 
 BOOL WIN_IsWine(void)

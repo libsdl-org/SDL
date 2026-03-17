@@ -3059,6 +3059,10 @@ extern "C" {
  * Note that some platforms cannot make this request at all, and on all
  * platforms this request can be denied by the operating system.
  *
+ * In addition to attempting to obtain the type of sRGB-capable OpenGL context
+ * requested by this hint, SDL will try to force the state of
+ * GL_FRAMEBUFFER_SRGB on the new context, if appropriate.
+ *
  * The variable can be set to the following values:
  *
  * - "0": Force a request for an OpenGL context that is _not_ sRGB-capable.
@@ -3074,7 +3078,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.4.2.
  */
-#define SDL_HINT_OPENGL_FORCE_SRGB_CAPABLE "SDL_OPENGL_FORCE_SRGB_CAPABLE"
+#define SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER "SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"
 
 /**
  * Mechanism to specify openvr_api library location
@@ -4547,6 +4551,24 @@ extern "C" {
  * \since This hint is available since SDL 3.4.0.
  */
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
+
+/**
+ * A variable controlling whether the RIDEV_INPUTSINK flag is set when
+ * enabling Windows raw keyboard events.
+ *
+ * This enables the window to still receive input even if not in foreground.
+ *
+ * Focused windows that receive text input will still prevent input events
+ * from triggering.
+ *
+ * - "0": Input is not received when not in focus or foreground. (default)
+ * - "1": Input will be received even when not in focus or foreground.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.4.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
 
 /**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.

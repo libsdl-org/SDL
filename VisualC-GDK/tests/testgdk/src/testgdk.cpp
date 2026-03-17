@@ -30,7 +30,9 @@ extern "C" {
 #include <XGameRuntime.h>
 
 #define NUM_SPRITES    100
-#define MAX_SPEED     1
+#define MAX_SPEED      1
+#define SUSPEND_CODE   0
+#define RESUME_CODE    1
 
 static SDLTest_CommonState *state;
 static int num_sprites;
@@ -291,9 +293,8 @@ static void DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
-static void loop()
+static void update(bool *suppressdraw)
 {
-    int i;
     SDL_Event event;
 
     /* Check for events */
@@ -306,24 +307,71 @@ static void loop()
         if (event.type != SDL_EVENT_KEY_DOWN) {
             SDLTest_CommonEvent(state, &event, &done);
         }
+
+        if (event.type == SDL_EVENT_USER) {
+            if (event.user.code == SUSPEND_CODE) {
+                for (int i = 0; i < state->num_windows; ++i) {
+                    if (state->windows[i] != NULL) {
+                        SDL_GDKSuspendRenderer(state->renderers[i]);
+                    }
+                }
+                *suppressdraw = true;
+                SDL_GDKSuspendComplete();
+            } else if (event.user.code == RESUME_CODE) {
+                for (int i = 0; i < state->num_windows; ++i) {
+                    if (state->windows[i] != NULL) {
+                        SDL_GDKResumeRenderer(state->renderers[i]);
+                    }
+                }
+                *suppressdraw = false;
+            }
+        }
 #else
         SDLTest_CommonEvent(state, &event, &done);
 #endif
     }
-    for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL) {
-            continue;
-        }
-        DrawSprites(state->renderers[i], sprites[i]);
-    }
     fillerup();
+}
+
+static void draw()
+{
+    int i;
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] != NULL) {
+            DrawSprites(state->renderers[i], sprites[i]);
+        }
+    }
+}
+
+static bool SDLCALL GDKEventWatch(void* userdata, SDL_Event* event)
+{
+    /* This callback may be on a different thread, so we'll
+     * push these events as USER events so they appear
+     * in the main thread's event loop.
+     *
+     * That allows us to cancel drawing before/after we finish
+     * drawing a frame, rather than mid-draw (which can crash).
+     */
+    if (event->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
+        SDL_Event evt;
+        evt.type = SDL_EVENT_USER;
+        evt.user.code = 0;
+        SDL_PushEvent(&evt);
+    } else if (event->type == SDL_EVENT_WILL_ENTER_FOREGROUND) {
+        SDL_Event evt;
+        evt.type = SDL_EVENT_USER;
+        evt.user.code = 1;
+        SDL_PushEvent(&evt);
+    }
+    return false;
 }
 
 int main(int argc, char *argv[])
 {
     int i;
-    const char *icon = "icon.bmp";
+    const char *icon = "icon.png";
     char *soundname = NULL;
+    bool suppressdraw = false;
 
     /* Initialize parameters */
     num_sprites = NUM_SPRITES;
@@ -390,6 +438,9 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
+    /* Set up the lifecycle event watcher */
+    SDL_AddEventWatch(GDKEventWatch, NULL);
+
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **) SDL_malloc(state->num_windows * sizeof(*sprites));
@@ -441,7 +492,10 @@ int main(int argc, char *argv[])
     AddUserSilent();
 
     while (!done) {
-        loop();
+        update(&suppressdraw);
+        if (!suppressdraw) {
+            draw();
+        }
     }
 
     quit(0);

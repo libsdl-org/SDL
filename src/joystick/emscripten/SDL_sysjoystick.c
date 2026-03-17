@@ -449,7 +449,7 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
-    rumble_available = EM_ASM_INT({
+    rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepads = navigator['getGamepads']();
         if (!gamepads) {
             return 0;
@@ -570,7 +570,7 @@ static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequen
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
 
     // clang-format off
-    bool result = EM_ASM_INT({
+    bool result = MAIN_THREAD_EM_ASM_INT({
         let gamepads = navigator['getGamepads']();
         if (!gamepads) {
             return 0;

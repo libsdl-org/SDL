@@ -595,7 +595,7 @@ static bool WGI_JoystickInit(void)
     }
     wgi.ro_initialized = true;
 
-#define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x);
+#define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x)
     RESOLVE(CoIncrementMTAUsage);
     RESOLVE(RoGetActivationFactory);
     RESOLVE(WindowsCreateStringReference);

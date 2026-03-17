@@ -94,7 +94,7 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
             controls->icon->rect.x = 0;
         } else {
             controls->message->rect.x = 0;    
-            controls->icon->rect.x = controls->message->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;;
+            controls->icon->rect.x = controls->message->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;
         }
         
         if (controls->message->rect.h > controls->icon->rect.h) {

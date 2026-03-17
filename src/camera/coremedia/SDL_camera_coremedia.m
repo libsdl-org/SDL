@@ -238,7 +238,10 @@ static SDL_CameraFrameResult COREMEDIA_AcquireFrame(SDL_Camera *device, SDL_Surf
         hidden.last_device_orientation = device_orientation;  // update the last known-good orientation for later.
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     const UIInterfaceOrientation ui_orientation = [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
 
     // there is probably math for this, but this is easy to slap into a table.
     // rotation = rotations[uiorientation-1][devorientation-1];
@@ -368,8 +371,7 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     avdevice.activeFormat = spec_format;
 
     // Try to set the frame duration to enforce the requested frame rate
-    const float frameRate = (float)spec->framerate_numerator / spec->framerate_denominator;
-    const CMTime frameDuration = CMTimeMake(1, (int32_t)frameRate);
+    const CMTime frameDuration = CMTimeMake(spec->framerate_denominator, spec->framerate_numerator);
 
     // Check if the device supports setting frame duration
     if ([avdevice respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
@@ -437,13 +439,15 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     }
     [session addOutput:output];
 
-    // Try to set the frame rate on the connection
-    AVCaptureConnection *connection = [output connectionWithMediaType:AVMediaTypeVideo];
-    if (connection && connection.isVideoMinFrameDurationSupported) {
-        connection.videoMinFrameDuration = frameDuration;
-        if (connection.isVideoMaxFrameDurationSupported) {
-            connection.videoMaxFrameDuration = frameDuration;
+    // Try to set the frame rate on the device (preferred modern approach)
+    if ([avdevice lockForConfiguration:nil]) {
+        @try {
+            avdevice.activeVideoMinFrameDuration = frameDuration;
+            avdevice.activeVideoMaxFrameDuration = frameDuration;
+        } @catch (NSException *exception) {
+            // Some devices don't support setting frame duration, that's okay
         }
+        [avdevice unlockForConfiguration];
     }
 
     [session commitConfiguration];
@@ -468,7 +472,10 @@ static bool COREMEDIA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     hidden.last_device_orientation = uidevice.orientation;
     if (!UIDeviceOrientationIsValidInterfaceOrientation(hidden.last_device_orientation)) {
         // accelerometer isn't ready yet or the phone is laying flat or something. Just try to guess from how the UI is oriented at the moment.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         switch ([UIApplication sharedApplication].statusBarOrientation) {
+#pragma clang diagnostic pop
             case UIInterfaceOrientationPortrait: hidden.last_device_orientation = UIDeviceOrientationPortrait; break;
             case UIInterfaceOrientationPortraitUpsideDown: hidden.last_device_orientation = UIDeviceOrientationPortraitUpsideDown; break;
             case UIInterfaceOrientationLandscapeLeft: hidden.last_device_orientation = UIDeviceOrientationLandscapeRight; break;  // Apple docs say UI and device orientations are reversed in landscape.
@@ -589,9 +596,13 @@ static void COREMEDIA_DetectDevices(void)
         devices = discoverySession.devices;
         // !!! FIXME: this can use Key Value Observation to get hotplug events.
     } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
         // this is deprecated but works back to macOS 10.7; 10.15 added AVCaptureDeviceDiscoverySession as a replacement.
         devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
         // !!! FIXME: this can use AVCaptureDeviceWasConnectedNotification and AVCaptureDeviceWasDisconnectedNotification with NSNotificationCenter to get hotplug events.
+#pragma clang diagnostic pop
     }
 
     for (AVCaptureDevice *device in devices) {

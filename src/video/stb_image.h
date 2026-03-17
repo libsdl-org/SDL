@@ -101,7 +101,7 @@ RECENT REVISION HISTORY:
     Marc LeBlanc            David Woo          Guillaume George     Martins Mozeiko
     Christpher Lloyd        Jerry Jansson      Joseph Thomson       Blazej Dariusz Roszkowski
     Phil Jordan             Henner Zeller      Dave Moore           Roy Eltham
-    Hayaki Saito            Nathan Reed        Won Chun
+    Hayaki Saito            Nathan Reed        Won Chun             Björn Wahlstrand
     Luke Graham             Johan Duparc       Nick Verigakis       the Horde3D community
     Thomas Ruf              Ronny Chevalier                         github:rlyeh
     Janez Zemva             John Bartholomew   Michal Cichon        github:romigrou
@@ -2586,7 +2586,7 @@ stbi_inline static stbi_uc stbi__clamp(int x)
    return (stbi_uc) x;
 }
 
-#define stbi__f2f(x)  ((int) (((x) * 4096 + 0.5)))
+#define stbi__f2f(x)  ((int) (((x) * 4096 + 0.5f)))
 #define stbi__fsh(x)  ((x) * 4096)
 
 // derived from jidctint -- DCT_ISLOW
@@ -3694,7 +3694,7 @@ static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc 
 #define TARGETING_SSE2 SDL_TARGETING("sse2") /* Added by SDL */
 #else
 #define TARGETING_SSE2
-#endif /* Added by SDL */
+#endif // STBI_SSE2 /* Added by SDL */
 static stbi_uc *TARGETING_SSE2 stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs) /* Changed by SDL: TARGETING_SSE2 */
 {
    // need to generate 2x2 samples for every one in input

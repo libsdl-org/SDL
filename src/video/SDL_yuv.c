@@ -735,27 +735,27 @@ static bool SDL_ConvertPixels_XRGB8888_to_YUV(int width, int height, const void 
     const Uint32 p4 = ((const Uint32 *)next_row)[2 * i + 1];                                                \
     const Uint32 r = ((p1 & 0x00ff0000) + (p2 & 0x00ff0000) + (p3 & 0x00ff0000) + (p4 & 0x00ff0000)) >> 18; \
     const Uint32 g = ((p1 & 0x0000ff00) + (p2 & 0x0000ff00) + (p3 & 0x0000ff00) + (p4 & 0x0000ff00)) >> 10; \
-    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff) + (p3 & 0x000000ff) + (p4 & 0x000000ff)) >> 2;
+    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff) + (p3 & 0x000000ff) + (p4 & 0x000000ff)) >> 2
 
 #define READ_2x1_PIXELS                                             \
     const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];            \
     const Uint32 p2 = ((const Uint32 *)next_row)[2 * i];            \
     const Uint32 r = ((p1 & 0x00ff0000) + (p2 & 0x00ff0000)) >> 17; \
     const Uint32 g = ((p1 & 0x0000ff00) + (p2 & 0x0000ff00)) >> 9;  \
-    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff)) >> 1;
+    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff)) >> 1
 
 #define READ_1x2_PIXELS                                             \
     const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];            \
     const Uint32 p2 = ((const Uint32 *)curr_row)[2 * i + 1];        \
     const Uint32 r = ((p1 & 0x00ff0000) + (p2 & 0x00ff0000)) >> 17; \
     const Uint32 g = ((p1 & 0x0000ff00) + (p2 & 0x0000ff00)) >> 9;  \
-    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff)) >> 1;
+    const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff)) >> 1
 
 #define READ_1x1_PIXEL                                  \
     const Uint32 p = ((const Uint32 *)curr_row)[2 * i]; \
     const Uint32 r = (p & 0x00ff0000) >> 16;            \
     const Uint32 g = (p & 0x0000ff00) >> 8;             \
-    const Uint32 b = (p & 0x000000ff);
+    const Uint32 b = (p & 0x000000ff)
 
 #define READ_TWO_RGB_PIXELS                                  \
     const Uint32 p = ((const Uint32 *)curr_row)[2 * i];      \
@@ -768,7 +768,7 @@ static bool SDL_ConvertPixels_XRGB8888_to_YUV(int width, int height, const void 
     const Uint32 b1 = (p1 & 0x000000ff);                     \
     const Uint32 R = (r + r1) / 2;                           \
     const Uint32 G = (g + g1) / 2;                           \
-    const Uint32 B = (b + b1) / 2;
+    const Uint32 B = (b + b1) / 2
 
 #define READ_ONE_RGB_PIXEL READ_1x1_PIXEL
 
@@ -1026,27 +1026,27 @@ static bool SDL_ConvertPixels_XBGR2101010_to_P010(int width, int height, const v
     const Uint32 p4 = ((const Uint32 *)next_row)[2 * i + 1];                                                \
     const Uint32 r = ((p1 & 0x000003ff) + (p2 & 0x000003ff) + (p3 & 0x000003ff) + (p4 & 0x000003ff)) >> 2;  \
     const Uint32 g = ((p1 & 0x000ffc00) + (p2 & 0x000ffc00) + (p3 & 0x000ffc00) + (p4 & 0x000ffc00)) >> 12; \
-    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000) + (p3 & 0x3ff00000) + (p4 & 0x3ff00000)) >> 22;
+    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000) + (p3 & 0x3ff00000) + (p4 & 0x3ff00000)) >> 22
 
 #define READ_2x1_PIXELS                                             \
     const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];            \
     const Uint32 p2 = ((const Uint32 *)next_row)[2 * i];            \
     const Uint32 r = ((p1 & 0x000003ff) + (p2 & 0x000003ff)) >> 1;  \
     const Uint32 g = ((p1 & 0x000ffc00) + (p2 & 0x000ffc00)) >> 11; \
-    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000)) >> 21;
+    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000)) >> 21
 
 #define READ_1x2_PIXELS                                             \
     const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];            \
     const Uint32 p2 = ((const Uint32 *)curr_row)[2 * i + 1];        \
     const Uint32 r = ((p1 & 0x000003ff) + (p2 & 0x000003ff)) >> 1;  \
     const Uint32 g = ((p1 & 0x000ffc00) + (p2 & 0x000ffc00)) >> 11; \
-    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000)) >> 21;
+    const Uint32 b = ((p1 & 0x3ff00000) + (p2 & 0x3ff00000)) >> 21
 
 #define READ_1x1_PIXEL                                  \
     const Uint32 p = ((const Uint32 *)curr_row)[2 * i]; \
     const Uint32 r = (p & 0x000003ff);                  \
     const Uint32 g = (p & 0x000ffc00) >> 10;            \
-    const Uint32 b = (p & 0x3ff00000) >> 20;
+    const Uint32 b = (p & 0x3ff00000) >> 20
 
     const Uint8 *curr_row, *next_row;
 

@@ -718,7 +718,7 @@ int SDL_memcmp(const void *s1, const void *s2, size_t len)
         ++s2p;
     }
     return 0;
-#endif // HAVE_MEMCMP
+#endif // SDL_PLATFORM_VITA
 }
 
 size_t SDL_strlen(const char *string)
@@ -1119,7 +1119,7 @@ char *SDL_strnstr(const char *haystack, const char *needle, size_t maxlen)
         --maxlen;
     }
     return NULL;
-#endif // HAVE_STRSTR
+#endif // HAVE_STRNSTR
 }
 
 char *SDL_strstr(const char *haystack, const char *needle)
@@ -2479,7 +2479,7 @@ int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list
 char * SDL_strpbrk(const char *str, const char *breakset)
 {
 #ifdef HAVE_STRPBRK
-    return strpbrk(str, breakset);
+    return SDL_const_cast(char *, strpbrk(str, breakset));
 #else
 
     for (; *str; str++) {

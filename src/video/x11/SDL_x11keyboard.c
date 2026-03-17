@@ -408,6 +408,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
             }
         }
 
+        // Only the shift, alt, level 3, level 5 and caps lock modifiers affect SDL keymaps.
         const Uint32 valid_mod_mask = ShiftMask | LockMask | data->keyboard.alt_mask | data->keyboard.level3_mask | data->keyboard.level5_mask;
 
         for (Uint32 xkeycode = data->keyboard.xkb.desc_ptr->min_key_code; xkeycode < data->keyboard.xkb.desc_ptr->max_key_code; ++xkeycode) {
