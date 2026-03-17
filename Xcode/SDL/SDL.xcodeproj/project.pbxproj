@@ -368,8 +368,6 @@
 		E4F257972C81903800FCEAFC /* SDL_sysgpu.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F257862C81903800FCEAFC /* SDL_sysgpu.h */; };
 		E4F257982C81903800FCEAFC /* SDL_gpu_openxr.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */; };
 		E4F257992C81903800FCEAFC /* SDL_openxrdyn.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */; };
-		E4F2579A2C81903800FCEAFC /* SDL_gpu_openxr_c.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */; };
-		E4F2579B2C81903800FCEAFC /* SDL_openxr_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */; };
 		E4F7981A2AD8D84800669F54 /* SDL_core_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */; };
 		E4F7981C2AD8D85500669F54 /* SDL_dynapi_unsupported.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F7981B2AD8D85500669F54 /* SDL_dynapi_unsupported.h */; };
 		E4F7981E2AD8D86A00669F54 /* SDL_render_unsupported.c in Sources */ = {isa = PBXBuildFile; fileRef = E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */; };
@@ -397,6 +395,7 @@
 		F34400362D40217A003F26D7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F373DA192D388A1E002158FA /* README.md */; };
 		F344003D2D4022E1003F26D7 /* INSTALL.md in Resources */ = {isa = PBXBuildFile; fileRef = F344003C2D4022E1003F26D7 /* INSTALL.md */; };
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
+		F34E17502F6A172F00AB9A48 /* SDL_ImmersiveHostingSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F34E174F2F6A172F00AB9A48 /* SDL_ImmersiveHostingSceneDelegate.swift */; platformFilters = (xros, ); };
 		F362B9192B3349E200D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9152B3349E200D30B94 /* controller_list.h */; };
 		F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */; };
 		F362B91B2B3349E200D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */; };
@@ -434,6 +433,12 @@
 		F3990E062A788303000D8759 /* SDL_hidapi_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = F3990E032A788303000D8759 /* SDL_hidapi_ios.h */; };
 		F3990E072A78833C000D8759 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		F3A4909E2554D38600E92A8B /* SDL_hidapi_ps5.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */; };
+		F3A8371C2F69C80100AD32B6 /* SDL_RealityKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */; platformFilters = (xros, ); };
+		F3A8371D2F69C80100AD32B6 /* SDL_VolumetricHostingSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A8371B2F69C80100AD32B6 /* SDL_VolumetricHostingSceneDelegate.swift */; platformFilters = (xros, ); };
+		F3A8371E2F69C80100AD32B6 /* SDL_uikitvolumetric.m in Sources */ = {isa = PBXBuildFile; fileRef = F3A8371A2F69C80100AD32B6 /* SDL_uikitvolumetric.m */; };
+		F3A8371F2F69C80100AD32B6 /* SDL_uikitvisionosscene.m in Sources */ = {isa = PBXBuildFile; fileRef = F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */; };
+		F3A837202F69C80100AD32B6 /* SDL_uikitvisionosscene.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */; };
+		F3A837212F69C80100AD32B6 /* SDL_uikitvolumetric.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A837192F69C80100AD32B6 /* SDL_uikitvolumetric.h */; };
 		F3A9AE982C8A13C100AAC390 /* SDL_gpu_util.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A9AE922C8A13C100AAC390 /* SDL_gpu_util.h */; };
 		F3A9AE992C8A13C100AAC390 /* SDL_render_gpu.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A9AE932C8A13C100AAC390 /* SDL_render_gpu.c */; };
 		F3A9AE9A2C8A13C100AAC390 /* SDL_shaders_gpu.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A9AE942C8A13C100AAC390 /* SDL_shaders_gpu.c */; };
@@ -970,8 +975,8 @@
 		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
 		F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_8bitdo.c; sourceTree = "<group>"; };
 		F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_flydigi.c; sourceTree = "<group>"; };
-		F3FBB1092DDF93AB0000F9A0 /* SDL_hidapi_gamesir.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamesir.c; sourceTree = "<group>"; };
 		F344003C2D4022E1003F26D7 /* INSTALL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
+		F34E174F2F6A172F00AB9A48 /* SDL_ImmersiveHostingSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_ImmersiveHostingSceneDelegate.swift; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
 		F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
@@ -1026,6 +1031,12 @@
 		F3990E022A788303000D8759 /* SDL_hidapi_mac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_mac.h; sourceTree = "<group>"; };
 		F3990E032A788303000D8759 /* SDL_hidapi_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_ios.h; sourceTree = "<group>"; };
 		F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps5.c; sourceTree = "<group>"; };
+		F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_RealityKitHelper.swift; sourceTree = "<group>"; };
+		F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_uikitvisionosscene.h; sourceTree = "<group>"; };
+		F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvisionosscene.m; sourceTree = "<group>"; };
+		F3A837192F69C80100AD32B6 /* SDL_uikitvolumetric.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_uikitvolumetric.h; sourceTree = "<group>"; };
+		F3A8371A2F69C80100AD32B6 /* SDL_uikitvolumetric.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvolumetric.m; sourceTree = "<group>"; };
+		F3A8371B2F69C80100AD32B6 /* SDL_VolumetricHostingSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_VolumetricHostingSceneDelegate.swift; sourceTree = "<group>"; };
 		F3A9AE922C8A13C100AAC390 /* SDL_gpu_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gpu_util.h; sourceTree = "<group>"; };
 		F3A9AE932C8A13C100AAC390 /* SDL_render_gpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gpu.c; sourceTree = "<group>"; };
 		F3A9AE942C8A13C100AAC390 /* SDL_shaders_gpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_shaders_gpu.c; sourceTree = "<group>"; };
@@ -1149,6 +1160,7 @@
 		F3FA5A1A2B59ACE000FEAD97 /* yuv_rgb_lsx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = yuv_rgb_lsx.c; sourceTree = "<group>"; };
 		F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_lsx.h; sourceTree = "<group>"; };
 		F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = yuv_rgb_common.h; sourceTree = "<group>"; };
+		F3FBB1092DDF93AB0000F9A0 /* SDL_hidapi_gamesir.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamesir.c; sourceTree = "<group>"; };
 		F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_nintendo.h; sourceTree = "<group>"; };
 		F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_steam_hori.c; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
@@ -1738,6 +1750,8 @@
 		A7D8A61823E2513D00DCD162 /* uikit */ = {
 			isa = PBXGroup;
 			children = (
+				F34E174F2F6A172F00AB9A48 /* SDL_ImmersiveHostingSceneDelegate.swift */,
+				F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */,
 				A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */,
 				A7D8A61E23E2513D00DCD162 /* SDL_uikitappdelegate.m */,
 				A7D8A62123E2513D00DCD162 /* SDL_uikitclipboard.h */,
@@ -1754,18 +1768,23 @@
 				A7D8A62323E2513D00DCD162 /* SDL_uikitopengles.m */,
 				A7D8A62B23E2513D00DCD162 /* SDL_uikitopenglview.h */,
 				A7D8A62023E2513D00DCD162 /* SDL_uikitopenglview.m */,
+				000063D3D80F97ADC7770000 /* SDL_uikitpen.h */,
+				000053D344416737F6050000 /* SDL_uikitpen.m */,
 				A7D8A62223E2513D00DCD162 /* SDL_uikitvideo.h */,
 				A7D8A63223E2513D00DCD162 /* SDL_uikitvideo.m */,
 				A7D8A61923E2513D00DCD162 /* SDL_uikitview.h */,
 				A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */,
 				A7D8A62423E2513D00DCD162 /* SDL_uikitviewcontroller.h */,
 				A7D8A63023E2513D00DCD162 /* SDL_uikitviewcontroller.m */,
+				F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */,
+				F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */,
+				F3A837192F69C80100AD32B6 /* SDL_uikitvolumetric.h */,
+				F3A8371A2F69C80100AD32B6 /* SDL_uikitvolumetric.m */,
 				A7D8A63323E2513D00DCD162 /* SDL_uikitvulkan.h */,
 				A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */,
 				A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */,
 				A7D8A61A23E2513D00DCD162 /* SDL_uikitwindow.m */,
-				000063D3D80F97ADC7770000 /* SDL_uikitpen.h */,
-				000053D344416737F6050000 /* SDL_uikitpen.m */,
+				F3A8371B2F69C80100AD32B6 /* SDL_VolumetricHostingSceneDelegate.swift */,
 			);
 			path = uikit;
 			sourceTree = "<group>";
@@ -2365,17 +2384,6 @@
 			path = vulkan;
 			sourceTree = "<group>";
 		};
-		E4F2578B2C81903800FCEAFC /* xr */ = {
-			isa = PBXGroup;
-			children = (
-				E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */,
-				E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */,
-				E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */,
-				E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */,
-			);
-			path = xr;
-			sourceTree = "<group>";
-		};
 		E4F257872C81903800FCEAFC /* gpu */ = {
 			isa = PBXGroup;
 			children = (
@@ -2386,6 +2394,17 @@
 				E4F257862C81903800FCEAFC /* SDL_sysgpu.h */,
 			);
 			path = gpu;
+			sourceTree = "<group>";
+		};
+		E4F2578B2C81903800FCEAFC /* xr */ = {
+			isa = PBXGroup;
+			children = (
+				E4F257882C81903800FCEAFC /* SDL_gpu_openxr.c */,
+				E4F257892C81903800FCEAFC /* SDL_openxrdyn.c */,
+				E4F2578A2C81903800FCEAFC /* SDL_gpu_openxr_c.h */,
+				E4F2578C2C81903800FCEAFC /* SDL_openxr_internal.h */,
+			);
+			path = xr;
 			sourceTree = "<group>";
 		};
 		F338A1142D1B3735007CDFDF /* tray */ = {
@@ -2763,6 +2782,8 @@
 				A7D8B9CB23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				A7D8BB4523E2514500DCD162 /* blank_cursor.h in Headers */,
 				F362B9192B3349E200D30B94 /* controller_list.h in Headers */,
+				F3A837202F69C80100AD32B6 /* SDL_uikitvisionosscene.h in Headers */,
+				F3A837212F69C80100AD32B6 /* SDL_uikitvolumetric.h in Headers */,
 				A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4B23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B23C23E2514200DCD162 /* egl.h in Headers */,
@@ -2843,6 +2864,9 @@
 			attributes = {
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
+					BECDF5FE0761BA81005FE872 = {
+						LastSwiftMigration = 2630;
+					};
 					F3676F582A7885080091160D = {
 						CreatedOnToolsVersion = 14.3.1;
 					};
@@ -2931,6 +2955,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7D8B9E323E2514400DCD162 /* SDL_drawline.c in Sources */,
+				F34E17502F6A172F00AB9A48 /* SDL_ImmersiveHostingSceneDelegate.swift in Sources */,
 				A7D8AE7C23E2514100DCD162 /* SDL_yuv.c in Sources */,
 				A7D8B62F23E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8B41C23E2514300DCD162 /* SDL_systls.c in Sources */,
@@ -3086,6 +3111,10 @@
 				A7D8B56323E2514300DCD162 /* SDL_hidapi_gamecube.c in Sources */,
 				A7D8B4DC23E2514300DCD162 /* SDL_joystick.c in Sources */,
 				A7D8BA4923E2514400DCD162 /* SDL_render_gles2.c in Sources */,
+				F3A8371C2F69C80100AD32B6 /* SDL_RealityKitHelper.swift in Sources */,
+				F3A8371D2F69C80100AD32B6 /* SDL_VolumetricHostingSceneDelegate.swift in Sources */,
+				F3A8371E2F69C80100AD32B6 /* SDL_uikitvolumetric.m in Sources */,
+				F3A8371F2F69C80100AD32B6 /* SDL_uikitvisionosscene.m in Sources */,
 				A7D8AC2D23E2514100DCD162 /* SDL_surface.c in Sources */,
 				A7D8B54B23E2514300DCD162 /* SDL_hidapi_xboxone.c in Sources */,
 				A7D8AD2323E2514100DCD162 /* SDL_blit_auto.c in Sources */,
@@ -3239,13 +3268,16 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				EXPORTED_SYMBOLS_FILE = "$(SRCROOT)/../../src/dynapi/SDL_dynapi.exports";
+				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -3305,13 +3337,17 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_LINK_OBJC_RUNTIME = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				EXPORTED_SYMBOLS_FILE = "$(SRCROOT)/../../src/dynapi/SDL_dynapi.exports";
+				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};

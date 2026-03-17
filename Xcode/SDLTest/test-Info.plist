@@ -16,5 +16,42 @@
         <string>UIInterfaceOrientationPortrait</string>
         <string>UIInterfaceOrientationPortraitUpsideDown</string>
     </array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationPreferredDefaultSceneSessionRole</key>
+		<string>UIWindowSceneSessionRoleApplication</string>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>SDLSceneConfiguration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SDLUIKitSceneDelegate</string>
+				</dict>
+			</array>
+			<key>UIWindowSceneSessionRoleVolumetricApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>SDLVolumetricSceneConfiguration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SDL_VolumetricHostingSceneDelegate</string>
+				</dict>
+			</array>
+			<key>UISceneSessionRoleImmersiveSpaceApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>SDLImmersiveSceneConfiguration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SDL_ImmersiveHostingSceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 </dict>
 </plist>

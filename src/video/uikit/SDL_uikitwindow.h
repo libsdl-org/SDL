@@ -43,6 +43,9 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 #define SDL_METALVIEW_TAG 255
 
 @class UIWindow;
+#ifdef SDL_PLATFORM_VISIONOS
+@class SDL_UIKitVisionOSScene;
+#endif
 
 @interface SDL_UIKitWindowData : NSObject
 
@@ -51,6 +54,11 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 
 // Array of SDL_uikitviews owned by this window.
 @property(nonatomic, copy) NSMutableArray *views;
+
+#ifdef SDL_PLATFORM_VISIONOS
+// Scene manager for visionOS volumetric/immersive content
+@property(nonatomic, strong) SDL_UIKitVisionOSScene *visionOSScene;
+#endif
 
 @end
 

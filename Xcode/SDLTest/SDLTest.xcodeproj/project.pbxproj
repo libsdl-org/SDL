@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -1991,6 +1991,7 @@
 			dependencies = (
 			);
 			name = testatomic;
+			productName = testatomic;
 			productReference = 0017958C10741F7900F5D044 /* testatomic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2007,6 +2008,7 @@
 			dependencies = (
 			);
 			name = testaudioinfo;
+			productName = testaudioinfo;
 			productReference = 001795AD107421BF00F5D044 /* testaudioinfo.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2023,6 +2025,7 @@
 			dependencies = (
 			);
 			name = testgl;
+			productName = testgl;
 			productReference = 0017972110742F3200F5D044 /* testgl.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2039,6 +2042,7 @@
 			dependencies = (
 			);
 			name = testhaptic;
+			productName = testhaptic;
 			productReference = 00179748107430D600F5D044 /* testhaptic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2055,6 +2059,7 @@
 			dependencies = (
 			);
 			name = testdraw;
+			productName = testdraw;
 			productReference = 0017976E107431B300F5D044 /* testdraw.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2072,6 +2077,7 @@
 			dependencies = (
 			);
 			name = testime;
+			productName = testime;
 			productReference = 0017978E107432AE00F5D044 /* testime.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2088,6 +2094,7 @@
 			dependencies = (
 			);
 			name = testintersections;
+			productName = testintersections;
 			productReference = 001797AE1074334C00F5D044 /* testintersections.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2104,6 +2111,7 @@
 			dependencies = (
 			);
 			name = testloadso;
+			productName = testloadso;
 			productReference = 001797D0107433C600F5D044 /* testloadso.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2121,6 +2129,7 @@
 			dependencies = (
 			);
 			name = testmultiaudio;
+			productName = testmultiaudio;
 			productReference = 001798121074355200F5D044 /* testmultiaudio.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2138,6 +2147,7 @@
 			dependencies = (
 			);
 			name = testnative;
+			productName = testnative;
 			productReference = 001798941074392D00F5D044 /* testnative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2154,6 +2164,7 @@
 			dependencies = (
 			);
 			name = testpower;
+			productName = testpower;
 			productReference = 001798B5107439DF00F5D044 /* testpower.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2170,6 +2181,7 @@
 			dependencies = (
 			);
 			name = testresample;
+			productName = testresample;
 			productReference = 001798F210743BEC00F5D044 /* testresample.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2187,6 +2199,7 @@
 			dependencies = (
 			);
 			name = testsprite;
+			productName = testsprite;
 			productReference = 0017991610743F1000F5D044 /* testsprite.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2203,6 +2216,7 @@
 			dependencies = (
 			);
 			name = testwm;
+			productName = testwm;
 			productReference = 0017993810743FB700F5D044 /* testwm.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2219,6 +2233,7 @@
 			dependencies = (
 			);
 			name = testfile;
+			productName = testfile;
 			productReference = 002F341209CA1BFF00EBEB88 /* testfile.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2236,6 +2251,7 @@
 			dependencies = (
 			);
 			name = testiconv;
+			productName = testiconv;
 			productReference = 002F343109CA1F0300EBEB88 /* testiconv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2253,6 +2269,7 @@
 			dependencies = (
 			);
 			name = testoverlay;
+			productName = testoverlay;
 			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2269,6 +2286,7 @@
 			dependencies = (
 			);
 			name = testplatform;
+			productName = testplatform;
 			productReference = 002F346A09CA204F00EBEB88 /* testplatform.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2491,6 +2509,7 @@
 			dependencies = (
 			);
 			name = testdrawchessboard;
+			productName = testdrawchessboard;
 			productReference = DB0F48EC17CA51E5008798C5 /* testdrawchessboard.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2507,6 +2526,7 @@
 			dependencies = (
 			);
 			name = testfilesystem;
+			productName = testfilesystem;
 			productReference = DB0F490117CA5212008798C5 /* testfilesystem.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2540,6 +2560,7 @@
 			dependencies = (
 			);
 			name = testmessage;
+			productName = testmessage;
 			productReference = DB166DD516A1D36A00A1396C /* testmessage.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2556,6 +2577,7 @@
 			dependencies = (
 			);
 			name = testrelative;
+			productName = testrelative;
 			productReference = DB166DEE16A1D50C00A1396C /* testrelative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2573,6 +2595,7 @@
 			dependencies = (
 			);
 			name = testrendercopyex;
+			productName = testrendercopyex;
 			productReference = DB166E0516A1D57C00A1396C /* testrendercopyex.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2590,6 +2613,7 @@
 			dependencies = (
 			);
 			name = testrendertarget;
+			productName = testrendertarget;
 			productReference = DB166E1C16A1D5AD00A1396C /* testrendertarget.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2606,6 +2630,7 @@
 			dependencies = (
 			);
 			name = testrumble;
+			productName = testrumble;
 			productReference = DB166E3816A1D64D00A1396C /* testrumble.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2623,6 +2648,7 @@
 			dependencies = (
 			);
 			name = testscale;
+			productName = testscale;
 			productReference = DB166E5216A1D69000A1396C /* testscale.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2691,6 +2717,7 @@
 			dependencies = (
 			);
 			name = testhotplug;
+			productName = testhotplug;
 			productReference = DB89957E18A19ABA0092407C /* testhotplug.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2707,6 +2734,7 @@
 			dependencies = (
 			);
 			name = testautomation;
+			productName = testautomation;
 			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2723,6 +2751,7 @@
 			dependencies = (
 			);
 			name = testcamera;
+			productName = testcamera;
 			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2739,6 +2768,7 @@
 			dependencies = (
 			);
 			name = testpen;
+			productName = testpen;
 			productReference = F3B7FD6A2D73FC630086D1D0 /* testpen.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2773,6 +2803,7 @@
 			dependencies = (
 			);
 			name = testyuv;
+			productName = testyuv;
 			productReference = F3DB65E92E9DA90000568044 /* testyuv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -3965,6 +3996,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				PRODUCT_NAME = testsprite;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -3975,6 +4007,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MXGJJ98X76;
 				PRODUCT_NAME = testsprite;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};

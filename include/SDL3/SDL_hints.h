@@ -4263,6 +4263,74 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable controlling the mode of the window on visionOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "flat": The window is shown as a flat window, with handles to move and resize the window, no curvature applies. (default)
+ * - "volumetric": The window is shown in a volume, with handles to move and resize the volume, curvature can be set using SDL_HINT_VISIONOS_WINDOW_CURVATURE.
+ * - "immersive": The window is shown in a darkened space, curvature can be set using SDL_HINT_VISIONOS_WINDOW_CURVATURE.
+ *
+ * If you set this hint, you should add the following to your Info.plist so your application supports multiple scenes:
+ *
+ * ```
+ *  <key>UIApplicationSceneManifest</key>
+ *  <dict>
+ *      <key>UIApplicationPreferredDefaultSceneSessionRole</key>
+ *      <string>UIWindowSceneSessionRoleApplication</string>
+ *      <key>UIApplicationSupportsMultipleScenes</key>
+ *      <true/>
+ *      <key>UISceneConfigurations</key>
+ *      <dict>
+ *          <key>UIWindowSceneSessionRoleApplication</key>
+ *          <array>
+ *              <dict>
+ *                  <key>UISceneConfigurationName</key>
+ *                  <string>SDLSceneConfiguration</string>
+ *                  <key>UISceneDelegateClassName</key>
+ *                  <string>SDLUIKitSceneDelegate</string>
+ *              </dict>
+ *          </array>
+ *          <key>UIWindowSceneSessionRoleVolumetricApplication</key>
+ *          <array>
+ *              <dict>
+ *                  <key>UISceneConfigurationName</key>
+ *                  <string>SDLVolumetricSceneConfiguration</string>
+ *                  <key>UISceneDelegateClassName</key>
+ *                  <string>SDL_VolumetricHostingSceneDelegate</string>
+ *              </dict>
+ *          </array>
+ *          <key>UISceneSessionRoleImmersiveSpaceApplication</key>
+ *          <array>
+ *              <dict>
+ *                  <key>UISceneConfigurationName</key>
+ *                  <string>SDLImmersiveSceneConfiguration</string>
+ *                  <key>UISceneDelegateClassName</key>
+ *                  <string>SDL_ImmersiveHostingSceneDelegate</string>
+ *              </dict>
+ *          </array>
+ *      </dict>
+ *  </dict>
+ * ```
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_VISIONOS_WINDOW_MODE "SDL_VISIONOS_WINDOW_MODE"
+
+/**
+ * A variable controlling the curvature of a volumetric or immersive window on visionOS.
+ *
+ * The variable can be set to a floating point value in the range 0.0-1.0, defaulting to 0.0.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_VISIONOS_WINDOW_CURVATURE "SDL_VISIONOS_WINDOW_CURVATURE"
+
+/**
  * A variable controlling whether touch should be enabled on the back panel of
  * the PlayStation Vita.
  *

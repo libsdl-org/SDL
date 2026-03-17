@@ -35,6 +35,9 @@
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
+#ifdef SDL_PLATFORM_VISIONOS
+#import "../../video/uikit/SDL_uikitvolumetric.h"
+#endif
 #endif
 
 // Regenerate these with build-metal-shaders.sh
@@ -453,16 +456,24 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             SDL3METAL_TextureData *texdata = (__bridge SDL3METAL_TextureData *)renderer->target->internal;
             mtltexture = texdata.mtltexture;
         } else {
-            if (data.mtlbackbuffer == nil) {
-                /* The backbuffer's contents aren't guaranteed to persist after
-                 * presenting, so we can leave it undefined when loading it. */
-                data.mtlbackbuffer = [data.mtllayer nextDrawable];
-                if (load == MTLLoadActionLoad) {
-                    load = MTLLoadActionDontCare;
+#ifdef SDL_PLATFORM_VISIONOS
+            if (renderer->window && SDL_UIKit_IsVolumetricWindow(renderer->window)) {
+                mtltexture = SDL_UIKit_GetVolumetricDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+            } else
+#endif
+            {
+                // Standard rendering path: use CAMetalLayer drawable
+                if (data.mtlbackbuffer == nil) {
+                    // The backbuffer's contents aren't guaranteed to persist after
+                    // presenting, so we can leave it undefined when loading it.
+                    data.mtlbackbuffer = [data.mtllayer nextDrawable];
+                    if (load == MTLLoadActionLoad) {
+                        load = MTLLoadActionDontCare;
+                    }
                 }
-            }
-            if (data.mtlbackbuffer != nil) {
-                mtltexture = data.mtlbackbuffer.texture;
+                if (data.mtlbackbuffer != nil) {
+                    mtltexture = data.mtlbackbuffer.texture;
+                }
             }
         }
 
@@ -2019,6 +2030,27 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 
         [data.mtlcmdencoder endEncoding];
 
+#ifdef SDL_PLATFORM_VISIONOS
+        // For volumetric windows, update RealityView with the rendered texture
+        if (renderer->window && SDL_UIKit_IsVolumetricWindow(renderer->window)) {
+            if (ready) {
+                // Commit the command buffer first to finish rendering
+                [data.mtlcmdbuffer commit];
+                [data.mtlcmdbuffer waitUntilCompleted];
+
+                data.mtlcmdencoder = nil;
+                data.mtlcmdbuffer = nil;
+
+                return true;
+            }
+
+            data.mtlcmdencoder = nil;
+            data.mtlcmdbuffer = nil;
+            return false;
+        }
+#endif
+
+        // Standard rendering path: present drawable
         // If we don't have a drawable to present, don't try to present it.
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
@@ -2055,6 +2087,11 @@ static void METAL_DestroyRenderer(SDL_Renderer *renderer)
 
             if (data.mtlcmdencoder != nil) {
                 [data.mtlcmdencoder endEncoding];
+            }
+
+            if (data.mtlcmdbuffer != nil) {
+                [data.mtlcmdbuffer commit];
+                [data.mtlcmdbuffer waitUntilCompleted];
             }
 
             DestroyAllPipelines(data.allpipelines, data.pipelinescount);

@@ -365,6 +365,16 @@ API_AVAILABLE(ios(13.0))
         return;
     }
 
+#ifdef SDL_PLATFORM_VISIONOS
+    // Skip volumetric/immersive scenes - they're handled by SDL hosting delegates (Swift)
+    if ([session.role isEqualToString:UIWindowSceneSessionRoleVolumetricApplication] ||
+        [session.role isEqualToString:@"UISceneSessionRoleImmersiveSpaceApplication"]) {
+        SDL_Log("SDLUIKitSceneDelegate: Ignoring %s scene connection (handled by SDL hosting delegate)",
+                [session.role UTF8String]);
+        return;
+    }
+#endif
+
     UIWindowScene *windowScene = (UIWindowScene *)scene;
     windowScene.delegate = self;
 
@@ -502,6 +512,22 @@ API_AVAILABLE(ios(13.0))
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0))
 {
     // This doesn't appear to be called, but it needs to be implemented to signal that we support the UIScene life cycle
+
+#ifdef SDL_PLATFORM_VISIONOS
+    // For volumetric/immersive scenes, use the Info.plist configuration for SDL hosting delegates
+    if ([connectingSceneSession.role isEqualToString:UIWindowSceneSessionRoleVolumetricApplication]) {
+        SDL_Log("SDLUIKitDelegate: Creating configuration for volumetric scene");
+        UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"SDLVolumetricSceneConfiguration" sessionRole:connectingSceneSession.role];
+        return config;
+    }
+    if ([connectingSceneSession.role isEqualToString:@"UISceneSessionRoleImmersiveSpaceApplication"]) {
+        SDL_Log("SDLUIKitDelegate: Creating configuration for immersive scene");
+        UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"SDLImmersiveSceneConfiguration" sessionRole:connectingSceneSession.role];
+        return config;
+    }
+#endif
+
+    // For standard window scenes, use the default SDL delegate
     UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"SDLSceneConfiguration" sessionRole:connectingSceneSession.role];
     config.delegateClass = [SDLUIKitSceneDelegate class];
     return config;
