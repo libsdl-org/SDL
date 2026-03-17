@@ -41,7 +41,7 @@ bool OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 bool OHOS_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0);
 }
 
 #endif
