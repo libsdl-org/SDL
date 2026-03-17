@@ -2,7 +2,7 @@ name: 'Setup Harmony toolchain'
 inputs:
   version:
     description: 'Harmony version'
-    default: '5.0.0-Release'
+    default: '6.0-Release'
 runs:
   using: 'composite'
   steps:
