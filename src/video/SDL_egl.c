@@ -1115,7 +1115,10 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
     } else {
         _this->egl_data->apitype = EGL_OPENGL_API;
     }
-    _this->egl_data->eglBindAPI(_this->egl_data->apitype);
+    if (!_this->egl_data->eglBindAPI(_this->egl_data->apitype)) {
+        SDL_SetError("Could not bind EGL API");
+        return NULL;
+    }
 
     egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                                     _this->egl_data->egl_config,
