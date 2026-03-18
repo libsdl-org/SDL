@@ -448,27 +448,28 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 }
 #endif
 
-// The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
-static HMODULE lib = NULL;
-#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
-static void *lib = NULL;
-#else
-#error Please define your platform.
-#endif
 
 // Obviously we can't use SDL_LoadObject() to load SDL.  :)
-// Also obviously, we never close the loaded library.
+// Also obviously, we never close the loaded library, once we accept it.
 #if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+static HMODULE sdlapi_lib = NULL;  // The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
+
+static SDL_INLINE void unload_sdlapi_library(void)
+{
+    if (sdlapi_lib) {
+        FreeLibrary(sdlapi_lib);
+        sdlapi_lib = NULL;
+    }
+}
+
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    lib = LoadLibraryA(fname);
+    sdlapi_lib = LoadLibraryA(fname);
     void *result = NULL;
-    if (lib) {
-        result = (void *) GetProcAddress(lib, sym);
+    if (sdlapi_lib) {
+        result = (void *) GetProcAddress(sdlapi_lib, sym);
         if (!result) {
-            FreeLibrary(lib);
-            lib = NULL;
+            unload_sdlapi_library();
         }
     }
     return result;
@@ -476,19 +477,31 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 
 #elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
 #include <dlfcn.h>
+static void *sdlapi_lib = NULL;  // The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
+
+static SDL_INLINE void unload_sdlapi_library(void)
+{
+    if (sdlapi_lib) {
+        dlclose(sdlapi_lib);
+        sdlapi_lib = NULL;
+    }
+}
+
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
+    sdlapi_lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
     void *result = NULL;
-    if (lib) {
-        result = dlsym(lib, sym);
+    if (sdlapi_lib) {
+        result = dlsym(sdlapi_lib, sym);
         if (!result) {
-            dlclose(lib);
-            lib = NULL;
+            unload_sdlapi_library();
         }
     }
     return result;
 }
+
+#else
+#error Please define your platform.
 #endif
 
 static void dynapi_warn(const char *msg)
@@ -557,14 +570,8 @@ static void SDL_InitDynamicAPILocked(void)
         if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof(jump_table)) < 0) {
             dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
 
-            // unload the other SDL library
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
-            FreeLibrary(lib);
-            lib = NULL;
-#elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
-            dlclose(lib);
-            lib = NULL;
-#endif
+            // unload the failed SDL library
+            unload_sdlapi_library();
 
             // Just fill in the function pointers from this library, later.
         } else {
