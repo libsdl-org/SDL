@@ -103,6 +103,37 @@ typedef Uint32 SDL_WindowID;
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
+ * The session ID string used for saving and restoring window state across runs.
+ *
+ * This requires that the compositor supports the `xdg_session_management_v1` protocol.
+ *
+ * To save and restore the current state of Wayland toplevel windows, set this to a non-null
+ * value before creating a window, and serialize this value before shutting down. To restore
+ * the previous state on subsequent runs, set this property to the previously serialized
+ * value before window creation.
+ *
+ * This can be set at any time before the first call to a window creation function. Reading
+ * should be deferred until serialization time, as compositors may not set the session
+ * identifier string immediately, and the identifier string may change during runtime, so
+ * it should not be cached.
+ *
+ * Setting this to an empty string ("") before creating a window will cause a new session with
+ * an automatically generated identifier string to be created.
+ *
+ * Setting this to null or an empty string before shutting down the video subsystem will cause
+ * the existing session to be removed.
+ *
+ * Note that for windows to be saved/restored by the session, they also need a stable, unique
+ * identifier string set via the `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at
+ * creation time.
+ *
+ * \since This property is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateWindowWithProperties
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING "SDL.video.wayland.session_id"
+
+/**
  * System theme.
  *
  * \since This enum is available since SDL 3.2.0.
@@ -1349,6 +1380,11 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   application wants an associated `wl_egl_window` object to be created and
  *   attached to the window, even if the window does not have the OpenGL
  *   property or `SDL_WINDOW_OPENGL` flag set.
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` - a string used as
+ *   a stable identifier for toplevel windows for the purpose of allowing
+ *   the compositor to save/restore their state between runs. This should
+ *   be human readable, but not translated, and must be unique for each
+ *   individual window.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
  *   [README-wayland](README-wayland) for more information.
@@ -1450,6 +1486,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER                 "SDL.window.create.uikit.windowscene"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "SDL.window.create.wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING            "SDL.window.create.wayland.window_id"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
@@ -1608,6 +1645,11 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   with the window
  * - `SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER`: the wl_egl_window
  *   associated with the window
+ * - `SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING`: the window identification string,
+ *   initially set with SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING, and used
+ *   as an identifier for session management. Setting this to null or an empty
+ *   string ("") before hiding or destroying the window will cause any session
+ *   information associated with the window to be removed
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER`: the xdg_surface associated
  *   with the window
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER`: the xdg_toplevel role
@@ -1680,6 +1722,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER                     "SDL.window.wayland.surface"
 #define SDL_PROP_WINDOW_WAYLAND_VIEWPORT_POINTER                    "SDL.window.wayland.viewport"
 #define SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER                  "SDL.window.wayland.egl_window"
+#define SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING                    "SDL.window.wayland.window_id"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER                 "SDL.window.wayland.xdg_surface"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER                "SDL.window.wayland.xdg_toplevel"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING   "SDL.window.wayland.xdg_toplevel_export_handle"

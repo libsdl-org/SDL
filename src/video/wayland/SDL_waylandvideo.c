@@ -70,6 +70,7 @@
 #include "pointer-warp-v1-client-protocol.h"
 #include "pointer-gestures-unstable-v1-client-protocol.h"
 #include "single-pixel-buffer-v1-client-protocol.h"
+#include "xdg-session-management-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1326,6 +1327,89 @@ static void Wayland_InitColorManager(SDL_VideoData *d)
     }
 }
 
+static void handle_xdg_session_created(void *data, struct xdg_session_v1 *xdg_session_v1, const char *id)
+{
+    SDL_SetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, id);
+}
+
+static void handle_xdg_session_restored(void *data, struct xdg_session_v1 *xdg_session_v1)
+{
+    // NOP
+}
+
+static void handle_xdg_session_replaced(void *data, struct xdg_session_v1 *xdg_session_v1)
+{
+    SDL_VideoDevice *viddev = SDL_GetVideoDevice();
+    SDL_VideoData *viddata = data;
+
+    // Clean up all session objects, as they have become inert, and should be destroyed.
+    SDL_SetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, NULL);
+
+    for (SDL_Window *w = viddev->windows; w; w = w->next) {
+        SDL_WindowData *d = w->internal;
+
+        if (d->xdg_toplevel_session) {
+            xdg_toplevel_session_v1_destroy(d->xdg_toplevel_session);
+            d->xdg_toplevel_session = NULL;
+
+            SDL_free(d->session_id);
+            d->session_id = NULL;
+        }
+    }
+
+    if (viddata->xdg_session) {
+        xdg_session_v1_destroy(viddata->xdg_session);
+        viddata->xdg_session = NULL;
+    }
+}
+
+static const struct xdg_session_v1_listener xdg_session_listener = {
+    .created  = handle_xdg_session_created,
+    .restored = handle_xdg_session_restored,
+    .replaced = handle_xdg_session_replaced
+};
+
+void Wayland_CreateSession(SDL_VideoData *viddata)
+{
+    if (!viddata->xdg_session_manager) {
+        // Set the ID string to null if session management is not available.
+        SDL_SetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, NULL);
+        return;
+    }
+
+    // Register a new session, if one does not yet exist.
+    if (!viddata->xdg_session) {
+        const char *session_id = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, NULL);
+        if (session_id) {
+            if (*session_id == '\0') {
+                // Create a new session if the ID string is empty.
+                session_id = NULL;
+            }
+
+            const enum xdg_session_manager_v1_reason reason = session_id ? XDG_SESSION_MANAGER_V1_REASON_SESSION_RESTORE : XDG_SESSION_MANAGER_V1_REASON_LAUNCH;
+            viddata->xdg_session = xdg_session_manager_v1_get_session(viddata->xdg_session_manager, reason, session_id);
+            xdg_session_v1_add_listener(viddata->xdg_session, &xdg_session_listener, viddata);
+        }
+    }
+}
+
+static void Wayland_SessionDestroy(SDL_VideoData *viddata)
+{
+    // If the session string was cleared, remove the session.
+    if (viddata->xdg_session) {
+        const char *session_id = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING, NULL);
+        if (!session_id || *session_id == '\0') {
+            xdg_session_v1_remove(viddata->xdg_session);
+
+            WAYLAND_wl_display_roundtrip(viddata->display);
+        } else {
+            xdg_session_v1_destroy(viddata->xdg_session);
+        }
+
+        viddata->xdg_session = NULL;
+    }
+}
+
 static void handle_xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg, uint32_t serial)
 {
     xdg_wm_base_pong(xdg, serial);
@@ -1425,6 +1509,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         Wayland_DisplayInitPointerGestureManager(d);
     } else if (SDL_strcmp(interface, wp_single_pixel_buffer_manager_v1_interface.name) == 0) {
         d->single_pixel_buffer_manager = wl_registry_bind(d->registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, xdg_session_manager_v1_interface.name) == 0) {
+        d->xdg_session_manager = wl_registry_bind(d->registry, id, &xdg_session_manager_v1_interface, 1);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, wl_fixes_interface.name) == 0) {
@@ -1685,6 +1771,8 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->internal;
     SDL_WaylandSeat *seat, *tmp;
 
+    Wayland_SessionDestroy(data);
+
     for (int i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = _this->displays[i];
         Wayland_free_display(display, false);
@@ -1840,6 +1928,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->single_pixel_buffer_manager) {
         wp_single_pixel_buffer_manager_v1_destroy(data->single_pixel_buffer_manager);
         data->single_pixel_buffer_manager = NULL;
+    }
+
+    if (data->xdg_session_manager) {
+        xdg_session_manager_v1_destroy(data->xdg_session_manager);
+        data->xdg_session_manager = NULL;
     }
 
     if (data->subcompositor) {
