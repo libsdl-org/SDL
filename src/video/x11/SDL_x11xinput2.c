@@ -34,7 +34,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 static bool xinput2_initialized;
-#endif
 #if defined(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO) || defined(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
 static bool xinput2_scrolling_supported;
 static bool xinput2_multitouch_supported;
@@ -137,6 +136,7 @@ static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window
     const SDL_WindowData *windowdata = X11_FindWindow(videodata, window);
     return windowdata ? windowdata->window : NULL;
 }
+#endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
 static void xinput2_reset_scrollable_valuators(void)
@@ -751,12 +751,15 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
 void X11_InitXinput2Multitouch(SDL_VideoDevice *_this)
 {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     xinput2_grabbed_touch_raised = false;
     xinput2_active_touch_count = 0;
+#endif
 }
 
 bool X11_Xinput2HandlesMotionForWindow(SDL_WindowData *window_data)
 {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     /* Send the active flag once more after the touch count is zero, to suppress the
      * emulated motion event when the last touch is raised.
      */
@@ -765,6 +768,9 @@ bool X11_Xinput2HandlesMotionForWindow(SDL_WindowData *window_data)
     xinput2_grabbed_touch_raised = false;
 
     return ret;
+#else
+    return false;
+#endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 }
 
 void X11_Xinput2Select(SDL_VideoDevice *_this, SDL_Window *window)

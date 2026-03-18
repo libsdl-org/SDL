@@ -186,6 +186,23 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
             }
             if (scene) {
                 uiwindow = [[UIWindow alloc] initWithWindowScene:scene];
+
+#ifdef SDL_PLATFORM_VISIONOS
+                /* On visionOS, the window scene may not have its final geometry yet
+                 * when the UIWindow is first created. Request the desired size now
+                 * and set the UIWindow frame to match so views have valid initial
+                 * dimensions before the async geometry update completes. */
+                CGSize desiredSize = CGSizeMake(window->w, window->h);
+                uiwindow.frame = CGRectMake(0, 0, desiredSize.width, desiredSize.height);
+
+                UIWindowSceneGeometryPreferences *preferences =
+                    [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:desiredSize];
+                [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+                                "Initial geometry request failed: %s",
+                                [[error localizedDescription] UTF8String]);
+                }];
+#endif
             }
         }
         if (!uiwindow) {
@@ -214,10 +231,6 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if (!SetupWindowData(_this, window, uiwindow, true)) {
             return false;
         }
-
-#ifdef SDL_PLATFORM_VISIONOS
-        SDL_SetWindowSize(window, window->w, window->h);
-#endif
     }
 
     return true;

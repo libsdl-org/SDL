@@ -1103,12 +1103,14 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
 
             dst_height = dst_width;
         } else {
-            // If viewports aren't available, the scale is always 1.0.
-            state->scale = viddata->viewporter && focus ? focus->scale_factor : 1.0;
-            dst_width = cursor_data->cursor_data.custom.width;
-            dst_height = cursor_data->cursor_data.custom.height;
-            hot_x = cursor_data->cursor_data.custom.hot_x;
-            hot_y = cursor_data->cursor_data.custom.hot_y;
+            /* If viewports aren't available, the scale is always 1.0.
+             * The dimensions are scaled by the pointer scale, so custom cursors will be scaled relative to the window size.
+             */
+            state->scale = viddata->viewporter && focus ? SDL_min(focus->pointer_scale.x, focus->pointer_scale.y) : 1.0;
+            dst_width = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.width / state->scale), 1);
+            dst_height = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.height / state->scale), 1);
+            hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / state->scale);
+            hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / state->scale);
         }
 
         state->current_cursor = cursor_data;
@@ -1178,6 +1180,34 @@ static void Wayland_CursorStateResetCursor(SDL_WaylandCursorState *state)
     // Stop the frame callback and set the reset status.
     Wayland_CursorStateDestroyFrameCallback(state);
     state->current_frame = -1;
+}
+
+void Wayland_DisplayUpdatePointerFocusedScale(SDL_WindowData *updated_window)
+{
+    SDL_VideoData *viddata = updated_window->waylandData;
+    SDL_WaylandSeat *seat;
+    const double new_scale = SDL_min(updated_window->pointer_scale.x, updated_window->pointer_scale.y);
+
+    wl_list_for_each (seat, &viddata->seat_list, link) {
+        if (seat->pointer.focus == updated_window) {
+            SDL_WaylandCursorState *state = &seat->pointer.cursor_state;
+            if (state->current_cursor && !state->current_cursor->is_system_cursor && state->scale != new_scale) {
+                Wayland_CursorStateResetCursor(state);
+                Wayland_SeatUpdatePointerCursor(seat);
+            }
+        }
+
+        SDL_WaylandPenTool *tool;
+        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+            if (tool->focus == updated_window) {
+                SDL_WaylandCursorState *state = &tool->cursor_state;
+                if (state->current_cursor && !state->current_cursor->is_system_cursor && state->scale != new_scale) {
+                    Wayland_CursorStateResetCursor(&tool->cursor_state);
+                    Wayland_TabletToolUpdateCursor(tool);
+                }
+            }
+        }
+    }
 }
 
 static bool Wayland_ShowCursor(SDL_Cursor *cursor)
