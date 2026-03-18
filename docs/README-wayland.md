@@ -38,6 +38,19 @@ encounter limitations or behavior that is different from other windowing systems
 
 - Wayland does not allow toplevel windows to position themselves programmatically.
 
+### How do I save and restore window layout and state between runs?
+
+- To preserve the state of toplevel windows across runs, the `xdg-session-management-v1` protocol is required:
+  - Create a session by setting the `SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING` property to a non-null value
+    before creating a window.
+  - Assign the windows you want managed by the session a unique, stable ID string with the
+    `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at creation time. This string should be human-readable,
+    but not translated.
+  - Serialize the session ID property `SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING` before shutting down.
+  - On subsequent runs, restore the session ID string property to the previously serialized value before window
+    creation. This property may change at some arbitrary point during runtime, so serialization should be deferred as
+    late as possible.
+
 ### Retrieving the global mouse cursor position when the cursor is outside a window doesn't work
 
 - Wayland only provides applications with the cursor position within the borders of the application windows. Querying

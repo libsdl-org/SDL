@@ -118,6 +118,7 @@ struct SDL_WindowData
     struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
     struct frog_color_managed_surface *frog_color_managed_surface;
     struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback;
+    struct xdg_toplevel_session_v1 *xdg_toplevel_session;
 
     struct Wayland_ColorInfoState *color_info_state;
 
@@ -127,6 +128,7 @@ struct SDL_WindowData
     int num_outputs;
 
     char *app_id;
+    char *session_id;
     double scale_factor;
 
     struct wl_buffer **icon_buffers;
