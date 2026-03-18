@@ -4,10 +4,9 @@ import { abilityAccessCtrl, AbilityConstant,
   Permissions,
   UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { promptAction, window } from '@kit.ArkUI';
+import { window } from '@kit.ArkUI';
 import { KeyboardAvoidMode } from '@ohos.arkui.UIContext';
 import { BusinessError } from '@kit.BasicServicesKit';
-import bundleManager from '@ohos.bundle.bundleManager';
 
 const DOMAIN = 0x0000;
 
@@ -34,53 +33,53 @@ function reqPermissionsFromUser(permissions: Array<Permissions>, context: common
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onCreate');
   }
 
   onDestroy(): void {
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onDestroy');
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // Main window is created, set main page for this ability
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onWindowStageCreate');
 
     windowStage.loadContent('pages/Index', (err) => {
       reqPermissionsFromUser(permissions, this.context);
 
       windowStage.getMainWindow().then(async (win) => {
         try {
-          win.setWindowTitleButtonVisible(true, true, true)
           win.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.OFFSET)
-          // win.setWindowLayoutFullScreen(true)
-          // win.setPreferredOrientation(window.Orientation.FOLLOW_DESKTOP)
-          win.setResizeByDragEnabled(true)
         } catch (error) {
           let ll: BusinessError = error;
-          hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(ll));
+          hilog.error(DOMAIN, 'surfaceLayer', 'Failed to load the content. Cause: %{public}s', JSON.stringify(ll));
         }
       })
 
       if (err.code) {
-        hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
+        hilog.error(DOMAIN, 'surfaceLayer', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
         return;
       }
-      hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      hilog.info(DOMAIN, 'surfaceLayer', 'Succeeded in loading the content.');
     });
   }
 
   onWindowStageDestroy(): void {
     // Main window is destroyed, release UI related resources
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onWindowStageDestroy');
   }
 
   onForeground(): void {
     // Ability has brought to foreground
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onForeground');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onForeground');
   }
 
   onBackground(): void {
     // Ability has back to background
-    hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onBackground');
+    hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onBackground');
+  }
+
+  onMemoryLevel(level: AbilityConstant.MemoryLevel): void {
+    
   }
 }

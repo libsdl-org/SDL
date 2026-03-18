@@ -1,5 +1,5 @@
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import sdltest from 'libSDL3.so';
+import sdl from 'libSDL3.so';
 import { intl } from '@kit.LocalizationKit';
 import { promptAction, ShowDialogSuccessResponse } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
@@ -19,7 +19,7 @@ let context: UIContext
 
 export class ArkNapiCallback {
   onMainLaunch() {
-    sdltest.sdlLaunchMain("libentry.so", "main")
+    sdl.sdlLaunchMain("libentry.so", "main")
   }
 
   showDialog(title: string, message: string, indexMapping: number[], names: string[]) {
@@ -29,16 +29,15 @@ export class ArkNapiCallback {
       target.push({ text: names[i], color: '#999999' })
     }
     promptAction.showDialog({ title: title, message: message, buttons: target }).then((a) => {
-      sdltest.sdlSendDialogStatus(indexMapping[a.index])
+      sdl.sdlSendDialogStatus(indexMapping[a.index])
     })
   }
   fetchLocale(): string {
     let locale = new intl.Locale()
     return locale.language + "_" + locale.region
   }
-  test(): number {
-    hilog.info(DOMAIN, 'testTag', 'Call from native !!!')
-    return 1
+  firstCall() {
+    hilog.info(DOMAIN, 'surfaceLayer', 'Native binding finished.')
   }
 
   openLink(url: string) {
@@ -64,11 +63,11 @@ export class ArkNapiCallback {
     let systemPasteboard: pasteboard.SystemPasteboard = pasteboard.getSystemPasteboard();
     systemPasteboard.setData(pasteData, (err, data) => {
       if (err) {
-        hilog.error(DOMAIN, 'testTag', 'Failed to set PasteData. Cause: ' + err.message);
+        hilog.error(DOMAIN, 'surfaceLayer', 'Failed to set PasteData. Cause: ' + err.message);
         return;
       }
 
-      hilog.info(DOMAIN, 'testTag', 'Succeed in setting PasteData.');
+      hilog.info(DOMAIN, 'surfaceLayer', 'Succeed in setting PasteData.');
     });
   }
 
@@ -79,12 +78,12 @@ export class ArkNapiCallback {
   startTextInput() {
     input = true
     controller.showTextInput()
-    hilog.info(DOMAIN, 'testTag', 'text input start')
+    hilog.info(DOMAIN, 'surfaceLayer', 'text input start')
   }
   stopTextInput() {
     input = false
     controller.hideTextInput()
-    hilog.info(DOMAIN, 'testTag', 'text input stop')
+    hilog.info(DOMAIN, 'surfaceLayer', 'text input stop')
     targetText = ""
   }
 
@@ -136,14 +135,14 @@ export class ArkNapiCallback {
     const documentViewPicker = new picker.DocumentViewPicker(contextt);
     documentViewPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
       uris = documentSelectResult;
-      sdltest.sdlDialogClearSelection()
+      sdl.sdlDialogClearSelection()
       for (let idx = 0; idx < uris.length; idx++)
       {
         let target = uris[idx].replace("file://docs", "")
-        sdltest.sdlDialogFileSelected(target)
+        sdl.sdlDialogFileSelected(target)
         console.info('documentViewPicker.select to file succeed and uris are: ' + target);
       }
-      sdltest.sdlDialogExecCallback()
+      sdl.sdlDialogExecCallback()
     }).catch((err: BusinessError) => {
       console.error(`Invoke documentViewPicker.select failed, code is ${err.code}, message is ${err.message}`);
     })
@@ -163,7 +162,7 @@ struct Index {
   async aboutToAppear(): Promise<void> {
     context = this.getUIContext()
 
-    sdltest.sdlCallbackInit(callbackRef)
+    sdl.sdlCallbackInit(callbackRef)
     focusControl.requestFocus('mainView')
     await controller.attach(true, {
       inputAttribute: {
@@ -173,23 +172,23 @@ struct Index {
     });
     controller.on('insertText', (text) => {
       targetText += text;
-      sdltest.sdlTextAppend(text)
+      sdl.sdlTextAppend(text)
     })
     controller.on('deleteLeft', (i) => {
-      sdltest.sdlTextEditing(targetText, targetText.length - 1 - i, i);
+      sdl.sdlTextEditing(targetText, targetText.length - 1 - i, i);
 
       if (targetText.length > 0) {
         targetText = targetText.substring(0, targetText.length - i)
       }
-      hilog.info(DOMAIN, 'testTag', targetText)
+      hilog.info(DOMAIN, 'surfaceLayer', targetText)
     })
     controller.on('deleteRight', (i) => {
-      sdltest.sdlTextEditing(targetText, 0, i);
+      sdl.sdlTextEditing(targetText, 0, i);
 
       if (targetText.length > 0) {
         targetText = targetText.substring(i, targetText.length)
       }
-      hilog.info(DOMAIN, 'testTag', targetText)
+      hilog.info(DOMAIN, 'surfaceLayer', targetText)
     })
   }
 
@@ -199,7 +198,7 @@ struct Index {
         .id('mainView')
     }
     .onKeyEvent((keyevent) => {
-      sdltest.sdlKeyEvent(keyevent.keyCode, keyevent.type);
+      sdl.sdlKeyEvent(keyevent.keyCode, keyevent.type);
     })
   }
 }

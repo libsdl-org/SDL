@@ -1,7 +1,7 @@
 {
   "app": {
-    "bundleName": "com.cpp.app",
-    "vendor": "example",
+    "bundleName": "org.libsdl.SdlShell",
+    "vendor": "libsdl-org",
     "versionCode": 1000000,
     "versionName": "1.0.0",
     "icon": "$media:layered_image",

@@ -1,4 +1,5 @@
 #include "SDL_internal.h"
+#include "events/SDL_events_c.h"
 #include "events/SDL_keyboard_c.h"
 #include "video/ohos/SDL_ohosmouse.h"
 #include <EGL/egl.h>
@@ -503,7 +504,7 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
     SDL_memset(data, 0, sizeof(napiCallbackData));
-    data->func = "test";
+    data->func = "firstCall";
     data->argCount = 0;
     data->type = Int;
     

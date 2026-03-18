@@ -6,7 +6,6 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libentry.so": "file:./src/main/cpp/types/libentry", 
     "libSDL3.so": "file:./src/main/cpp/sdl"
   }
 }

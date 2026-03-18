@@ -2,7 +2,7 @@
   "string": [
     {
       "name": "app_name",
-      "value": "MyApplication"
+      "value": "SDL Demo"
     },
     {
       "name": "perm_reason",
