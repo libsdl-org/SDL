@@ -1,5 +1,6 @@
 import { abilityAccessCtrl, AbilityConstant,
   common,
+  Configuration,
   ConfigurationConstant,
   Permissions,
   UIAbility, Want } from '@kit.AbilityKit';
@@ -7,6 +8,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { KeyboardAvoidMode } from '@ohos.arkui.UIContext';
 import { BusinessError } from '@kit.BasicServicesKit';
+import sdl from 'libSDL3.so';
 
 const DOMAIN = 0x0000;
 
@@ -65,21 +67,27 @@ export default class EntryAbility extends UIAbility {
   }
 
   onWindowStageDestroy(): void {
-    // Main window is destroyed, release UI related resources
     hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onWindowStageDestroy');
+    sdl.sdlOnTerminate();
   }
 
   onForeground(): void {
-    // Ability has brought to foreground
     hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onForeground');
+    sdl.sdlOnForeground();
   }
 
   onBackground(): void {
-    // Ability has back to background
     hilog.info(DOMAIN, 'surfaceLayer', '%{public}s', 'Ability onBackground');
+    sdl.sdlOnBackground();
   }
 
   onMemoryLevel(level: AbilityConstant.MemoryLevel): void {
-    
+    if (level == AbilityConstant.MemoryLevel.MEMORY_LEVEL_LOW || level == AbilityConstant.MemoryLevel.MEMORY_LEVEL_CRITICAL) {
+      sdl.sdlOnLowMemory();
+    }
+  }
+
+  onConfigurationUpdate(newConfig: Configuration): void {
+    sdl.sdlOnConfigUpdate();
   }
 }

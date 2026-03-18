@@ -21,6 +21,7 @@ bool OHOS_IsBatteryCharged();
 int OHOS_GetBatteryPercent();
 void OHOS_SetClipboardText(const char* data);
 char* OHOS_GetStoragePath();
+bool OHOS_ThemeDark();
 
 void OHOS_FileDialog(int id, const char* defpath, int allowmany, const char* filter);
 

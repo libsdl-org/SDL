@@ -452,6 +452,22 @@ void OHOS_OpenLink(const char* url)
     napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
 }
 
+bool OHOS_ThemeDark()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "themeIsDark";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+
+    return data->ret.data.i;
+}
+
 const char* OHOS_Locale()
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
@@ -865,6 +881,60 @@ static napi_value sdlSendDialogStatus(napi_env env, napi_callback_info info)
     return result;
 }
 
+static napi_value sdlOnBackground(napi_env env, napi_callback_info info)
+{
+    SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_BACKGROUND);
+    SDL_SendAppEvent(SDL_EVENT_DID_ENTER_BACKGROUND);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlOnForeground(napi_env env, napi_callback_info info)
+{
+    SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_FOREGROUND);
+    SDL_SendAppEvent(SDL_EVENT_DID_ENTER_FOREGROUND);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlOnLowMemory(napi_env env, napi_callback_info info)
+{
+    SDL_SendAppEvent(SDL_EVENT_LOW_MEMORY);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlOnTerminate(napi_env env, napi_callback_info info)
+{
+    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlOnConfigUpdate(napi_env env, napi_callback_info info)
+{
+    SDL_SendAppEvent(SDL_EVENT_LOCALE_CHANGED);
+    SDL_SendAppEvent(SDL_EVENT_SYSTEM_THEME_CHANGED);
+    
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this)
+    {
+        _this->system_theme = OHOS_ThemeDark() ? SDL_SYSTEM_THEME_DARK : SDL_SYSTEM_THEME_LIGHT;
+    }
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
@@ -876,7 +946,12 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
         { "sdlDialogClearSelection", NULL, sdlDialogClearSelection, NULL, NULL, NULL, napi_default, NULL },
         { "sdlDialogExecCallback", NULL, sdlDialogExecCallback, NULL, NULL, NULL, napi_default, NULL },
         { "sdlDialogFileSelected", NULL, sdlDialogFileSelected, NULL, NULL, NULL, napi_default, NULL },
-        { "sdlSendDialogStatus", NULL, sdlSendDialogStatus, NULL, NULL, NULL, napi_default, NULL }
+        { "sdlSendDialogStatus", NULL, sdlSendDialogStatus, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlOnBackground", NULL, sdlOnBackground, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlOnForeground", NULL, sdlOnForeground, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlOnLowMemory", NULL, sdlOnLowMemory, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlOnTerminate", NULL, sdlOnTerminate, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlOnConfigUpdate", NULL, sdlOnConfigUpdate, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 

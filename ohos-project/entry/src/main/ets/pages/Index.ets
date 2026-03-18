@@ -4,7 +4,7 @@ import { intl } from '@kit.LocalizationKit';
 import { promptAction, ShowDialogSuccessResponse } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
 import { pasteboard } from '@kit.BasicServicesKit';
-import { common } from '@kit.AbilityKit';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { batteryInfo } from '@kit.BasicServicesKit';
 
 import  { picker } from '@kit.CoreFileKit';
@@ -38,6 +38,7 @@ export class ArkNapiCallback {
   }
   firstCall() {
     hilog.info(DOMAIN, 'surfaceLayer', 'Native binding finished.')
+    sdl.sdlOnConfigUpdate();
   }
 
   openLink(url: string) {
@@ -151,6 +152,11 @@ export class ArkNapiCallback {
   getInternalPath(): string {
     let contextt = context.getHostContext() as common.UIAbilityContext
     return contextt.filesDir
+  }
+
+  themeIsDark(): number {
+    let contextt = context.getHostContext() as common.UIAbilityContext
+    return (contextt.config.colorMode == ConfigurationConstant.ColorMode.COLOR_MODE_DARK) ? 1 : 0;
   }
 }
 
