@@ -16,6 +16,6 @@ include_directories(${NATIVERENDER_ROOT_PATH}
                     ${NATIVERENDER_ROOT_PATH}/include
 	            ${SDL3_SOURCE_DIR}/include)
 
-add_library(entry SHARED napi_init.cpp)
+add_library(entry SHARED entrypoint.cpp)
 add_dependencies(entry SDL3::SDL3-shared)
 target_link_libraries(entry PUBLIC libace_napi.z.so libSDL3.so libvulkan.so libGLESv2.so libohaudio.so libohsensor.so)

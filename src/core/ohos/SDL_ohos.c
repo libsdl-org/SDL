@@ -800,6 +800,8 @@ static napi_value sdlTextAppend(napi_env env, napi_callback_info info)
     
     SDL_SendKeyboardText(fname);
     
+    SDL_free(fname);
+    
     napi_value result;
     napi_create_int32(env, 0, &result);
     return result;
@@ -821,6 +823,8 @@ static napi_value sdlTextEditing(napi_env env, napi_callback_info info)
     napi_get_value_int32(env, args[2], &len);
     
     SDL_SendEditingText(fname, start, len);
+    
+    SDL_free(fname);
     
     napi_value result;
     napi_create_int32(env, 0, &result);

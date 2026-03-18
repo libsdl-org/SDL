@@ -186,7 +186,6 @@ struct Index {
       if (targetText.length > 0) {
         targetText = targetText.substring(0, targetText.length - i)
       }
-      hilog.info(DOMAIN, 'surfaceLayer', targetText)
     })
     controller.on('deleteRight', (i) => {
       sdl.sdlTextEditing(targetText, 0, i);
@@ -194,7 +193,6 @@ struct Index {
       if (targetText.length > 0) {
         targetText = targetText.substring(i, targetText.length)
       }
-      hilog.info(DOMAIN, 'surfaceLayer', targetText)
     })
   }
 
