@@ -334,6 +334,11 @@ bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
     return SDL_Unsupported();
 }
 
+bool WIN_SetRawKeyboardFlag_Inputsink(SDL_VideoDevice *_this, bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
