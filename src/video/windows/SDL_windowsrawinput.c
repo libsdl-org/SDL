@@ -46,13 +46,7 @@ typedef struct
     HANDLE thread;
 } RawInputThreadData;
 
-static RawInputThreadData thread_data = {
-    false,
-    0,
-    INVALID_HANDLE_VALUE,
-    INVALID_HANDLE_VALUE,
-    INVALID_HANDLE_VALUE
-};
+static RawInputThreadData thread_data = { 0 };
 
 static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 {
@@ -140,22 +134,22 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
 
 static void CleanupRawInputThreadData(RawInputThreadData *data)
 {
-    if (data->thread != INVALID_HANDLE_VALUE) {
+    if (data->thread) {
         data->done = true;
         SetEvent(data->signal_event);
         WaitForSingleObject(data->thread, 3000);
         CloseHandle(data->thread);
-        data->thread = INVALID_HANDLE_VALUE;
+        data->thread = NULL;
     }
 
-    if (data->ready_event != INVALID_HANDLE_VALUE) {
+    if (data->ready_event) {
         CloseHandle(data->ready_event);
-        data->ready_event = INVALID_HANDLE_VALUE;
+        data->ready_event = NULL;
     }
 
-    if (data->signal_event != INVALID_HANDLE_VALUE) {
+    if (data->signal_event) {
         CloseHandle(data->signal_event);
-        data->signal_event = INVALID_HANDLE_VALUE;
+        data->signal_event = NULL;
     }
 }
 
@@ -170,20 +164,20 @@ bool WIN_SetRawInputEnabled(SDL_VideoDevice *_this, Uint32 flags)
 
         thread_data.flags = flags;
         thread_data.ready_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-        if (thread_data.ready_event == INVALID_HANDLE_VALUE) {
+        if (!thread_data.ready_event) {
             WIN_SetError("CreateEvent");
             goto done;
         }
 
         thread_data.done = false;
         thread_data.signal_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-        if (thread_data.signal_event == INVALID_HANDLE_VALUE) {
+        if (!thread_data.signal_event) {
             WIN_SetError("CreateEvent");
             goto done;
         }
 
         thread_data.thread = CreateThread(NULL, 0, WIN_RawInputThread, &thread_data, 0, NULL);
-        if (thread_data.thread == INVALID_HANDLE_VALUE) {
+        if (!thread_data.thread) {
             WIN_SetError("CreateThread");
             goto done;
         }
