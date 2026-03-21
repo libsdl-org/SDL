@@ -727,7 +727,7 @@ bool TrayRightClickHandler(SDL_ListNode *menu, void *udata)
     return tray_dbus->r_cb(tray_dbus->udata, (SDL_Tray *)tray_dbus);
 }
 
-void TraySendNewMenu(SDL_Tray *tray) {
+void TraySendNewMenu(SDL_Tray *tray, const char *new_path) {
     SDL_TrayDriverDBus *driver;
     SDL_TrayDBus *tray_dbus;
     SDL_TrayMenuDBus *menu_dbus;
@@ -749,9 +749,10 @@ void TraySendNewMenu(SDL_Tray *tray) {
 
         iface = SNI_INTERFACE;
         prop = "Menu";
-        path = menu_dbus->menu_path;
-        if (!path) {
-			path = menu_dbus->menu_path = DBUS_MENU_OBJECT_PATH;
+        if (new_path) {
+			path = menu_dbus->menu_path = new_path;
+		} else {
+			path = menu_dbus->menu_path;
 		}
         bool_val = TRUE;
         driver->dbus->message_iter_init_append(signal, &iter);
@@ -789,8 +790,8 @@ void TraySendNewMenu(SDL_Tray *tray) {
 }
 
 
-void TrayNewMenuOnMenuUpdateCallback(SDL_ListNode *menu, void *cbdata) {
-	TraySendNewMenu((SDL_Tray *)cbdata);
+void TrayNewMenuOnMenuUpdateCallback(SDL_ListNode *menu, const char *path, void *cbdata) {
+	TraySendNewMenu((SDL_Tray *)cbdata, path);
 }
 
 SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
@@ -855,12 +856,12 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         SDL_TrayMenuDBus *main_menu_dbus;
 
         main_menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
-        SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+        SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
     } else {
         menu_dbus->menu_path = SDL_DBus_ExportMenu(driver->dbus, tray_dbus->connection, menu_dbus->menu);
 
         if (menu_dbus->menu_path) {
-			TraySendNewMenu(tray);
+			TraySendNewMenu(tray, NULL);
         }
     }
 
@@ -916,7 +917,8 @@ void RemoveTrayEntry(SDL_TrayEntry *entry)
     SDL_TrayDriverDBus *driver;
     SDL_TrayDBus *tray_dbus;
     SDL_TrayMenuDBus *main_menu_dbus;
-
+    const char *old_path;
+    
     tray = entry->parent->parent_tray;
     tray_dbus = (SDL_TrayDBus *)tray;
     driver = (SDL_TrayDriverDBus *)tray->driver;
@@ -929,13 +931,21 @@ void RemoveTrayEntry(SDL_TrayEntry *entry)
 		SDL_DBus_TransferMenuItemProperties(entry_dbus->item, (SDL_MenuItem *)menu_dbus->menu->next->entry);
 	}	
 	
+    old_path = NULL;
+    if (!main_menu_dbus->menu->next) {
+		old_path = main_menu_dbus->menu_path;
+	}
+    
     driver->dbus->connection_flush(tray_dbus->connection);
     DestroyMenu((SDL_TrayMenu *)entry_dbus->sub_menu);
     SDL_ListRemove(&menu_dbus->menu, entry_dbus->item);
     SDL_free(entry_dbus->item);
     SDL_free(entry);
 	
-    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+    if (old_path) {
+        SDL_DBus_RetractMenu(driver->dbus, tray_dbus->connection, &main_menu_dbus->menu_path);
+    }
+    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
     driver->dbus->connection_flush(tray_dbus->connection);
     tray_dbus->block = false;
 }
@@ -966,7 +976,7 @@ void SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void 
     entry_dbus->item->cb_data = userdata;
     entry_dbus->item->udata2 = callback;
 
-    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
 }
 
 void SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
@@ -985,7 +995,7 @@ void SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 
     entry_dbus->item->utf8 = label;
 
-    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
 }
 
 const char *GetTrayEntryLabel(SDL_TrayEntry *entry)
@@ -1013,7 +1023,7 @@ void SetTrayEntryChecked(SDL_TrayEntry *entry, bool val)
         entry_dbus->item->flags &= ~(SDL_MENU_ITEM_FLAGS_CHECKED);
     }
 
-    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
 }
 
 bool GetTrayEntryChecked(SDL_TrayEntry *entry)
@@ -1041,7 +1051,7 @@ void SetTrayEntryEnabled(SDL_TrayEntry *entry, bool val)
         entry_dbus->item->flags &= ~(SDL_MENU_ITEM_FLAGS_DISABLED);
     }
 
-    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+    SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
 }
 
 bool GetTrayEntryEnabled(SDL_TrayEntry *entry)
@@ -1067,7 +1077,7 @@ void ClickTrayEntry(SDL_TrayEntry *entry)
 		main_menu_dbus = (SDL_TrayMenuDBus *)tray->menu;
 
 		dbus_entry->item->flags ^= SDL_MENU_ITEM_FLAGS_CHECKED; 
-		SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, TrayNewMenuOnMenuUpdateCallback, tray);
+		SDL_DBus_UpdateMenu(driver->dbus, tray_dbus->connection, main_menu_dbus->menu, main_menu_dbus->menu_path, TrayNewMenuOnMenuUpdateCallback, tray, SDL_DBUS_UPDATE_MENU_FLAGS_NONE);
     }
     entry_cb = dbus_entry->item->udata2;
     entry_cb(dbus_entry->item->cb_data, dbus_entry->item->udata);

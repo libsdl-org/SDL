@@ -44,8 +44,6 @@
 #define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
 #endif
 
-#define DBUS_MENU_OBJECT_PATH "/Menu"
-
 typedef struct SDL_DBusContext
 {
     DBusConnection *session_conn;
@@ -144,11 +142,13 @@ extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_
 extern int SDL_DBus_CameraPortalRequestAccess(void);
 
 // Menu export functions
+#define SDL_DBUS_UPDATE_MENU_FLAGS_NONE 0
 extern SDL_MenuItem *SDL_DBus_CreateMenuItem(void);
 extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
-extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu, void (*cb)(SDL_ListNode *, void *), void *cbdata);
+extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu, const char *path, void (*cb)(SDL_ListNode *, const char *, void *), void *cbdata, unsigned char flags);
 extern void SDL_DBus_RegisterMenuOpenCallback(SDL_ListNode *menu, bool (*cb)(SDL_ListNode *, void *), void *cbdata);
 extern void SDL_DBus_TransferMenuItemProperties(SDL_MenuItem *src, SDL_MenuItem *dst);
+extern void SDL_DBus_RetractMenu(SDL_DBusContext *ctx, DBusConnection *conn, const char **path);
 
 #endif // HAVE_DBUS_DBUS_H
 
