@@ -1802,7 +1802,7 @@ void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNod
     DBusMessage *signal;
     dbus_uint32_t revision;
     dbus_int32_t next_id;
-	
+		
     if (!ctx) {
         return;
     }
@@ -1912,6 +1912,8 @@ void SDL_DBus_TransferMenuItemProperties(SDL_MenuItem *src, SDL_MenuItem *dst)
     dst_dbus = (SDL_DBusMenuItem *)dst;
     dst_dbus->dbus = src_dbus->dbus;
     dst_dbus->revision = src_dbus->revision;
+    dst_dbus->cb = src_dbus->cb;
+    dst_dbus->cbdata = src_dbus->cbdata;
 }
 
 void SDL_DBus_RetractMenu(SDL_DBusContext *ctx, DBusConnection *conn, const char **path) 
