@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Special thanks to the kind Hayden Gray (thag_iceman/A1029384756) from the SDL community for helping me figure out libdbus and fixing some embarassing mistakes, without him both the SNI tray driver and the DBus menu exporter would be broken and useless. */
+/* Special thanks to the kind Hayden Gray (thag_iceman/A1029384756) from the SDL community for his help! */
 
 #include "SDL_internal.h"
 #include "../../core/linux/SDL_dbus.h"
