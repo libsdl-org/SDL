@@ -90,6 +90,7 @@ static int (*PIPEWIRE_pw_stream_queue_buffer)(struct pw_stream *, struct pw_buff
 static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA_SENTINEL;
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
+static int (*PIPEWIRE_pw_stream_update_properties)(struct pw_stream *, const struct spa_dict *);
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
@@ -183,6 +184,7 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_properties_new);
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
+    SDL_PIPEWIRE_SYM(pw_stream_update_properties);
 
     return true;
 }
@@ -1118,6 +1120,24 @@ static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_E
                                                              .add_buffer = stream_add_buffer_callback,
                                                              .process = input_callback };
 
+static void SDLCALL PIPEWIRE_StreamNameChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    struct SDL_PrivateAudioData *priv = device->hidden;
+
+    if (!priv || !priv->stream || !priv->loop) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO, "PIPEWIRE: StreamNameChanged: stream not ready, skipping");
+        return;
+    }
+
+    struct spa_dict_item items[] = { { PW_KEY_MEDIA_NAME, newValue } };
+    struct spa_dict dict = SPA_DICT_INIT(items, 1);
+
+    PIPEWIRE_pw_thread_loop_lock(priv->loop);
+    PIPEWIRE_pw_stream_update_properties(priv->stream, &dict);
+    PIPEWIRE_pw_thread_loop_unlock(priv->loop);
+}
+
 static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
 {
     /*
@@ -1227,8 +1247,11 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     if (app_id) {
         PIPEWIRE_pw_properties_set(props, PW_KEY_APP_ID, app_id);
     }
-    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, stream_name);
-    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, stream_name);
+    // node_name/description describes the app, media_name what's currently playing
+    const char *node_name = (app_name && *app_name) ? app_name : stream_name;
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, node_name);
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, node_name);
+    PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
@@ -1279,6 +1302,8 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Pipewire: Stream error: %s", error);
     }
 
+    SDL_AddHintCallback(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PIPEWIRE_StreamNameChanged, device);
+
     return true;
 }
 
@@ -1287,6 +1312,8 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
     if (!device->hidden) {
         return;
     }
+
+    SDL_RemoveHintCallback(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PIPEWIRE_StreamNameChanged, device);
 
     if (device->hidden->loop) {
         PIPEWIRE_pw_thread_loop_stop(device->hidden->loop);
