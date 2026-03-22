@@ -1590,12 +1590,10 @@ static DBusHandlerResult MenuMessageHandler(DBusConnection *conn, DBusMessage *m
 
     menu = user_data;
     if (!menu) {
-		puts("fail 1");
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     if (!menu->entry) {
-		puts("fail 2");
         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
     
