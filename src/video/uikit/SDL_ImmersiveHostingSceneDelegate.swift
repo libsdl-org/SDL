@@ -60,9 +60,7 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
     public static var rootScene: some SwiftUI.Scene {
         ImmersiveSpace(id: "sdl-immersive") {
             SDL_VolumetricRootView(helper: helper, isImmersive: true)
-                .preferredSurroundingsEffect(.ultraDark)
         }
-        .immersionStyle(selection: .constant(.full), in: .full)
     }
 
     // MARK: - UISceneDelegate Lifecycle
