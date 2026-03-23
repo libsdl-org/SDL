@@ -415,6 +415,7 @@ public class SDL_VolumetricHostingSceneDelegate: NSObject, UIWindowSceneDelegate
 struct SDL_VolumetricRootView: View {
     let helper: SDL_RealityKitHelper
     var isImmersive: Bool = false
+    let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 1.5, -1.5)
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.physicalMetrics) private var metrics: PhysicalMetricsConverter
 
@@ -477,7 +478,7 @@ struct SDL_VolumetricRootView: View {
 
             if let attachmentEntity = attachments.entity(for: "sceneButton") {
                 if isImmersive {
-                    attachmentEntity.position = SIMD3<Float>(0.0, 1.0, -1.4)
+                    attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -0.5, 0.1)
                 } else {
                     let buttonHeight = Float(metrics.convert(80.0, to: .meters))
                     attachmentEntity.position = SIMD3<Float>(0, -(helper.meshHeight * 0.5) + buttonHeight * 0.5, 0.24 * 0.5)
@@ -493,7 +494,7 @@ struct SDL_VolumetricRootView: View {
             let entity = helper.getCurvedEntity()
             if let entity, entity.parent == nil {
                 if isImmersive {
-                    entity.position = SIMD3<Float>(0, 1.5, -1.5)
+                    entity.position = immersivePosition
                 } else {
                     entity.position = .zero
                 }
