@@ -82,10 +82,29 @@ struct FlatButtonIcon : Shape {
 // Curved button
 /* SVG:
  <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
- <path d="M133.333 400C311.111 311.111 488.889 311.111 666.667 400" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M133 380C311 317.333 489 317.333 667 380" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
  </svg>
  */
 struct CurvedButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.475*height))
+        strokePath.addCurve(to: CGPoint(x: 0.83375*width, y: 0.475*height), control1: CGPoint(x: 0.38875*width, y: 0.39667*height), control2: CGPoint(x: 0.61125*width, y: 0.39667*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curviest button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133.333 400C311.111 311.111 488.889 311.111 666.667 400" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurviestButtonIcon : Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let width = rect.size.width
@@ -233,7 +252,7 @@ public class SDL_VolumetricHostingSceneDelegate: NSObject, UIWindowSceneDelegate
         }
         .windowStyle(.volumetric)
         .windowResizability(.contentSize)
-        .defaultSize(width: 16.0 / 9.0, height: 1.0, depth: 0.25, in: .meters)
+        .defaultSize(width: 16.0 / 9.0, height: 1.0, depth: 0.4, in: .meters)
     }
 
     // MARK: - UIWindowSceneDelegate Lifecycle
@@ -497,9 +516,9 @@ struct SDL_VolumetricRootView: View {
                         .glassBackgroundEffect()
                         .labelStyle(.iconOnly)
                     }
-                    if helper.isCurved() {
+                    if helper.meshCurvature == 0.0 {
                         Button(action: {
-                            helper.updateCurvature(curvature: 0.0)
+                            helper.updateCurvature(curvature: 0.2)
                         }) {
                             Label {
                                 Text("Flat")
@@ -510,14 +529,27 @@ struct SDL_VolumetricRootView: View {
                         .frame(width: 80, height: 80)
                         .glassBackgroundEffect()
                         .labelStyle(.iconOnly)
-                    } else {
+                    } else if helper.meshCurvature == 0.2 {
                         Button(action: {
-                            helper.updateCurvature(curvature: 0.2)
+                            helper.updateCurvature(curvature: 0.4)
                         }) {
                             Label {
                                 Text("Curved")
                             } icon: {
                                 CurvedButtonIcon()
+                            }
+                        }
+                        .frame(width: 80, height: 80)
+                        .glassBackgroundEffect()
+                        .labelStyle(.iconOnly)
+                    } else {
+                        Button(action: {
+                            helper.updateCurvature(curvature: 0.0)
+                        }) {
+                            Label {
+                                Text("Curviest")
+                            } icon: {
+                                CurviestButtonIcon()
                             }
                         }
                         .frame(width: 80, height: 80)
