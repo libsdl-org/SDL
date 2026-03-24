@@ -288,8 +288,8 @@ public class SDL_RealityKitHelper: NSObject {
         contentSizeInPoints = CGSize(width: width, height: height);
 
         @Environment(\.physicalMetrics) var metrics: PhysicalMetricsConverter
-        let newWidth = Float(metrics.convert(Float(width), to: .meters))
-        let newHeight = Float(metrics.convert(Float(height), to: .meters))
+        let newWidth = Float(metrics.convert(Float(width), to: .meters)) * 1.5
+        let newHeight = Float(metrics.convert(Float(height), to: .meters)) * 1.5
 
         NSLog("SDL_RealityKitHelper: configuring size %.2fx%.2f and curvature %.2f", width, height, curvature)
 
@@ -308,8 +308,8 @@ public class SDL_RealityKitHelper: NSObject {
         contentSizeInPoints = CGSize(width: width, height: height);
 
         @Environment(\.physicalMetrics) var metrics: PhysicalMetricsConverter
-        let newWidth = Float(metrics.convert(Float(width), to: .meters))
-        let newHeight = Float(metrics.convert(Float(height), to: .meters))
+        let newWidth = Float(metrics.convert(Float(width), to: .meters)) * 1.5
+        let newHeight = Float(metrics.convert(Float(height), to: .meters)) * 1.5
 
         NSLog("SDL_RealityKitHelper: Updating size from %.2fx%.2f to %.2fx%.2f",
               self.meshWidth, self.meshHeight, newWidth, newHeight)
