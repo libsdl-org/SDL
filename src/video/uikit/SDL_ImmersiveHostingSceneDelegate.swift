@@ -20,13 +20,8 @@
 */
 import SwiftUI
 import RealityKit
-import Metal
 
 /// SwiftUI scene delegate for immersive spaces using UIHostingSceneDelegate bridging.
-///
-/// Parallel to SDL_VolumetricHostingSceneDelegate but declares an ImmersiveSpace
-/// instead of a volumetric WindowGroup. The RealityKit content (SDL_VolumetricRootView)
-/// is shared between both scene types.
 ///
 /// Note: SwiftUI creates a NEW instance of this class for each scene connection.
 /// All state that needs to persist across the ObjC bridge must be static.
@@ -59,7 +54,7 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
     /// the user's real-world surroundings.
     public static var rootScene: some SwiftUI.Scene {
         ImmersiveSpace(id: "sdl-immersive") {
-            SDL_VolumetricRootView(helper: helper, isImmersive: true)
+            SDL_ImmersiveRootView(helper: helper)
         }
     }
 
@@ -147,5 +142,299 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
     @objc public func updateCurvature(_ curvature: Float) {
         NSLog("SDL_ImmersiveHostingSceneDelegate: Updating curvature to %.2f", curvature)
         Self.helper.updateCurvature(curvature: curvature)
+    }
+}
+
+
+// Icons used by buttons below
+
+// Close button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M200 200L600 600" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M600 200L200 600" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CloseButtonIcon: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath1 = Path()
+        strokePath1.move(to: CGPoint(x: 0.25*width, y: 0.25*height))
+        strokePath1.addLine(to: CGPoint(x: 0.75*width, y: 0.75*height))
+        path.addPath(strokePath1.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        var strokePath2 = Path()
+        strokePath2.move(to: CGPoint(x: 0.75*width, y: 0.25*height))
+        strokePath2.addLine(to: CGPoint(x: 0.25*width, y: 0.75*height))
+        path.addPath(strokePath2.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Flat button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133.333 400H666.667" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct FlatButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16667*width, y: 0.5*height))
+        strokePath.addLine(to: CGPoint(x: 0.83333*width, y: 0.5*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curved button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133 380C311 317.333 489 317.333 667 380" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurvedButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.475*height))
+        strokePath.addCurve(to: CGPoint(x: 0.83375*width, y: 0.475*height), control1: CGPoint(x: 0.38875*width, y: 0.39667*height), control2: CGPoint(x: 0.61125*width, y: 0.39667*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curviest button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133.333 400C311.111 311.111 488.889 311.111 666.667 400" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurviestButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16667*width, y: 0.5*height))
+        strokePath.addCurve(to: CGPoint(x: 0.83333*width, y: 0.5*height), control1: CGPoint(x: 0.38889*width, y: 0.38889*height), control2: CGPoint(x: 0.61111*width, y: 0.38889*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Enter immersive mode button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M175 625L343.75 456.25M625 175L456.25 343.75" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M492 175H625.333V308.333" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M308.333 625.333H175V492" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct EnterImmersiveButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath2 = Path()
+        strokePath2.move(to: CGPoint(x: 0.21875*width, y: 0.78125*height))
+        strokePath2.addLine(to: CGPoint(x: 0.42969*width, y: 0.57031*height))
+        strokePath2.move(to: CGPoint(x: 0.78125*width, y: 0.21875*height))
+        strokePath2.addLine(to: CGPoint(x: 0.57031*width, y: 0.42969*height))
+        path.addPath(strokePath2.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        var strokePath4 = Path()
+        strokePath4.move(to: CGPoint(x: 0.615*width, y: 0.21875*height))
+        strokePath4.addLine(to: CGPoint(x: 0.78167*width, y: 0.21875*height))
+        strokePath4.addLine(to: CGPoint(x: 0.78167*width, y: 0.38542*height))
+        path.addPath(strokePath4.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        var strokePath6 = Path()
+        strokePath6.move(to: CGPoint(x: 0.38542*width, y: 0.78167*height))
+        strokePath6.addLine(to: CGPoint(x: 0.21875*width, y: 0.78167*height))
+        strokePath6.addLine(to: CGPoint(x: 0.21875*width, y: 0.615*height))
+        path.addPath(strokePath6.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Leave immersive mode button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M175 625L343.75 456.25M625 175L456.25 343.75" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M211 456H344.333V589.333" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M589.333 344.333H456V211" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct LeaveImmersiveButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath2 = Path()
+        strokePath2.move(to: CGPoint(x: 0.21875*width, y: 0.78125*height))
+        strokePath2.addLine(to: CGPoint(x: 0.42969*width, y: 0.57031*height))
+        strokePath2.move(to: CGPoint(x: 0.78125*width, y: 0.21875*height))
+        strokePath2.addLine(to: CGPoint(x: 0.57031*width, y: 0.42969*height))
+        path.addPath(strokePath2.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        var strokePath4 = Path()
+        strokePath4.move(to: CGPoint(x: 0.26375*width, y: 0.57*height))
+        strokePath4.addLine(to: CGPoint(x: 0.43042*width, y: 0.57*height))
+        strokePath4.addLine(to: CGPoint(x: 0.43042*width, y: 0.73667*height))
+        path.addPath(strokePath4.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        var strokePath6 = Path()
+        strokePath6.move(to: CGPoint(x: 0.73667*width, y: 0.43042*height))
+        strokePath6.addLine(to: CGPoint(x: 0.57*width, y: 0.43042*height))
+        strokePath6.addLine(to: CGPoint(x: 0.57*width, y: 0.26375*height))
+        path.addPath(strokePath6.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// MARK: - SwiftUI Content View
+
+/// RealityKit content view for volumetric windows and immersive spaces
+@available(visionOS 26.0, *)
+struct SDL_ImmersiveRootView: View {
+    let helper: SDL_RealityKitHelper
+    let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 1.5, -1.5)
+
+    let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
+    let SDL_EVENT_FINGER_UP: UInt32 = 0x701
+    let SDL_EVENT_FINGER_MOTION: UInt32 = 0x702
+    let SDL_EVENT_FINGER_CANCELED: UInt32 = 0x703
+    private(set) static var last_fingerID: UInt64 = 0
+    private(set) static var fingers: [SpatialEventCollection.Event.ID: UInt64] = [:]
+
+    private func sendTouchEvent(event: SpatialEventCollection.Event) {
+        var fingerID: UInt64
+        var eventType: UInt32
+        if let value = Self.fingers[event.id] {
+            fingerID = value
+            if (event.phase == SpatialEventCollection.Event.Phase.active) {
+                eventType = SDL_EVENT_FINGER_MOTION
+            } else if (event.phase == SpatialEventCollection.Event.Phase.ended) {
+                eventType = SDL_EVENT_FINGER_UP
+                Self.fingers.removeValue(forKey: event.id)
+            } else {
+                eventType = SDL_EVENT_FINGER_CANCELED
+                Self.fingers.removeValue(forKey: event.id)
+            }
+        } else if (event.phase == SpatialEventCollection.Event.Phase.active) {
+            Self.last_fingerID += 1
+            fingerID = Self.last_fingerID
+            Self.fingers[event.id] = fingerID
+            eventType = SDL_EVENT_FINGER_DOWN
+        } else {
+            // An inactive event for a finger we don't know about
+            return
+        }
+        SDL_VisionOS_SendImmersiveTouch(event.timestamp, fingerID, eventType, event.location)
+    }
+
+    var body: some View {
+        GeometryReader3D { proxy in
+            realityContent
+        }
+        .frame(
+            //idealWidth: helper.contentSizeInPoints.width > 0 ? helper.contentSizeInPoints.width : nil,
+            //idealHeight: helper.contentSizeInPoints.height > 0 ? helper.contentSizeInPoints.height : nil
+            width: helper.contentSizeInPoints.width > 0 ? helper.contentSizeInPoints.width : nil,
+            height: helper.contentSizeInPoints.height > 0 ? helper.contentSizeInPoints.height : nil
+        )
+    }
+
+    private var realityContent: some View {
+        RealityView { content, attachments in
+            NSLog("SDL_ImmersiveRootView: RealityView setup (immersive=%d)", 1)
+
+            if let attachmentEntity = attachments.entity(for: "sceneButton") {
+                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -0.5, 0.1)
+                content.add(attachmentEntity)
+                NSLog("SDL_ImmersiveRootView: Added button attachment (immersive=%d)", 1)
+            }
+        } update: { content, attachments in
+            let entity = helper.getCurvedEntity()
+            if let entity, entity.parent == nil {
+                entity.position = immersivePosition
+                content.add(entity)
+            }
+        } attachments: {
+            Attachment(id: "sceneButton") {
+                HStack(spacing: 32) {
+                    if helper.meshCurvature == 0.0 {
+                        Button(action: {
+                            helper.updateCurvature(curvature: 0.2)
+                        }) {
+                            Label {
+                                Text("Flat")
+                            } icon: {
+                                FlatButtonIcon()
+                            }
+                        }
+                        .frame(width: 80, height: 80)
+                        .glassBackgroundEffect()
+                        .labelStyle(.iconOnly)
+                    } else if helper.meshCurvature == 0.2 {
+                        Button(action: {
+                            helper.updateCurvature(curvature: 0.4)
+                        }) {
+                            Label {
+                                Text("Curved")
+                            } icon: {
+                                CurvedButtonIcon()
+                            }
+                        }
+                        .frame(width: 80, height: 80)
+                        .glassBackgroundEffect()
+                        .labelStyle(.iconOnly)
+                    } else {
+                        Button(action: {
+                            helper.updateCurvature(curvature: 0.0)
+                        }) {
+                            Label {
+                                Text("Curviest")
+                            } icon: {
+                                CurviestButtonIcon()
+                            }
+                        }
+                        .frame(width: 80, height: 80)
+                        .glassBackgroundEffect()
+                        .labelStyle(.iconOnly)
+                    }
+
+                    Button(action: {
+                        SDL_VisionOS_LeaveImmersiveMode()
+                    }) {
+                        Label {
+                            Text("Leave Immersive")
+                        } icon: {
+                            LeaveImmersiveButtonIcon()
+                        }
+                    }
+                    .frame(width: 80, height: 80)
+                    .glassBackgroundEffect()
+                    .labelStyle(.iconOnly)
+                }
+            }
+        }
+        .ignoresSafeArea()
+        .gesture(
+            SpatialEventGesture()
+                .onChanged { events in
+                    for event in events {
+                        sendTouchEvent(event: event)
+                    }
+                }
+                .onEnded { events in
+                    for event in events {
+                        sendTouchEvent(event: event)
+                    }
+                }
+        )
     }
 }

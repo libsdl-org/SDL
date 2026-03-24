@@ -126,7 +126,17 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_PLATFORM_VISIONOS
     if (@available(visionOS 26.0, *)) {
-        [self addOrnaments];
+        bool canGoImmersive = false;
+        id sceneManifest = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIApplicationSceneManifest"];
+        if (sceneManifest != nil) {
+            NSNumber *value = [sceneManifest valueForKey:@"UIApplicationSupportsMultipleScenes"];
+            if (value != nil && [value boolValue]) {
+                canGoImmersive = true;
+            }
+        }
+        if (canGoImmersive) {
+            [self addOrnaments];
+        }
     }
 #endif
     return self;

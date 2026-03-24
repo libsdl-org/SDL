@@ -33,9 +33,9 @@ extension SDL_uikitviewcontroller {
                         SDL_VisionOS_EnterImmersiveMode()
                     }) {
                         Label {
-                            Text("Immersive")
+                            Text("Enter Immersive")
                         } icon: {
-                            ImmersiveButtonIcon()
+                            EnterImmersiveButtonIcon()
                         }
                     }
                     .frame(width: 80, height: 80)

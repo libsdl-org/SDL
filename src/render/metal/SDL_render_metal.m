@@ -36,7 +36,7 @@
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
 #ifdef SDL_PLATFORM_VISIONOS
-#import "../../video/uikit/SDL_uikitvolumetric.h"
+#import "../../video/uikit/SDL_uikitvisionosscene.h"
 #endif
 #endif
 
@@ -457,8 +457,8 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             mtltexture = texdata.mtltexture;
         } else {
 #ifdef SDL_PLATFORM_VISIONOS
-            if (renderer->window && SDL_UIKit_IsVolumetricWindow(renderer->window)) {
-                mtltexture = SDL_UIKit_GetVolumetricDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+            if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
+                mtltexture = SDL_UIKit_GetImmersiveDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
             } else
 #endif
             {
@@ -2032,7 +2032,7 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 
 #ifdef SDL_PLATFORM_VISIONOS
         // For volumetric windows, update RealityView with the rendered texture
-        if (renderer->window && SDL_UIKit_IsVolumetricWindow(renderer->window)) {
+        if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
             if (ready) {
                 // Commit the command buffer first to finish rendering
                 [data.mtlcmdbuffer commit];

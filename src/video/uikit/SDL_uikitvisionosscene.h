@@ -25,14 +25,6 @@
 #import <Metal/Metal.h>
 
 /**
- * Scene presentation mode for visionOS.
- */
-typedef NS_ENUM(NSInteger, SDL_VisionOSSceneMode) {
-    SDL_VisionOSSceneModeVolumetric,
-    SDL_VisionOSSceneModeImmersive
-};
-
-/**
  * SDL_UIKitVisionOSScene
  *
  * Manages a visionOS scene for presenting SDL content using SwiftUI.
@@ -51,26 +43,18 @@ typedef NS_ENUM(NSInteger, SDL_VisionOSSceneMode) {
 @property (nonatomic, assign, readonly) CGFloat curvature;
 
 /**
- * The scene presentation mode.
- */
-@property (nonatomic, assign, readonly) SDL_VisionOSSceneMode mode;
-
-/**
  * Initialize the scene manager.
  *
- * @param mode Volumetric or immersive presentation mode
  * @param windowScene The window scene context
  * @param device Metal device for rendering
  * @param curvature Initial curvature factor (0.0-1.0)
  * @param size Size of the content
  * @param mainSceneSession The main scene session (kept alive for restoration)
  */
-- (instancetype)initWithMode:(SDL_VisionOSSceneMode)mode
-                 windowScene:(UIWindowScene *)windowScene
-                 metalDevice:(id<MTLDevice>)device
-                   curvature:(CGFloat)curvature
-                        size:(CGSize)size
-            mainSceneSession:(UISceneSession *)mainSceneSession;
+- (instancetype)initWithWindowScene:(UIWindowScene *)windowScene
+                          curvature:(CGFloat)curvature
+                               size:(CGSize)size
+                   mainSceneSession:(UISceneSession *)mainSceneSession;
 
 /**
  * Present the scene.
@@ -112,5 +96,19 @@ typedef NS_ENUM(NSInteger, SDL_VisionOSSceneMode) {
 - (void)setSceneSession:(UISceneSession *)session;
 
 @end
+
+
+/**
+ * Check if a window is using volumetric rendering mode.
+ *
+ * @param window The SDL window to check.
+ * @return true if the window is volumetric, false otherwise.
+ */
+bool SDL_UIKit_IsImmersiveWindow(SDL_Window *window);
+
+/**
+ * Get the volumetric display texture.
+ */
+id<MTLTexture> SDL_UIKit_GetImmersiveDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat);
 
 #endif /* SDL_uikitvisionosscene_h_ */

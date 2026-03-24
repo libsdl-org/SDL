@@ -24,7 +24,7 @@
 void SDL_VisionOS_SendWindowResized(CGSize size);
 
 // Called from Swift scene delegates when visionOS delivers a touch event
-void SDL_VisionOS_SendVolumetricTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGPoint location);
+void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGPoint location);
 
 // Called from Swift to enter immersive mode
 void SDL_VisionOS_EnterImmersiveMode();

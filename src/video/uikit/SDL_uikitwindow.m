@@ -35,7 +35,6 @@
 #include "SDL_uikitopenglview.h"
 
 #ifdef SDL_PLATFORM_VISIONOS
-#import "SDL_uikitvolumetric.h"
 #import "SDL_uikitvisionosscene.h"
 #endif
 
@@ -236,71 +235,6 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if (!SetupWindowData(_this, window, uiwindow, true)) {
             return false;
         }
-
-#ifdef SDL_PLATFORM_VISIONOS
-        // Set up visionOS scene rendering if requested
-        SDL_VisionOSSceneMode sceneMode = SDL_VisionOSSceneModeVolumetric;
-        BOOL createScene = NO;
-        const char *hint = SDL_GetHint(SDL_HINT_VISIONOS_WINDOW_MODE);
-
-        if (hint && *hint) {
-            if (SDL_strcasecmp(hint, "volumetric") == 0) {
-                sceneMode = SDL_VisionOSSceneModeVolumetric;
-                createScene = YES;
-                SDL_Log("VISIONOS: Creating volumetric scene");
-            } else if (SDL_strcasecmp(hint, "immersive") == 0) {
-                sceneMode = SDL_VisionOSSceneModeImmersive;
-                createScene = YES;
-                SDL_Log("VISIONOS: Creating immersive scene");
-            } else if (SDL_strcasecmp(hint, "flat") != 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Unknown value \"%s\" for SDL_HINT_VISIONOS_WINDOW_MODE, defaulting to flat", hint);
-            }
-        }
-
-        if (createScene) {
-            SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
-
-            id<MTLDevice> device = MTLCreateSystemDefaultDevice();
-            if (!device) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "VISIONOS: Failed to create Metal device");
-                SDL_SetError("Failed to create Metal device for visionOS rendering");
-                return false;
-            }
-
-            const char *curvature_hint = SDL_GetHint(SDL_HINT_VISIONOS_WINDOW_CURVATURE);
-            float curvature = 0.0f;
-            if (curvature_hint) {
-                curvature = SDL_atof(curvature_hint);
-                curvature = SDL_clamp(curvature, 0.0f, 1.0f);
-            }
-            SDL_Log("VISIONOS: Using curvature: %.2f", curvature);
-
-            SDL_UIKitVisionOSScene *scene =
-                [[SDL_UIKitVisionOSScene alloc] initWithMode:sceneMode
-                                                 windowScene:windowData.uiwindow.windowScene
-                                                 metalDevice:device
-                                                   curvature:curvature
-                                                        size:CGSizeMake(window->w, window->h)
-                                            mainSceneSession:windowData.uiwindow.windowScene.session];
-
-            if (!scene) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "VISIONOS: Failed to create scene");
-                SDL_SetError("Failed to create visionOS scene");
-                return false;
-            }
-
-            windowData.visionOSScene = scene;
-            SDL_Log("VISIONOS: Scene created successfully");
-
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                SDL_Log("VISIONOS: Auto-presenting scene now");
-                windowData.uiwindow.hidden = YES;
-                [scene present];
-            });
-        } else {
-            SDL_Log("VISIONOS: Standard window (no volumetric/immersive flag)");
-        }
-#endif // SDL_PLATFORM_VISIONOS
     }
 
     return true;
@@ -320,7 +254,7 @@ void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         CGSize size = { window->pending.w, window->pending.h };
-        if (SDL_UIKit_IsVolumetricWindow(window)) {
+        if (SDL_UIKit_IsImmersiveWindow(window)) {
             [data.visionOSScene setSize:size];
         } else {
             UIWindowScene *scene = data.uiwindow.windowScene;

@@ -27,12 +27,6 @@ import simd
 
 /// Swift wrapper for RealityKit functionality to be called from Objective-C
 ///
-/// This helper provides the core RealityKit mesh generation and texture update functionality.
-/// It's used by SDL_VolumetricHostingSceneDelegate which hosts the SwiftUI/RealityKit content.
-///
-/// Architecture:
-/// SDL (ObjC) → SDL_VolumetricHostingSceneDelegate (Swift) → SDL_RealityKitHelper (Swift) → RealityKit
-///
 /// Key responsibilities:
 /// - Generate curved mesh geometry procedurally (CPU-based)
 /// - Update textures using LowLevelTexture for efficient Metal → RealityKit transfer
@@ -268,7 +262,7 @@ public class SDL_RealityKitHelper: NSObject {
     }
 
     @objc public func getDisplayTexture(_ commandBuffer: MTLCommandBuffer, width: Int, height: Int, pixelFormat: MTLPixelFormat) -> MTLTexture? {
-        // This can happen where we are in the middle of a transition between QT -> SDL or Volumetric -> Immersive
+        // This can happen where we are in the middle of a transition
         guard curvedEntity != nil else {
             return nil
         }
