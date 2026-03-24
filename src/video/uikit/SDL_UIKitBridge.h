@@ -20,8 +20,8 @@
 */
 #import "SDL_uikitviewcontroller.h"
 
-// Called from Swift scene delegates when visionOS resizes a scene
-void SDL_VisionOS_SendWindowResized(CGSize size);
+// Called from Swift scene delegates when window curvature changes
+void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature);
 
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGPoint location);

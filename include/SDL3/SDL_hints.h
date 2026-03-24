@@ -4263,17 +4263,6 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
- * A variable controlling the curvature of an immersive window on visionOS.
- *
- * The variable can be set to a floating point value in the range 0.0-1.0, defaulting to 0.0.
- *
- * This hint should be set before creating a window.
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_VISIONOS_WINDOW_CURVATURE "SDL_VISIONOS_WINDOW_CURVATURE"
-
-/**
  * A variable controlling whether touch should be enabled on the back panel of
  * the PlayStation Vita.
  *

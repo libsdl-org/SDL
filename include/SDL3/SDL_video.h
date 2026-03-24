@@ -1384,6 +1384,11 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   popup windows and have the behaviors and guidelines outlined in
  *   SDL_CreatePopupWindow().
  *
+ * These are additional supported properties with visionOS:
+ *
+ * - `SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT`: the curvature of the window in immersive mode on visionOS.
+ * This can be set to a floating point value in the range 0.0-1.0, defaulting to 0.0.
+ *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
  * (`SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`, etc), as SDL will handle that
@@ -1446,6 +1451,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT            "SDL.window.create.visionos.curvature"
 
 /**
  * Get the numeric ID of a window.
@@ -1624,6 +1630,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
  *
+ * On visionOS:
+ *
+ * - `SDL_PROP_WINDOW_VISIONOS_CURVATURE_FLOAT`: the curvature of the window in immersive mode on visionOS. This value is updated dynamically when changed via the screen ornaments.
+ *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1673,6 +1683,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_VISIONOS_CURVATURE_FLOAT                    "SDL.window.visionos.curvature"
 
 /**
  * Get the window flags.

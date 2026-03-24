@@ -57,7 +57,7 @@
 
 @end
 
-static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
+static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_PropertiesID create_props, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -123,9 +123,17 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
      * hierarchy. */
     [view setSDLWindow:window];
 
+
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
+
+#ifdef SDL_PLATFORM_VISIONOS
+    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT, 0.0f);
+    curvature = SDL_clamp(curvature, 0.0f, 1.0f);
+    data.curvature = curvature;
+    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_VISIONOS_CURVATURE_FLOAT, curvature);
+#endif
 
     return true;
 }
@@ -232,7 +240,7 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         }
 #endif
 
-        if (!SetupWindowData(_this, window, uiwindow, true)) {
+        if (!SetupWindowData(_this, window, uiwindow, create_props, true)) {
             return false;
         }
     }

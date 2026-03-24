@@ -342,13 +342,14 @@ static id SDL_GetSharedDelegate()
 @end
 
 
-// Called from Swift scene delegates when visionOS resizes a scene
-void SDL_VisionOS_SendWindowResized(CGSize size)
+// Called from Swift scene delegates when window curvature changes
+void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        data.uiwindow.frame = CGRectMake(0, 0, size.width, size.height);
+        data.curvature = curvature;
+        SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT, curvature);
     }
 }
 
@@ -398,17 +399,9 @@ void SDL_VisionOS_EnterImmersiveMode()
         return false;
     }
 
-    const char *curvature_hint = SDL_GetHint(SDL_HINT_VISIONOS_WINDOW_CURVATURE);
-    float curvature = 0.0f;
-    if (curvature_hint) {
-        curvature = SDL_atof(curvature_hint);
-        curvature = SDL_clamp(curvature, 0.0f, 1.0f);
-    }
-    SDL_Log("VISIONOS: Using curvature: %.2f", curvature);
-
     SDL_UIKitVisionOSScene *scene =
         [[SDL_UIKitVisionOSScene alloc] initWithWindowScene:windowData.uiwindow.windowScene
-                                                  curvature:curvature
+                                                  curvature:windowData.curvature
                                                        size:CGSizeMake(window->w, window->h)
                                            mainSceneSession:windowData.uiwindow.windowScene.session];
 

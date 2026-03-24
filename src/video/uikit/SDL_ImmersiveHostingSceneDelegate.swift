@@ -369,6 +369,7 @@ struct SDL_ImmersiveRootView: View {
                     if helper.meshCurvature == 0.0 {
                         Button(action: {
                             helper.updateCurvature(curvature: 0.2)
+                            SDL_VisionOS_SendCurvatureChanged(0.2)
                         }) {
                             Label {
                                 Text("Flat")
@@ -382,6 +383,7 @@ struct SDL_ImmersiveRootView: View {
                     } else if helper.meshCurvature == 0.2 {
                         Button(action: {
                             helper.updateCurvature(curvature: 0.4)
+                            SDL_VisionOS_SendCurvatureChanged(0.4)
                         }) {
                             Label {
                                 Text("Curved")
@@ -395,6 +397,7 @@ struct SDL_ImmersiveRootView: View {
                     } else {
                         Button(action: {
                             helper.updateCurvature(curvature: 0.0)
+                            SDL_VisionOS_SendCurvatureChanged(0.0)
                         }) {
                             Label {
                                 Text("Curviest")
