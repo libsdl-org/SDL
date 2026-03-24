@@ -80,7 +80,7 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
     // MARK: - ObjC-Callable Activation
 
     /// Activate the immersive scene from Objective-C code.
-    @objc public static func activateImmersiveScene(errorHandler: @escaping (Error) -> Void) {
+    @objc public static func activateScene(errorHandler: @escaping (Error) -> Void) {
         guard let request = UISceneSessionActivationRequest(
             hostingDelegateClass: SDL_ImmersiveHostingSceneDelegate.self,
             id: "sdl-immersive"
@@ -102,7 +102,7 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
     }
 
     /// Dismiss the active immersive scene from Objective-C code.
-    @objc public static func dismissImmersiveScene() {
+    @objc public static func dismissScene() {
         guard let session = activeSession else {
             NSLog("SDL_ImmersiveHostingSceneDelegate: No active session to dismiss")
             return

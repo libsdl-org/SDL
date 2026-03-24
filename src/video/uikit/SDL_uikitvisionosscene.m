@@ -38,23 +38,17 @@
 
 @end
 
-// Returns the ObjC class name and scene ID for the given mode
-static void SDL_GetSceneConfig(NSString * __autoreleasing *outClassName,
-                               NSString * __autoreleasing *outActivateSelector,
-                               NSString * __autoreleasing *outDismissSelector)
+// Returns the ObjC class name for the immersive scene
+static void SDL_GetSceneConfig(NSString * __autoreleasing *outClassName)
 {
     *outClassName = @"SDL_ImmersiveHostingSceneDelegate";
-    *outActivateSelector = @"activateImmersiveSceneWithErrorHandler:";
-    *outDismissSelector = @"dismissImmersiveScene";
 }
 
 // Helper function to get the Swift hosting delegate class for the given mode
 static Class SDL_GetHostingDelegateClass()
 {
     NSString *className = nil;
-    NSString *unused1 = nil;
-    NSString *unused2 = nil;
-    SDL_GetSceneConfig(&className, &unused1, &unused2);
+    SDL_GetSceneConfig(&className);
 
     // The @objc(...) attribute on the Swift class gives it a stable ObjC name
     Class delegateClass = NSClassFromString(className);
@@ -178,16 +172,10 @@ static id SDL_GetSharedDelegate()
     }
 
     // Activate using the UIHostingSceneDelegate bridging API
-    NSString *unused1 = nil;
-    NSString *activateSelectorName = nil;
-    NSString *unused2 = nil;
-    SDL_GetSceneConfig(&unused1, &activateSelectorName, &unused2);
-
-    SEL activateSelector = NSSelectorFromString(activateSelectorName);
+    SEL activateSelector = NSSelectorFromString(@"activateSceneWithErrorHandler:");
     if (![delegateClass respondsToSelector:activateSelector]) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
-                    "SDL_UIKitVisionOSScene: Delegate doesn't respond to %s",
-                    [activateSelectorName UTF8String]);
+                     "SDL_UIKitVisionOSScene: Delegate doesn't respond to activateSceneWithErrorHandler:");
         return;
     }
 
@@ -224,12 +212,7 @@ static id SDL_GetSharedDelegate()
     // across SwiftUI-created delegate instances
     Class delegateClass = SDL_GetHostingDelegateClass();
     if (delegateClass) {
-        NSString *unused1 = nil;
-        NSString *unused2 = nil;
-        NSString *dismissSelectorName = nil;
-        SDL_GetSceneConfig(&unused1, &unused2, &dismissSelectorName);
-
-        SEL dismissSelector = NSSelectorFromString(dismissSelectorName);
+        SEL dismissSelector = NSSelectorFromString(@"dismissScene");
         if ([delegateClass respondsToSelector:dismissSelector]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
