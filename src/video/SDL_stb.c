@@ -22,6 +22,7 @@
 
 #include "SDL_stb_c.h"
 #include "SDL_surface_c.h"
+#include "SDL_yuv_c.h"
 
 /* STB image conversion */
 #ifndef SDL_DISABLE_STB
@@ -114,8 +115,37 @@ bool SDL_ConvertPixels_STB(int width, int height,
                            SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
 #ifdef SDL_HAVE_STB
-    if (src_format == SDL_PIXELFORMAT_MJPG && dst_format == SDL_PIXELFORMAT_NV12) {
-        return SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, dst, dst_pitch);
+    if (src_format == SDL_PIXELFORMAT_MJPG) {
+        if (dst_format == SDL_PIXELFORMAT_NV12) {
+            return SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, dst, dst_pitch);
+        } else if (
+            dst_format == SDL_PIXELFORMAT_YV12 ||
+            dst_format == SDL_PIXELFORMAT_IYUV ||
+            dst_format == SDL_PIXELFORMAT_YUY2 ||
+            dst_format == SDL_PIXELFORMAT_UYVY ||
+            dst_format == SDL_PIXELFORMAT_YVYU ||
+            dst_format == SDL_PIXELFORMAT_NV21 ||
+            dst_format == SDL_PIXELFORMAT_P010
+        ) {
+            size_t temp_size = 0;
+            size_t temp_pitch = 0;
+            if (!SDL_CalculateYUVSize(dst_format, width, height, &temp_size, &temp_pitch)) {
+                return false;
+            }
+            void *temp_pixels = SDL_malloc(temp_size);
+            if (!temp_pixels) {
+                return false;
+            }
+
+            if (!SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, temp_pixels, (int)temp_pitch)) {
+                SDL_free(temp_pixels);
+                return false;
+            }
+
+            bool result = SDL_ConvertPixelsAndColorspace(width, height, SDL_PIXELFORMAT_NV12, src_colorspace, 0 /*props*/, temp_pixels, (int)temp_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+            SDL_free(temp_pixels);
+            return result;
+        }
     }
 
     bool result;
