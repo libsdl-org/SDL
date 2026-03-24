@@ -353,7 +353,7 @@ struct SDL_ImmersiveRootView: View {
             NSLog("SDL_ImmersiveRootView: RealityView setup (immersive=%d)", 1)
 
             if let attachmentEntity = attachments.entity(for: "sceneButton") {
-                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -0.5, 0.1)
+                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(helper.meshHeight * 0.5), 0.1)
                 content.add(attachmentEntity)
                 NSLog("SDL_ImmersiveRootView: Added button attachment (immersive=%d)", 1)
             }
