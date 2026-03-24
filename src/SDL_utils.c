@@ -583,9 +583,80 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
     return name;
 }
 
+static char *initialized_backends = NULL;
 
 void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
+    char *newstr = NULL;
+    if (SDL_asprintf(&newstr, "%s%s%s=%s", initialized_backends ? initialized_backends : "", initialized_backends ? ", " : "", subsystem, backend) > 0) {
+        SDL_free(initialized_backends);
+        initialized_backends = newstr;
+    }
+    // !!! FIXME: free this string on SDL_Quit.
 }
+
+
+#define BUGREPORT_URL_BASE "https://github.com/libsdl-org/SDL/issues/new/?body="
+
+static char *URLEncode(const char *base, const char *url)
+{
+    const size_t slen = SDL_strlen(base) + (SDL_strlen(url) * 3) + 1;
+    char *retval = SDL_malloc(slen);
+    if (retval) {
+        char *ptr = retval + SDL_strlcpy(retval, base, slen);
+        while (*url) {
+            const char ch = *(url++);
+            // RFC 3986 section 2.3 Unreserved Characters (don't percent-encode these).
+            if ( ((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')) || (ch == '-') || (ch == '.') || (ch == '_') || (ch == '~') ) {
+                *(ptr++) = ch;
+            } else if (ch == ' ') {
+                *(ptr++) = '+';
+            } else {  // encode everything else (multiple bytes in a UTF-8 codepoint will encode byte-by-byte).
+                ptr += SDL_snprintf(ptr, 4, "%%%02X", (unsigned int) ch);
+            }
+            SDL_assert(((size_t)(ptr - retval)) < slen);
+        }
+        *ptr = '\0';
+    }
+    return retval;
+}
+
+bool SDL_LaunchBugReportURL(void)
+{
+    const int version = SDL_GetVersion();
+    char *body = NULL;
+    const int rc = SDL_asprintf(&body,
+        "Some info about my system:\n"
+        "- SDL version: %d.%d.%d\n"
+        "- SDL revision: %s\n"
+        "- App id: %s\n"
+        "- App version: %s\n"
+        "- App url: %s\n"
+        "- platform: %s\n"
+        //!!! FIXME: processor type, HasSSE, etc. "cpuinfo: %s\n"
+        "- backends: %s\n"
+        "----\n\n"
+        "(Please report your SDL bug here!)",
+            SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version), SDL_VERSIONNUM_MICRO(version),
+            SDL_GetRevision(),
+            SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING),
+            SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING),
+            SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING),
+            SDL_GetPlatform(),  // !!! FIXME: this is just SDL's hardcoded thing, a better platform string ("Windows 11" verses "windows") would be good.
+            // !!! FIXME: CPU info.
+            initialized_backends ? initialized_backends : "(none)"
+    );
+
+    if (rc < 0) {
+        return false;
+    }
+    char *url = URLEncode(BUGREPORT_URL_BASE, body);
+    SDL_free(body);
+    SDL_Log("Launching bug report URL! Go here if this doesn't work: %s", url);
+    const bool retval = SDL_OpenURL(url);
+    SDL_free(url);
+    return retval;
+}
+
 

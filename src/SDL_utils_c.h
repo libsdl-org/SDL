@@ -93,6 +93,10 @@ extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *ven
 // Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
 extern void SDL_DebugLogBackend(const char *subsystem, const char *backend);
 
+// Launch a web browser to our bug tracker with some end-user info automatically added to the bug report.
+bool SDL_LaunchBugReportURL(void);
+
+
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 // even though we reference the C runtime's free() in other places, it appears
 // to be inlined more aggressively in Emscripten 4, so we need a reference to

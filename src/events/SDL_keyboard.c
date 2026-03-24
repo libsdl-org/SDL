@@ -627,6 +627,24 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
         }
     }
 
+    static bool check_for_bugreport_cheatcode = true;
+    if (check_for_bugreport_cheatcode && (SDL_GetTicks() > 10000)) {
+        check_for_bugreport_cheatcode = false;  // stop checking for this after 10 seconds of uptime.
+    }
+    if (down && check_for_bugreport_cheatcode) {
+        static const char *bugreport_cheatcode = "sdlbug";
+        static int cheatcode_index = 0;
+        if (((SDL_Keycode) bugreport_cheatcode[cheatcode_index]) != keycode) {
+            cheatcode_index = 0;
+        } else {
+            cheatcode_index++;
+            if (bugreport_cheatcode[cheatcode_index] == '\0') {
+                check_for_bugreport_cheatcode = false;  // don't check again after we've launched.
+                SDL_LaunchBugReportURL();
+            }
+        }
+    }
+
     // Post the event, if desired
     if (SDL_EventEnabled(type)) {
         SDL_Event event;
