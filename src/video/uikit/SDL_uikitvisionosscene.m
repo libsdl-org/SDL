@@ -30,17 +30,10 @@
 // Called from Swift scene delegates when visionOS resizes a scene
 void SDL_VisionOS_SendWindowResized(CGSize size)
 {
-    SDL_Window **windows = SDL_GetWindows(NULL);
-    if (windows) {
-        for (int i = 0; windows[i]; ++i) {
-            SDL_Window *window = windows[i];
-            if (SDL_UIKit_IsVolumetricWindow(window)) {
-                SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-                data.uiwindow.frame = CGRectMake(0, 0, size.width, size.height);
-                break;
-            }
-        }
-        SDL_free(windows);
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (window) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+        data.uiwindow.frame = CGRectMake(0, 0, size.width, size.height);
     }
 }
 
@@ -71,6 +64,66 @@ void SDL_VisionOS_SendVolumetricTouch(NSTimeInterval timestamp, SDL_FingerID fin
         }
         SDL_free(windows);
     }
+}
+
+// Called from Swift to enter immersive mode
+void SDL_VisionOS_EnterImmersiveMode()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (!window) {
+        return;
+    }
+
+    SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
+
+    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+    if (!device) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "VISIONOS: Failed to create Metal device");
+        SDL_SetError("Failed to create Metal device for visionOS rendering");
+        return false;
+    }
+
+    const char *curvature_hint = SDL_GetHint(SDL_HINT_VISIONOS_WINDOW_CURVATURE);
+    float curvature = 0.0f;
+    if (curvature_hint) {
+        curvature = SDL_atof(curvature_hint);
+        curvature = SDL_clamp(curvature, 0.0f, 1.0f);
+    }
+    SDL_Log("VISIONOS: Using curvature: %.2f", curvature);
+
+    SDL_UIKitVisionOSScene *scene =
+        [[SDL_UIKitVisionOSScene alloc] initWithMode:SDL_VisionOSSceneModeImmersive
+                                         windowScene:windowData.uiwindow.windowScene
+                                         metalDevice:device
+                                           curvature:curvature
+                                                size:CGSizeMake(window->w, window->h)
+                                    mainSceneSession:windowData.uiwindow.windowScene.session];
+
+    if (!scene) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "VISIONOS: Failed to create scene");
+    }
+
+    windowData.visionOSScene = scene;
+    SDL_Log("VISIONOS: Scene created successfully");
+
+    SDL_Log("VISIONOS: Auto-presenting scene now");
+    windowData.uiwindow.hidden = YES;
+    [scene present];
+}
+
+// Called from Swift to leave immersive mode
+void SDL_VisionOS_LeaveImmersiveMode()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (!window) {
+        return;
+    }
+
+    SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
+    [windowData.visionOSScene dismiss];
+    windowData.visionOSScene = nil;
+    windowData.uiwindow.hidden = NO;
+    [windowData.viewcontroller addOrnaments];
 }
 
 // Forward declare the Swift delegate class.

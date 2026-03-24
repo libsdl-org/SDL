@@ -59,6 +59,10 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
+#ifdef SDL_PLATFORM_VISIONOS
+- (void)addOrnaments;
+#endif
+
 #ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;

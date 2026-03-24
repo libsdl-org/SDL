@@ -22,14 +22,6 @@ import SwiftUI
 import RealityKit
 import Metal
 
-// Defined in SDL_uikitvisionosscene.m — posts SDL_EVENT_WINDOW_RESIZED when a scene is resized
-@_silgen_name("SDL_VisionOS_SendWindowResized")
-func SDL_VisionOS_SendWindowResized(size: CGSize)
-
-// Defined in SDL_uikitvisionosscene.m — sends touch events to the application
-@_silgen_name("SDL_VisionOS_SendVolumetricTouch")
-func SDL_VisionOS_SendVolumetricTouch(timestamp: Double, fingerID: UInt64, eventType: UInt32, location: CGPoint);
-
 // Defined in SDL_quit.c
 @_silgen_name("SDL_SendQuit")
 func SDL_SendQuit()
@@ -449,7 +441,7 @@ struct SDL_VolumetricRootView: View {
             // An inactive event for a finger we don't know about
             return
         }
-        SDL_VisionOS_SendVolumetricTouch(timestamp: event.timestamp, fingerID: fingerID, eventType: eventType, location: event.location)
+        SDL_VisionOS_SendVolumetricTouch(event.timestamp, fingerID, eventType, event.location)
     }
 
     var body: some View {
@@ -461,7 +453,7 @@ struct SDL_VolumetricRootView: View {
                     SDL_VolumetricHostingSceneDelegate.immersiveActive = false;
                     let size = CGSize(width: newSize.width, height: newSize.height);
                     SDL_ImmersiveHostingSceneDelegate.shared.updateSize(size);
-                    SDL_VisionOS_SendWindowResized(size: size);
+                    SDL_VisionOS_SendWindowResized(size);
                 }
         }
         .frame(
@@ -559,17 +551,7 @@ struct SDL_VolumetricRootView: View {
                     }
                     if isImmersive {
                         Button(action: {
-                            Task {
-                                SDL_VolumetricHostingSceneDelegate.immersiveActive = false
-                                SDL_VolumetricHostingSceneDelegate.immersiveHelper.reset()
-                                // Reopen the volumetric scene before dismissing immersive
-                                // so the app always has a foreground scene.
-                                SDL_VolumetricHostingSceneDelegate.activateVolumetricScene { error in
-                                    NSLog("SDL_VolumetricHostingSceneDelegate: Failed to reactivate volumetric: %@",
-                                          error.localizedDescription)
-                                }
-                                await dismissImmersiveSpace()
-                            }
+                            SDL_VisionOS_LeaveImmersiveMode()
                         }) {
                             Label {
                                 Text("Volumetric")
