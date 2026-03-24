@@ -24,6 +24,7 @@
 
 #include "../../SDL_hints_c.h"
 #include "../../misc/SDL_libusb.h"
+#include "../../hidapi/SDL_hidapi_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -215,6 +216,11 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         // GCController support doesn't work with the Steam Virtual Gamepad
         return true;
+    } else if (SDL_HIDAPI_ShouldIgnoreDevice(SDL_HID_API_BUS_USB, vendor_id, product_id, 0, 0, false)) {
+        // Devices in the libusb-required whitelist use XInput protocol over
+        // vendor-specific USB interfaces (not HID). macOS GCController/MFI
+        // cannot see these devices, so we must handle them via HIDAPI/libusb.
+        return (type == SDL_GAMEPAD_TYPE_XBOX360);
     } else {
         // On macOS when it isn't controlled by the 360Controller driver and
         // it doesn't look like a Steam virtual gamepad we should rely on
