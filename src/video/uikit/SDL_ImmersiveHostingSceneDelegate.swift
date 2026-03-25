@@ -213,7 +213,7 @@ struct CurvedButtonIcon : Shape {
 // Curviest button
 /* SVG:
  <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
- <path d="M133.333 400C311.111 311.111 488.889 311.111 666.667 400" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M133 370C310.667 230 488.333 230 666 370" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
  </svg>
  */
 struct CurviestButtonIcon : Shape {
@@ -222,75 +222,9 @@ struct CurviestButtonIcon : Shape {
         let width = rect.size.width
         let height = rect.size.height
         var strokePath = Path()
-        strokePath.move(to: CGPoint(x: 0.16667*width, y: 0.5*height))
-        strokePath.addCurve(to: CGPoint(x: 0.83333*width, y: 0.5*height), control1: CGPoint(x: 0.38889*width, y: 0.38889*height), control2: CGPoint(x: 0.61111*width, y: 0.38889*height))
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.4625*height))
+        strokePath.addCurve(to: CGPoint(x: 0.8325*width, y: 0.4625*height), control1: CGPoint(x: 0.38833*width, y: 0.2875*height), control2: CGPoint(x: 0.61042*width, y: 0.2875*height))
         path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        return path
-    }
-}
-
-// Enter immersive mode button
-/* SVG:
- <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
- <path d="M175 625L343.75 456.25M625 175L456.25 343.75" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- <path d="M492 175H625.333V308.333" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- <path d="M308.333 625.333H175V492" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- </svg>
- */
-struct EnterImmersiveButtonIcon : Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let width = rect.size.width
-        let height = rect.size.height
-        var strokePath2 = Path()
-        strokePath2.move(to: CGPoint(x: 0.21875*width, y: 0.78125*height))
-        strokePath2.addLine(to: CGPoint(x: 0.42969*width, y: 0.57031*height))
-        strokePath2.move(to: CGPoint(x: 0.78125*width, y: 0.21875*height))
-        strokePath2.addLine(to: CGPoint(x: 0.57031*width, y: 0.42969*height))
-        path.addPath(strokePath2.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        var strokePath4 = Path()
-        strokePath4.move(to: CGPoint(x: 0.615*width, y: 0.21875*height))
-        strokePath4.addLine(to: CGPoint(x: 0.78167*width, y: 0.21875*height))
-        strokePath4.addLine(to: CGPoint(x: 0.78167*width, y: 0.38542*height))
-        path.addPath(strokePath4.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        var strokePath6 = Path()
-        strokePath6.move(to: CGPoint(x: 0.38542*width, y: 0.78167*height))
-        strokePath6.addLine(to: CGPoint(x: 0.21875*width, y: 0.78167*height))
-        strokePath6.addLine(to: CGPoint(x: 0.21875*width, y: 0.615*height))
-        path.addPath(strokePath6.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        return path
-    }
-}
-
-// Leave immersive mode button
-/* SVG:
- <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
- <path d="M175 625L343.75 456.25M625 175L456.25 343.75" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- <path d="M211 456H344.333V589.333" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- <path d="M589.333 344.333H456V211" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
- </svg>
- */
-struct LeaveImmersiveButtonIcon : Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let width = rect.size.width
-        let height = rect.size.height
-        var strokePath2 = Path()
-        strokePath2.move(to: CGPoint(x: 0.21875*width, y: 0.78125*height))
-        strokePath2.addLine(to: CGPoint(x: 0.42969*width, y: 0.57031*height))
-        strokePath2.move(to: CGPoint(x: 0.78125*width, y: 0.21875*height))
-        strokePath2.addLine(to: CGPoint(x: 0.57031*width, y: 0.42969*height))
-        path.addPath(strokePath2.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        var strokePath4 = Path()
-        strokePath4.move(to: CGPoint(x: 0.26375*width, y: 0.57*height))
-        strokePath4.addLine(to: CGPoint(x: 0.43042*width, y: 0.57*height))
-        strokePath4.addLine(to: CGPoint(x: 0.43042*width, y: 0.73667*height))
-        path.addPath(strokePath4.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
-        var strokePath6 = Path()
-        strokePath6.move(to: CGPoint(x: 0.73667*width, y: 0.43042*height))
-        strokePath6.addLine(to: CGPoint(x: 0.57*width, y: 0.43042*height))
-        strokePath6.addLine(to: CGPoint(x: 0.57*width, y: 0.26375*height))
-        path.addPath(strokePath6.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
         return path
     }
 }
@@ -371,57 +305,36 @@ struct SDL_ImmersiveRootView: View {
                             helper.updateCurvature(curvature: 0.2)
                             SDL_VisionOS_SendCurvatureChanged(0.2)
                         }) {
-                            Label {
-                                Text("Flat")
-                            } icon: {
-                                FlatButtonIcon()
-                            }
+                            FlatButtonIcon()
+                                .frame(width: 48, height: 48)
                         }
-                        .frame(width: 80, height: 80)
-                        .glassBackgroundEffect()
-                        .labelStyle(.iconOnly)
+                        .frame(width: 48, height: 48)
                     } else if helper.meshCurvature == 0.2 {
                         Button(action: {
                             helper.updateCurvature(curvature: 0.4)
                             SDL_VisionOS_SendCurvatureChanged(0.4)
                         }) {
-                            Label {
-                                Text("Curved")
-                            } icon: {
-                                CurvedButtonIcon()
-                            }
+                            CurvedButtonIcon()
+                                .frame(width: 48, height: 48)
                         }
-                        .frame(width: 80, height: 80)
-                        .glassBackgroundEffect()
-                        .labelStyle(.iconOnly)
+                        .frame(width: 48, height: 48)
                     } else {
                         Button(action: {
                             helper.updateCurvature(curvature: 0.0)
                             SDL_VisionOS_SendCurvatureChanged(0.0)
                         }) {
-                            Label {
-                                Text("Curviest")
-                            } icon: {
-                                CurviestButtonIcon()
-                            }
+                            CurviestButtonIcon()
+                                .frame(width: 48, height: 48)
                         }
-                        .frame(width: 80, height: 80)
-                        .glassBackgroundEffect()
-                        .labelStyle(.iconOnly)
+                        .frame(width: 48, height: 48)
                     }
 
                     Button(action: {
                         SDL_VisionOS_LeaveImmersiveMode()
                     }) {
-                        Label {
-                            Text("Leave Immersive")
-                        } icon: {
-                            LeaveImmersiveButtonIcon()
-                        }
+                        Image(systemName: "rectangle.arrowtriangle.2.inward")
                     }
-                    .frame(width: 80, height: 80)
-                    .glassBackgroundEffect()
-                    .labelStyle(.iconOnly)
+                    .frame(width: 48, height: 48)
                 }
             }
         }

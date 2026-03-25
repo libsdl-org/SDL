@@ -32,15 +32,9 @@ extension SDL_uikitviewcontroller {
                         self.ornaments = []
                         SDL_VisionOS_EnterImmersiveMode()
                     }) {
-                        Label {
-                            Text("Enter Immersive")
-                        } icon: {
-                            EnterImmersiveButtonIcon()
-                        }
+                        Image(systemName: "rectangle.arrowtriangle.2.outward")
                     }
-                    .frame(width: 80, height: 80)
-                    .glassBackgroundEffect()
-                    .labelStyle(.iconOnly)
+                    .frame(width: 48, height: 48)
                 }
             ]
         }
