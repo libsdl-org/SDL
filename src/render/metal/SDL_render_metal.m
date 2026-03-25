@@ -1942,6 +1942,13 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         Uint32 format;
         SDL_Surface *surface;
 
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!renderer->target && renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
+            SDL_SetError("Can't read back from the window in immersive mode");
+            return NULL;
+        }
+#endif
+
         if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {
             SDL_SetError("Failed to activate render command encoder (is your window in the background?");
             return NULL;
