@@ -393,6 +393,10 @@ set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" ON "SDL_GPU;NOT RISCOS" OFF)
 
+if(EMSCRIPTEN)
+  option_string(SDL_EMSCRIPTEN_PERSISTENT_PATH  "Path to mount Emscripten IDBFS at startup or '' to disable" "")
+endif()
+
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 if(DEFINED CACHE{SDL_SHARED} OR DEFINED CACHE{SDL_STATIC})
@@ -1667,6 +1671,11 @@ elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   sdl_compile_options(PRIVATE "-Wno-warn-absolute-paths")
+
+  if(NOT SDL_EMSCRIPTEN_PERSISTENT_PATH STREQUAL "")
+    set(SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING "${SDL_EMSCRIPTEN_PERSISTENT_PATH}")
+    sdl_link_dependency(idbfs LIBS idbfs.js)
+  endif()
 
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/main/emscripten/*.c"
@@ -4001,6 +4010,7 @@ if(SDL_SHARED)
       )
     endif()
   endif()
+
   target_link_libraries(SDL3-shared PRIVATE ${SDL_CMAKE_DEPENDS})
   target_include_directories(SDL3-shared
     PRIVATE

@@ -346,6 +346,64 @@ all has to live in memory at runtime.
 [Emscripten's documentation on the matter](https://emscripten.org/docs/porting/files/packaging_files.html)
 gives other options and details, and is worth a read.
 
+Please also read the next section on persistent storage, for a little help
+from SDL.
+
+
+## Automount persistent storage
+
+The file tree in Emscripten is provided by MEMFS by default, which stores all
+files in RAM. This is often what you want, because it's fast and can be
+accessed with the usual synchronous i/o functions like fopen or SDL_IOFromFile.
+You can also write files to MEMFS, but when the browser tab goes away, so do
+the files. But we want things like high scores, save games, etc, to still
+exist if we reload the game later.
+
+For this, Emscripten offers IDBFS, which backs files with the browser's
+[IndexedDB](https://en.wikipedia.org/wiki/IndexedDB) functionality.
+
+To use this, the app has to mount the IDBFS filesystem somewhere in the
+virtual file tree, and then wait for it to sync up. This needs to be done in
+Javascript code. The sync will not complete until at least one (but possibly
+several) iterations of the mainloop have passed, which means you can not
+access any saved files during main() or SDL_AppInit() by default.
+
+SDL can solve this problem for you: it can be built to automatically mount the
+persistent files from IDBFS to a specific place in the file tree and wait
+until the sync has completed before calling main() or SDL_AppInit(), so to
+your C code, it looks like the files were always available.
+
+To use this functionality, set the CMake variable
+`SDL_EMSCRIPTEN_PERSISTENT_PATH` to a path in the filetree where persistent
+storage should be mounted:
+
+```bash
+mkdir build
+cd build
+emcmake cmake -DSDL_EMSCRIPTEN_PERSISTENT_PATH=/storage ..
+```
+
+You should also link your app with `-lidbfs.js`. If your project links to SDL
+using CMake's find_package(SDL3), or uses `pkg-config sdl3 --libs`, this will
+be handled for you when used with an SDL built with
+`-DSDL_EMSCRIPTEN_PERSISTENT_PATH`.
+
+Now `/storage` will be prepared when your program runs, and SDL_GetPrefPath()
+will return a directory under that path. The storage is mounted with the
+`autoPersist: true` option, so when you write to that tree, whether with
+SDL APIs or other functions like fopen(), Emscripten will know it needs to
+sync that data back to the persistent database, and will do so automatically
+within the next few iterations of the mainloop.
+
+It's best to assume the sync will take a few frames to complete, and the
+data is not safe until it does.
+
+To summarize how to automate this:
+
+- Build with `emcmake cmake -DSDL_EMSCRIPTEN_PERSISTENT_PATH=/storage`
+- Link your app with `-lidbfs.js` if not handled automatically.
+- Write under `/storage`, or use SDL_GetPrefPath()
+
 
 ## Customizing index.html
 
