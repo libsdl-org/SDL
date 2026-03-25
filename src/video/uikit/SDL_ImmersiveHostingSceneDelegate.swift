@@ -233,7 +233,7 @@ struct CurviestButtonIcon : Shape {
 @available(visionOS 26.0, *)
 struct SDL_ImmersiveRootView: View {
     let helper: SDL_RealityKitHelper
-    let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 1.5, -1.5)
+    let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 0, -1.5)
     @State private var touchScale: CGPoint = CGPoint()
     @State private var touchOffset: CGPoint = CGPoint()
 
@@ -289,27 +289,25 @@ struct SDL_ImmersiveRootView: View {
         RealityView { content, attachments in
             NSLog("SDL_ImmersiveRootView: RealityView setup")
 
-            let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
-            helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
-
-            if let attachmentEntity = attachments.entity(for: "sceneButton") {
-                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1)
-                content.add(attachmentEntity)
-            }
         } update: { content, attachments in
             //NSLog("SDL_ImmersiveRootView: RealityView update")
 
-            let entity = helper.getCurvedEntity()
-            if let entity, entity.parent == nil {
-                entity.position = immersivePosition
-                content.add(entity)
-            }
-
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
 
-            if let attachmentEntity = attachments.entity(for: "sceneButton") {
-                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1)
+            let entity = helper.getCurvedEntity()
+            if let entity, entity.parent == nil {
+                let headAnchor = AnchorEntity(.head)
+                headAnchor.anchoring.trackingMode = .once
+                content.add(headAnchor)
+
+                entity.setPosition(immersivePosition, relativeTo: headAnchor)
+                headAnchor.addChild(entity)
+
+                if let attachmentEntity = attachments.entity(for: "sceneButton") {
+                    attachmentEntity.setPosition(immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1), relativeTo: headAnchor)
+                    headAnchor.addChild(attachmentEntity)
+                }
             }
 
             let frame = proxy.frame(in: .local)
