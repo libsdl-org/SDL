@@ -39,8 +39,8 @@ import simd
 public class SDL_RealityKitHelper: NSObject {
 
     private var curvedEntity: ModelEntity?
-    private(set) var meshWidth: Float = 16.0 / 9.0
-    private(set) var meshHeight: Float = 1.0
+    private(set) var meshWidth: Float = 0.0
+    private(set) var meshHeight: Float = 0.0
     private(set) var meshCurvature: Float = 0.0
 
     /// Content size in points, used by SwiftUI to drive .windowResizability(.contentSize)
@@ -56,28 +56,13 @@ public class SDL_RealityKitHelper: NSObject {
         super.init()
     }
 
-    /// Resets all state so the helper can be reused for a new volumetric scene session.
-    /// Called when the volumetric scene is dismissed.
-    @objc public func reset() {
-        NSLog("SDL_RealityKitHelper: Resetting state for next session")
-        curvedEntity?.removeFromParent()
-        curvedEntity = nil
-        lowLevelTexture = nil
-        textureResource = nil
-        textureWidth = 0
-        textureHeight = 0
-        meshWidth = 16.0 / 9.0
-        meshHeight = 1.0
-        meshCurvature = 0.0
-    }
-
     // MARK: - Mesh Generation
 
     /// Creates a plane entity for displaying SDL content with optional curvature
     private func createCurvedMesh(width: Float, height: Float, curvature: Float) async {
         self.meshWidth = width
         self.meshHeight = height
-        self.meshCurvature = max(0.0, min(1.0, curvature))
+        self.meshCurvature = curvature
 
         NSLog("SDL_RealityKitHelper: Creating display plane %.2fx%.2f (curvature %.2f)",
               self.meshWidth, self.meshHeight, self.meshCurvature)
@@ -123,7 +108,7 @@ public class SDL_RealityKitHelper: NSObject {
         }
 
         curvedEntity?.removeFromParent()
-        self.curvedEntity = entity
+        curvedEntity = entity
 
         NSLog("SDL_RealityKitHelper: Created plane entity %.2fx%.2f meters", self.meshWidth, self.meshHeight)
     }
@@ -283,39 +268,32 @@ public class SDL_RealityKitHelper: NSObject {
         return llt.replace(using: commandBuffer)
     }
 
-    /// Updates the curvature and recreates the mesh
+    /// Set the initial size and curvature
     public func configure(width: Int, height: Int, curvature: Float) {
         contentSizeInPoints = CGSize(width: width, height: height);
-
-        @Environment(\.physicalMetrics) var metrics: PhysicalMetricsConverter
-        let newWidth = Float(metrics.convert(Float(width), to: .meters)) * 1.5
-        let newHeight = Float(metrics.convert(Float(height), to: .meters)) * 1.5
-
-        NSLog("SDL_RealityKitHelper: configuring size %.2fx%.2f and curvature %.2f", width, height, curvature)
-
-        Task {
-            await createCurvedMesh(width: newWidth, height: newHeight, curvature: curvature)
-            updateEntityMaterial()
-        }
+        meshCurvature = curvature
     }
 
     /// Updates the mesh dimensions and recreates the mesh
     public func updateSize(width: Int, height: Int) {
-        if (width == Int(contentSizeInPoints.width) && height == Int(contentSizeInPoints.height)) {
+        // The RealityView will update based on this size change
+        contentSizeInPoints = CGSize(width: width, height: height);
+    }
+
+    public func updateMeshSize(width: Float, height: Float) {
+
+        if (width == meshWidth && height == meshHeight) {
             return;
         }
 
-        contentSizeInPoints = CGSize(width: width, height: height);
-
-        @Environment(\.physicalMetrics) var metrics: PhysicalMetricsConverter
-        let newWidth = Float(metrics.convert(Float(width), to: .meters)) * 1.5
-        let newHeight = Float(metrics.convert(Float(height), to: .meters)) * 1.5
-
         NSLog("SDL_RealityKitHelper: Updating size from %.2fx%.2f to %.2fx%.2f",
-              self.meshWidth, self.meshHeight, newWidth, newHeight)
+              meshWidth, meshHeight, width, height)
+
+        meshWidth = width
+        meshHeight = height
 
         Task {
-            await createCurvedMesh(width: newWidth, height: newHeight, curvature: meshCurvature)
+            await createCurvedMesh(width: meshWidth, height: meshHeight, curvature: meshCurvature)
             updateEntityMaterial()
         }
     }
@@ -324,15 +302,17 @@ public class SDL_RealityKitHelper: NSObject {
     public func updateCurvature(curvature: Float) {
         let clampedCurvature = max(0.0, min(1.0, curvature))
 
-        if abs(self.meshCurvature - clampedCurvature) < 0.01 {
+        if abs(meshCurvature - clampedCurvature) < 0.01 {
             return
         }
 
         NSLog("SDL_RealityKitHelper: Updating curvature from %.2f to %.2f",
-              self.meshCurvature, clampedCurvature)
+              meshCurvature, clampedCurvature)
+
+        meshCurvature = clampedCurvature
 
         Task {
-            await createCurvedMesh(width: meshWidth, height: meshHeight, curvature: clampedCurvature)
+            await createCurvedMesh(width: meshWidth, height: meshHeight, curvature: meshCurvature)
             updateEntityMaterial()
         }
     }

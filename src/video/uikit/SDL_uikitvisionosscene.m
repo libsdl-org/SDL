@@ -337,7 +337,7 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
 }
 
 // Called from Swift scene delegates when visionOS delivers a touch event
-void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGPoint location)
+void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y)
 {
     const SDL_TouchID directTouchId = 1;
     SDL_Window **windows = SDL_GetWindows(NULL);
@@ -351,8 +351,6 @@ void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fing
                 } else {
                     pressure = 0.0f;
                 }
-                float x = location.x / window->w;
-                float y = location.y / window->h;
                 if (eventType == SDL_EVENT_FINGER_MOTION) {
                     SDL_SendTouchMotion(UIKit_GetEventTimestamp(timestamp), directTouchId, fingerID, window, x, y, pressure);
                 } else {

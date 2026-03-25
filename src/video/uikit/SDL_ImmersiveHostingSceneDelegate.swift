@@ -110,8 +110,6 @@ public class SDL_ImmersiveHostingSceneDelegate: NSObject, UISceneDelegate, @Main
 
         NSLog("SDL_ImmersiveHostingSceneDelegate: Dismissing immersive scene session")
 
-        helper.reset()
-
         let options = UISceneDestructionRequestOptions()
         UIApplication.shared.requestSceneSessionDestruction(session, options: options) { error in
             NSLog("SDL_ImmersiveHostingSceneDelegate: Dismiss error: %@", error.localizedDescription)
@@ -236,6 +234,8 @@ struct CurviestButtonIcon : Shape {
 struct SDL_ImmersiveRootView: View {
     let helper: SDL_RealityKitHelper
     let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 1.5, -1.5)
+    @State private var touchScale: CGPoint = CGPoint()
+    @State private var touchOffset: CGPoint = CGPoint()
 
     let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
     let SDL_EVENT_FINGER_UP: UInt32 = 0x701
@@ -267,35 +267,59 @@ struct SDL_ImmersiveRootView: View {
             // An inactive event for a finger we don't know about
             return
         }
-        SDL_VisionOS_SendImmersiveTouch(event.timestamp, fingerID, eventType, event.location)
+        var location = event.location
+        location.x -= touchOffset.x
+        location.y -= touchOffset.y
+        location.x *= touchScale.x
+        location.y *= touchScale.y
+        SDL_VisionOS_SendImmersiveTouch(event.timestamp, fingerID, eventType, location.x, location.y)
     }
 
     var body: some View {
         GeometryReader3D { proxy in
-            realityContent
+            realityContent(proxy)
         }
         .frame(
-            //idealWidth: helper.contentSizeInPoints.width > 0 ? helper.contentSizeInPoints.width : nil,
-            //idealHeight: helper.contentSizeInPoints.height > 0 ? helper.contentSizeInPoints.height : nil
-            width: helper.contentSizeInPoints.width > 0 ? helper.contentSizeInPoints.width : nil,
-            height: helper.contentSizeInPoints.height > 0 ? helper.contentSizeInPoints.height : nil
+            width: helper.contentSizeInPoints.width > 0 ? helper.contentSizeInPoints.width * 1.5 : nil,
+            height: helper.contentSizeInPoints.height > 0 ? helper.contentSizeInPoints.height * 1.5 : nil
         )
     }
 
-    private var realityContent: some View {
+    private func realityContent(_ proxy: GeometryProxy3D) -> some View {
         RealityView { content, attachments in
-            NSLog("SDL_ImmersiveRootView: RealityView setup (immersive=%d)", 1)
+            NSLog("SDL_ImmersiveRootView: RealityView setup")
+
+            let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
+            helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
 
             if let attachmentEntity = attachments.entity(for: "sceneButton") {
-                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(helper.meshHeight * 0.5), 0.1)
+                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1)
                 content.add(attachmentEntity)
-                NSLog("SDL_ImmersiveRootView: Added button attachment (immersive=%d)", 1)
             }
         } update: { content, attachments in
+            //NSLog("SDL_ImmersiveRootView: RealityView update")
+
             let entity = helper.getCurvedEntity()
             if let entity, entity.parent == nil {
                 entity.position = immersivePosition
                 content.add(entity)
+            }
+
+            let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
+            helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
+
+            if let attachmentEntity = attachments.entity(for: "sceneButton") {
+                attachmentEntity.position = immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1)
+            }
+
+            let frame = proxy.frame(in: .local)
+            let scale = CGPoint(x: 1 / frame.size.width, y: 1 / frame.size.height)
+            var translate = content.convert(point:immersivePosition, from: .scene, to: .local)
+            translate.x -= (frame.max.x - frame.min.x) / 2
+            translate.y -= (frame.max.y - frame.min.y) / 2
+            Task {
+                touchScale = scale
+                touchOffset = CGPoint(x: translate.x, y: translate.y)
             }
         } attachments: {
             Attachment(id: "sceneButton") {
