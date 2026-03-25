@@ -21,7 +21,7 @@ macro(option_string _NAME _DESC _VALUE)
   add_to_alloptions(${_NAME})
   set(${_NAME} ${_VALUE} CACHE STRING "${_DESC}")
   set(HAVE_${_NAME} ${_VALUE})
-ENDMACRO()
+endmacro()
 
 macro(message_bool_option _NAME _VALUE)
   set(_PAD "\t")
