@@ -526,6 +526,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
             tried_format = SDL_TRUE;
 
             this->spec.format = test_format;
+            this->spec.freq = SDL_min(DSBFREQUENCY_MAX, this->spec.freq);
 
             /* Update the fragment size as size in bytes */
             SDL_CalculateAudioSpec(&this->spec);
@@ -580,7 +581,7 @@ static int DSOUND_OpenDevice(_THIS, const char *devname)
                 }
 
                 wfmt.Format.wBitsPerSample = SDL_AUDIO_BITSIZE(this->spec.format);
-                wfmt.Format.nChannels = this->spec.channels;
+                wfmt.Format.nChannels = (WORD)this->spec.channels;
                 wfmt.Format.nSamplesPerSec = this->spec.freq;
                 wfmt.Format.nBlockAlign = wfmt.Format.nChannels * (wfmt.Format.wBitsPerSample / 8);
                 wfmt.Format.nAvgBytesPerSec = wfmt.Format.nSamplesPerSec * wfmt.Format.nBlockAlign;
