@@ -238,7 +238,7 @@ public class SDL_RealityKitHelper: NSObject {
 
         if var modelComponent = entity.components[ModelComponent.self],
            modelComponent.materials.count > 0 {
-            var material = UnlitMaterial()
+            var material = UnlitMaterial(applyPostProcessToneMap: false)
             material.color = .init(texture: .init(texResource))
             modelComponent.materials[0] = material
             entity.components[ModelComponent.self] = modelComponent
