@@ -142,6 +142,9 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, assign) METAL_ShaderPipelines *activepipelines;
 @property(nonatomic, assign) METAL_ShaderPipelines *allpipelines;
 @property(nonatomic, assign) int pipelinescount;
+#ifdef SDL_PLATFORM_VISIONOS
+@property(nonatomic, retain) id<MTLTexture> mtlimmersivetexture;
+#endif
 @end
 
 @implementation SDL3METAL_RenderData
@@ -458,7 +461,8 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
         } else {
 #ifdef SDL_PLATFORM_VISIONOS
             if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
-                mtltexture = SDL_UIKit_GetImmersiveDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+                data.mtlimmersivetexture = SDL_UIKit_GetImmersiveDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+                mtltexture = data.mtlimmersivetexture;
             } else
 #endif
             {
@@ -1943,7 +1947,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         SDL_Surface *surface;
 
 #ifdef SDL_PLATFORM_VISIONOS
-        if (!renderer->target && renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
+        if (!renderer->target && data.mtlimmersivetexture) {
             SDL_SetError("Can't read back from the window in immersive mode");
             return NULL;
         }
@@ -2037,32 +2041,26 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 
         [data.mtlcmdencoder endEncoding];
 
-#ifdef SDL_PLATFORM_VISIONOS
-        // For volumetric windows, update RealityView with the rendered texture
-        if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
-            if (ready) {
-                // Commit the command buffer first to finish rendering
-                [data.mtlcmdbuffer commit];
-                [data.mtlcmdbuffer waitUntilCompleted];
-
-                data.mtlcmdencoder = nil;
-                data.mtlcmdbuffer = nil;
-
-                return true;
-            }
-
-            data.mtlcmdencoder = nil;
-            data.mtlcmdbuffer = nil;
-            return false;
-        }
-#endif
-
         // Standard rendering path: present drawable
         // If we don't have a drawable to present, don't try to present it.
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
-            SDL_assert(data.mtlbackbuffer != nil);
-            [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+#ifdef SDL_PLATFORM_VISIONOS
+            if (data.mtlimmersivetexture) {
+                // Generate mipmaps
+                id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+                [blitcmd generateMipmapsForTexture:data.mtlimmersivetexture];
+                [blitcmd endEncoding];
+
+                data.mtlimmersivetexture = nil;
+            }
+            else
+#endif
+            {
+                SDL_assert(data.mtlbackbuffer != nil);
+                [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+            }
         }
 
         [data.mtlcmdbuffer commit];
