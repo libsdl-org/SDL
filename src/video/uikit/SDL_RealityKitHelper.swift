@@ -209,7 +209,12 @@ public class SDL_RealityKitHelper: NSObject {
             descriptor.width = width
             descriptor.height = height
             descriptor.depth = 1
-            descriptor.mipmapLevelCount = Int(floor(log2(Float(max(width, height))))) + 1
+            let size = max(width, height)
+            if (size > 32) {
+                descriptor.mipmapLevelCount = Int(floor(log2(Float(size)))) - 5
+            } else {
+                descriptor.mipmapLevelCount = 0
+            }
             descriptor.textureUsage = [.shaderRead, .renderTarget]
 
             // Create the LowLevelTexture
