@@ -545,7 +545,7 @@ static bool DSOUND_OpenDevice(SDL_AudioDevice *device)
             tried_format = true;
 
             device->spec.format = test_format;
-            device->spec.freq = SDL_min(200000, device->spec.freq); // DirectSound has an arbitrary limit of 200,000Hz.
+            device->spec.freq = SDL_min(DSBFREQUENCY_MAX, device->spec.freq);
 
             // Update the fragment size as size in bytes
             SDL_UpdatedAudioDeviceFormat(device);
