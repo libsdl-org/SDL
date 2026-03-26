@@ -1937,21 +1937,59 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     }
 }
 
+#ifdef SDL_PLATFORM_VISIONOS
+static id<MTLTexture> METAL_CopyToStagingTexture(SDL_Renderer *renderer, id<MTLTexture> texture, SDL_Rect *rect)
+{
+    SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
+    MTLTextureDescriptor *desc;
+    id<MTLTexture> stagingtex;
+    id<MTLBlitCommandEncoder> blitcmd;
+
+    desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:texture.pixelFormat
+                                                              width:rect->w
+                                                             height:rect->h
+                                                          mipmapped:NO];
+    if (desc == nil) {
+        SDL_OutOfMemory();
+        return nil;
+    }
+
+    stagingtex = [data.mtldevice newTextureWithDescriptor:desc];
+    if (stagingtex == nil) {
+        SDL_OutOfMemory();
+        return nil;
+    }
+
+    blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromTexture:texture
+                 sourceSlice:0
+                 sourceLevel:0
+                sourceOrigin:MTLOriginMake(rect->x, rect->y, 0)
+                  sourceSize:MTLSizeMake(rect->w, rect->h, 1)
+                   toTexture:stagingtex
+            destinationSlice:0
+            destinationLevel:0
+           destinationOrigin:MTLOriginMake(0, 0, 0)];
+
+    [blitcmd endEncoding];
+
+    rect->x = 0;
+    rect->y = 0;
+
+    return stagingtex;
+}
+#endif // SDL_PLATFORM_VISIONOS
+
 static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
         id<MTLTexture> mtltexture;
         MTLRegion mtlregion;
+        SDL_Rect read_rect = *rect;
         Uint32 format;
         SDL_Surface *surface;
-
-#ifdef SDL_PLATFORM_VISIONOS
-        if (!renderer->target && data.mtlimmersivetexture) {
-            SDL_SetError("Can't read back from the window in immersive mode");
-            return NULL;
-        }
-#endif
 
         if (!METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil)) {
             SDL_SetError("Failed to activate render command encoder (is your window in the background?");
@@ -1973,6 +2011,15 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         }
 #endif
 
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!renderer->target && data.mtlimmersivetexture) {
+            mtltexture = METAL_CopyToStagingTexture(renderer, mtltexture, &read_rect);
+            if (mtltexture == nil) {
+                return NULL;
+            }
+        }
+#endif
+
         /* Commit the current command buffer and wait until it's completed, to make
          * sure the GPU has finished rendering to it by the time we read it. */
         [data.mtlcmdbuffer commit];
@@ -1980,7 +2027,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         data.mtlcmdencoder = nil;
         data.mtlcmdbuffer = nil;
 
-        mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
+        mtlregion = MTLRegionMake2D(read_rect.x, read_rect.y, read_rect.w, read_rect.h);
 
         switch (mtltexture.pixelFormat) {
         case MTLPixelFormatBGRA8Unorm:
@@ -2013,7 +2060,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
             SDL_SetError("Unknown framebuffer pixel format");
             return NULL;
         }
-        surface = SDL_CreateSurface(rect->w, rect->h, format);
+        surface = SDL_CreateSurface(read_rect.w, read_rect.h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
         }
