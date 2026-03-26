@@ -638,6 +638,17 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     return 0;
 }
 
+static bool METAL_RenderingLinearSpace(SDL_Renderer *renderer)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    if (!renderer->target && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
+        // The immersive texture uses linear colorspace for rendering
+        return true;
+    }
+#endif
+    return SDL_RenderingLinearSpace(renderer);
+}
+
 static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
     @autoreleasepool {
@@ -1227,7 +1238,7 @@ static bool METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = METAL_RenderingLinearSpace(renderer);
 
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1254,7 +1265,7 @@ static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = METAL_RenderingLinearSpace(renderer);
     size_t vertlen;
     float *verts;
 
@@ -1312,7 +1323,7 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
 {
-    bool convert_color = SDL_RenderingLinearSpace(renderer);
+    bool convert_color = METAL_RenderingLinearSpace(renderer);
     int count = indices ? num_indices : num_vertices;
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1428,7 +1439,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
 
     SDL_zerop(constants);
 
-    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
+    constants->scRGB_output = (float)METAL_RenderingLinearSpace(renderer);
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
@@ -1808,7 +1819,7 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                 statecache.viewport_dirty = true;
 
                 {
-                    bool convert_color = SDL_RenderingLinearSpace(renderer);
+                    bool convert_color = METAL_RenderingLinearSpace(renderer);
                     SDL_FColor color = cmd->data.color.color;
                     if (convert_color) {
                         SDL_ConvertToLinear(&color);

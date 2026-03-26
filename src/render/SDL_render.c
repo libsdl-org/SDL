@@ -177,12 +177,7 @@ bool SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat forma
 
 void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
 {
-#ifdef SDL_PLATFORM_VISIONOS
-    // Immersive mode outputs in linear colorspace, so use that for all rendering
-    renderer->output_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-#else
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
-#endif
 }
 
 bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
