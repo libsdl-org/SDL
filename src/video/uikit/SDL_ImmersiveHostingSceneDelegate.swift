@@ -236,6 +236,8 @@ struct SDL_ImmersiveRootView: View {
     let immersivePosition: SIMD3<Float> = SIMD3<Float>(0, 0, -1.5)
     @State private var touchScale: CGPoint = CGPoint()
     @State private var touchOffset: CGPoint = CGPoint()
+    @State private var cachedContent: RealityViewContent?
+    @State private var cachedAttachments: RealityViewAttachments?
 
     let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
     let SDL_EVENT_FINGER_UP: UInt32 = 0x701
@@ -289,24 +291,30 @@ struct SDL_ImmersiveRootView: View {
         RealityView { content, attachments in
             NSLog("SDL_ImmersiveRootView: RealityView setup")
 
+            let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
+            helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
+            helper.center(content: content, position: immersivePosition)
+
+            if let anchor = helper.getAnchorEntity() {
+                if let attachmentEntity = attachments.entity(for: "sceneButton") {
+                    attachmentEntity.setPosition(immersivePosition + SIMD3<Float>(0.0, -(helper.meshHeight * 0.5), 0.1), relativeTo: anchor)
+                }
+            }
+
+            cachedContent = content
+            cachedAttachments = attachments
+
         } update: { content, attachments in
             //NSLog("SDL_ImmersiveRootView: RealityView update")
 
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
 
-            let entity = helper.getCurvedEntity()
-            if let entity, entity.parent == nil {
-                let headAnchor = AnchorEntity(.head)
-                headAnchor.anchoring.trackingMode = .once
-                content.add(headAnchor)
-
-                entity.setPosition(immersivePosition, relativeTo: headAnchor)
-                headAnchor.addChild(entity)
-
+            if let anchor = helper.getAnchorEntity() {
                 if let attachmentEntity = attachments.entity(for: "sceneButton") {
-                    attachmentEntity.setPosition(immersivePosition + SIMD3<Float>(0.0, -(frameInMeters.extents.y * 0.5), 0.1), relativeTo: headAnchor)
-                    headAnchor.addChild(attachmentEntity)
+                    attachmentEntity.removeFromParent()
+                    attachmentEntity.setPosition(immersivePosition + SIMD3<Float>(0.0, -(helper.meshHeight * 0.5), 0.1), relativeTo: anchor)
+                    anchor.addChild(attachmentEntity)
                 }
             }
 
@@ -374,5 +382,18 @@ struct SDL_ImmersiveRootView: View {
                     }
                 }
         )
+        .onWorldRecenter {
+            if let content = cachedContent, let attachments = cachedAttachments {
+                helper.center(content: content, position: immersivePosition)
+
+                if let anchor = helper.getAnchorEntity() {
+                    if let attachmentEntity = attachments.entity(for: "sceneButton") {
+                        attachmentEntity.removeFromParent()
+                        attachmentEntity.setPosition(immersivePosition + SIMD3<Float>(0.0, -(helper.meshHeight * 0.5), 0.1), relativeTo: anchor)
+                        anchor.addChild(attachmentEntity)
+                    }
+                }
+            }
+        }
     }
 }

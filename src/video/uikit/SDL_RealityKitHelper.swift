@@ -39,6 +39,8 @@ import simd
 public class SDL_RealityKitHelper: NSObject {
 
     private var curvedEntity: ModelEntity?
+    private var anchorEntity: AnchorEntity?
+    private var anchorPosition: SIMD3<Float> = [0, 0, 0]
     private(set) var meshWidth: Float = 0.0
     private(set) var meshHeight: Float = 0.0
     private(set) var meshCurvature: Float = 0.0
@@ -109,6 +111,11 @@ public class SDL_RealityKitHelper: NSObject {
 
         curvedEntity?.removeFromParent()
         curvedEntity = entity
+
+        if let anchor = anchorEntity {
+            entity.setPosition(anchorPosition, relativeTo: anchor)
+            anchor.addChild(entity)
+        }
 
         NSLog("SDL_RealityKitHelper: Created plane entity %.2fx%.2f meters", self.meshWidth, self.meshHeight)
     }
@@ -185,6 +192,29 @@ public class SDL_RealityKitHelper: NSObject {
     /// Returns the curved entity for adding to RealityView content
     func getCurvedEntity() -> ModelEntity? {
         return curvedEntity
+    }
+
+    func getAnchorEntity() -> AnchorEntity? {
+        return anchorEntity
+    }
+
+    func center(content: RealityViewContent, position: SIMD3<Float>) {
+        if let anchor = anchorEntity {
+            content.remove(anchor)
+        }
+
+        let anchor = AnchorEntity(.head)
+        anchor.anchoring.trackingMode = .once
+        content.add(anchor)
+
+        anchorEntity = anchor
+        anchorPosition = position
+
+        if let entity = curvedEntity {
+            entity.removeFromParent()
+            entity.setPosition(anchorPosition, relativeTo: anchor)
+            anchor.addChild(entity)
+        }
     }
 
     // MARK: - Texture Updates (LowLevelTexture Pipeline)
