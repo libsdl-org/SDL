@@ -203,7 +203,7 @@ static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to
         pch = *(++pattern);
     }
 
-    *matched_to_dir = ((pch == '/') || (pch == '\0'));  // end of string and the pattern is complete or failed at a '/'? We should descend into this directory.
+    *matched_to_dir = (pch == '/');  // end of string and the pattern failed at a '/'? We should descend into this directory.
 
     return (pch == '\0');  // survived the whole pattern? That's a match!
 }
