@@ -109,7 +109,13 @@ Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
 
 float SDL_randf_r(Uint64 *state)
 {
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+    const float val = 0x1p-24f;
+#else
+    union { Uint32 u32; float f; } float_union = { 0x33800000U };
+    const float val = float_union.f;
+#endif
     // Note: its using 24 bits because float has 23 bits significand + 1 implicit bit
-    return (SDL_rand_bits_r(state) >> (32 - 24)) * 0x1p-24f;
+    return (SDL_rand_bits_r(state) >> (32 - 24)) * val;
 }
 
