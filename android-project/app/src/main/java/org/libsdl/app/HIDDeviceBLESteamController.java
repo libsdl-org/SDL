@@ -682,7 +682,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             if (getProductId() == D0G_BLE2_PID) {
                 //Log.v(TAG, "writeOutputReport " + HexDump.dumpHexString(report));
                 writeCharacteristic(reportCharacteristic, report);
-                return report.length;                
+                return report.length;
             }
 
             // If we're a Triton, we need to find the correct report characteristic.

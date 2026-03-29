@@ -1973,7 +1973,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
 
-            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY 
+            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                       | Intent.FLAG_ACTIVITY_MULTIPLE_TASK
                       | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
             i.addFlags(flags);
