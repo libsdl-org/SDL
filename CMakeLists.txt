@@ -2735,13 +2735,6 @@ elseif(APPLE)
           set(SDL_VIDEO_RENDER_METAL 1)
           set(HAVE_RENDER_METAL TRUE)
         endif()
-        if (SDL_GPU)
-          set(SDL_GPU_METAL 1)
-          sdl_glob_sources(
-            "${SDL3_SOURCE_DIR}/src/gpu/metal/*.m"
-            "${SDL3_SOURCE_DIR}/src/gpu/metal/*.h"
-          )
-        endif()
       endif()
     endif()
   endif()
@@ -3552,6 +3545,14 @@ if(SDL_GPU)
       "${SDL3_SOURCE_DIR}/src/gpu/vulkan/*.h"
     )
     set(SDL_GPU_VULKAN 1)
+    set(HAVE_SDL_GPU TRUE)
+  endif()
+  if(SDL_VIDEO_METAL)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/gpu/metal/*.m"
+      "${SDL3_SOURCE_DIR}/src/gpu/metal/*.h"
+    )
+    set(SDL_GPU_METAL 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
   if(SDL_RENDER_GPU AND HAVE_SDL_GPU)
