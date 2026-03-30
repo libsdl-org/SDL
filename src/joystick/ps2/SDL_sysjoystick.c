@@ -52,8 +52,8 @@ struct JoyInfo
     int8_t opened;
 } __attribute__((aligned(64)));
 
-static uint8_t enabled_pads = 0;
-static struct JoyInfo joyInfo[MAX_CONTROLLERS];
+static uint8_t enabled_pads = 1;
+static struct JoyInfo joyInfo[MAX_CONTROLLERS + 1];
 
 static inline int16_t convert_u8_to_s16(uint8_t val)
 {
