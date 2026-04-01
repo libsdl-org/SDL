@@ -34,10 +34,6 @@
 #include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
 
-#ifdef SDL_PLATFORM_VISIONOS
-#import "SDL_uikitvisionosscene.h"
-#endif
-
 #include <Foundation/Foundation.h>
 
 @implementation SDL_UIKitWindowData
@@ -262,15 +258,11 @@ void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         CGSize size = { window->pending.w, window->pending.h };
-        if (SDL_UIKit_IsImmersiveWindow(window)) {
-            [data.visionOSScene setSize:size];
-        } else {
-            UIWindowScene *scene = data.uiwindow.windowScene;
-            UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
-            [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
-                // Request failed, no worries
-            }];
-        }
+        UIWindowScene *scene = data.uiwindow.windowScene;
+        UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
+        [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
+            // Request failed, no worries
+        }];
     }
 #endif
 }
@@ -400,14 +392,6 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 [view setSDLWindow:NULL];
             }
 
-
-#ifdef SDL_PLATFORM_VISIONOS
-            // Dismiss the scene before tearing down the window
-            if (data.visionOSScene) {
-                [data.visionOSScene dismiss];
-                data.visionOSScene = nil;
-            }
-#endif
 
             /* iOS may still hold a reference to the window after we release it.
              * We want to make sure the SDL view controller isn't accessed in

@@ -36,7 +36,7 @@
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
 #ifdef SDL_PLATFORM_VISIONOS
-#import "../../video/uikit/SDL_uikitvisionosscene.h"
+#import "../../video/uikit/SDL_UIKitBridge-objc.h"
 #endif
 #endif
 
@@ -143,7 +143,7 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, assign) METAL_ShaderPipelines *allpipelines;
 @property(nonatomic, assign) int pipelinescount;
 #ifdef SDL_PLATFORM_VISIONOS
-@property(nonatomic, retain) id<MTLTexture> mtlimmersivetexture;
+@property(nonatomic, retain) id<MTLTexture> mtlrealitykittexture;
 #endif
 @end
 
@@ -460,12 +460,9 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             mtltexture = texdata.mtltexture;
         } else {
 #ifdef SDL_PLATFORM_VISIONOS
-            if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
-                data.mtlimmersivetexture = SDL_UIKit_GetImmersiveDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
-                mtltexture = data.mtlimmersivetexture;
-            } else if (renderer->window && SDL_UIKit_IsCurvedWindow(renderer->window)) {
-                data.mtlimmersivetexture = SDL_UIKit_GetCurvedDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
-                mtltexture = data.mtlimmersivetexture;
+            if (renderer->window && SDL_UIKit_IsCurvedWindow(renderer->window)) {
+                data.mtlrealitykittexture = SDL_UIKit_GetCurvedDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+                mtltexture = data.mtlrealitykittexture;
             } else
 #endif
             {
@@ -644,8 +641,8 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
 static bool METAL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
 #ifdef SDL_PLATFORM_VISIONOS
-    if (!renderer->target && (SDL_UIKit_IsImmersiveWindow(renderer->window) || SDL_UIKit_IsCurvedWindow(renderer->window))) {
-        // The immersive/curved texture uses linear colorspace for rendering
+    if (!renderer->target && SDL_UIKit_IsCurvedWindow(renderer->window)) {
+        // The curved texture uses linear colorspace for rendering
         return true;
     }
 #endif
@@ -2026,7 +2023,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
 #endif
 
 #ifdef SDL_PLATFORM_VISIONOS
-        if (!renderer->target && data.mtlimmersivetexture) {
+        if (!renderer->target && data.mtlrealitykittexture) {
             mtltexture = METAL_CopyToStagingTexture(renderer, mtltexture, &read_rect);
             if (mtltexture == nil) {
                 return NULL;
@@ -2107,14 +2104,14 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
 #ifdef SDL_PLATFORM_VISIONOS
-            if (data.mtlimmersivetexture) {
+            if (data.mtlrealitykittexture) {
                 // Generate mipmaps
                 id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
 
-                [blitcmd generateMipmapsForTexture:data.mtlimmersivetexture];
+                [blitcmd generateMipmapsForTexture:data.mtlrealitykittexture];
                 [blitcmd endEncoding];
 
-                data.mtlimmersivetexture = nil;
+                data.mtlrealitykittexture = nil;
             }
             else
 #endif

@@ -56,8 +56,6 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @property(nonatomic, copy) NSMutableArray *views;
 
 #ifdef SDL_PLATFORM_VISIONOS
-// Scene manager for visionOS immersive content
-@property(nonatomic, strong) SDL_UIKitVisionOSScene *visionOSScene;
 // Hosting controller for curved content mode (UIHostingController-based)
 @property(nonatomic, strong) id curvedContentHosting;
 @property(nonatomic, assign) CGFloat curvature;

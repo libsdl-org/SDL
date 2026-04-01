@@ -22,7 +22,7 @@ import SwiftUI
 import RealityKit
 
 /// SwiftUI view that presents SDL content on a curved RealityKit mesh
-/// inside a UIHostingController (no ImmersiveSpace required).
+/// inside a UIHostingController
 @available(visionOS 26.0, *)
 struct SDL_CurvedContentView: View {
     let helper: SDL_RealityKitHelper
@@ -62,7 +62,7 @@ struct SDL_CurvedContentView: View {
         var location = event.location
         location.x *= touchScale.x
         location.y *= touchScale.y
-        SDL_VisionOS_SendImmersiveTouch(event.timestamp, fingerID, eventType, location.x, location.y)
+        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, location.x, location.y)
     }
 
     var body: some View {

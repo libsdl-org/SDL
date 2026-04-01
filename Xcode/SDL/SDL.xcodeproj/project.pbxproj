@@ -406,7 +406,6 @@
 		F36C7AD1294BA009004D61C3 /* SDL_runapp.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C7AD0294BA009004D61C3 /* SDL_runapp.c */; };
 		F376F6552559B4E300CFC0BC /* SDL_hidapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A81423E2513F00DCD162 /* SDL_hidapi.c */; };
 		F37A8E1A28405AA100C38E95 /* CMake in Resources */ = {isa = PBXBuildFile; fileRef = F37A8E1928405AA100C38E95 /* CMake */; };
-		F37AA9352F7339BB00BCBD15 /* SDL_ImmersiveHostingSceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F37AA9342F7339BB00BCBD15 /* SDL_ImmersiveHostingSceneDelegate.swift */; platformFilters = (xros, ); };
 		F37E18582BA50F3B0098C111 /* SDL_cocoadialog.m in Sources */ = {isa = PBXBuildFile; fileRef = F37E18572BA50F3B0098C111 /* SDL_cocoadialog.m */; };
 		F37E185A2BA50F450098C111 /* SDL_dummydialog.c in Sources */ = {isa = PBXBuildFile; fileRef = F37E18592BA50F450098C111 /* SDL_dummydialog.c */; };
 		F37E18622BAA40090098C111 /* SDL_sysfilesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = F37E18612BAA40090098C111 /* SDL_sysfilesystem.h */; };
@@ -434,11 +433,12 @@
 		F3990E072A78833C000D8759 /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAA523E2792500529352 /* hid.m */; };
 		F3A4909E2554D38600E92A8B /* SDL_hidapi_ps5.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */; };
 		F3A8371C2F69C80100AD32B6 /* SDL_RealityKitHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */; platformFilters = (xros, ); };
-		F3A8371F2F69C80100AD32B6 /* SDL_uikitvisionosscene.m in Sources */ = {isa = PBXBuildFile; fileRef = F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */; };
-		F3A837202F69C80100AD32B6 /* SDL_uikitvisionosscene.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */; };
-		F3A895702F7D8AAA00B9E5C2 /* SDL_UIKitBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A8956F2F7D8AAA00B9E5C2 /* SDL_UIKitBridge.h */; platformFilters = (xros, ); };
 		F3A895712F7D8AAA00B9E5C2 /* SDL_CurvedContentHosting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A8956D2F7D8AAA00B9E5C2 /* SDL_CurvedContentHosting.swift */; platformFilters = (xros, ); };
 		F3A895722F7D8AAA00B9E5C2 /* SDL_CurvedContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A8956E2F7D8AAA00B9E5C2 /* SDL_CurvedContentView.swift */; platformFilters = (xros, ); };
+		F3A895792F7DC14400B9E5C2 /* SDL_UIKitBridge-objc.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A895772F7DC14400B9E5C2 /* SDL_UIKitBridge-objc.h */; platformFilters = (xros, ); };
+		F3A8957A2F7DC14400B9E5C2 /* SDL_UIKitBridge-swift.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A895782F7DC14400B9E5C2 /* SDL_UIKitBridge-swift.h */; platformFilters = (xros, ); };
+		F3A8957B2F7DC14400B9E5C2 /* SDL_UIKitBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F3A895762F7DC14400B9E5C2 /* SDL_UIKitBridge.m */; platformFilters = (xros, ); };
+		F3A8957D2F7DC15500B9E5C2 /* SDL_uikitviewcontroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A8957C2F7DC15500B9E5C2 /* SDL_uikitviewcontroller.swift */; platformFilters = (xros, ); };
 		F3A9AE982C8A13C100AAC390 /* SDL_gpu_util.h in Headers */ = {isa = PBXBuildFile; fileRef = F3A9AE922C8A13C100AAC390 /* SDL_gpu_util.h */; };
 		F3A9AE992C8A13C100AAC390 /* SDL_render_gpu.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A9AE932C8A13C100AAC390 /* SDL_render_gpu.c */; };
 		F3A9AE9A2C8A13C100AAC390 /* SDL_shaders_gpu.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A9AE942C8A13C100AAC390 /* SDL_shaders_gpu.c */; };
@@ -449,7 +449,6 @@
 		F3B439532C935C2C00792030 /* SDL_posixprocess.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B439522C935C2C00792030 /* SDL_posixprocess.c */; };
 		F3B439562C937DAB00792030 /* SDL_process.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B439542C937DAB00792030 /* SDL_process.c */; };
 		F3B439572C937DAB00792030 /* SDL_sysprocess.h in Headers */ = {isa = PBXBuildFile; fileRef = F3B439552C937DAB00792030 /* SDL_sysprocess.h */; };
-		F3B6179A2F7209BD0036309C /* SDL_UIKitBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B617992F7209BD0036309C /* SDL_UIKitBridge.swift */; platformFilters = (xros, ); };
 		F3B6B80A2DC3EA54004954FD /* SDL_hidapi_gip.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */; };
 		F3C1BD752D1F1A3000846529 /* SDL_tray_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C1BD742D1F1A3000846529 /* SDL_tray_utils.c */; };
 		F3C1BD762D1F1A3000846529 /* SDL_tray_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = F3C1BD732D1F1A3000846529 /* SDL_tray_utils.h */; };
@@ -1004,7 +1003,6 @@
 		F376F7252559B76800CFC0BC /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		F376F7272559B77100CFC0BC /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
 		F37A8E1928405AA100C38E95 /* CMake */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CMake; sourceTree = "<group>"; };
-		F37AA9342F7339BB00BCBD15 /* SDL_ImmersiveHostingSceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_ImmersiveHostingSceneDelegate.swift; sourceTree = "<group>"; };
 		F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = SDKROOT; };
 		F37DC5F425350ECC0002E6F7 /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS14.0.sdk/System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
 		F37E18572BA50F3B0098C111 /* SDL_cocoadialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoadialog.m; sourceTree = "<group>"; };
@@ -1033,11 +1031,12 @@
 		F3990E032A788303000D8759 /* SDL_hidapi_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapi_ios.h; sourceTree = "<group>"; };
 		F3A4909D2554D38500E92A8B /* SDL_hidapi_ps5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps5.c; sourceTree = "<group>"; };
 		F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_RealityKitHelper.swift; sourceTree = "<group>"; };
-		F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_uikitvisionosscene.h; sourceTree = "<group>"; };
-		F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvisionosscene.m; sourceTree = "<group>"; };
 		F3A8956D2F7D8AAA00B9E5C2 /* SDL_CurvedContentHosting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_CurvedContentHosting.swift; sourceTree = "<group>"; };
 		F3A8956E2F7D8AAA00B9E5C2 /* SDL_CurvedContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_CurvedContentView.swift; sourceTree = "<group>"; };
-		F3A8956F2F7D8AAA00B9E5C2 /* SDL_UIKitBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_UIKitBridge.h; sourceTree = "<group>"; };
+		F3A895762F7DC14400B9E5C2 /* SDL_UIKitBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_UIKitBridge.m; sourceTree = "<group>"; };
+		F3A895772F7DC14400B9E5C2 /* SDL_UIKitBridge-objc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SDL_UIKitBridge-objc.h"; sourceTree = "<group>"; };
+		F3A895782F7DC14400B9E5C2 /* SDL_UIKitBridge-swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SDL_UIKitBridge-swift.h"; sourceTree = "<group>"; };
+		F3A8957C2F7DC15500B9E5C2 /* SDL_uikitviewcontroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_uikitviewcontroller.swift; sourceTree = "<group>"; };
 		F3A9AE922C8A13C100AAC390 /* SDL_gpu_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gpu_util.h; sourceTree = "<group>"; };
 		F3A9AE932C8A13C100AAC390 /* SDL_render_gpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gpu.c; sourceTree = "<group>"; };
 		F3A9AE942C8A13C100AAC390 /* SDL_shaders_gpu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_shaders_gpu.c; sourceTree = "<group>"; };
@@ -1049,7 +1048,6 @@
 		F3B439522C935C2C00792030 /* SDL_posixprocess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_posixprocess.c; sourceTree = "<group>"; };
 		F3B439542C937DAB00792030 /* SDL_process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_process.c; sourceTree = "<group>"; };
 		F3B439552C937DAB00792030 /* SDL_sysprocess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysprocess.h; sourceTree = "<group>"; };
-		F3B617992F7209BD0036309C /* SDL_UIKitBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_UIKitBridge.swift; sourceTree = "<group>"; };
 		F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gip.c; sourceTree = "<group>"; };
 		F3C1BD732D1F1A3000846529 /* SDL_tray_utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_tray_utils.h; sourceTree = "<group>"; };
 		F3C1BD742D1F1A3000846529 /* SDL_tray_utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray_utils.c; sourceTree = "<group>"; };
@@ -1754,12 +1752,12 @@
 			children = (
 				F3A8956D2F7D8AAA00B9E5C2 /* SDL_CurvedContentHosting.swift */,
 				F3A8956E2F7D8AAA00B9E5C2 /* SDL_CurvedContentView.swift */,
-				F37AA9342F7339BB00BCBD15 /* SDL_ImmersiveHostingSceneDelegate.swift */,
 				F3A837162F69C80100AD32B6 /* SDL_RealityKitHelper.swift */,
 				A7D8A62F23E2513D00DCD162 /* SDL_uikitappdelegate.h */,
 				A7D8A61E23E2513D00DCD162 /* SDL_uikitappdelegate.m */,
-				F3A8956F2F7D8AAA00B9E5C2 /* SDL_UIKitBridge.h */,
-				F3B617992F7209BD0036309C /* SDL_UIKitBridge.swift */,
+				F3A895762F7DC14400B9E5C2 /* SDL_UIKitBridge.m */,
+				F3A895772F7DC14400B9E5C2 /* SDL_UIKitBridge-objc.h */,
+				F3A895782F7DC14400B9E5C2 /* SDL_UIKitBridge-swift.h */,
 				A7D8A62123E2513D00DCD162 /* SDL_uikitclipboard.h */,
 				A7D8A62A23E2513D00DCD162 /* SDL_uikitclipboard.m */,
 				A7D8A62D23E2513D00DCD162 /* SDL_uikitevents.h */,
@@ -1782,8 +1780,7 @@
 				A7D8A62923E2513D00DCD162 /* SDL_uikitview.m */,
 				A7D8A62423E2513D00DCD162 /* SDL_uikitviewcontroller.h */,
 				A7D8A63023E2513D00DCD162 /* SDL_uikitviewcontroller.m */,
-				F3A837172F69C80100AD32B6 /* SDL_uikitvisionosscene.h */,
-				F3A837182F69C80100AD32B6 /* SDL_uikitvisionosscene.m */,
+				F3A8957C2F7DC15500B9E5C2 /* SDL_uikitviewcontroller.swift */,
 				A7D8A63323E2513D00DCD162 /* SDL_uikitvulkan.h */,
 				A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */,
 				A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */,
@@ -2583,6 +2580,8 @@
 				F3EFA5ED2D5AB97300BCF22F /* SDL_stb_c.h in Headers */,
 				F3EFA5EE2D5AB97300BCF22F /* stb_image.h in Headers */,
 				F3EFA5EF2D5AB97300BCF22F /* SDL_surface_c.h in Headers */,
+				F3A895792F7DC14400B9E5C2 /* SDL_UIKitBridge-objc.h in Headers */,
+				F3A8957A2F7DC14400B9E5C2 /* SDL_UIKitBridge-swift.h in Headers */,
 				A7D8AE8E23E2514100DCD162 /* SDL_cocoakeyboard.h in Headers */,
 				A7D8AF0623E2514100DCD162 /* SDL_cocoamessagebox.h in Headers */,
 				A7D8AEB223E2514100DCD162 /* SDL_cocoametalview.h in Headers */,
@@ -2738,7 +2737,6 @@
 				A7D8BA4F23E2514400DCD162 /* SDL_shaders_gles2.h in Headers */,
 				A7D8B98C23E2514400DCD162 /* SDL_shaders_metal_ios.h in Headers */,
 				A7D8B99B23E2514400DCD162 /* SDL_shaders_metal_macos.h in Headers */,
-				F3A895702F7D8AAA00B9E5C2 /* SDL_UIKitBridge.h in Headers */,
 				A7D8B9A123E2514400DCD162 /* SDL_shaders_metal_tvos.h in Headers */,
 				F310138F2C1F2CB700FBE946 /* SDL_sysstdlib.h in Headers */,
 				F362B91B2B3349E200D30B94 /* SDL_steam_virtual_gamepad.h in Headers */,
@@ -2786,7 +2784,6 @@
 				A7D8B9CB23E2514400DCD162 /* SDL_yuv_sw_c.h in Headers */,
 				A7D8BB4523E2514500DCD162 /* blank_cursor.h in Headers */,
 				F362B9192B3349E200D30B94 /* controller_list.h in Headers */,
-				F3A837202F69C80100AD32B6 /* SDL_uikitvisionosscene.h in Headers */,
 				A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4B23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B23C23E2514200DCD162 /* egl.h in Headers */,
@@ -2958,7 +2955,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A7D8B9E323E2514400DCD162 /* SDL_drawline.c in Sources */,
-				F37AA9352F7339BB00BCBD15 /* SDL_ImmersiveHostingSceneDelegate.swift in Sources */,
+				F3A8957B2F7DC14400B9E5C2 /* SDL_UIKitBridge.m in Sources */,
 				A7D8AE7C23E2514100DCD162 /* SDL_yuv.c in Sources */,
 				A7D8B62F23E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8B41C23E2514300DCD162 /* SDL_systls.c in Sources */,
@@ -3050,7 +3047,6 @@
 				F395BF6525633B2400942BFF /* SDL_crc32.c in Sources */,
 				A7D8B5E723E2514300DCD162 /* SDL_power.c in Sources */,
 				A7D8AED623E2514100DCD162 /* SDL_cocoakeyboard.m in Sources */,
-				F3B6179A2F7209BD0036309C /* SDL_UIKitBridge.swift in Sources */,
 				A7D8AB1623E2514100DCD162 /* SDL_dynapi.c in Sources */,
 				A7D8BA8523E2514400DCD162 /* SDL_shaders_gl.c in Sources */,
 				A7D8AED023E2514100DCD162 /* SDL_cocoamessagebox.m in Sources */,
@@ -3088,6 +3084,7 @@
 				F3B439512C935C2400792030 /* SDL_dummyprocess.c in Sources */,
 				A7D8B76423E2514300DCD162 /* SDL_mixer.c in Sources */,
 				A7D8BB5723E2514500DCD162 /* SDL_events.c in Sources */,
+				F3A8957D2F7DC15500B9E5C2 /* SDL_uikitviewcontroller.swift in Sources */,
 				A7D8ADE623E2514100DCD162 /* SDL_blit_0.c in Sources */,
 				89E5801E2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c in Sources */,
 				A7D8B8A823E2514400DCD162 /* SDL_diskaudio.c in Sources */,
@@ -3116,7 +3113,6 @@
 				A7D8B4DC23E2514300DCD162 /* SDL_joystick.c in Sources */,
 				A7D8BA4923E2514400DCD162 /* SDL_render_gles2.c in Sources */,
 				F3A8371C2F69C80100AD32B6 /* SDL_RealityKitHelper.swift in Sources */,
-				F3A8371F2F69C80100AD32B6 /* SDL_uikitvisionosscene.m in Sources */,
 				A7D8AC2D23E2514100DCD162 /* SDL_surface.c in Sources */,
 				A7D8B54B23E2514300DCD162 /* SDL_hidapi_xboxone.c in Sources */,
 				A7D8AD2323E2514100DCD162 /* SDL_blit_auto.c in Sources */,
@@ -3281,7 +3277,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
-				"SWIFT_OBJC_BRIDGING_HEADER[sdk=xr*]" = ../../src/video/uikit/SDL_UIKitBridge.h;
+				"SWIFT_OBJC_BRIDGING_HEADER[sdk=xr*]" = "../../src/video/uikit/SDL_UIKitBridge-swift.h";
 				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
@@ -3351,7 +3347,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = GLES_SILENCE_DEPRECATION;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
-				"SWIFT_OBJC_BRIDGING_HEADER[sdk=xr*]" = ../../src/video/uikit/SDL_UIKitBridge.h;
+				"SWIFT_OBJC_BRIDGING_HEADER[sdk=xr*]" = "../../src/video/uikit/SDL_UIKitBridge-swift.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 			};

@@ -22,6 +22,65 @@ import SwiftUI
 import RealityKit
 import Metal
 
+// Icons used by buttons below
+
+// Flat button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133.333 400H666.667" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct FlatButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16667*width, y: 0.5*height))
+        strokePath.addLine(to: CGPoint(x: 0.83333*width, y: 0.5*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curved button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133 380C311 317.333 489 317.333 667 380" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurvedButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.475*height))
+        strokePath.addCurve(to: CGPoint(x: 0.83375*width, y: 0.475*height), control1: CGPoint(x: 0.38875*width, y: 0.39667*height), control2: CGPoint(x: 0.61125*width, y: 0.39667*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curviest button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133 370C310.667 230 488.333 230 666 370" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurviestButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.4625*height))
+        strokePath.addCurve(to: CGPoint(x: 0.8325*width, y: 0.4625*height), control1: CGPoint(x: 0.38833*width, y: 0.2875*height), control2: CGPoint(x: 0.61042*width, y: 0.2875*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
 /// UIHostingController subclass that hides the visionOS glass background.
 @available(visionOS 26.0, *)
 private class SDL_ClearHostingController<Content: View>: UIHostingController<Content> {
@@ -31,7 +90,7 @@ private class SDL_ClearHostingController<Content: View>: UIHostingController<Con
 }
 
 /// ObjC-accessible wrapper that manages presenting SDL curved content
-/// via a UIHostingController (no ImmersiveSpace required).
+/// via a UIHostingController
 @available(visionOS 26.0, *)
 @MainActor
 @objc(SDL_CurvedContentHosting)

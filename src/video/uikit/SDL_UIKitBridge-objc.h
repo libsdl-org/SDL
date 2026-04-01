@@ -18,25 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#import "SDL_uikitviewcontroller.h"
+#ifndef SDL_uikitvisionosscene_h_
+#define SDL_uikitvisionosscene_h_
 
-// Called from Swift scene delegates when window size changes
-void SDL_VisionOS_SendSizeChanged(long width, long height);
+#import <UIKit/UIKit.h>
+#import <Metal/Metal.h>
 
-// Called from Swift scene delegates when window curvature changes
-void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature);
+/**
+ * Check if a window is using curved content mode (UIHostingController-based).
+ *
+ * @param window The SDL window to check.
+ * @return true if the window is in curved mode, false otherwise.
+ */
+bool SDL_UIKit_IsCurvedWindow(SDL_Window *window);
 
-// Called from Swift scene delegates when visionOS delivers a touch event
-void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y);
+/**
+ * Get the curved content display texture.
+ */
+id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat);
 
-// Called from Swift to enter immersive mode
-void SDL_VisionOS_EnterImmersiveMode();
-
-// Called from Swift to leave immersive mode
-void SDL_VisionOS_LeaveImmersiveMode();
-
-// Called from Swift to enter curved content mode (UIHostingController-based)
-void SDL_VisionOS_EnterCurvedMode();
-
-// Called from Swift to leave curved content mode
-void SDL_VisionOS_LeaveCurvedMode();
+#endif /* SDL_uikitvisionosscene_h_ */
