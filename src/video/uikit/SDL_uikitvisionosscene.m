@@ -340,26 +340,21 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
 void SDL_VisionOS_SendImmersiveTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y)
 {
     const SDL_TouchID directTouchId = 1;
-    SDL_Window **windows = SDL_GetWindows(NULL);
-    if (windows) {
-        for (int i = 0; windows[i]; ++i) {
-            SDL_Window *window = windows[i];
-            if (SDL_UIKit_IsImmersiveWindow(window)) {
-                float pressure;
-                if (eventType == SDL_EVENT_FINGER_DOWN || eventType == SDL_EVENT_FINGER_MOTION) {
-                    pressure = 1.0f;
-                } else {
-                    pressure = 0.0f;
-                }
-                if (eventType == SDL_EVENT_FINGER_MOTION) {
-                    SDL_SendTouchMotion(UIKit_GetEventTimestamp(timestamp), directTouchId, fingerID, window, x, y, pressure);
-                } else {
-                    SDL_SendTouch(UIKit_GetEventTimestamp(timestamp), directTouchId, fingerID, window, (SDL_EventType)eventType, x, y, pressure);
-                }
-                break;
-            }
-        }
-        SDL_free(windows);
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (!window) {
+        return;
+    }
+
+    float pressure;
+    if (eventType == SDL_EVENT_FINGER_DOWN || eventType == SDL_EVENT_FINGER_MOTION) {
+        pressure = 1.0f;
+    } else {
+        pressure = 0.0f;
+    }
+    if (eventType == SDL_EVENT_FINGER_MOTION) {
+        SDL_SendTouchMotion(UIKit_GetEventTimestamp(timestamp), directTouchId, fingerID, window, x, y, pressure);
+    } else {
+        SDL_SendTouch(UIKit_GetEventTimestamp(timestamp), directTouchId, fingerID, window, (SDL_EventType)eventType, x, y, pressure);
     }
 }
 

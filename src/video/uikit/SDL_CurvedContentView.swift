@@ -28,7 +28,6 @@ struct SDL_CurvedContentView: View {
     let helper: SDL_RealityKitHelper
 
     @State private var touchScale: CGPoint = CGPoint()
-    @State private var touchOffset: CGPoint = CGPoint()
     @State private var addedEntity: ModelEntity?
 
     let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
@@ -61,8 +60,6 @@ struct SDL_CurvedContentView: View {
             return
         }
         var location = event.location
-        location.x -= touchOffset.x
-        location.y -= touchOffset.y
         location.x *= touchScale.x
         location.y *= touchScale.y
         SDL_VisionOS_SendImmersiveTouch(event.timestamp, fingerID, eventType, location.x, location.y)
@@ -100,13 +97,21 @@ struct SDL_CurvedContentView: View {
                       helper.meshWidth, helper.meshHeight, helper.meshCurvature)
             }
 
+            // Compensate for the curve in the touch event location
+            let posX = 0.5 * frameInMeters.extents.x
+            let curveAmount = helper.meshCurvature * 2.0
+            let angle = posX * curveAmount
+            let radius = 1.0 / max(curveAmount, 0.001)
+            let adjustedX = radius * sin(angle)
+            let ratio = CGFloat(adjustedX > 0 ? (adjustedX / posX): 1.0)
+            let a = (1.0 - ratio) * 0.5
+            let curveScale = 1.0 - a
+
             let frame = proxy.frame(in: .local)
-            let scale = CGPoint(x: 1 / frame.size.width, y: 1 / frame.size.height)
-            let centerX = (frame.max.x - frame.min.x) / 2
-            let centerY = (frame.max.y - frame.min.y) / 2
+            let scale = CGPoint(x: 1 / (frame.size.width * curveScale), y: 1 / frame.size.height)
+
             Task {
                 touchScale = scale
-                touchOffset = CGPoint(x: -centerX, y: -centerY)
             }
         }
         .ignoresSafeArea()
