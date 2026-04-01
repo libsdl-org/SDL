@@ -30,7 +30,7 @@ extension SDL_uikitviewcontroller {
                 UIHostingOrnament(sceneAnchor: .topTrailing, contentAlignment: .leading) {
                     Button(action: {
                         self.ornaments = []
-                        SDL_VisionOS_EnterImmersiveMode()
+                        SDL_VisionOS_EnterCurvedMode()
                     }) {
                         Image(systemName: "rectangle.arrowtriangle.2.outward")
                     }

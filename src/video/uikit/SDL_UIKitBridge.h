@@ -31,3 +31,9 @@ void SDL_VisionOS_EnterImmersiveMode();
 
 // Called from Swift to leave immersive mode
 void SDL_VisionOS_LeaveImmersiveMode();
+
+// Called from Swift to enter curved content mode (UIHostingController-based)
+void SDL_VisionOS_EnterCurvedMode();
+
+// Called from Swift to leave curved content mode
+void SDL_VisionOS_LeaveCurvedMode();

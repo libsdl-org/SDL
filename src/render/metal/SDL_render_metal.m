@@ -463,6 +463,9 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             if (renderer->window && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
                 data.mtlimmersivetexture = SDL_UIKit_GetImmersiveDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
                 mtltexture = data.mtlimmersivetexture;
+            } else if (renderer->window && SDL_UIKit_IsCurvedWindow(renderer->window)) {
+                data.mtlimmersivetexture = SDL_UIKit_GetCurvedDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+                mtltexture = data.mtlimmersivetexture;
             } else
 #endif
             {
@@ -641,8 +644,8 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
 static bool METAL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
 #ifdef SDL_PLATFORM_VISIONOS
-    if (!renderer->target && SDL_UIKit_IsImmersiveWindow(renderer->window)) {
-        // The immersive texture uses linear colorspace for rendering
+    if (!renderer->target && (SDL_UIKit_IsImmersiveWindow(renderer->window) || SDL_UIKit_IsCurvedWindow(renderer->window))) {
+        // The immersive/curved texture uses linear colorspace for rendering
         return true;
     }
 #endif

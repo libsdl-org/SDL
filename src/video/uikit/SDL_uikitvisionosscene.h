@@ -111,4 +111,17 @@ bool SDL_UIKit_IsImmersiveWindow(SDL_Window *window);
  */
 id<MTLTexture> SDL_UIKit_GetImmersiveDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat);
 
+/**
+ * Check if a window is using curved content mode (UIHostingController-based).
+ *
+ * @param window The SDL window to check.
+ * @return true if the window is in curved mode, false otherwise.
+ */
+bool SDL_UIKit_IsCurvedWindow(SDL_Window *window);
+
+/**
+ * Get the curved content display texture.
+ */
+id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat);
+
 #endif /* SDL_uikitvisionosscene_h_ */

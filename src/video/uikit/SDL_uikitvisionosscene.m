@@ -424,13 +424,143 @@ id<MTLTexture> SDL_UIKit_GetImmersiveDisplayTexture(SDL_Window *window, id<MTLCo
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
     if (!data || !data.visionOSScene) {
-        return;
+        return nil;
     }
 
     return [data.visionOSScene getDisplayTexture:commandBuffer
                                            width:width
                                           height:height
                                      pixelFormat:pixelFormat];
+}
+
+// MARK: - Curved Content Mode (UIHostingController-based)
+
+// Helper function to get the SDL_CurvedContentHosting class
+static Class SDL_GetCurvedContentHostingClass()
+{
+    Class hostingClass = NSClassFromString(@"SDL_CurvedContentHosting");
+    if (!hostingClass) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
+                    "SDL_UIKitVisionOSScene: Could not find SDL_CurvedContentHosting class");
+    }
+    return hostingClass;
+}
+
+// Called from Swift to enter curved content mode
+void SDL_VisionOS_EnterCurvedMode()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (!window) {
+        return;
+    }
+
+    SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
+
+    if (windowData.curvedContentHosting) {
+        SDL_Log("VISIONOS: Already in curved mode");
+        return;
+    }
+
+    Class hostingClass = SDL_GetCurvedContentHostingClass();
+    if (!hostingClass) {
+        return;
+    }
+
+    // Create the hosting wrapper
+    id hosting = [[hostingClass alloc] init];
+
+    // Configure with size and curvature
+    SEL configureSelector = NSSelectorFromString(@"configureWithSize:curvature:");
+    if ([hosting respondsToSelector:configureSelector]) {
+        NSMethodSignature *signature = [hosting methodSignatureForSelector:configureSelector];
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setSelector:configureSelector];
+        [invocation setTarget:hosting];
+
+        CGSize size = CGSizeMake(window->w, window->h);
+        float curvatureFloat = (float)windowData.curvature;
+        [invocation setArgument:&size atIndex:2];
+        [invocation setArgument:&curvatureFloat atIndex:3];
+        [invocation invoke];
+    }
+
+    // Present from the view controller
+    SEL presentSelector = NSSelectorFromString(@"presentFrom:");
+    if ([hosting respondsToSelector:presentSelector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [hosting performSelector:presentSelector withObject:windowData.viewcontroller];
+#pragma clang diagnostic pop
+    }
+
+    windowData.curvedContentHosting = hosting;
+    SDL_Log("VISIONOS: Entered curved content mode");
+}
+
+// Called from Swift to leave curved content mode
+void SDL_VisionOS_LeaveCurvedMode()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (!window) {
+        return;
+    }
+
+    SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
+
+    if (!windowData.curvedContentHosting) {
+        SDL_Log("VISIONOS: Not in curved mode");
+        return;
+    }
+
+    SEL dismissSelector = NSSelectorFromString(@"dismiss");
+    if ([windowData.curvedContentHosting respondsToSelector:dismissSelector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [windowData.curvedContentHosting performSelector:dismissSelector];
+#pragma clang diagnostic pop
+    }
+
+    windowData.curvedContentHosting = nil;
+    [windowData.viewcontroller addOrnaments];
+    SDL_Log("VISIONOS: Left curved content mode");
+}
+
+bool SDL_UIKit_IsCurvedWindow(SDL_Window *window)
+{
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+    return data && data.curvedContentHosting;
+}
+
+id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat)
+{
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+    if (!data || !data.curvedContentHosting) {
+        return nil;
+    }
+
+    id hosting = data.curvedContentHosting;
+    SEL getTextureSelector = NSSelectorFromString(@"getDisplayTexture:width:height:pixelFormat:");
+    if (![hosting respondsToSelector:getTextureSelector]) {
+        return nil;
+    }
+
+    NSMethodSignature *signature = [hosting methodSignatureForSelector:getTextureSelector];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setSelector:getTextureSelector];
+    [invocation setTarget:hosting];
+
+    long arg_width = width;
+    long arg_height = height;
+    [invocation setArgument:&commandBuffer atIndex:2];
+    [invocation setArgument:&arg_width atIndex:3];
+    [invocation setArgument:&arg_height atIndex:4];
+    [invocation setArgument:&pixelFormat atIndex:5];
+    [invocation invoke];
+
+    __unsafe_unretained id temp = nil;
+    [invocation getReturnValue:&temp];
+    id<MTLTexture> texture = temp;
+    return texture;
 }
 
 #endif /* SDL_PLATFORM_VISIONOS */
