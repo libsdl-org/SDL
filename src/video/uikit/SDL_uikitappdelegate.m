@@ -502,8 +502,6 @@ API_AVAILABLE(ios(13.0))
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0))
 {
     // This doesn't appear to be called, but it needs to be implemented to signal that we support the UIScene life cycle
-
-    // For standard window scenes, use the default SDL delegate
     UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"SDLSceneConfiguration" sessionRole:connectingSceneSession.role];
     config.delegateClass = [SDLUIKitSceneDelegate class];
     return config;

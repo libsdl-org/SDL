@@ -119,16 +119,14 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
      * hierarchy. */
     [view setSDLWindow:window];
 
-
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
 #ifdef SDL_PLATFORM_VISIONOS
     float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT, 0.0f);
-    curvature = SDL_clamp(curvature, 0.0f, 1.0f);
-    data.curvature = curvature;
-    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_VISIONOS_CURVATURE_FLOAT, curvature);
+    data.curvature = SDL_clamp(curvature, 0.0f, 1.0f);
+    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_VISIONOS_CURVATURE_FLOAT, data.curvature);
 #endif
 
     return true;
@@ -257,8 +255,8 @@ void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_PLATFORM_VISIONOS
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        CGSize size = { window->pending.w, window->pending.h };
         UIWindowScene *scene = data.uiwindow.windowScene;
+        CGSize size = { window->pending.w, window->pending.h };
         UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
         [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
             // Request failed, no worries
@@ -391,7 +389,6 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             for (SDL_uikitview *view in views) {
                 [view setSDLWindow:NULL];
             }
-
 
             /* iOS may still hold a reference to the window after we release it.
              * We want to make sure the SDL view controller isn't accessed in

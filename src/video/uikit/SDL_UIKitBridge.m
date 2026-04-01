@@ -98,7 +98,7 @@ static Class SDL_GetCurvedContentHostingClass()
     Class hostingClass = NSClassFromString(@"SDL_CurvedContentHosting");
     if (!hostingClass) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
-                    "SDL_UIKitVisionOSScene: Could not find SDL_CurvedContentHosting class");
+                    "Could not find SDL_CurvedContentHosting class");
     }
     return hostingClass;
 }

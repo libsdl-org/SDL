@@ -6496,19 +6496,3 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
     }
 }
 #endif
-
-/* visionOS volumetric window support */
-
-#ifndef SDL_PLATFORM_VISIONOS
-/* Stub implementations when visionOS is not available */
-
-bool SDL_SetVisionOSWindowCurvature(SDL_Window *window, float curvature)
-{
-    return SDL_Unsupported();
-}
-
-float SDL_GetVisionOSWindowCurvature(SDL_Window *window)
-{
-    return 0.0f;
-}
-#endif

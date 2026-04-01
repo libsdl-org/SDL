@@ -87,7 +87,6 @@ SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-
         CGFloat scale = 1.0;
         SDL_uikitmetalview *metalview;
 

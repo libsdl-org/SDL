@@ -43,9 +43,6 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 #define SDL_METALVIEW_TAG 255
 
 @class UIWindow;
-#ifdef SDL_PLATFORM_VISIONOS
-@class SDL_UIKitVisionOSScene;
-#endif
 
 @interface SDL_UIKitWindowData : NSObject
 
