@@ -20,6 +20,9 @@
 */
 #import "SDL_uikitviewcontroller.h"
 
+// Called from Swift scene delegates when window size changes
+void SDL_VisionOS_SendSizeChanged(long width, long height);
+
 // Called from Swift scene delegates when window curvature changes
 void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature);
 

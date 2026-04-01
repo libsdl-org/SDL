@@ -42,6 +42,8 @@
 - (instancetype)initWithFrame:(CGRect)frame
                         scale:(CGFloat)scale;
 
+- (void)updateDrawableSize;
+
 @end
 
 SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window);

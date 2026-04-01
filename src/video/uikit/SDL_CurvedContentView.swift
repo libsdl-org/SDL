@@ -83,6 +83,9 @@ struct SDL_CurvedContentView: View {
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
 
+            let frame = proxy.frame(in: .local)
+            helper.updateSize(width: Int(frame.size.width), height: Int(frame.size.height))
+
             // The entity is created asynchronously by updateMeshSize.
             // Each time the helper changes (@Observable), this update closure runs.
             // Add the entity to content when it becomes available, or when it changes.
@@ -107,7 +110,6 @@ struct SDL_CurvedContentView: View {
             let a = (1.0 - ratio) * 0.5
             let curveScale = 1.0 - a
 
-            let frame = proxy.frame(in: .local)
             let scale = CGPoint(x: 1 / (frame.size.width * curveScale), y: 1 / frame.size.height)
 
             Task {

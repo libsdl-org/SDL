@@ -25,6 +25,7 @@
 #import "SDL_uikitvisionosscene.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitwindow.h"
+#include "SDL_uikitmetalview.h"
 #include "../../events/SDL_events_c.h"
 
 
@@ -324,6 +325,33 @@ static id SDL_GetSharedDelegate()
 
 @end
 
+
+// Called from Swift scene delegates when window size changes
+void SDL_VisionOS_SendSizeChanged(long width, long height)
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (window) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+        CGRect bounds = CGRectMake(0, 0, width, height);
+
+        // Update the UIWindow
+        data.uiwindow.frame = bounds;
+
+        // Update the view
+        UIView *view = data.viewcontroller.view;
+        view.bounds = bounds;
+
+        // Update the metal layer
+        if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
+            SDL_uikitmetalview *metalview = (SDL_uikitmetalview *)view;
+
+            [metalview updateDrawableSize];
+        }
+
+        // Send the resize event
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, (int)width, (int)height);
+    }
+}
 
 // Called from Swift scene delegates when window curvature changes
 void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)

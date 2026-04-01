@@ -313,6 +313,7 @@ public class SDL_RealityKitHelper: NSObject {
     public func updateSize(width: Int, height: Int) {
         // The RealityView will update based on this size change
         contentSizeInPoints = CGSize(width: width, height: height);
+        SDL_VisionOS_SendSizeChanged(width, height)
     }
 
     public func updateMeshSize(width: Float, height: Float) {
