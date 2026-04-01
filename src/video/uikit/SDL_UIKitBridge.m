@@ -63,8 +63,11 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        data.curvature = curvature;
-        SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CREATE_VISIONOS_CURVATURE_FLOAT, curvature);
+        if (curvature != data.curvature) {
+            data.curvature = curvature;
+            SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_CURVATURE_CHANGED, 0, 0);
+        }
     }
 }
 

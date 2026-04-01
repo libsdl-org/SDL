@@ -163,8 +163,9 @@ typedef enum SDL_EventType
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
     SDL_EVENT_WINDOW_HDR_STATE_CHANGED, /**< Window HDR properties have changed */
+    SDL_EVENT_WINDOW_CURVATURE_CHANGED, /**< Window curvature has changed (on visionOS) */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_HDR_STATE_CHANGED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_CURVATURE_CHANGED,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
