@@ -204,7 +204,7 @@ struct SDL_CurvedContentOrnamentView: View {
             Button(action: {
                 SDL_VisionOS_LeaveCurvedMode()
             }) {
-                Image(systemName: "rectangle.arrowtriangle.2.inward")
+                Image(systemName: "rectangle")
             }
             .frame(width: 48, height: 48)
         }

@@ -32,7 +32,7 @@ extension SDL_uikitviewcontroller {
                         self.ornaments = []
                         SDL_VisionOS_EnterCurvedMode()
                     }) {
-                        Image(systemName: "rectangle.arrowtriangle.2.outward")
+                        Image(systemName: "pano")
                     }
                     .frame(width: 48, height: 48)
                 }
