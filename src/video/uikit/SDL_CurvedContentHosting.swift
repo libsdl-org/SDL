@@ -174,17 +174,17 @@ struct SDL_CurvedContentOrnamentView: View {
         HStack(spacing: 32) {
             if helper.meshCurvature == 0.0 {
                 Button(action: {
-                    helper.updateCurvature(curvature: 0.4)
-                    SDL_VisionOS_SendCurvatureChanged(0.4)
+                    helper.updateCurvature(curvature: 0.3)
+                    SDL_VisionOS_SendCurvatureChanged(0.3)
                 }) {
                     CurvedButtonIcon()
                         .frame(width: 48, height: 48)
                 }
                 .frame(width: 48, height: 48)
-            } else if helper.meshCurvature == 0.4 {
+            } else if helper.meshCurvature == 0.3 {
                 Button(action: {
-                    helper.updateCurvature(curvature: 0.8)
-                    SDL_VisionOS_SendCurvatureChanged(0.8)
+                    helper.updateCurvature(curvature: 0.5)
+                    SDL_VisionOS_SendCurvatureChanged(0.5)
                 }) {
                     CurviestButtonIcon()
                         .frame(width: 48, height: 48)
