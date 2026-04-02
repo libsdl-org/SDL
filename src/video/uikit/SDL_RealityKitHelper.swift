@@ -43,6 +43,7 @@ public class SDL_RealityKitHelper: NSObject {
     private var anchorPosition: SIMD3<Float> = [0, 0, 0]
     private(set) var meshWidth: Float = 0.0
     private(set) var meshHeight: Float = 0.0
+    private(set) var meshDepth: Float = 0.0
     private(set) var meshCurvature: Float = 0.0
 
     /// Content size in points, used by SwiftUI to drive .windowResizability(.contentSize)
@@ -64,6 +65,7 @@ public class SDL_RealityKitHelper: NSObject {
     private func createCurvedMesh(width: Float, height: Float, curvature: Float) async {
         self.meshWidth = width
         self.meshHeight = height
+        self.meshDepth = 0.0
         self.meshCurvature = curvature
 
         NSLog("SDL_RealityKitHelper: Creating display plane %.2fx%.2f (curvature %.2f)",
@@ -160,6 +162,7 @@ public class SDL_RealityKitHelper: NSObject {
                 uvs.append(SIMD2<Float>(u, v))
             }
         }
+        meshDepth = positions[positions.count - 1].z
 
         // Generate triangle indices (reversed winding for correct front face)
         for y in 0..<segmentsY {

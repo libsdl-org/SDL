@@ -29,6 +29,7 @@ struct SDL_CurvedContentView: View {
 
     @State private var touchScale: CGPoint = CGPoint()
     @State private var addedEntity: ModelEntity?
+    @State private var frameDepth: CGFloat = 0.0
 
     let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
     let SDL_EVENT_FINGER_UP: UInt32 = 0x701
@@ -112,11 +113,15 @@ struct SDL_CurvedContentView: View {
 
             let scale = CGPoint(x: 1 / (frame.size.width * curveScale), y: 1 / frame.size.height)
 
+            let meshDepth = content.convert(vector: [0.0, 0.0, helper.meshDepth], from: .scene, to: .local)
+
             Task {
                 touchScale = scale
+                frameDepth = meshDepth.z
             }
         }
         .ignoresSafeArea()
+        .offset(z: -frameDepth)
         .gesture(
             SpatialEventGesture()
                 .onChanged { events in
