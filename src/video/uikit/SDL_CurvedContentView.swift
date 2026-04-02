@@ -20,6 +20,7 @@
 */
 import SwiftUI
 import RealityKit
+import GameController
 
 /// SwiftUI view that presents SDL content on a curved RealityKit mesh
 /// inside a UIHostingController
@@ -135,5 +136,6 @@ struct SDL_CurvedContentView: View {
                     }
                 }
         )
+        .handlesGameControllerEvents(matching: .gamepad)
     }
 }
