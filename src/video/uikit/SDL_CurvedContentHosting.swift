@@ -127,7 +127,10 @@ public class SDL_CurvedContentHosting: NSObject {
         let curvedHelper = helper
         viewController.ornaments = [
             UIHostingOrnament(sceneAnchor: .bottom, contentAlignment: .center) {
-                SDL_CurvedContentOrnamentView(helper: curvedHelper)
+                SDL_CurvedContentCurvatureOrnamentView(helper: curvedHelper)
+            },
+            UIHostingOrnament(sceneAnchor: .topTrailing, contentAlignment: .leading) {
+                SDL_CurvedContentCloseOrnamentView()
             }
         ]
     }
@@ -165,48 +168,44 @@ public class SDL_CurvedContentHosting: NSObject {
     }
 }
 
-/// Ornament view with curvature and close buttons for curved content mode.
+/// Ornament view with curvature control curved content mode.
 @available(visionOS 26.0, *)
-struct SDL_CurvedContentOrnamentView: View {
+struct SDL_CurvedContentCurvatureOrnamentView: View {
     let helper: SDL_RealityKitHelper
 
     var body: some View {
-        HStack(spacing: 32) {
-            if helper.meshCurvature == 0.0 {
-                Button(action: {
-                    helper.updateCurvature(curvature: 0.3)
-                    SDL_VisionOS_SendCurvatureChanged(0.3)
-                }) {
-                    CurvedButtonIcon()
-                        .frame(width: 48, height: 48)
-                }
+        HStack(spacing: 2) {
+            FlatButtonIcon()
                 .frame(width: 48, height: 48)
-            } else if helper.meshCurvature == 0.3 {
-                Button(action: {
-                    helper.updateCurvature(curvature: 0.5)
-                    SDL_VisionOS_SendCurvatureChanged(0.5)
-                }) {
-                    CurviestButtonIcon()
-                        .frame(width: 48, height: 48)
-                }
-                .frame(width: 48, height: 48)
-            } else {
-                Button(action: {
-                    helper.updateCurvature(curvature: 0.0)
-                    SDL_VisionOS_SendCurvatureChanged(0.0)
-                }) {
-                    FlatButtonIcon()
-                        .frame(width: 48, height: 48)
-                }
-                .frame(width: 48, height: 48)
-            }
 
-            Button(action: {
-                SDL_VisionOS_LeaveCurvedMode()
-            }) {
-                Image(systemName: "rectangle")
-            }
-            .frame(width: 48, height: 48)
+            Slider(
+                value: Binding(
+                    get: { Double( helper.meshCurvature * 1000 ) },
+                    set: {
+                        let curvature = $0 / 1000
+                        helper.updateCurvature(curvature: Float(curvature))
+                        SDL_VisionOS_SendCurvatureChanged(curvature)
+                    }
+                ),
+                in: 0...600,
+            )
+            .frame(width: 96, height: 48)
+
+            CurviestButtonIcon()
+                .frame(width: 48, height: 48)
         }
+    }
+}
+
+/// Ornament view with close button for curved content mode.
+@available(visionOS 26.0, *)
+struct SDL_CurvedContentCloseOrnamentView: View {
+    var body: some View {
+        Button(action: {
+            SDL_VisionOS_LeaveCurvedMode()
+        }) {
+            Image(systemName: "rectangle")
+        }
+        .frame(width: 48, height: 48)
     }
 }
