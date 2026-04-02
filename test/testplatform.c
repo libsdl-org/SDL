@@ -208,6 +208,9 @@ static int TST_uallrem(void *a, void *b, int arg, void *result, void *expected)
     return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
 }
 
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(__ICC)
+static int TST_allshl(void *a, void *b, int arg, void *result, void *expected) __attribute__ ((no_sanitize("undefined")));
+#endif
 static int TST_allshl(void *a, void *b, int arg, void *result, void *expected)
 {
     (*(long long *)result) = (*(long long *)a) << arg;
