@@ -172,27 +172,55 @@ public class SDL_CurvedContentHosting: NSObject {
 @available(visionOS 26.0, *)
 struct SDL_CurvedContentCurvatureOrnamentView: View {
     let helper: SDL_RealityKitHelper
+    @State var changingCurvature: Bool = false
 
     var body: some View {
-        HStack(spacing: 2) {
-            FlatButtonIcon()
-                .frame(width: 48, height: 48)
-
+        if ( changingCurvature ) {
             Slider(
                 value: Binding(
-                    get: { Double( helper.meshCurvature * 1000 ) },
+                    get: { Double( helper.meshCurvature * 100 ) },
                     set: {
-                        let curvature = $0 / 1000
+                        var curvature = $0 / 100
+                        if (curvature < 0.01) {
+                            curvature = 0.0
+                        }
                         helper.updateCurvature(curvature: Float(curvature))
                         SDL_VisionOS_SendCurvatureChanged(curvature)
                     }
                 ),
-                in: 0...600,
+                in: 0...60,
+                onEditingChanged: { editing in
+                    changingCurvature = editing
+                }
             )
-            .frame(width: 96, height: 48)
+            .frame(width: 120, height: 48)
 
-            CurviestButtonIcon()
+        } else {
+            if helper.meshCurvature == 0.0 {
+                Button(action: {
+                    changingCurvature = true
+                }) {
+                    FlatButtonIcon()
+                        .frame(width: 48, height: 48)
+                }
                 .frame(width: 48, height: 48)
+            } else if helper.meshCurvature <= 0.3 {
+                Button(action: {
+                    changingCurvature = true
+                }) {
+                    CurvedButtonIcon()
+                        .frame(width: 48, height: 48)
+                }
+                .frame(width: 48, height: 48)
+            } else {
+                Button(action: {
+                    changingCurvature = true
+                }) {
+                    CurviestButtonIcon()
+                        .frame(width: 48, height: 48)
+                }
+                .frame(width: 48, height: 48)
+            }
         }
     }
 }
