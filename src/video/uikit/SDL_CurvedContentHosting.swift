@@ -177,7 +177,7 @@ struct SDL_CurvedContentOrnamentView: View {
                     helper.updateCurvature(curvature: 0.2)
                     SDL_VisionOS_SendCurvatureChanged(0.2)
                 }) {
-                    FlatButtonIcon()
+                    CurvedButtonIcon()
                         .frame(width: 48, height: 48)
                 }
                 .frame(width: 48, height: 48)
@@ -186,7 +186,7 @@ struct SDL_CurvedContentOrnamentView: View {
                     helper.updateCurvature(curvature: 0.4)
                     SDL_VisionOS_SendCurvatureChanged(0.4)
                 }) {
-                    CurvedButtonIcon()
+                    CurviestButtonIcon()
                         .frame(width: 48, height: 48)
                 }
                 .frame(width: 48, height: 48)
@@ -195,7 +195,7 @@ struct SDL_CurvedContentOrnamentView: View {
                     helper.updateCurvature(curvature: 0.0)
                     SDL_VisionOS_SendCurvatureChanged(0.0)
                 }) {
-                    CurviestButtonIcon()
+                    FlatButtonIcon()
                         .frame(width: 48, height: 48)
                 }
                 .frame(width: 48, height: 48)
