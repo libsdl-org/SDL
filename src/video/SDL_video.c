@@ -1352,7 +1352,9 @@ SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *co
     result = (SDL_DisplayMode **)SDL_malloc((num_modes + 1) * sizeof(*result) + num_modes * sizeof(**result));
     if (result) {
         SDL_DisplayMode *modes = (SDL_DisplayMode *)((Uint8 *)result + ((num_modes + 1) * sizeof(*result)));
-        SDL_memcpy(modes, display->fullscreen_modes, num_modes * sizeof(*modes));
+        if (num_modes) {
+            SDL_memcpy(modes, display->fullscreen_modes, num_modes * sizeof(*modes));
+        }
         for (i = 0; i < num_modes; ++i) {
             result[i] = modes++;
         }
