@@ -766,7 +766,7 @@ done:
 
 int main(int argc, char **argv)
 {
-    struct
+    static const struct
     {
         bool enable_intrinsics;
         int pattern_size;
