@@ -646,8 +646,6 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     SDL_Surface *surface = PS3_ActivateRenderer(renderer);
-    SDL_PixelFormat src_format;
-    void *src_pixels;
     SDL_Rect final_rect;
 
     if (!surface) {
@@ -668,8 +666,8 @@ static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         return NULL;
     }
 
-    src_format = surface->format;
-    src_pixels = (void*)((Uint8 *) surface->pixels +
+    SDL_PixelFormat src_format = surface->format;
+    void *src_pixels = (void*)((Uint8 *) surface->pixels +
                     rect->y * surface->pitch +
                     rect->x * surface->fmt->bits_per_pixel);
 
