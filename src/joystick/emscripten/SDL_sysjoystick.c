@@ -35,53 +35,62 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
-EM_JS(int, SDL_GetEmscriptenJoystickVendor, (int device_index), {
+static int SDL_GetEmscriptenJoystickVendor(int device_index)
+{
     // Let's assume that if we're calling these function then the gamepad object definitely exists
-    let gamepad = navigator['getGamepads']()[device_index];
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
 
-    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
-    let vendor_str = 'Vendor: ';
-    if (gamepad['id']['indexOf'](vendor_str) > 0) {
-        let vendor_str_index = gamepad['id']['indexOf'](vendor_str) + vendor_str['length'];
-        return parseInt(gamepad['id']['substr'](vendor_str_index, 4), 16);
-    }
+        // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+        let vendor_str = 'Vendor: ';
+        if (gamepad['id']['indexOf'](vendor_str) > 0) {
+            let vendor_str_index = gamepad['id']['indexOf'](vendor_str) + vendor_str['length'];
+            return parseInt(gamepad['id']['substr'](vendor_str_index, 4), 16);
+        }
 
-    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
-    let id_split = gamepad['id']['split']('-');
-    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
-        return parseInt(id_split[0], 16);
-    }
+        // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+        let id_split = gamepad['id']['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            return parseInt(id_split[0], 16);
+        }
 
-    return 0;
-});
+        return 0;
+    }, device_index);
+}
 
-EM_JS(int, SDL_GetEmscriptenJoystickProduct, (int device_index), {
-    let gamepad = navigator['getGamepads']()[device_index];
+static int SDL_GetEmscriptenJoystickProduct(int device_index)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
 
-    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
-    let product_str = 'Product: ';
-    if (gamepad['id']['indexOf'](product_str) > 0) {
-        let product_str_index = gamepad['id']['indexOf'](product_str) + product_str['length'];
-        return parseInt(gamepad['id']['substr'](product_str_index, 4), 16);
-    }
+        // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+        let product_str = 'Product: ';
+        if (gamepad['id']['indexOf'](product_str) > 0) {
+            let product_str_index = gamepad['id']['indexOf'](product_str) + product_str['length'];
+            return parseInt(gamepad['id']['substr'](product_str_index, 4), 16);
+        }
 
-    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
-    let id_split = gamepad['id']['split']('-');
-    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[1], 16))) {
-        return parseInt(id_split[1], 16);
-    }
+        // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+        let id_split = gamepad['id']['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[1], 16))) {
+            return parseInt(id_split[1], 16);
+        }
 
-    return 0;
-});
+        return 0;
+    }, device_index);
+}
 
-EM_JS(int, SDL_IsEmscriptenJoystickXInput, (int device_index), {
-    let gamepad = navigator['getGamepads']()[device_index];
+static int SDL_IsEmscriptenJoystickXInput(int device_index)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
 
-    // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
-    // Firefox: xinput
-    // TODO: Safari
-    return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
-});
+        // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
+        // Firefox: xinput
+        // TODO: Safari
+        return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
+    }, device_index);
+}
 
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
