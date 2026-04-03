@@ -1218,6 +1218,10 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     static const enum libdecor_window_state tiled_states = (LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
                                                             LIBDECOR_WINDOW_STATE_TILED_TOP | LIBDECOR_WINDOW_STATE_TILED_BOTTOM);
 
+    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
+        LibdecorGetMinContentSize(frame, &wind->system_limits.min_width, &wind->system_limits.min_height);
+    }
+
     // Window State
     if (libdecor_configuration_get_window_state(configuration, &window_state)) {
         fullscreen = (window_state & LIBDECOR_WINDOW_STATE_FULLSCREEN) != 0;
@@ -1461,7 +1465,6 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-        LibdecorGetMinContentSize(frame, &wind->system_limits.min_width, &wind->system_limits.min_height);
         wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME;
     }
 
