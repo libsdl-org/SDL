@@ -289,8 +289,10 @@ bool SDL_PreInitMouse(void)
     SDL_AddHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
                         SDL_PenMouseEventsChanged, mouse);
 
+#ifndef SDL_PLATFORM_PS3
     SDL_AddHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
                         SDL_PenTouchEventsChanged, mouse);
+#endif
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);

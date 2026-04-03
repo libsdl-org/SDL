@@ -219,6 +219,9 @@
            void reset_IOP(); \
            void reset_IOP() {}
 
+    #elif defined(SDL_PLATFORM_PS3)
+        #define SDL_MAIN_AVAILABLE
+
     #elif defined(SDL_PLATFORM_3DS)
         /*
           On N3DS, SDL provides a main function that sets up the screens

@@ -453,6 +453,17 @@
 #define SDL_PLATFORM_PS2 1
 #endif
 
+#if defined(__PS3__) || defined(PS3)
+
+/**
+ * A preprocessor macro that is only defined if compiling for Sony PlayStation
+ * 3.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PLATFORM_PS3 1
+#endif
+
 #if defined(__vita__) || defined(__psp2__)
 
 /**
