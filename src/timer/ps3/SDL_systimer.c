@@ -34,8 +34,8 @@ static bool ticks_started = false;
 
 int gettimeofday(struct timeval* tv, void* unused)
 {
-    system_time_t sec;
-    system_time_t nsec;
+    u64 sec;
+    u64 nsec;
     int rv = -1;
 
     rv = sysGetCurrentTime(&sec, &nsec);
@@ -66,8 +66,8 @@ void SDL_TicksQuit(void)
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    system_time_t sec;
-    system_time_t nsec;
+    u64 sec;
+    u64 nsec;
     sysGetCurrentTime(&sec, &nsec);
     return (Uint64)sec * 1000000000ULL + nsec;
 }
