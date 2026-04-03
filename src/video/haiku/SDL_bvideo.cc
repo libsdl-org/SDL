@@ -318,9 +318,9 @@ extern "C"
 bool HAIKU_OpenURL(const char *url)
 {
 #if B_HAIKU_VERSION <= B_HAIKU_VERSION_1_BETA_5
-    BUrl burl(url, true);
-#else
     BUrl burl(url);
+#else
+    BUrl burl(url, true);
 #endif
     const status_t rc = burl.OpenWithPreferredApplication(false);
     if (rc != B_NO_ERROR) {

@@ -27,9 +27,9 @@
 bool SDL_SYS_OpenURL(const char *url)
 {
 #if B_BEOS_VERSION >= B_HAIKU_VERSION_1_PRE_BETA_6
-    BUrl burl(url, true);
-#else
     BUrl burl(url);
+#else
+    BUrl burl(url, true);
 #endif
     const status_t rc = burl.OpenWithPreferredApplication(false);
     if (rc != B_NO_ERROR) {
