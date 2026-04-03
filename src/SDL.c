@@ -788,6 +788,8 @@ const char *SDL_GetPlatform(void)
     return "tvOS";
 #elif defined(SDL_PLATFORM_PS2)
     return "PlayStation 2";
+#elif defined(SDL_PLATFORM_PS3)
+    return "PlayStation 3";
 #elif defined(SDL_PLATFORM_PSP)
     return "PlayStation Portable";
 #elif defined(SDL_PLATFORM_VITA)

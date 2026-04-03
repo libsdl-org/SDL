@@ -1187,6 +1187,12 @@ int SDL_GetSystemRAM(void)
             SDL_SystemRAM = GetMemorySize();
         }
 #endif
+#ifdef SDL_PLATFORM_PS3
+        if (SDL_SystemRAM <= 0) {
+            // PlayStation 3 has 256MiB.
+            SDL_SystemRAM = 268435456;
+        }
+#endif
 #ifdef SDL_PLATFORM_HAIKU
         if (SDL_SystemRAM <= 0) {
             system_info info;
@@ -1218,6 +1224,9 @@ int SDL_GetSystemPageSize(void)
 #endif
 #ifdef SDL_PLATFORM_PS2
         SDL_SystemPageSize = 4096;  // It's a MIPS R5900 CPU; I assume this is 4K.
+#endif
+#ifdef SDL_PLATFORM_PS3
+        SDL_SystemPageSize = 4096;  // It's a Cell PowerPC CPU; Default is 4K.
 #endif
 #if defined(HAVE_SYSCONF) && (defined(_SC_PAGESIZE) || defined(_SC_PAGE_SIZE))
         if (SDL_SystemPageSize <= 0) {

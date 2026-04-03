@@ -132,6 +132,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
 #endif
+#ifdef SDL_VIDEO_RENDER_PS3
+    &PS3_RenderDriver,
+#endif
 #ifdef SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
 #endif
