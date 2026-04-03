@@ -37,9 +37,9 @@ static int numjoysticks = 0;
 
 static int SDL_GetEmscriptenJoystickVendor(int device_index)
 {
-    // Let's assume that if we're calling these function then the gamepad object definitely exists
     return MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) return 0;
 
         // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
         let vendor_str = 'Vendor: ';
@@ -62,6 +62,7 @@ static int SDL_GetEmscriptenJoystickProduct(int device_index)
 {
     return MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) return 0;
 
         // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
         let product_str = 'Product: ';
@@ -84,6 +85,7 @@ static int SDL_IsEmscriptenJoystickXInput(int device_index)
 {
     return MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) return 0;
 
         // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
         // Firefox: xinput
