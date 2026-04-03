@@ -25,7 +25,6 @@
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_BWin.h"
-#include <os/BeBuild.h>
 #include <Url.h>
 
 #ifdef __cplusplus

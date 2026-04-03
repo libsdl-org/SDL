@@ -21,7 +21,6 @@
 #include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
-#include <os/BeBuild.h>
 #include <Url.h>
 
 bool SDL_SYS_OpenURL(const char *url)
