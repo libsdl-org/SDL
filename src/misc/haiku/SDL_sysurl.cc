@@ -21,11 +21,16 @@
 #include "SDL_internal.h"
 
 #include "../SDL_sysurl.h"
+#include <os/BeBuild.h>
 #include <Url.h>
 
 bool SDL_SYS_OpenURL(const char *url)
 {
+#if B_BEOS_VERSION >= B_HAIKU_VERSION_1_PRE_BETA_6
     BUrl burl(url, true);
+#else
+    BUrl burl(url);
+#endif
     const status_t rc = burl.OpenWithPreferredApplication(false);
     if (rc != B_NO_ERROR) {
         return SDL_SetError("URL open failed (err=%d)", (int)rc);

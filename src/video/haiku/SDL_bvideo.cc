@@ -25,6 +25,7 @@
 #ifdef SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_BWin.h"
+#include <os/BeBuild.h>
 #include <Url.h>
 
 #ifdef __cplusplus
@@ -316,7 +317,11 @@ void HAIKU_VideoQuit(SDL_VideoDevice *_this)
 extern "C"
 bool HAIKU_OpenURL(const char *url)
 {
+#if B_HAIKU_VERSION <= B_HAIKU_VERSION_1_BETA_5
     BUrl burl(url, true);
+#else
+    BUrl burl(url);
+#endif
     const status_t rc = burl.OpenWithPreferredApplication(false);
     if (rc != B_NO_ERROR) {
         return SDL_SetError("URL open failed (err=%d)", (int)rc);
