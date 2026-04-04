@@ -52,9 +52,11 @@ SDL_ToolkitDriverSet *SDL_ToolkitDriverSet_Create(SDL_VideoDevice *parent_device
     set->render = NULL;
     set->text = NULL;
 
+#ifdef SDL_VIDEO_DRIVER_X11
     set->video = SDL_ToolkitVideoDriverX11_Create(parent_device);
     set->render = SDL_ToolkitRenderDriverX11_Create(set->video);
     set->text = SDL_ToolkitTextDriverX11_Create(set->video, set->render);
+#endif
 
     set->window_count = 0;
 
@@ -195,6 +197,7 @@ void SDL_ToolkitColorScheme_SetSystemColors(SDL_ToolkitColorScheme *theme)
         break;
     default:
         SetDefaultColors(theme);
+        break;
     }
 #else
     SetDefaultColors(theme);
@@ -576,7 +579,9 @@ static void ProcessWindowEvent(SDL_ToolkitWindow *wnd, SDL_ToolkitVideoEvent *e)
                 wnd->selected_control = next;
             }
         }
+        break;
     default:
+        break;
     }
 
     if (draw) {
@@ -650,6 +655,7 @@ static void IconControl_InitResources(SDL_ToolkitControl *base)
         break;
     default:
         chr = 'X';
+        break;
     }
     control->object = SDL_ToolkitTextDriver_CreateObject(base->wnd->set->text, control->font, &chr, 1);
 }
@@ -698,6 +704,7 @@ static void IconControl_Draw(SDL_ToolkitControl *base)
         break;
     default:
         SDL_ToolkitRenderContext_SetColor(base->wnd->ctx, &control->dark_red);
+        break;
     }
     SDL_ToolkitRenderContext_FillCircle(base->wnd->ctx, &rct);
 
@@ -714,16 +721,17 @@ static void IconControl_Draw(SDL_ToolkitControl *base)
         break;
     default:
         SDL_ToolkitRenderContext_SetColor(base->wnd->ctx, &control->red);
+        break;
     }
     SDL_ToolkitRenderContext_FillCircle(base->wnd->ctx, &rct)
 
-        switch (control->icon)
-    {
+    switch (control->icon) {
     case SDL_TOOLKIT_ICON_WARNING:
         SDL_ToolkitRenderContext_SetColor(base->wnd->ctx, &control->black);
         break;
     default:
         SDL_ToolkitRenderContext_SetColor(base->wnd->ctx, &control->white);
+        break;
     }
     SDL_ToolkitTextObject_Draw(control->object, base->wnd->ctx, base->rct.x + control->object_pos.x, base->rct.y + control->object_pos.y);
 }
@@ -813,6 +821,7 @@ SDL_ToolkitControl *SDL_ToolkitIconControl_Create(SDL_ToolkitWindow *wnd, SDL_To
         SDL_ToolkitVideoWindow_MapColor(wnd->vid_wnd, &control->white);
         SDL_ToolkitVideoWindow_MapColor(wnd->vid_wnd, &control->red);
         SDL_ToolkitVideoWindow_MapColor(wnd->vid_wnd, &control->dark_red);
+        break;
     }
 
     if (wnd->colors.bg.rgba.r > 128) {
@@ -958,6 +967,7 @@ static void LabelControl_Calculate(SDL_ToolkitControl *base)
                     control->lines[i].pos.x = 0;
                 }
             }
+            break;
         }
     }
 

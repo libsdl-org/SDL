@@ -103,8 +103,8 @@ static void DestroyWindowBuffer(SDL_ToolkitVideoWindow *window)
         }
 #endif
         break;
-
     default:
+        break;
     }
 
     window->buffer_type = SDL_TOOLKIT_VIDEO_WINDOW_BUFFER_TYPE_NONE;
@@ -550,6 +550,7 @@ static void EndWindowDraw(SDL_ToolkitVideoWindow *window)
         }
         break;
     default:
+		break;
     }
 }
 
