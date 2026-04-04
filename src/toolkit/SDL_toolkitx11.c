@@ -466,6 +466,8 @@ static bool CreateWindowBuffer(SDL_ToolkitVideoWindow *window, SDL_ToolkitVideoW
         w = va_arg(args, unsigned int);
         h = va_arg(args, unsigned int);
         va_end(args);
+        return CreateSoftwareBuffer(xdrv, xwnd, window, type, w, h);
+        break;
     case SDL_TOOLKIT_VIDEO_WINDOW_BUFFER_TYPE_SURFACE:
         return CreateSoftwareBuffer(xdrv, xwnd, window, type, w, h);
         break;
