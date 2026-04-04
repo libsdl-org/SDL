@@ -112,6 +112,7 @@ static void SetDefaultColors(SDL_ToolkitColorScheme *theme)
     theme->button_selected.rgba.b = 235;
 }
 
+#ifdef SDL_USE_LIBDBUS
 static void SetDarkColors(SDL_ToolkitColorScheme *theme)
 {
     theme->bg.rgba.r = 30;
@@ -134,6 +135,7 @@ static void SetDarkColors(SDL_ToolkitColorScheme *theme)
     theme->button_selected.rgba.g = 47;
     theme->button_selected.rgba.b = 47;
 }
+#endif
 
 #if 0
 static void SetAccessibleLightColors(SDL_ToolkitColorScheme *theme) {
