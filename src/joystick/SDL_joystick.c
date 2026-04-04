@@ -3425,8 +3425,12 @@ bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
     return (guid.data[14] == 'v') ? true : false;
 }
 
-bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id, Uint16 crc)
 {
+    if (vendor_id == 0x11FF && product_id == 0x3331 && crc == 0xFAF6) {
+        // Oklick W-2 racing wheel controller (on Windows via DirectInput).
+        return true;
+    }
     return SDL_VIDPIDInList(vendor_id, product_id, &wheel_devices);
 }
 
@@ -3459,10 +3463,11 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
 {
     Uint16 vendor;
     Uint16 product;
+    Uint16 crc;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, &crc);
 
-    if (SDL_IsJoystickWheel(vendor, product)) {
+    if (SDL_IsJoystickWheel(vendor, product, crc)) {
         return SDL_JOYSTICK_TYPE_WHEEL;
     }
 

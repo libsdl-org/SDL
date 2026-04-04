@@ -1087,7 +1087,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
-    if (SDL_IsJoystickWheel(vendor, product)) {
+    if (SDL_IsJoystickWheel(vendor, product, 0)) {
         // We don't want to pick up Logitech FFB wheels here
         // Some versions of WINE will also not treat devices that show up as gamepads as wheels
         return NULL;
