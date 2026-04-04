@@ -3427,7 +3427,7 @@ bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
 
 bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id, Uint16 crc)
 {
-    if (vendor_id == 0x11FF && product_id == 0x3331 && crc == 0xFAF6) {
+    if (vendor_id == 0x11FF && product_id == 0x3331 && (crc == 0xFAF6 || crc == 0x2004)) {
         // Oklick W-2 racing wheel controller (on Windows via DirectInput).
         return true;
     }
