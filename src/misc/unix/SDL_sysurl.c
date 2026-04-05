@@ -33,8 +33,42 @@
 extern char **environ;
 #endif
 
+#ifdef HAVE_DBUS_DBUS_H
+#include "../../core/linux/SDL_dbus.h"
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+#include "../../video/wayland/SDL_waylandutil.h"
+#endif
+
+// Wayland requires an activation token for the browser to take focus.
+static void GetActivationToken(char **token, char **window_id)
+{
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+    SDL_VideoDevice *vid = SDL_GetVideoDevice();
+
+    if (vid && SDL_strcmp(vid->name, "wayland") == 0) {
+        Wayland_GetActivationTokenForExport(vid, token, window_id);
+    }
+#endif
+}
+
 bool SDL_SYS_OpenURL(const char *url)
 {
+    char *activation_token = NULL;
+    char *window_id = NULL;
+
+    GetActivationToken(&activation_token, &window_id);
+
+    // Prefer the D-Bus portal, if available.
+#ifdef HAVE_DBUS_DBUS_H
+    if (SDL_DBus_OpenURI(url, window_id, activation_token)) {
+        SDL_free(activation_token);
+        SDL_free(window_id);
+        return true;
+    }
+#endif
+
     const char *args[] = { "xdg-open", url, NULL };
     SDL_Environment *env = NULL;
     SDL_Process *process = NULL;
@@ -47,6 +81,9 @@ bool SDL_SYS_OpenURL(const char *url)
 
     // Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam
     SDL_UnsetEnvironmentVariable(env, "LD_PRELOAD");
+    if (activation_token) {
+        SDL_SetEnvironmentVariable(env, "XDG_ACTIVATION_TOKEN", activation_token, false);
+    }
 
     SDL_PropertiesID props = SDL_CreateProperties();
     if (!props) {
@@ -64,6 +101,8 @@ bool SDL_SYS_OpenURL(const char *url)
     result = true;
 
 done:
+    SDL_free(activation_token);
+    SDL_free(window_id);
     SDL_DestroyEnvironment(env);
     SDL_DestroyProcess(process);
 

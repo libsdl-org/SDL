@@ -471,6 +471,63 @@ static bool SDL_DBus_AppendDictWithKeyValue(DBusMessageIter *iterInit, const cha
    return SDL_DBus_AppendDictWithKeysAndValues(iterInit, keys, values, 1);
 }
 
+bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activation_token)
+{
+    const char *bus_name = "org.freedesktop.portal.Desktop";
+    const char *path = "/org/freedesktop/portal/desktop";
+    const char *interface = "org.freedesktop.portal.OpenURI";
+    DBusMessageIter iterInit;
+    bool ret = false;
+
+    if (!dbus.session_conn) {
+        /* We either lost connection to the session bus or were not able to
+         * load the D-Bus library at all.
+         */
+        return false;
+    }
+
+    DBusMessage *msg = dbus.message_new_method_call(bus_name, path, interface, "OpenURI");
+    if (!msg) {
+        return false;
+    }
+
+    if (!window_id) {
+        window_id = "";
+    }
+    if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &window_id, DBUS_TYPE_STRING, &uri, DBUS_TYPE_INVALID)) {
+        goto done;
+    }
+
+    dbus.message_iter_init_append(msg, &iterInit);
+
+    if (activation_token) {
+        if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, "activation_token", activation_token)) {
+            goto done;
+        }
+    } else {
+        // The array must be in the parameter list, even if empty.
+        DBusMessageIter iterArray;
+        if (!dbus.message_iter_open_container(&iterInit, DBUS_TYPE_ARRAY, "{sv}", &iterArray)) {
+            goto done;
+        }
+        if (!dbus.message_iter_close_container(&iterInit, &iterArray)) {
+            goto done;
+        }
+    }
+
+    {
+        DBusMessage *reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, -1, NULL);
+        if (reply) {
+            ret = true;
+            dbus.message_unref(reply);
+        }
+    }
+
+done:
+    dbus.message_unref(msg);
+    return ret;
+}
+
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
 {
     const char *default_inhibit_reason = "Playing a game";
