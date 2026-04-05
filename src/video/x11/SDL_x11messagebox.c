@@ -25,6 +25,7 @@
 
 #include "../../toolkit/SDL_toolkit.h"
 #include "../../toolkit/SDL_toolkitx11.h"
+#include "../../dialog/unix/SDL_zenitymessagebox.h"
 
 typedef struct SDL_MessageBoxDataX11
 {
@@ -237,7 +238,7 @@ static void CreateControls(SDL_MessageBoxDataX11 *data)
 
     data->buttons = SDL_calloc(data->messageboxdata->numbuttons, sizeof(SDL_ToolkitControl *));
     for (i = 0; i < data->messageboxdata->numbuttons; i++) {
-        data->buttons[i] = SDL_ToolkitButtonControl_Create(data->wnd, data->messageboxdata->buttons[i].text, ButtonCallback, &data);
+        data->buttons[i] = SDL_ToolkitButtonControl_Create(data->wnd, data->messageboxdata->buttons[i].text, ButtonCallback, data);
 
         data->buttons[i]->udata = SDL_malloc(sizeof(int));
         *(int *)data->buttons[i]->udata = data->messageboxdata->buttons[i].buttonID;
@@ -292,9 +293,18 @@ bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     SDL_MessageBoxDataX11 data;
 
+	if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
+        return true;
+    }
+    
     data.ret_id = -1;
     data.messageboxdata = messageboxdata;
     data.set = SDL_ToolkitDriverSet_Create(SDL_GetVideoDevice());
+    if (!SDL_ToolkitDriverSet_IsValid(data.set)) {
+		SDL_ToolkitDriverSet_Destroy(data.set);
+		return false;
+	}
+	
     if (messageboxdata->colorScheme) {
         data.scheme.bg.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND].r;
         data.scheme.bg.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND].g;
@@ -327,6 +337,10 @@ bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     } else {
         data.wnd = SDL_ToolkitWindow_Create(data.set, &data.scheme, NULL, SDL_TOOLKIT_VIDEO_WINDOW_TYPE_DIALOG, 300, 300, messageboxdata->title);
     }
+    if (!data.wnd) {
+		SDL_ToolkitDriverSet_Destroy(data.set);
+		return false;
+	}
     data.wnd->scale_change_cb = OnScaleChange;
     data.wnd->scale_change_cbdata = &data;
 
