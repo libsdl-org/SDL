@@ -10214,6 +10214,13 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             break;  // we got the next image!
         }
 
+        // Surface lost — flag for surface + swapchain recreation on next call
+        if (acquireResult == VK_ERROR_SURFACE_LOST_KHR) {
+            windowData->needsSurfaceRecreate = true;
+            windowData->needsSwapchainRecreate = true;
+            return true;
+        }
+
         // If acquisition is invalid, let's try to recreate
         Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
         if (!recreateSwapchainResult) {
