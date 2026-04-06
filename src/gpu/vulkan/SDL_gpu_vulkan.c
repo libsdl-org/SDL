@@ -10589,7 +10589,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     commandBuffer->usedBufferCount = 0;
 
     for (Sint32 i = 0; i < commandBuffer->buffersUsedInPendingTransfersCount; i += 1) {
-        (void)SDL_AtomicDecRef(&commandBuffer->usedBuffers[i]->usedRegion->allocation->referenceCount);
+        (void)SDL_AtomicDecRef(&commandBuffer->buffersUsedInPendingTransfers[i]->usedRegion->allocation->referenceCount);
     }
     commandBuffer->buffersUsedInPendingTransfersCount = 0;
 
@@ -10599,7 +10599,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     commandBuffer->usedTextureCount = 0;
 
     for (Sint32 i = 0; i < commandBuffer->texturesUsedInPendingTransfersCount; i += 1){
-        (void)SDL_AtomicDecRef(&commandBuffer->usedTextures[i]->usedRegion->allocation->referenceCount);
+        (void)SDL_AtomicDecRef(&commandBuffer->texturesUsedInPendingTransfers[i]->usedRegion->allocation->referenceCount);
     }
     commandBuffer->texturesUsedInPendingTransfersCount = 0;
 
