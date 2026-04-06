@@ -43,6 +43,13 @@ void SDL_CleanupNotifications()
     // Nothing to do.
 }
 
+#ifdef SDL_PLATFORM_APPLE
+void Cocoa_RegisterNotificationDelegate()
+{
+    // Nothing to do.
+}
+#endif
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 const char *SDL_GetNotificationActivationToken()
 {

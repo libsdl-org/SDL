@@ -27,6 +27,10 @@
 extern SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props);
 extern void SDL_CleanupNotifications();
 
+#ifdef SDL_PLATFORM_APPLE
+extern void Cocoa_RegisterNotificationDelegate();
+#endif
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 extern const char *SDL_GetNotificationActivationToken();
 #endif

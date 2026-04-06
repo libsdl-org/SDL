@@ -359,6 +359,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     SDL_DBus_Init();
 #endif
 
+#ifdef SDL_PLATFORM_APPLE
+    // Apple platforms require the notification delegate to be registered early.
+    Cocoa_RegisterNotificationDelegate();
+#endif
+
 #ifdef SDL_PLATFORM_WINDOWS
     if (flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK)) {
         if (!SDL_HelperWindowCreate()) {
