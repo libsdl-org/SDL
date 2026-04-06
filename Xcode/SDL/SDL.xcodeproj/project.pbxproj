@@ -58,6 +58,9 @@
 		1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */; platformFilters = (maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		3AFD09EA2F9766BA00208BA9 /* SDL_CurvedUIShader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFD09E92F9766BA00208BA9 /* SDL_CurvedUIShader.swift */; platformFilters = (xros, ); };
 		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, xros, ); settings = {ATTRIBUTES = (Weak, ); }; };
+		30840D4C2F76A822000F1D1B /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30840D4B2F76A822000F1D1B /* UserNotifications.framework */; };
+		30840D4E2F76A8E7000F1D1B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30840D4D2F76A8E7000F1D1B /* Security.framework */; };
+		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		5616CA4C252BB2A6005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
@@ -566,6 +569,12 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, xros, ); settings = {ATTRIBUTES = (Required, ); }; };
+		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
+		00009183ED11C92F23FC0000 /* SDL_notification.c in Sources */ = {isa = PBXBuildFile; fileRef = 000059D16599F687D87B0000 /* SDL_notification.c */; };
+		0000B6DBAE1F178E87010000 /* SDL_notification_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 000045BF87FD2865AB1C0000 /* SDL_notification_c.h */; };
+		0000FB5C9B8CE5929A250000 /* SDL_cocoanotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 000088B5AFB11E40F7920000 /* SDL_cocoanotification.m */; };
+		0000AF1D2CED20010C2D0000 /* SDL_notificationevents.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000D6CCB566B8AE47FE0000 /* SDL_notificationevents.c */; };
+		00004A19C923458228C10000 /* SDL_notificationevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0000FA7334391F6720820000 /* SDL_notificationevents_c.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -624,6 +633,8 @@
 		02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_sinput.c; sourceTree = "<group>"; };
 		1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		3AFD09E92F9766BA00208BA9 /* SDL_CurvedUIShader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDL_CurvedUIShader.swift; sourceTree = "<group>"; };
+		30840D4B2F76A822000F1D1B /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		30840D4D2F76A8E7000F1D1B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		5616CA49252BB2A5005D5928 /* SDL_url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_url.c; sourceTree = "<group>"; };
 		5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysurl.h; sourceTree = "<group>"; };
 		5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysurl.m; sourceTree = "<group>"; };
@@ -1168,6 +1179,11 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		000059D16599F687D87B0000 /* SDL_notification.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_notification.c; path = SDL_notification.c; sourceTree = "<group>"; };
+		000045BF87FD2865AB1C0000 /* SDL_notification_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_notification_c.h; path = SDL_notification_c.h; sourceTree = "<group>"; };
+		000088B5AFB11E40F7920000 /* SDL_cocoanotification.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_cocoanotification.m; path = SDL_cocoanotification.m; sourceTree = "<group>"; };
+		0000D6CCB566B8AE47FE0000 /* SDL_notificationevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_notificationevents.c; path = SDL_notificationevents.c; sourceTree = "<group>"; };
+		0000FA7334391F6720820000 /* SDL_notificationevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_notificationevents_c.h; path = SDL_notificationevents_c.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1176,11 +1192,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */,
+				30840D4E2F76A8E7000F1D1B /* Security.framework in Frameworks */,
 				A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */,
 				557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */,
+				30840D4C2F76A822000F1D1B /* UserNotifications.framework in Frameworks */,
 				00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */,
 				FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */,
 				00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */,
@@ -1445,6 +1463,7 @@
 				F3E5A6EA2AD5E0E600293D83 /* SDL_properties.c */,
 				F386F6E62884663E001840AA /* SDL_utils.c */,
 				F386F6E52884663E001840AA /* SDL_utils_c.h */,
+				0000A12B47E1FC5391780000 /* notification */,
 			);
 			name = "Library Source";
 			path = ../../src;
@@ -1474,6 +1493,8 @@
 		564624341FF821B70074AC87 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				30840D4D2F76A8E7000F1D1B /* Security.framework */,
+				30840D4B2F76A822000F1D1B /* UserNotifications.framework */,
 				1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */,
 				F382339B2738ED6600F7F527 /* CoreBluetooth.framework */,
 				F376F7272559B77100CFC0BC /* CoreAudio.framework */,
@@ -2330,6 +2351,8 @@
 				A7D8A93723E2514000DCD162 /* SDL_touch_c.h */,
 				A7D8A92F23E2514000DCD162 /* SDL_windowevents.c */,
 				A7D8A94323E2514000DCD162 /* SDL_windowevents_c.h */,
+				0000D6CCB566B8AE47FE0000 /* SDL_notificationevents.c */,
+				0000FA7334391F6720820000 /* SDL_notificationevents_c.h */,
 			);
 			path = events;
 			sourceTree = "<group>";
@@ -2549,6 +2572,24 @@
 				F373DA172D3889EE002158FA /* INSTALL.md */,
 			);
 			path = resources;
+			sourceTree = "<group>";
+		};
+		0000A12B47E1FC5391780000 /* notification */ = {
+			isa = PBXGroup;
+			children = (
+				000059D16599F687D87B0000 /* SDL_notification.c */,
+				000045BF87FD2865AB1C0000 /* SDL_notification_c.h */,
+				0000B071CC4D6AB5CE640000 /* cocoa */,
+			);
+			path = notification;
+			sourceTree = "<group>";
+		};
+		0000B071CC4D6AB5CE640000 /* cocoa */ = {
+			isa = PBXGroup;
+			children = (
+				000088B5AFB11E40F7920000 /* SDL_cocoanotification.m */,
+			);
+			path = cocoa;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -3199,6 +3240,9 @@
 				0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */,
 				0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */,
 				63124A422E5C357500A53610 /* SDL_hidapi_zuiki.c in Sources */,
+				00009183ED11C92F23FC0000 /* SDL_notification.c in Sources */,
+				0000FB5C9B8CE5929A250000 /* SDL_cocoanotification.m in Sources */,
+				0000AF1D2CED20010C2D0000 /* SDL_notificationevents.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
