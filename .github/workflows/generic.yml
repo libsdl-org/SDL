@@ -35,7 +35,7 @@ jobs:
           echo "os=${{ matrix.platform.os }}"
           echo ""
           echo "Add [sdl-ci-filter ${{ matrix.platform.key }}] to your commit message to reduce the number of jobs."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: 'Set up ninja'
         if: ${{ matrix.platform.setup-ninja }}
         uses: ./.github/actions/setup-ninja
@@ -44,11 +44,11 @@ jobs:
         uses: ./.github/actions/setup-msvc-libusb
         with:
           arch: ${{ matrix.platform.setup-libusb-arch }}
-      - uses: mymindstorm/setup-emsdk@v14
+      - uses: mymindstorm/setup-emsdk@v15
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
           version: 3.1.35
-      - uses: browser-actions/setup-chrome@v1
+      - uses: browser-actions/setup-chrome@v2
         id: setup-chrome
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
@@ -76,7 +76,7 @@ jobs:
         run: |
           # We cannot use GitHub expressions in the controller job
           echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >>$GITHUB_ENV
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         if: ${{ matrix.platform.java }}
         with:
           distribution: 'temurin'
@@ -171,7 +171,7 @@ jobs:
           echo "timestamp=$(date -u "+%Y%m%d%H%M_%S")" >> "$GITHUB_OUTPUT"
       - name: 'Restore ccache'
         if: ${{ matrix.platform.ccache }}
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore-ccache
         with:
           path: ${{ runner.temp }}/ccache
@@ -319,7 +319,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.29.0
+        uses: cross-platform-actions/action@v0.32.0
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'
@@ -349,7 +349,7 @@ jobs:
       - name: Add msbuild to PATH
         id: setup-msbuild
         if: ${{ matrix.platform.msvc-project != '' }}
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
       - name: Build msbuild
         if: ${{ matrix.platform.msvc-project != '' }}
         run: |
@@ -393,7 +393,7 @@ jobs:
           ccache -s
       - name: 'Save ccache'
         if: ${{ matrix.platform.ccache }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ runner.temp }}/ccache
           key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
@@ -413,7 +413,7 @@ jobs:
         run: |
           find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
         with:
           if-no-files-found: error
@@ -422,14 +422,14 @@ jobs:
             build/dist/SDL3*
             build/include*
       - name: 'Upload minidumps'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ always() && steps.tests.outcome == 'failure' && (matrix.platform.platform == 'msvc' || matrix.platform.platform == 'msys2') }}
         with:
           if-no-files-found: ignore
           name: '${{ matrix.platform.artifact }}-minidumps'
           path: build/**/*.dmp
       - name: "Upload Android test apk's"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ matrix.platform.enable-artifacts && always() && matrix.platform.artifact != '' && steps.apks.outcome == 'success' }}
         with:
           if-no-files-found: error

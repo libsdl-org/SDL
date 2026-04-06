@@ -20,15 +20,15 @@ jobs:
       src-zip: ${{ steps.releaser.outputs.src-zip }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Set up SDL sources'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: 'SDL'
           fetch-depth: 0
@@ -43,7 +43,7 @@ jobs:
             --github \
             --debug
       - name: 'Store source archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sources
           path: '${{ github.workspace}}/dist'
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
@@ -114,15 +114,15 @@ jobs:
       dmg: ${{ steps.releaser.outputs.dmg }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
@@ -143,7 +143,7 @@ jobs:
             --github \
             --debug
       - name: 'Store DMG image file'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dmg
           path: '${{ github.workspace }}/dist'
@@ -153,12 +153,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
       - name: 'Download ${{ needs.dmg.outputs.dmg }}'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dmg
           path: '${{ github.workspace }}'
@@ -322,15 +322,15 @@ jobs:
       VC-devel: ${{ steps.releaser.outputs.VC-devel }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
@@ -351,7 +351,7 @@ jobs:
             --github `
             --debug
       - name: 'Store MSVC archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: win32
           path: '${{ github.workspace }}/dist'
@@ -361,16 +361,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: 'Fetch .github/actions/setup-ninja/action.yml'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: '.github/actions/setup-ninja/action.yml'
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
       - name: 'Download MSVC binaries'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: win32
           path: '${{ github.workspace }}'
@@ -481,11 +481,11 @@ jobs:
       mingw-devel-tar-xz: ${{ steps.releaser.outputs.mingw-devel-tar-xz }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Install Mingw toolchain'
@@ -493,7 +493,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y gcc-mingw-w64 g++-mingw-w64 ninja-build
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
@@ -513,7 +513,7 @@ jobs:
             --github \
             --debug
       - name: 'Store MinGW archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mingw
           path: '${{ github.workspace }}/dist'
@@ -527,12 +527,12 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y gcc-mingw-w64 g++-mingw-w64 ninja-build
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
       - name: 'Download MinGW binaries'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: mingw
           path: '${{ github.workspace }}'
@@ -582,11 +582,11 @@ jobs:
       android-aar: ${{ steps.releaser.outputs.android-aar }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Setup Android NDK'
@@ -596,7 +596,7 @@ jobs:
           local-cache: false
           ndk-version: r28c
       - name: 'Setup Java JDK'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -605,7 +605,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y ninja-build
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
@@ -627,7 +627,7 @@ jobs:
             --github \
             --debug
       - name: 'Store Android archive(s)'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android
           path: '${{ github.workspace }}/dist'
@@ -637,20 +637,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
       - name: 'Download source archives'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sources
           path: '${{ github.workspace }}'
       - name: 'Download Android .aar archive'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: android
           path: '${{ github.workspace }}'

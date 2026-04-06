@@ -17,7 +17,7 @@ runs:
   steps:
     - name: 'Restore cached libusb-${{ inputs.version }}.7z'
       id: cache-restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: 'C:\temp\libusb-${{ inputs.version }}.7z'
         key: libusb-msvc-${{ inputs.version }}
@@ -28,7 +28,7 @@ runs:
         Invoke-WebRequest "https://github.com/libusb/libusb/releases/download/v${{ inputs.version }}/libusb-${{ inputs.version }}.7z" -OutFile "C:\temp\libusb-${{ inputs.version }}.7z"
     - name: 'Cache libusb-${{ inputs.version }}.7z'
       if: ${{ !steps.cache-restore.outputs.cache-hit }}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: 'C:\temp\libusb-${{ inputs.version }}.7z'
         key: libusb-msvc-${{ inputs.version }}
