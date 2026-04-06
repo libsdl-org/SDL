@@ -1321,3 +1321,7 @@
 #define SDL_wcstoul SDL_wcstoul_REAL
 #define SDL_wcstoll SDL_wcstoll_REAL
 #define SDL_wcstoull SDL_wcstoull_REAL
+#define SDL_RequestNotificationPermission SDL_RequestNotificationPermission_REAL
+#define SDL_ShowNotificationWithProperties SDL_ShowNotificationWithProperties_REAL
+#define SDL_ShowNotification SDL_ShowNotification_REAL
+#define SDL_RemoveNotification SDL_RemoveNotification_REAL

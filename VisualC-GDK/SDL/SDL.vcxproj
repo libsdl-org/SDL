@@ -452,6 +452,7 @@
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keymap_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_notificationevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
@@ -486,6 +487,7 @@
     <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
+    <ClInclude Include="..\..\src\notification\SDL_notification_c.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.h" />
@@ -544,6 +546,7 @@
     <ClCompile Include="..\..\src\camera\SDL_camera.c" />
     <ClCompile Include="..\..\src\dialog\SDL_dialog.c" />
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
+    <ClCompile Include="..\..\src\events\SDL_notificationevents.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
     <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
@@ -553,6 +556,8 @@
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />
+    <ClCompile Include="..\..\src\notification\dummy\SDL_dummynotification.c" />
+    <ClCompile Include="..\..\src\notification\SDL_notification.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
     <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
