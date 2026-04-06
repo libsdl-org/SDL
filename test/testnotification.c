@@ -29,7 +29,6 @@ static SDL_NotificationAction actions[] = {
     { .button = { SDL_NOTIFICATION_ACTION_TYPE_BUTTON, "action_1", "OK" } },
     { .button = { SDL_NOTIFICATION_ACTION_TYPE_BUTTON, "action_2", "Cancel" } }
 };
-static SDL_NotificationAction *action_array[SDL_arraysize(actions) + 1];
 
 static bool transient;
 static int sound;

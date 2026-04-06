@@ -28,6 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 #include "../../core/unix/SDL_appid.h"
+#include "../../notification/SDL_notification_c.h"
 #include "../SDL_egl_c.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandmouse.h"
@@ -2564,6 +2565,29 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_
 
 void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    SDL_VideoData *viddata = _this->internal;
+    SDL_WindowData *wind = window->internal;
+
+    if (viddata->activation_manager) {
+        /* Check for an activation token, in case the window is being
+         * raised in response to a system notification.
+         *
+         * Note that we don't check for empty strings, as that is still
+         * considered a valid activation token!
+         */
+        const char *activation_token = SDL_GetNotificationActivationToken();
+        if (activation_token) {
+            xdg_activation_v1_activate(viddata->activation_manager,
+                                       activation_token,
+                                       wind->surface);
+
+            // Clear this variable, per the protocol's request.
+            SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
+            return;
+        }
+    }
+
+    // No token? Try to activate the window via an event serial.
     Wayland_activate_window(_this->internal, window->internal, true);
 }
 
