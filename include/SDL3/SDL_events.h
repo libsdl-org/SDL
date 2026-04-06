@@ -61,6 +61,7 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_notification.h>
 #include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_power.h>
 #include <SDL3/SDL_sensor.h>
@@ -261,6 +262,9 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_REMOVED,         /**< A camera device has been removed. */
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
+
+    /* Notification events */
+    SDL_EVENT_NOTIFICATION_ACTION_INVOKED = 0x1500, /**< A user response to a system notification was received. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -764,6 +768,23 @@ typedef struct SDL_CameraDeviceEvent
     SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
 } SDL_CameraDeviceEvent;
 
+/**
+ * Notification dialog event structure (event.notification.*)
+ *
+ * An `action_id` value of 'default' for an SDL_EVENT_NOTIFICATION_ACTION_INVOKED
+ * event indicates that the notification was interacted with without selecting a
+ * specific action (e.g. the body of the notification was clicked on).
+ *
+ * \since This struct is available since SDL 3.6.0.
+ */
+typedef struct SDL_NotificationEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_NOTIFICATION_ACTION_INVOKED */
+    Uint32 reserved;
+    Uint64 timestamp;         /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_NotificationID which; /**< The ID of the notification that generated this event. */
+    const char *action_id;    /**< The identifier string of the action invoked in the notification dialog. */
+} SDL_NotificationEvent;
 
 /**
  * Renderer event structure (event.render.*)
@@ -1075,6 +1096,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_NotificationEvent notification;     /**< Notification event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

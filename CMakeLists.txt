@@ -268,6 +268,7 @@ define_sdl_subsystem(Power)
 define_sdl_subsystem(Sensor)
 define_sdl_subsystem(Dialog)
 define_sdl_subsystem(Tray)
+define_sdl_subsystem(Notification)
 
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "APPLE" OFF)
 if(SDL_FRAMEWORK)
@@ -460,6 +461,7 @@ if (NGAGE)
   set(SDL_DUMMYAUDIO       OFF)
   set(SDL_DUMMYCAMERA      OFF)
   set(SDL_DUMMYVIDEO       OFF)
+  set(SDL_NOTIFICATION     OFF)
   set(SDL_OFFSCREEN        OFF)
   set(SDL_RENDER_GPU       OFF)
   set(SDL_TRAY             OFF)
@@ -1327,6 +1329,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/main/*.h"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
   "${SDL3_SOURCE_DIR}/src/misc/*.h"
+  "${SDL3_SOURCE_DIR}/src/notification/*.c"
+  "${SDL3_SOURCE_DIR}/src/notification/*.h"
   "${SDL3_SOURCE_DIR}/src/power/*.c"
   "${SDL3_SOURCE_DIR}/src/power/*.h"
   "${SDL3_SOURCE_DIR}/src/render/*.c"
@@ -2055,6 +2059,13 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_progressbar.c"
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_progressbar.h"
       )
+
+      if(SDL_NOTIFICATION)
+        sdl_sources(
+          "${SDL3_SOURCE_DIR}/src/notification/unix/SDL_dbusnotification.c"
+        )
+        set(HAVE_SDL_NOTIFICATION TRUE)
+      endif()
     endif()
 
     if(SDL_USE_IME)
@@ -2316,6 +2327,7 @@ elseif(WINDOWS OR CYGWIN)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
   check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
+  check_include_file(Windows.ui.notifications.h HAVE_WINDOWS_UI_NOTIFICATIONS_H)
   check_c_source_compiles("
     #include <windows.h>
     #include <mfapi.h>
@@ -2425,7 +2437,7 @@ elseif(WINDOWS OR CYGWIN)
   set(HAVE_SDL_STORAGE 1)
 
   # Libraries for Win32 native and MinGW
-  sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid)
+  sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid mincore)
 
   set(SDL_TIME_WINDOWS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/windows/*.c")
@@ -2472,6 +2484,11 @@ elseif(WINDOWS OR CYGWIN)
   if(SDL_TRAY)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
     set(HAVE_SDL_TRAY TRUE)
+  endif()
+
+  if(SDL_NOTIFICATION AND HAVE_WINDOWS_UI_NOTIFICATIONS_H)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/notification/windows/*.c")
+    set(HAVE_SDL_NOTIFICATION TRUE)
   endif()
 
   if(SDL_HIDAPI)
@@ -2650,6 +2667,11 @@ elseif(APPLE)
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
 
+  if(SDL_NOTIFICATION)
+    set(SDL_FRAMEWORK_SECURITY 1)
+    set(SDL_FRAMEWORK_USERNOTIFICATIONS 1)
+  endif()
+
   if(SDL_POWER)
     if (IOS OR TVOS OR VISIONOS OR WATCHOS)
       sdl_glob_sources(
@@ -2679,6 +2701,10 @@ elseif(APPLE)
   set(SDL_FILESYSTEM_COCOA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/cocoa/*.m")
   set(HAVE_SDL_FILESYSTEM TRUE)
+
+  set(SDL_NOTIFICATION_COCOA 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/notification/cocoa/*.m")
+  set(HAVE_SDL_NOTIFICATION TRUE)
 
   # TODO: SDL_STORAGE_ICLOUD
   set(SDL_STORAGE_GENERIC 1)
@@ -2842,11 +2868,18 @@ elseif(APPLE)
   if(SDL_FRAMEWORK_METAL)
     sdl_link_dependency(metal LIBS "$<LINK_LIBRARY:FRAMEWORK,Metal>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,Metal")
   endif()
+  if(SDL_FRAMEWORK_USERNOTIFICATIONS)
+    find_library(USERNOTIFICATIONS UserNotifications)
+    sdl_link_dependency(usernotifications LIBS "$<LINK_LIBRARY:FRAMEWORK,UserNotifications>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,UserNotifications")
+  endif()
   if(SDL_FRAMEWORK_OPENGLES)
     sdl_link_dependency(opengles LIBS "$<LINK_LIBRARY:FRAMEWORK,OpenGLES>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,OpenGLES")
   endif()
   if(SDL_FRAMEWORK_QUARTZCORE)
     sdl_link_dependency(quartz_core LIBS "$<LINK_LIBRARY:FRAMEWORK,QuartzCore>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,QuartzCore")
+  endif()
+  if(SDL_FRAMEWORK_SECURITY)
+    sdl_link_dependency(quartz_core LIBS "$<LINK_LIBRARY:FRAMEWORK,Security>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,Security")
   endif()
   if(SDL_FRAMEWORK_UIKIT)
     sdl_link_dependency(ui_kit LIBS "$<LINK_LIBRARY:FRAMEWORK,UIKit>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,UIKit")
@@ -3752,6 +3785,12 @@ if(NOT HAVE_CAMERA)
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/camera/dummy/*.c"
     "${SDL3_SOURCE_DIR}/src/camera/dummy/*.h"
+  )
+endif()
+if(NOT HAVE_SDL_NOTIFICATION)
+  sdl_glob_sources(
+     "${SDL3_SOURCE_DIR}/src/notification/dummy/*.c"
+     "${SDL3_SOURCE_DIR}/src/notification/dummy/*.h"
   )
 endif()
 
