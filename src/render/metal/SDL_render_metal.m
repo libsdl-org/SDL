@@ -2074,6 +2074,13 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         surface = SDL_CreateSurface(read_rect.w, read_rect.h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
+            if (METAL_RenderingLinearSpace(renderer) &&
+                (!SDL_ISPIXELFORMAT_10BIT(format) && !SDL_ISPIXELFORMAT_FLOAT(format))) {
+                if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, SDL_COLORSPACE_SRGB_LINEAR, 0, surface->pixels, surface->pitch, format, SDL_COLORSPACE_SRGB, 0, surface->pixels, surface->pitch)) {
+                    SDL_DestroySurface(surface);
+                    return NULL;
+                }
+            }
         }
         return surface;
     }
