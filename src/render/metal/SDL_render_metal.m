@@ -638,26 +638,6 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     return 0;
 }
 
-static bool METAL_OutputLinearSpace(SDL_Renderer *renderer)
-{
-#ifdef SDL_PLATFORM_VISIONOS
-    // The RealityKit texture uses linear colorspace for rendering
-    return true;
-#else
-    return (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR);
-#endif
-}
-
-static bool METAL_RenderingLinearSpace(SDL_Renderer *renderer)
-{
-#ifdef SDL_PLATFORM_VISIONOS
-    // The RealityKit texture uses linear colorspace for rendering
-    return true;
-#else
-    return SDL_RenderingLinearSpace(renderer);
-#endif
-}
-
 static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
     @autoreleasepool {
@@ -667,7 +647,7 @@ static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
         id<MTLTexture> mtltexture = nil;
         SDL3METAL_PaletteData *palettedata;
 
-        if (METAL_OutputLinearSpace(renderer)) {
+        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
             pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
         } else {
             pixfmt = MTLPixelFormatRGBA8Unorm;
@@ -734,14 +714,14 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            if (METAL_OutputLinearSpace(renderer)) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatRGBA8Unorm;
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            if (METAL_OutputLinearSpace(renderer)) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
@@ -1247,7 +1227,7 @@ static bool METAL_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    bool convert_color = METAL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
 
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1274,7 +1254,7 @@ static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_FColor color = cmd->data.draw.color;
-    bool convert_color = METAL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
     size_t vertlen;
     float *verts;
 
@@ -1332,7 +1312,7 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                                int num_vertices, const void *indices, int num_indices, int size_indices,
                                float scale_x, float scale_y)
 {
-    bool convert_color = METAL_RenderingLinearSpace(renderer);
+    bool convert_color = SDL_RenderingLinearSpace(renderer);
     int count = indices ? num_indices : num_vertices;
     const size_t vertlen = (2 * sizeof(float) + 4 * sizeof(float) + (texture ? 2 : 0) * sizeof(float)) * count;
     float *verts = (float *)SDL_AllocateRenderVertices(renderer, vertlen, DEVICE_ALIGN(8), &cmd->data.draw.first);
@@ -1448,7 +1428,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
 
     SDL_zerop(constants);
 
-    constants->scRGB_output = (float)METAL_RenderingLinearSpace(renderer);
+    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
@@ -1828,7 +1808,7 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                 statecache.viewport_dirty = true;
 
                 {
-                    bool convert_color = METAL_RenderingLinearSpace(renderer);
+                    bool convert_color = SDL_RenderingLinearSpace(renderer);
                     SDL_FColor color = cmd->data.color.color;
                     if (convert_color) {
                         SDL_ConvertToLinear(&color);
@@ -2083,7 +2063,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         surface = SDL_CreateSurface(read_rect.w, read_rect.h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
-            if (METAL_RenderingLinearSpace(renderer) &&
+            if (SDL_RenderingLinearSpace(renderer) &&
                 (!SDL_ISPIXELFORMAT_10BIT(format) && !SDL_ISPIXELFORMAT_FLOAT(format))) {
                 if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, SDL_COLORSPACE_SRGB_LINEAR, 0, surface->pixels, surface->pitch, format, SDL_COLORSPACE_SRGB, 0, surface->pixels, surface->pitch)) {
                     SDL_DestroySurface(surface);
@@ -2404,15 +2384,6 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
             layer.colorspace = colorspace;
             CGColorSpaceRelease(colorspace);
         }
-#ifdef SDL_PLATFORM_VISIONOS
-        else {
-            // The RealityKit texture uses linear colorspace for rendering
-            const CFStringRef name = kCGColorSpaceExtendedLinearSRGB;
-            CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(name);
-            layer.colorspace = colorspace;
-            CGColorSpaceRelease(colorspace);
-        }
-#endif
 #endif // !SDL_PLATFORM_TVOS
 
         layer.device = mtldevice;
