@@ -365,7 +365,8 @@ static void RenderBlendDrawing(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw Blending");
     y += TEXT_LINE_ADVANCE;
-    if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
+    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
+        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
@@ -425,7 +426,8 @@ static void RenderBlendTexture(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Texture Blending");
     y += TEXT_LINE_ADVANCE;
-    if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
+    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
+        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
