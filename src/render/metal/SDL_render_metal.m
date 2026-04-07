@@ -638,15 +638,24 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     return 0;
 }
 
+static bool METAL_OutputLinearSpace(SDL_Renderer *renderer)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    // The RealityKit texture uses linear colorspace for rendering
+    return true;
+#else
+    return (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR);
+#endif
+}
+
 static bool METAL_RenderingLinearSpace(SDL_Renderer *renderer)
 {
 #ifdef SDL_PLATFORM_VISIONOS
-    if (!renderer->target && SDL_UIKit_IsCurvedWindow(renderer->window)) {
-        // The curved texture uses linear colorspace for rendering
-        return true;
-    }
-#endif
+    // The RealityKit texture uses linear colorspace for rendering
+    return true;
+#else
     return SDL_RenderingLinearSpace(renderer);
+#endif
 }
 
 static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
@@ -658,7 +667,7 @@ static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
         id<MTLTexture> mtltexture = nil;
         SDL3METAL_PaletteData *palettedata;
 
-        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        if (METAL_OutputLinearSpace(renderer)) {
             pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
         } else {
             pixfmt = MTLPixelFormatRGBA8Unorm;
@@ -725,14 +734,14 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (METAL_OutputLinearSpace(renderer)) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatRGBA8Unorm;
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (METAL_OutputLinearSpace(renderer)) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
@@ -2395,6 +2404,15 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
             layer.colorspace = colorspace;
             CGColorSpaceRelease(colorspace);
         }
+#ifdef SDL_PLATFORM_VISIONOS
+        else {
+            // The RealityKit texture uses linear colorspace for rendering
+            const CFStringRef name = kCGColorSpaceExtendedLinearSRGB;
+            CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(name);
+            layer.colorspace = colorspace;
+            CGColorSpaceRelease(colorspace);
+        }
+#endif
 #endif // !SDL_PLATFORM_TVOS
 
         layer.device = mtldevice;
