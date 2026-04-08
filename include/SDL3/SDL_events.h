@@ -259,6 +259,10 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
+    /* File watch events */
+    SDL_EVENT_FILE_WATCH_ERROR = 0x1500, /**< Watched files may have been modified, but the events are lost. */
+    SDL_EVENT_FILE_CHANGED,              /**< A watched file was written. */
+
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
@@ -971,6 +975,17 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
+ * File watch event structure (event.file_watch.*)
+ */
+typedef struct SDL_FileWatchEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_FILE_WATCH_ERROR or SDL_EVENT_FILE_CHANGED */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    const char *path;   /**< Path of the modified file for SDL_EVENT_FILE_CHANGED, NULL for SDL_EVENT_FILE_WATCH_ERROR */
+} SDL_FileWatchEvent;
+
+/**
  * The "quit requested" event
  *
  * \since This struct is available since SDL 3.2.0.
@@ -1054,6 +1069,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_FileWatchEvent file_watch;          /**< File watch event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

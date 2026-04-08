@@ -28,6 +28,7 @@
 #include "../SDL_hints_c.h"
 #include "../audio/SDL_audio_c.h"
 #include "../camera/SDL_camera_c.h"
+#include "../filesystem/SDL_filesystem_c.h"
 #include "../timer/SDL_timer_c.h"
 #include "../core/linux/SDL_udev.h"
 #ifndef SDL_JOYSTICK_DISABLED
@@ -1458,6 +1459,8 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
 
 void SDL_PumpEventMaintenance(void)
 {
+    SDL_UpdateFileWatch();
+
 #ifdef SDL_USE_LIBUDEV
     SDL_UDEV_Poll();
 #endif

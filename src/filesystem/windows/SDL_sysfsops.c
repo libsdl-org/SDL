@@ -231,5 +231,18 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return true;
 }
 
+bool SDL_SYS_WatchFileForChanges(const char *path)
+{
+    return SDL_Unsupported();
+}
+
+void SDL_SYS_UpdateFileWatch(void)
+{
+}
+
+void SDL_SYS_QuitFileWatch(void)
+{
+}
+
 #endif // SDL_FSOPS_WINDOWS
 

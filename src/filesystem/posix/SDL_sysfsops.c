@@ -27,6 +27,8 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
+#include "../../SDL_hashtable.h"
+#include "../../events/SDL_events_c.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +41,11 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
+#ifdef HAVE_INOTIFY
+#include <sys/inotify.h>
+#include <fcntl.h>
+#include <limits.h>
+#endif
 
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
@@ -408,6 +415,161 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     info->access_time = (SDL_Time)SDL_SECONDS_TO_NS(statbuf.st_atime);
 #endif
     return true;
+}
+
+#ifdef HAVE_INOTIFY
+static int inotify_fd = -1;
+static SDL_HashTable *watch_descriptor_table = NULL; // stores directory or file path for a watch descriptor
+static SDL_Mutex *file_watch_lock = NULL;
+
+#ifdef HAVE_INOTIFY_INIT1
+static int SDL_inotify_init1(void)
+{
+    return inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
+}
+#else
+static int SDL_inotify_init1(void)
+{
+    int fd = inotify_init();
+    if (fd < 0) {
+        return -1;
+    }
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    return fd;
+}
+#endif // HAVE_INOTIFY_INIT1
+#endif // HAVE_INOTIFY
+
+bool SDL_SYS_WatchFileForChanges(const char *path)
+{
+#ifdef HAVE_INOTIFY
+    if (!watch_descriptor_table) {
+        watch_descriptor_table = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+        if (!watch_descriptor_table) {
+            return false;
+        }
+        inotify_fd = SDL_inotify_init1();
+        if (inotify_fd == -1) {
+            SDL_DestroyHashTable(watch_descriptor_table);
+            watch_descriptor_table = NULL;
+            return SDL_SetError("Could not initialize inotify: %s", strerror(errno));
+        }
+        file_watch_lock = SDL_CreateMutex();
+        if (!file_watch_lock) {
+            SDL_DestroyHashTable(watch_descriptor_table);
+            watch_descriptor_table = NULL;
+            close(inotify_fd);
+            inotify_fd = -1;
+            return false;
+        }
+    }
+
+    char *p = SDL_strdup(path);
+    if (!p) {
+        return false;
+    }
+    // remove separator at the end of the path
+    const size_t slen = SDL_strlen(p);
+    if (p[slen - 1] == '/') {
+        p[slen - 1] = '\0';
+    }
+
+    SDL_LockMutex(file_watch_lock);
+    int wd = inotify_add_watch(inotify_fd, p, IN_MODIFY);
+    if (wd == -1) {
+        SDL_UnlockMutex(file_watch_lock);
+        SDL_free(p);
+        return SDL_SetError("inotify_add_watch failed: %s", strerror(errno));
+    }
+    if (!SDL_InsertIntoHashTable(watch_descriptor_table, (void *)(intptr_t)wd, p, false)) {
+        inotify_rm_watch(inotify_fd, wd);
+        SDL_UnlockMutex(file_watch_lock);
+        SDL_free(p);
+        return false;
+    }
+    SDL_UnlockMutex(file_watch_lock);
+    return true;
+#else
+    return SDL_Unsupported();
+#endif // HAVE_INOTIFY
+}
+
+void SDL_SYS_UpdateFileWatch(void)
+{
+#ifdef HAVE_INOTIFY
+    if (inotify_fd >= 0) {
+        SDL_LockMutex(file_watch_lock);
+        union
+        {
+            struct inotify_event event;
+            char storage[4096];
+            char enough_for_inotify[sizeof(struct inotify_event) + NAME_MAX + 1];
+        } buf;
+        ssize_t bytes;
+        size_t remain = 0;
+        size_t len;
+        char path[PATH_MAX];
+
+        bytes = read(inotify_fd, &buf, sizeof(buf));
+
+        if (bytes > 0) {
+            remain = (size_t)bytes;
+        }
+
+        while (remain > 0) {
+            const char *watched_path;
+            if (SDL_FindInHashTable(watch_descriptor_table, (void *)(intptr_t)buf.event.wd, (const void **)&watched_path)) {
+                const char *path_tmp;
+                SDL_EventType event_type;
+                bool post_event = true;
+                if (buf.event.mask & IN_Q_OVERFLOW) {
+                    event_type = SDL_EVENT_FILE_WATCH_ERROR;
+                    path_tmp = NULL;
+                } else if (buf.event.len != 0) {
+                    (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watched_path, buf.event.name);
+                    event_type = SDL_EVENT_FILE_CHANGED;
+                    path_tmp = SDL_CreateTemporaryString(path);
+                    post_event = (path_tmp != NULL);
+                } else {
+                    event_type = SDL_EVENT_FILE_CHANGED;
+                    path_tmp = SDL_CreateTemporaryString(watched_path);
+                    post_event = (path_tmp != NULL);
+                }
+                if (post_event && SDL_EventEnabled(event_type)) {
+                    SDL_Event event;
+                    SDL_zero(event);
+                    event.type = event_type;
+                    event.common.timestamp = 0;
+                    event.file_watch.path = path_tmp;
+                    SDL_PushEvent(&event);
+                }
+            }
+
+            len = sizeof(struct inotify_event) + buf.event.len;
+            remain -= len;
+
+            if (remain != 0) {
+                SDL_memmove(&buf.storage[0], &buf.storage[len], remain);
+            }
+        }
+        SDL_UnlockMutex(file_watch_lock);
+    }
+#endif // HAVE_INOTIFY
+}
+
+void SDL_SYS_QuitFileWatch(void)
+{
+#ifdef HAVE_INOTIFY
+    if (inotify_fd >= 0) {
+        close(inotify_fd);
+        inotify_fd = -1;
+        SDL_DestroyMutex(file_watch_lock);
+        file_watch_lock = NULL;
+        SDL_DestroyHashTable(watch_descriptor_table);
+        watch_descriptor_table = NULL;
+    }
+#endif // HAVE_INOTIFY
 }
 
 // Note that this is actually part of filesystem, not fsops, but everything that uses posix fsops uses this implementation, even with separate filesystem code.

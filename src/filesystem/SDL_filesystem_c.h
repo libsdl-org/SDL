@@ -25,5 +25,6 @@
 extern void SDL_InitFilesystem(void);
 extern void SDL_QuitFilesystem(void);
 
+extern void SDL_UpdateFileWatch(void);
 #endif
 
