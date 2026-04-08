@@ -81,18 +81,18 @@ SDL_RenderDriver PS3_RenderDriver = {
 
 static FILE *ps3_log = NULL;
 
-static void PS3_Log(const char *fmt, ...)
-{
-    if (!ps3_log) {
-        ps3_log = fopen("/dev_usb000/ps3_render.log", "w");
-        if (!ps3_log) return;
-    }
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(ps3_log, fmt, args);
-    va_end(args);
-    fflush(ps3_log);
-}
+// static void PS3_Log(const char *fmt, ...)
+// {
+//     if (!ps3_log) {
+//         ps3_log = fopen("/dev_usb000/ps3_render.log", "w");
+//         if (!ps3_log) return;
+//     }
+//     va_list args;
+//     va_start(args, fmt);
+//     vfprintf(ps3_log, fmt, args);
+//     va_end(args);
+//     fflush(ps3_log);
+// }
 
 #define NUM_BUFFERS 2
 
@@ -257,7 +257,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     }
 
-    gcmSetFlipMode(GCM_FLIP_VSYNC);
+    // gcmSetFlipMode(GCM_FLIP_VSYNC);
     // Needs to be called once at init before the render loop starts.
     gcmResetFlipStatus();
 
@@ -313,7 +313,7 @@ static bool PS3_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMo
 
 static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SDL_PropertiesID create_props)
 {
-    int bpp;
+    // int bpp;
     int pitch;
     void *pixels;
 
@@ -644,7 +644,7 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 dsty + dsth <= 0 ||
                 dstx >= surface->w ||
                 dsty >= surface->h) {
-                    PS3_Log("COPY: early FAILED\n");
+                    // PS3_Log("COPY: early FAILED\n");
                 break;
             }
             u32 src_offset, dst_offset;
@@ -652,18 +652,18 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             gcmAddressToOffset(surface->pixels, &dst_offset);
             gcmAddressToOffset(surface_src->pixels, &src_offset);
 
-PS3_Log("COPY: dstrect=%.2f,%.2f,%.2f,%.2f srcrect=%.2f,%.2f,%.2f,%.2f\n",
-    dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h,
-    src_rect.x, src_rect.y, src_rect.w, src_rect.h);
-;
+// PS3_Log("COPY: dstrect=%.2f,%.2f,%.2f,%.2f srcrect=%.2f,%.2f,%.2f,%.2f\n",
+//     dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h,
+//     src_rect.x, src_rect.y, src_rect.w, src_rect.h);
+// ;
 
-PS3_Log("COPY: tex=%dx%d pitch=%d offset=%u\n",
-    surface_src->w, surface_src->h, surface_src->pitch, src_offset);
+// PS3_Log("COPY: tex=%dx%d pitch=%d offset=%u\n",
+//     surface_src->w, surface_src->h, surface_src->pitch, src_offset);
 
-PS3_Log("COPY: surface=%dx%d pitch=%d offset=%u\n",
-    surface->w, surface->h,
-    surface->pitch,
-    dst_offset);
+// PS3_Log("COPY: surface=%dx%d pitch=%d offset=%u\n",
+//     surface->w, surface->h,
+//     surface->pitch,
+//     dst_offset);
     
             gcmTransferScale scale;
             scale.conversion = GCM_TRANSFER_CONVERSION_TRUNCATE;
@@ -695,9 +695,9 @@ PS3_Log("COPY: surface=%dx%d pitch=%d offset=%u\n",
 
             // Hardware accelerated blit with scaling
             rsxSetTransferScaleMode(data->context, GCM_TRANSFER_LOCAL_TO_LOCAL, GCM_TRANSFER_SURFACE);
-            PS3_Log("--- calling rsxSetTransfer->scaleSurface ---\n");
+            // PS3_Log("--- calling rsxSetTransfer->scaleSurface ---\n");
             rsxSetTransferScaleSurface(data->context, &scale, &gcm_surface);
-            PS3_Log("--- done ---\n");
+            // PS3_Log("--- done ---\n");
 
             // PS3_RenderCopy(renderer, cmd->data.draw.texture, &copyData->srcRect, &copyData->dstRect);
             break;
@@ -758,35 +758,37 @@ static bool PS3_RenderPresent(SDL_Renderer * renderer)
 {
 
     PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
-    PS3_Log("--- RenderPresent start, current_screen=%d ---\n", data->current_screen);
+    // PS3_Log("--- RenderPresent start, current_screen=%d ---\n", data->current_screen);
+
+
+    gcmResetFlipStatus();
+
+    gcmSetFlip(data->context, data->current_screen);
+    // PS3_Log("--- gcmFlip done ---\n");
+
+    rsxFlushBuffer(data->context);
+    // PS3_Log("--- rsxFlushBuffer done ---\n");
+    gcmSetWaitFlip(data->context);
+    //  PS3_Log("--- gcmSetWaitFlip done ---\n");
+
+    // PS3_Log("--- waitFlip done ---\n");
+   
 
     Uint64 timeout_timer = SDL_GetTicks();
     u32 res = gcmGetFlipStatus();
     while (res != 0)
     {   
-        PS3_Log("--- sysUsleep on gcmGetFlipStatus ---\n");
+        // PS3_Log("--- sysUsleep on gcmGetFlipStatus ---\n");
         sysUsleep(200);
         res = gcmGetFlipStatus();
 
         if (SDL_GetTicks() - timeout_timer >= 2000)
         {
-            PS3_Log("--- sysUsleep BREAK ---\n");
+            // PS3_Log("--- sysUsleep BREAK ---\n");
             break;
         }
     }
 
-    gcmResetFlipStatus();
-
-    gcmSetFlip(data->context, data->current_screen);
-    PS3_Log("--- gcmFlip done ---\n");
-
-    rsxFlushBuffer(data->context);
-    PS3_Log("--- rsxFlushBuffer done ---\n");
-    gcmSetWaitFlip(data->context);
-     PS3_Log("--- gcmSetWaitFlip done ---\n");
-
-    PS3_Log("--- waitFlip done ---\n");
-   
     // Update the flipping chain, if any
     data->current_screen = (data->current_screen + 1) % 2;
 
