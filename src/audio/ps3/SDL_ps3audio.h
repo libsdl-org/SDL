@@ -30,13 +30,13 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The file descriptor for the audio device */
-	audioPortParam params;
-	audioPortConfig config;
-	u32 portNum;
-	u32 last_filled_buf;
-	sys_event_queue_t snd_queue; // Queue identifier
-	u64	snd_queue_key; // Queue Key
+    // The file descriptor for the audio device
+    audioPortParam params;
+    audioPortConfig config;
+    u32 portNum;
+    u32 last_filled_buf;
+    sys_event_queue_t snd_queue; // Queue identifier
+    u64    snd_queue_key; // Queue Key
     // The raw allocated mixing buffer.
     Uint8 *rawbuf;
     // Individual mixing buffers.
