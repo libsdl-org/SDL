@@ -1387,7 +1387,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  * These are additional supported properties with visionOS:
  *
  * - `SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT`: the curvature of the window in curved mode on visionOS.
- * This can be set to a floating point value in the range 0.0-1.0, defaulting to 0.0.
+ * This can be 0 (no curve), which is the default, or set to a specific curvature radius in millimeters. A common value for a gaming monitor is 1000.
  *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
@@ -1632,7 +1632,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * On visionOS:
  *
- * - `SDL_PROP_WINDOW_CURVATURE_FLOAT`: the curvature of the window in curved mode on visionOS. This value is updated dynamically when changed via the screen ornaments.
+ * - `SDL_PROP_WINDOW_CURVATURE_FLOAT`: the curvature of the window in curved mode on visionOS. This value is updated dynamically when changed via the screen ornaments. This can be 0 (no curve), or a specific curvature radius in millimeters. A common value for a gaming monitor is 1000.
  *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call

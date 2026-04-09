@@ -172,28 +172,61 @@ public class SDL_CurvedContentHosting: NSObject {
 @available(visionOS 26.0, *)
 struct SDL_CurvedContentCurvatureOrnamentView: View {
     let helper: SDL_RealityKitHelper
+    let curvatureSteps: [Float] = [
+        0,
+        4000,
+        3000,
+        2300,
+        1800,
+        1500,
+        1000,
+        800
+    ]
     @State var changingCurvature: Bool = false
 
-    var body: some View {
-        if ( changingCurvature ) {
-            Slider(
-                value: Binding(
-                    get: { Double( helper.meshCurvature * 100 ) },
-                    set: {
-                        var curvature = $0 / 100
-                        if (curvature < 0.01) {
-                            curvature = 0.0
-                        }
-                        helper.updateCurvature(curvature: Float(curvature))
-                        SDL_VisionOS_SendCurvatureChanged(curvature)
-                    }
-                ),
-                in: 0...60,
-                onEditingChanged: { editing in
-                    changingCurvature = editing
+    private func setCurvatureStep(step: Int) {
+        let curvature = curvatureSteps[step]
+        helper.updateCurvature(curvature: curvature)
+        SDL_VisionOS_SendCurvatureChanged(CGFloat(curvature))
+    }
+
+    private func getCurvatureStep() -> Int {
+        let curvature = helper.meshCurvature
+        var step = 0
+        if helper.meshCurvature > 0 {
+            step = curvatureSteps.count - 1
+            for i in 1...(curvatureSteps.count - 1) {
+                if curvature >= curvatureSteps[i] {
+                    step = i
+                    break
                 }
-            )
-            .frame(width: 120, height: 48)
+            }
+        }
+        return step
+    }
+
+    var body: some View {
+        if (changingCurvature) {
+            VStack(spacing: 8) {
+                if helper.meshCurvature > 0 {
+                    Text(String.init(format: "%dR", Int(helper.meshCurvature)))
+                } else {
+                    Text("Flat")
+                }
+                Slider(
+                    value: Binding(
+                        get: { CGFloat(getCurvatureStep()) },
+                        set: {
+                            setCurvatureStep(step: Int($0))
+                        }
+                    ),
+                    in: 0...CGFloat(curvatureSteps.count - 1),
+                    onEditingChanged: { editing in
+                        changingCurvature = editing
+                    }
+                )
+                .frame(width: 128, height: 48)
+            }
 
         } else {
             if helper.meshCurvature == 0.0 {
@@ -204,7 +237,7 @@ struct SDL_CurvedContentCurvatureOrnamentView: View {
                         .frame(width: 48, height: 48)
                 }
                 .frame(width: 48, height: 48)
-            } else if helper.meshCurvature <= 0.3 {
+            } else if helper.meshCurvature > 1000.0 {
                 Button(action: {
                     changingCurvature = true
                 }) {

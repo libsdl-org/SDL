@@ -43,8 +43,8 @@ public class SDL_RealityKitHelper: NSObject {
     private var anchorPosition: SIMD3<Float> = [0, 0, 0]
     private(set) var meshWidth: Float = 0.0
     private(set) var meshHeight: Float = 0.0
-    private(set) var meshDepth: Float = 0.0
-    private(set) var meshCurvature: Float = 0.0
+    private(set) var meshCurvature: Float = 0.0 // R value, in millimeters
+    private(set) var meshSize: Size3D = Size3D()
 
     /// Content size in points, used by SwiftUI to drive .windowResizability(.contentSize)
     var contentSizeInPoints: CGSize = .zero
@@ -65,7 +65,6 @@ public class SDL_RealityKitHelper: NSObject {
     private func createCurvedMesh(width: Float, height: Float, curvature: Float) async {
         self.meshWidth = width
         self.meshHeight = height
-        self.meshDepth = 0.0
         self.meshCurvature = curvature
 
         NSLog("SDL_RealityKitHelper: Creating display plane %.2fx%.2f (curvature %.2f)",
@@ -75,7 +74,7 @@ public class SDL_RealityKitHelper: NSObject {
         let planeMesh: MeshResource
         let needsRotation: Bool
 
-        if self.meshCurvature > 0.01 {
+        if self.meshCurvature > 0 {
             // Create curved mesh procedurally (already in correct orientation)
             planeMesh = generateCurvedPlaneMesh(width: self.meshWidth, height: self.meshHeight, curvature: self.meshCurvature)
             needsRotation = false  // Curved mesh is generated facing viewer already
@@ -84,6 +83,9 @@ public class SDL_RealityKitHelper: NSObject {
             // Use flat plane for zero curvature (needs rotation)
             planeMesh = MeshResource.generatePlane(width: self.meshWidth, depth: self.meshHeight)
             needsRotation = true  // Flat plane needs 90° rotation
+            meshSize.width = Double(meshWidth)
+            meshSize.height = Double(meshHeight)
+            meshSize.depth = 0.0
             NSLog("SDL_RealityKitHelper: Using flat plane")
         }
 
@@ -133,6 +135,25 @@ public class SDL_RealityKitHelper: NSObject {
         var uvs: [SIMD2<Float>] = []
         var indices: [UInt32] = []
 
+        // Apply cylindrical curve: Z varies with X to create wrap-around
+        var curve_positions: [SIMD3<Float>] = []
+        var curve_normals: [SIMD3<Float>] = []
+        let r = meshCurvature / 1000  // Convert from R value in millimeters to meters
+        let arc_length = width / r
+        for x in 0...segmentsX {
+            let u = Float(x) / Float(segmentsX)
+            let angle = (u - 0.5) * arc_length
+            let vec: SIMD3<Float> = simd_normalize([sin(angle), 0.0, cos(angle)])
+            let pos: SIMD3<Float> = [vec.x, vec.y, 1.0 - vec.z] * r
+            curve_positions.append(pos)
+
+            // Normal points toward viewer for convex curve
+            curve_normals.append(-vec)
+        }
+        meshSize.width = Double(-curve_positions[0].x * 2)
+        meshSize.height = Double(meshHeight)
+        meshSize.depth = Double(curve_positions[0].z)
+
         // Generate vertices with cylindrical curvature
         // X = width (left/right), Y = height (up/down), Z = depth (toward/away from viewer)
         for y in 0...segmentsY {
@@ -141,28 +162,16 @@ public class SDL_RealityKitHelper: NSObject {
 
             for x in 0...segmentsX {
                 let u = Float(x) / Float(segmentsX)
-                let posX = (u - 0.5) * width  // Width horizontal
 
-                // Apply cylindrical curve: Z varies with X to create wrap-around
-                let curveAmount = curvature * 2.0
-                let angle = posX * curveAmount
-                let radius = 1.0 / max(curveAmount, 0.001)
+                let pos = curve_positions[x];
+                positions.append([pos.x, posY, pos.z])
 
-                // Z offset: center at 0, edges forward (positive Z) to wrap around viewer
-                let posZ = radius * (1.0 - cos(angle))
-                let adjustedX = radius * sin(angle)
-
-                positions.append(SIMD3<Float>(adjustedX, posY, posZ))
-
-                // Normal points away from curve center (toward viewer for convex curve)
-                let normalX = sin(angle)
-                let normalZ = -cos(angle)
-                normals.append(normalize(SIMD3<Float>(normalX, 0, normalZ)))
+                let normal = curve_normals[x];
+                normals.append(normal)
 
                 uvs.append(SIMD2<Float>(u, v))
             }
         }
-        meshDepth = positions[positions.count - 1].z
 
         // Generate triangle indices (reversed winding for correct front face)
         for y in 0..<segmentsY {
@@ -308,8 +317,9 @@ public class SDL_RealityKitHelper: NSObject {
 
     /// Set the initial size and curvature
     public func configure(width: Int, height: Int, curvature: Float) {
+        let clampedCurvature = curvature > 1.0 ? curvature : 0.0
         contentSizeInPoints = CGSize(width: width, height: height);
-        meshCurvature = curvature
+        meshCurvature = clampedCurvature
     }
 
     /// Updates the mesh dimensions and recreates the mesh
@@ -339,9 +349,9 @@ public class SDL_RealityKitHelper: NSObject {
 
     /// Updates the curvature and recreates the mesh
     public func updateCurvature(curvature: Float) {
-        let clampedCurvature = max(0.0, min(1.0, curvature))
+        let clampedCurvature = curvature > 1.0 ? curvature : 0.0
 
-        if abs(meshCurvature - clampedCurvature) < 0.01 {
+        if abs(meshCurvature - clampedCurvature) < 1 {
             return
         }
 

@@ -28,6 +28,7 @@ import GameController
 struct SDL_CurvedContentView: View {
     let helper: SDL_RealityKitHelper
 
+    @State private var touchOffsetX: CGFloat = 0
     @State private var touchScale: CGPoint = CGPoint()
     @State private var addedEntity: ModelEntity?
     @State private var frameDepth: CGFloat = 0.0
@@ -62,6 +63,7 @@ struct SDL_CurvedContentView: View {
             return
         }
         var location = event.location
+        location.x -= touchOffsetX
         location.x *= touchScale.x
         location.y *= touchScale.y
         SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, location.x, location.y)
@@ -103,22 +105,16 @@ struct SDL_CurvedContentView: View {
             }
 
             // Compensate for the curve in the touch event location
-            let posX = 0.5 * frameInMeters.extents.x
-            let curveAmount = helper.meshCurvature * 2.0
-            let angle = posX * curveAmount
-            let radius = 1.0 / max(curveAmount, 0.001)
-            let adjustedX = radius * sin(angle)
-            let ratio = CGFloat(adjustedX > 0 ? (adjustedX / posX): 1.0)
-            let a = (1.0 - ratio) * 0.5
-            let curveScale = 1.0 - a
-
-            let scale = CGPoint(x: 1 / (frame.size.width * curveScale), y: 1 / frame.size.height)
-
-            let meshDepth = content.convert(vector: [0.0, 0.0, helper.meshDepth], from: .scene, to: .local)
+            let meshSize = content.convert(
+                vector: [Float(helper.meshSize.width), 0.0, Float(helper.meshSize.depth)],
+                from: .scene, to: .local)
+            let offset = (frame.size.width - meshSize.x) / 2
+            let scale = CGPoint(x: 1 / meshSize.x, y: 1 / frame.size.height)
 
             Task {
+                touchOffsetX = offset
                 touchScale = scale
-                frameDepth = meshDepth.z
+                frameDepth = meshSize.z
             }
         }
         .ignoresSafeArea()

@@ -66,7 +66,7 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
         if (curvature != data.curvature) {
             data.curvature = curvature;
             SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_CURVATURE_CHANGED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_CURVATURE_CHANGED, (int)curvature, 0);
         }
     }
 }
