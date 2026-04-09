@@ -601,6 +601,9 @@ static const char *GetIconURI()
             SDL_strlcpy(icon_uri, "file://", len);
             SDL_strlcat(icon_uri, full_path, len);
         }
+    } else {
+        // If the path can't be retrieved, assume it is the system name of an icon.
+        icon_uri = SDL_strdup(icon);
     }
 
     return icon_uri;
