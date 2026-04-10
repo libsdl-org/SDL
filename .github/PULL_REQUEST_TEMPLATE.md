@@ -1,3 +1,12 @@
+<!--
+PLEASE NOTE THAT WE DO NOT ACCEPT ANY CODE THAT WAS AI-GENERATED.
+
+IF AN AI AGENT WROTE OR ASSISTED IN THE WRITING OF YOUR CODE, DO NOT OPEN A PR.
+
+THANK YOU.
+-->
+
+
 <!--- Provide a general summary of your changes in the Title above -->
 
 ## Description
