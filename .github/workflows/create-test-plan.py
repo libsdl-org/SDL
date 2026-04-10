@@ -490,6 +490,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
             fpic = True
+            job.cmake_arguments.append("-DSDLTEST_GDB=ON")
+            job.apt_packages.append("gdb")
             if spec.more_hard_deps:
                 # Some distros prefer to make important dependencies
                 # mandatory, so that SDL won't start up but lack expected
