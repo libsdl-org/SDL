@@ -570,7 +570,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static int getNaturalOrientation() {
         int result = SDL_ORIENTATION_UNKNOWN;
 
-        Activity activity = (Activity)getContext();
+        Activity activity = getContext();
         if (activity != null) {
             Configuration config = activity.getResources().getConfiguration();
             Display display = activity.getWindowManager().getDefaultDisplay();
@@ -590,7 +590,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static int getCurrentRotation() {
         int result = 0;
 
-        Activity activity = (Activity)getContext();
+        Activity activity = getContext();
         if (activity != null) {
             Display display = activity.getWindowManager().getDefaultDisplay();
             switch (display.getRotation()) {
@@ -1292,7 +1292,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static double getDiagonal()
     {
         DisplayMetrics metrics = new DisplayMetrics();
-        Activity activity = (Activity)getContext();
+        Activity activity = getContext();
         if (activity == null) {
             return 0.0;
         }
@@ -1940,7 +1940,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return;
         }
 
-        Activity activity = (Activity)getContext();
+        Activity activity = getContext();
         if (activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
             activity.requestPermissions(new String[]{permission}, requestCode);
         } else {
