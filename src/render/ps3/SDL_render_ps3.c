@@ -683,9 +683,9 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                     scale.inX = rsxGetFixedUint16(srcx + (SDL_min(dstx, 0) * -1));
                 }
             }
-            if (dsty < 0 || dsty + dsth > (s32)surface->w) {
-                scale.clipY = SDL_max(dstx, 0);
-                scale.outY = scale.clipX;
+            if (dsty < 0 || dsty + dsth > (s32)surface->h) {
+                scale.clipY = SDL_max(dsty, 0);
+                scale.outY = scale.clipY;
                 scale.clipH = SDL_min(dsth + SDL_min(dsty, 0), surface->h - scale.clipY);
                 scale.outH = scale.clipH;
                 if (dsty < 0) {
