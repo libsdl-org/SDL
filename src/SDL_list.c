@@ -163,15 +163,11 @@ void SDL_ListClear(SDL_ListNode **head)
 
 int SDL_ListCountEntries(SDL_ListNode **head)
 {
-    SDL_ListNode *l;
-    int i;
+    SDL_ListNode *node;
+    int count = 0;
 
-    i = 0;
-    l = *head;
-    while (l) {
-        i++;
-        l = l->next;
+    for (node = *head; node; node = node->next) {
+        ++count;
     }
-
-    return i;
+    return count;
 }
