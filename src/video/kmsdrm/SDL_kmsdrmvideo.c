@@ -1693,17 +1693,6 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     /***************************/
-    // Destroy the EGL surface
-    /***************************/
-
-    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-    if (windata->egl_surface != EGL_NO_SURFACE) {
-        SDL_EGL_DestroySurface(_this, windata->egl_surface);
-        windata->egl_surface = EGL_NO_SURFACE;
-    }
-
-    /***************************/
     // Destroy the GBM buffers
     /***************************/
 
@@ -1717,6 +1706,17 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     if (windata->next_bo) {
         KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
         windata->next_bo = NULL;
+    }
+
+    /***************************/
+    // Destroy the EGL surface
+    /***************************/
+
+    SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+    if (windata->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_DestroySurface(_this, windata->egl_surface);
+        windata->egl_surface = EGL_NO_SURFACE;
     }
 
     /***************************/
