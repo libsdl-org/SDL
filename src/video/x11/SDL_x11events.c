@@ -1862,8 +1862,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonPress:
     {
-        if (data->xinput2_mouse_enabled) {
-            // This input is being handled by XInput2
+        if (data->xinput2_mouse_enabled && xevent->xbutton.serial == videodata->xinput_last_button_serial) {
+            // This input event was handled by XInput2.
             break;
         }
 
@@ -1873,8 +1873,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case ButtonRelease:
     {
-        if (data->xinput2_mouse_enabled) {
-            // This input is being handled by XInput2
+        if (data->xinput2_mouse_enabled && xevent->xbutton.serial == videodata->xinput_last_button_serial) {
+            // This input event was handled by XInput2.
             break;
         }
 
