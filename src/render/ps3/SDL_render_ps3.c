@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#define SDL_VIDEO_RENDER_PS3 1
 
 #ifdef SDL_VIDEO_RENDER_PS3
 
@@ -78,21 +79,6 @@ static void PS3_DestroyRenderer(SDL_Renderer * renderer);
 SDL_RenderDriver PS3_RenderDriver = {
     PS3_CreateRenderer, "PS3"
 };
-
-static FILE *ps3_log = NULL;
-
-// static void PS3_Log(const char *fmt, ...)
-// {
-//     if (!ps3_log) {
-//         ps3_log = fopen("/dev_usb000/ps3_render.log", "w");
-//         if (!ps3_log) return;
-//     }
-//     va_list args;
-//     va_start(args, fmt);
-//     vfprintf(ps3_log, fmt, args);
-//     va_end(args);
-//     fflush(ps3_log);
-// }
 
 #define NUM_BUFFERS 2
 
@@ -287,11 +273,11 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->DestroyRenderer = PS3_DestroyRenderer;
 
     // // Enable alpha blending globally
-    rsxSetBlendEnable(data->context, GCM_TRUE);
-    rsxSetBlendFunc(data->context,
-                   GCM_SRC_ALPHA, GCM_ONE_MINUS_SRC_ALPHA,
-                   GCM_SRC_ALPHA, GCM_ONE_MINUS_SRC_ALPHA);
-    rsxSetBlendEquation(data->context, GCM_FUNC_ADD, GCM_FUNC_ADD);
+    // rsxSetBlendFunc(data->context,
+    //                GCM_SRC_ALPHA, GCM_ONE_MINUS_SRC_ALPHA,
+    //                GCM_SRC_ALPHA, GCM_ONE_MINUS_SRC_ALPHA);
+    // rsxSetBlendEquation(data->context, GCM_FUNC_ADD, GCM_FUNC_ADD);
+    // rsxSetBlendEnable(data->context, GCM_TRUE);
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
@@ -313,7 +299,6 @@ static bool PS3_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMo
 
 static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SDL_PropertiesID create_props)
 {
-    // int bpp;
     int pitch;
     void *pixels;
 
@@ -321,6 +306,9 @@ static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SD
     pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
     // pitch = (texture->w * 4 + 63) & ~63;
     pixels = rsxMemalign(64, texture->h * pitch);
+    if (!pixels) {
+        return SDL_SetError("rsxMemalign failed");
+    }
 
     texture->internal = SDL_CreateSurfaceFrom(texture->w, texture->h, texture->format, pixels, pitch);
 
@@ -402,7 +390,15 @@ static bool PS3_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cm
 
 static void PS3_SetTextureScaleMode(SDL_ScaleMode scaleMode)
 {
-    printf("PS3_SetTextureScaleMode... \n"); fflush(stdout); 
+    // switch (scaleMode) {
+    // case SDL_SCALEMODE_PIXELART:
+    // case SDL_SCALEMODE_NEAREST:
+    //     break;
+    // case SDL_SCALEMODE_LINEAR:
+    //     break;
+    // default:
+    //     break;
+    // }
 }
 
 static bool PS3_UpdateViewport(SDL_Renderer * renderer)
@@ -620,31 +616,17 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             SDL_FRect *srcrect = &copyData.srcRect;
             SDL_FRect *dstrect = &copyData.dstRect;
 
-            // convert to integers
+            // Convert to integers
             int dstx = (int)SDL_floorf(dstrect->x);
             int dsty = (int)SDL_floorf(dstrect->y);
             int dstw = (int)SDL_floorf(dstrect->w);
             int dsth = (int)SDL_floorf(dstrect->h);
 
-            SDL_Rect dst_rect = {
-                (int)SDL_floorf(dstrect->x),
-                (int)SDL_floorf(dstrect->y),
-                (int)SDL_floorf(dstrect->w),
-                (int)SDL_floorf(dstrect->h),
-            };
-            SDL_Rect src_rect = {
-                (int)SDL_floorf(srcrect->x),
-                (int)SDL_floorf(srcrect->y),
-                (int)SDL_floorf(srcrect->w),
-                (int)SDL_floorf(srcrect->h),
-            };
-
-            // skip if completely offscreen
+            // Skip if completely offscreen
             if (dstx + dstw <= 0 ||
                 dsty + dsth <= 0 ||
                 dstx >= surface->w ||
                 dsty >= surface->h) {
-                    // PS3_Log("COPY: early FAILED\n");
                 break;
             }
             u32 src_offset, dst_offset;
@@ -652,54 +634,68 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             gcmAddressToOffset(surface->pixels, &dst_offset);
             gcmAddressToOffset(surface_src->pixels, &src_offset);
 
-// PS3_Log("COPY: dstrect=%.2f,%.2f,%.2f,%.2f srcrect=%.2f,%.2f,%.2f,%.2f\n",
-//     dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h,
-//     src_rect.x, src_rect.y, src_rect.w, src_rect.h);
-// ;
+            // Apply viewport
+            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
+                dstrect->x += drawstate.viewport->x;
+                dstrect->y += drawstate.viewport->y;
+            }
 
-// PS3_Log("COPY: tex=%dx%d pitch=%d offset=%u\n",
-//     surface_src->w, surface_src->h, surface_src->pitch, src_offset);
+            int srcx = (int)SDL_floorf(srcrect->x);
+            int srcy = (int)SDL_floorf(srcrect->y);
+            int srcw = (int)SDL_floorf(srcrect->w);
+            int srch = (int)SDL_floorf(srcrect->h);
 
-// PS3_Log("COPY: surface=%dx%d pitch=%d offset=%u\n",
-//     surface->w, surface->h,
-//     surface->pitch,
-//     dst_offset);
-    
             gcmTransferScale scale;
             scale.conversion = GCM_TRANSFER_CONVERSION_TRUNCATE;
             scale.format = GCM_TRANSFER_SCALE_FORMAT_A8R8G8B8;
             scale.operation = GCM_TRANSFER_OPERATION_SRCCOPY;
-            scale.clipX = dst_rect.x;
-            scale.clipY = dst_rect.y;
-            scale.clipW = dst_rect.w;
-            scale.clipH = dst_rect.h;
-            scale.outX = dst_rect.x;
-            scale.outY = dst_rect.y;
-            scale.outW = dst_rect.w;
-            scale.outH = dst_rect.h;
-            scale.ratioX = rsxGetFixedSint32(1);
-            scale.ratioY = rsxGetFixedSint32(1);
-            scale.inX = rsxGetFixedUint16(src_rect.x);
-            scale.inY = rsxGetFixedUint16(src_rect.y);
-            scale.inW = src_rect.x + src_rect.w;
-            scale.inH = src_rect.y + src_rect.h;
+            scale.conversion = GCM_TRANSFER_CONVERSION_TRUNCATE;
+            scale.origin = GCM_TRANSFER_ORIGIN_CORNER;
+            scale.clipX = (s16)dstx;
+            scale.clipY = (s16)dsty;
+            scale.clipW = (u16)dstw;
+            scale.clipH = (u16)dsth;
+            scale.outX = (s16)(dstx);
+            scale.outY = (s16)(dsty);
+            scale.outW = (u16)(dstw);
+            scale.outH = (u16)(dsth);
+            scale.ratioX = rsxGetFixedSint32(dstw/srcw);
+            scale.ratioY = rsxGetFixedSint32(dsth/srch);
+            scale.inX = rsxGetFixedUint16(srcx);
+            scale.inY = rsxGetFixedUint16(srcy);
+            scale.inW = (u16)(srcw & ~1);
+            scale.inH = (u16)srch;
             scale.offset = src_offset;
             scale.pitch = surface_src->pitch;
-            scale.origin = GCM_TRANSFER_ORIGIN_CORNER;
-            scale.interp = GCM_TRANSFER_INTERPOLATOR_NEAREST;
 
             gcmTransferSurface gcm_surface;
             gcm_surface.format = GCM_TRANSFER_SURFACE_FORMAT_A8R8G8B8;
             gcm_surface.pitch = surface->pitch;
             gcm_surface.offset = dst_offset;
 
+            // Fix offscreen drawing
+            if (dstx < 0 || dstx + dstw > (s32)surface->w) {
+                scale.clipX = SDL_max(dstx, 0);
+                scale.outX = scale.clipX;
+                scale.clipW = SDL_min(dstw + SDL_min(dstx, 0), surface->w - scale.clipX);
+                scale.outW = scale.clipW;
+                if (dstx < 0) {
+                    scale.inX = rsxGetFixedUint16(srcx + (SDL_min(dstx, 0) * -1));
+                }
+            }
+            if (dsty < 0 || dsty + dsth > (s32)surface->w) {
+                scale.clipY = SDL_max(dstx, 0);
+                scale.outY = scale.clipX;
+                scale.clipH = SDL_min(dsth + SDL_min(dsty, 0), surface->h - scale.clipY);
+                scale.outH = scale.clipH;
+                if (dsty < 0) {
+                    scale.inY = rsxGetFixedUint16(srcy + (SDL_min(dsty, 0) * -1));
+                }
+            }
+
             // Hardware accelerated blit with scaling
             rsxSetTransferScaleMode(data->context, GCM_TRANSFER_LOCAL_TO_LOCAL, GCM_TRANSFER_SURFACE);
-            // PS3_Log("--- calling rsxSetTransfer->scaleSurface ---\n");
             rsxSetTransferScaleSurface(data->context, &scale, &gcm_surface);
-            // PS3_Log("--- done ---\n");
-
-            // PS3_RenderCopy(renderer, cmd->data.draw.texture, &copyData->srcRect, &copyData->dstRect);
             break;
         }
 
@@ -758,33 +754,23 @@ static bool PS3_RenderPresent(SDL_Renderer * renderer)
 {
 
     PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
-    // PS3_Log("--- RenderPresent start, current_screen=%d ---\n", data->current_screen);
-
 
     gcmResetFlipStatus();
 
     gcmSetFlip(data->context, data->current_screen);
-    // PS3_Log("--- gcmFlip done ---\n");
 
     rsxFlushBuffer(data->context);
-    // PS3_Log("--- rsxFlushBuffer done ---\n");
     gcmSetWaitFlip(data->context);
-    //  PS3_Log("--- gcmSetWaitFlip done ---\n");
-
-    // PS3_Log("--- waitFlip done ---\n");
-   
 
     Uint64 timeout_timer = SDL_GetTicks();
     u32 res = gcmGetFlipStatus();
     while (res != 0)
     {   
-        // PS3_Log("--- sysUsleep on gcmGetFlipStatus ---\n");
         sysUsleep(200);
         res = gcmGetFlipStatus();
 
         if (SDL_GetTicks() - timeout_timer >= 2000)
         {
-            // PS3_Log("--- sysUsleep BREAK ---\n");
             break;
         }
     }
@@ -801,7 +787,10 @@ static void PS3_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (!surface) return;
 
-    // // TODO: Wait for the DMA transfer to complete
+    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
+
+    // TODO: Wait for the DMA transfer to complete
+    rsxFinish(data->context, 1);
     rsxFree(surface->pixels);
     SDL_DestroySurface(surface);
 }
@@ -812,12 +801,17 @@ static void PS3_DestroyRenderer(SDL_Renderer * renderer)
 
     deprintf (1, "SDL_PS3_DestroyRenderer()\n");
 
+    // stop RSX before exit
+    gcmSetWaitFlip(data->context);
+    rsxFinish(data->context, 1);
+
     if (data) {
         for (int i = 0; i < SDL_arraysize(data->textures); ++i) {
             if (data->screens[i]) {
                SDL_DestroySurface(data->screens[i]);
             }
             if (data->textures[i]) {
+                rsxFinish(data->context, 1);
                 rsxFree(data->textures[i]);
             }
         }
