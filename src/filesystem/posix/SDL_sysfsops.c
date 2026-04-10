@@ -74,7 +74,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 #endif
 
     char *pathwithsep = NULL;
-    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", apath ? apath : path);
+    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s%s", apath ? apath : path, (apath ? *apath : *path) ? "/" : "");
     const size_t extralen = apath ? (SDL_strlen(apath) - SDL_strlen(path)) : 0;
     SDL_free(apath);
     if ((pathwithseplen == -1) || (!pathwithsep)) {
