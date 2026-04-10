@@ -95,31 +95,36 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
 
-static SDL_tracked_allocation *SDL_GetTrackedAllocation(void *mem)
+static bool SDL_GetTrackedAllocation(void *mem, size_t *entry_size)
 {
     SDL_tracked_allocation *entry;
     LOCK_ALLOCATOR();
     int index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
+            if (entry_size) {
+                *entry_size = entry->size;
+            }
             UNLOCK_ALLOCATOR();
-            return entry;
+            return true;
         }
     }
     UNLOCK_ALLOCATOR();
-    return NULL;
+    return false;
 }
 
 static size_t SDL_GetTrackedAllocationSize(void *mem)
 {
-    SDL_tracked_allocation *entry = SDL_GetTrackedAllocation(mem);
-
-    return entry ? entry->size : SIZE_MAX;
+    size_t size = 0;
+    if (!SDL_GetTrackedAllocation(mem, &size)) {
+        size = SIZE_MAX;
+    }
+    return size;
 }
 
 static bool SDL_IsAllocationTracked(void *mem)
 {
-    return SDL_GetTrackedAllocation(mem) != NULL;
+    return SDL_GetTrackedAllocation(mem, NULL);
 }
 
 static void SDL_TrackAllocation(void *mem, size_t size)
