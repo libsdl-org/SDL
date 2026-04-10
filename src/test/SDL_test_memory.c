@@ -77,12 +77,12 @@ static SDL_tracked_allocation *s_tracked_allocations[256];
 static bool s_randfill_allocations = false;
 static SDL_AtomicInt s_lock;
 
-#define LOCK_ALLOCATOR()                               \
-    do {                                               \
+#define LOCK_ALLOCATOR()                                  \
+    do {                                                  \
         if (SDL_CompareAndSwapAtomicInt(&s_lock, 0, 1)) { \
-            break;                                     \
-        }                                              \
-        SDL_CPUPauseInstruction();                     \
+            break;                                        \
+        }                                                 \
+        SDL_CPUPauseInstruction();                        \
     } while (true)
 #define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
@@ -199,23 +199,19 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
 static void SDL_UntrackAllocation(void *mem)
 {
-    SDL_tracked_allocation *entry, *prev;
+    SDL_tracked_allocation *entry, **prev_next_ptr;
     int index = get_allocation_bucket(mem);
 
     LOCK_ALLOCATOR();
-    prev = NULL;
+    prev_next_ptr = &s_tracked_allocations[index];
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
-            if (prev) {
-                prev->next = entry->next;
-            } else {
-                s_tracked_allocations[index] = entry->next;
-            }
+            *prev_next_ptr = entry->next;
             SDL_free_orig(entry);
             UNLOCK_ALLOCATOR();
             return;
         }
-        prev = entry;
+        prev_next_ptr = &entry->next;
     }
     s_unknown_frees += 1;
     UNLOCK_ALLOCATOR();
