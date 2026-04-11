@@ -34,11 +34,15 @@
 
 typedef struct SDL_TrayDriverDBus
 {
+    SDL_TrayDriver class_parent;
+
     SDL_DBusContext *dbus;
 } SDL_TrayDriverDBus;
 
 typedef struct SDL_TrayDBus
 {
+    SDL_Tray class_parent;
+
     DBusConnection *connection;
     char *service_name;
 
@@ -55,6 +59,8 @@ typedef struct SDL_TrayDBus
 
 typedef struct SDL_TrayMenuDBus
 {
+    SDL_TrayMenu class_parent;
+
     SDL_ListNode *menu;
     const char *menu_path;
 
@@ -63,6 +69,8 @@ typedef struct SDL_TrayMenuDBus
 
 typedef struct SDL_TrayEntryDBus
 {
+    SDL_TrayEntry class_parent;
+
     SDL_MenuItem *item;
     SDL_TrayMenuDBus *sub_menu;
 } SDL_TrayEntryDBus;
@@ -428,7 +436,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
 
     /* Allocate the tray structure */
     tray_dbus = SDL_malloc(sizeof(SDL_TrayDBus));
-    tray = (SDL_Tray *)tray_dbus;
+    tray = &tray_dbus->class_parent;
     if (!tray_dbus) {
         return NULL;
     }
@@ -663,7 +671,7 @@ SDL_TrayMenu *CreateTrayMenu(SDL_Tray *tray)
     SDL_TrayMenuDBus *menu_dbus;
 
     menu_dbus = SDL_malloc(sizeof(SDL_TrayMenuDBus));
-    tray->menu = (SDL_TrayMenu *)menu_dbus;
+    tray->menu = &menu_dbus->class_parent;
     if (!menu_dbus) {
         SDL_SetError("Unable to create tray menu: allocation failure!");
         return NULL;
@@ -686,7 +694,7 @@ SDL_TrayMenu *CreateTraySubmenu(SDL_TrayEntry *entry)
 
     entry_dbus = (SDL_TrayEntryDBus *)entry;
     menu_dbus = SDL_malloc(sizeof(SDL_TrayMenuDBus));
-    menu = (SDL_TrayMenu *)menu_dbus;
+    menu = &menu_dbus->class_parent;
     if (!menu_dbus) {
         SDL_SetError("Unable to create tray submenu: allocation failure!");
         return NULL;
@@ -804,7 +812,7 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     driver = (SDL_TrayDriverDBus *)tray->driver;
 
     entry_dbus = SDL_malloc(sizeof(SDL_TrayEntryDBus));
-    entry = (SDL_TrayEntry *)entry_dbus;
+    entry = &entry_dbus->class_parent;
     if (!entry_dbus) {
         SDL_SetError("Unable to create tray entry: allocation failure!");
         return NULL;
@@ -1135,7 +1143,7 @@ SDL_TrayDriver *SDL_Tray_CreateDBusDriver(void)
 
     /* Allocate the driver struct */
     dbus_driver = SDL_malloc(sizeof(SDL_TrayDriverDBus));
-    driver = (SDL_TrayDriver *)dbus_driver;
+    driver = &dbus_driver->class_parent;
     if (!dbus_driver) {
         return NULL;
     }
