@@ -85,7 +85,6 @@ void PS3_VideoQuit(SDL_VideoDevice *_this)
     PS3_QuitModes(_this);
     PS3_QuitSysEvent(_this);
     SDL_free( _this->internal);
-
 }
 
 void initializeGPU( SDL_DeviceData * devdata)
@@ -219,7 +218,7 @@ static SDL_VideoDevice *PS3_CreateDevice(void)
     // Initialize GPU before any videoOut calls
     initializeGPU(devdata);
 
-    device->internal = devdata;
+    device->internal = (SDL_DeviceData*) devdata;
     device->VideoInit = PS3_VideoInit;
     device->VideoQuit = PS3_VideoQuit;
     device->GetDisplayModes = PS3_GetDisplayModes;

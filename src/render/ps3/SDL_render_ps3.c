@@ -19,7 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#define SDL_VIDEO_RENDER_PS3 1
 
 #ifdef SDL_VIDEO_RENDER_PS3
 
@@ -176,7 +175,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     }
     
     SDL_zerop(data);
-	rsxHeapInit();
+    rsxHeapInit();
 
     // printf("Display mode %d %d... \n", displayMode->w , displayMode->h); fflush(stdout); 
 

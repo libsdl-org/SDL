@@ -31,15 +31,31 @@ extern "C" {
 
 #include "../SDL_main_callbacks.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <lv2/process.h>
+#include <sysutil/sysutil.h>
 
 extern SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]);
 extern SDL_AppResult SDL_AppIterate(void *appstate);
 extern SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event);
 extern void SDL_AppQuit(void *appstate, SDL_AppResult result);
+
+static volatile bool quit_requested = false;
+
+static void program_exit_callback()
+{
+    sysUtilUnregisterCallback(SYSUTIL_EVENT_SLOT0);
+}
+
+static void sysutil_exit_callback(u64 status, u64 param, void *usrdata)
+{
+    if (status == SYSUTIL_EXIT_GAME) {
+        quit_requested = true;
+    }
+}
 
 #ifdef __cplusplus
 }
@@ -47,6 +63,10 @@ extern void SDL_AppQuit(void *appstate, SDL_AppResult result);
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
+    atexit(program_exit_callback);
+    // Register XMB callbacks.
+    sysUtilRegisterCallback(SYSUTIL_EVENT_SLOT0, sysutil_exit_callback, NULL);
+
     SDL_SetMainReady();
 
     // Call callbacks directly — no mainFunction involved to
@@ -59,10 +79,17 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
     );
 
     while (result == SDL_APP_CONTINUE) {
-        result = SDL_IterateMainCallbacks(true);
-    }
+        sysUtilCheckCallback();
 
+        result = SDL_IterateMainCallbacks(true);
+
+        if (quit_requested) {
+            result = SDL_APP_SUCCESS;
+        }
+    }
     SDL_QuitMainCallbacks(result);
+
+    sysProcessExit(0);
 
     return result == SDL_APP_SUCCESS ? 0 : 1;
 }

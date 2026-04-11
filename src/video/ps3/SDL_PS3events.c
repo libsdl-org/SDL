@@ -22,8 +22,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_PS3
 
-/* Being a null driver, there's no event stream. We just define stubs for
-   most of the API. */
+/* Video driver implementation for PS3 */
 
 #include "../../events/SDL_events_c.h"
 #include "SDL_PS3video.h"
@@ -33,24 +32,19 @@
 
 #include <sysutil/sysutil.h>
 
-static int videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoOutDeviceInfo *info, void *userData) {
-    SDL_VideoDevice *_this = (SDL_VideoDevice*)userData;
+static void sysWindowCallback(u64 event, u64 param, void* userdata)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice*) userdata;
     SDL_Window *window = NULL;
-    
+
     // There should only be one window
     if (_this->num_displays == 1) {
-        // SDL_VideoDisplay *display = &_this->displays[0];
         if (_this->displays[0]->fullscreen_window != NULL) {
             window = _this->displays[0]->fullscreen_window;
         }
     }
 
-    // Process event
     switch (event) {
-        case SYSUTIL_EXIT_GAME:
-            deprintf(1, "Quit game requested\n");
-            SDL_SendQuit();
-            break;
         case SYSUTIL_MENU_OPEN:
             // XMB opened
             if (window) {
@@ -66,18 +60,24 @@ static int videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, v
         case SYSUTIL_DRAW_BEGIN:
             break;
         case SYSUTIL_DRAW_END:
-            deprintf(1, "Unhandled event: %08llX\n", (unsigned long long int)event);
             break;
         default:
             break;
     }
+}
 
-    return 1;
+static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoOutDeviceInfo *info, void *userData) {
+    // SDL_VideoDevice *_this = (SDL_VideoDevice*)userData;
+
+    // // Process event
+    // switch (event) {
+    //     default:
+    //         break;
+    // }
 }
 
 void PS3_PumpEvents(SDL_VideoDevice *_this)
 {
-    sysUtilCheckCallback();
     // PS3_PumpKeyboard(_this);
     // PS3_PumpMouse();
 }
@@ -85,14 +85,22 @@ void PS3_PumpEvents(SDL_VideoDevice *_this)
 
 void PS3_InitSysEvent(SDL_VideoDevice *_this)
 {
-    videoOutRegisterCallback(0, videoOutHandler, _this);
+    // This callbach register should be used when application will
+    // change resoulution.
+    // videoOutRegisterCallback(0, videoOutHandler, _this);
+
+    // Init window events handler.
+    sysUtilRegisterCallback(SYSUTIL_EVENT_SLOT1, sysWindowCallback, _this);
+
     // PS3_InitKeyboard(_this);
     // PS3_InitMouse();
 }
 
 void PS3_QuitSysEvent(SDL_VideoDevice *_this)
 {
-    videoOutUnregisterCallback(0);
+    sysUtilUnregisterCallback(SYSUTIL_EVENT_SLOT1);
+    // videoOutUnregisterCallback(0);
+    videoOutConfigure(0, NULL, NULL, 0);  // reset video output
     // PS3_QuitKeyboard(_this);
     // PS3_QuitMouse();
 }

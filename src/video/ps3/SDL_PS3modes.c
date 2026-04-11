@@ -126,8 +126,10 @@ bool PS3_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay * display)
 
     int n;
     for (n=0; n<nummodes; ++n) {
+        PS3_DisplayModeData *data = (PS3_DisplayModeData *)malloc(sizeof(PS3_DisplayModeData));
+        *data = ps3fb_data[n];
         // Get driver specific mode data
-        ps3fb_modedb[n].internal = &ps3fb_data[n];
+        ps3fb_modedb[n].internal = data;
 
         // Add DisplayMode to list
         deprintf(2, "Adding resolution %u x %u\n", ps3fb_modedb[n].w, ps3fb_modedb[n].h);
@@ -153,11 +155,11 @@ bool PS3_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_D
     }
 
     // Wait until RSX is ready
-    do{
+    do {
         SDL_Delay(10);
         int rv = videoOutGetState(0, 0, &state);
         assert( rv == 0);
-    }while ( state.state == 3);
+    }  while ( state.state == 3);
 
     deprintf(1, "-PS3_SetDisplayMode()\n");
     return true;
@@ -165,19 +167,8 @@ bool PS3_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_D
 
 void PS3_QuitModes(SDL_VideoDevice *_this)
 {
-    deprintf(1, "+PS3_QuitModes()\n");
-
-    SDL_VideoDisplay *display;
-    int i;
-    
-    for (i = 0; i < _this->num_displays; i++) {
-        display = _this->displays[i];
-        if (display) {
-            SDL_ResetFullscreenDisplayModes(display);
-        }
-    }
-
-    deprintf(1, "-PS3_QuitModes()\n");
+    // No need to do anything here.
+    // SDL_ResetFullscreenDisplayModes will be called on SDL_Quit.
 }
 
 #endif // SDL_VIDEO_DRIVER_PS3
