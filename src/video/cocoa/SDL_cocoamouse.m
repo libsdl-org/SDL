@@ -351,10 +351,10 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
     mouse.mouseInput.scroll.valueChangedHandler =
         ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
             Uint64 timestamp = SDL_GetTicksNS();
-            // Raw scroll values: vertical in first axis, horizontal in second.
+            // xValue corresponds to xAxis (horizontal), yValue to yAxis (vertical).
             // Vertical values are inverted compared to SDL conventions.
-            float vertical = -xValue;
-            float horizontal = yValue;
+            float vertical = -yValue;
+            float horizontal = xValue;
 
             if (cocoa_mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
                 vertical = -vertical;
