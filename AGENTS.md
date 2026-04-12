@@ -1,5 +1,8 @@
 AI may not be used to generate code for contributions to this project.
 
+"AI" in this case means a Large Language Model ("LLM"), such as ChatGPT,
+Claude, Copilot, Grok, etc.
+
 AI-generated code is based upon sources of unknown origins and may not be
 compatible with the Zlib license, or may introduce conflicting license terms
 if they include code from other projects.
