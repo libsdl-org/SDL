@@ -37,11 +37,7 @@
 #if defined(__GNUC__) && (__GNUC__ >= 5)
 #define HAVE_ATOMIC_LOAD_N 1
 #elif SDL_HAS_BUILTIN(__atomic_load_n) || (defined(__clang__) && defined(HAVE_GCC_ATOMICS))
-/* !!! FIXME: this advertises as available in the NDK but uses an external symbol we don't have.
-   It might be in a later NDK or we might need an extra library? --ryan. */
-#ifndef SDL_PLATFORM_ANDROID
 #define HAVE_ATOMIC_LOAD_N 1
-#endif
 #endif
 
 /*
