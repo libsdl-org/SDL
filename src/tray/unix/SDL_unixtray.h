@@ -54,17 +54,23 @@ typedef struct SDL_TrayDriver
     void (*SetTrayEntryCallback)(SDL_TrayEntry *, SDL_TrayCallback, void *);
 
     void (*DestroyDriver)(struct SDL_TrayDriver *);
+
+    void *internal;
 } SDL_TrayDriver;
 
 struct SDL_TrayMenu
 {
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
+
+    void *internal;
 };
 
 struct SDL_TrayEntry
 {
     SDL_TrayMenu *parent;
+
+    void *internal;
 };
 
 struct SDL_Tray
@@ -72,6 +78,8 @@ struct SDL_Tray
     SDL_TrayDriver *driver;
 
     SDL_TrayMenu *menu;
+
+    void *internal;
 };
 
 #ifdef SDL_USE_LIBDBUS
