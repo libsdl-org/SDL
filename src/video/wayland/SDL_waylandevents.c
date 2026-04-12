@@ -640,7 +640,7 @@ connection_error:
     }
 }
 
-static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
+static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat, bool warp)
 {
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
@@ -656,7 +656,11 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
 
         sx *= window_data->pointer_scale.x;
         sy *= window_data->pointer_scale.y;
-        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        if (!warp) {
+            SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        } else {
+            SDL_SendMouseWarp(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, (float)sx, (float)sy);
+        }
 
         seat->pointer.last_motion.x = (int)SDL_floor(sx);
         seat->pointer.last_motion.y = (int)SDL_floor(sy);
@@ -763,7 +767,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
         }
     } else {
         seat->pointer.pending_frame.timestamp_ns = timestamp;
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, false);
     }
 }
 
@@ -790,7 +794,7 @@ static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
     SDL_SetMouseFocus(window->sdlwindow);
 
     // Send the initial position.
-    pointer_dispatch_absolute_motion(seat);
+    pointer_dispatch_absolute_motion(seat, false);
 
     // Update the pointer grab state.
     Wayland_SeatUpdatePointerGrab(seat);
@@ -1280,7 +1284,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     }
 
     if (seat->pointer.pending_frame.have_absolute) {
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, seat->pointer.pending_frame.have_warp);
     }
 
     if (seat->pointer.pending_frame.have_relative) {
@@ -1341,6 +1345,7 @@ static void pointer_handle_warp(void *data, struct wl_pointer *wl_pointer, wl_fi
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
 
     seat->pointer.pending_frame.have_absolute = true;
+    seat->pointer.pending_frame.have_warp = true;
     seat->pointer.pending_frame.absolute.sx = surface_x;
     seat->pointer.pending_frame.absolute.sy = surface_y;
 }
