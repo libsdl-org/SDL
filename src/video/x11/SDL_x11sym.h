@@ -174,6 +174,14 @@ SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db))
 SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *))
 SDL_X11_SYM(int,XGetPointerMapping,(Display *a, unsigned char *b, unsigned int c))
 
+/* Symbols for toolkit */
+SDL_X11_SYM(void,XNextEvent,(Display *a, XEvent *b))
+SDL_X11_SYM(XrmQuark,XrmUniqueQuark,(void))
+SDL_X11_SYM(int,XSaveContext,(Display *a, XID b, XContext c, XPointer d))
+SDL_X11_SYM(int,XFindContext,(Display *a, XID b, XContext c, XPointer *d))
+SDL_X11_SYM(int,XDeleteContext,(Display *a, XID b, XContext c))
+SDL_X11_SYM(void,XMoveResizeWindow,(Display *a, Window b, int c, int d, unsigned int e, unsigned int f))
+
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
 SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i))

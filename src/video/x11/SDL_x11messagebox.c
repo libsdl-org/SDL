@@ -23,316 +23,343 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
+#include "../../toolkit/SDL_toolkit.h"
+#include "../../toolkit/SDL_toolkitx11.h"
 #include "../../dialog/unix/SDL_zenitymessagebox.h"
-#include "SDL_x11messagebox.h"
-#include "SDL_x11toolkit.h"
 
-#ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 0
-#endif
-
-#if SDL_FORK_MESSAGEBOX
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <errno.h>
-#endif
-
-typedef struct SDL_MessageBoxX11
+typedef struct SDL_MessageBoxDataX11
 {
-    SDL_ToolkitWindowX11 *window;
-    SDL_ToolkitControlX11 *icon;
-    SDL_ToolkitControlX11 *message;
-    SDL_ToolkitControlX11 **buttons;
     const SDL_MessageBoxData *messageboxdata;
-    int *buttonID;
-} SDL_MessageBoxX11;
 
-static void X11_MessageBoxButtonCallback(SDL_ToolkitControlX11 *control, void *data)
+    SDL_ToolkitDriverSet *set;
+    SDL_ToolkitWindow *wnd;
+    SDL_ToolkitVideoWindowParent parent;
+    SDL_ToolkitColorScheme scheme;
+
+    SDL_ToolkitControl *icon;
+    SDL_ToolkitControl *label;
+    SDL_ToolkitControl **buttons;
+
+    int ret_id;
+} SDL_MessageBoxDataX11;
+
+static void FreeUserData(SDL_ToolkitControl *base)
 {
-    SDL_MessageBoxX11 *cbdata;
-
-    cbdata = data;
-    *cbdata->buttonID = X11Toolkit_GetButtonControlData(control)->buttonID;
-    X11Toolkit_SignalWindowClose(cbdata->window);
+    SDL_free(base->udata);
 }
 
-static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp) {
+static void ButtonCallback(SDL_ToolkitControl *base, void *cbdata)
+{
+    SDL_MessageBoxDataX11 *data;
+
+    data = cbdata;
+    data->ret_id = *(int *)base->udata;
+    SDL_ToolkitWindow_Close(base->wnd);
+}
+
+static void PositionControls(SDL_MessageBoxDataX11 *data)
+{
+    SDL_Rect rct;
     int first_line_width;
     int first_line_height;
     int second_line_width;
     int second_line_height;
     int max_button_width;
     int max_button_height;
-    int window_width;
-    int window_height;
+    int iw;
+    int ih;
     int i;
     bool rtl;
-    
-    /* window size */
-    window_width = 1;
-    window_height = 1;
-    
-    /* rtl */
-    if (controls->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+
+    if (data->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
         rtl = true;
-    } else if (controls->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT) {
+    } else if (data->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT) {
         rtl = false;
     } else {
-        rtl = controls->window->flip_interface;
+        rtl = data->wnd->flags & SDL_TOOLKIT_WINDOW_FLAGS_RTL;
     }
-    
-    /* first line */
+
     first_line_width = first_line_height = 0;
-    if (controls->icon && controls->message) {
-        controls->icon->rect.y = 0;
-        
-        first_line_width = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale + controls->message->rect.w;  
-        
-        if (!controls->window->flip_interface) {
-            controls->message->rect.x = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;
-            controls->icon->rect.x = 0;
+    if (data->icon && data->label) {
+        data->icon->rct.y = 0;
+
+        first_line_width = data->icon->rct.w + SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale + data->label->rct.w;
+
+        if (data->wnd->flags & SDL_TOOLKIT_WINDOW_FLAGS_RTL) {
+            data->label->rct.x = 0;
+            data->icon->rct.x = data->label->rct.w + SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
         } else {
-            controls->message->rect.x = 0;    
-            controls->icon->rect.x = controls->message->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;
+            data->icon->rct.x = 0;
+            data->label->rct.x = data->icon->rct.w + SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
         }
-        
-        if (controls->message->rect.h > controls->icon->rect.h) {
-            controls->message->rect.y = (controls->icon->rect.h - X11Toolkit_GetLabelControlFirstLineHeight(controls->message))/2;
-            first_line_height = controls->message->rect.y + controls->message->rect.h;
+
+        if (data->label->rct.h > data->icon->rct.h) {
+            data->label->rct.y = (data->icon->rct.h - SDL_ToolkitLabelControl_GetHeightOfFirstLine(data->label)) / 2;
+            first_line_height = data->label->rct.y + data->label->rct.h;
         } else {
-            controls->message->rect.y = (controls->icon->rect.h - controls->message->rect.h)/2;
-            first_line_height = controls->icon->rect.h;
-        }        
-    } else if (!controls->icon && controls->message) {
-        first_line_width = controls->message->rect.w;  
-        first_line_height = controls->message->rect.h;
-        controls->message->rect.x = 0;
-        controls->message->rect.y = 0;
-    } else if (controls->icon && !controls->message) {
-        first_line_width = controls->icon->rect.w;  
-        first_line_height = controls->icon->rect.h;
-        controls->icon->rect.x = 0;
-        controls->icon->rect.y = 0;        
+            data->label->rct.y = (data->icon->rct.h - data->label->rct.h) / 2;
+            first_line_height = data->icon->rct.h;
+        }
+    } else if (!data->icon && data->label) {
+        first_line_width = data->label->rct.w;
+        first_line_height = data->label->rct.h;
+        data->label->rct.x = 0;
+        data->label->rct.y = 0;
+    } else if (data->icon && !data->label) {
+        first_line_width = data->icon->rct.w;
+        first_line_height = data->icon->rct.h;
+        data->icon->rct.x = 0;
+        data->icon->rct.y = 0;
     }
-    
-    /* second line */
-    max_button_width = 50;
-    max_button_height = 0;
+
+    max_button_width = 50 * data->wnd->int_scale;
+    max_button_height = 32 * data->wnd->int_scale;
     second_line_width = second_line_height = 0;
-    
-    for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
-        max_button_width = SDL_max(max_button_width, controls->buttons[i]->rect.w);
-        max_button_height = SDL_max(max_button_height, controls->buttons[i]->rect.h);
-        controls->buttons[i]->rect.x = 0;
-        controls->buttons[i]->rect.y = 0;
+
+    for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+        max_button_width = SDL_max(max_button_width, data->buttons[i]->rct.w);
+        max_button_height = SDL_max(max_button_height, data->buttons[i]->rct.h);
+        data->buttons[i]->rct.x = 0;
+        data->buttons[i]->rct.y = 0;
     }
 
     if (rtl) {
-        for (i = (controls->messageboxdata->numbuttons - 1); i != -1; i--) {
-            controls->buttons[i]->rect.w = max_button_width;
-            controls->buttons[i]->rect.h = max_button_height;
-            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);
+        for (i = (data->messageboxdata->numbuttons - 1); i != -1; i--) {
+            data->buttons[i]->rct.w = max_button_width;
+            data->buttons[i]->rct.h = max_button_height;
+            SDL_ToolkitControl_Calculate(data->buttons[i]);
 
             if (first_line_height) {
-                controls->buttons[i]->rect.y = first_line_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_4 * controls->window->iscale;
-                second_line_height = max_button_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_4 * controls->window->iscale;
+                data->buttons[i]->rct.y = first_line_height + SDL_TOOLKIT_PADDING_4 * data->wnd->int_scale;
+                second_line_height = max_button_height + SDL_TOOLKIT_PADDING_4 * data->wnd->int_scale;
             } else {
                 second_line_height = max_button_height;
             }
-            
-            if ((i + 1) < controls->messageboxdata->numbuttons) {
-                controls->buttons[i]->rect.x = controls->buttons[i + 1]->rect.x + controls->buttons[i + 1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
+
+            if ((i + 1) < data->messageboxdata->numbuttons) {
+                data->buttons[i]->rct.x = data->buttons[i + 1]->rct.x + data->buttons[i + 1]->rct.w + (SDL_TOOLKIT_PADDING_3 * data->wnd->int_scale);
             }
-        }    
+        }
     } else {
-        for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
-            controls->buttons[i]->rect.w = max_button_width;
-            controls->buttons[i]->rect.h = max_button_height;
-            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);
+        for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+            data->buttons[i]->rct.w = max_button_width;
+            data->buttons[i]->rct.h = max_button_height;
+            SDL_ToolkitControl_Calculate(data->buttons[i]);
 
             if (first_line_height) {
-                controls->buttons[i]->rect.y = first_line_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_4 * controls->window->iscale;
-                second_line_height = max_button_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_4 * controls->window->iscale;
+                data->buttons[i]->rct.y = first_line_height + SDL_TOOLKIT_PADDING_4 * data->wnd->int_scale;
+                second_line_height = max_button_height + SDL_TOOLKIT_PADDING_4 * data->wnd->int_scale;
             } else {
                 second_line_height = max_button_height;
             }
-            
+
             if (i) {
-                controls->buttons[i]->rect.x = controls->buttons[i-1]->rect.x + controls->buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
+                data->buttons[i]->rct.x = data->buttons[i - 1]->rct.x + data->buttons[i - 1]->rct.w + (SDL_TOOLKIT_PADDING_3 * data->wnd->int_scale);
             }
         }
     }
-    
-    if (controls->messageboxdata->numbuttons) {
+
+    if (data->messageboxdata->numbuttons) {
         if (rtl) {
-            second_line_width = controls->buttons[0]->rect.x + controls->buttons[0]->rect.w;
+            second_line_width = data->buttons[0]->rct.x + data->buttons[0]->rct.w;
         } else {
-            second_line_width = controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.x + controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.w;            
+            second_line_width = data->buttons[data->messageboxdata->numbuttons - 1]->rct.x + data->buttons[data->messageboxdata->numbuttons - 1]->rct.w;
         }
     }
 
-    /* center lines */
     if (second_line_width > first_line_width) {
         int pad;
-        
-        pad = (second_line_width - first_line_width)/2;
-        if (controls->message) {
-            controls->message->rect.x += pad;
+
+        pad = (second_line_width - first_line_width) / 2;
+        if (data->label) {
+            data->label->rct.x += pad;
         }
-        if (controls->icon) {
-            controls->icon->rect.x += pad;
+        if (data->icon) {
+            data->icon->rct.x += pad;
         }
     } else {
         int pad;
-        
-        pad = (first_line_width - second_line_width)/2;
-        for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
-            controls->buttons[i]->rect.x += pad;
+
+        pad = (first_line_width - second_line_width) / 2;
+        for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+            data->buttons[i]->rct.x += pad;
         }
     }
-     
-    /* window size and final padding */
-    window_width = SDL_max(first_line_width, second_line_width) + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 2 * controls->window->iscale;
-    window_height = first_line_height + second_line_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 2 * controls->window->iscale;
-    *wp = window_width;
-    *hp = window_height;
-    if (controls->message) {
-        controls->message->rect.x += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
-        controls->message->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
+
+    iw = rct.w = SDL_max(first_line_width, second_line_width) + SDL_TOOLKIT_PADDING_2 * 2 * data->wnd->int_scale;
+    ih = rct.h = first_line_height + second_line_height + SDL_TOOLKIT_PADDING_2 * 2 * data->wnd->int_scale;
+    rct.w = SDL_ToolkitWindow_ReverseScaleValue(data->wnd, rct.w);
+    rct.h = SDL_ToolkitWindow_ReverseScaleValue(data->wnd, rct.h);
+    SDL_ToolkitWindow_UpdateRect(data->wnd, &rct, iw, ih);
+
+    if (data->label) {
+        data->label->rct.x += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
+        data->label->rct.y += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
     }
-    if (controls->icon) {
-        controls->icon->rect.x += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
-        controls->icon->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
+
+    if (data->icon) {
+        data->icon->rct.x += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
+        data->icon->rct.y += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
     }
-    for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
-        controls->buttons[i]->rect.x += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
-        controls->buttons[i]->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
+
+    for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+        data->buttons[i]->rct.x += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
+        data->buttons[i]->rct.y += SDL_TOOLKIT_PADDING_2 * data->wnd->int_scale;
     }
 }
 
-static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data) {
-    SDL_MessageBoxX11 *controls;
-    int w;
-    int h;
-
-    controls = data;
-    X11_PositionMessageBox(controls, &w, &h);
-    X11Toolkit_ResizeWindow(window, w, h);
-}
-
-static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static void CreateControls(SDL_MessageBoxDataX11 *data)
 {
-    SDL_VideoDevice *video = SDL_GetVideoDevice();
-    SDL_Window *parent_window = NULL;
-    SDL_MessageBoxX11 controls;
-    const SDL_MessageBoxColor *colorhints;
     int i;
-    int w;
-    int h;
 
-    controls.messageboxdata = messageboxdata;
+    switch (data->messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+    case SDL_MESSAGEBOX_ERROR:
+        data->icon = SDL_ToolkitIconControl_Create(data->wnd, SDL_TOOLKIT_ICON_ERROR);
+        break;
+    case SDL_MESSAGEBOX_WARNING:
+        data->icon = SDL_ToolkitIconControl_Create(data->wnd, SDL_TOOLKIT_ICON_WARNING);
+        break;
+    case SDL_MESSAGEBOX_INFORMATION:
+        data->icon = SDL_ToolkitIconControl_Create(data->wnd, SDL_TOOLKIT_ICON_INFORMATION);
+        break;
+    default:
+        data->icon = NULL;
+    }
 
-    /* Color scheme */
-    if (messageboxdata->colorScheme) {
-        colorhints = messageboxdata->colorScheme->colors;
+    if (data->messageboxdata->message) {
+        if (SDL_strcmp(data->messageboxdata->message, "")) {
+            data->label = SDL_ToolkitLabelControl_Create(data->wnd, data->messageboxdata->message);
+        } else {
+            data->label = NULL;
+        }
     } else {
-        colorhints = NULL;
+        data->label = NULL;
     }
 
-    /* Create window */
-    if (messageboxdata->window && video && SDL_strcmp(video->name, "x11") == 0) {
-        // Only use the window as a parent if it is from the X11 driver.
-        parent_window = messageboxdata->window;
+    data->buttons = SDL_calloc(data->messageboxdata->numbuttons, sizeof(SDL_ToolkitControl *));
+    for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+        data->buttons[i] = SDL_ToolkitButtonControl_Create(data->wnd, data->messageboxdata->buttons[i].text, ButtonCallback, data);
+
+        data->buttons[i]->udata = SDL_malloc(sizeof(int));
+        *(int *)data->buttons[i]->udata = data->messageboxdata->buttons[i].buttonID;
+        data->buttons[i]->udata_free = FreeUserData;
+
+        if (data->messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+            data->buttons[i]->flags |= SDL_TOOLKIT_CONTROL_FLAGS_ACTIVATE_ON_ENTER;
+        }
+
+        if (data->messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
+            data->buttons[i]->flags |= SDL_TOOLKIT_CONTROL_FLAGS_ACTIVATE_ON_ESCAPE;
+        }
+
+        SDL_ToolkitControl_FlagsUpdated(data->buttons[i]);
     }
-#if SDL_FORK_MESSAGEBOX
-    controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, true);
-#else 
-    controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, false);
-#endif
-    controls.window->cb_data = &controls;
-    controls.window->cb_on_scale_change = X11_OnMessageBoxScaleChange;
-    if (!controls.window) {
-        return false;
+}
+
+static void DestroyControls(SDL_MessageBoxDataX11 *data)
+{
+    int i;
+
+    for (i = 0; i < data->messageboxdata->numbuttons; i++) {
+        SDL_ToolkitControl_Destroy(data->buttons[i]);
     }
 
-    /* Create controls */
-    controls.buttonID = buttonID;
-    controls.buttons = SDL_calloc(messageboxdata->numbuttons, sizeof(SDL_ToolkitControlX11 *));
-    controls.icon = X11Toolkit_CreateIconControl(controls.window, messageboxdata->flags);
-    controls.message = X11Toolkit_CreateLabelControl(controls.window, (char *)messageboxdata->message);
-    for (i = 0; i < messageboxdata->numbuttons; i++) {
-        controls.buttons[i] = X11Toolkit_CreateButtonControl(controls.window, &messageboxdata->buttons[i]);
-        X11Toolkit_RegisterCallbackForButtonControl(controls.buttons[i], &controls, X11_MessageBoxButtonCallback);
+    if (data->messageboxdata->numbuttons) {
+        SDL_free(data->buttons);
     }
 
-    /* Positioning */
-    X11_PositionMessageBox(&controls, &w, &h);
+    if (data->label) {
+        SDL_ToolkitControl_Destroy(data->label);
+    }
 
-    /* Actually create window, do event loop, cleanup */
-    X11Toolkit_CreateWindowRes(controls.window, w, h, 0, 0, (char *)messageboxdata->title);
-    X11Toolkit_DoWindowEventLoop(controls.window);
-    X11Toolkit_DestroyWindow(controls.window);
-    SDL_free(controls.buttons);
+    if (data->icon) {
+        SDL_ToolkitControl_Destroy(data->icon);
+    }
+}
+
+static void OnScaleChange(SDL_ToolkitWindow *window, void *udata)
+{
+    SDL_MessageBoxDataX11 *data;
+
+    data = udata;
+
+    DestroyControls(data);
+    CreateControls(data);
+    PositionControls(data);
+    SDL_ToolkitWindow_CenterInParent(data->wnd);
+}
+
+bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+{
+    SDL_MessageBoxDataX11 data;
+
+	if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
+        return true;
+    }
+    
+    data.ret_id = -1;
+    data.messageboxdata = messageboxdata;
+    data.set = SDL_ToolkitDriverSet_Create(SDL_GetVideoDevice());
+    if (!SDL_ToolkitDriverSet_IsValid(data.set)) {
+		SDL_ToolkitDriverSet_Destroy(data.set);
+		return false;
+	}
+	
+    if (messageboxdata->colorScheme) {
+        data.scheme.bg.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND].r;
+        data.scheme.bg.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND].g;
+        data.scheme.bg.rgba.b = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND].b;
+
+        data.scheme.text.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_TEXT].r;
+        data.scheme.text.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_TEXT].g;
+        data.scheme.text.rgba.b = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_TEXT].b;
+
+        data.scheme.button_border.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].r;
+        data.scheme.button_border.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].g;
+        data.scheme.button_border.rgba.b = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].b;
+
+        data.scheme.button_bg.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].r;
+        data.scheme.button_bg.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].g;
+        data.scheme.button_bg.rgba.b = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].b;
+
+        data.scheme.button_selected.rgba.r = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].r;
+        data.scheme.button_selected.rgba.g = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].g;
+        data.scheme.button_selected.rgba.b = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].b;
+    } else {
+        SDL_ToolkitColorScheme_SetSystemColors(&data.scheme);
+    }
+    SDL_ToolkitColorScheme_GenerateShades(&data.scheme);
+
+    data.parent.type = SDL_TOOLKIT_VIDEO_WINDOW_PARENT_SDL;
+    data.parent.parent.sdl = messageboxdata->window;
+    if (messageboxdata->window) {
+        data.wnd = SDL_ToolkitWindow_Create(data.set, &data.scheme, &data.parent, SDL_TOOLKIT_VIDEO_WINDOW_TYPE_DIALOG, 300, 300, messageboxdata->title);
+    } else {
+        data.wnd = SDL_ToolkitWindow_Create(data.set, &data.scheme, NULL, SDL_TOOLKIT_VIDEO_WINDOW_TYPE_DIALOG, 300, 300, messageboxdata->title);
+    }
+    if (!data.wnd) {
+		SDL_ToolkitDriverSet_Destroy(data.set);
+		return false;
+	}
+    data.wnd->scale_change_cb = OnScaleChange;
+    data.wnd->scale_change_cbdata = &data;
+
+    CreateControls(&data);
+    PositionControls(&data);
+
+    SDL_ToolkitWindow_Realize(data.wnd);
+    SDL_ToolkitWindow_CenterInParent(data.wnd);
+    SDL_ToolkitWindow_Show(data.wnd);
+    SDL_ToolkitDriverSet_EventLoop(data.set);
+
+    DestroyControls(&data);
+    SDL_ToolkitWindow_Destroy(data.wnd);
+    SDL_ToolkitDriverSet_Destroy(data.set);
+
+    if (data.ret_id != -1) {
+        *buttonID = data.ret_id;
+    }
     return true;
 }
 
-// Display an x11 message box.
-bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
-{
-    if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
-        return true;
-    }
-
-#if SDL_FORK_MESSAGEBOX
-    // Use a child process to protect against setlocale(). Annoying.
-    pid_t pid;
-    int fds[2];
-    int status = 0;
-    bool result = true;
-
-    if (pipe(fds) == -1) {
-        return X11_ShowMessageBoxImpl(messageboxdata, buttonID); // oh well.
-    }
-
-    pid = fork();
-    if (pid == -1) { // failed
-        close(fds[0]);
-        close(fds[1]);
-        return X11_ShowMessageBoxImpl(messageboxdata, buttonID); // oh well.
-    } else if (pid == 0) {                                       // we're the child
-        int exitcode = 0;
-        close(fds[0]);
-        result = X11_ShowMessageBoxImpl(messageboxdata, buttonID);
-        if (write(fds[1], &result, sizeof(result)) != sizeof(result)) {
-            exitcode = 1;
-        } else if (write(fds[1], buttonID, sizeof(*buttonID)) != sizeof(*buttonID)) {
-            exitcode = 1;
-        }
-        close(fds[1]);
-        _exit(exitcode); // don't run atexit() stuff, static destructors, etc.
-    } else {             // we're the parent
-        pid_t rc;
-        close(fds[1]);
-        do {
-            rc = waitpid(pid, &status, 0);
-        } while ((rc == -1) && (errno == EINTR));
-
-        SDL_assert(rc == pid); // not sure what to do if this fails.
-
-        if ((rc == -1) || (!WIFEXITED(status)) || (WEXITSTATUS(status) != 0)) {
-            result = SDL_SetError("msgbox child process failed");
-        } else if ((read(fds[0], &result, sizeof(result)) != sizeof(result)) ||
-                   (read(fds[0], buttonID, sizeof(*buttonID)) != sizeof(*buttonID))) {
-            result = SDL_SetError("read from msgbox child process failed");
-            *buttonID = 0;
-        }
-        close(fds[0]);
-
-        return result;
-    }
-#else
-    return X11_ShowMessageBoxImpl(messageboxdata, buttonID);
-#endif
-}
 #endif // SDL_VIDEO_DRIVER_X11
