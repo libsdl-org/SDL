@@ -120,38 +120,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return SDL_SetError("PS3_CreateRenderer: could not get display for window");
     }
 
-    // SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    // SDL_DisplayMode *displayMode1 = &display->current_mode;
-    // int w, h;
-    // SDL_GetWindowSize(window, &w, &h);
-
-    // printf("window %d %d... \n", w , h); fflush(stdout);
-
-    // find a matching display mode for this window size
-    // SDL_DisplayMode mode;
-    // SDL_memset(&mode, 0, sizeof(mode));
-
-    // mode.w      = w;
-    // mode.h      = h;
-    // mode.format = SDL_PIXELFORMAT_XRGB8888;
-
-    // printf("display ID %d  \n", displayID); fflush(stdout);
-
-    // find closest matching mode from display's mode list
-    // SDL_DisplayMode closest = {0};
-
-    // SDL_GetClosestFullscreenDisplayMode(displayID, w, h, 0.0f, false, &closest);
-    // if (closest.displayID) {
-    //     printf("FODUN display ID %d  with w: %d h: %d\n", closest.displayID, closest.w, closest.h); fflush(stdout);
-    //     // return SDL_SetError("PS3_CreateRenderer: no matching display mode for %dx%d", w, h);
-    //     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
-    //     SDL_SetCurrentDisplayMode(display, &closest);
-    //     SDL_SetWindowFullscreenMode(window, &closest);
-    //     SDL_SetWindowSize(window, closest.w, closest.h);
-    // }
-
     const SDL_DisplayMode *displayMode = SDL_GetCurrentDisplayMode(displayID);
-    // printf("display mode id %d   w: %d h: %d \n", displayMode->displayID, displayMode->w, displayMode->h); fflush(stdout);
 
     int bpp;
     int pitch;
@@ -176,8 +145,6 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     
     SDL_zerop(data);
     rsxHeapInit();
-
-    // printf("Display mode %d %d... \n", displayMode->w , displayMode->h); fflush(stdout); 
 
     SDL_VideoDevice *videoDevice = SDL_GetVideoDevice();
     if (!videoDevice || !videoDevice->internal) {
@@ -356,7 +323,6 @@ static bool PS3_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 static bool PS3_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
 {
-    printf("PS3_LockTexture... \n"); fflush(stdout);
     SDL_Surface *surface = (SDL_Surface *) texture->internal;
 
     *pixels =
@@ -368,12 +334,10 @@ static bool PS3_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 
 static void PS3_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    printf("PS3_UnlockTexture... \n"); fflush(stdout);
 }
 
 static bool PS3_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    printf("PS3_SetRenderTarget... \n"); fflush(stdout);
     return true;
 }
 
@@ -402,7 +366,6 @@ static void PS3_SetTextureScaleMode(SDL_ScaleMode scaleMode)
 
 static bool PS3_UpdateViewport(SDL_Renderer * renderer)
 {
-    printf("PS3_UpdateViewport  start\n"); fflush(stdout);
     PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
     SDL_Surface *surface = data->screens[0];
 
@@ -422,7 +385,6 @@ static bool PS3_UpdateViewport(SDL_Renderer * renderer)
     
     SDL_SetSurfaceClipRect(data->screens[0], &renderer->last_queued_viewport);
     SDL_SetSurfaceClipRect(data->screens[1], &renderer->last_queued_viewport);
-    printf("PS3_UpdateViewport  end\n"); fflush(stdout);
     return true;
 }
 

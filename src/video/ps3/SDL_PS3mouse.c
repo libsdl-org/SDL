@@ -120,7 +120,6 @@ void PS3_PumpMouse(void)
 
 void PS3_InitMouse(void)
 {
-    printf("[ps3] PS3_InitMouse 1... \n"); fflush(stdout); 
     SDL_Mouse *mouse = SDL_GetMouse();
 
     // mouse->CreateCursor = Emscripten_CreateCursor;
