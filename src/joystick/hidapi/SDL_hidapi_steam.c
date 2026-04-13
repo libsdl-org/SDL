@@ -925,6 +925,7 @@ static bool UpdateBLESteamControllerState(const uint8_t *pData, int nDataSize, S
 static bool UpdateSteamControllerState(const uint8_t *pData, int nDataSize, SteamControllerStateInternal_t *pState)
 {
     ValveInReport_t *pInReport = (ValveInReport_t *)pData;
+    //the cast above is likely not safe due to struct padding rules being platform dependent
 
     if (pInReport->header.unReportVersion != k_ValveInReportMsgVersion) {
         if ((pData[0] & 0x0F) == k_EBLEReportState) {
@@ -1269,8 +1270,12 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
 
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
+
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED,
                         SDL_HomeLEDHintChanged, ctx);
+
 
     return true;
 }
@@ -1468,6 +1473,21 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, ~ctx->m_state.sLeftStickY);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, ctx->m_state.sRightPadX);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~ctx->m_state.sRightPadY);
+
+
+            //todo: check if -ctx->m_state.sLeftPadY or ~ctx->m_state.sLeftPadY gives better centering
+            SDL_SendJoystickTouchpad(timestamp, joystick, /*pad idx*/0, /*finger idx*/0,
+                     !!(ctx->m_state.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK),//fingerdown yes/no
+                     ctx->m_state.sLeftPadX                    / 65536.0f + 0.5f,
+                     (-(int32_t)ctx->m_state.sLeftPadY)        / 65536.0f + 0.5f,
+                     (float)!!(ctx->m_state.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK));//fake pressure
+
+            SDL_SendJoystickTouchpad(timestamp, joystick, /*pad idx*/1, /*finger idx*/0,
+                     !!(ctx->m_state.ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK),//fingerdown yes/no
+                     ctx->m_state.sRightPadX                    / 65536.0f + 0.5f,
+                     (-(int32_t)ctx->m_state.sRightPadY)        / 65536.0f + 0.5f,
+                     (float)!!(ctx->m_state.ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK));//fake pressure
+
 
             if (ctx->report_sensors) {
                 float values[3];
