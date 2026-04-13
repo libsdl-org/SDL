@@ -180,7 +180,7 @@ static void xinput2_parse_scrollable_valuators(const XIDeviceEvent *xev)
                             const double y = info->scroll_type == XIScrollTypeVertical ? delta : 0;
 
                             SDL_Mouse *mouse = SDL_GetMouse();
-                            SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)x, (float)y, SDL_MOUSEWHEEL_NORMAL);
+                            SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL);
                         }
                         info->prev_value = current_val;
                         info->prev_value_valid = true;
