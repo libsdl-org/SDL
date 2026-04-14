@@ -1643,6 +1643,9 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
         struct libdecor_state *state = libdecor_state_new(wind->current.logical_width, wind->current.logical_height);
         libdecor_frame_commit(frame, state, configuration);
         libdecor_state_free(state);
+    } else {
+        // Send an exposure event so that clients doing deferred updates will trigger a frame callback and make guaranteed forward progress when resizing.
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     }
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
