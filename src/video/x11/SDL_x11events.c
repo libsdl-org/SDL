@@ -1834,12 +1834,16 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case KeyPress:
     case KeyRelease:
     {
+        SDL_KeyboardID keyboardID = SDL_GLOBAL_KEYBOARD_ID;
         if (data->xinput2_keyboard_enabled) {
-            // This input is being handled by XInput2
+            // This input is being handled by XInput2.
             break;
+        } else if (xevent->xkey.serial == videodata->xinput_last_key_serial) {
+            // Use the device ID from the XInput2 event if the serials match.
+            keyboardID = videodata->xinput_last_keyboard_device;
         }
 
-        X11_HandleKeyEvent(_this, data, SDL_GLOBAL_KEYBOARD_ID, xevent);
+        X11_HandleKeyEvent(_this, data, keyboardID, xevent);
     } break;
 
     case MotionNotify:

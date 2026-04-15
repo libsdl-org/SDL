@@ -140,6 +140,8 @@ struct SDL_VideoData
 
     SDL_XInput2DeviceInfo *mouse_device_info;
     unsigned long xinput_last_button_serial;
+    unsigned long xinput_last_key_serial;
+    int xinput_last_keyboard_device;
     int xinput_master_pointer_device;
     bool xinput_hierarchy_changed;
 

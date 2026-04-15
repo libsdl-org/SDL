@@ -303,6 +303,12 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     eventmask.mask_len = sizeof(mask);
     eventmask.mask = mask;
 
+#ifndef USE_XINPUT2_KEYBOARD
+    // If not using the full keyboard handling, register for keypresses to get the event source devices.
+    XISetMask(mask, XI_KeyPress);
+    XISetMask(mask, XI_KeyRelease);
+#endif
+
     XISetMask(mask, XI_HierarchyChanged);
     X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1);
 
@@ -535,6 +541,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_KeyRelease:
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
+
+#ifdef XINPUT2_USE_KEYBOARD
         SDL_WindowData *windowdata = X11_FindWindow(videodata, xev->event);
         XEvent xevent;
 
@@ -564,6 +572,13 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         xevent.xkey.same_screen = 1;
 
         X11_HandleKeyEvent(_this, windowdata, (SDL_KeyboardID)xev->sourceid, &xevent);
+#else
+        /* Keys are handled through core X events, however, note the device ID and
+         * associated serial, so that the source device ID can be passed through.
+         */
+        videodata->xinput_last_key_serial = xev->serial;
+        videodata->xinput_last_keyboard_device = xev->sourceid;
+#endif
     } break;
 
     case XI_RawButtonPress:
