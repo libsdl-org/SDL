@@ -417,6 +417,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     SDL_Surface *icon;
     const char *tooltip;
     const char *object_path;
+    const char *flatpak_id;
     char *register_name;
     DBusObjectPathVTable vtable;
     DBusError err;
@@ -470,7 +471,12 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
 
     /* Request name */
     driver->count++;
-    SDL_asprintf(&tray_dbus->service_name, "org.kde.StatusNotifierItem-%d-%d", getpid(), driver->count);
+    flatpak_id = SDL_getenv("FLATPAK_ID");
+    if (flatpak_id) {
+        SDL_asprintf(&tray_dbus->service_name, "%s.tray%d", flatpak_id, driver->count);
+    } else {
+        SDL_asprintf(&tray_dbus->service_name, "org.kde.StatusNotifierItem-%d-%d", getpid(), driver->count);
+    }
     status = dbus_driver->dbus->bus_request_name(tray_dbus->connection, tray_dbus->service_name, DBUS_NAME_FLAG_REPLACE_EXISTING, &err);
     if (dbus_driver->dbus->error_is_set(&err)) {
         SDL_SetError("Unable to create tray: %s", err.message);
