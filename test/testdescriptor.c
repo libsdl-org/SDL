@@ -60,15 +60,15 @@ int main(int argc, char *argv[])
     }
 
     size_t descriptor_size = 0;
-    Uint8 *descriptor = SDL_LoadFile(argv[1], &descriptor_size);
+    Uint8 *descriptor = SDL_LoadFile(file, &descriptor_size);
     if (!descriptor) {
-        SDL_Log("Couldn't load %s: %s", argv[1], SDL_GetError());
+        SDL_Log("Couldn't load %s: %s", file, SDL_GetError());
         return 2;
     }
 
     DescriptorContext ctx;
     if (!ParseDescriptor(&ctx, descriptor, descriptor_size)) {
-        SDL_Log("Couldn't parse %s: %s", argv[1], SDL_GetError());
+        SDL_Log("Couldn't parse %s: %s", file, SDL_GetError());
         return 3;
     }
     return 0;
