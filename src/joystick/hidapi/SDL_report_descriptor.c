@@ -302,7 +302,9 @@ static bool ParseMainItem(DescriptorContext *ctx, int tag, int size, const Uint8
     case MainTagInput:
         flags = ReadValue(data, size);
         DebugMainTag(ctx, "MainTagInput", flags);
-        AddInputFields(ctx);
+        if (!AddInputFields(ctx)) {
+            return false;
+        }
         break;
     case MainTagOutput:
         flags = ReadValue(data, size);
@@ -421,8 +423,10 @@ static bool ParseLocalItem(DescriptorContext *ctx, int tag, int size, const Uint
     switch (tag) {
     case LocalTagUsage:
         value = ReadValue(data, size);
-        AddUsage(ctx, value);
         DebugDescriptor(ctx, "LocalTagUsage: 0x%.4x", value);
+        if (!AddUsage(ctx, value)) {
+            return false;
+        }
         break;
     case LocalTagUsageMinimum:
         ctx->local.usage_minimum = ReadValue(data, size);
