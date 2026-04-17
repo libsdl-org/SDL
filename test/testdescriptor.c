@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    DescriptorContext ctx;
-    if (!ParseDescriptor(&ctx, descriptor, descriptor_size)) {
+    SDL_ReportDescriptor *sdl_descriptor = SDL_ParseReportDescriptor(descriptor, descriptor_size);
+    if (sdl_descriptor == NULL) {
         SDL_Log("Couldn't parse %s: %s", file, SDL_GetError());
         return 3;
     }
-    CleanupContext(&ctx);
+    SDL_DestroyDescriptor(sdl_descriptor);
     return 0;
 }
