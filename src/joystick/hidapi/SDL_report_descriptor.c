@@ -589,32 +589,3 @@ bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_siz
     }
     return true;
 }
-
-#ifdef TEST_MAIN
-
-#include <SDL3/SDL_main.h>
-
-int main(int argc, char *argv[])
-{
-    const char *file = argv[1];
-    if (argc < 2) {
-        SDL_Log("Usage: %s file", argv[0]);
-        return 1;
-    }
-
-    size_t descriptor_size = 0;
-    Uint8 *descriptor = SDL_LoadFile(argv[1], &descriptor_size);
-    if (!descriptor) {
-        SDL_Log("Couldn't load %s: %s", argv[1], SDL_GetError());
-        return 2;
-    }
-
-    DescriptorContext ctx;
-    if (!ParseDescriptor(&ctx, descriptor, descriptor_size)) {
-        SDL_Log("Couldn't parse %s: %s", argv[1], SDL_GetError());
-        return 3;
-    }
-    return 0;
-}
-
-#endif // TEST_MAIN
