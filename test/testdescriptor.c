@@ -71,5 +71,6 @@ int main(int argc, char *argv[])
         SDL_Log("Couldn't parse %s: %s", file, SDL_GetError());
         return 3;
     }
+    CleanupContext(&ctx);
     return 0;
 }
