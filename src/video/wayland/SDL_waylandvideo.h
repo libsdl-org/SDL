@@ -30,6 +30,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
+#include "SDL_waylandeventthread.h"
 
 struct xkb_context;
 struct SDL_WaylandSeat;
@@ -94,6 +95,7 @@ struct SDL_VideoData
     struct SDL_WaylandSeat *last_implicit_grab_seat;
     struct SDL_WaylandSeat *last_incoming_data_offer_seat;
     struct SDL_WaylandSeat *last_incoming_primary_selection_seat;
+    Wayland_EventThreadContext *event_thread_context;
 
     SDL_DisplayData **output_list;
     int output_count;

@@ -1595,6 +1595,11 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
+    data->event_thread_context = Wayland_CreateEventThread(data, "SDL Event Thread Queue");
+    if (!data->event_thread_context) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Failed to create event thread context");
+    }
+
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
         return SDL_SetError("Failed to create XKB context");
@@ -1696,6 +1701,10 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     Wayland_FiniMouse(data);
+    Wayland_QuitKeyboard(_this);
+
+    Wayland_DestroyEventThread(data->event_thread_context);
+    data->event_thread_context = NULL;
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);
@@ -1721,8 +1730,6 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
         zwp_keyboard_shortcuts_inhibit_manager_v1_destroy(data->key_inhibitor_manager);
         data->key_inhibitor_manager = NULL;
     }
-
-    Wayland_QuitKeyboard(_this);
 
     if (data->text_input_manager) {
         zwp_text_input_manager_v3_destroy(data->text_input_manager);
