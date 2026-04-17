@@ -1416,14 +1416,14 @@ bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, 
         if (closest) {
             float current_aspect_ratio = (float)mode->w / mode->h;
             float closest_aspect_ratio = (float)closest->w / closest->h;
-            if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) < SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
-                // The mode we already found has a better aspect ratio match
+            if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) <= SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
+                // The mode we already found has a similar or better aspect ratio match
                 continue;
             }
 
             if (mode->w == closest->w && mode->h == closest->h &&
-                SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
-                /* We already found a mode and the new mode is further from our
+                SDL_fabsf(closest->refresh_rate - refresh_rate) <= SDL_fabsf(mode->refresh_rate - refresh_rate)) {
+                /* We already found a mode and the new mode's refresh rate is the same or is further away from our
                  * refresh rate target */
                 continue;
             }
