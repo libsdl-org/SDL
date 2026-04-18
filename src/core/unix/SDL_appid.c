@@ -62,8 +62,8 @@ const char *SDL_GetAppID(void)
     const char *id_str = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
 
 #ifdef SDL_PLATFORM_LINUX
-    const char *flatpak_id = SDL_getenv("FLATPAK_ID");
-    if (flatpak_id) {
+    if (!id_str) {
+        const char *flatpak_id = SDL_getenv("FLATPAK_ID");
         id_str = flatpak_id;
     }
 #endif
