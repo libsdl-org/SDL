@@ -28,6 +28,7 @@
 #ifdef SDL_USE_LIBDBUS
 
 #include "../../video/SDL_surface_c.h"
+#include "../../core/unix/SDL_appid.h"
 #include "../SDL_tray_utils.h"
 #include "SDL_unixtray.h"
 #include <unistd.h>
@@ -417,7 +418,6 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     SDL_Surface *icon;
     const char *tooltip;
     const char *object_path;
-    const char *flatpak_id;
     char *register_name;
     DBusObjectPathVTable vtable;
     DBusError err;
@@ -471,9 +471,8 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
 
     /* Request name */
     driver->count++;
-    flatpak_id = SDL_getenv("FLATPAK_ID");
-    if (flatpak_id) {
-        SDL_asprintf(&tray_dbus->service_name, "%s.tray%d", flatpak_id, driver->count);
+    if (SDL_GetSandbox() == SDL_SANDBOX_FLATPAK) {
+        SDL_asprintf(&tray_dbus->service_name, "%s.tray%d", SDL_GetAppID(), driver->count);
     } else {
         SDL_asprintf(&tray_dbus->service_name, "org.kde.StatusNotifierItem-%d-%d", getpid(), driver->count);
     }
