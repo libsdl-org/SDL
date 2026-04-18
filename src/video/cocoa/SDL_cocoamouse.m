@@ -33,6 +33,8 @@
 #define DEBUG_COCOAMOUSE
 #endif
 
+//#define USE_GCMOUSE_SCROLL
+
 #ifdef DEBUG_COCOAMOUSE
 #define DLog(fmt, ...) printf("%s: " fmt "\n", SDL_FUNCTION, ##__VA_ARGS__)
 #else
@@ -348,6 +350,14 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
             }
         };
 
+    #ifdef USE_GCMOUSE_SCROLL
+    /*
+    18/04/2026
+    There seems to be a bug in the CGMouse API, at least when using some mouse types.
+    An event is fired only for the first scroll in one direction. Repeated 1-step
+    scrolls in the same direction do not raise an event.
+    Observed on macOS 26.3.1 with 2 different USB mice.
+    */
     mouse.mouseInput.scroll.valueChangedHandler =
         ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
             DLog("GCMouse scroll: %f, %f", xValue, yValue);
@@ -364,7 +374,8 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
                                cocoa_mouse_scroll_direction);
         };
     Cocoa_UpdateGCMouseScrollDirection();
-
+    #endif
+    
     // Use high-priority queue for low-latency input
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.mouse",
                                                    DISPATCH_QUEUE_SERIAL);
@@ -851,10 +862,12 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
+    #ifdef USE_GCMOUSE_SCROLL
     // GCMouse handles scroll events directly, skip NSEvent path to avoid duplicates
     if (Cocoa_HasGCMouse()) {
         return;
     }
+    #endif
 
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
