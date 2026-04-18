@@ -264,6 +264,9 @@ static id cocoa_mouse_disconnect_observer = nil;
 // Atomic for thread-safe access during high-frequency mouse input
 static SDL_AtomicInt cocoa_gcmouse_relative_mode;
 static bool cocoa_has_gcmouse = false;
+
+
+#ifdef USE_GCMOUSE_SCROLL
 static SDL_MouseWheelDirection cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
 
 static void Cocoa_UpdateGCMouseScrollDirection(void)
@@ -283,6 +286,7 @@ static void Cocoa_UpdateGCMouseScrollDirection(void)
         cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
     }
 }
+#endif
 
 static bool Cocoa_SetGCMouseRelativeMode(bool enabled)
 {
