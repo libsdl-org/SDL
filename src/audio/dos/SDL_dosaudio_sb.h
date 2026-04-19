@@ -34,6 +34,14 @@ struct SDL_PrivateAudioData
     bool is_16bit;
     _go32_dpmi_seginfo dma_seginfo;
     DOS_InterruptHook interrupt_hook;
+
+    // IRQ-driven ring buffer
+    Uint8 *ring_buffer;      // pre-allocated, memory-locked ring buffer
+    volatile int ring_read;  // read position (advanced by IRQ handler only)
+    volatile int ring_write; // write position (advanced by audio thread only)
+    int ring_size;           // total ring buffer size (power-of-2, multiple of chunk_size)
+    int chunk_size;          // == device->buffer_size (one DMA half-buffer worth)
+    Uint8 *staging_buffer;   // audio thread writes here, then commits to ring
 };
 
 #endif // SDL_dosaudio_sb_h_

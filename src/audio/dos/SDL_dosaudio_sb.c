@@ -72,39 +72,114 @@ static Uint8 ReadSoundBlasterDSP(void)
     return (Uint8)inportb(query_port);
 }
 
-static volatile bool soundblaster_irq_pending = false;
+// The ISR copies audio from a pre-allocated ring buffer directly into the
+// DMA half-buffer. The SDL audio thread fills the ring buffer cooperatively
+// (using the full SDL pipeline with all its allocations and mutexes), and
+// the ISR just does a memcpy (no SDL calls, no DPMI, no allocator).
+
+// Number of DMA half-buffers that fit in the ring. Must be a power of two.
+// 4 chunks is ~45 ms at 44100 Hz, enough headroom for 22 fps frame times.
+#define RING_BUFFER_CHUNKS 4
+
+// All of the following statics are memory-locked, making them safe to access
+// from the ISR without risking a page fault or DPMI re-entrance.
 
 // ISR-cached copies of device state (avoids chasing heap pointers in IRQ context).
 static volatile int isr_irq_ack_port = 0;
 
-static void SoundBlasterIRQHandler(void) // this is wrapped in a thing that handles IRET, etc.
+// ISR-visible ring buffer state (all memory-locked).
+static volatile int isr_ring_read = 0;
+static volatile int isr_ring_write = 0;
+static int isr_ring_size = 0;         // ring_size (power-of-2 bytes)
+static int isr_ring_mask = 0;         // ring_size - 1
+static int isr_chunk_size = 0;        // one DMA half-buffer, in bytes
+static Uint8 *isr_ring_buffer = NULL; // the ring itself (allocated and locked)
+static Uint8 *isr_dma_buffer = NULL;  // pointer to the DMA double-buffer
+static int isr_dma_halfdma = 0;       // half the DMA buffer size, in bytes
+static int isr_dma_channel = 0;
+static bool isr_is_16bit = false;
+static Uint8 isr_silence_value = 0;
+
+// Copy `len` bytes from the ring buffer at position `pos` into `dst`,
+// handling the power-of-2 wrap. All pointers are memory-locked.
+static void RingCopyOut(Uint8 *dst, int pos, int len)
 {
-    // Set flag and acknowledge hardware.  The actual mixing happens in
-    // SDL's audio thread via DOSSOUNDBLASTER_WaitDevice / DOS_Yield.
-    soundblaster_irq_pending = true;
-
-    inportb(isr_irq_ack_port); // acknowledge the interrupt
-    DOS_EndOfInterrupt(soundblaster_irq);
+    const int mask = isr_ring_mask;
+    const int start = pos & mask;
+    const int first = (start + len <= isr_ring_size) ? len : (isr_ring_size - start);
+    SDL_memcpy(dst, isr_ring_buffer + start, first);
+    if (first < len) {
+        SDL_memcpy(dst + first, isr_ring_buffer, len - first);
+    }
 }
-static void SoundBlasterIRQHandler_End(void) {} // end-of-ISR label for memory locking
+static void RingCopyOut_End(void) {}
 
-// Block until the SB16 ISR signals that the DMA buffer needs refilling.
-// Called from SDL's audio thread (PlaybackAudioThread) between iterations.
+// Determine which DMA half-buffer the hardware is NOT currently playing
+// (i.e. the one we should fill). Uses ISR-cached statics so we don't
+// chase any heap pointers.
+static Uint8 *ISR_GetDMAHalf(void)
+{
+    int count;
+    if (isr_is_16bit) {
+        outportb(0xD8, 0x00);
+        count = (int)inportb(0xC0 + (isr_dma_channel - 4) * 4 + 2);
+        count += (int)inportb(0xC0 + (isr_dma_channel - 4) * 4 + 2) << 8;
+        return isr_dma_buffer + (count < (isr_dma_halfdma / 2) ? 0 : isr_dma_halfdma);
+    } else {
+        outportb(0x0C, 0x00);
+        count = (int)inportb(isr_dma_channel * 2 + 1);
+        count += (int)inportb(isr_dma_channel * 2 + 1) << 8;
+        return isr_dma_buffer + (count < isr_dma_halfdma ? 0 : isr_dma_halfdma);
+    }
+}
+static void ISR_GetDMAHalf_End(void) {}
+
+// The IRQ handler. Copies one chunk from the ring buffer into the DMA
+// half-buffer that the hardware isn't currently playing. If the ring is
+// empty it fills with silence (no stutter, just a brief gap).
+//
+// This function touches ONLY memory-locked data and does ONLY port I/O and
+// memcpy. No DPMI, no malloc, no mutex, no FPU.
+static void SoundBlasterIRQHandler(void)
+{
+    // Acknowledge hardware first.
+    inportb(isr_irq_ack_port);
+    DOS_EndOfInterrupt(soundblaster_irq);
+
+    Uint8 *dma_dst = ISR_GetDMAHalf();
+
+    // How many bytes are available in the ring?
+    const int avail = isr_ring_write - isr_ring_read; // both are monotonic
+
+    if (avail >= isr_chunk_size) {
+        RingCopyOut(dma_dst, isr_ring_read, isr_chunk_size);
+        isr_ring_read += isr_chunk_size;
+    } else {
+        // Ring underrun: fill with silence so we don't replay stale audio.
+        SDL_memset(dma_dst, isr_silence_value, isr_chunk_size);
+    }
+}
+static void SoundBlasterIRQHandler_End(void) {}
+
+// Wait until the ring buffer has room for one more chunk.
+// The audio thread keeps yielding so the game's main thread can run while
+// we wait. Because the ISR is steadily draining the ring, this only blocks
+// when the ring is completely full, which is a good problem to have.
 static bool DOSSOUNDBLASTER_WaitDevice(SDL_AudioDevice *device)
 {
-    // Yield in a loop until the hardware interrupt sets the pending flag.
-    // Each DOS_Yield() gives the main thread (and any other cooperative
-    // threads) a chance to run, so the game keeps processing input and
-    // rendering while we wait for the next DMA cycle (~23 ms at 44100 Hz).
-    while (!soundblaster_irq_pending) {
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    const int size = hidden->ring_size;
+
+    for (;;) {
+        // Available space = ring_size - (write - read).
+        // ring_write is ours (audio thread only), ring_read is advanced by
+        // the ISR. Read the ISR's copy so we see the latest drain position.
+        const int used = hidden->ring_write - isr_ring_read;
+        if ((size - used) >= hidden->chunk_size) {
+            return true; // room for at least one chunk
+        }
         DOS_Yield();
     }
-
-    DOS_DisableInterrupts();
-    soundblaster_irq_pending = false;
-    DOS_EnableInterrupts();
-
-    return true;
 }
 
 static bool DOSSOUNDBLASTER_OpenDevice(SDL_AudioDevice *device)
@@ -211,15 +286,68 @@ static bool DOSSOUNDBLASTER_OpenDevice(SDL_AudioDevice *device)
         outportb(0x0A, hidden->dma_channel);                                     // unmask the DMA channel (just the channel number, no bit 2)
     }
 
-    soundblaster_irq_pending = false;
-
     // Cache the IRQ ack port so the ISR doesn't chase pointers.
     isr_irq_ack_port = is_sb16 ? (soundblaster_base_port + 0x0F) : (soundblaster_base_port + 0x0E);
 
-    // Lock ISR code and data to prevent page faults during interrupts.
-    // The ISR is minimal: just sets a flag and acknowledges the hardware.
+    // Set up the IRQ-driven ring buffer.
+    hidden->chunk_size = device->buffer_size; // one DMA half-buffer
+
+    // Ring size must be a power of two and hold RING_BUFFER_CHUNKS chunks.
+    hidden->ring_size = hidden->chunk_size * RING_BUFFER_CHUNKS;
+    // Ensure power-of-two (chunk_size itself comes from SDL and may not be).
+    {
+        int rs = hidden->ring_size;
+        rs--;
+        rs |= rs >> 1;
+        rs |= rs >> 2;
+        rs |= rs >> 4;
+        rs |= rs >> 8;
+        rs |= rs >> 16;
+        rs++;
+        hidden->ring_size = rs;
+    }
+
+    hidden->ring_buffer = (Uint8 *)SDL_calloc(1, hidden->ring_size);
+    if (!hidden->ring_buffer) {
+        return SDL_SetError("Couldn't allocate ring buffer for IRQ-driven audio");
+    }
+    hidden->staging_buffer = (Uint8 *)SDL_calloc(1, hidden->chunk_size);
+    if (!hidden->staging_buffer) {
+        return SDL_SetError("Couldn't allocate staging buffer for IRQ-driven audio");
+    }
+
+    hidden->ring_read = 0;
+    hidden->ring_write = 0;
+
+    // Populate ISR-visible statics (all will be memory-locked below).
+    isr_ring_buffer = hidden->ring_buffer;
+    isr_ring_read = 0;
+    isr_ring_write = 0;
+    isr_ring_size = hidden->ring_size;
+    isr_ring_mask = hidden->ring_size - 1;
+    isr_chunk_size = hidden->chunk_size;
+    isr_dma_buffer = hidden->dma_buffer;
+    isr_dma_halfdma = hidden->dma_buflen / 2;
+    isr_dma_channel = hidden->dma_channel;
+    isr_is_16bit = is_sb16;
+    isr_silence_value = soundblaster_silence_value;
+
+    // Lock all ISR code and data to prevent page faults during interrupts.
     DOS_LockCode(SoundBlasterIRQHandler, SoundBlasterIRQHandler_End);
-    DOS_LockVariable(soundblaster_irq_pending);
+    DOS_LockCode(RingCopyOut, RingCopyOut_End);
+    DOS_LockCode(ISR_GetDMAHalf, ISR_GetDMAHalf_End);
+    DOS_LockData(*hidden->ring_buffer, hidden->ring_size);
+    DOS_LockVariable(isr_ring_read);
+    DOS_LockVariable(isr_ring_write);
+    DOS_LockVariable(isr_ring_size);
+    DOS_LockVariable(isr_ring_mask);
+    DOS_LockVariable(isr_chunk_size);
+    DOS_LockVariable(isr_ring_buffer);
+    DOS_LockVariable(isr_dma_buffer);
+    DOS_LockVariable(isr_dma_halfdma);
+    DOS_LockVariable(isr_dma_channel);
+    DOS_LockVariable(isr_is_16bit);
+    DOS_LockVariable(isr_silence_value);
     DOS_LockVariable(isr_irq_ack_port);
     DOS_LockVariable(soundblaster_irq);
 
@@ -288,28 +416,38 @@ static bool DOSSOUNDBLASTER_OpenDevice(SDL_AudioDevice *device)
     return true;
 }
 
+// Return the staging buffer. The SDL audio pipeline writes the mixed audio
+// here; PlayDevice then copies it into the ring buffer.
 static Uint8 *DOSSOUNDBLASTER_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    SDL_assert(*buffer_size == (hidden->dma_buflen / 2));
-    const int halfdma = *buffer_size;
+    (void)buffer_size; // unchanged, always one chunk
+    return hidden->staging_buffer;
+}
 
-    int count;
-    if (hidden->is_16bit) {
-        // High DMA (16-bit, channels 5-7): ports in 0xC0+ range, counts in 16-bit words
-        outportb(0xD8, 0x00); // clear byte flip-flop for high DMA
-        count = (int)inportb(0xC0 + (hidden->dma_channel - 4) * 4 + 2);
-        count += (int)inportb(0xC0 + (hidden->dma_channel - 4) * 4 + 2) << 8;
-        // count is in words; halfdma is in bytes, so compare against halfdma/2
-        return hidden->dma_buffer + (count < (halfdma / 2) ? 0 : halfdma);
-    } else {
-        // Low DMA (8-bit, channels 0-3): ports in 0x00+ range, counts in bytes
-        outportb(0x0C, 0x00); // clear byte flip-flop for low DMA
-        count = (int)inportb(hidden->dma_channel * 2 + 1);
-        count += (int)inportb(hidden->dma_channel * 2 + 1) << 8;
-        // count is in bytes; halfdma is in bytes, so compare directly
-        return hidden->dma_buffer + (count < halfdma ? 0 : halfdma);
+// Commit the staging buffer into the ring buffer.
+// Called by SDL's audio thread after it has written a full chunk.
+static bool DOSSOUNDBLASTER_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+{
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    const int mask = hidden->ring_size - 1;
+    const int pos = hidden->ring_write & mask;
+    const int first = (pos + buffer_size <= hidden->ring_size) ? buffer_size : (hidden->ring_size - pos);
+
+    SDL_memcpy(hidden->ring_buffer + pos, buffer, first);
+    if (first < buffer_size) {
+        SDL_memcpy(hidden->ring_buffer, buffer + first, buffer_size - first);
     }
+
+    // Advance the write cursor. Interrupts are disabled around the store so
+    // the ISR never sees a torn write (not strictly necessary on x86 for an
+    // aligned int, but let's be safe).
+    DOS_DisableInterrupts();
+    hidden->ring_write += buffer_size;
+    isr_ring_write = hidden->ring_write;
+    DOS_EnableInterrupts();
+
+    return true;
 }
 
 static void DOSSOUNDBLASTER_CloseDevice(SDL_AudioDevice *device)
@@ -346,7 +484,23 @@ static void DOSSOUNDBLASTER_CloseDevice(SDL_AudioDevice *device)
             DOS_FreeConventionalMemory(&hidden->dma_seginfo);
         }
 
-        soundblaster_irq_pending = false;
+        // Free ring buffer resources.
+        if (hidden->ring_buffer) {
+            SDL_free(hidden->ring_buffer);
+        }
+        if (hidden->staging_buffer) {
+            SDL_free(hidden->staging_buffer);
+        }
+
+        // Clear ISR-visible statics.
+        isr_ring_buffer = NULL;
+        isr_ring_read = 0;
+        isr_ring_write = 0;
+        isr_ring_size = 0;
+        isr_ring_mask = 0;
+        isr_chunk_size = 0;
+        isr_dma_buffer = NULL;
+        isr_dma_halfdma = 0;
         isr_irq_ack_port = 0;
 
         SDL_free(hidden);
@@ -462,6 +616,7 @@ static bool DOSSOUNDBLASTER_Init(SDL_AudioDriverImpl *impl)
     impl->OpenDevice = DOSSOUNDBLASTER_OpenDevice;
     impl->WaitDevice = DOSSOUNDBLASTER_WaitDevice;
     impl->GetDeviceBuf = DOSSOUNDBLASTER_GetDeviceBuf;
+    impl->PlayDevice = DOSSOUNDBLASTER_PlayDevice;
     impl->CloseDevice = DOSSOUNDBLASTER_CloseDevice;
 
     impl->OnlyHasDefaultPlaybackDevice = true;
@@ -473,4 +628,4 @@ AudioBootStrap DOSSOUNDBLASTER_bootstrap = {
     "soundblaster", "Sound Blaster", DOSSOUNDBLASTER_Init, false, false
 };
 
-#endif // SDL_AUDIO_DRIVER_OSS
+#endif // SDL_AUDIO_DRIVER_DOS_SOUNDBLASTER

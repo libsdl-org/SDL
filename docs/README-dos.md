@@ -33,7 +33,7 @@ SDL on DOS requires the fat DS trick. `SDL_RunApp()` enables it automatically vi
 
 ### Threading
 
-DOS has no OS-level threads. SDL on DOS implements cooperative threading via a mini-scheduler that uses `setjmp`/`longjmp` for context switching. Threads are never preempted mid-instruction. Context switches occur only at explicit yield points such as `SDL_Delay` and the event pump, so make sure your main loop calls `SDL_PumpEvents` or `SDL_Delay` regularly. `SDL_Delay(0)` yields to other threads without sleeping and is safe to call in tight loops. In some cases a longer delay (e.g. `SDL_Delay(16)`) may be needed to give background threads enough CPU time.
+DOS has no OS-level threads. SDL on DOS implements cooperative threading via a mini-scheduler that uses `setjmp`/`longjmp` for context switching. Threads are never preempted mid-instruction. Context switches occur only at explicit yield points such as `SDL_Delay` and the event pump, so make sure your main loop calls `SDL_PumpEvents` or `SDL_Delay` regularly. `SDL_Delay(0)` yields to other threads without sleeping and is safe to call in tight loops. In some cases, like a load screen, a longer delay (e.g. `SDL_Delay(16)`) may be needed to give background threads enough CPU time.
 
 ### Video
 
@@ -47,7 +47,9 @@ All video modes are effectively fullscreen. When creating a window, the driver s
 
 ### Audio
 
-Sound Blaster support is available for SB16 (16-bit stereo), SB Pro (8-bit stereo), and SB 2.0/1.x (8-bit mono). Configured automatically from the `BLASTER` environment variable. Uses DMA double-buffering with ISR-driven notifications.
+Sound Blaster support is available for SB16 (16-bit stereo), SB Pro (8-bit stereo), and SB 2.0/1.x (8-bit mono). Configured automatically from the `BLASTER` environment variable.
+
+A ring buffer sits between the SDL audio pipeline and the DMA hardware. The audio thread fills the ring buffer cooperatively, and the Sound Blaster IRQ handler copies data from the ring buffer to the DMA buffer directly. This gives roughly 45 ms of cushion before audio would stutter. If your game runs at 22 fps or above, audio will be glitch-free with no extra effort. Below 20 fps, adding a `SDL_Delay(0)` in the middle of your game loop should be enough to keep the ring buffer fed.
 
 Audio recording is not implemented.
 
