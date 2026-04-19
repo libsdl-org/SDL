@@ -35,11 +35,17 @@
 #include <atomic.h>
 #endif
 
-/* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
-#if defined(__GNUC__) && (__GNUC__ >= 5)
+/* The __atomic intrinsics showed up in different times for different compilers. */
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || (defined(__clang__) && defined(HAVE_GCC_ATOMICS))
 #define HAVE_ATOMIC_LOAD_N 1
-#elif _SDL_HAS_BUILTIN(__atomic_load_n) || (defined(__clang__) && defined(HAVE_GCC_ATOMICS))
+#define HAVE_ATOMIC_EXCHANGE_N 1
+#else
+#if _SDL_HAS_BUILTIN(__atomic_load_n)
 #define HAVE_ATOMIC_LOAD_N 1
+#endif
+#if _SDL_HAS_BUILTIN(__atomic_exchange_n)
+#define HAVE_ATOMIC_EXCHANGE_N 1
+#endif
 #endif
 
 /* *INDENT-OFF* */ /* clang-format off */
@@ -182,7 +188,15 @@ int SDL_AtomicSet(SDL_atomic_t *a, int v)
     return _InterlockedExchange((long *)&a->value, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
     return _SDL_xchg_watcom(&a->value, v);
+#elif defined(HAVE_ATOMIC_EXCHANGE_N)
+    return __atomic_exchange_n(&a->value, v, __ATOMIC_SEQ_CST);
 #elif defined(HAVE_GCC_ATOMICS)
+    /* __sync_lock_test_and_set() is designed for locking rather than a
+       generic atomic exchange, so it only provides an acquire barrier
+       and may not store the exact value on all architectures. We prefer
+       __atomic_exchange_n() instead on all modern compilers.
+    */
+    __sync_synchronize();
     return __sync_lock_test_and_set(&a->value, v);
 #elif defined(__SOLARIS__)
     return (int)atomic_swap_uint((volatile uint_t *)&a->value, v);
@@ -201,7 +215,15 @@ void *SDL_AtomicSetPtr(void **a, void *v)
     return _InterlockedExchangePointer(a, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
     return (void *)_SDL_xchg_watcom((int *)a, (long)v);
+#elif defined(HAVE_ATOMIC_EXCHANGE_N)
+    return __atomic_exchange_n(a, v, __ATOMIC_SEQ_CST);
 #elif defined(HAVE_GCC_ATOMICS)
+    /* __sync_lock_test_and_set() is designed for locking rather than a
+       generic atomic exchange, so it only provides an acquire barrier
+       and may not store the exact value on all architectures. We prefer
+       __atomic_exchange_n() instead on all modern compilers.
+    */
+    __sync_synchronize();
     return __sync_lock_test_and_set(a, v);
 #elif defined(__SOLARIS__)
     return atomic_swap_ptr(a, v);
