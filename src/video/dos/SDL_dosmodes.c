@@ -26,6 +26,7 @@
 // SDL internals
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_sysvideo.h"
+#include "SDL_dosframebuffer_c.h"
 
 // DOS declarations
 #include "SDL_dosmodes.h"
@@ -48,13 +49,6 @@
 // Minimum required mode attributes for usable graphics modes
 #define VBE_MODEATTR_REQUIRED (VBE_MODEATTR_SUPPORTED | VBE_MODEATTR_COLOR | VBE_MODEATTR_GRAPHICS)
 
-// VBE window attribute bits (WinAAttributes / WinBAttributes field)
-#define VBE_WINATTR_SUPPORTED 0x01 // bit 0: window is supported
-#define VBE_WINATTR_WRITABLE  0x04 // bit 2: window is writable
-
-// Combination: a usable banked window must be both supported and writable
-#define VBE_WINATTR_USABLE (VBE_WINATTR_SUPPORTED | VBE_WINATTR_WRITABLE)
-
 // VBE memory model types (MemoryModel field)
 #define VBE_MEMMODEL_PACKED_PIXEL 4 // packed pixel (includes 8-bit indexed)
 #define VBE_MEMMODEL_DIRECT_COLOR 6 // direct color (RGB with masks)
@@ -64,6 +58,12 @@
 
 // VBE mode list sentinel
 #define VBE_MODELIST_END 0xFFFF
+
+// VGA mode 13h (320x200x256) is universally supported, but most VESA
+// BIOSes do not include it in their VESA mode list. This sentinel
+// value is used to identify the legacy fallback.
+#define VGA_MODE_13H_SENTINEL 0xFFEE
+#define VGA_MODE_13H_SEGMENT  0xA000
 
 #pragma pack(push, 1)
 // this is the struct from the hardware; we save only a few parts from this, later, in SDL_VESAInfo.
@@ -125,7 +125,9 @@ typedef struct SDL_VESAInfo
 {
     Uint16 version;              // 0x200 == 2.0, etc.
     Uint32 total_memory;         // in bytes (SDL_VESAHardwareInfo::TotalMemory does it in 64k pages).
-    Uint32 video_addr_segoffset; // real mode segment:offset
+    Uint32 video_addr_segoffset; // real mode segment:offset (only valid while VBE info block is allocated!)
+    Uint16 *mode_list;           // copied out of conventional memory before freeing
+    int num_modes;
     Uint16 oem_software_revision;
     char *oem_string;
     char *oem_vendor;
@@ -138,6 +140,7 @@ static SDL_VESAInfo *vesa_info = NULL;
 void DOSVESA_FreeVESAInfo(void)
 {
     if (vesa_info) {
+        SDL_free(vesa_info->mode_list);
         SDL_free(vesa_info->oem_string);
         SDL_free(vesa_info->oem_vendor);
         SDL_free(vesa_info->oem_product);
@@ -184,6 +187,30 @@ static const SDL_VESAInfo *GetVESAInfo(void)
             vesa_info->oem_vendor = DOS_GetFarPtrCString(hwinfo->OEMVendorNamePtr);
             vesa_info->oem_product = DOS_GetFarPtrCString(hwinfo->OEMProductNamePtr);
             vesa_info->oem_revision = DOS_GetFarPtrCString(hwinfo->OEMProductRevPtr);
+
+            // Copy the mode list out of conventional memory BEFORE freeing
+            // the VBE info block. Some VESA BIOSes store the mode list
+            // inside the 512-byte info block itself. If we free the block
+            // first, the mode list pointer becomes dangling and we read
+            // garbage, silently losing modes.
+            {
+                Uint32 segoffset = vesa_info->video_addr_segoffset;
+                int count = 0;
+                while (DOS_PeekUint16(segoffset + count * sizeof(Uint16)) != VBE_MODELIST_END) {
+                    count++;
+                    if (count > 64)
+                        break; // sanity limit
+                }
+                vesa_info->num_modes = count;
+                vesa_info->mode_list = (Uint16 *)SDL_malloc(count * sizeof(Uint16));
+                if (vesa_info->mode_list) {
+                    for (int i = 0; i < count; i++) {
+                        vesa_info->mode_list[i] = DOS_PeekUint16(segoffset + i * sizeof(Uint16));
+                    }
+                } else {
+                    vesa_info->num_modes = 0;
+                }
+            }
         }
     }
 
@@ -267,28 +294,22 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
     const SDL_VESAInfo *vinfo = GetVESAInfo();
     SDL_assert(vinfo != NULL); // we should have already cached this.
 
-    /* read the list of available modes */
-    for (Uint32 segoffset = vinfo->video_addr_segoffset;; segoffset += sizeof(Uint16)) {
-        const Uint16 modeid = DOS_PeekUint16(segoffset);
-        if (modeid == VBE_MODELIST_END) {
-            break; // end of mode list.
-        }
+    // Enumerate VESA modes. 320x200x8 is explicitly skipped here so that
+    // VGA mode 13h (added below) is always used for that resolution. It
+    // has no page-flip overhead, no LFB setup, and universal compatibility.
+    for (int mi = 0; mi < vinfo->num_modes; mi++) {
+        const Uint16 modeid = vinfo->mode_list[mi];
 
         SDL_DisplayModeData info;
         if (!GetVESAModeInfo(modeid, &info)) {
             continue;
         }
 
-#if 0
-        SDL_Log("VESA: mode=%d %dx%dx%d attr=%X pitch=%d planes=%d model=%d pages=%d r=%d@%d g=%d@%d b=%d@%d addr=%X",
-                (int) info.mode_id, (int) info.w, (int) info.h, (int) info.bpp,
-                (unsigned int) info.attributes, (int) info.pitch,
-                (int) info.num_planes, (int) info.memory_model, (int) info.num_image_pages,
-                (int) info.red_mask_size, (int) info.red_mask_pos,
-                (int) info.green_mask_size, (int) info.green_mask_pos,
-                (int) info.blue_mask_size, (int) info.blue_mask_pos,
-                (unsigned int) info.physical_base_addr);
-#endif
+        // Skip 320x200x8 from VESA. We always want VGA mode 13h for this
+        // resolution (no page flip, no LFB overhead, universal compatibility).
+        if (info.bpp == 8 && info.w == 320 && info.h == 200) {
+            continue;
+        }
 
         if ((info.attributes & VBE_MODEATTR_REQUIRED) != VBE_MODEATTR_REQUIRED) {
             continue;
@@ -344,18 +365,6 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
             continue; // don't know what to do with this one.
         }
 
-        // okay, add this mode.
-
-#if 0
-        SDL_Log("ADD VESA MODE: mode=%d %dx%dx%d fmt=%s attr=%X pitch=%d planes=%d pages=%d addr=%X lfb=%d winA=%X",
-                (int) info.mode_id, (int) info.w, (int) info.h, (int) info.bpp,
-                SDL_GetPixelFormatName(format),
-                (unsigned int) info.attributes, (int) info.pitch,
-                (int) info.num_planes, (int) info.num_image_pages,
-                (unsigned int) info.physical_base_addr,
-                (int) info.has_lfb, (unsigned int) info.win_a_attributes);
-#endif
-
         SDL_DisplayModeData *internal = (SDL_DisplayModeData *)SDL_malloc(sizeof(*internal));
         if (!internal) {
             continue; // oof.
@@ -382,6 +391,43 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
         }
     }
 
+    // Always add VGA mode 13h for 320x200x8. We skipped any VESA 320x200x8
+    // modes above so this is the only entry at that resolution.
+    {
+        SDL_DisplayModeData *internal = (SDL_DisplayModeData *)SDL_malloc(sizeof(*internal));
+        if (internal) {
+            SDL_zerop(internal);
+            internal->mode_id = VGA_MODE_13H_SENTINEL;
+            internal->attributes = VBE_MODEATTR_REQUIRED;
+            internal->pitch = 320;
+            internal->w = 320;
+            internal->h = 200;
+            internal->num_planes = 1;
+            internal->bpp = 8;
+            internal->memory_model = VBE_MEMMODEL_PACKED_PIXEL;
+            internal->num_image_pages = 0; // no page flipping in mode 13h
+            internal->physical_base_addr = 0;
+            internal->has_lfb = false;
+            internal->win_granularity = 64;
+            internal->win_size = 64;
+            internal->win_a_segment = VGA_MODE_13H_SEGMENT;
+            internal->win_func_ptr = 0;
+            internal->win_a_attributes = VBE_WINATTR_USABLE;
+
+            SDL_DisplayMode mode;
+            SDL_zero(mode);
+            mode.format = SDL_PIXELFORMAT_INDEX8;
+            mode.w = 320;
+            mode.h = 200;
+            mode.pixel_density = 1.0f;
+            mode.internal = internal;
+
+            if (!SDL_AddFullscreenDisplayMode(sdl_display, &mode)) {
+                SDL_free(internal);
+            }
+        }
+    }
+
     return true;
 }
 
@@ -394,14 +440,58 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         return true;
     }
 
+    DOSVESA_InvalidateCachedFramebuffer();
+
     if (data->mapping.size) {
         __dpmi_free_physical_address_mapping(&data->mapping); // dump existing video mapping.
         SDL_zero(data->mapping);
     }
 
+    __dpmi_regs regs;
+
+    if (modedata->mode_id == VGA_MODE_13H_SENTINEL) {
+        // Set VGA mode 13h (320x200x256) via legacy BIOS call.
+        SDL_zero(regs);
+        regs.x.ax = 0x0013;
+        __dpmi_int(0x10, &regs);
+        // Mode 13h always succeeds on VGA hardware; no status to check.
+
+        data->banked_mode = true; // uses A000:0000 segment, no LFB
+
+        SDL_copyp(&data->current_mode, mode);
+
+        data->page_flip_available = false;
+        data->current_page = 0;
+        data->page_offset[0] = 0;
+        data->page_offset[1] = 0;
+
+        // Clear the framebuffer
+        {
+            Uint8 zero_buf[320];
+            SDL_memset(zero_buf, 0, sizeof(zero_buf));
+            Uint32 vga_base = (Uint32)VGA_MODE_13H_SEGMENT << 4;
+            for (int row = 0; row < 200; row++) {
+                dosmemput(zero_buf, 320, vga_base + row * 320);
+            }
+        }
+
+        if (SDL_GetMouse()->internal != NULL) {
+            regs.x.ax = 0x7;
+            regs.x.cx = 0;
+            regs.x.dx = (Uint16)mode->w;
+            __dpmi_int(0x33, &regs);
+
+            regs.x.ax = 0x8;
+            regs.x.cx = 0;
+            regs.x.dx = (Uint16)mode->h;
+            __dpmi_int(0x33, &regs);
+        }
+
+        return true;
+    }
+
     const bool use_lfb = modedata->has_lfb;
 
-    __dpmi_regs regs;
     regs.x.ax = 0x4F02;
     regs.x.bx = modedata->mode_id | (use_lfb ? VBE_SETMODE_LFB : 0);
     __dpmi_int(0x10, &regs);
@@ -424,7 +514,7 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         }
 
         // make sure framebuffer is blanked out.
-        SDL_memset(DOS_PhysicalToLinear(data->mapping.address), '\0', modedata->h * modedata->pitch);
+        SDL_memset(DOS_PhysicalToLinear(data->mapping.address), '\0', (Uint32)modedata->h * (Uint32)modedata->pitch);
     } else {
         // Banked mode: no physical address mapping needed.
         // Blank the visible framebuffer through the banked window.
@@ -489,16 +579,23 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         data->page_offset[0] = 0;
         data->page_offset[1] = (Uint32)modedata->pitch * (Uint32)modedata->h;
 
-        // Also blank the second page
-        SDL_memset((Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[1],
-                   '\0', (Uint32)modedata->pitch * (Uint32)modedata->h);
+        // Check that both pages fit within the mapped region.
+        Uint32 page1_end = data->page_offset[1] + (Uint32)modedata->pitch * (Uint32)modedata->h;
+        if (page1_end > data->mapping.size) {
+            data->page_flip_available = false;
+            data->page_offset[1] = 0;
+        } else {
+            // Also blank the second page
+            SDL_memset((Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[1],
+                       '\0', (Uint32)modedata->pitch * (Uint32)modedata->h);
 
-        // Start display at page 0
-        regs.x.ax = 0x4F07;
-        regs.x.bx = 0x0000; // set display start, wait for retrace
-        regs.x.cx = 0;      // first pixel in scan line
-        regs.x.dx = 0;      // first scan line
-        __dpmi_int(0x10, &regs);
+            // Start display at page 0
+            regs.x.ax = 0x4F07;
+            regs.x.bx = 0x0000; // set display start, wait for retrace
+            regs.x.cx = 0;      // first pixel in scan line
+            regs.x.dx = 0;      // first scan line
+            __dpmi_int(0x10, &regs);
+        }
     } else {
         data->page_flip_available = false;
         data->current_page = 0;

@@ -91,6 +91,11 @@ void DOS_SchedulerInit(void)
     current_thread = 0;
 
     scheduler_initialized = true;
+
+    _go32_dpmi_lock_data((void *)threads, sizeof(threads));
+    _go32_dpmi_lock_data((void *)&current_thread, sizeof(current_thread));
+    _go32_dpmi_lock_data((void *)&scheduler_initialized, sizeof(scheduler_initialized));
+    _go32_dpmi_lock_data((void *)&trampoline_thread_id, sizeof(trampoline_thread_id));
 }
 
 void DOS_SchedulerQuit(void)

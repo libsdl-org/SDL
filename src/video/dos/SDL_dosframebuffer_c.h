@@ -29,5 +29,6 @@ extern bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window 
 extern void DOSVESA_DestroyWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window);
 extern bool DOSVESA_SetWindowFramebufferVSync(SDL_VideoDevice *device, SDL_Window *window, int vsync);
 extern bool DOSVESA_GetWindowFramebufferVSync(SDL_VideoDevice *device, SDL_Window *window, int *vsync);
+extern void DOSVESA_InvalidateCachedFramebuffer(void);
 
 #endif // SDL_dosframebuffer_c_h_

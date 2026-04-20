@@ -30,4 +30,11 @@ extern bool DOSVESA_SupportsVESA(void);
 extern void DOSVESA_FreeVESAInfo(void);
 extern Uint32 DOSVESA_GetVESATotalMemory(void);
 
+// VBE window attribute bits (WinAAttributes / WinBAttributes field)
+#define VBE_WINATTR_SUPPORTED 0x01 // bit 0: window is supported
+#define VBE_WINATTR_WRITABLE  0x04 // bit 2: window is writable
+
+// Combination: a usable banked window must be both supported and writable
+#define VBE_WINATTR_USABLE (VBE_WINATTR_SUPPORTED | VBE_WINATTR_WRITABLE)
+
 #endif // SDL_dosmodes_h_

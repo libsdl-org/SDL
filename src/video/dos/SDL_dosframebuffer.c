@@ -26,6 +26,7 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_dosframebuffer_c.h"
+#include "SDL_dosmodes.h"
 #include "SDL_dosmouse.h"
 #include "SDL_dosvideo.h"
 
@@ -41,38 +42,152 @@
 #define VGA_STATUS_VBLANK 0x08 // bit 3: vertical retrace active
 
 // note that DOS_SURFACE's value is the same string that the dummy driver uses.
-#define DOS_SURFACE     "SDL.internal.window.surface"
-#define DOS_LFB_SURFACE "SDL.internal.window.lfb_surface"
+#define DOS_SURFACE "SDL.internal.window.surface"
 
-bool DOSVESA_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+//  Consolidated framebuffer state (DOS has only one window)
+typedef struct DOSFramebufferState
 {
-    SDL_VideoData *data = device->internal;
-    const SDL_DisplayMode *mode = &data->current_mode;
-    const SDL_PixelFormat surface_format = mode->format;
-    int w, h;
+    SDL_Surface *surface;     // system-RAM surface (app renders here)
+    SDL_Surface *lfb_surface; // LFB surface (pixels in VRAM), NULL for direct-FB path
+    bool direct_fb;           // true when the fast direct-FB hint path is active
+    bool use_dosmemput;       // true = dosmemput (banked), false = nearptr (LFB)
+    int vram_pitch;
+    int vram_w;
+    int vram_h;
+    int bpp; // bytes per pixel
 
-    // writing to video RAM shows up as the screen refreshes, done or not, and it might have a weird pitch, so give the app a buffer of system RAM.
-    SDL_GetWindowSizeInPixels(window, &w, &h);
-    SDL_Surface *surface = SDL_CreateSurface(w, h, surface_format);
-    if (!surface) {
-        return false;
+    // dosmemput path state (use_dosmemput)
+    Uint32 vram_phys;      // base address for dosmemput (e.g. 0xA0000)
+    bool banked_multibank; // true if fb doesn't fit in one bank window
+    Uint32 win_gran_bytes; // bank granularity in bytes
+    Uint32 win_size_bytes; // bank window size in bytes
+    Uint32 win_base;       // window base address (segment << 4)
+    Uint32 win_func_ptr;   // real-mode far pointer to bank-switch function
+
+    // nearptr path state (use_dosmemput == false)
+    Uint8 *vram_ptr; // nearptr into VRAM (LFB)
+
+    // Cached per-frame values (set at create time, avoid repeated lookups)
+    Uint8 *pixels;      // == surface->pixels (stable after create)
+    int src_pitch;      // == surface->pitch
+    Uint32 fb_size;     // total framebuffer bytes (pitch * h) for full-surface fast path
+    bool pitches_match; // src_pitch == vram_pitch (enables single-copy fast path)
+} DOSFramebufferState;
+
+static DOSFramebufferState fb_state;
+
+// Convert cursor to the current format.
+static SDL_Surface *GetConvertedCursorSurface(SDL_CursorData *curdata, SDL_Surface *dst)
+{
+    SDL_Palette *pal = SDL_GetSurfacePalette(dst);
+    Uint32 pal_version = pal ? pal->version : 0;
+
+    if (curdata->converted_surface &&
+        curdata->converted_surface->format == dst->format &&
+        curdata->converted_palette_version == pal_version) {
+        return curdata->converted_surface;
     }
 
-    SDL_Surface *lfb_surface = NULL;
+    SDL_DestroySurface(curdata->converted_surface);
+    curdata->converted_surface = NULL;
 
-    if (!data->banked_mode) {
-        // LFB path: we make a surface that uses video memory directly, so SDL can optimize the blit for us.
-        // Point LFB surface at the back page (not currently displayed) for tear-free double-buffering.
-        int back_page = data->page_flip_available ? (1 - data->current_page) : 0;
-        void *lfb_pixels = (Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[back_page];
-        lfb_surface = SDL_CreateSurfaceFrom(mode->w, mode->h, surface_format, lfb_pixels, mode->internal->pitch);
-        if (!lfb_surface) {
-            SDL_DestroySurface(surface);
-            return false;
+    SDL_Surface *src = curdata->surface;
+    SDL_assert(src->format == SDL_PIXELFORMAT_ARGB8888);
+
+    int w = src->w;
+    int h = src->h;
+    SDL_Surface *conv = SDL_CreateSurface(w, h, dst->format);
+    if (!conv) {
+        return NULL;
+    }
+
+    // Copy the destination palette.
+    if (pal) {
+        SDL_Palette *conv_pal = SDL_CreateSurfacePalette(conv);
+        if (conv_pal) {
+            SDL_SetPaletteColors(conv_pal, pal->colors, 0, pal->ncolors);
         }
     }
-    // Banked path: no LFB surface — we'll copy from the system RAM surface
-    // directly to the banked window in UpdateWindowFramebuffer.
+
+    // Find a colorkey value. For INDEX8, find a palette index that isn't
+    // used by any opaque cursor pixel. For other formats, use magenta.
+    Uint32 colorkey = 0;
+    if (dst->format == SDL_PIXELFORMAT_INDEX8 && pal) {
+        // Track which palette indices are used by opaque pixels.
+        bool used[256];
+        SDL_memset(used, 0, sizeof(used));
+
+        // First pass: blit with BLENDMODE_NONE to get raw color-matched indices.
+        SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
+        SDL_BlitSurface(src, NULL, conv, NULL);
+        SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_BLEND);
+
+        // Mark which indices are used by non-transparent source pixels.
+        for (int y = 0; y < h; y++) {
+            const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
+            const Uint8 *convrow = (const Uint8 *)conv->pixels + y * conv->pitch;
+            for (int x = 0; x < w; x++) {
+                Uint8 srcA = (Uint8)(srcrow[x] >> 24);
+                if (srcA > 0) {
+                    used[convrow[x]] = true;
+                }
+            }
+        }
+
+        // Find an unused index for the colorkey.
+        colorkey = 0;
+        for (int i = 0; i < 256; i++) {
+            if (!used[i]) {
+                colorkey = (Uint32)i;
+                break;
+            }
+        }
+
+        // Second pass: set transparent pixels to the colorkey index.
+        for (int y = 0; y < h; y++) {
+            const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
+            Uint8 *convrow = (Uint8 *)conv->pixels + y * conv->pitch;
+            for (int x = 0; x < w; x++) {
+                Uint8 srcA = (Uint8)(srcrow[x] >> 24);
+                if (srcA == 0) {
+                    convrow[x] = (Uint8)colorkey;
+                }
+            }
+        }
+    } else {
+        // Non-indexed format: blit normally, transparent pixels will be handled by colorkey.
+        colorkey = SDL_MapSurfaceRGB(conv, 255, 0, 255);
+        SDL_FillSurfaceRect(conv, NULL, colorkey);
+        SDL_BlitSurface(src, NULL, conv, NULL);
+    }
+
+    SDL_SetSurfaceColorKey(conv, true, colorkey);
+    SDL_SetSurfaceBlendMode(conv, SDL_BLENDMODE_NONE);
+
+    curdata->converted_surface = conv;
+    curdata->converted_palette_version = pal_version;
+    return conv;
+}
+
+//  Invalidation (called from SetDisplayMode before freeing DPMI mapping)
+void DOSVESA_InvalidateCachedFramebuffer(void)
+{
+    fb_state.direct_fb = false;
+    fb_state.vram_ptr = NULL;
+    fb_state.vram_phys = 0;
+    fb_state.use_dosmemput = false;
+    // Clear the LFB surface pointer so UpdateWindowFramebuffer won't try
+    // to blit into VRAM after the DPMI mapping has been freed.
+    fb_state.lfb_surface = NULL;
+}
+
+// Create a system-RAM surface (with a blank palette if INDEX8 and update the VGA DAC).
+static SDL_Surface *CreateSystemSurface(SDL_VideoData *data, int w, int h, SDL_PixelFormat surface_format)
+{
+    SDL_Surface *surface = SDL_CreateSurface(w, h, surface_format);
+    if (!surface) {
+        return NULL;
+    }
 
     // For 8-bit indexed modes, both surfaces need palettes.
     // Share the same palette object so palette updates propagate to both.
@@ -87,9 +202,6 @@ bool DOSVESA_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
                 black[i].a = SDL_ALPHA_OPAQUE;
             }
             SDL_SetPaletteColors(palette, black, 0, 256);
-            if (lfb_surface) {
-                SDL_SetSurfacePalette(lfb_surface, palette);
-            }
         }
         data->palette_version = 0; // force DAC update on first present
 
@@ -103,6 +215,48 @@ bool DOSVESA_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
         }
     }
 
+    return surface;
+}
+
+// Normal (non-direct-FB) path: system-RAM surface with optional LFB blit,
+// cursor compositing, palette sync, vsync, and page-flipping.
+static bool CreateNormalFramebuffer(SDL_VideoDevice *device, SDL_Window *window,
+                                    SDL_PixelFormat *format, void **pixels, int *pitch)
+{
+    SDL_VideoData *data = device->internal;
+    const SDL_DisplayMode *mode = &data->current_mode;
+    const SDL_DisplayModeData *mdata = mode->internal;
+    const SDL_PixelFormat surface_format = mode->format;
+    int w, h;
+
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+
+    SDL_Surface *surface = CreateSystemSurface(data, w, h, surface_format);
+    if (!surface) {
+        return false;
+    }
+
+    SDL_Surface *lfb_surface = NULL;
+
+    if (!data->banked_mode) {
+        // LFB path: Make a surface that uses video memory directly, ot let SDL do the blitting for us.
+        // Point the LFB surface at the back page for tear-free double-buffering.
+        int back_page = data->page_flip_available ? (1 - data->current_page) : 0;
+        void *lfb_pixels = (Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[back_page];
+        lfb_surface = SDL_CreateSurfaceFrom(mode->w, mode->h, surface_format, lfb_pixels, mdata->pitch);
+        if (!lfb_surface) {
+            SDL_DestroySurface(surface);
+            return false;
+        }
+        fb_state.lfb_surface = lfb_surface;
+
+        // Share the palette so updates propagate to both surfaces.
+        SDL_Palette *src_palette = SDL_GetSurfacePalette(surface);
+        if (src_palette) {
+            SDL_SetSurfacePalette(lfb_surface, src_palette);
+        }
+    }
+
     // clear the framebuffer completely, in case another window at a larger size was using this before us.
     if (lfb_surface) {
         SDL_ClearSurface(lfb_surface, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -110,15 +264,105 @@ bool DOSVESA_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
     // (For banked mode, the framebuffer was already zeroed in DOSVESA_SetDisplayMode.)
 
     // Save the info and return!
+    fb_state.surface = surface;
     SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), DOS_SURFACE, surface);
-    if (lfb_surface) {
-        SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), DOS_LFB_SURFACE, lfb_surface);
-    }
 
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
     return true;
+}
+
+bool DOSVESA_CreateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
+{
+    SDL_zero(fb_state);
+
+    SDL_VideoData *data = device->internal;
+    const SDL_DisplayMode *mode = &data->current_mode;
+    const SDL_DisplayModeData *mdata = mode->internal;
+    const SDL_PixelFormat surface_format = mode->format;
+    int w, h;
+
+    // writing to video RAM shows up as the screen refreshes, done or not, and it might have a weird pitch, so give the app a buffer of system RAM.
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+
+    // Try to set up fast path where UpdateWindowFramebuffer copies system-RAM directly to VRAM.
+    if (SDL_GetHintBoolean(SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER, false)) {
+        int vram_pitch = mdata->pitch;
+
+        // Check if we have any usable VRAM access path (banked or LFB).
+        bool have_vram = false;
+
+        if (mdata->win_a_segment && mdata->win_size > 0 &&
+            (mdata->win_a_attributes & VBE_WINATTR_USABLE) == VBE_WINATTR_USABLE) {
+            // Banked window available. Use dosmemput path (preferred).
+            have_vram = true;
+        } else if (!data->banked_mode && data->mapping.size) {
+            // LFB only, use nearptr fallback.
+            have_vram = true;
+        }
+
+        if (have_vram) {
+            SDL_Surface *surface = CreateSystemSurface(data, w, h, surface_format);
+            if (!surface) {
+                return false;
+            }
+
+            SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), DOS_SURFACE, surface);
+
+            fb_state.surface = surface;
+            fb_state.direct_fb = true;
+            fb_state.vram_pitch = vram_pitch;
+            fb_state.vram_w = mdata->w;
+            fb_state.vram_h = mdata->h;
+            fb_state.bpp = SDL_BYTESPERPIXEL(surface_format);
+            fb_state.pixels = (Uint8 *)surface->pixels;
+            fb_state.src_pitch = surface->pitch;
+            fb_state.fb_size = (Uint32)vram_pitch * mdata->h;
+            fb_state.pitches_match = (surface->pitch == vram_pitch);
+
+            // Prefer dosmemput via the banked VGA window (0xA0000). Real
+            // hardware testing shows dosmemput is significantly faster
+            // than nearptr writes to DPMI-mapped LFB, even with bank
+            // switching overhead at higher resolutions.
+            //
+            // The banked window always maps to page 0, so page flipping is
+            // not possible through this path. We accept tearing: the app
+            // opted into the direct-FB hint for maximum throughput, and
+            // games like Quake never used page flipping for their software
+            // renderers anyway.
+            if (mdata->win_a_segment && mdata->win_size > 0 &&
+                (mdata->win_a_attributes & VBE_WINATTR_USABLE) == VBE_WINATTR_USABLE) {
+                Uint32 win_bytes = (Uint32)mdata->win_size * 1024;
+                fb_state.use_dosmemput = true;
+                fb_state.vram_ptr = NULL;
+                fb_state.vram_phys = (Uint32)mdata->win_a_segment << 4;
+                fb_state.win_base = fb_state.vram_phys;
+                fb_state.win_gran_bytes = (Uint32)mdata->win_granularity * 1024;
+                fb_state.win_size_bytes = win_bytes;
+                fb_state.win_func_ptr = mdata->win_func_ptr;
+                fb_state.banked_multibank = (fb_state.fb_size > win_bytes);
+            } else if (!data->banked_mode && data->mapping.size) {
+                // Fallback: nearptr to LFB.
+                int back_page = data->page_flip_available ? (1 - data->current_page) : 0;
+                fb_state.vram_ptr = (Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[back_page];
+                fb_state.vram_phys = 0;
+                fb_state.use_dosmemput = false;
+                fb_state.banked_multibank = false;
+            } else {
+                // No usable VRAM path. Shouldn't happen, but bail out.
+                SDL_DestroySurface(surface);
+                return CreateNormalFramebuffer(device, window, format, pixels, pitch);
+            }
+            *format = surface_format;
+            *pixels = surface->pixels;
+            *pitch = surface->pitch;
+            return true;
+        }
+        // else: couldn't get a direct pointer, fall through to normal path.
+    }
+
+    return CreateNormalFramebuffer(device, window, format, pixels, pitch);
 }
 
 bool DOSVESA_SetWindowFramebufferVSync(SDL_VideoDevice *device, SDL_Window *window, int vsync)
@@ -138,6 +382,52 @@ bool DOSVESA_GetWindowFramebufferVSync(SDL_VideoDevice *device, SDL_Window *wind
         *vsync = data->framebuffer_vsync;
     }
     return true;
+}
+
+// Switch the VGA bank window if needed. Returns without doing anything
+// if the requested bank is already active.
+SDL_FORCE_INLINE void SwitchBank(int bank, int *current_bank, Uint32 win_func_ptr)
+{
+    if (bank == *current_bank) {
+        return;
+    }
+    __dpmi_regs regs;
+    SDL_zero(regs);
+    regs.x.bx = 0; // Window A
+    regs.x.dx = (Uint16)bank;
+    if (win_func_ptr) {
+        regs.x.cs = (Uint16)(win_func_ptr >> 16);
+        regs.x.ip = (Uint16)(win_func_ptr & 0xFFFF);
+        __dpmi_simulate_real_mode_procedure_retf(&regs);
+    } else {
+        regs.x.ax = 0x4F05;
+        __dpmi_int(0x10, &regs);
+    }
+    *current_bank = bank;
+}
+
+// Copy a contiguous byte range from system RAM to VRAM through the banked
+// window, switching banks as needed.
+SDL_FORCE_INLINE void BankedDosmemput(const Uint8 *src, Uint32 total_bytes, Uint32 dst_offset,
+                                      Uint32 win_gran_bytes, Uint32 win_size_bytes,
+                                      Uint32 win_base, Uint32 win_func_ptr,
+                                      int *current_bank)
+{
+    Uint32 src_off = 0;
+    while (total_bytes > 0) {
+        int bank = (int)(dst_offset / win_gran_bytes);
+        Uint32 off_in_win = dst_offset % win_gran_bytes;
+        Uint32 avail = win_size_bytes - off_in_win;
+        Uint32 n = total_bytes;
+        if (n > avail) {
+            n = avail;
+        }
+        SwitchBank(bank, current_bank, win_func_ptr);
+        dosmemput(src + src_off, n, win_base + off_in_win);
+        src_off += n;
+        dst_offset += n;
+        total_bytes -= n;
+    }
 }
 
 // Bank-switched copy of a rectangular region from a system RAM surface to the
@@ -169,88 +459,16 @@ static void BankedFramebufferCopyRect(const SDL_DisplayModeData *mdata,
     if (row_bytes == src->pitch && row_bytes == dst_pitch) {
         const Uint8 *src_data = (const Uint8 *)src->pixels + src_rect->y * src->pitch + src_rect->x * bytes_per_pixel;
         Uint32 dst_offset = (Uint32)(dst_y + src_rect->y) * dst_pitch + (Uint32)(dst_x + src_rect->x) * bytes_per_pixel;
-        int total_bytes = row_bytes * src_rect->h;
-        int src_off = 0;
-
-        while (total_bytes > 0) {
-            int bank = (int)(dst_offset / win_gran_bytes);
-            Uint32 off_in_win = dst_offset % win_gran_bytes;
-            Uint32 avail = win_size_bytes - off_in_win;
-            int n = total_bytes;
-            if ((Uint32)n > avail) {
-                n = (int)avail;
-            }
-
-            if (bank != *current_bank) {
-                __dpmi_regs regs;
-                SDL_zero(regs);
-                regs.x.bx = 0;
-                regs.x.dx = (Uint16)bank;
-                if (win_func_ptr) {
-                    // Call WinFuncPtr directly — faster than INT 10h.
-                    // CS:IP = segment:offset of the real-mode bank-switch function.
-                    regs.x.cs = (Uint16)(win_func_ptr >> 16);
-                    regs.x.ip = (Uint16)(win_func_ptr & 0xFFFF);
-                    __dpmi_simulate_real_mode_procedure_retf(&regs);
-                } else {
-                    // Fallback: use VBE INT 10h function 0x4F05.
-                    regs.x.ax = 0x4F05;
-                    __dpmi_int(0x10, &regs);
-                }
-                *current_bank = bank;
-            }
-
-            dosmemput(src_data + src_off, n, win_base + off_in_win);
-            src_off += n;
-            dst_offset += n;
-            total_bytes -= n;
-        }
+        BankedDosmemput(src_data, (Uint32)(row_bytes * src_rect->h), dst_offset,
+                        win_gran_bytes, win_size_bytes, win_base, win_func_ptr, current_bank);
         return;
     }
 
     for (int y = 0; y < src_rect->h; y++) {
-        Uint32 dst_offset = (Uint32)(dst_y + src_rect->y + y) * dst_pitch + (Uint32)(dst_x + src_rect->x) * bytes_per_pixel;
         const Uint8 *src_row = (const Uint8 *)src->pixels + (src_rect->y + y) * src->pitch + src_rect->x * bytes_per_pixel;
-        int bytes_remaining = row_bytes;
-        int src_off = 0;
-
-        while (bytes_remaining > 0) {
-            int bank = (int)(dst_offset / win_gran_bytes);
-            Uint32 off_in_win = dst_offset % win_gran_bytes;
-
-            // How many bytes can we write before hitting the end of this
-            // bank's addressable window?
-            Uint32 avail = win_size_bytes - off_in_win;
-            int n = bytes_remaining;
-            if ((Uint32)n > avail) {
-                n = (int)avail;
-            }
-
-            if (bank != *current_bank) {
-                __dpmi_regs regs;
-                SDL_zero(regs);
-                regs.x.bx = 0; // Window A
-                regs.x.dx = (Uint16)bank;
-                if (win_func_ptr) {
-                    // Call WinFuncPtr directly — faster than INT 10h.
-                    // CS:IP = segment:offset of the real-mode bank-switch function.
-                    regs.x.cs = (Uint16)(win_func_ptr >> 16);
-                    regs.x.ip = (Uint16)(win_func_ptr & 0xFFFF);
-                    __dpmi_simulate_real_mode_procedure_retf(&regs);
-                } else {
-                    // Fallback: use VBE INT 10h function 0x4F05.
-                    regs.x.ax = 0x4F05;
-                    __dpmi_int(0x10, &regs);
-                }
-                *current_bank = bank;
-            }
-
-            dosmemput(src_row + src_off, n, win_base + off_in_win);
-
-            src_off += n;
-            dst_offset += n;
-            bytes_remaining -= n;
-        }
+        Uint32 dst_offset = (Uint32)(dst_y + src_rect->y + y) * dst_pitch + (Uint32)(dst_x + src_rect->x) * bytes_per_pixel;
+        BankedDosmemput(src_row, (Uint32)row_bytes, dst_offset,
+                        win_gran_bytes, win_size_bytes, win_base, win_func_ptr, current_bank);
     }
 }
 
@@ -277,13 +495,200 @@ static void ProgramVGADAC(SDL_Palette *palette)
 bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     SDL_VideoData *vdata = device->internal;
-    SDL_WindowData *windata = window->internal;
-    SDL_Surface *src = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DOS_SURFACE, NULL);
+
+    // ===================================================================
+    //  Direct-FB fast path: copy system-RAM to VRAM, program palette,
+    //  optionally page-flip. No cursor compositing, no SDL_BlitSurface.
+    //
+    //  This path prefers banked dosmemput (through the VGA window at
+    //  0xA0000) over nearptr writes to the DPMI-mapped LFB. Real
+    //  hardware testing on multiple NVIDIA cards showed dosmemput is
+    //  significantly faster, even with bank-switching overhead at
+    //  higher resolutions. The nearptr LFB path is only used as a
+    // fallback if no usable banked window is available.
+    // ===================================================================
+    if (fb_state.direct_fb && (fb_state.vram_ptr || fb_state.vram_phys)) {
+
+        // Palette update.
+        if (window->surface) {
+            SDL_Palette *pal = window->surface->palette;
+            if (pal && pal->version != vdata->palette_version) {
+                vdata->palette_version = pal->version;
+                ProgramVGADAC(pal);
+            }
+        }
+
+        if (fb_state.use_dosmemput) {
+            // dosmemput path (banked window, possibly multi-bank)
+            const int src_pitch = fb_state.src_pitch;
+            const int dst_pitch = fb_state.vram_pitch;
+            const Uint8 *pixels = fb_state.pixels;
+
+            if (!fb_state.banked_multibank) {
+                // Single-bank: entire FB fits in one window (e.g. mode 13h).
+                // Full-surface fast path when pitches match.
+                if (fb_state.pitches_match) {
+                    dosmemput(pixels, fb_state.fb_size, fb_state.vram_phys);
+                } else {
+                    for (int i = 0; i < numrects; i++) {
+                        int rx = rects[i].x, ry = rects[i].y;
+                        int rw = rects[i].w, rh = rects[i].h;
+                        if (rx < 0) {
+                            rw += rx;
+                            rx = 0;
+                        }
+                        if (ry < 0) {
+                            rh += ry;
+                            ry = 0;
+                        }
+                        if (rx + rw > fb_state.vram_w) {
+                            rw = fb_state.vram_w - rx;
+                        }
+                        if (ry + rh > fb_state.vram_h) {
+                            rh = fb_state.vram_h - ry;
+                        }
+                        if (rw <= 0 || rh <= 0) {
+                            continue;
+                        }
+                        const int bx = rx * fb_state.bpp;
+                        const int bw = rw * fb_state.bpp;
+                        const Uint8 *sp = pixels + ry * src_pitch + bx;
+                        Uint32 dst_off = fb_state.vram_phys + ry * dst_pitch + bx;
+                        for (int row = 0; row < rh; row++) {
+                            dosmemput(sp, bw, dst_off);
+                            sp += src_pitch;
+                            dst_off += dst_pitch;
+                        }
+                    }
+                }
+            } else {
+                // Multi-bank: bank-switch as needed.
+                const Uint32 gran = fb_state.win_gran_bytes;
+                const Uint32 wsize = fb_state.win_size_bytes;
+                const Uint32 wbase = fb_state.win_base;
+                const Uint32 wfunc = fb_state.win_func_ptr;
+                int current_bank = -1;
+
+                if (fb_state.pitches_match) {
+                    // Contiguous: stream the entire framebuffer through banks.
+                    BankedDosmemput(pixels, fb_state.fb_size, 0,
+                                    gran, wsize, wbase, wfunc, &current_bank);
+                } else {
+                    // Per-rect with bank switching.
+                    for (int i = 0; i < numrects; i++) {
+                        int rx = rects[i].x, ry = rects[i].y;
+                        int rw = rects[i].w, rh = rects[i].h;
+                        if (rx < 0) {
+                            rw += rx;
+                            rx = 0;
+                        }
+                        if (ry < 0) {
+                            rh += ry;
+                            ry = 0;
+                        }
+                        if (rx + rw > fb_state.vram_w) {
+                            rw = fb_state.vram_w - rx;
+                        }
+                        if (ry + rh > fb_state.vram_h) {
+                            rh = fb_state.vram_h - ry;
+                        }
+                        if (rw <= 0 || rh <= 0) {
+                            continue;
+                        }
+                        const int bx = rx * fb_state.bpp;
+                        const int bw = rw * fb_state.bpp;
+
+                        for (int row = 0; row < rh; row++) {
+                            const Uint8 *sp = pixels + (ry + row) * src_pitch + bx;
+                            Uint32 dst_offset = (Uint32)(ry + row) * dst_pitch + bx;
+                            BankedDosmemput(sp, (Uint32)bw, dst_offset,
+                                            gran, wsize, wbase, wfunc, &current_bank);
+                        }
+                    }
+                }
+            }
+        } else {
+            // nearptr path (LFB fallback)
+            if (fb_state.pitches_match) {
+                SDL_memcpy(fb_state.vram_ptr, fb_state.pixels, fb_state.fb_size);
+            } else {
+                const int bpp = fb_state.bpp;
+                const int src_pitch = fb_state.src_pitch;
+                const int dst_pitch = fb_state.vram_pitch;
+                const Uint8 *pixels = fb_state.pixels;
+
+                for (int i = 0; i < numrects; i++) {
+                    int rx = rects[i].x, ry = rects[i].y;
+                    int rw = rects[i].w, rh = rects[i].h;
+                    if (rx < 0) {
+                        rw += rx;
+                        rx = 0;
+                    }
+                    if (ry < 0) {
+                        rh += ry;
+                        ry = 0;
+                    }
+                    if (rx + rw > fb_state.vram_w) {
+                        rw = fb_state.vram_w - rx;
+                    }
+                    if (ry + rh > fb_state.vram_h) {
+                        rh = fb_state.vram_h - ry;
+                    }
+                    if (rw <= 0 || rh <= 0) {
+                        continue;
+                    }
+                    const int bw = rw * bpp;
+                    const Uint8 *sp = pixels + ry * src_pitch + rx * bpp;
+                    Uint8 *dp = fb_state.vram_ptr + ry * dst_pitch + rx * bpp;
+                    for (int row = 0; row < rh; row++) {
+                        SDL_memcpy(dp, sp, bw);
+                        sp += src_pitch;
+                        dp += dst_pitch;
+                    }
+                }
+            }
+        }
+
+        // Page flipping is only used with the nearptr LFB path. The banked
+        // dosmemput path always writes to page 0 (the visible page) and
+        // accepts tearing, avoiding a BIOS call.
+        if (!fb_state.use_dosmemput && vdata->page_flip_available) {
+            const SDL_DisplayModeData *mdata = vdata->current_mode.internal;
+            int back_page = 1 - vdata->current_page;
+            Uint16 first_scanline = (Uint16)(vdata->page_offset[back_page] / mdata->pitch);
+
+            __dpmi_regs regs;
+            SDL_zero(regs);
+            regs.x.ax = 0x4F07;
+            regs.x.bx = 0x0080;
+            regs.x.cx = 0;
+            regs.x.dx = first_scanline;
+            __dpmi_int(0x10, &regs);
+
+            vdata->current_page = back_page;
+
+            int new_back = 1 - vdata->current_page;
+            fb_state.vram_ptr = (Uint8 *)DOS_PhysicalToLinear(vdata->mapping.address) + vdata->page_offset[new_back];
+        }
+
+        return true;
+    }
+
+    // ===================================================================
+    //  Normal path: system-RAM to LFB surface (or banked copy)
+    //  with cursor compositing, palette sync, vsync, and page-flipping.
+    // ===================================================================
+
+    SDL_Surface *src = fb_state.surface;
+    if (!src) {
+        src = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DOS_SURFACE, NULL);
+    }
     if (!src) {
         return SDL_SetError("Couldn't find DOS surface for window");
     }
 
     const SDL_DisplayModeData *mdata = vdata->current_mode.internal;
+    SDL_WindowData *windata = window->internal;
 
     // For 8-bit indexed modes, sync palette data between surfaces so the
     // blit uses the correct color mapping.  The actual VGA DAC programming
@@ -302,15 +707,12 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
             SDL_SetPaletteColors(src_palette, win_palette->colors, 0,
                                  SDL_min(win_palette->ncolors, src_palette->ncolors));
 
-            if (!vdata->banked_mode) {
+            if (!vdata->banked_mode && fb_state.lfb_surface) {
                 // Also update the LFB surface palette for correct blitting
-                SDL_Surface *dst = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DOS_LFB_SURFACE, NULL);
-                if (dst) {
-                    SDL_Palette *dst_palette = SDL_GetSurfacePalette(dst);
-                    if (dst_palette && dst_palette != src_palette) {
-                        SDL_SetPaletteColors(dst_palette, win_palette->colors, 0,
-                                             SDL_min(win_palette->ncolors, dst_palette->ncolors));
-                    }
+                SDL_Palette *dst_palette = SDL_GetSurfacePalette(fb_state.lfb_surface);
+                if (dst_palette && dst_palette != src_palette) {
+                    SDL_SetPaletteColors(dst_palette, win_palette->colors, 0,
+                                         SDL_min(win_palette->ncolors, dst_palette->ncolors));
                 }
             }
         }
@@ -385,7 +787,10 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
                 }
 
                 // Composite cursor onto the source surface.
-                SDL_BlitSurface(cursor, NULL, src, &cursorrect);
+                {
+                    SDL_Surface *blit_cursor = GetConvertedCursorSurface(cur->internal, src);
+                    SDL_BlitSurface(blit_cursor ? blit_cursor : cursor, NULL, src, &cursorrect);
+                }
             }
         }
 
@@ -462,8 +867,8 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
         }
 
     } else {
-        // --- LFB path (original code) ---
-        SDL_Surface *dst = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DOS_LFB_SURFACE, NULL);
+        // --- LFB path ---
+        SDL_Surface *dst = fb_state.lfb_surface;
         if (!dst) {
             return SDL_SetError("Couldn't find VESA linear framebuffer surface for window");
         }
@@ -485,13 +890,34 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
             }
         }
 
-        // Blit to the back page (or the only page, if no page-flipping)
-        if (!SDL_BlitSurface(src, NULL, dst, &dstrect)) {
-            return false;
+        // If both surfaces are INDEX8 and same size, skip the SDL blit
+        // machinery (which does per-pixel palette remapping even for
+        // identical palettes), copy directly to the LFB surface using
+        // SDL_memcpy.
+        if (src->format == SDL_PIXELFORMAT_INDEX8 &&
+            dst->format == SDL_PIXELFORMAT_INDEX8 &&
+            src->w == dstrect.w && src->h == dstrect.h) {
+            const Uint8 *sp = (const Uint8 *)src->pixels;
+            Uint8 *dp = (Uint8 *)dst->pixels + dstrect.y * dst->pitch + dstrect.x;
+            if (src->pitch == dstrect.w && dst->pitch == dstrect.w) {
+                SDL_memcpy(dp, sp, (size_t)dstrect.w * dstrect.h);
+            } else {
+                for (int row = 0; row < dstrect.h; row++) {
+                    SDL_memcpy(dp, sp, dstrect.w);
+                    sp += src->pitch;
+                    dp += dst->pitch;
+                }
+            }
+        } else {
+            // Blit to the back page (or the only page, if no page-flipping)
+            if (!SDL_BlitSurface(src, NULL, dst, &dstrect)) {
+                return false;
+            }
         }
 
         if (cursor) {
-            if (!SDL_BlitSurface(cursor, NULL, dst, &cursorrect)) {
+            SDL_Surface *blit_cursor = GetConvertedCursorSurface(cur->internal, dst);
+            if (!SDL_BlitSurface(blit_cursor ? blit_cursor : cursor, NULL, dst, &cursorrect)) {
                 return false;
             }
         }
@@ -547,15 +973,13 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
 
 void DOSVESA_DestroyWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window)
 {
-    SDL_VideoData *data = device->internal;
-    if (!data->banked_mode) {
-        SDL_Surface *lfb_surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), DOS_LFB_SURFACE, NULL);
-        if (lfb_surface && data->mapping.size) {
-            SDL_ClearSurface(lfb_surface, 0.0f, 0.0f, 0.0f, 0.0f);
-        }
-    }
+    // Note: we intentionally do NOT call SDL_ClearSurface on the LFB surface
+    // here. SetDisplayMode already blanks the framebuffer (both pages) when
+    // setting a new mode, and the LFB surface's pixels pointer may be stale
+    // if the DPMI mapping was freed before this function is called.
+    (void)device;
+    SDL_zero(fb_state);
     SDL_ClearProperty(SDL_GetWindowProperties(window), DOS_SURFACE);
-    SDL_ClearProperty(SDL_GetWindowProperties(window), DOS_LFB_SURFACE);
 }
 
 #endif // SDL_VIDEO_DRIVER_DOSVESA

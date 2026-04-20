@@ -45,6 +45,18 @@ All video modes are effectively fullscreen. When creating a window, the driver s
 
 8-bit indexed color (INDEX8) modes with programmable VGA DAC palettes are supported but will only be used when explicitly requested via the `SDL_PIXELFORMAT` window creation property.
 
+#### Direct Framebuffer Hint
+
+Setting `SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER` to `"1"` before calling `SDL_GetWindowSurface()` enables a fast path that skips the normal surface copy. `SDL_UpdateWindowSurface()` copies the system-RAM surface directly to VRAM via `dosmemput` and only programs the VGA DAC palette when it changes. Page flipping is done without waiting for vblank. No software cursor compositing is performed.
+
+This mode is designed for applications like Quake that manage their own rendering and want maximum frame throughput. The trade-offs are:
+
+- No vsync. Tearing is expected.
+- No software cursor. The application must draw its own cursor if needed.
+- Reading back the surface may be slow on real hardware (uncached VRAM).
+
+The hint must be set before the first call to `SDL_GetWindowSurface()`. Changing it after that has no effect.
+
 ### Audio
 
 Sound Blaster support is available for SB16 (16-bit stereo), SB Pro (8-bit stereo), and SB 2.0/1.x (8-bit mono). Configured automatically from the `BLASTER` environment variable.

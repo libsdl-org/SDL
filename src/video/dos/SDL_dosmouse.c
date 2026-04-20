@@ -90,6 +90,7 @@ static void DOSVESA_FreeCursor(SDL_Cursor *cursor)
 
         if (curdata) {
             SDL_DestroySurface(curdata->surface);
+            SDL_DestroySurface(curdata->converted_surface);
             SDL_free(cursor->internal);
         }
         SDL_free(cursor);

@@ -54,6 +54,15 @@ static bool DOSVESA_CreateWindow(SDL_VideoDevice *device, SDL_Window *window, SD
     return true;
 }
 
+// Critical for performance: this function must be implemented and as simple
+// as possible to avoid slowdowns during calls to SDL_UpdateWindowSurface().
+// A few pointer dereferences here can cost 10% of performance easily.
+static void DOSVESA_GetWindowSizeInPixels(SDL_VideoDevice *device, SDL_Window *window, int *w, int *h)
+{
+    *w = window->w;
+    *h = window->h;
+}
+
 static void DOSVESA_DestroyWindow(SDL_VideoDevice *device, SDL_Window *window)
 {
     SDL_free(window->internal);
@@ -287,6 +296,7 @@ static SDL_VideoDevice *DOSVESA_CreateDevice(void)
     device->GetWindowFramebufferVSync = DOSVESA_GetWindowFramebufferVSync;
     device->UpdateWindowFramebuffer = DOSVESA_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = DOSVESA_DestroyWindowFramebuffer;
+    device->GetWindowSizeInPixels = DOSVESA_GetWindowSizeInPixels;
     device->PumpEvents = DOSVESA_PumpEvents;
     device->device_caps = VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY;
 
