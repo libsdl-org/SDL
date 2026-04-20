@@ -1132,6 +1132,7 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
                 state->viewport = wp_viewporter_get_viewport(viddata->viewporter, state->surface);
             }
 
+            wl_surface_set_buffer_scale(state->surface, SDL_ceil(state->scale));
             wp_viewport_set_source(state->viewport, wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1), wl_fixed_from_int(-1));
             wp_viewport_set_destination(state->viewport, dst_width, dst_height);
         } else if (state->viewport) {
