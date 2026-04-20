@@ -23,6 +23,18 @@ To run in DOSBox:
 dosbox myapp.exe
 ```
 
+## System Requirements
+
+| Component | Minimum                        |
+| --------- | ------------------------------ |
+| CPU       | i386 or higher                 |
+| RAM       | 4 MB                           |
+| Video     | VGA (256-color mode 13h)       |
+| Audio     | Sound Blaster (optional)       |
+| DPMI      | CWSDPMI.exe or compatible host |
+
+Higher resolutions (640×480 and above) require a VESA VBE 1.2+ compatible video card.
+
 ## Notes
 
 ### Memory Model
@@ -37,13 +49,15 @@ DOS has no OS-level threads. SDL on DOS implements cooperative threading via a m
 
 ### Video
 
-The video driver uses VESA BIOS Extensions (VBE). Both linear framebuffer (VBE 2.0+) and banked framebuffer (VBE 1.2+) modes are supported. Hardware page-flipping is used for tear-free rendering when available.
+The video driver supports VGA mode 13h (320×200×256) on any VGA card, and higher resolutions via VESA BIOS Extensions (VBE 1.2+). Both linear framebuffer (VBE 2.0+) and banked framebuffer modes are supported. Hardware page-flipping is used for tear-free rendering when available.
 
 Only software rendering is supported. There is no GPU renderer.
 
-All video modes are effectively fullscreen. When creating a window, the driver selects the closest available VESA mode to the requested size.
+All video modes are effectively fullscreen. When creating a window, the driver selects the closest available video mode to the requested size.
 
 8-bit indexed color (INDEX8) modes with programmable VGA DAC palettes are supported but will only be used when explicitly requested via the `SDL_PIXELFORMAT` window creation property.
+
+EGA and CGA cards are not supported. The driver detects VGA hardware at initialization and will fail with a clear error message if VGA is not present.
 
 #### Direct Framebuffer Hint
 
