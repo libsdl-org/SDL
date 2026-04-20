@@ -612,7 +612,13 @@ done:
 
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
 {
+    static bool interface_unavailable = false;
     const char *default_inhibit_reason = "Playing a game";
+
+    // If the interface was previously queried and is unavailable, return false.
+    if (interface_unavailable) {
+        return false;
+    }
 
     if ((inhibit && (screensaver_cookie != 0 || inhibit_handle)) || (!inhibit && (screensaver_cookie == 0 && !inhibit_handle))) {
         return true;
@@ -664,6 +670,8 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
             if (SDL_DBus_CallWithBasicReply(dbus.session_conn, &reply, msg, DBUS_TYPE_OBJECT_PATH, &reply_path)) {
                 inhibit_handle = SDL_strdup(reply_path);
                 result = true;
+            } else {
+                interface_unavailable = true;
             }
             SDL_DBus_FreeReply(&reply);
             dbus.message_unref(msg);
@@ -690,6 +698,7 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
             if (!SDL_DBus_CallMethod(NULL, bus_name, path, interface, "Inhibit",
                                      DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
                                      DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
+                interface_unavailable = true;
                 return false;
             }
             return (screensaver_cookie != 0);
