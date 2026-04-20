@@ -1104,13 +1104,27 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
             dst_height = dst_width;
         } else {
             /* If viewports aren't available, the scale is always 1.0.
-             * The dimensions are scaled by the pointer scale, so custom cursors will be scaled relative to the window size.
+             *
+             * If the pointer scale values are 1.0, the preferred backing buffer scale is the window scale.
+             *
+             * If the pointer is scaled, the dimensions are scaled by the pointer scale, so custom cursors will be scaled
+             * relative to the viewport size.
              */
-            state->scale = viddata->viewporter && focus ? SDL_min(focus->pointer_scale.x, focus->pointer_scale.y) : 1.0;
-            dst_width = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.width / state->scale), 1);
-            dst_height = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.height / state->scale), 1);
-            hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / state->scale);
-            hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / state->scale);
+            if (!focus || (focus->pointer_scale.x == 1.0 && focus->pointer_scale.y == 1.0)) {
+                state->scale = viddata->viewporter && focus ? focus->scale_factor : 1.0;
+                dst_width = cursor_data->cursor_data.custom.width;
+                dst_height = cursor_data->cursor_data.custom.height;
+                hot_x = cursor_data->cursor_data.custom.hot_x;
+                hot_y = cursor_data->cursor_data.custom.hot_y;
+            } else {
+                // The preferred buffer scale is the inverse of the pointer scale.
+                state->scale = 1.0 / SDL_min(focus->pointer_scale.x, focus->pointer_scale.y);
+                dst_width = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.width / focus->pointer_scale.x), 1);
+                dst_height = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.height / focus->pointer_scale.y), 1);
+                hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / focus->pointer_scale.x);
+                hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / focus->pointer_scale.y);
+            }
+
         }
 
         state->current_cursor = cursor_data;
