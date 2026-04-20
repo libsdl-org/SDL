@@ -378,7 +378,7 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
                                cocoa_mouse_scroll_direction);
         };
     Cocoa_UpdateGCMouseScrollDirection();
-    #endif
+    #endif // USE_GCMOUSE_SCROLL
     
     // Use high-priority queue for low-latency input
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.mouse",
