@@ -30,6 +30,15 @@ extern bool DOSVESA_SupportsVESA(void);
 extern void DOSVESA_FreeVESAInfo(void);
 extern Uint32 DOSVESA_GetVESATotalMemory(void);
 
+// VGA DAC (Digital-to-Analog Converter) ports for palette programming
+#define VGA_DAC_PIXEL_MASK  0x3C6 // pixel mask register (read/write, VGA-only)
+#define VGA_DAC_WRITE_INDEX 0x3C8 // write index register (set starting color index)
+#define VGA_DAC_DATA        0x3C9 // data register (write R, G, B in sequence)
+
+// VGA Input Status Register 1 (for vblank detection)
+#define VGA_STATUS_PORT   0x3DA
+#define VGA_STATUS_VBLANK 0x08 // bit 3: vertical retrace active
+
 // VBE window attribute bits (WinAAttributes / WinBAttributes field)
 #define VBE_WINATTR_SUPPORTED 0x01 // bit 0: window is supported
 #define VBE_WINATTR_WRITABLE  0x04 // bit 2: window is writable

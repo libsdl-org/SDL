@@ -219,16 +219,31 @@ static const SDL_VESAInfo *GetVESAInfo(void)
     return vesa_info;
 }
 
+// Test by writing and reading back the DAC Pixel Mask register (0x3C6).
+// On VGA this is a read/write register, on EGA/CGA the port either
+// doesn't exist (reads 0xFF) or isn't writable.
+static bool DetectVGA(void)
+{
+    const Uint8 original = inportb(VGA_DAC_PIXEL_MASK);
+    outportb(VGA_DAC_PIXEL_MASK, 0xA5);
+    (void)inportb(0x80); // small I/O delay
+    const Uint8 readback = inportb(VGA_DAC_PIXEL_MASK);
+    outportb(VGA_DAC_PIXEL_MASK, original);
+
+    return (readback == 0xA5);
+}
+
 bool DOSVESA_SupportsVESA(void)
 {
-    const SDL_VESAInfo *info = GetVESAInfo();
-    if (!info) {
-        return false;                   // it will have set an SDL error string.
-    } else if (info->version < 0x102) { // not at least VESA 1.2?
-        DOSVESA_FreeVESAInfo();         // won't be needing this, then.
-        return SDL_SetError("Hardware is not VESA 1.2 compatible");
+    // We need at least VGA hardware (for mode 13h). EGA and CGA cards
+    // do not support 256 colors or programmable palettes.
+    if (!DetectVGA()) {
+        return SDL_SetError("No VGA card detected");
     }
-    // don't free `info`, it's cached for later.
+
+    // Cache VESA info if available (NULL mean we only have VGA).
+    (void)GetVESAInfo();
+
     return true;
 }
 
@@ -292,12 +307,13 @@ static bool GetVESAModeInfo(Uint16 mode_id, SDL_DisplayModeData *info)
 bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_display)
 {
     const SDL_VESAInfo *vinfo = GetVESAInfo();
-    SDL_assert(vinfo != NULL); // we should have already cached this.
 
-    // Enumerate VESA modes. 320x200x8 is explicitly skipped here so that
-    // VGA mode 13h (added below) is always used for that resolution. It
-    // has no page-flip overhead, no LFB setup, and universal compatibility.
-    for (int mi = 0; mi < vinfo->num_modes; mi++) {
+    // Enumerate VESA modes if we have a VBE 1.2+ BIOS.  Older VBE versions
+    // (1.0, 1.1) or no VESA at all just skip this loop and fall through to
+    // the VGA mode 13h fallback below.
+    int num_vesa_modes = (vinfo && vinfo->version >= 0x102) ? vinfo->num_modes : 0;
+
+    for (int mi = 0; mi < num_vesa_modes; mi++) {
         const Uint16 modeid = vinfo->mode_list[mi];
 
         SDL_DisplayModeData info;
@@ -490,7 +506,13 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         return true;
     }
 
-    const bool use_lfb = modedata->has_lfb;
+    // When the direct-FB hint is active, prefer banked mode. This needs
+    // to be set explicitly for some cards (Intel 740).
+    const bool is_banked_usable = modedata->win_a_segment &&
+                                  modedata->win_size > 0 &&
+                                  (modedata->win_a_attributes & VBE_WINATTR_USABLE) == VBE_WINATTR_USABLE;
+    const bool use_lfb = modedata->has_lfb &&
+                         (!is_banked_usable || !SDL_GetHintBoolean(SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER, false));
 
     regs.x.ax = 0x4F02;
     regs.x.bx = modedata->mode_id | (use_lfb ? VBE_SETMODE_LFB : 0);

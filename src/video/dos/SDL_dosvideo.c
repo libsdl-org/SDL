@@ -109,6 +109,7 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
         const int target_w = 640;
         const int target_h = 480;
         const SDL_DisplayMode *best = NULL;
+        // First pass: prefer non-INDEX8 mode >= 640x480.
         for (int i = 0; i < display->num_fullscreen_modes; ++i) {
             const SDL_DisplayMode *m = &display->fullscreen_modes[i];
             if (m->format == SDL_PIXELFORMAT_INDEX8) {
@@ -124,13 +125,24 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
                 best = m;
             }
         }
-        // If nothing >= 640x480 was found, just take the largest available.
+        // Second pass: largest non-INDEX8 mode.
         if (!best) {
             for (int i = 0; i < display->num_fullscreen_modes; ++i) {
                 const SDL_DisplayMode *m = &display->fullscreen_modes[i];
                 if (m->format == SDL_PIXELFORMAT_INDEX8) {
                     continue;
                 }
+                if (!best || (m->w * m->h) > (best->w * best->h)) {
+                    best = m;
+                }
+            }
+        }
+        // Third pass: if only INDEX8 modes are available (VGA-only card),
+        // accept INDEX8 rather than leaving desktop_mode unset (which would
+        // cause a crash when SDL tries to restore it on quit).
+        if (!best) {
+            for (int i = 0; i < display->num_fullscreen_modes; ++i) {
+                const SDL_DisplayMode *m = &display->fullscreen_modes[i];
                 if (!best || (m->w * m->h) > (best->w * best->h)) {
                     best = m;
                 }
@@ -149,7 +161,10 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
         }
     }
 
-    // Save the current VBE mode so we can restore it on quit.
+    // Save the current video mode so we can restore it on quit.
+    // The VBE calls (0x4F03, 0x4F04) return 0x004F on success; on cards
+    // without VBE support (or VBE < 1.2) they simply fail and we fall
+    // back to restoring standard text mode 0x03.
     {
         __dpmi_regs regs;
         SDL_zero(regs);
@@ -232,18 +247,26 @@ static void DOSVESA_VideoQuit(SDL_VideoDevice *device)
         data->vbe_state_buffer_size = 0;
     }
 
-    // Also restore the original VBE mode.
-    __dpmi_regs regs;
-    SDL_zero(regs);
-    regs.x.ax = 0x4F02;
-    regs.x.bx = data->original_vbe_mode;
-    __dpmi_int(0x10, &regs);
+    // Restore the original video mode.
+    {
+        __dpmi_regs regs;
+        bool restored = false;
 
-    // If VBE mode restore failed, fall back to text mode.
-    if (regs.x.ax != 0x004F) {
-        SDL_zero(regs);
-        regs.x.ax = 0x03;
-        __dpmi_int(0x10, &regs);
+        // Try VBE mode restore first (only works on VBE 1.2+).
+        if (data->original_vbe_mode != 0x03) {
+            SDL_zero(regs);
+            regs.x.ax = 0x4F02;
+            regs.x.bx = data->original_vbe_mode;
+            __dpmi_int(0x10, &regs);
+            restored = (regs.x.ax == 0x004F);
+        }
+
+        // Fall back to standard BIOS text mode (works on any VGA).
+        if (!restored) {
+            SDL_zero(regs);
+            regs.x.ax = 0x0003;
+            __dpmi_int(0x10, &regs);
+        }
     }
 
     SDL_zero(data->current_mode);

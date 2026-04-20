@@ -33,14 +33,6 @@
 #include <pc.h>           // for inportb, outportb
 #include <sys/movedata.h> // for dosmemput (banked framebuffer writes)
 
-// VGA DAC (Digital-to-Analog Converter) ports for palette programming
-#define VGA_DAC_WRITE_INDEX 0x3C8 // write index register (set starting color index)
-#define VGA_DAC_DATA        0x3C9 // data register (write R, G, B in sequence)
-
-// VGA Input Status Register 1 (for vblank detection)
-#define VGA_STATUS_PORT   0x3DA
-#define VGA_STATUS_VBLANK 0x08 // bit 3: vertical retrace active
-
 // note that DOS_SURFACE's value is the same string that the dummy driver uses.
 #define DOS_SURFACE "SDL.internal.window.surface"
 
