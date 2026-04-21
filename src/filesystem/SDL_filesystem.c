@@ -142,12 +142,12 @@ bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_SYS_GetPathInfo(path, info);
 }
 
-bool SDL_WatchFileForChanges(const char *path, SDL_FileWatchCallback cb, void *userdata)
+bool SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *userdata)
 {
     CHECK_PARAM(!path) {
         return SDL_InvalidParamError("path");
     }
-    return SDL_SYS_WatchFileForChanges(path, cb, userdata);
+    return SDL_SYS_WatchPathForChanges(path, cb, userdata);
 }
 
 static bool EverythingMatch(const char *pattern, const char *str, bool *matched_to_dir)
@@ -555,6 +555,6 @@ void SDL_QuitFilesystem(void)
             CachedUserFolders[i] = NULL;
         }
     }
-    SDL_SYS_QuitFileWatch();
+    SDL_SYS_QuitPathWatch();
 }
 

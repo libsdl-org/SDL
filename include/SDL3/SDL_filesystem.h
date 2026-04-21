@@ -532,7 +532,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 /**
  * A function pointer used for callbacks that watch for files change.
  *
- * \param userdata what was passed as `userdata` to SDL_WatchFileForChanges().
+ * \param userdata what was passed as `userdata` to SDL_WatchPathForChanges().
  * \param path path of file that was modified.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the

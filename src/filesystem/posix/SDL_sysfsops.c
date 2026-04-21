@@ -453,7 +453,7 @@ static int SDL_inotify_init1(void)
 #endif // HAVE_INOTIFY_INIT1
 #endif // HAVE_INOTIFY
 
-bool SDL_SYS_WatchFileForChanges(const char *path, SDL_FileWatchCallback cb, void *user_data)
+bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *user_data)
 {
 #ifdef HAVE_INOTIFY
     if (!watch_descriptor_table) {
@@ -590,7 +590,7 @@ static int SDL_FileWatchThread(void *userdata)
 }
 #endif // HAVE_INOTIFY
 
-void SDL_SYS_QuitFileWatch(void)
+void SDL_SYS_QuitPathWatch(void)
 {
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0) {

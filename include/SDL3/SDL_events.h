@@ -977,9 +977,9 @@ typedef struct SDL_SensorEvent
 /**
  * File watch event structure (event.file_watch.*)
  *
- * You can add file to the watch list with SDL_WatchFileForChanges().
+ * You can add file to the watch list with SDL_WatchPathForChanges().
  *
- * \sa SDL_WatchFileForChanges
+ * \sa SDL_WatchPathForChanges
  */
 typedef struct SDL_FileWatchEvent
 {
