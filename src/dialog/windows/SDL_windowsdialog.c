@@ -1143,7 +1143,7 @@ wchar_t *win_get_filters(const SDL_DialogFileFilter *filters, int nfilters)
         // suffix needs two null bytes in case the filter list is empty
         char *filterlist = convert_filters(filters, nfilters, clear_filt_names,
                                            "", "", "\x01\x01", "", "\x01",
-                                           "\x01", "*.", ";*.", "");
+                                           "\x01", "*.", ";*.", "", false);
 
         if (!filterlist) {
             return NULL;

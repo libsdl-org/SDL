@@ -192,7 +192,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
             char *filter_str = convert_filter(filters[i],
                                               zenity_clean_name,
                                               "--file-filter=", " | ", "",
-                                              "*.", " *.", "");
+                                              "*.", " *.", "", true);
 
             if (!filter_str) {
                 while (i--) {
