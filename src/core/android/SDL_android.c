@@ -44,6 +44,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <time.h>
 
 #define SDL_JAVA_PREFIX                               org_libsdl_app
 #define CONCAT1(prefix, class, function)              CONCAT2(prefix, class, function)
@@ -1838,6 +1839,398 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
     return false;
 }
 
+
+// APK file tree discovery...
+
+// APK files are just .zip files, so try to find parse out the file tree from it. We'll still
+// use Android's system APIs to actually access data, but those APIs aren't reliable for
+// enumerating the tree for various reasons.
+
+// we only care about the directories; Android's AAssetManager can enumerate all files in any
+// known directory, but it won't enumerate subdirectories, so we track that by ourselves.
+typedef struct APKNode
+{
+    char *name;
+    SDL_PathInfo info;
+    struct APKNode *children;
+    struct APKNode *next_sibling;
+} APKNode;
+
+static APKNode *APKRootNode = NULL;
+
+static void FreeAPKNode(APKNode *node)
+{
+    if (node) {
+        FreeAPKNode(node->next_sibling);
+        FreeAPKNode(node->children);
+        SDL_free(node->name);
+        SDL_free(node);
+    }
+}
+
+static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
+{
+    for (APKNode *node = parent->children; node != NULL; node = node->next_sibling) {
+        if (SDL_strcmp(child, node->name) == 0) {
+            return node;
+        }
+    }
+    return NULL;
+}
+
+static const APKNode *FindAPKNode(const char *constpath)
+{
+    APKNode *parent = APKRootNode;
+    if (!parent) {
+        return NULL;
+    }
+
+    const size_t pathlen = SDL_strlen(constpath);
+    bool isstack = false;
+    char *alloc_path = SDL_small_alloc(char, pathlen + 1, &isstack);
+    if (!alloc_path) {
+        return NULL;
+    }
+    char *path = alloc_path;
+    SDL_strlcpy(path, constpath, pathlen + 1);
+
+    while (parent) {
+        while (*path == '/') {
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
+        }
+
+        if (*path == '\0') {  // ended with a '/'? We're done.
+            break;
+        }
+
+        char *ptr = SDL_strchr(path, '/');
+        if (ptr) {
+            *ptr = '\0';  // terminate on the end of this subdir's name.
+        }
+
+        APKNode *node = FindAPKChildNode(parent, path);
+        if (!node) {
+            SDL_SetError("No such file or directory");
+            parent = NULL;
+        } else if ((node->info.type == SDL_PATHTYPE_FILE) && ptr) {  // file where we want a directory?
+            SDL_SetError("%s is not a directory", alloc_path);
+            parent = NULL;
+        } else {
+            parent = node;
+            if (!ptr) {
+                break;
+            }
+            *ptr = '/';
+            path = ptr + 1;
+        }
+    }
+
+    SDL_small_free(alloc_path, isstack);
+    return parent;
+}
+
+static APKNode *AddAPKChildNode(APKNode *parent, const char *child)
+{
+    APKNode *node = FindAPKChildNode(parent, child);
+    if (!node) {  // don't have this one yet, make a new node.
+        node = (APKNode *) SDL_calloc(1, sizeof (*node));
+        if (!node) {
+            return NULL;  // uhoh.
+        }
+
+        node->name = SDL_strdup(child);
+        if (!node->name) {
+            SDL_free(node);
+            return NULL;  // uhoh.
+        }
+
+        SDL_copyp(&node->info, &parent->info);  // you probably need to update this afterwards.
+
+        node->next_sibling = parent->children;
+        parent->children = node;
+    }
+    return node;
+}
+
+static APKNode *AddAPKDirs(char *path, APKNode *parent)
+{
+    // zip files specify explicit directories by just having a path that ends with a dir separator,
+    // which works nicely for our needs here; if the last segment of the path doesn't end with a
+    // '/', it's a file and we can drop it, or we filled in the final subdirectory and the '/' at
+    // the end will put us at an empty string to be dropped.
+    //
+    // directories do not need to be explicitly specified if something uses some deeper path, they
+    // may need to be inferred from those references, so we build out the tree by looking at all
+    // files and filling in nodes they mention.
+
+    SDL_assert(parent->info.type == SDL_PATHTYPE_DIRECTORY);
+    SDL_assert(parent->info.size == 0);
+
+    while (true) {  // while still subdirectories to handle...
+        while (*path == '/') {
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
+        }
+
+        char *ptr = SDL_strchr(path, '/');
+        if (!ptr) {
+            break;  // last thing is either an empty string (we ended with a '/'), or an actual file's name, so drop it.
+        }
+
+        *ptr = '\0';  // terminate on the end of this subdir's name.
+        APKNode *node = AddAPKChildNode(parent, path);
+        *ptr = '/';
+
+        if (!node) {
+            return NULL;  // uhoh.
+        }
+
+        parent = node;
+        path = ptr + 1;  // point to start of next section.
+    }
+
+    return parent;
+}
+
+
+static SDL_Time ZipDosTimeToSDLTime(Uint32 dostime)
+{
+    Uint32 dosdate;
+    struct tm unixtime;
+    SDL_zero(unixtime);
+
+    dosdate = (Uint32) ((dostime >> 16) & 0xFFFF);
+    dostime &= 0xFFFF;
+
+    /* dissect date */
+    unixtime.tm_year = ((dosdate >> 9) & 0x7F) + 80;
+    unixtime.tm_mon  = ((dosdate >> 5) & 0x0F) - 1;
+    unixtime.tm_mday = ((dosdate     ) & 0x1F);
+
+    /* dissect time */
+    unixtime.tm_hour = ((dostime >> 11) & 0x1F);
+    unixtime.tm_min  = ((dostime >>  5) & 0x3F);
+    unixtime.tm_sec  = ((dostime <<  1) & 0x3E);
+
+    /* let mktime calculate daylight savings time. */
+    unixtime.tm_isdst = -1;
+
+    return ((SDL_Time) mktime(&unixtime));
+}
+
+
+
+#define ZIP_CENTRAL_DIR_SIG                         0x02014b50
+#define ZIP_END_OF_CENTRAL_DIR_SIG                  0x06054b50
+#define ZIP64_END_OF_CENTRAL_DIR_SIG                0x06064b50
+#define ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG  0x07064b50
+
+static bool ProcessZip(SDL_IOStream *io, APKNode *root)
+{
+    // There is a record at the end of a .zip file we can use to find the central directory;
+    // unfortunately it's before the variable-length comment field, so we might need to read
+    // from the end of the file until we see a magic signature. For now, we assume APKs don't
+    // have a comment, so we don't have to search backwards for the signature and it's always
+    // 22 bytes from EOF.
+    const Sint64 eocd = SDL_GetIOSize(io) - 22;
+    if (eocd < 0) {
+        SDL_Log("ANDROID: Couldn't find End Of Central Directory in APK (%s). Filesystem enumeration will fail.", SDL_GetError());
+        return false;
+    }
+
+    //bool zip64 = false;
+    Sint64 centraldir = -1;
+    Uint64 num_entries = 0;
+    Uint16 val16 = 0;
+    Uint32 val32 = 0;
+    Uint64 val64 = 0;
+
+    // First, check if this is actually zip64 format instead. The zip64 magic is 20 bytes back.
+    if (eocd < 20) {  // presumably we always _are_ > 20, but let's be defensive here.
+        goto corrupterr;
+    } else if (SDL_SeekIO(io, eocd - 20, SDL_IO_SEEK_SET) < 0) {
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {
+        goto ioerr;
+    } else if (val32 == ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG) {  // this is a zip64 archive?
+        if (!SDL_ReadU32LE(io, &val32)) {  // disk number with start of central directory.
+            goto ioerr;
+        } else if (val32 != 0) {
+            goto corrupterr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // file offset of zip64 end-of-central-dir record
+            goto ioerr;
+
+        // note that this gets significantly more complex if there is data prepended to the .zip file
+        //  (like a self-extracting .exe, etc), but until that happens, we're keeping this as simple
+        //  as possible and assuming the file offset in val64 is correct.
+
+        } else if (SDL_SeekIO(io, (Sint64) val64, SDL_IO_SEEK_SET) < 0) {
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // zip64 end-of-central-dir signature.
+            goto ioerr;
+        } else if (val32 != ZIP64_END_OF_CENTRAL_DIR_SIG) {
+            goto corrupterr;
+        } else if (SDL_SeekIO(io, 28, SDL_IO_SEEK_CUR) < 0) {  // we don't care about several of the fields, skip over them.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &num_entries)) {  // total entries in the central dir.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // size of the central dir.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // offset of the central dir.
+            goto ioerr;
+        }
+
+        //zip64 = true;
+        centraldir = (Sint64) val64;
+    } else if (SDL_SeekIO(io, eocd + 4 + 6, SDL_IO_SEEK_SET) < 0) {  // skip back to where we were, plus skip some fields we don't care about.
+        goto ioerr;
+    } else if (!SDL_ReadU16LE(io, &val16)) {
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // size of the central dir.
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // offset of the central dir.
+        goto ioerr;
+    } else {
+        num_entries = (Uint64) val16;
+        centraldir = (Sint64) val32;
+    }
+
+    // okay, we know where the central dir is now, go there and start reading entries.
+    SDL_assert(centraldir > 0);  // negative means we failed, zero is impossible since there should be something else there.
+
+    for (Uint64 i = 0; i < num_entries; i++) {
+        Uint16 fnamelen = 0;
+        Uint16 extralen = 0;
+        Uint16 commentlen = 0;
+        Uint32 dosmodtime = 0;
+        Uint32 uncompressed = 0;
+
+        // we don't care about most of this information, just parse through it to get what we need.
+        if (SDL_SeekIO(io, centraldir, SDL_IO_SEEK_SET) < 0) {
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // central dir item signature.
+            goto ioerr;
+        } else if (val32 != ZIP_CENTRAL_DIR_SIG) {
+            goto corrupterr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version made by
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version needed
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // general bits
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // compression method
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &dosmodtime)) {  // last mod date/time
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // CRC-32
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // compressed size
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &uncompressed)) {  // uncompressed size
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &fnamelen)) {  // filename length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &extralen)) {  // extra length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &commentlen)) {  // comment length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // disk number start
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // internal file attributes
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // external file attributes
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // relative offset of local header
+            goto ioerr;
+        }
+
+        char fnamebuf[0xFFFF+1];  // just eat 64k of stack like a boss until someone complains.
+        if (SDL_ReadIO(io, fnamebuf, (size_t) fnamelen) != ((size_t) fnamelen)) {
+            goto ioerr;
+        }
+
+        // !!! FIXME: parse out the extralen section for zip64 file sizes; needed if a file is > 4 gigabytes.
+
+        // technically zip files might have '\\' dir separators, but these were mostly old DOS files and not Android APKs, I think. Revisit if necessary.
+
+        fnamebuf[fnamelen] = '\0';  // make sure the string is null-terminated.
+
+        //SDL_Log("ANDROID: Saw ZIP entry '%s'", fnamebuf);
+
+        char *ptr = fnamebuf;
+        while (*ptr == '/') {  // drop absolute paths.
+            ptr++;
+        }
+
+        if (SDL_strncmp(ptr, "assets/", 7) == 0) {  //  we only care about things under 'assets' for now. Drop everything else.
+            ptr += 6;  // keep the '/' so strrchr never returns NULL.
+            APKNode *node = AddAPKDirs(ptr, root);  // this builds out any missing subdirs, returns parent dir's node.
+            if (!node) {
+                goto ioerr;  // (probably out of memory.)
+            }
+
+            const SDL_Time modtime = ZipDosTimeToSDLTime(dosmodtime);
+            ptr = SDL_strrchr(ptr, '/');
+            SDL_assert(ptr != NULL);
+            if (*(++ptr) == '\0') {  // explicit directory entry paths end with '/' ...`node` is the new node.
+                node->info.type = SDL_PATHTYPE_DIRECTORY;
+                node->info.size = 0;
+            } else {
+                node = AddAPKChildNode(node, ptr);
+                if (!node) {
+                    goto ioerr;  // (probably out of memory.)
+                }
+                node->info.type = SDL_PATHTYPE_FILE;
+                node->info.size = (Uint64) uncompressed;
+            }
+            node->info.create_time = node->info.modify_time = node->info.access_time = modtime;
+        }
+
+        centraldir += (Sint64) (46 + fnamelen + extralen + commentlen);  // will seek to next file entry.
+    }
+
+    return true;
+
+corrupterr:
+    SDL_Log("ANDROID: Unexpected or corrupt data in APK. Filesystem enumeration will fail.");
+    return false;
+
+ioerr:
+    SDL_Log("ANDROID: i/o error in APK (%s). Filesystem enumeration will fail.", SDL_GetError());
+    return false;
+}
+
+static bool CreateAPKNodes(const char *path)
+{
+    SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
+
+    SDL_PathInfo apkinfo;
+    SDL_assert(path[0] == '/');  // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
+    if (!SDL_GetPathInfo(path, &apkinfo)) {
+        SDL_zero(apkinfo);  // we just want the file times here, so oh well.
+    }
+
+    if (!APKRootNode) {
+        APKRootNode = (APKNode *) SDL_calloc(1, sizeof (*APKRootNode));
+        if (!APKRootNode) {
+            SDL_Log("ANDROID: Can't open APK (out of memory). Filesystem enumeration will fail.");
+            return false;
+        }
+        APKRootNode->info.type = SDL_PATHTYPE_DIRECTORY;
+        APKRootNode->info.create_time = apkinfo.create_time;
+        APKRootNode->info.modify_time = apkinfo.modify_time;
+        APKRootNode->info.access_time = apkinfo.access_time;
+    }
+
+    SDL_IOStream *io = SDL_IOFromFile(path, "rb");
+    if (!io) {
+        SDL_Log("ANDROID: Can't open APK '%s' for reading (%s). Filesystem enumeration will fail.", path, SDL_GetError());
+    } else {
+        ProcessZip(io, APKRootNode);
+        SDL_CloseIO(io);
+    }
+    return true;  // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
+}
+
 static void Internal_Android_Create_AssetManager(void)
 {
 
@@ -1874,6 +2267,21 @@ static void Internal_Android_Create_AssetManager(void)
         Android_JNI_ExceptionOccurred(true);
     }
 
+    // the assetmanager isn't useful for enumerating directories, so parse the APK directly for that info upfront.
+    jthrowable jexception = 0;
+    jstring jstr = 0;
+
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getPackageResourcePath", "()Ljava/lang/String;");
+    jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
+    jexception = (*env)->ExceptionOccurred(env);
+    if (jexception != NULL) {
+        (*env)->ExceptionClear(env);  // oh well
+    } else {
+        const char *apkpath = (*env)->GetStringUTFChars(env, jstr, NULL);
+        CreateAPKNodes(apkpath);
+        (*env)->ReleaseStringUTFChars(env, jstr, apkpath);
+    }
+
     LocalReferenceHolder_Cleanup(&refs);
 }
 
@@ -1884,6 +2292,11 @@ static void Internal_Android_Destroy_AssetManager(void)
     if (asset_manager) {
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
         asset_manager = NULL;
+    }
+
+    if (APKRootNode) {
+        FreeAPKNode(APKRootNode);
+        APKRootNode = NULL;
     }
 }
 
@@ -1970,20 +2383,20 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
         }
     }
 
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     const char *asset_path = GetAssetPath(path);
 
-    AAssetDir *adir = AAssetManager_openDir(asset_manager, asset_path);
-    if (!adir) {
-        return SDL_SetError("AAssetManager_openDir failed");
+    // check our tree we built from the APK first.
+    const APKNode *apknode = FindAPKNode(asset_path);
+    if (!apknode) {
+        return SDL_SetError("No such directory");
+    } else if (apknode->info.type != SDL_PATHTYPE_DIRECTORY) {
+        return SDL_SetError("Not a directory");
+    } else {
+        for (const APKNode *node = apknode->children; node && (result == SDL_ENUM_CONTINUE); node = node->next_sibling) {
+            result = cb(userdata, path, node->name);
+        }
     }
-
-    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
-    const char *ent;
-    while ((result == SDL_ENUM_CONTINUE) && ((ent = AAssetDir_getNextFileName(adir)) != NULL)) {
-        result = cb(userdata, path, ent);
-    }
-
-    AAssetDir_close(adir);
 
     return (result != SDL_ENUM_FAILURE);
 }
@@ -1998,28 +2411,12 @@ bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
     }
 
     path = GetAssetPath(path);
-
-    // this is sort of messy, but there isn't a stat()-like interface to the Assets.
-    AAsset *aasset = AAssetManager_open(asset_manager, path, AASSET_MODE_UNKNOWN);
-    if (aasset) {  // it's a file!
-        info->type = SDL_PATHTYPE_FILE;
-        info->size = (Uint64) AAsset_getLength64(aasset);
-        AAsset_close(aasset);
-        return true;
+    const APKNode *apknode = FindAPKNode(path);
+    if (!apknode) {
+        return SDL_SetError("No such file or directory");
     }
-
-    AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
-    if (adir) {  // This does _not_ return NULL for a missing directory! Treat empty directories as missing. Better than nothing.  :/
-        const bool contains_something = (AAssetDir_getNextFileName(adir) != NULL);  // if not NULL, there are files in this directory, so it's _definitely_ a directory.
-        AAssetDir_close(adir);
-        if (contains_something) {
-            info->type = SDL_PATHTYPE_DIRECTORY;
-            info->size = 0;
-            return true;
-        }
-    }
-
-    return SDL_SetError("Couldn't open asset '%s'", path);
+    SDL_copyp(info, &apknode->info);
+    return true;
 }
 
 bool Android_JNI_SetClipboardText(const char *text)
