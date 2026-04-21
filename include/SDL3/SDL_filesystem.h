@@ -529,6 +529,38 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const ch
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 
+/**
+ * A function pointer used for callbacks that watch for files change.
+ *
+ * \param userdata what was passed as `userdata` to SDL_WatchFileForChanges().
+ * \param path path of file that was modified.
+ *
+ * \threadsafety SDL may call this callback at any time from any thread; the
+ *               application is responsible for locking resources the callback
+ *               touches that need to be protected.
+ */
+typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path);
+
+/**
+ * This function adds a file watcher that will fires an app-provided callback
+ * and send an SDL_EVENT_FILE_CHANGED event every time the file is modified. If
+ * path is a directory, the callback will be called for every file modified in
+ * that directory.
+ *
+ * \param path file or directory path to watch.
+ * \param callback a function that is called when the watched file is modified.
+ *                 Can be NULL if you only want to receive event.
+ * \param userdata a pointer that is passed to `callback`.
+ *
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \sa SDL_FileWatchEvent
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_WatchFileForChanges(const char *path, SDL_FileWatchCallback callback, void *userdata);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

@@ -260,8 +260,8 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
     /* File watch events */
-    SDL_EVENT_FILE_WATCH_ERROR = 0x1500, /**< Watched files may have been modified, but the events are lost. */
-    SDL_EVENT_FILE_CHANGED,              /**< A watched file was written. */
+    SDL_EVENT_FILE_CHANGED = 0x1500, /**< A watched file was written. */
+    SDL_EVENT_FILE_WATCH_ERROR,      /**< Watched files may have been modified, but the events are lost. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -976,6 +976,10 @@ typedef struct SDL_SensorEvent
 
 /**
  * File watch event structure (event.file_watch.*)
+ *
+ * You can add file to the watch list with SDL_WatchFileForChanges().
+ *
+ * \sa SDL_WatchFileForChanges
  */
 typedef struct SDL_FileWatchEvent
 {

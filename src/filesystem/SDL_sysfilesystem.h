@@ -35,8 +35,7 @@ extern bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath);
 extern bool SDL_SYS_CreateDirectory(const char *path);
 extern bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info);
 
-extern bool SDL_SYS_WatchFileForChanges(const char *path);
-extern void SDL_SYS_UpdateFileWatch(void);
+extern bool SDL_SYS_WatchFileForChanges(const char *path, SDL_FileWatchCallback cb, void *userdata);
 extern void SDL_SYS_QuitFileWatch(void);
 
 typedef bool (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata);

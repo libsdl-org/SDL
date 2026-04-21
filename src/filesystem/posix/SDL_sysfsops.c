@@ -26,6 +26,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 // System dependent filesystem routines
 
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_thread.h>
 #include "../SDL_sysfilesystem.h"
 #include "../../SDL_hashtable.h"
 #include "../../events/SDL_events_c.h"
@@ -419,8 +421,18 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 
 #ifdef HAVE_INOTIFY
 static int inotify_fd = -1;
-static SDL_HashTable *watch_descriptor_table = NULL; // stores directory or file path for a watch descriptor
+typedef struct WatchEntry
+{
+    SDL_FileWatchCallback callback;
+    void *user_data;
+    char path[]; // directory or file path
+} WatchEntry;
+static SDL_HashTable *watch_descriptor_table = NULL; // stores WatchEntry for a watch descriptor
+
+static int SDL_FileWatchThread(void *user_data);
+static SDL_Thread *file_watch_thread = NULL;
 static SDL_Mutex *file_watch_lock = NULL;
+static SDL_AtomicInt quit_watch_file;
 
 #ifdef HAVE_INOTIFY_INIT1
 static int SDL_inotify_init1(void)
@@ -441,7 +453,7 @@ static int SDL_inotify_init1(void)
 #endif // HAVE_INOTIFY_INIT1
 #endif // HAVE_INOTIFY
 
-bool SDL_SYS_WatchFileForChanges(const char *path)
+bool SDL_SYS_WatchFileForChanges(const char *path, SDL_FileWatchCallback cb, void *user_data)
 {
 #ifdef HAVE_INOTIFY
     if (!watch_descriptor_table) {
@@ -463,29 +475,41 @@ bool SDL_SYS_WatchFileForChanges(const char *path)
             inotify_fd = -1;
             return false;
         }
+        file_watch_thread = SDL_CreateThread(SDL_FileWatchThread, "SDL_FileWatch", NULL);
+        SDL_SetAtomicInt(&quit_watch_file, 0);
+        if (!file_watch_thread) {
+            SDL_DestroyHashTable(watch_descriptor_table);
+            watch_descriptor_table = NULL;
+            close(inotify_fd);
+            inotify_fd = -1;
+            SDL_DestroyMutex(file_watch_lock);
+            file_watch_lock = NULL;
+            return false;
+        }
     }
-
-    char *p = SDL_strdup(path);
-    if (!p) {
+    const size_t slen = SDL_strlen(path);
+    WatchEntry *watch_entry = SDL_malloc(sizeof(*watch_entry) + slen + 1);
+    if (!watch_entry) {
         return false;
     }
+    watch_entry->callback = cb;
+    watch_entry->user_data = user_data;
+    SDL_memcpy(watch_entry->path, path, slen + 1);
     // remove separator at the end of the path
-    const size_t slen = SDL_strlen(p);
-    if (p[slen - 1] == '/') {
-        p[slen - 1] = '\0';
+    if (watch_entry->path[slen - 1] == '/') {
+        watch_entry->path[slen - 1] = '\0';
     }
-
     SDL_LockMutex(file_watch_lock);
-    int wd = inotify_add_watch(inotify_fd, p, IN_MODIFY);
+    int wd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
     if (wd == -1) {
         SDL_UnlockMutex(file_watch_lock);
-        SDL_free(p);
+        SDL_free(watch_entry);
         return SDL_SetError("inotify_add_watch failed: %s", strerror(errno));
     }
-    if (!SDL_InsertIntoHashTable(watch_descriptor_table, (void *)(intptr_t)wd, p, false)) {
+    if (!SDL_InsertIntoHashTable(watch_descriptor_table, (void *)(intptr_t)wd, watch_entry, false)) {
         inotify_rm_watch(inotify_fd, wd);
         SDL_UnlockMutex(file_watch_lock);
-        SDL_free(p);
+        SDL_free(watch_entry);
         return false;
     }
     SDL_UnlockMutex(file_watch_lock);
@@ -495,10 +519,27 @@ bool SDL_SYS_WatchFileForChanges(const char *path)
 #endif // HAVE_INOTIFY
 }
 
-void SDL_SYS_UpdateFileWatch(void)
-{
 #ifdef HAVE_INOTIFY
-    if (inotify_fd >= 0) {
+static void SendFileWatchEvent(SDL_EventType event_type, const char *path) {
+    if (SDL_EventEnabled(event_type)) {
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = event_type;
+        event.common.timestamp = 0;
+        if (path) {
+            event.file_watch.path = SDL_CreateTemporaryString(path);
+            if (!event.file_watch.path) {
+                return;
+            }
+        }
+        SDL_PushEvent(&event);
+    }
+}
+
+static int SDL_FileWatchThread(void *userdata)
+{
+    while (SDL_GetAtomicInt(&quit_watch_file) == 0) {
+        SDL_Delay(100);
         SDL_LockMutex(file_watch_lock);
         union
         {
@@ -518,31 +559,21 @@ void SDL_SYS_UpdateFileWatch(void)
         }
 
         while (remain > 0) {
-            const char *watched_path;
-            if (SDL_FindInHashTable(watch_descriptor_table, (void *)(intptr_t)buf.event.wd, (const void **)&watched_path)) {
-                const char *path_tmp;
-                SDL_EventType event_type;
-                bool post_event = true;
+            const WatchEntry *watch_entry;
+            if (SDL_FindInHashTable(watch_descriptor_table, (void *)(intptr_t)buf.event.wd, (const void **)&watch_entry)) {
                 if (buf.event.mask & IN_Q_OVERFLOW) {
-                    event_type = SDL_EVENT_FILE_WATCH_ERROR;
-                    path_tmp = NULL;
+                    SendFileWatchEvent(SDL_EVENT_FILE_WATCH_ERROR, NULL);
                 } else if (buf.event.len != 0) {
-                    (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watched_path, buf.event.name);
-                    event_type = SDL_EVENT_FILE_CHANGED;
-                    path_tmp = SDL_CreateTemporaryString(path);
-                    post_event = (path_tmp != NULL);
+                    (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watch_entry->path, buf.event.name);
+                    if (watch_entry->callback) {
+                        watch_entry->callback(watch_entry->user_data, path);
+                    }
+                    SendFileWatchEvent(SDL_EVENT_FILE_CHANGED, path);
                 } else {
-                    event_type = SDL_EVENT_FILE_CHANGED;
-                    path_tmp = SDL_CreateTemporaryString(watched_path);
-                    post_event = (path_tmp != NULL);
-                }
-                if (post_event && SDL_EventEnabled(event_type)) {
-                    SDL_Event event;
-                    SDL_zero(event);
-                    event.type = event_type;
-                    event.common.timestamp = 0;
-                    event.file_watch.path = path_tmp;
-                    SDL_PushEvent(&event);
+                    if (watch_entry->callback) {
+                        watch_entry->callback(watch_entry->user_data, watch_entry->path);
+                    }
+                    SendFileWatchEvent(SDL_EVENT_FILE_CHANGED, watch_entry->path);
                 }
             }
 
@@ -555,13 +586,16 @@ void SDL_SYS_UpdateFileWatch(void)
         }
         SDL_UnlockMutex(file_watch_lock);
     }
-#endif // HAVE_INOTIFY
+    return 0;
 }
+#endif // HAVE_INOTIFY
 
 void SDL_SYS_QuitFileWatch(void)
 {
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0) {
+        SDL_SetAtomicInt(&quit_watch_file, 0);
+        SDL_WaitThread(file_watch_thread, NULL);
         close(inotify_fd);
         inotify_fd = -1;
         SDL_DestroyMutex(file_watch_lock);
