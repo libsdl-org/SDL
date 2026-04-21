@@ -100,11 +100,33 @@ static int SDL_IsEmscriptenJoystickXInput(int device_index)
     }, device_index);
 }
 
+static int SDL_GetEmscriptenOSID()
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        const os = ([
+            'Android',
+            'Linux',
+            'iPhone',
+            'Macintosh',
+            'Windows',
+        ]);
+        const ua = navigator['userAgent'];
+        for (let i = 0; i < os.length; i++) {
+            if (ua['indexOf'](os[i]) >= 0) {
+                return i + 1;
+            }
+        }
+        return 0;
+    });
+}
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
     int i;
+    Uint16 bus;
     Uint16 vendor, product;
+    Uint8 os_id;
     bool is_xinput;
 
     SDL_LockJoysticks();
@@ -121,6 +143,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     SDL_zerop(item);
     item->index = gamepadEvent->index;
 
+    bus = SDL_HARDWARE_BUS_UNKNOWN;
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
@@ -130,6 +153,21 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         vendor = USB_VENDOR_MICROSOFT;
         product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
     }
+    
+    os_id = SDL_GetEmscriptenOSID();
+
+    if (os_id != 0) {
+        if (os_id == 1 || os_id == 3) { // Android or iOS (mobile)
+            bus = SDL_HARDWARE_BUS_BLUETOOTH;
+        } else { // Desktop
+            bus = SDL_HARDWARE_BUS_USB;
+        }
+    }
+
+    if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
+        // We should differentiate between devices that are mapped or unmapped by the browser.
+        os_id += 0x80;
+    }
 
     item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
     if (!item->name) {
@@ -138,9 +176,10 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, vendor, product, 0, NULL, item->name, 0, 0);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, gamepadEvent->id, 0, os_id);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
+        item->guid.data[15] = os_id;
     }
 
     if (is_xinput) {
