@@ -983,7 +983,7 @@ typedef struct SDL_SensorEvent
  */
 typedef struct SDL_FileWatchEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_FILE_WATCH_ERROR or SDL_EVENT_FILE_CHANGED */
+    SDL_EventType type; /**< SDL_EVENT_FILE_CHANGED or SDL_EVENT_FILE_WATCH_ERROR */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     const char *path;   /**< Path of the modified file for SDL_EVENT_FILE_CHANGED, NULL for SDL_EVENT_FILE_WATCH_ERROR */

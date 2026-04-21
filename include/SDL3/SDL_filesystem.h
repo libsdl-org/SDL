@@ -559,7 +559,7 @@ typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path);
  *
  * \sa SDL_FileWatchEvent
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_WatchFileForChanges(const char *path, SDL_FileWatchCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback callback, void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
