@@ -414,9 +414,11 @@ static bool GAMEINPUT_JoystickInit(void)
     if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
         kind |= GameInputKindController;
     }
+#if GAMEINPUT_API_VERSION >= 3
     if (GAMEINPUT_IsRawGameInputEnabled()) {
         kind |= GameInputKindRawDeviceReport;
     }
+#endif
 
     hr = g_pGameInput->RegisterDeviceCallback(NULL,
                                            kind,
@@ -696,7 +698,8 @@ static bool GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool ena
 
 static void GAMEINPUT_GuitarUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp)
 {
-    IGameInputRawDeviceReport* rawState;
+#if GAMEINPUT_API_VERSION >= 3
+    IGameInputRawDeviceReport *rawState;
     if (reading->GetRawReport(&rawState)) {
         static WORD s_GuitarButtons[] = {
             0x0010,  // SDL_GAMEPAD_BUTTON_SOUTH
@@ -748,6 +751,7 @@ static void GAMEINPUT_GuitarUpdate(SDL_Joystick *joystick, IGameInputReading *re
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[rawData[4] >> 4]);
         }
     }
+#endif // GAMEINPUT_API_VERSION >= 3
 }
 
 static void GAMEINPUT_GamepadUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp) {
