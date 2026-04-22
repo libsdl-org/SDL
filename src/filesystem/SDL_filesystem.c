@@ -147,6 +147,9 @@ bool SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *u
     CHECK_PARAM(!path) {
         return SDL_InvalidParamError("path");
     }
+    CHECK_PARAM(path[0] == '\0') {
+        return SDL_InvalidParamError("path");
+    }
     return SDL_SYS_WatchPathForChanges(path, cb, userdata);
 }
 

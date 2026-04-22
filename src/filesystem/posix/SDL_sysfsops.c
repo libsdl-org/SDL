@@ -475,8 +475,8 @@ bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, voi
             inotify_fd = -1;
             return false;
         }
-        file_watch_thread = SDL_CreateThread(SDL_FileWatchThread, "SDL_FileWatch", NULL);
         SDL_SetAtomicInt(&quit_watch_file, 0);
+        file_watch_thread = SDL_CreateThread(SDL_FileWatchThread, "SDL_FileWatch", NULL);
         if (!file_watch_thread) {
             SDL_DestroyHashTable(watch_descriptor_table);
             watch_descriptor_table = NULL;
@@ -495,7 +495,8 @@ bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, voi
     watch_entry->callback = cb;
     watch_entry->user_data = user_data;
     SDL_memcpy(watch_entry->path, path, slen + 1);
-    // remove separator at the end of the path
+    // remove separator at the end of the path, it is added back when
+    // concatenating directory path and file name
     if (watch_entry->path[slen - 1] == '/') {
         watch_entry->path[slen - 1] = '\0';
     }
@@ -594,7 +595,7 @@ void SDL_SYS_QuitPathWatch(void)
 {
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0) {
-        SDL_SetAtomicInt(&quit_watch_file, 0);
+        SDL_SetAtomicInt(&quit_watch_file, 1);
         SDL_WaitThread(file_watch_thread, NULL);
         close(inotify_fd);
         inotify_fd = -1;
