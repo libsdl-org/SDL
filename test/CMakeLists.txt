@@ -41,7 +41,7 @@ add_library(sdltests_utils OBJECT
 )
 target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
-file(GLOB RESOURCE_FILES *.png *.wav *.csv *.hex moose.dat utf8.txt)
+file(GLOB RESOURCE_FILES *.png *.wav *.csv *.hex moose.dat utf8.txt data/*.bin)
 
 option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 
@@ -364,7 +364,7 @@ add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARG
 
 set(build_options_dependent_tests )
 
-add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c NAME83 evdev)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE NEEDS_RESOURCES SOURCES testevdev.c NAME83 evdev)
 
 if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
