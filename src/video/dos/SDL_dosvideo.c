@@ -90,7 +90,12 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
     mode.format = SDL_PIXELFORMAT_RGB565;
     mode.w = 320;
     mode.h = 200;
-    SDL_DisplayID display_id = SDL_AddBasicVideoDisplay(&mode);
+
+    SDL_VideoDisplay vdisplay;
+    SDL_zero(vdisplay);
+    SDL_memcpy(&vdisplay.desktop_mode, &mode, sizeof(mode));
+    vdisplay.name = (char *)DOSVESA_GetGPUName();
+    SDL_DisplayID display_id = SDL_AddVideoDisplay(&vdisplay, false);
     if (!display_id) {
         return false;
     }

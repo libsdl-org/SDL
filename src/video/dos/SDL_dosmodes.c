@@ -219,7 +219,7 @@ static const SDL_VESAInfo *GetVESAInfo(void)
     return vesa_info;
 }
 
-// Test by writing and reading back the DAC Pixel Mask register (0x3C6).
+// Test by writing and reading back the DAC Pixel Mask register
 // On VGA this is a read/write register, on EGA/CGA the port either
 // doesn't exist (reads 0xFF) or isn't writable.
 static bool DetectVGA(void)
@@ -245,6 +245,26 @@ bool DOSVESA_SupportsVESA(void)
     (void)GetVESAInfo();
 
     return true;
+}
+
+const char *DOSVESA_GetGPUName(void)
+{
+    const SDL_VESAInfo *vinfo = GetVESAInfo();
+    if (!vinfo) {
+        return "VGA";
+    }
+
+    if (vinfo->oem_product && *vinfo->oem_product) {
+        return vinfo->oem_product;
+    }
+    if (vinfo->oem_vendor && *vinfo->oem_vendor) {
+        return vinfo->oem_vendor;
+    }
+    if (vinfo->oem_string && *vinfo->oem_string) {
+        return vinfo->oem_string;
+    }
+
+    return "VESA";
 }
 
 Uint32 DOSVESA_GetVESATotalMemory(void)

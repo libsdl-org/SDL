@@ -30,7 +30,7 @@ dosbox myapp.exe
 | CPU       | i386 or higher                 |
 | RAM       | 4 MB                           |
 | Video     | VGA (256-color mode 13h)       |
-| Audio     | Sound Blaster (optional)       |
+| Audio     | Sound Blaster                  |
 | DPMI      | CWSDPMI.exe or compatible host |
 
 Higher resolutions (640×480 and above) require a VESA VBE 1.2+ compatible video card.

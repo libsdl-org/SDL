@@ -281,9 +281,9 @@ int DOS_JoinThread(int thread_id)
 int DOS_GetCurrentThreadID(void)
 {
     if (!scheduler_initialized) {
-        return 0;
+        return 1;
     }
-    return current_thread;
+    return current_thread + 1;
 }
 
 void DOS_WakeThread(int thread_id)

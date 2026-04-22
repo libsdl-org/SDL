@@ -29,6 +29,7 @@ extern bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sd
 extern bool DOSVESA_SupportsVESA(void);
 extern void DOSVESA_FreeVESAInfo(void);
 extern Uint32 DOSVESA_GetVESATotalMemory(void);
+extern const char *DOSVESA_GetGPUName(void);
 
 // VGA DAC (Digital-to-Analog Converter) ports for palette programming
 #define VGA_DAC_PIXEL_MASK  0x3C6 // pixel mask register (read/write, VGA-only)
