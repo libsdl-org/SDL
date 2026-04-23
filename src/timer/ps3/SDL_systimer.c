@@ -79,7 +79,8 @@ Uint64 SDL_GetPerformanceFrequency(void)
 
 void SDL_SYS_DelayNS(Uint64 ns)
 {
-    sysUsleep(ns);
+    // Convert nanoseconds to microseconds.
+    sysUsleep(ns / 1000);
 }
 
 #endif /* SDL_TIMER_PS3 */
