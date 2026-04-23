@@ -72,6 +72,10 @@ static DOSFramebufferState fb_state;
 static SDL_Surface *GetConvertedCursorSurface(SDL_CursorData *curdata, SDL_Surface *dst)
 {
     SDL_Palette *pal = SDL_GetSurfacePalette(dst);
+    if (!pal) {
+        return NULL;
+    }
+
     Uint32 pal_version = pal ? pal->version : 0;
 
     if (curdata->converted_surface &&
@@ -94,63 +98,51 @@ static SDL_Surface *GetConvertedCursorSurface(SDL_CursorData *curdata, SDL_Surfa
     }
 
     // Copy the destination palette.
-    if (pal) {
-        SDL_Palette *conv_pal = SDL_CreateSurfacePalette(conv);
-        if (conv_pal) {
-            SDL_SetPaletteColors(conv_pal, pal->colors, 0, pal->ncolors);
+    SDL_Palette *conv_pal = SDL_CreateSurfacePalette(conv);
+    if (conv_pal) {
+        SDL_SetPaletteColors(conv_pal, pal->colors, 0, pal->ncolors);
+    }
+
+    // Track which palette indices are used by opaque pixels.
+    bool used[256];
+    SDL_memset(used, 0, sizeof(used));
+
+    // First pass: blit with BLENDMODE_NONE to get raw color-matched indices.
+    SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
+    SDL_BlitSurface(src, NULL, conv, NULL);
+    SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_BLEND);
+
+    // Mark which indices are used by non-transparent source pixels.
+    for (int y = 0; y < h; y++) {
+        const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
+        const Uint8 *convrow = (const Uint8 *)conv->pixels + y * conv->pitch;
+        for (int x = 0; x < w; x++) {
+            Uint8 srcA = (Uint8)(srcrow[x] >> 24);
+            if (srcA > 0) {
+                used[convrow[x]] = true;
+            }
         }
     }
 
-    // Find a colorkey value. For INDEX8, find a palette index that isn't
-    // used by any opaque cursor pixel. For other formats, use magenta.
+    // Find an unused index for the colorkey.
     Uint32 colorkey = 0;
-    if (dst->format == SDL_PIXELFORMAT_INDEX8 && pal) {
-        // Track which palette indices are used by opaque pixels.
-        bool used[256];
-        SDL_memset(used, 0, sizeof(used));
+    for (int i = 0; i < 256; i++) {
+        if (!used[i]) {
+            colorkey = (Uint32)i;
+            break;
+        }
+    }
 
-        // First pass: blit with BLENDMODE_NONE to get raw color-matched indices.
-        SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
-        SDL_BlitSurface(src, NULL, conv, NULL);
-        SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_BLEND);
-
-        // Mark which indices are used by non-transparent source pixels.
-        for (int y = 0; y < h; y++) {
-            const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
-            const Uint8 *convrow = (const Uint8 *)conv->pixels + y * conv->pitch;
-            for (int x = 0; x < w; x++) {
-                Uint8 srcA = (Uint8)(srcrow[x] >> 24);
-                if (srcA > 0) {
-                    used[convrow[x]] = true;
-                }
+    // Second pass: set transparent pixels to the colorkey index.
+    for (int y = 0; y < h; y++) {
+        const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
+        Uint8 *convrow = (Uint8 *)conv->pixels + y * conv->pitch;
+        for (int x = 0; x < w; x++) {
+            Uint8 srcA = (Uint8)(srcrow[x] >> 24);
+            if (srcA == 0) {
+                convrow[x] = (Uint8)colorkey;
             }
         }
-
-        // Find an unused index for the colorkey.
-        colorkey = 0;
-        for (int i = 0; i < 256; i++) {
-            if (!used[i]) {
-                colorkey = (Uint32)i;
-                break;
-            }
-        }
-
-        // Second pass: set transparent pixels to the colorkey index.
-        for (int y = 0; y < h; y++) {
-            const Uint32 *srcrow = (const Uint32 *)((const Uint8 *)src->pixels + y * src->pitch);
-            Uint8 *convrow = (Uint8 *)conv->pixels + y * conv->pitch;
-            for (int x = 0; x < w; x++) {
-                Uint8 srcA = (Uint8)(srcrow[x] >> 24);
-                if (srcA == 0) {
-                    convrow[x] = (Uint8)colorkey;
-                }
-            }
-        }
-    } else {
-        // Non-indexed format: blit normally, transparent pixels will be handled by colorkey.
-        colorkey = SDL_MapSurfaceRGB(conv, 255, 0, 255);
-        SDL_FillSurfaceRect(conv, NULL, colorkey);
-        SDL_BlitSurface(src, NULL, conv, NULL);
     }
 
     SDL_SetSurfaceColorKey(conv, true, colorkey);
