@@ -2095,7 +2095,6 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 
         [data.mtlcmdencoder endEncoding];
 
-        // Standard rendering path: present drawable
         // If we don't have a drawable to present, don't try to present it.
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
