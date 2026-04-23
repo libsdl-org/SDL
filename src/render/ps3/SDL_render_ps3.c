@@ -91,7 +91,6 @@ typedef struct
 
 typedef struct
 {
-    bool first_fb; // Is this the first flip ?
     int current_screen;
     SDL_Surface *screens[NUM_BUFFERS];
     void *textures[NUM_BUFFERS];
@@ -152,7 +151,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
-    SDL_DeviceData *devdata = (SDL_DeviceData *)videoDevice->internal;
+    SDL_VideoData *devdata = (SDL_VideoData *)videoDevice->internal;
 
     if (!devdata->_CommandBuffer) {
         SDL_free(data);
@@ -162,7 +161,6 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     // Get a copy of the command buffer
     data->context = devdata->_CommandBuffer;
     data->current_screen = 0;
-    data->first_fb = true;
     
     pitch = displayMode->w * SDL_BYTESPERPIXEL(displayMode->format);
     // pitch = (displayMode->w * 4 + 63) & ~63;
@@ -205,8 +203,6 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
             SDL_OutOfMemory();
             return false;
         }
-
-
     }
 
     // gcmSetFlipMode(GCM_FLIP_VSYNC);
@@ -616,10 +612,10 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             scale.clipY = (s16)dsty;
             scale.clipW = (u16)dstw;
             scale.clipH = (u16)dsth;
-            scale.outX = (s16)(dstx);
-            scale.outY = (s16)(dsty);
-            scale.outW = (u16)(dstw);
-            scale.outH = (u16)(dsth);
+            scale.outX = (s16)dstx;
+            scale.outY = (s16)dsty;
+            scale.outW = (u16)dstw;
+            scale.outH = (u16)dsth;
             scale.ratioX = rsxGetFixedSint32(dstw/srcw);
             scale.ratioY = rsxGetFixedSint32(dsth/srch);
             scale.inX = rsxGetFixedUint16(srcx);
@@ -717,16 +713,14 @@ static bool PS3_RenderPresent(SDL_Renderer * renderer)
     PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
 
     gcmResetFlipStatus();
-
     gcmSetFlip(data->context, data->current_screen);
-
     rsxFlushBuffer(data->context);
     gcmSetWaitFlip(data->context);
 
     Uint64 timeout_timer = SDL_GetTicks();
     u32 res = gcmGetFlipStatus();
     while (res != 0)
-    {   
+    {
         sysUsleep(200);
         res = gcmGetFlipStatus();
 

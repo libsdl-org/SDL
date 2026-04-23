@@ -73,7 +73,7 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("PS3AUDIO: failed to create notify event queue");
     }
     
-    ret=audioPortStart(device->hidden->portNum);
+    ret = audioPortStart(device->hidden->portNum);
 
     device->hidden->last_filled_buf = 0;
     device->hidden->next_buffer = 0;
@@ -120,15 +120,19 @@ static bool PS3AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
 static void PS3AUDIO_CloseDevice(SDL_AudioDevice *device)
 {
-    audioPortStop(device->hidden->portNum);
-    audioRemoveNotifyEventQueue(device->hidden->snd_queue_key);
-    audioPortClose(device->hidden->portNum);
-    sysEventQueueDestroy(device->hidden->snd_queue, 0);
-    audioQuit();
+    if (device->hidden) {
+        audioPortStop(device->hidden->portNum);
+        audioRemoveNotifyEventQueue(device->hidden->snd_queue_key);
+        audioPortClose(device->hidden->portNum);
+        sysEventQueueDestroy(device->hidden->snd_queue, 0);
+        audioQuit();
 
-    SDL_free(device->hidden->rawbuf);
-    device->hidden->rawbuf = NULL;
-    SDL_free(device->hidden);
+        if (device->hidden->rawbuf) {
+            SDL_aligned_free(device->hidden->rawbuf);
+            device->hidden->rawbuf = NULL;
+        }
+        SDL_free(device->hidden);
+    }
 }
 
 static Uint8 *PS3AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)

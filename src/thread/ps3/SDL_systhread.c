@@ -64,7 +64,6 @@ static void RunThread(void *arg)
 bool SDL_SYS_CreateThread(SDL_Thread * thread, SDL_FunctionPointer pfnBeginThread,
                           SDL_FunctionPointer pfnEndThread)
 {
-
     size_t stack_size = 0x4000;
     u64 priority = 1500;
 
@@ -89,7 +88,6 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    SDL_Log("SDL_SYS_SetupThread: 1");
     /* Mask asynchronous signals for this thread */
     SDL_MaskSignals(NULL);
     (void)name;
