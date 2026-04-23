@@ -1500,12 +1500,13 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             float jitter=256.0f/(1<<16);
             float leftX=ctx->m_state.sLeftPadX / 0x1.0p16f + 0.5f;
             float leftY=(~ctx->m_state.sLeftPadY) / 0x1.0p16f + 0.5f;
-            oldLeftX=filter(leftX, oldLeftX, jitter);
-            oldLeftY=filter(leftY, oldLeftY, jitter);
             float fake_pressure=fingerDown ? 0.5f : 0.0f;
             if (leftPadClicked)
                 fake_pressure+=0.5f;
-
+            if (fingerDown){
+                oldLeftX=filter(leftX, oldLeftX, jitter);
+                oldLeftY=filter(leftY, oldLeftY, jitter);
+            }
             SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldLeftX,oldLeftY,fake_pressure);
 }
 {
@@ -1521,8 +1522,10 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             float fake_pressure=fingerDown ? 0.5f : 0.0f;
             if (rightPadClicked)
                 fake_pressure+=0.5f;
-            oldRightX=filter(rightX, oldRightX, jitter);
-            oldRightY=filter(rightY, oldRightY, jitter);
+            if (fingerDown){
+                oldRightX=filter(rightX, oldRightX, jitter);
+                oldRightY=filter(rightY, oldRightY, jitter);
+            }
             SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldRightX,oldRightY,fake_pressure);
 }
 
