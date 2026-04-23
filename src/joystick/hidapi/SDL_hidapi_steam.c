@@ -1487,46 +1487,46 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, ctx->m_state.sRightPadX);
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~ctx->m_state.sRightPadY);
 
-{
-            int padindex = 0;
-            int fingerindex = 0;
-            bool fingerDown = (ctx->m_state.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) ? 1 : 0;
-            bool leftPadClicked = (ctx->m_state.ulButtons & STEAM_BUTTON_LEFTPAD_CLICKED_MASK) ? 1 : 0;
-            static float oldLeftX = 0;
-            static float oldLeftY = 0;
-            float jitter=256.0f / (1 << 16);
-            float leftX = ctx->m_state.sLeftPadX / 0x1.0p16f + 0.5f;
-            float leftY = (~ctx->m_state.sLeftPadY) / 0x1.0p16f + 0.5f;
-            float fake_pressure = fingerDown ? 0.5f : 0.0f;
-            if (leftPadClicked) {
-                fake_pressure += 0.5f;
+            {
+                int padindex = 0;
+                int fingerindex = 0;
+                bool fingerDown = (ctx->m_state.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) ? 1 : 0;
+                bool leftPadClicked = (ctx->m_state.ulButtons & STEAM_BUTTON_LEFTPAD_CLICKED_MASK) ? 1 : 0;
+                static float oldLeftX = 0;
+                static float oldLeftY = 0;
+                float jitter=256.0f / (1 << 16);
+                float leftX = ctx->m_state.sLeftPadX /(float)(1 << 16) + 0.5f;
+                float leftY = (~ctx->m_state.sLeftPadY) /(float)(1 << 16) + 0.5f;
+                float fake_pressure = fingerDown ? 0.5f : 0.0f;
+                if (leftPadClicked) {
+                    fake_pressure += 0.5f;
+                }
+                if (fingerDown) {
+                    oldLeftX = filter(leftX, oldLeftX, jitter);
+                    oldLeftY = filter(leftY, oldLeftY, jitter);
+                }
+                SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldLeftX,oldLeftY,fake_pressure);
             }
-            if (fingerDown) {
-                oldLeftX = filter(leftX, oldLeftX, jitter);
-                oldLeftY = filter(leftY, oldLeftY, jitter);
+            {
+                int padindex = 1;
+                int fingerindex = 0;
+                bool fingerDown = (ctx->m_state.ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) ? 1 : 0;
+                bool rightPadClicked = (ctx->m_state.ulButtons & STEAM_BUTTON_RIGHTPAD_CLICKED_MASK) ? 1 : 0;
+                static float oldRightX = 0;
+                static float oldRightY = 0;
+                float jitter = 256.0f / (1 << 16);
+                float rightX = ctx->m_state.sRightPadX /(float)(1 << 16)+ 0.5f;
+                float rightY = (~ctx->m_state.sRightPadY) /(float)(1 << 16)+ 0.5f;
+                float fake_pressure = fingerDown ? 0.5f : 0.0f;
+                if (rightPadClicked) {
+                    fake_pressure += 0.5f;
+                }
+                if (fingerDown) {
+                    oldRightX = filter(rightX, oldRightX, jitter);
+                    oldRightY = filter(rightY, oldRightY, jitter);
+                }
+                SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldRightX,oldRightY,fake_pressure);
             }
-            SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldLeftX,oldLeftY,fake_pressure);
-}
-{
-            int padindex = 1;
-            int fingerindex = 0;
-            bool fingerDown = (ctx->m_state.ulButtons & STEAM_RIGHTPAD_FINGERDOWN_MASK) ? 1 : 0;
-            bool rightPadClicked = (ctx->m_state.ulButtons & STEAM_BUTTON_RIGHTPAD_CLICKED_MASK) ? 1 : 0;
-            static float oldRightX = 0;
-            static float oldRightY = 0;
-            float jitter = 256.0f / (1 << 16);
-            float rightX = ctx->m_state.sRightPadX / 0x1.0p16f + 0.5f;
-            float rightY = (~ctx->m_state.sRightPadY) / 0x1.0p16f + 0.5f;
-            float fake_pressure = fingerDown ? 0.5f : 0.0f;
-            if (rightPadClicked) {
-                fake_pressure += 0.5f;
-            }
-            if (fingerDown) {
-                oldRightX = filter(rightX, oldRightX, jitter);
-                oldRightY = filter(rightY, oldRightY, jitter);
-            }
-            SDL_SendJoystickTouchpad(timestamp, joystick, padindex, fingerindex,fingerDown,oldRightX,oldRightY,fake_pressure);
-}
 
             if (ctx->report_sensors) {
                 float values[3];
