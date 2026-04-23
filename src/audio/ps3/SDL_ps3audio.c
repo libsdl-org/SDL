@@ -85,7 +85,7 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
     // PS3 audio block is always 256 samples
     device->sample_frames = 256;
 
-    /* Allocate the mixing buffer.  Its size and starting address must
+    /* Allocate the mixing buffer. Its size and starting address must
     be a multiple of 64 bytes.  Our sample count is already a multiple of
     64, so spec->size should be a multiple of 64 as well. */
     const int mixlen = device->buffer_size * NUM_BUFFERS;

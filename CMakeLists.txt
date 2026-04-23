@@ -3254,13 +3254,11 @@ elseif(PS3)
 
   set(SDL_THREAD_PS3 1)
   sdl_glob_sources(
-    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.c"
-    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.h"
-  )
-  sdl_sources(
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.c"
+    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.h"
   )
   set(HAVE_SDL_THREADS TRUE)
 
@@ -3278,23 +3276,6 @@ elseif(PS3)
     set(SDL_VIDEO_OPENGL 0)
     set(HAVE_SDL_VIDEO TRUE)
   endif()
-
-  sdl_link_dependency(base
-    LIBS
-        gcm_sys
-        rsx
-        sysutil
-        rt
-        lv2
-        io
-        audio
-        m
-  )
-
-  set(HAVE_GCC_ATOMICS TRUE)
-
-  add_compile_definitions(HAVE_GCC_ATOMICS=1)
-
 elseif(N3DS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/n3ds/*.c")
 
