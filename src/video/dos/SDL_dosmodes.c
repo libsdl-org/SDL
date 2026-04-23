@@ -332,7 +332,6 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
     // (1.0, 1.1) or no VESA at all just skip this loop and fall through to
     // the VGA mode 13h fallback below.
     int num_vesa_modes = (vinfo && vinfo->version >= 0x102) ? vinfo->num_modes : 0;
-    const bool allow_index8 = SDL_GetHintBoolean(SDL_HINT_DOS_ALLOW_INDEX8_MODES, false);
 
     for (int mi = 0; mi < num_vesa_modes; mi++) {
         const Uint16 modeid = vinfo->mode_list[mi];
@@ -360,8 +359,6 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
             continue; // skip planar pixel layouts.
         } else if (info.bpp < 8) {
             continue; // skip anything below 8-bit.
-        } else if (info.bpp == 8 && !allow_index8) {
-            continue; // skip INDEX8 unless explicitly requested via hint.
         } else if (!info.w || !info.h) {
             continue; // zero-area display mode?!
         } else if (!info.has_lfb && !info.win_granularity) {
@@ -430,9 +427,9 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
         }
     }
 
-    // Add VGA mode 13h for 320x200x8 when INDEX8 modes are allowed.
-    // We skipped any VESA 320x200x8 modes above so this is the only entry at that resolution.
-    if (allow_index8) {
+    // Always add VGA mode 13h for 320x200x8. We skipped any VESA 320x200x8
+    // modes above so this is the only entry at that resolution.
+    {
         SDL_DisplayModeData *internal = (SDL_DisplayModeData *)SDL_malloc(sizeof(*internal));
         if (internal) {
             SDL_zerop(internal);
@@ -463,6 +460,31 @@ bool DOSVESA_GetDisplayModes(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_disp
 
             if (!SDL_AddFullscreenDisplayMode(sdl_display, &mode)) {
                 SDL_free(internal);
+            }
+        }
+    }
+
+    // Sort modes descending: largest to smallest (by width first, then height, then bpp).
+    for (int i = 0; i < sdl_display->num_fullscreen_modes - 1; i++) {
+        for (int j = i + 1; j < sdl_display->num_fullscreen_modes; j++) {
+            const SDL_DisplayMode *a = &sdl_display->fullscreen_modes[i];
+            const SDL_DisplayMode *b = &sdl_display->fullscreen_modes[j];
+            bool swap = false;
+            if (b->w > a->w) {
+                swap = true;
+            } else if (b->w == a->w) {
+                if (b->h > a->h) {
+                    swap = true;
+                } else if (b->h == a->h) {
+                    if (SDL_BITSPERPIXEL(b->format) > SDL_BITSPERPIXEL(a->format)) {
+                        swap = true;
+                    }
+                }
+            }
+            if (swap) {
+                SDL_DisplayMode tmp = sdl_display->fullscreen_modes[i];
+                sdl_display->fullscreen_modes[i] = sdl_display->fullscreen_modes[j];
+                sdl_display->fullscreen_modes[j] = tmp;
             }
         }
     }

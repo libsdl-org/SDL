@@ -742,22 +742,6 @@ extern "C" {
 #define SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER "SDL_DOS_ALLOW_DIRECT_FRAMEBUFFER"
 
 /**
- * A variable that controls whether INDEX8 video modes are exposed on DOS.
- *
- * By default, INDEX8 modes are hidden from the fullscreen display mode list.
- *
- * The variable can be set to the following values:
- *
- * - "0": Hide INDEX8 modes. (default)
- * - "1": Expose INDEX8 modes.
- *
- * This hint should be set before calling SDL_Init().
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_DOS_ALLOW_INDEX8_MODES "SDL_DOS_ALLOW_INDEX8_MODES"
-
-/**
  * Set the level of checking for invalid parameters passed to SDL functions.
  *
  * The variable can be set to the following values:

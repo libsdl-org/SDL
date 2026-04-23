@@ -161,11 +161,6 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
         return false;
     }
 
-    if (display->num_fullscreen_modes == 0) {
-        return SDL_SetError("DOSVESA: No usable video modes found. "
-                            "Set SDL_DOS_ALLOW_INDEX8_MODES=1 if your application can use 8-bit indexed modes.");
-    }
-
     // Pick a sensible default desktop mode. This determines the window
     // size for FULLSCREEN_ONLY. Target 640x480 as a safe default; apps
     // that want something else should call SDL_SetWindowFullscreenMode.
