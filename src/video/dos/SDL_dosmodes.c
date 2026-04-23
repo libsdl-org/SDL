@@ -514,12 +514,12 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         if (SDL_GetMouse()->internal != NULL) {
             regs.x.ax = 0x7;
             regs.x.cx = 0;
-            regs.x.dx = (Uint16)mode->w;
+            regs.x.dx = (Uint16)(mode->w - 1);
             __dpmi_int(0x33, &regs);
 
             regs.x.ax = 0x8;
             regs.x.cx = 0;
-            regs.x.dx = (Uint16)mode->h;
+            regs.x.dx = (Uint16)(mode->h - 1);
             __dpmi_int(0x33, &regs);
         }
 
@@ -648,12 +648,12 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
     if (SDL_GetMouse()->internal != NULL) { // internal != NULL) == int 33h services available.
         regs.x.ax = 0x7;                    // set mouse min/max horizontal position.
         regs.x.cx = 0;
-        regs.x.dx = (Uint16)mode->w;
+        regs.x.dx = (Uint16)(mode->w - 1);
         __dpmi_int(0x33, &regs);
 
         regs.x.ax = 0x8; // set mouse min/max vertical position.
         regs.x.cx = 0;
-        regs.x.dx = (Uint16)mode->h;
+        regs.x.dx = (Uint16)(mode->h - 1);
         __dpmi_int(0x33, &regs);
     }
 
