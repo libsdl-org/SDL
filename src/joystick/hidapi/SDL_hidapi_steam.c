@@ -1493,7 +1493,6 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             int padindex=0;
             int fingerindex=0;
             bool fingerDown=(ctx->m_state.ulButtons & STEAM_LEFTPAD_FINGERDOWN_MASK) ? 1 : 0;
-
             bool leftPadClicked=(ctx->m_state.ulButtons & STEAM_BUTTON_LEFTPAD_CLICKED_MASK) ? 1 : 0;
             static float oldLeftX=0;
             static float oldLeftY=0;
