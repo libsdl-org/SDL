@@ -106,6 +106,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
             for (j = 0; modes[j]; ++j) {
                 SDL_FRect cell_rect;
                 const SDL_DisplayMode *mode = modes[j];
+                if (mode->format == SDL_PIXELFORMAT_INDEX8) {
+                    continue;
+                }
 
                 (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gx %gHz",
                                    SDL_GetDisplayName(display),
