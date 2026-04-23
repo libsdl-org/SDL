@@ -1351,7 +1351,6 @@ static bool ControllerConnected(SDL_HIDAPI_Device *device, SDL_Joystick **joysti
     return true;
 }
 
-
 static float filter(float newvalue, float oldvalue, float jitter)
 {
     jitter = jitter >= 0 ? jitter : -jitter;
@@ -1366,8 +1365,6 @@ static float filter(float newvalue, float oldvalue, float jitter)
     }
     return newvalue;
 }
-
-
 
 static void ControllerDisconnected(SDL_HIDAPI_Device *device, SDL_Joystick **joystick)
 {
