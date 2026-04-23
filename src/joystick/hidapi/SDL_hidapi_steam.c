@@ -1355,7 +1355,7 @@ static float filter(float newvalue, float oldvalue, float jitter)
 {
     jitter = jitter >= 0 ? jitter : -jitter;
     if (newvalue > (oldvalue - jitter * 0.5f) && newvalue < (oldvalue + jitter * 0.5f)){
-        return  oldvalue;
+        return oldvalue;
     }
     if (newvalue > (oldvalue - jitter) && newvalue < (oldvalue + jitter)){
         return oldvalue * 0.75f + newvalue * 0.25f;
