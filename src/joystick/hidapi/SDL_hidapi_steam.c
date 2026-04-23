@@ -1354,13 +1354,13 @@ static bool ControllerConnected(SDL_HIDAPI_Device *device, SDL_Joystick **joysti
 static float filter(float newvalue, float oldvalue, float jitter)
 {
     jitter = jitter >= 0 ? jitter : -jitter;
-    if (newvalue > (oldvalue - jitter * 0.5f) && newvalue < (oldvalue + jitter * 0.5f)){
+    if (newvalue > (oldvalue - jitter * 0.5f) && newvalue < (oldvalue + jitter * 0.5f)) {
         return oldvalue;
     }
-    if (newvalue > (oldvalue - jitter) && newvalue < (oldvalue + jitter)){
+    if (newvalue > (oldvalue - jitter) && newvalue < (oldvalue + jitter)) {
         return oldvalue * 0.75f + newvalue * 0.25f;
     }
-    if (newvalue > (oldvalue - jitter * 2.0f) && newvalue < (oldvalue + jitter * 2.0f)){
+    if (newvalue > (oldvalue - jitter * 2.0f) && newvalue < (oldvalue + jitter * 2.0f)) {
         return (oldvalue + newvalue) * 0.5f;
     }
     return newvalue;
@@ -1518,10 +1518,10 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
             float rightX = ctx->m_state.sRightPadX / 0x1.0p16f + 0.5f;
             float rightY = (~ctx->m_state.sRightPadY)/ 0x1.0p16f + 0.5f;
             float fake_pressure = fingerDown ? 0.5f : 0.0f;
-            if (rightPadClicked){
+            if (rightPadClicked) {
                 fake_pressure += 0.5f;
             }
-            if (fingerDown){
+            if (fingerDown) {
                 oldRightX = filter(rightX, oldRightX, jitter);
                 oldRightY = filter(rightY, oldRightY, jitter);
             }
