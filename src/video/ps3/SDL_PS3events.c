@@ -78,6 +78,7 @@ static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, 
 
 void PS3_PumpEvents(SDL_VideoDevice *_this)
 {
+    sysUtilCheckCallback();
     // PS3_PumpKeyboard(_this);
     // PS3_PumpMouse();
 }

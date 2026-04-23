@@ -50,8 +50,8 @@ static void unicodeToUtf8(Uint16 w, char *utf8buf)
 
 static void updateKeymap(SDL_VideoDevice *_this)
 {
-    SDL_DeviceData *data =
-        (SDL_DeviceData *) _this->internal;
+    SDL_VideoData *data =
+        (SDL_VideoData *) _this->internal;
 
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_SCANCODE_COUNT];
@@ -97,7 +97,7 @@ static void updateKeymap(SDL_VideoDevice *_this)
 
 static void checkKeyboardConnected(SDL_VideoDevice *_this)
 {
-    SDL_DeviceData *data = (SDL_DeviceData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 
     KbInfo kbInfo;
     ioKbGetInfo(&kbInfo);
@@ -147,7 +147,7 @@ static void updateModifiers(SDL_VideoDevice *_this, const KbData *Keys)
 
 static void updateKeys(SDL_VideoDevice *_this, const KbData *Keys)
 {
-    SDL_DeviceData *data = (SDL_DeviceData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 
     int x = 0;
     int numKeys = 0;
@@ -199,7 +199,7 @@ static void updateKeys(SDL_VideoDevice *_this, const KbData *Keys)
 
 void PS3_PumpKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_DeviceData *data = (SDL_DeviceData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 
     checkKeyboardConnected(_this);
 
@@ -217,7 +217,7 @@ void PS3_PumpKeyboard(SDL_VideoDevice *_this)
 
 void PS3_InitKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_DeviceData *data = (SDL_DeviceData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
 
     // Init the PS3 Keyboard
     ioKbInit(1);

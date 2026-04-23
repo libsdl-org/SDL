@@ -54,19 +54,7 @@
 
 static bool PS3_VideoInit(SDL_VideoDevice *_this);
 static void PS3_VideoQuit(SDL_VideoDevice *_this);
-
-static void initializeGPU(SDL_DeviceData * devdata);
-
-static int PS3_Available(void)
-{
-    return (1);
-}
-
-static void PS3_DeleteDevice(SDL_VideoDevice * device)
-{
-    deprintf (1, "PS3_DeleteDevice( %p)\n", device); fflush(stdout);
-    SDL_free(device);
-}
+static void initializeGPU(SDL_VideoData * devdata);
 
 bool PS3_VideoInit(SDL_VideoDevice *_this)
 {
@@ -84,10 +72,10 @@ void PS3_VideoQuit(SDL_VideoDevice *_this)
 {
     PS3_QuitModes(_this);
     PS3_QuitSysEvent(_this);
-    SDL_free( _this->internal);
+    SDL_free(_this->internal);
 }
 
-void initializeGPU( SDL_DeviceData * devdata)
+void initializeGPU( SDL_VideoData * devdata)
 {
     deprintf (1, "initializeGPU()\n");
 
@@ -115,6 +103,12 @@ void initializeGPU( SDL_DeviceData * devdata)
     }
 
     assert(devdata->_CommandBuffer != NULL);
+}
+
+static void PS3_DeleteDevice(SDL_VideoDevice * device)
+{
+    deprintf (1, "PS3_DeleteDevice( %p)\n", device);
+    SDL_free(device);
 }
 
 bool PS3_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -209,7 +203,7 @@ static SDL_VideoDevice *PS3_CreateDevice(void)
         return (0);
     }
 
-    SDL_DeviceData *devdata = (SDL_DeviceData*)SDL_calloc(1, sizeof(SDL_DeviceData));
+    SDL_VideoData *devdata = (SDL_VideoData*)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!devdata) {
         SDL_OutOfMemory();
         return false;
@@ -218,7 +212,7 @@ static SDL_VideoDevice *PS3_CreateDevice(void)
     // Initialize GPU before any videoOut calls
     initializeGPU(devdata);
 
-    device->internal = (SDL_DeviceData*) devdata;
+    device->internal = (SDL_VideoData*) devdata;
     device->VideoInit = PS3_VideoInit;
     device->VideoQuit = PS3_VideoQuit;
     device->GetDisplayModes = PS3_GetDisplayModes;
