@@ -1275,7 +1275,6 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED,
                         SDL_HomeLEDHintChanged, ctx);
 
-
     return true;
 }
 
