@@ -1496,7 +1496,7 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                 static float oldLeftY = 0;
                 float jitter=256.0f / (1 << 16);
                 float leftX = ctx->m_state.sLeftPadX /(float)(1 << 16)+ 0.5f;
-                float leftY = (~ctx->m_state.sLeftPadY) /(float)(1 << 16)+ 0.5f;
+                float leftY =(~ctx->m_state.sLeftPadY)/(float)(1 << 16)+ 0.5f;
                 float fake_pressure = fingerDown ? 0.5f : 0.0f;
                 if (leftPadClicked) {
                     fake_pressure += 0.5f;
