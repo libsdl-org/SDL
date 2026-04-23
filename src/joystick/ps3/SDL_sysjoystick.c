@@ -160,11 +160,6 @@ static bool PS3_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     return (result == 0);
 }
 
-static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static SDL_INLINE Sint16 PS3_AxisScale(u16 raw)
 {
     return (Sint16)(((int)(raw & 0xFF) - 128) * 257);
@@ -213,6 +208,7 @@ static void PS3_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata)
         SDL_free(joystick->hwdata);
+    ioPadEnd();
 }
 
 static void PS3_JoystickQuit(void)

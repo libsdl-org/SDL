@@ -314,6 +314,7 @@
 #cmakedefine SDL_JOYSTICK_MFI 1
 #cmakedefine SDL_JOYSTICK_N3DS 1
 #cmakedefine SDL_JOYSTICK_PS2 1
+#cmakedefine SDL_JOYSTICK_PS3 1
 #cmakedefine SDL_JOYSTICK_PSP 1
 #cmakedefine SDL_JOYSTICK_RAWINPUT 1
 #cmakedefine SDL_JOYSTICK_USBHID 1
