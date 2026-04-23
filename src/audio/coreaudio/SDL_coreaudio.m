@@ -351,11 +351,11 @@ static void interruption_end(_THIS)
 - (void)audioSessionInterruption:(NSNotification *)note
 {
     @synchronized(self) {
+        NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
         /* Defensive: skip if the device was already torn down. */
         if (self.device == NULL) {
             return;
         }
-        NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
         if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
             interruption_begin(self.device);
         } else {
@@ -382,6 +382,12 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
+        NSString *category = AVAudioSessionCategoryPlayback;
+        NSString *mode = AVAudioSessionModeDefault;
+        NSUInteger options = AVAudioSessionCategoryOptionMixWithOthers;
+        NSError *err = nil;
+        const char *hint;
+
         /* Close path: unregister the interruption observer FIRST, before any
            code that can early-return. [AVAudioSession setCategory:] failures
            (phone call, Siri, CarPlay / AirPlay handoff, etc.) would otherwise
@@ -398,12 +404,6 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
                 listener.device = NULL;
             }
         }
-
-        NSString *category = AVAudioSessionCategoryPlayback;
-        NSString *mode = AVAudioSessionModeDefault;
-        NSUInteger options = AVAudioSessionCategoryOptionMixWithOthers;
-        NSError *err = nil;
-        const char *hint;
 
         hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
         if (hint) {
