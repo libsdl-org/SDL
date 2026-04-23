@@ -35,6 +35,85 @@
 #include "SDL_dosmouse.h"
 #include "SDL_dosvideo.h"
 
+// Find the best display mode matching a requested width/height.
+// Resolution rule: any mode >= requested size beats any mode < requested size.
+// Among modes >= requested, smallest area wins. Among modes < requested, largest area wins.
+// Tiebreak on bpp: lower beats higher.
+// INDEX8 modes are only considered when allow_index8 is true.
+static const SDL_DisplayMode *DOSVESA_FindBestMode(SDL_VideoDisplay *display, int req_w, int req_h, bool allow_index8)
+{
+    const SDL_DisplayMode *best = NULL;
+    bool best_ge = false; // true if best is >= requested size
+
+    for (int i = 0; i < display->num_fullscreen_modes; ++i) {
+        const SDL_DisplayMode *m = &display->fullscreen_modes[i];
+        if (m->format == SDL_PIXELFORMAT_INDEX8 && !allow_index8) {
+            continue;
+        }
+
+        bool m_ge = (m->w >= req_w && m->h >= req_h);
+
+        if (!best) {
+            best = m;
+            best_ge = m_ge;
+            continue;
+        }
+
+        // Any >= requested beats any < requested.
+        if (m_ge && !best_ge) {
+            best = m;
+            best_ge = m_ge;
+            continue;
+        }
+        if (!m_ge && best_ge) {
+            continue;
+        }
+
+        int m_area = m->w * m->h;
+        int best_area = best->w * best->h;
+
+        if (m_ge) {
+            // Both >= requested: prefer smaller area.
+            if (m_area < best_area) {
+                best = m;
+                best_ge = m_ge;
+            } else if (m_area == best_area && SDL_BITSPERPIXEL(m->format) < SDL_BITSPERPIXEL(best->format)) {
+                best = m;
+                best_ge = m_ge;
+            }
+        } else {
+            // Both < requested: prefer larger area.
+            if (m_area > best_area) {
+                best = m;
+                best_ge = m_ge;
+            } else if (m_area == best_area && SDL_BITSPERPIXEL(m->format) < SDL_BITSPERPIXEL(best->format)) {
+                best = m;
+                best_ge = m_ge;
+            }
+        }
+    }
+
+    return best;
+}
+
+// Apply a display mode for a window: set the hardware mode, store it as
+// the window's requested fullscreen mode, and update window dimensions.
+static void DOSVESA_ApplyModeForWindow(SDL_VideoDisplay *display, SDL_Window *window, SDL_DisplayMode *mode)
+{
+    SDL_SetDisplayModeForDisplay(display, mode);
+
+    if (mode) {
+        SDL_copyp(&window->requested_fullscreen_mode, mode);
+        window->floating.w = window->windowed.w = window->w = mode->w;
+        window->floating.h = window->windowed.h = window->h = mode->h;
+
+        SDL_VideoData *vdata = SDL_GetVideoDevice()->internal;
+        if (vdata) {
+            vdata->using_rgb_modes = (mode->format != SDL_PIXELFORMAT_INDEX8);
+        }
+    }
+}
+
 static bool DOSVESA_CreateWindow(SDL_VideoDevice *device, SDL_Window *window, SDL_PropertiesID create_props)
 {
     // Allocate window internal data
@@ -50,8 +129,47 @@ static bool DOSVESA_CreateWindow(SDL_VideoDevice *device, SDL_Window *window, SD
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
 
-    // Window has been successfully created
+    {
+        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+        if (!display) {
+            return true;
+        }
+
+        SDL_DisplayMode *mode = NULL;
+        if (window->requested_fullscreen_mode.internal) {
+            // App explicitly set a fullscreen mode.
+            mode = &window->requested_fullscreen_mode;
+        } else if (window->floating.w > 0 && window->floating.h > 0) {
+            SDL_VideoData *data = device->internal;
+            mode = DOSVESA_FindBestMode(display, window->floating.w, window->floating.h, !data->using_rgb_modes);
+        }
+        if (!mode) {
+            return true;
+        }
+
+        DOSVESA_ApplyModeForWindow(display, window, mode);
+    }
+
     return true;
+}
+
+static void DOSVESA_SetWindowSize(SDL_VideoDevice *device, SDL_Window *window)
+{
+    SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+    if (!display) {
+        return;
+    }
+
+    SDL_VideoData *data = device->internal;
+    SDL_DisplayMode *mode = DOSVESA_FindBestMode(display, window->floating.w, window->floating.h, !data->using_rgb_modes);
+    if (!mode) {
+        mode = NULL;
+    }
+
+    DOSVESA_ApplyModeForWindow(display, window, mode);
+
+    // Invalidate the framebuffer so it gets recreated at the new size.
+    window->surface_valid = false;
 }
 
 // Critical for performance: this function must be implemented and as simple
@@ -107,52 +225,20 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
         return false;
     }
 
+    // Determine whether any non-INDEX8 (15bpp+) modes are available.
+    data->using_rgb_modes = false;
+    for (int i = 0; i < display->num_fullscreen_modes; ++i) {
+        if (display->fullscreen_modes[i].format != SDL_PIXELFORMAT_INDEX8) {
+            data->using_rgb_modes = true;
+            break;
+        }
+    }
+
     // Pick a sensible default desktop mode. This determines the window
     // size for FULLSCREEN_ONLY. Target 640x480 as a safe default; apps
     // that want something else should call SDL_SetWindowFullscreenMode.
     {
-        const int target_w = 640;
-        const int target_h = 480;
-        const SDL_DisplayMode *best = NULL;
-        // First pass: prefer non-INDEX8 mode >= 640x480.
-        for (int i = 0; i < display->num_fullscreen_modes; ++i) {
-            const SDL_DisplayMode *m = &display->fullscreen_modes[i];
-            if (m->format == SDL_PIXELFORMAT_INDEX8) {
-                continue;
-            }
-            if (m->w < target_w || m->h < target_h) {
-                continue;
-            }
-            if (!best ||
-                (m->w * m->h) < (best->w * best->h) ||
-                ((m->w == best->w && m->h == best->h) &&
-                 SDL_BITSPERPIXEL(m->format) < SDL_BITSPERPIXEL(best->format))) {
-                best = m;
-            }
-        }
-        // Second pass: largest non-INDEX8 mode.
-        if (!best) {
-            for (int i = 0; i < display->num_fullscreen_modes; ++i) {
-                const SDL_DisplayMode *m = &display->fullscreen_modes[i];
-                if (m->format == SDL_PIXELFORMAT_INDEX8) {
-                    continue;
-                }
-                if (!best || (m->w * m->h) > (best->w * best->h)) {
-                    best = m;
-                }
-            }
-        }
-        // Third pass: if only INDEX8 modes are available (VGA-only card),
-        // accept INDEX8 rather than leaving desktop_mode unset (which would
-        // cause a crash when SDL tries to restore it on quit).
-        if (!best) {
-            for (int i = 0; i < display->num_fullscreen_modes; ++i) {
-                const SDL_DisplayMode *m = &display->fullscreen_modes[i];
-                if (!best || (m->w * m->h) > (best->w * best->h)) {
-                    best = m;
-                }
-            }
-        }
+        const SDL_DisplayMode *best = DOSVESA_FindBestMode(display, 640, 480, !data->using_rgb_modes);
         if (best) {
             // Deep-copy the mode into desktop_mode. We need our own
             // internal allocation because SDL frees desktop_mode.internal
@@ -318,6 +404,7 @@ static SDL_VideoDevice *DOSVESA_CreateDevice(void)
     device->GetDisplayModes = DOSVESA_GetDisplayModes;
     device->SetDisplayMode = DOSVESA_SetDisplayMode;
     device->CreateSDLWindow = DOSVESA_CreateWindow;
+    device->SetWindowSize = DOSVESA_SetWindowSize;
     device->DestroyWindow = DOSVESA_DestroyWindow;
     device->CreateWindowFramebuffer = DOSVESA_CreateWindowFramebuffer;
     device->SetWindowFramebufferVSync = DOSVESA_SetWindowFramebufferVSync;

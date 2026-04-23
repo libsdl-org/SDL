@@ -74,6 +74,7 @@ struct SDL_VideoData
     Uint32 page_offset[2];    // byte offset of each page within video memory
     bool page_flip_available; // true if mode supports double-buffering
     bool banked_mode;         // true if current mode uses banked (not LFB) access
+    bool using_rgb_modes;     // true if current display modes isn't Index8
 };
 
 struct SDL_DisplayData
