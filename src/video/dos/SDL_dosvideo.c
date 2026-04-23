@@ -35,67 +35,6 @@
 #include "SDL_dosmouse.h"
 #include "SDL_dosvideo.h"
 
-// Find the best display mode matching a requested width/height.
-// Resolution rule: any mode >= requested size beats any mode < requested size.
-// Among modes >= requested, smallest area wins. Among modes < requested, largest area wins.
-// Tiebreak on bpp: lower beats higher.
-// INDEX8 modes are only considered when allow_index8 is true.
-static const SDL_DisplayMode *DOSVESA_FindBestMode(SDL_VideoDisplay *display, int req_w, int req_h, bool allow_index8)
-{
-    const SDL_DisplayMode *best = NULL;
-    bool best_ge = false; // true if best is >= requested size
-
-    for (int i = 0; i < display->num_fullscreen_modes; ++i) {
-        const SDL_DisplayMode *m = &display->fullscreen_modes[i];
-        if (m->format == SDL_PIXELFORMAT_INDEX8 && !allow_index8) {
-            continue;
-        }
-
-        bool m_ge = (m->w >= req_w && m->h >= req_h);
-
-        if (!best) {
-            best = m;
-            best_ge = m_ge;
-            continue;
-        }
-
-        // Any >= requested beats any < requested.
-        if (m_ge && !best_ge) {
-            best = m;
-            best_ge = m_ge;
-            continue;
-        }
-        if (!m_ge && best_ge) {
-            continue;
-        }
-
-        int m_area = m->w * m->h;
-        int best_area = best->w * best->h;
-
-        if (m_ge) {
-            // Both >= requested: prefer smaller area.
-            if (m_area < best_area) {
-                best = m;
-                best_ge = m_ge;
-            } else if (m_area == best_area && SDL_BITSPERPIXEL(m->format) < SDL_BITSPERPIXEL(best->format)) {
-                best = m;
-                best_ge = m_ge;
-            }
-        } else {
-            // Both < requested: prefer larger area.
-            if (m_area > best_area) {
-                best = m;
-                best_ge = m_ge;
-            } else if (m_area == best_area && SDL_BITSPERPIXEL(m->format) < SDL_BITSPERPIXEL(best->format)) {
-                best = m;
-                best_ge = m_ge;
-            }
-        }
-    }
-
-    return best;
-}
-
 // Apply a display mode for a window: set the hardware mode, store it as
 // the window's requested fullscreen mode, and update window dimensions.
 static void DOSVESA_ApplyModeForWindow(SDL_VideoDisplay *display, SDL_Window *window, SDL_DisplayMode *mode)
@@ -106,11 +45,6 @@ static void DOSVESA_ApplyModeForWindow(SDL_VideoDisplay *display, SDL_Window *wi
         SDL_copyp(&window->requested_fullscreen_mode, mode);
         window->floating.w = window->windowed.w = window->w = mode->w;
         window->floating.h = window->windowed.h = window->h = mode->h;
-
-        SDL_VideoData *vdata = SDL_GetVideoDevice()->internal;
-        if (vdata) {
-            vdata->using_rgb_modes = (mode->format != SDL_PIXELFORMAT_INDEX8);
-        }
     }
 }
 
@@ -140,8 +74,10 @@ static bool DOSVESA_CreateWindow(SDL_VideoDevice *device, SDL_Window *window, SD
             // App explicitly set a fullscreen mode.
             mode = &window->requested_fullscreen_mode;
         } else if (window->floating.w > 0 && window->floating.h > 0) {
-            SDL_VideoData *data = device->internal;
-            mode = DOSVESA_FindBestMode(display, window->floating.w, window->floating.h, !data->using_rgb_modes);
+            SDL_DisplayMode closest;
+            if (SDL_GetClosestFullscreenDisplayMode(display->id, window->floating.w, window->floating.h, 0.0f, false, &closest)) {
+                mode = &closest;
+            }
         }
         if (!mode) {
             return true;
@@ -160,10 +96,10 @@ static void DOSVESA_SetWindowSize(SDL_VideoDevice *device, SDL_Window *window)
         return;
     }
 
-    SDL_VideoData *data = device->internal;
-    SDL_DisplayMode *mode = DOSVESA_FindBestMode(display, window->floating.w, window->floating.h, !data->using_rgb_modes);
-    if (!mode) {
-        mode = NULL;
+    SDL_DisplayMode closest;
+    SDL_DisplayMode *mode = NULL;
+    if (SDL_GetClosestFullscreenDisplayMode(display->id, window->floating.w, window->floating.h, 0.0f, false, &closest)) {
+        mode = &closest;
     }
 
     DOSVESA_ApplyModeForWindow(display, window, mode);
@@ -225,28 +161,24 @@ static bool DOSVESA_VideoInit(SDL_VideoDevice *device)
         return false;
     }
 
-    // Determine whether any non-INDEX8 (15bpp+) modes are available.
-    data->using_rgb_modes = false;
-    for (int i = 0; i < display->num_fullscreen_modes; ++i) {
-        if (display->fullscreen_modes[i].format != SDL_PIXELFORMAT_INDEX8) {
-            data->using_rgb_modes = true;
-            break;
-        }
+    if (display->num_fullscreen_modes == 0) {
+        return SDL_SetError("DOSVESA: No usable video modes found. "
+                            "Set SDL_DOS_ALLOW_INDEX8_MODES=1 if your application can use 8-bit indexed modes.");
     }
 
     // Pick a sensible default desktop mode. This determines the window
     // size for FULLSCREEN_ONLY. Target 640x480 as a safe default; apps
     // that want something else should call SDL_SetWindowFullscreenMode.
     {
-        const SDL_DisplayMode *best = DOSVESA_FindBestMode(display, 640, 480, !data->using_rgb_modes);
-        if (best) {
+        SDL_DisplayMode closest;
+        if (SDL_GetClosestFullscreenDisplayMode(display_id, 640, 480, 0.0f, false, &closest)) {
             // Deep-copy the mode into desktop_mode. We need our own
             // internal allocation because SDL frees desktop_mode.internal
             // and fullscreen_modes[].internal independently.
             SDL_DisplayModeData *desktop_internal = (SDL_DisplayModeData *)SDL_malloc(sizeof(*desktop_internal));
             if (desktop_internal) {
-                SDL_copyp(desktop_internal, (const SDL_DisplayModeData *)best->internal);
-                SDL_copyp(&display->desktop_mode, best);
+                SDL_copyp(desktop_internal, (const SDL_DisplayModeData *)closest.internal);
+                SDL_copyp(&display->desktop_mode, &closest);
                 display->desktop_mode.internal = desktop_internal;
             }
         }

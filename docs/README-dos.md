@@ -55,7 +55,7 @@ Only software rendering is supported. There is no GPU renderer.
 
 All video modes are effectively fullscreen. When creating a window, the driver selects the closest available video mode to the requested size.
 
-8-bit indexed color (INDEX8) modes with programmable VGA DAC palettes are supported but will only be used when explicitly requested via the `SDL_PIXELFORMAT` window creation property.
+8-bit indexed color (INDEX8) modes with programmable VGA DAC palettes are supported but are hidden from the display mode list by default. This prevents SDL's automatic mode matching from selecting an INDEX8 mode when the application doesn't manage a palette (which would result in a black screen). To use INDEX8 modes, set `SDL_DOS_ALLOW_INDEX8_MODES` to `"1"` before calling `SDL_Init()`. Video initialization will fail if the video card doesn't have any higher modes and this hint is not set.
 
 EGA and CGA cards are not supported. The driver detects VGA hardware at initialization and will fail with a clear error message if VGA is not present.
 
