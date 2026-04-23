@@ -1268,7 +1268,7 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
-    int num_fingers=1;
+    int num_fingers = 1;
     SDL_PrivateJoystickAddTouchpad(joystick, num_fingers);
     SDL_PrivateJoystickAddTouchpad(joystick, num_fingers);
 
