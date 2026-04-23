@@ -351,6 +351,10 @@ static void interruption_end(_THIS)
 - (void)audioSessionInterruption:(NSNotification *)note
 {
     @synchronized(self) {
+        /* Defensive: skip if the device was already torn down. */
+        if (self.device == NULL) {
+            return;
+        }
         NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
         if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
             interruption_begin(self.device);
@@ -363,6 +367,9 @@ static void interruption_end(_THIS)
 - (void)applicationBecameActive:(NSNotification *)note
 {
     @synchronized(self) {
+        if (self.device == NULL) {
+            return;
+        }
         interruption_end(self.device);
     }
 }
@@ -374,6 +381,23 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+        /* Close path: unregister the interruption observer FIRST, before any
+           code that can early-return. [AVAudioSession setCategory:] failures
+           (phone call, Siri, CarPlay / AirPlay handoff, etc.) would otherwise
+           leave the listener registered with a stale device pointer;
+           NotificationCenter later delivers foreground events to freed memory.
+           See #2900 for the sibling setActive:YES leak fix; this closes the
+           setCategory: leak. */
+        if (!open && this->hidden->interruption_listener != NULL) {
+            SDLInterruptionListener *listener =
+                (SDLInterruptionListener *)CFBridgingRelease(this->hidden->interruption_listener);
+            this->hidden->interruption_listener = NULL;
+            [center removeObserver:listener];
+            @synchronized(listener) {
+                listener.device = NULL;
+            }
+        }
 
         NSString *category = AVAudioSessionCategoryPlayback;
         NSString *mode = AVAudioSessionModeDefault;
@@ -498,13 +522,6 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
                          object:nil];
 
             this->hidden->interruption_listener = CFBridgingRetain(listener);
-        } else {
-            SDLInterruptionListener *listener = nil;
-            listener = (SDLInterruptionListener *)CFBridgingRelease(this->hidden->interruption_listener);
-            [center removeObserver:listener];
-            @synchronized(listener) {
-                listener.device = NULL;
-            }
         }
     }
 
