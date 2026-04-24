@@ -94,7 +94,7 @@ typedef Uint32 SDL_TrayCallbackCapabilities;
 #define SDL_TRAYCALLBACKCAPABILITIES_NONE                 0x00000000u /**< Tray callbacks have no capabilities */
 #define SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU        0x00000001u /**< Tray callbacks can suppress context menu */
 #define SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU         0x00000002u /**< Tray callbacks can request context menu open */
-#define SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES    0x00000003u /**< Tray callbacks include screen-space coordinates */
+#define SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES    0x00000004u /**< Tray callbacks include screen-space coordinates */
 
 /**
  * A callback that is invoked when a tray entry is selected.
@@ -176,7 +176,8 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
  *   On Linux, this will only run when the "Activate" signal is sent from
- *   the SNI host to the client.
+ *   the SNI host to the client. This does not occur when a tray menu is
+ *   registered.
  * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
  *   Not supported on all platforms. The callback should return true to show
