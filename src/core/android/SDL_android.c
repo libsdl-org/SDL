@@ -2023,6 +2023,7 @@ static SDL_Time ZipDosTimeToSDLTime(Uint32 dostime)
 #define ZIP_END_OF_CENTRAL_DIR_SIG                  0x06054b50
 #define ZIP64_END_OF_CENTRAL_DIR_SIG                0x06064b50
 #define ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG  0x07064b50
+#define ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG         0x0001
 
 static bool ProcessZip(SDL_IOStream *io, APKNode *root)
 {
@@ -2037,7 +2038,7 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
         return false;
     }
 
-    //bool zip64 = false;
+    bool zip64 = false;
     Sint64 centraldir = -1;
     Uint64 num_entries = 0;
     Uint16 val16 = 0;
@@ -2079,7 +2080,7 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
             goto ioerr;
         }
 
-        //zip64 = true;
+        zip64 = true;
         centraldir = (Sint64) val64;
     } else if (SDL_SeekIO(io, eocd + 4 + 6, SDL_IO_SEEK_SET) < 0) {  // skip back to where we were, plus skip some fields we don't care about.
         goto ioerr;
@@ -2102,7 +2103,8 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
         Uint16 extralen = 0;
         Uint16 commentlen = 0;
         Uint32 dosmodtime = 0;
-        Uint32 uncompressed = 0;
+        Uint32 uncompressed32 = 0;
+        Uint64 uncompressed64 = 0;
 
         // we don't care about most of this information, just parse through it to get what we need.
         if (SDL_SeekIO(io, centraldir, SDL_IO_SEEK_SET) < 0) {
@@ -2125,7 +2127,7 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
             goto ioerr;
         } else if (!SDL_ReadU32LE(io, &val32)) {  // compressed size
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &uncompressed)) {  // uncompressed size
+        } else if (!SDL_ReadU32LE(io, &uncompressed32)) {  // uncompressed size
             goto ioerr;
         } else if (!SDL_ReadU16LE(io, &fnamelen)) {  // filename length
             goto ioerr;
@@ -2148,13 +2150,44 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
             goto ioerr;
         }
 
-        // !!! FIXME: parse out the extralen section for zip64 file sizes; needed if a file is > 4 gigabytes.
-
         // technically zip files might have '\\' dir separators, but these were mostly old DOS files and not Android APKs, I think. Revisit if necessary.
 
         fnamebuf[fnamelen] = '\0';  // make sure the string is null-terminated.
 
         //SDL_Log("ANDROID: Saw ZIP entry '%s'", fnamebuf);
+
+        uncompressed64 = (Uint64) uncompressed32;
+        if (zip64 && (uncompressed32 == 0xFFFFFFFF)) {  // file is larger than 4gig, find the zip64 extended info field in the extra section.
+            bool found = false;
+            Uint16 remaining = extralen;
+            while (remaining > 4) {  // Two 16-bit values at a minimum, tag and len.
+                Uint16 tag, len;
+                if (!SDL_ReadU16LE(io, &tag) || !SDL_ReadU16LE(io, &len)) {
+                    goto ioerr;
+                } else if (remaining < (len + 4)) {
+                    goto corrupterr;
+                } else if (tag != ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG) {  // not the field we need, skip over it.
+                    if (SDL_SeekIO(io, (Sint64) len, SDL_IO_SEEK_CUR) < 0) {
+                        goto ioerr;
+                    }
+                } else if (len < 8) {
+                    goto corrupterr;
+                } else if ((uncompressed32 == 0xFFFFFFFF) && !SDL_ReadU64LE(io, &uncompressed64)) {
+                    goto ioerr;
+
+                // there are other values in here, but we don't care about them and we're done, so don't try to skip over them.
+
+                } else {
+                    found = true;
+                    break;  // got what we need, drop out.
+                }
+                remaining -= len + 4;
+            }
+
+            if (!found) {
+                goto corrupterr;
+            }
+        }
 
         char *ptr = fnamebuf;
         while (*ptr == '/') {  // drop absolute paths.
@@ -2180,7 +2213,7 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
                     goto ioerr;  // (probably out of memory.)
                 }
                 node->info.type = SDL_PATHTYPE_FILE;
-                node->info.size = (Uint64) uncompressed;
+                node->info.size = uncompressed64;
             }
             node->info.create_time = node->info.modify_time = node->info.access_time = modtime;
         }
