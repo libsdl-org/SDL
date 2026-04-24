@@ -332,6 +332,19 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
     return DBUS_HANDLER_RESULT_HANDLED;
 }
 
+static bool TrayGetClickCoordinatesFromMessage(SDL_TrayDriverDBus *driver, DBusMessage *msg, Sint32 *x, Sint32 *y) {
+    DBusError err;
+    driver->dbus->error_init(&err);
+    if (!driver->dbus->message_get_args(msg, &err,
+                                        DBUS_TYPE_INT32, &x,
+                                        DBUS_TYPE_INT32, &y,
+                                        DBUS_TYPE_INVALID)) {
+        driver->dbus->error_free(&err);
+        return false;
+    }
+    return true;
+}
+
 static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMessage *msg, void *user_data)
 {
     SDL_Tray *tray;
@@ -355,7 +368,9 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
         if (tray_dbus->r_cb) {
-            tray_dbus->r_cb(tray_dbus->udata, tray);
+            Sint32 x = 0, y = 0;
+            TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
+            tray_dbus->r_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -364,7 +379,9 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
         if (tray_dbus->l_cb) {
-            tray_dbus->l_cb(tray_dbus->udata, tray);
+            Sint32 x = 0, y = 0;
+            TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
+            tray_dbus->l_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -373,7 +390,9 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "SecondaryActivate")) {
         if (tray_dbus->m_cb) {
-            tray_dbus->m_cb(tray_dbus->udata, tray);
+            Sint32 x = 0, y = 0;
+            TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
+            tray_dbus->m_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -742,7 +761,7 @@ bool TrayRightClickHandler(SDL_ListNode *menu, void *udata)
     SDL_Tray *tray = (SDL_Tray *)udata;
     SDL_TrayDBus *tray_dbus = (SDL_TrayDBus *)tray->internal;
 
-    return tray_dbus->r_cb(tray_dbus->udata, tray);
+    return tray_dbus->r_cb(tray_dbus->udata, tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
 }
 
 void TraySendNewMenu(SDL_Tray *tray, const char *new_path)
