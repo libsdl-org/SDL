@@ -211,8 +211,8 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(iiay)", &array_iter);
         driver->dbus->message_iter_close_container(&struct_iter, &array_iter);
-        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &tray_dbus->tooltip);
+        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&variant_iter, &struct_iter);
         driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
         driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
@@ -311,8 +311,8 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(iiay)", &array_iter);
         driver->dbus->message_iter_close_container(&struct_iter, &array_iter);
-        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &tray_dbus->tooltip);
+        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&variant_iter, &struct_iter);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "WindowId")) {
