@@ -46,9 +46,9 @@ typedef struct SDL_TrayDBus
     char *tooltip;
     SDL_Surface *surface;
 
-    SDL_TrayClickCallback l_cb;
-    SDL_TrayClickCallback r_cb;
-    SDL_TrayClickCallback m_cb;
+    SDL_TrayClickCallback activate_cb;
+    SDL_TrayClickCallback secondary_activate_cb;
+    SDL_TrayClickCallback menu_open_cb;
     void *udata;
 
     bool block;
@@ -367,10 +367,10 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "ContextMenu")) {
-        if (tray_dbus->r_cb) {
+        if (tray_dbus->menu_open_cb) {
             Sint32 x = 0, y = 0;
             TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
-            tray_dbus->r_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            tray_dbus->menu_open_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -378,10 +378,10 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "Activate")) {
-        if (tray_dbus->l_cb) {
+        if (tray_dbus->activate_cb) {
             Sint32 x = 0, y = 0;
             TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
-            tray_dbus->l_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            tray_dbus->activate_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -389,10 +389,10 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->message_unref(reply);
         return DBUS_HANDLER_RESULT_HANDLED;
     } else if (driver->dbus->message_is_method_call(msg, SNI_INTERFACE, "SecondaryActivate")) {
-        if (tray_dbus->m_cb) {
+        if (tray_dbus->secondary_activate_cb) {
             Sint32 x = 0, y = 0;
             TrayGetClickCoordinatesFromMessage(driver, msg, &x, &y);
-            tray_dbus->m_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            tray_dbus->secondary_activate_cb(tray_dbus->udata, tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
 
         reply = driver->dbus->message_new_method_return(msg);
@@ -531,9 +531,9 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     }
 
     /* Icon mouse event callbacks */
-    tray_dbus->l_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
-    tray_dbus->r_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
-    tray_dbus->m_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->activate_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->menu_open_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->secondary_activate_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
     tray_dbus->udata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
 
     return tray;
@@ -761,7 +761,7 @@ bool TrayRightClickHandler(SDL_ListNode *menu, void *udata)
     SDL_Tray *tray = (SDL_Tray *)udata;
     SDL_TrayDBus *tray_dbus = (SDL_TrayDBus *)tray->internal;
 
-    return tray_dbus->r_cb(tray_dbus->udata, tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
+    return tray_dbus->menu_open_cb(tray_dbus->udata, tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
 }
 
 void TraySendNewMenu(SDL_Tray *tray, const char *new_path)
@@ -909,7 +909,7 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
         }
     }
 
-    if (menu->parent_tray && !menu->parent_entry && tray_dbus->r_cb) {
+    if (menu->parent_tray && !menu->parent_entry && tray_dbus->menu_open_cb) {
         SDL_DBus_RegisterMenuOpenCallback(menu_dbus->menu, TrayRightClickHandler, tray);
     }
 
