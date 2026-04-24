@@ -1351,7 +1351,7 @@ static bool ControllerConnected(SDL_HIDAPI_Device *device, SDL_Joystick **joysti
     return true;
 }
 
-static float filter(float newValue, float oldValue, float jitter)
+static float Filter(float newValue, float oldValue, float jitter)
 {
     jitter = jitter >= 0 ? jitter : -jitter;
     if (newValue > (oldValue - jitter * 0.5f) && newValue < (oldValue + jitter * 0.5f)) {
@@ -1502,8 +1502,8 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                     fakePressure += 0.5f;
                 }
                 if (fingerDown) {
-                    oldLeftX = filter(leftX, oldLeftX, jitter);
-                    oldLeftY = filter(leftY, oldLeftY, jitter);
+                    oldLeftX = Filter(leftX, oldLeftX, jitter);
+                    oldLeftY = Filter(leftY, oldLeftY, jitter);
                 }
                 SDL_SendJoystickTouchpad(timestamp, joystick, padIndex, fingerIndex,fingerDown,oldLeftX,oldLeftY,fakePressure);
             }
@@ -1522,8 +1522,8 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
                     fakePressure += 0.5f;
                 }
                 if (fingerDown) {
-                    oldRightX = filter(rightX, oldRightX, jitter);
-                    oldRightY = filter(rightY, oldRightY, jitter);
+                    oldRightX = Filter(rightX, oldRightX, jitter);
+                    oldRightY = Filter(rightY, oldRightY, jitter);
                 }
                 SDL_SendJoystickTouchpad(timestamp, joystick, padIndex, fingerIndex,fingerDown,oldRightX,oldRightY,fakePressure);
             }
