@@ -175,13 +175,19 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  *   SDL_TrayClickCallback to be invoked when the tray icon is left-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the "Activate" signal is sent from
+ *   the SNI host to the client.
  * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the menu is shown or the
+ *   "ContextMenu" signal is sent from the SNI host to the client.
  * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
  *   Not supported on all platforms. May be NULL.
+ *   On Linux, this is only sent when the "SecondaryActivate" signal is sent
+ *   from the SNI host to the client.
  *
  * \param props the properties to use.
  * \returns The newly created system tray icon.
