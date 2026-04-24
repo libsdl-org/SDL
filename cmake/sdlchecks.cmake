@@ -528,10 +528,8 @@ macro(CheckX11)
             XFreeEventData(display, cookie);
             return 0; }" HAVE_XGENERICEVENT)
 
-      # In OmniOS pkgsrc, XGenericEventCookie is defined as "typedef struct { ... } XGenericEventCookie;"
-      # which differs from every other implementation where it's
-      # "typedef struct XGenericEventCookie { ... } XGenericEventCookie;"
-      if(HAVE_XGENERICEVENT AND NOT ${CMAKE_SYSTEM_NAME} STREQUAL "SunOS")
+      # In OmniOS pkgsrc, XGenericEventCookie is defined, but fails to compile due to unrelated circumstances
+      if(HAVE_XGENERICEVENT OR ${CMAKE_SYSTEM_NAME} STREQUAL "SunOS")
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
