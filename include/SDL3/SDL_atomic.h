@@ -284,6 +284,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 #elif defined(__GNUC__) && defined(__aarch64__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ishld" : : : "memory")
+#elif defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#include <arm64intr.h>
+#define SDL_MemoryBarrierRelease() __dmb(_ARM64_BARRIER_ISH)
+#define SDL_MemoryBarrierAcquire() __dmb(_ARM64_BARRIER_ISHLD)
 #elif defined(__GNUC__) && defined(__arm__)
 #if 0 /* defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) */
 /* Information from:
