@@ -442,6 +442,7 @@ macro(CheckX11)
         /usr/openwin/share/include
         /opt/graphics/OpenGL/include
         /opt/X11/include
+        /opt/local/include/X11
     )
 
     if(X_INCLUDEDIR)
