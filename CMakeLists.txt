@@ -1209,34 +1209,33 @@ if(SDL_LIBC)
     check_symbol_exists(posix_fallocate "fcntl.h" HAVE_POSIX_FALLOCATE)
     check_symbol_exists(posix_spawn_file_actions_addchdir "spawn.h" HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR)
     check_symbol_exists(posix_spawn_file_actions_addchdir_np "spawn.h" HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP)
+  endif()
+  if(SDL_SYSTEM_ICONV)
+    check_c_source_compiles("
+      #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
+      #include <stddef.h>
+      #include <iconv.h>
+      int main(int argc, char **argv) {
+          return !iconv_open(NULL,NULL);
+      }" ICONV_IN_LIBC)
 
-    if(SDL_SYSTEM_ICONV)
-      check_c_source_compiles("
-        #define LIBICONV_PLUG 1 /* in case libiconv header is in include path */
-        #include <stddef.h>
-        #include <iconv.h>
-        int main(int argc, char **argv) {
-            return !iconv_open(NULL,NULL);
-        }" ICONV_IN_LIBC)
+    cmake_push_check_state()
+    list(APPEND CMAKE_REQUIRED_LIBRARIES iconv)
+    check_c_source_compiles("
+      #include <stddef.h>
+      #include <iconv.h>
+      int main(int argc, char **argv) {
+          return !iconv_open(NULL,NULL);
+      }" ICONV_IN_LIBICONV)
+    cmake_pop_check_state()
 
-      cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_LIBRARIES iconv)
-      check_c_source_compiles("
-        #include <stddef.h>
-        #include <iconv.h>
-        int main(int argc, char **argv) {
-            return !iconv_open(NULL,NULL);
-        }" ICONV_IN_LIBICONV)
-      cmake_pop_check_state()
-
-      if(ICONV_IN_LIBC OR ICONV_IN_LIBICONV)
-        set(HAVE_ICONV 1)
-        set(HAVE_SYSTEM_ICONV TRUE)
-        if(ICONV_IN_LIBICONV AND (SDL_LIBICONV OR (NOT ICONV_IN_LIBC)))
-          sdl_link_dependency(iconv LIBS iconv)
-          set(SDL_USE_LIBICONV 1)
-          set(HAVE_LIBICONV TRUE)
-        endif()
+    if(ICONV_IN_LIBC OR ICONV_IN_LIBICONV)
+      set(HAVE_ICONV 1)
+      set(HAVE_SYSTEM_ICONV TRUE)
+      if(ICONV_IN_LIBICONV AND (SDL_LIBICONV OR (NOT ICONV_IN_LIBC)))
+        sdl_link_dependency(iconv LIBS iconv)
+        set(SDL_USE_LIBICONV 1)
+        set(HAVE_LIBICONV TRUE)
       endif()
     endif()
 
