@@ -529,7 +529,14 @@ macro(CheckX11)
             return 0; }" HAVE_XGENERICEVENT)
 
       # In OmniOS pkgsrc, XGenericEventCookie is defined, but fails to compile due to unrelated circumstances
-      if(HAVE_XGENERICEVENT OR ${CMAKE_SYSTEM_NAME} STREQUAL "SunOS")
+      # thus, if this check fails, it means that OmniOS's outdated X11 is being used
+      check_c_source_compiles("
+          #include <X11/Xlib.h>
+          typedef struct XGenericCookie XGenericCookie;
+          int main(int argc, char **argv) {
+            return 0; }" HAVE_XGENERICEVENT_TYPEDEF_QUIRK)
+
+      if(HAVE_XGENERICEVENT OR NOT HAVE_XGENERICEVENT_TYPEDEF_QUIRK)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
