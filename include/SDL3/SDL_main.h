@@ -220,6 +220,7 @@
            void reset_IOP() {}
 
     #elif defined(SDL_PLATFORM_DOS)
+
         /*
           On DOS, SDL provides a main function that sets up memory
           page locking (code, data, stack are locked, future

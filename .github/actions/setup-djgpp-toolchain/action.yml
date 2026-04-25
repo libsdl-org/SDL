@@ -63,4 +63,5 @@ runs:
       id: final
       shell: pwsh
       run: |
+        echo "${{ runner.temp }}/djgpp/i586-pc-msdosdjgpp/bin" >> $env:GITHUB_PATH
         echo "${{ runner.temp }}/djgpp/bin" >> $env:GITHUB_PATH

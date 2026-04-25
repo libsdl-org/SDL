@@ -148,4 +148,116 @@
 
 #endif /* SDL_MAIN_HANDLED */
 
+#ifdef SDL_PLATFORM_DOS
+
+     /* On DOS, the executable must export symbols for the SDL3 module.
+      */
+    #define FOR_EACH_DXE_EXPORT(X) \
+        X(__Exit) \
+        X(___dj_huge_val) \
+        X(___dj_stderr) \
+        X(___dj_stdin) \
+        X(___djgpp_base_address) \
+        X(___djgpp_nearptr_enable) \
+        X(___dpmi_free_physical_address_mapping) \
+        X(___dpmi_int) \
+        X(___dpmi_physical_address_mapping) \
+        X(___dpmi_simulate_real_mode_procedure_retf) \
+        X(___fpclassifyd) \
+        X(___fpclassifyf) \
+        X(__go32_dpmi_allocate_dos_memory) \
+        X(__go32_dpmi_chain_protected_mode_interrupt_vector) \
+        X(__go32_dpmi_free_dos_memory) \
+        X(__go32_dpmi_get_protected_mode_interrupt_vector) \
+        X(__go32_dpmi_lock_code) \
+        X(__go32_dpmi_lock_data) \
+        X(__go32_dpmi_set_protected_mode_interrupt_vector) \
+        X(__go32_info_block) \
+        X(_abort) \
+        X(_atof) \
+        X(_atoi) \
+        X(_calloc) \
+        X(_clearerr) \
+        X(_close) \
+        X(_closedir) \
+        X(_delay) \
+        X(_dlregsym) \
+        X(_dosmemput) \
+        X(_environ) \
+        X(_errno) \
+        X(_fclose) \
+        X(_ferror) \
+        X(_fflush) \
+        X(_fgets) \
+        X(_fileno) \
+        X(_fopen) \
+        X(_fprintf) \
+        X(_fputs) \
+        X(_fread) \
+        X(_free) \
+        X(_fseeko) \
+        X(_fstat) \
+        X(_ftello) \
+        X(_fwrite) \
+        X(_getcwd) \
+        X(_getenv) \
+        X(_gethostname) \
+        X(_getpagesize) \
+        X(_gettimeofday) \
+        X(_gmtime_r) \
+        X(_itoa) \
+        X(_localtime_r) \
+        X(_longjmp) \
+        X(_lseek) \
+        X(_malloc) \
+        X(_memcmp) \
+        X(_memcpy) \
+        X(_memmove) \
+        X(_mkdir) \
+        X(_opendir) \
+        X(_read) \
+        X(_readdir) \
+        X(_realloc) \
+        X(_remove) \
+        X(_rename) \
+        X(_searchpath) \
+        X(_setenv) \
+        X(_setjmp) \
+        X(_sigaction) \
+        X(_stat) \
+        X(_strchr) \
+        X(_strcmp) \
+        X(_strerror) \
+        X(_strlcat) \
+        X(_strlcpy) \
+        X(_strlen) \
+        X(_strncmp) \
+        X(_strnlen) \
+        X(_strpbrk) \
+        X(_strrchr) \
+        X(_strstr) \
+        X(_strtod) \
+        X(_strtok_r) \
+        X(_strtol) \
+        X(_strtoll) \
+        X(_strtoul) \
+        X(_strtoull) \
+        X(_uclock) \
+        X(_unsetenv) \
+        X(_vsnprintf) \
+        X(_vsscanf) \
+        X(_write)
+
+    #define EXTERN_ASM_SEMICOLON(V) extern_asm(V);
+    #include <sys/dxe.h>
+    FOR_EACH_DXE_EXPORT(EXTERN_ASM_SEMICOLON)
+    DXE_EXPORT_TABLE(sdl3_export_syms)
+        FOR_EACH_DXE_EXPORT(DXE_EXPORT_ASM)
+    DXE_EXPORT_END
+    static __attribute__((constructor)) void sdl3_export_syms_auto_register (void)
+    {
+        dlregsym (sdl3_export_syms);
+    }
+#endif
+
 #endif /* SDL_main_impl_h_ */
