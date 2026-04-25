@@ -262,9 +262,12 @@ void SDL_Generic_QuitTLSData(void)
 static SDL_error *SDL_GetStaticErrBuf(void)
 {
     static SDL_error SDL_global_error;
-    static char SDL_global_error_str[128];
-    SDL_global_error.str = SDL_global_error_str;
-    SDL_global_error.len = sizeof(SDL_global_error_str);
+    static char SDL_global_error_str1[128];
+    static char SDL_global_error_str2[128];
+    SDL_global_error.info[0].str = SDL_global_error_str1;
+    SDL_global_error.info[0].len = sizeof(SDL_global_error_str1);
+    SDL_global_error.info[1].str = SDL_global_error_str2;
+    SDL_global_error.info[1].len = sizeof(SDL_global_error_str2);
     return &SDL_global_error;
 }
 
@@ -272,9 +275,11 @@ static SDL_error *SDL_GetStaticErrBuf(void)
 static void SDLCALL SDL_FreeErrBuf(void *data)
 {
     SDL_error *errbuf = (SDL_error *)data;
-
-    if (errbuf->str) {
-        errbuf->free_func(errbuf->str);
+    if (errbuf->info[0].str) {
+        errbuf->free_func(errbuf->info[0].str);
+    }
+    if (errbuf->info[1].str) {
+        errbuf->free_func(errbuf->info[1].str);
     }
     errbuf->free_func(errbuf);
 }
