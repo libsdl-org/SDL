@@ -53,6 +53,41 @@
 #include <libdecor.h>
 #endif
 
+/* According to the Wayland spec:
+ *
+ * "If the [fullscreen] surface doesn't cover the whole output, the compositor will
+ * position the surface in the center of the output and compensate with border fill
+ * covering the rest of the output. The content of the border fill is undefined, but
+ * should be assumed to be in some way that attempts to blend into the surrounding area
+ * (e.g. solid black)."
+ *
+ * KDE (6.7 at the time of writing) doesn't do this (https://invent.kde.org/plasma/kwin/-/merge_requests/6953),
+ * so fullscreen modes that don't cover the output need to be manually masked.
+ *
+ * This must not be done universally, as some compositors do not correctly honor subsurface
+ * offsets on fullscreen windows, but those also follow the spec regarding automatic masking
+ * around fullscreen windows, so SDL doesn't need to apply its own mask.
+ *
+ * TODO: Remove this once KDE is spec-compliant.
+ */
+static bool ShouldMaskFullscreen()
+{
+    static int mask_required = -1;
+
+    if (mask_required >= 0) {
+        return mask_required != 0;
+    }
+
+    const char *desktop = SDL_getenv("XDG_CURRENT_DESKTOP");
+    if (desktop && SDL_strcmp(desktop, "KDE") == 0) {
+        mask_required = 1;
+    } else {
+        mask_required = 0;
+    }
+
+    return mask_required != 0;
+}
+
 static double GetWindowScale(SDL_Window *window)
 {
     return (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) || window->internal->scale_to_display ? window->internal->scale_factor : 1.0;
@@ -73,20 +108,6 @@ static int PixelToPoint(SDL_Window *window, int pixel)
     return pixel ? SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1) : 0;
 }
 
-/* According to the Wayland spec:
- *
- * "If the [fullscreen] surface doesn't cover the whole output, the compositor will
- * position the surface in the center of the output and compensate with border fill
- * covering the rest of the output. The content of the border fill is undefined, but
- * should be assumed to be in some way that attempts to blend into the surrounding area
- * (e.g. solid black)."
- *
- * - KDE, as of 5.27, still doesn't do this
- * - GNOME prior to 43 didn't do this (older versions are still found in many LTS distros)
- *
- * Default to 'stretch' for now, until things have moved forward enough that the default
- * can be changed to 'aspect'.
- */
 enum WaylandModeScale
 {
     WAYLAND_MODE_SCALE_UNDEFINED,
@@ -479,9 +500,9 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     }
 
     /* Calculate the mask size and offset.
-     * Fullscreen windows are centered and masked automatically by the compositor.
+     * Fullscreen windows are centered and masked automatically by the compositor, unless it lacks the capability.
      */
-    if (data->viewport && data->waylandData->subcompositor && !data->is_fullscreen &&
+    if (data->viewport && data->waylandData->subcompositor && (!data->is_fullscreen || ShouldMaskFullscreen()) &&
         (viewport_width != data->current.logical_width || viewport_height != data->current.logical_height)) {
         struct wl_buffer *old_buffer = NULL;
 
