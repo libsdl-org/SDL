@@ -727,7 +727,7 @@ typedef Sint64 SDL_Time;
  * <inttypes.h> should define these but this is not true all platforms.
  * (for example win32) */
 #ifndef SDL_PRIs64
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #define SDL_PRIs64 "I64d"
 #elif defined(PRId64)
 #define SDL_PRIs64 PRId64
@@ -738,7 +738,7 @@ typedef Sint64 SDL_Time;
 #endif
 #endif
 #ifndef SDL_PRIu64
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #define SDL_PRIu64 "I64u"
 #elif defined(PRIu64)
 #define SDL_PRIu64 PRIu64
@@ -749,7 +749,7 @@ typedef Sint64 SDL_Time;
 #endif
 #endif
 #ifndef SDL_PRIx64
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #define SDL_PRIx64 "I64x"
 #elif defined(PRIx64)
 #define SDL_PRIx64 PRIx64
@@ -760,7 +760,7 @@ typedef Sint64 SDL_Time;
 #endif
 #endif
 #ifndef SDL_PRIX64
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #define SDL_PRIX64 "I64X"
 #elif defined(PRIX64)
 #define SDL_PRIX64 PRIX64
@@ -799,7 +799,7 @@ typedef Sint64 SDL_Time;
 #endif
 #endif
 /* Specifically for the `long long` -- SDL-specific. */
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #ifndef SDL_NOLONGLONG
 SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 for windows - make sure `long long` is 64 bits. */
 #endif
