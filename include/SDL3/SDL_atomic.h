@@ -167,8 +167,9 @@ void _ReadWriteBarrier(void);
 extern __inline void SDL_CompilerBarrier(void);
 #pragma aux SDL_CompilerBarrier = "" parm [] modify exact [];
 #else
+/* We don't unlock here to avoid possible infinite recursion */
 #define SDL_CompilerBarrier()   \
-{ SDL_SpinLock _tmp = 0; SDL_LockSpinlock(&_tmp); SDL_UnlockSpinlock(&_tmp); }
+{ SDL_SpinLock _tmp = 0; SDL_LockSpinlock(&_tmp); }
 #endif
 
 /**
