@@ -4037,9 +4037,8 @@ extern "C" {
  * The variable can be set to the following values:
  *
  * - "aspect" - Video modes will be displayed scaled, in their proper aspect
- *   ratio, with black bars.
+ *   ratio, with black bars. (default)
  * - "stretch" - Video modes will be scaled to fill the entire display.
- *   (default)
  * - "none" - Video modes will be displayed as 1:1 with no scaling.
  *
  * This hint should be set before creating a window.

@@ -103,15 +103,15 @@ static enum WaylandModeScale GetModeScaleMethod(void)
         const char *scale_hint = SDL_GetHint(SDL_HINT_VIDEO_WAYLAND_MODE_SCALING);
 
         if (scale_hint) {
-            if (!SDL_strcasecmp(scale_hint, "aspect")) {
-                scale_mode = WAYLAND_MODE_SCALE_ASPECT;
+            if (!SDL_strcasecmp(scale_hint, "stretch")) {
+                scale_mode = WAYLAND_MODE_SCALE_STRETCH;
             } else if (!SDL_strcasecmp(scale_hint, "none")) {
                 scale_mode = WAYLAND_MODE_SCALE_NONE;
             } else {
-                scale_mode = WAYLAND_MODE_SCALE_STRETCH;
+                scale_mode = WAYLAND_MODE_SCALE_ASPECT;
             }
         } else {
-            scale_mode = WAYLAND_MODE_SCALE_STRETCH;
+            scale_mode = WAYLAND_MODE_SCALE_ASPECT;
         }
     }
 
