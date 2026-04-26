@@ -4055,6 +4055,10 @@ if(SDL_SHARED)
       MACHO_COMPATIBILITY_VERSION "${SDL_DYLIB_COMPAT_VERSION}"
       MACHO_CURRENT_VERSION "${SDL_DYLIB_CURRENT_VERSION}"
     )
+    set_property(TARGET SDL3-shared APPEND PROPERTY LINK_DEPENDS
+      "${PROJECT_SOURCE_DIR}/src/dynapi/SDL_dynapi.exports")
+    target_link_options(SDL3-shared PRIVATE
+      "SHELL:-Wl,-exported_symbols_list,${PROJECT_SOURCE_DIR}/src/dynapi/SDL_dynapi.exports")
     if(SDL_FRAMEWORK)
       set_target_properties(SDL3-shared PROPERTIES
         PUBLIC_HEADER "${SDL3_INCLUDE_FILES}"
