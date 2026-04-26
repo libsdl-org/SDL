@@ -25,21 +25,21 @@
 /* Semaphores in the PS3 environment */
 
 #include "SDL3/SDL_mutex.h"
-#include <sys/sem.h>
 #include <ppu-types.h>
+#include <sys/sem.h>
 #include <sys/systime.h>
 
 /* PS3 LV2 timeout error code */
 #ifndef ETIMEDOUT
-#define ETIMEDOUT  0x80010006   /* LV2_ETIMEDOUT */
+#define ETIMEDOUT 0x80010006 /* LV2_ETIMEDOUT */
 #endif
 
 #ifndef SYS_SEM_NAME_MAX
-#define SYS_SEM_NAME_MAX  0x08
+#define SYS_SEM_NAME_MAX 0x08
 #endif
 
 #ifndef SYS_SEM_ID_INVALID
-#define SYS_SEM_ID_INVALID  0
+#define SYS_SEM_ID_INVALID 0
 #endif
 
 struct SDL_Semaphore
@@ -50,17 +50,17 @@ struct SDL_Semaphore
 /* Create a counting semaphore */
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_Semaphore *sem = (SDL_Semaphore *) SDL_malloc(sizeof(*sem));
+    SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
     if (!sem) {
         return NULL;
     }
 
     sys_sem_attr_t attr;
     memset(&attr, 0, sizeof(attr));
-    attr.attr_protocol  = SYS_SEM_ATTR_PROTOCOL;
-    attr.attr_pshared   = SYS_SEM_ATTR_PSHARED;
-    attr.key            = 0;
-    attr.flags          = 0;
+    attr.attr_protocol = SYS_SEM_ATTR_PROTOCOL;
+    attr.attr_pshared = SYS_SEM_ATTR_PSHARED;
+    attr.key = 0;
+    attr.flags = 0;
     strncpy(attr.name, "SDLsem", SYS_SEM_NAME_MAX);
     // sysSemAttrInitialize(attr);
 
@@ -74,7 +74,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 }
 
 /* Free the semaphore */
-void SDL_DestroySemaphore(SDL_Semaphore * sem)
+void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
         sysSemDestroy(sem->id);
@@ -110,31 +110,31 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     int ret = sysSemWait(sem->id, timeoutUS);
 
     switch (ret) {
-        case 0:
-            return true;       /* acquired */
-        case ETIMEDOUT:
-            return false;      /* timed out */
-        default:
-            SDL_SetError("sys_sem_wait() failed: %d", ret);
-            return false;
+    case 0:
+        return true; /* acquired */
+    case ETIMEDOUT:
+        return false; /* timed out */
+    default:
+        SDL_SetError("sys_sem_wait() failed: %d", ret);
+        return false;
     }
 }
 
 /* Returns the current count of the semaphore */
-Uint32 SDL_GetSemaphoreValue(SDL_Semaphore * sem)
+Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     s32 val = 0;
     sysSemGetValue(sem->id, &val);
-    return (Uint32) val;
+    return (Uint32)val;
 }
 
 /* Atomically increases the semaphore's count (not blocking) */
-void SDL_SignalSemaphore(SDL_Semaphore * sem)
+void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     if (!sem) {
         return;
     }
-    
+
     sysSemPost(sem->id, 1);
 }
 

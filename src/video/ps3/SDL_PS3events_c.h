@@ -31,5 +31,4 @@ extern void PS3_QuitSysEvent(SDL_VideoDevice *_this);
 
 #endif
 
-
 /* vi: set ts=4 sw=4 expandtab: */

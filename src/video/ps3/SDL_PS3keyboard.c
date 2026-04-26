@@ -29,21 +29,19 @@
 
 static void unicodeToUtf8(Uint16 w, char *utf8buf)
 {
-    unsigned char *utf8s = (unsigned char *) utf8buf;
+    unsigned char *utf8s = (unsigned char *)utf8buf;
 
-    if ( w < 0x0080 ) {
-        utf8s[0] = ( unsigned char ) w;
+    if (w < 0x0080) {
+        utf8s[0] = (unsigned char)w;
         utf8s[1] = 0;
-    }
-    else if ( w < 0x0800 ) {
-        utf8s[0] = 0xc0 | (( w ) >> 6 );
-        utf8s[1] = 0x80 | (( w ) & 0x3f );
+    } else if (w < 0x0800) {
+        utf8s[0] = 0xc0 | ((w) >> 6);
+        utf8s[1] = 0x80 | ((w) & 0x3f);
         utf8s[2] = 0;
-    }
-    else {
-        utf8s[0] = 0xe0 | (( w ) >> 12 );
-        utf8s[1] = 0x80 | (( ( w ) >> 6 ) & 0x3f );
-        utf8s[2] = 0x80 | (( w ) & 0x3f );
+    } else {
+        utf8s[0] = 0xe0 | ((w) >> 12);
+        utf8s[1] = 0x80 | (((w) >> 6) & 0x3f);
+        utf8s[2] = 0x80 | ((w) & 0x3f);
         utf8s[3] = 0;
     }
 }
@@ -51,7 +49,7 @@ static void unicodeToUtf8(Uint16 w, char *utf8buf)
 static void updateKeymap(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data =
-        (SDL_VideoData *) _this->internal;
+        (SDL_VideoData *)_this->internal;
 
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_SCANCODE_COUNT];
@@ -97,7 +95,7 @@ static void updateKeymap(SDL_VideoDevice *_this)
 
 static void checkKeyboardConnected(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     KbInfo kbInfo;
     ioKbGetInfo(&kbInfo);
@@ -114,8 +112,7 @@ static void checkKeyboardConnected(SDL_VideoDevice *_this)
         ioKbSetReadMode(0, KB_RMODE_INPUTCHAR);
 
         updateKeymap(_this);
-    }
-    else if (kbInfo.status[0] != 1 && data->_keyboardConnected) // Disconnected
+    } else if (kbInfo.status[0] != 1 && data->_keyboardConnected) // Disconnected
     {
         data->_keyboardConnected = false;
 
@@ -135,24 +132,24 @@ static void updateModifiers(SDL_VideoDevice *_this, const KbData *Keys)
 {
     SDL_Keymod modstate = SDL_GetModState();
 
-    updateModifierKey(modstate & SDL_KMOD_LSHIFT, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_shift, SDL_SCANCODE_LSHIFT);
-    updateModifierKey(modstate & SDL_KMOD_RSHIFT, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_shift, SDL_SCANCODE_RSHIFT);
-    updateModifierKey(modstate & SDL_KMOD_LCTRL, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_ctrl, SDL_SCANCODE_LCTRL);
-    updateModifierKey(modstate & SDL_KMOD_RCTRL, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_ctrl, SDL_SCANCODE_RCTRL);
-    updateModifierKey(modstate & SDL_KMOD_LALT, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_alt, SDL_SCANCODE_LALT);
-    updateModifierKey(modstate & SDL_KMOD_RALT, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_alt, SDL_SCANCODE_RALT);
-    updateModifierKey(modstate & SDL_KMOD_LGUI, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_win, SDL_SCANCODE_LGUI);
-    updateModifierKey(modstate & SDL_KMOD_RGUI, ((KbMkey*)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_win, SDL_SCANCODE_RGUI);
+    updateModifierKey(modstate & SDL_KMOD_LSHIFT, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_shift, SDL_SCANCODE_LSHIFT);
+    updateModifierKey(modstate & SDL_KMOD_RSHIFT, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_shift, SDL_SCANCODE_RSHIFT);
+    updateModifierKey(modstate & SDL_KMOD_LCTRL, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_ctrl, SDL_SCANCODE_LCTRL);
+    updateModifierKey(modstate & SDL_KMOD_RCTRL, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_ctrl, SDL_SCANCODE_RCTRL);
+    updateModifierKey(modstate & SDL_KMOD_LALT, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_alt, SDL_SCANCODE_LALT);
+    updateModifierKey(modstate & SDL_KMOD_RALT, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_alt, SDL_SCANCODE_RALT);
+    updateModifierKey(modstate & SDL_KMOD_LGUI, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.l_win, SDL_SCANCODE_LGUI);
+    updateModifierKey(modstate & SDL_KMOD_RGUI, ((KbMkey *)(&Keys->mkey))->_KbMkeyU._KbMkeyS.r_win, SDL_SCANCODE_RGUI);
 }
 
 static void updateKeys(SDL_VideoDevice *_this, const KbData *Keys)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     int x = 0;
     int numKeys = 0;
     Uint8 newkeystate[SDL_SCANCODE_COUNT];
-    const bool * keystate = SDL_GetKeyboardState(&numKeys);
+    const bool *keystate = SDL_GetKeyboardState(&numKeys);
     Uint16 unicode;
     SDL_Scancode scancode;
 
@@ -167,8 +164,7 @@ static void updateKeys(SDL_VideoDevice *_this, const KbData *Keys)
     }
 
     for (scancode = 0; scancode < SDL_SCANCODE_COUNT; ++scancode) {
-        if ((newkeystate[scancode] != keystate[scancode])
-                && (scancode < SDL_SCANCODE_LCTRL || scancode > SDL_SCANCODE_RGUI)) {
+        if ((newkeystate[scancode] != keystate[scancode]) && (scancode < SDL_SCANCODE_LCTRL || scancode > SDL_SCANCODE_RGUI)) {
 
             // TODO: fix me
             // Send new key state
@@ -199,7 +195,7 @@ static void updateKeys(SDL_VideoDevice *_this, const KbData *Keys)
 
 void PS3_PumpKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     checkKeyboardConnected(_this);
 
@@ -217,7 +213,7 @@ void PS3_PumpKeyboard(SDL_VideoDevice *_this)
 
 void PS3_InitKeyboard(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
+    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
     // Init the PS3 Keyboard
     ioKbInit(1);

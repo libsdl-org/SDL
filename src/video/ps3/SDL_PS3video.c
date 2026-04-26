@@ -31,30 +31,30 @@
  *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
  */
 
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 
-#include "SDL_PS3video.h"
 #include "SDL_PS3events_c.h"
 #include "SDL_PS3modes_c.h"
+#include "SDL_PS3video.h"
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include <rsx/gcm_sys.h>
-#include <rsx/resc.h>
 #include <rsx/mm.h>
+#include <rsx/resc.h>
 #include <rsx/rsx.h>
 
 #define PS3VID_DRIVER_NAME "ps3"
 
-#define CB_SIZE        0x200000   // 2MB command buffer
-#define RSX_BUFFER_SIZE 0x1000000  // 16MB — must be power of 2
+#define CB_SIZE         0x200000  // 2MB command buffer
+#define RSX_BUFFER_SIZE 0x1000000 // 16MB — must be power of 2
 
 static bool PS3_VideoInit(SDL_VideoDevice *_this);
 static void PS3_VideoQuit(SDL_VideoDevice *_this);
-static void initializeGPU(SDL_VideoData * devdata);
+static void initializeGPU(SDL_VideoData *devdata);
 
 bool PS3_VideoInit(SDL_VideoDevice *_this)
 {
@@ -75,12 +75,12 @@ void PS3_VideoQuit(SDL_VideoDevice *_this)
     SDL_free(_this->internal);
 }
 
-void initializeGPU( SDL_VideoData * devdata)
+void initializeGPU(SDL_VideoData *devdata)
 {
-    deprintf (1, "initializeGPU()\n");
+    deprintf(1, "initializeGPU()\n");
 
     // Use system malloc with manual alignment instead of rsxMemalign
-    void *raw = malloc(32*1024*1024 + (1024*1024));  // extra for alignment
+    void *raw = malloc(32 * 1024 * 1024 + (1024 * 1024)); // extra for alignment
 
     if (!raw) {
         deprintf(1, "initializeGPU: malloc FAILED\n");
@@ -88,15 +88,15 @@ void initializeGPU( SDL_VideoData * devdata)
     }
 
     // Manually align to 1MB boundary
-    void *host_addr = (void *)(((uintptr_t)raw + (1024*1024 - 1)) & ~(uintptr_t)(1024*1024 - 1));
+    void *host_addr = (void *)(((uintptr_t)raw + (1024 * 1024 - 1)) & ~(uintptr_t)(1024 * 1024 - 1));
     if (!host_addr) {
         deprintf(1, "initializeGPU: rsxMemalign FAILED\n");
         return;
     }
-    
+
     devdata->_CommandBuffer = NULL;
-    int ret = gcmInitBody(&devdata->_CommandBuffer, 0x200000, 32*1024*1024, host_addr);
-    
+    int ret = gcmInitBody(&devdata->_CommandBuffer, 0x200000, 32 * 1024 * 1024, host_addr);
+
     if (ret != 0 || devdata->_CommandBuffer == NULL) {
         deprintf(1, "initializeGPU: gcmInitBody FAILED ret=%x\n", ret);
         return;
@@ -105,9 +105,9 @@ void initializeGPU( SDL_VideoData * devdata)
     assert(devdata->_CommandBuffer != NULL);
 }
 
-static void PS3_DeleteDevice(SDL_VideoDevice * device)
+static void PS3_DeleteDevice(SDL_VideoDevice *device)
 {
-    deprintf (1, "PS3_DeleteDevice( %p)\n", device);
+    deprintf(1, "PS3_DeleteDevice( %p)\n", device);
     SDL_free(device);
 }
 
@@ -116,7 +116,7 @@ bool PS3_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     SDL_WindowData *wdata;
 
     // Allocate window internal data
-    wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
         return false;
     }
@@ -128,49 +128,49 @@ bool PS3_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     return true;
 }
 
-int PS3_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window * window, const void *data)
+int PS3_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window *window, const void *data)
 {
     return SDL_Unsupported();
 }
 
-void PS3_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-bool PS3_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window)
+bool PS3_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     return true;
 }
 
-void PS3_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_ShowWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_HideWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_RaiseWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_RestoreWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
-void PS3_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window)
+void PS3_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
 }
 
@@ -190,20 +190,19 @@ void PS3_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_VideoDevice *PS3_CreateDevice(void)
 {
     SDL_VideoDevice *device;
-    deprintf (1, "PS3_CreateDevice( %s )\n", device->name);
+    deprintf(1, "PS3_CreateDevice( %s )\n", device->name);
 
     // Initialize all variables that we clean on shutdown
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device) {
         SDL_memset(device, 0, (sizeof *device));
-    }
-    else {
+    } else {
         SDL_OutOfMemory();
         SDL_free(device);
         return (0);
     }
 
-    SDL_VideoData *devdata = (SDL_VideoData*)SDL_calloc(1, sizeof(SDL_VideoData));
+    SDL_VideoData *devdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!devdata) {
         SDL_OutOfMemory();
         return false;
@@ -212,7 +211,7 @@ static SDL_VideoDevice *PS3_CreateDevice(void)
     // Initialize GPU before any videoOut calls
     initializeGPU(devdata);
 
-    device->internal = (SDL_VideoData*) devdata;
+    device->internal = (SDL_VideoData *)devdata;
     device->VideoInit = PS3_VideoInit;
     device->VideoQuit = PS3_VideoQuit;
     device->GetDisplayModes = PS3_GetDisplayModes;

@@ -24,15 +24,15 @@
 
 #include "../SDL_timer_c.h"
 
-#include <time.h>
-#include <sys/time.h>
 #include <sys/systime.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 static struct timeval start;
 static bool ticks_started = false;
 
-int gettimeofday(struct timeval* tv, void* unused)
+int gettimeofday(struct timeval *tv, void *unused)
 {
     u64 sec;
     u64 nsec;

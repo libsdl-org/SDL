@@ -22,38 +22,40 @@
 
 #ifdef SDL_JOYSTICK_PS3
 
-#include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
 
 #include <io/pad.h>
 
 #define NAMESIZE 10
 
-typedef struct {
-    int       word;
-    u16       mask;
+typedef struct
+{
+    int word;
+    u16 mask;
 } PS3ButtonDef;
 
 static const PS3ButtonDef ps3_buttons[] = {
     { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_TRIANGLE },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_CIRCLE   },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_CROSS    },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_SQUARE   },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_L1       },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_R1       },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_DOWN     },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_LEFT     },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_UP       },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_RIGHT    },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_SELECT   },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_START    },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_L2       },
-    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_R2       },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_L3       },
-    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_R3       },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_CIRCLE },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_CROSS },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_SQUARE },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_L1 },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_R1 },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_DOWN },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_LEFT },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_UP },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_RIGHT },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_SELECT },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_START },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_L2 },
+    { PAD_BUTTON_OFFSET_DIGITAL2, PAD_CTRL_R2 },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_L3 },
+    { PAD_BUTTON_OFFSET_DIGITAL1, PAD_CTRL_R3 },
 };
 
-typedef struct {
+typedef struct
+{
     int word;
 } PS3AxisDef;
 
@@ -95,7 +97,7 @@ static void PS3_JoystickDetect(void)
 {
 }
 
-static const char * PS3_JoystickGetDeviceName(int device_index)
+static const char *PS3_JoystickGetDeviceName(int device_index)
 {
     if (device_index < numberOfJoysticks) {
         return "PS3 Controller";
@@ -112,7 +114,6 @@ static int PS3_JoystickGetDevicePlayerIndex(int device_index)
 
 static void PS3_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
-
 }
 
 static SDL_JoystickID PS3_JoystickGetDeviceInstanceID(int device_index)
@@ -128,8 +129,7 @@ static SDL_GUID PS3_JoystickGetDeviceGUID(int device_index)
 
 static bool PS3_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    if (!(joystick->hwdata = (struct joystick_hwdata*)SDL_malloc(sizeof(struct joystick_hwdata))))
-    {
+    if (!(joystick->hwdata = (struct joystick_hwdata *)SDL_malloc(sizeof(struct joystick_hwdata)))) {
         return false;
     }
 
@@ -147,7 +147,7 @@ static bool PS3_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 static bool PS3_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    padActParam act = {0};
+    padActParam act = { 0 };
     int joystickIndex = (int)(joystick->instance_id - 1);
 
     // low frequency, analog [0x00, 0xFF]
@@ -165,23 +165,22 @@ static SDL_INLINE Sint16 PS3_AxisScale(u16 raw)
     return (Sint16)(((int)(raw & 0xFF) - 128) * 257);
 }
 
-static void PS3_JoystickUpdate(SDL_Joystick * joystick)
+static void PS3_JoystickUpdate(SDL_Joystick *joystick)
 {
 
     padData new_pad_data;
     int joystickIndex = (int)(joystick->instance_id - 1);
     Uint64 timestamp = SDL_GetTicksNS();
 
-    if (ioPadGetData(joystickIndex, (padData*)&new_pad_data) != 0)
-    {
+    if (ioPadGetData(joystickIndex, (padData *)&new_pad_data) != 0) {
         return;
     }
-    
+
     if (new_pad_data.len >= 8) {
         // Update buttons
         for (int i = 0; i < SDL_arraysize(ps3_buttons); i++) {
             const PS3ButtonDef *b = &ps3_buttons[i];
-            int cur  = (new_pad_data.button[b->word] & b->mask) != 0;
+            int cur = (new_pad_data.button[b->word] & b->mask) != 0;
             int prev = (joystick->hwdata->old_pad_data.button[b->word] & b->mask) != 0;
 
             if (cur != prev) {
@@ -192,7 +191,7 @@ static void PS3_JoystickUpdate(SDL_Joystick * joystick)
         // Update axes
         for (int i = 0; i < SDL_arraysize(ps3_axes); i++) {
             const PS3AxisDef *a = &ps3_axes[i];
-            u16 cur  = new_pad_data.button[a->word];
+            u16 cur = new_pad_data.button[a->word];
             u16 prev = joystick->hwdata->old_pad_data.button[a->word];
 
             if (cur != prev) {
@@ -204,7 +203,7 @@ static void PS3_JoystickUpdate(SDL_Joystick * joystick)
     }
 }
 
-static void PS3_JoystickClose(SDL_Joystick * joystick)
+static void PS3_JoystickClose(SDL_Joystick *joystick)
 {
     if (joystick->hwdata)
         SDL_free(joystick->hwdata);
@@ -257,8 +256,7 @@ static bool PS3_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
     return SDL_Unsupported();
 }
 
-SDL_JoystickDriver SDL_PS3_JoystickDriver =
-{
+SDL_JoystickDriver SDL_PS3_JoystickDriver = {
     PS3_JoystickInit,
     PS3_JoystickGetCount,
     PS3_JoystickDetect,

@@ -37,70 +37,70 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         SDL_strlcpy(buf, "en_US", buflen);
         return true;
     }
-    switch(current_locale_int) {
-        case SYSUTIL_LANG_JAPANESE:
-            SDL_strlcpy(buf, "ja_JP", buflen);
-            break;
-        case SYSUTIL_LANG_ENGLISH_US:
-            SDL_strlcpy(buf, "en_US", buflen);
-            break;
-        case SYSUTIL_LANG_FRENCH:
-            SDL_strlcpy(buf, "fr_FR", buflen);
-            break;
-        case SYSUTIL_LANG_SPANISH:
-            SDL_strlcpy(buf, "es_ES", buflen);
-            break;
-        case SYSUTIL_LANG_GERMAN:
-            SDL_strlcpy(buf, "de_DE", buflen);
-            break;
-        case SYSUTIL_LANG_ITALIAN:
-            SDL_strlcpy(buf, "it_IT", buflen);
-            break;
-        case SYSUTIL_LANG_DUTCH:
-            SDL_strlcpy(buf, "nl_NL", buflen);
-            break;
-        case SYSUTIL_LANG_PORTUGUESE_PT:
-            SDL_strlcpy(buf, "pt_PT", buflen);
-            break;
-        case SYSUTIL_LANG_RUSSIAN:
-            SDL_strlcpy(buf, "ru_RU", buflen);
-            break;
-        case SYSUTIL_LANG_KOREAN:
-            SDL_strlcpy(buf, "ko_KR", buflen);
-            break;
-        case SYSUTIL_LANG_CHINESE_T:
-            SDL_strlcpy(buf, "zh_TW", buflen);
-            break;
-        case SYSUTIL_LANG_CHINESE_S:
-            SDL_strlcpy(buf, "zh_CN", buflen);
-            break;
-        case SYSUTIL_LANG_FINNISH:
-            SDL_strlcpy(buf, "fi_FI", buflen);
-            break;
-        case SYSUTIL_LANG_SWEDISH:
-            SDL_strlcpy(buf, "sv_SE", buflen);
-            break;
-        case SYSUTIL_LANG_DANISH:
-            SDL_strlcpy(buf, "da_DK", buflen);
-            break;
-        case SYSUTIL_LANG_NORWEGIAN:
-            SDL_strlcpy(buf, "no_NO", buflen);
-            break;
-        case SYSUTIL_LANG_POLISH:
-            SDL_strlcpy(buf, "pl_PL", buflen);
-            break;
-        case SYSUTIL_LANG_PORTUGUESE_BR:
-            SDL_strlcpy(buf, "pt_BR", buflen);
-            break;
-        case SYSUTIL_LANG_ENGLISH_GB:
-            SDL_strlcpy(buf, "en_GB", buflen);
-            break;
-        case SYSUTIL_LANG_TURKISH:
-            SDL_strlcpy(buf, "tr_TR", buflen);
-            break;
-        default:
-            SDL_strlcpy(buf, "en_US", buflen);
-            break;
+    switch (current_locale_int) {
+    case SYSUTIL_LANG_JAPANESE:
+        SDL_strlcpy(buf, "ja_JP", buflen);
+        break;
+    case SYSUTIL_LANG_ENGLISH_US:
+        SDL_strlcpy(buf, "en_US", buflen);
+        break;
+    case SYSUTIL_LANG_FRENCH:
+        SDL_strlcpy(buf, "fr_FR", buflen);
+        break;
+    case SYSUTIL_LANG_SPANISH:
+        SDL_strlcpy(buf, "es_ES", buflen);
+        break;
+    case SYSUTIL_LANG_GERMAN:
+        SDL_strlcpy(buf, "de_DE", buflen);
+        break;
+    case SYSUTIL_LANG_ITALIAN:
+        SDL_strlcpy(buf, "it_IT", buflen);
+        break;
+    case SYSUTIL_LANG_DUTCH:
+        SDL_strlcpy(buf, "nl_NL", buflen);
+        break;
+    case SYSUTIL_LANG_PORTUGUESE_PT:
+        SDL_strlcpy(buf, "pt_PT", buflen);
+        break;
+    case SYSUTIL_LANG_RUSSIAN:
+        SDL_strlcpy(buf, "ru_RU", buflen);
+        break;
+    case SYSUTIL_LANG_KOREAN:
+        SDL_strlcpy(buf, "ko_KR", buflen);
+        break;
+    case SYSUTIL_LANG_CHINESE_T:
+        SDL_strlcpy(buf, "zh_TW", buflen);
+        break;
+    case SYSUTIL_LANG_CHINESE_S:
+        SDL_strlcpy(buf, "zh_CN", buflen);
+        break;
+    case SYSUTIL_LANG_FINNISH:
+        SDL_strlcpy(buf, "fi_FI", buflen);
+        break;
+    case SYSUTIL_LANG_SWEDISH:
+        SDL_strlcpy(buf, "sv_SE", buflen);
+        break;
+    case SYSUTIL_LANG_DANISH:
+        SDL_strlcpy(buf, "da_DK", buflen);
+        break;
+    case SYSUTIL_LANG_NORWEGIAN:
+        SDL_strlcpy(buf, "no_NO", buflen);
+        break;
+    case SYSUTIL_LANG_POLISH:
+        SDL_strlcpy(buf, "pl_PL", buflen);
+        break;
+    case SYSUTIL_LANG_PORTUGUESE_BR:
+        SDL_strlcpy(buf, "pt_BR", buflen);
+        break;
+    case SYSUTIL_LANG_ENGLISH_GB:
+        SDL_strlcpy(buf, "en_GB", buflen);
+        break;
+    case SYSUTIL_LANG_TURKISH:
+        SDL_strlcpy(buf, "tr_TR", buflen);
+        break;
+    default:
+        SDL_strlcpy(buf, "en_US", buflen);
+        break;
     }
 
     return true;

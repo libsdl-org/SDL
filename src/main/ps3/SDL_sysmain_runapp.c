@@ -31,12 +31,12 @@ extern "C" {
 
 #include "../SDL_main_callbacks.h"
 
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <lv2/process.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sysutil/sysutil.h>
+#include <unistd.h>
 
 static volatile bool quit_requested = false;
 
@@ -57,7 +57,7 @@ static void sysutil_exit_callback(u64 status, u64 param, void *usrdata)
 }
 #endif
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     int result;
     (void)reserved;

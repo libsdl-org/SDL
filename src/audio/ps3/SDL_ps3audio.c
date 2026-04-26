@@ -32,7 +32,7 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     const SDL_AudioFormat *closefmts;
     SDL_AudioFormat test_format;
-    
+
     device->hidden = (struct SDL_PrivateAudioData *)
         SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
@@ -72,7 +72,7 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
     if (audioCreateNotifyEventQueue(&device->hidden->snd_queue, &device->hidden->snd_queue_key) != 0) {
         return SDL_SetError("PS3AUDIO: failed to create notify event queue");
     }
-    
+
     ret = audioPortStart(device->hidden->portNum);
 
     device->hidden->last_filled_buf = 0;
@@ -108,8 +108,7 @@ static bool PS3AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
     u32 block_index = hwdata->last_filled_buf % hwdata->params.numBlocks;
 
-    float *dst = (float *)hwdata->config.audioDataStart
-                 + block_index * device->sample_frames * hwdata->config.channelCount;
+    float *dst = (float *)hwdata->config.audioDataStart + block_index * device->sample_frames * hwdata->config.channelCount;
 
     SDL_memcpy(dst, buffer, buflen);
 
@@ -150,7 +149,7 @@ static Uint8 *PS3AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static bool PS3AUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     sys_event_t event;
-    sysEventQueueReceive( device->hidden->snd_queue, &event, UINT64_MAX);
+    sysEventQueueReceive(device->hidden->snd_queue, &event, UINT64_MAX);
 
     return true;
 }
@@ -169,7 +168,7 @@ static void PS3AUDIO_ThreadInit(SDL_AudioDevice *device)
     audioSetNotifyEventQueue(hwdata->snd_queue_key);
 }
 
-bool PS3AUDIO_Init(SDL_AudioDriverImpl * impl)
+bool PS3AUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = PS3AUDIO_OpenDevice;
     impl->PlayDevice = PS3AUDIO_PlayDevice;

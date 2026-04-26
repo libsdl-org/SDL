@@ -12,7 +12,11 @@ Credit to
 
 ## Building
 
-First you need to setup [ps3toolchain](https://github.com/onesixromcom/ps3toolchain)
+First you need to setup [ps3toolchain](https://github.com/onesixromcom/ps3toolchain). New fork was created to fix build on the latest Linux system.
+
+There's also referenced [ps3libraries](https://github.com/onesixromcom/ps3libraries) from ps3toolchain which builds SDL3, SDL3_mixer and SDL3_ttf.
+
+Example PS3 program that builds with cmake [https://github.com/onesixromcom/sdl3-ps3-example](https://github.com/onesixromcom/sdl3-ps3-example)
 
 Add variables to .bashrc
 ```bash
@@ -35,4 +39,5 @@ Use ps3loadx installed on PS3 and ps3load compiled from ps3toolchain to run and 
 ## To Do
 - PS3 Screen Keyboard
 - PS3 Screen Mouse
-- Video mode/resolution change.
+- Handle video mode/resolution change.
+- Render target Ex.

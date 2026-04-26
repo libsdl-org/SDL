@@ -35,7 +35,8 @@ SDL_Mutex *SDL_CreateMutex(void)
 {
 
     SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
-    if (!mutex) return NULL;
+    if (!mutex)
+        return NULL;
 
     sys_mutex_attr_t attr;
     sysMutexAttrInitialize(attr);
@@ -50,7 +51,7 @@ SDL_Mutex *SDL_CreateMutex(void)
     return mutex;
 }
 
-void SDL_DestroyMutex(SDL_Mutex * mutex)
+void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
     if (mutex) {
         sysMutexDestroy(mutex->id);
@@ -58,7 +59,7 @@ void SDL_DestroyMutex(SDL_Mutex * mutex)
     }
 }
 
-void SDL_LockMutex(SDL_Mutex * mutex)
+void SDL_LockMutex(SDL_Mutex *mutex)
 {
     sysMutexLock(mutex->id, 0);
 }
@@ -68,7 +69,7 @@ void SDL_UnlockMutex(SDL_Mutex *mutex)
     sysMutexUnlock(mutex->id);
 }
 
-bool SDL_TryLockMutex(SDL_Mutex * mutex)
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
 {
     return sysMutexTryLock(mutex->id) == 0;
 }

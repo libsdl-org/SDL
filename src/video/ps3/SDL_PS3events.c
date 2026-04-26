@@ -25,16 +25,16 @@
 /* Video driver implementation for PS3 */
 
 #include "../../events/SDL_events_c.h"
-#include "SDL_PS3video.h"
 #include "SDL_PS3events_c.h"
 #include "SDL_PS3keyboard_c.h"
 #include "SDL_PS3mouse_c.h"
+#include "SDL_PS3video.h"
 
 #include <sysutil/sysutil.h>
 
-static void sysWindowCallback(u64 event, u64 param, void* userdata)
+static void sysWindowCallback(u64 event, u64 param, void *userdata)
 {
-    SDL_VideoDevice *_this = (SDL_VideoDevice*) userdata;
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
     SDL_Window *window = NULL;
 
     // There should only be one window
@@ -45,28 +45,29 @@ static void sysWindowCallback(u64 event, u64 param, void* userdata)
     }
 
     switch (event) {
-        case SYSUTIL_MENU_OPEN:
-            // XMB opened
-            if (window) {
-                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_LEAVE, 0, 0);
-            }
-            break;
-        case SYSUTIL_MENU_CLOSE:
-            // XMB closed
-            if (window) {
-                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_ENTER, 0, 0);
-            }
-            break;
-        case SYSUTIL_DRAW_BEGIN:
-            break;
-        case SYSUTIL_DRAW_END:
-            break;
-        default:
-            break;
+    case SYSUTIL_MENU_OPEN:
+        // XMB opened
+        if (window) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_LEAVE, 0, 0);
+        }
+        break;
+    case SYSUTIL_MENU_CLOSE:
+        // XMB closed
+        if (window) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_ENTER, 0, 0);
+        }
+        break;
+    case SYSUTIL_DRAW_BEGIN:
+        break;
+    case SYSUTIL_DRAW_END:
+        break;
+    default:
+        break;
     }
 }
 
-static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoOutDeviceInfo *info, void *userData) {
+static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoOutDeviceInfo *info, void *userData)
+{
     // SDL_VideoDevice *_this = (SDL_VideoDevice*)userData;
 
     // // Process event
@@ -82,7 +83,6 @@ void PS3_PumpEvents(SDL_VideoDevice *_this)
     // PS3_PumpKeyboard(_this);
     // PS3_PumpMouse();
 }
-
 
 void PS3_InitSysEvent(SDL_VideoDevice *_this)
 {
@@ -101,7 +101,7 @@ void PS3_QuitSysEvent(SDL_VideoDevice *_this)
 {
     sysUtilUnregisterCallback(SYSUTIL_EVENT_SLOT1);
     // videoOutUnregisterCallback(0);
-    videoOutConfigure(0, NULL, NULL, 0);  // reset video output
+    videoOutConfigure(0, NULL, NULL, 0); // reset video output
     // PS3_QuitKeyboard(_this);
     // PS3_QuitMouse();
 }

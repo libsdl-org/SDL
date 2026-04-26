@@ -30,24 +30,23 @@
 #include <sysutil/video_out.h>
 
 #ifndef CELL_OK
-#define CELL_OK             0
+#define CELL_OK 0
 #endif
 #ifndef CELL_EINVAL
-#define CELL_EINVAL         0x80010002
+#define CELL_EINVAL 0x80010002
 #endif
 #ifndef CELL_EBUSY
-#define CELL_EBUSY          0x8001000B
+#define CELL_EBUSY 0x8001000B
 #endif
 #ifndef CELL_ETIMEDOUT
-#define CELL_ETIMEDOUT      0x80010006
+#define CELL_ETIMEDOUT 0x80010006
 #endif
 #ifndef CELL_ENOMEM
-#define CELL_ENOMEM         0x80010004
+#define CELL_ENOMEM 0x80010004
 #endif
 #ifndef CELL_EPERM
-#define CELL_EPERM          0x80010001
+#define CELL_EPERM 0x80010001
 #endif
-
 
 /* Debugging
  * 0: No debug messages
@@ -62,17 +61,15 @@
 #endif
 
 #ifdef VIDEO_DEBUG_LEVEL
-#define deprintf( level, fmt, args... ) \
-    do \
-{ \
-    if ( (unsigned)(level) <= VIDEO_DEBUG_LEVEL ) \
-    { \
-        fprintf( stdout, fmt, ##args ); \
-        fflush( stdout ); \
-    } \
-} while ( 0 )
+#define deprintf(level, fmt, args...)                 \
+    do {                                              \
+        if ((unsigned)(level) <= VIDEO_DEBUG_LEVEL) { \
+            fprintf(stdout, fmt, ##args);             \
+            fflush(stdout);                           \
+        }                                             \
+    } while (0)
 #else
-#define deprintf( level, fmt, args... )
+#define deprintf(level, fmt, args...)
 #endif
 
 /* Private RSX data */
