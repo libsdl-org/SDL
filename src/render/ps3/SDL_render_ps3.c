@@ -22,58 +22,57 @@
 
 #ifdef SDL_VIDEO_RENDER_PS3
 
-#include "../SDL_sysrender.h"
 #include "../../video/SDL_sysvideo.h"
 #include "../../video/ps3/SDL_PS3video.h"
+#include "../SDL_sysrender.h"
 
-#include "../software/SDL_draw.h"
 #include "../software/SDL_blendfillrect.h"
 #include "../software/SDL_blendline.h"
 #include "../software/SDL_blendpoint.h"
+#include "../software/SDL_draw.h"
 #include "../software/SDL_drawline.h"
 #include "../software/SDL_drawpoint.h"
 
-#include <rsx/gcm_sys.h>
-#include <unistd.h>
 #include <assert.h>
-#include <sys/systime.h>
+#include <rsx/commands.h>
+#include <rsx/gcm_sys.h>
 #include <rsx/mm.h>
 #include <rsx/rsx.h>
-#include <rsx/commands.h>
+#include <sys/systime.h>
+#include <unistd.h>
 
 /* SDL surface based renderer implementation */
 
 static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props);
-static void PS3_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event);
-static bool PS3_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
-static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SDL_PropertiesID create_props);
-static bool PS3_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                            const SDL_Rect * rect, const void *pixels,
-                            int pitch);
-static bool PS3_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
-                     const SDL_Rect * rect,
-                     const Uint8 *Yplane, int Ypitch,
-                     const Uint8 *Uplane, int Upitch,
-                     const Uint8 *Vplane, int Vpitch);
-static bool PS3_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                          const SDL_Rect * rect, void **pixels, int *pitch);
-static void PS3_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
+static void PS3_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
+static bool PS3_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
+static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
+static bool PS3_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+                              const SDL_Rect *rect, const void *pixels,
+                              int pitch);
+static bool PS3_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *Uplane, int Upitch,
+                                 const Uint8 *Vplane, int Vpitch);
+static bool PS3_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+                            const SDL_Rect *rect, void **pixels, int *pitch);
+static void PS3_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static bool PS3_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture);
-static bool PS3_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
-static bool PS3_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
+static bool PS3_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
+static bool PS3_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 static void PS3_SetTextureScaleMode(SDL_ScaleMode scaleMode);
-static bool PS3_UpdateViewport(SDL_Renderer * renderer);
-static bool PS3_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count);
+static bool PS3_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
 static bool PS3_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects, int count);
 static bool PS3_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect);
 static bool PS3_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                           const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
+                            const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+                            const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
 static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-static SDL_Surface * PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
-static bool PS3_RenderPresent(SDL_Renderer * renderer);
-static void PS3_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static void PS3_DestroyRenderer(SDL_Renderer * renderer);
+static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect);
+static bool PS3_RenderPresent(SDL_Renderer *renderer);
+static void PS3_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
+static void PS3_DestroyRenderer(SDL_Renderer *renderer);
 
 SDL_RenderDriver PS3_RenderDriver = {
     PS3_CreateRenderer, "PS3"
@@ -84,8 +83,10 @@ SDL_RenderDriver PS3_RenderDriver = {
 typedef struct
 {
     const SDL_Rect *viewport;
-    const SDL_Rect *cliprect;
-    bool surface_cliprect_dirty;
+    SDL_Rect cliprect;
+    bool cliprect_enabled_dirty;
+    bool cliprect_enabled;
+    bool cliprect_dirty;
     SDL_Color color;
 } PS3_DrawStateCache;
 
@@ -95,6 +96,7 @@ typedef struct
     SDL_Surface *screens[NUM_BUFFERS];
     void *textures[NUM_BUFFERS];
     gcmContextData *context; // Context to keep track of the RSX buffer.
+    PS3_DrawStateCache drawstate;
 } PS3_RenderData;
 
 typedef struct
@@ -103,9 +105,9 @@ typedef struct
     SDL_FRect dstRect;
 } PS3_CopyData;
 
-static SDL_Surface *PS3_ActivateRenderer(SDL_Renderer * renderer)
+static SDL_Surface *PS3_ActivateRenderer(SDL_Renderer *renderer)
 {
-    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
     return data->screens[data->current_screen];
 }
@@ -135,13 +137,13 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         SDL_GetMasksForPixelFormat(displayMode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
     }
 
-    data = (PS3_RenderData *) SDL_calloc(1, sizeof(*data));
+    data = (PS3_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         PS3_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return false;
     }
-    
+
     SDL_zerop(data);
     rsxHeapInit();
 
@@ -158,47 +160,49 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
+    // data->drawstate = {NULL, NULL, true, {0, 0, 0, 255}};
+
     // Get a copy of the command buffer
     data->context = devdata->_CommandBuffer;
     data->current_screen = 0;
-    
+
     pitch = displayMode->w * SDL_BYTESPERPIXEL(displayMode->format);
     // pitch = (displayMode->w * 4 + 63) & ~63;
 
     for (int i = 0; i < NUM_BUFFERS; ++i) {
-        deprintf (1,  "\t\tAllocate RSX memory for pixels\n");
+        deprintf(1, "\t\tAllocate RSX memory for pixels\n");
 
         /* Allocate RSX memory for pixels */
         data->textures[i] = rsxMemalign(64, displayMode->h * pitch);
         if (!data->textures[i]) {
-            deprintf (1, "ERROR\n");
+            deprintf(1, "ERROR\n");
             PS3_DestroyRenderer(renderer);
             SDL_OutOfMemory();
             return false;
         }
 
-        deprintf (1,  "\t\tSDL_CreateRGBSurfaceFrom( w: %d, h: %d)\n", displayMode->w, displayMode->h);
+        deprintf(1, "\t\tSDL_CreateRGBSurfaceFrom( w: %d, h: %d)\n", displayMode->w, displayMode->h);
         data->screens[i] =
             SDL_CreateSurfaceFrom(displayMode->w, displayMode->h, displayMode->format, data->textures[i], pitch);
 
         if (!data->screens[i]) {
-            deprintf (1, "ERROR\n");
+            deprintf(1, "ERROR\n");
             PS3_DestroyRenderer(renderer);
             return false;
         }
 
         u32 offset = 0;
         if (gcmAddressToOffset(data->screens[i]->pixels, &offset) != 0) {
-            deprintf (1, "ERROR\n");
+            deprintf(1, "ERROR\n");
             PS3_DestroyRenderer(renderer);
             SDL_OutOfMemory();
             return false;
         }
-        
-        deprintf (1,  "\t\tSetup the display buffers\n");
+
+        deprintf(1, "\t\tSetup the display buffers\n");
         // Setup the display buffers
         if (gcmSetDisplayBuffer(i, offset, data->screens[i]->pitch, data->screens[i]->w, data->screens[i]->h) != 0) {
-            deprintf (1, "ERROR\n");
+            deprintf(1, "ERROR\n");
             PS3_DestroyRenderer(renderer);
             SDL_OutOfMemory();
             return false;
@@ -244,22 +248,21 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
 
-    PS3_UpdateViewport(renderer);
     PS3_ActivateRenderer(renderer);
-    
+
     return true;
 }
 
-static void PS3_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
+static void PS3_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
 
-static bool PS3_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+static bool PS3_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     return false;
 }
 
-static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SDL_PropertiesID create_props)
+static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     int pitch;
     void *pixels;
@@ -282,18 +285,16 @@ static bool PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture, SD
     return true;
 }
 
-static bool PS3_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                 const SDL_Rect * rect, const void *pixels, int pitch)
+static bool PS3_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+                              const SDL_Rect *rect, const void *pixels, int pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
-    if(SDL_MUSTLOCK(surface))
+    if (SDL_MUSTLOCK(surface))
         SDL_LockSurface(surface);
 
-    Uint8 *src = (Uint8 *) pixels;
-    Uint8 *dst = (Uint8 *) surface->pixels
-                 + rect->y * surface->pitch
-                 + rect->x * surface->fmt->bytes_per_pixel;
+    Uint8 *src = (Uint8 *)pixels;
+    Uint8 *dst = (Uint8 *)surface->pixels + rect->y * surface->pitch + rect->x * surface->fmt->bytes_per_pixel;
     size_t length = rect->w * surface->fmt->bytes_per_pixel;
     for (int row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
@@ -301,34 +302,34 @@ static bool PS3_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         dst += surface->pitch;
     }
 
-    if(SDL_MUSTLOCK(surface))
+    if (SDL_MUSTLOCK(surface))
         SDL_UnlockSurface(surface);
 
     return true;
 }
 
-static bool PS3_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
-                     const SDL_Rect * rect,
-                     const Uint8 *Yplane, int Ypitch,
-                     const Uint8 *Uplane, int Upitch,
-                     const Uint8 *Vplane, int Vpitch)
+static bool PS3_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *Uplane, int Upitch,
+                                 const Uint8 *Vplane, int Vpitch)
 {
     return false;
 }
 
-static bool PS3_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-               const SDL_Rect * rect, void **pixels, int *pitch)
+static bool PS3_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
+                            const SDL_Rect *rect, void **pixels, int *pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
     *pixels =
-        (void *) ((Uint8 *) surface->pixels + rect->y * surface->pitch +
-                  rect->x * surface->fmt->bytes_per_pixel);
+        (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
+                 rect->x * surface->fmt->bytes_per_pixel);
     *pitch = surface->pitch;
     return true;
 }
 
-static void PS3_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void PS3_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
 }
 
@@ -337,12 +338,12 @@ static bool PS3_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     return true;
 }
 
-static bool PS3_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static bool PS3_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return true;
 }
 
-static bool PS3_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+static bool PS3_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     return true;
 }
@@ -360,31 +361,7 @@ static void PS3_SetTextureScaleMode(SDL_ScaleMode scaleMode)
     // }
 }
 
-static bool PS3_UpdateViewport(SDL_Renderer * renderer)
-{
-    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
-    SDL_Surface *surface = data->screens[0];
-
-    if (!renderer->last_queued_viewport.w && !renderer->last_queued_viewport.h) {
-        /* There may be no window, so update the viewport directly */
-        renderer->last_queued_viewport.w = surface->w;
-        renderer->last_queued_viewport.h = surface->h;
-    }
-
-    /* Center drawable region on screen */
-    if (renderer->window && surface->w > renderer->window->w) {
-        renderer->last_queued_viewport.x += (surface->w - renderer->window->w)/2;
-    }
-    if (renderer->window && surface->h > renderer->window->h) {
-        renderer->last_queued_viewport.y += (surface->h - renderer->window->h)/2;
-    }
-    
-    SDL_SetSurfaceClipRect(data->screens[0], &renderer->last_queued_viewport);
-    SDL_SetSurfaceClipRect(data->screens[1], &renderer->last_queued_viewport);
-    return true;
-}
-
-static bool PS3_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+static bool PS3_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count)
 {
     SDL_Point *verts = (SDL_Point *)SDL_AllocateRenderVertices(renderer, count * sizeof(SDL_Point), 0, &cmd->data.draw.first);
     int i;
@@ -403,7 +380,7 @@ static bool PS3_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd,
     return true;
 }
 
-static bool PS3_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
+static bool PS3_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects, int count)
 {
     SDL_Rect *verts = (SDL_Rect *)SDL_AllocateRenderVertices(renderer, count * sizeof(SDL_Rect), 0, &cmd->data.draw.first);
     int i;
@@ -426,8 +403,8 @@ static bool PS3_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, 
 
 static bool PS3_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture, const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
-    const size_t outLen = sizeof (PS3_CopyData);
-    PS3_CopyData *outData = (PS3_CopyData *) SDL_AllocateRenderVertices(renderer, outLen, 0, &cmd->data.draw.first);
+    const size_t outLen = sizeof(PS3_CopyData);
+    PS3_CopyData *outData = (PS3_CopyData *)SDL_AllocateRenderVertices(renderer, outLen, 0, &cmd->data.draw.first);
 
     if (!outData) {
         return false;
@@ -442,8 +419,8 @@ static bool PS3_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Te
 }
 
 static bool PS3_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                           const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
+                            const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+                            const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
 {
     return true;
 }
@@ -451,9 +428,7 @@ static bool PS3_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_
 static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     SDL_Surface *surface = PS3_ActivateRenderer(renderer);
-    // PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
-    PS3_DrawStateCache drawstate = {NULL, NULL, true, {0, 0, 0, 255}};
-    drawstate.viewport = NULL;
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
     if (!surface) {
         return false;
@@ -461,10 +436,10 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
     Uint8 r, g, b, a;
     while (cmd) {
-        r = drawstate.color.r;
-        g = drawstate.color.g;
-        b = drawstate.color.b;
-        a = drawstate.color.a;
+        r = data->drawstate.color.r;
+        g = data->drawstate.color.g;
+        b = data->drawstate.color.b;
+        a = data->drawstate.color.a;
 
         switch (cmd->command) {
         case SDL_RENDERCMD_GEOMETRY:
@@ -472,7 +447,7 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            drawstate.color = (SDL_Color) {
+            data->drawstate.color = (SDL_Color){
                 (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
                 (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
                 (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
@@ -482,35 +457,47 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         }
 
         case SDL_RENDERCMD_SETVIEWPORT:
-            drawstate.viewport = &cmd->data.viewport.rect;
-            // data->drawstate.surface_cliprect_dirty = true;
+            data->drawstate.viewport = &cmd->data.viewport.rect;
             break;
 
         case SDL_RENDERCMD_SETCLIPRECT:
-            drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;
-            // data->drawstate.surface_cliprect_dirty = true;
-            break;
+        {
+            if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
+                data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
+                data->drawstate.cliprect_enabled_dirty = true;
+            }
 
+            const SDL_Rect *rect = &cmd->data.cliprect.rect;
+            if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
+                SDL_copyp(&data->drawstate.cliprect, rect);
+                data->drawstate.cliprect_dirty = true;
+            }
+            break;
+        }
         case SDL_RENDERCMD_CLEAR:
+        {
             /* By definition the clear ignores the clip rect */
             SDL_SetSurfaceClipRect(surface, NULL);
-            SDL_FillSurfaceRect(surface, NULL, SDL_MapSurfaceRGBA(surface,
-                (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
-                (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
-                (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
-                (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f)
-            ));
+
+            SDL_FillSurfaceRect(surface, data->drawstate.cliprect_dirty ? &data->drawstate.cliprect : NULL,
+                                SDL_MapSurfaceRGBA(surface,
+                                                   (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
+                                                   (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.g * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
+                                                   (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.b * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f),
+                                                   (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.a, 0.0f, 1.0f) * 255.0f)));
+
             SDL_SetSurfaceClipRect(surface, &surface->clip_rect);
             break;
+        }
 
         case SDL_RENDERCMD_DRAW_POINTS:
         {
-            SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+            SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
             /* Apply viewport */
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
+            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
                 for (int i = 0; i < cmd->data.draw.count; i++) {
-                    verts[i].x += drawstate.viewport->x;
-                    verts[i].y += drawstate.viewport->y;
+                    verts[i].x += data->drawstate.viewport->x;
+                    verts[i].y += data->drawstate.viewport->y;
                 }
             }
 
@@ -525,12 +512,12 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_DRAW_LINES:
         {
-            SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
+            SDL_Point *verts = (SDL_Point *)(((Uint8 *)vertices) + cmd->data.draw.first);
 
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
+            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
                 for (int i = 0; i < cmd->data.draw.count; i++) {
-                    verts[i].x += drawstate.viewport->x;
-                    verts[i].y += drawstate.viewport->y;
+                    verts[i].x += data->drawstate.viewport->x;
+                    verts[i].y += data->drawstate.viewport->y;
                 }
             }
             /* Draw the lines! */
@@ -544,31 +531,29 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
         case SDL_RENDERCMD_FILL_RECTS:
         {
-            SDL_Rect *rects = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
+            SDL_Rect *rects = (SDL_Rect *)(((Uint8 *)vertices) + cmd->data.draw.first);
 
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
+            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
                 for (int i = 0; i < cmd->data.draw.count; i++) {
-                    rects[i].x += drawstate.viewport->x;
-                    rects[i].y += drawstate.viewport->y;
+                    rects[i].x += data->drawstate.viewport->x;
+                    rects[i].y += data->drawstate.viewport->y;
                 }
             }
 
             if (renderer->blendMode == SDL_BLENDMODE_NONE) {
-                 SDL_FillSurfaceRects(surface, rects, cmd->data.draw.count, SDL_MapRGBA(surface->fmt, NULL, r, g, b, a));
+                SDL_FillSurfaceRects(surface, rects, cmd->data.draw.count, SDL_MapRGBA(surface->fmt, NULL, r, g, b, a));
             } else {
-                 SDL_BlendFillRects(surface, rects, cmd->data.draw.count, renderer->blendMode, r, g, b, a);
+                SDL_BlendFillRects(surface, rects, cmd->data.draw.count, renderer->blendMode, r, g, b, a);
             }
             break;
         }
 
         case SDL_RENDERCMD_COPY:
         {
-            SDL_Surface *surface_src = (SDL_Surface *) cmd->data.draw.texture->internal;
+            SDL_Surface *surface_src = (SDL_Surface *)cmd->data.draw.texture->internal;
 
-            PS3_CopyData copyData;// = (PS3_CopyData *) (((Uint8 *) vertices) + cmd->data.draw.first);
+            PS3_CopyData copyData; // = (PS3_CopyData *) (((Uint8 *) vertices) + cmd->data.draw.first);
             SDL_memcpy(&copyData, ((Uint8 *)vertices) + cmd->data.draw.first, sizeof(PS3_CopyData));
-
-            PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
 
             SDL_FRect *srcrect = &copyData.srcRect;
             SDL_FRect *dstrect = &copyData.dstRect;
@@ -592,9 +577,9 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             gcmAddressToOffset(surface_src->pixels, &src_offset);
 
             // Apply viewport
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
-                dstrect->x += drawstate.viewport->x;
-                dstrect->y += drawstate.viewport->y;
+            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
+                dstrect->x += data->drawstate.viewport->x;
+                dstrect->y += data->drawstate.viewport->y;
             }
 
             int srcx = (int)SDL_floorf(srcrect->x);
@@ -616,8 +601,8 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             scale.outY = (s16)dsty;
             scale.outW = (u16)dstw;
             scale.outH = (u16)dsth;
-            scale.ratioX = rsxGetFixedSint32(dstw/srcw);
-            scale.ratioY = rsxGetFixedSint32(dsth/srch);
+            scale.ratioX = rsxGetFixedSint32(dstw / srcw);
+            scale.ratioY = rsxGetFixedSint32(dsth / srch);
             scale.inX = rsxGetFixedUint16(srcx);
             scale.inY = rsxGetFixedUint16(srcy);
             scale.inW = (u16)(srcw & ~1);
@@ -688,16 +673,16 @@ static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         rect = &final_rect;
     }
 
-    if (rect->x < 0 || rect->x+rect->w > surface->w ||
-        rect->y < 0 || rect->y+rect->h > surface->h) {
+    if (rect->x < 0 || rect->x + rect->w > surface->w ||
+        rect->y < 0 || rect->y + rect->h > surface->h) {
         SDL_SetError("Tried to read outside of surface bounds");
         return NULL;
     }
 
     SDL_PixelFormat src_format = surface->format;
-    void *src_pixels = (void*)((Uint8 *) surface->pixels +
-                    rect->y * surface->pitch +
-                    rect->x * surface->fmt->bits_per_pixel);
+    void *src_pixels = (void *)((Uint8 *)surface->pixels +
+                                rect->y * surface->pitch +
+                                rect->x * surface->fmt->bits_per_pixel);
 
     // TODO: fix me
     // SDL_ConvertPixels(rect->w, rect->h,
@@ -707,10 +692,10 @@ static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     return surface;
 }
 
-static bool PS3_RenderPresent(SDL_Renderer * renderer)
+static bool PS3_RenderPresent(SDL_Renderer *renderer)
 {
 
-    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
     gcmResetFlipStatus();
     gcmSetFlip(data->context, data->current_screen);
@@ -719,13 +704,11 @@ static bool PS3_RenderPresent(SDL_Renderer * renderer)
 
     Uint64 timeout_timer = SDL_GetTicks();
     u32 res = gcmGetFlipStatus();
-    while (res != 0)
-    {
+    while (res != 0) {
         sysUsleep(200);
         res = gcmGetFlipStatus();
 
-        if (SDL_GetTicks() - timeout_timer >= 2000)
-        {
+        if (SDL_GetTicks() - timeout_timer >= 2000) {
             break;
         }
     }
@@ -736,13 +719,14 @@ static bool PS3_RenderPresent(SDL_Renderer * renderer)
     return true;
 }
 
-static void PS3_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+static void PS3_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
-    if (!surface) return;
+    if (!surface)
+        return;
 
-    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
     // TODO: Wait for the DMA transfer to complete
     rsxFinish(data->context, 1);
@@ -750,11 +734,11 @@ static void PS3_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     SDL_DestroySurface(surface);
 }
 
-static void PS3_DestroyRenderer(SDL_Renderer * renderer)
+static void PS3_DestroyRenderer(SDL_Renderer *renderer)
 {
-    PS3_RenderData *data = (PS3_RenderData *) renderer->internal;
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
-    deprintf (1, "SDL_PS3_DestroyRenderer()\n");
+    deprintf(1, "SDL_PS3_DestroyRenderer()\n");
 
     // stop RSX before exit
     gcmSetWaitFlip(data->context);
@@ -763,7 +747,7 @@ static void PS3_DestroyRenderer(SDL_Renderer * renderer)
     if (data) {
         for (int i = 0; i < SDL_arraysize(data->textures); ++i) {
             if (data->screens[i]) {
-               SDL_DestroySurface(data->screens[i]);
+                SDL_DestroySurface(data->screens[i]);
             }
             if (data->textures[i]) {
                 rsxFinish(data->context, 1);
