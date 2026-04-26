@@ -542,6 +542,9 @@ if(SDL_TEST_LIBRARY)
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
   SDL_AddCommonCompilerFlags(SDL3_test)
   target_compile_definitions(SDL3_test PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+  if("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
+    target_compile_features(SDL3_test PRIVATE c_std_99)
+  endif()
 endif()
 
 # Make sure SDL3::SDL3 always exists
