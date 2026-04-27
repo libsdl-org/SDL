@@ -313,32 +313,6 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audi
 
 static bool session_active = false;
 
-static bool PauseOneAudioDevice(SDL_AudioDevice *device, void *userdata)
-{
-    if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
-        AudioQueuePause(device->hidden->audioQueue);
-    }
-    return false;  // keep enumerating devices until we've paused them all.
-}
-
-static void PauseAudioDevices(void)
-{
-    (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneAudioDevice, NULL);
-}
-
-static bool ResumeOneAudioDevice(SDL_AudioDevice *device, void *userdata)
-{
-    if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
-        AudioQueueStart(device->hidden->audioQueue, NULL);
-    }
-    return false;  // keep enumerating devices until we've resumed them all.
-}
-
-static void ResumeAudioDevices(void)
-{
-    (void) SDL_FindPhysicalAudioDeviceByCallback(ResumeOneAudioDevice, NULL);
-}
-
 static void InterruptionBegin(SDL_AudioDevice *device)
 {
     if (device != NULL && device->hidden != NULL && device->hidden->audioQueue != NULL) {
@@ -383,40 +357,22 @@ static void InterruptionEnd(SDL_AudioDevice *device)
 
 @end
 
-typedef struct
-{
-    int playback;
-    int recording;
-} CountOpenAudioDevicesData;
 
-static bool CountOpenAudioDevices(SDL_AudioDevice *device, void *userdata)
-{
-    CountOpenAudioDevicesData *data = (CountOpenAudioDevicesData *) userdata;
-    if (device->hidden != NULL) {  // assume it's open if hidden != NULL
-        if (device->recording) {
-            data->recording++;
-        } else {
-            data->playback++;
-        }
-    }
-    return false;  // keep enumerating until all devices have been checked.
-}
+static SDL_AtomicInt open_playback_device_count;
+static SDL_AtomicInt open_recording_device_count;
 
-static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_playandrecord)
+static bool UpdateAudioSession(SDL_AudioDevice *device, bool allow_playandrecord)
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-
         NSString *category = AVAudioSessionCategoryPlayback;
         NSString *mode = AVAudioSessionModeDefault;
         NSUInteger options = AVAudioSessionCategoryOptionMixWithOthers;
         NSError *err = nil;
         const char *hint;
 
-        CountOpenAudioDevicesData data;
-        SDL_zero(data);
-        (void) SDL_FindPhysicalAudioDeviceByCallback(CountOpenAudioDevices, &data);
+        const int opened_for_playback = SDL_GetAtomicInt(&open_playback_device_count);
+        const int opened_for_recording = SDL_GetAtomicInt(&open_recording_device_count);
 
         hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
         if (hint) {
@@ -436,14 +392,14 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
                     category = AVAudioSessionCategoryPlayAndRecord;
                 }
             }
-        } else if (data.playback && data.recording) {
+        } else if (opened_for_playback && opened_for_recording) {
             if (allow_playandrecord) {
                 category = AVAudioSessionCategoryPlayAndRecord;
             } else {
                 // We already failed play and record with AVAudioSessionErrorCodeResourceNotAvailable
                 return false;
             }
-        } else if (data.recording) {
+        } else if (opened_for_recording) {
             category = AVAudioSessionCategoryRecord;
         }
 
@@ -469,70 +425,10 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
         }
 
         if (![session.category isEqualToString:category] || session.categoryOptions != options) {
-            // Stop the current session so we don't interrupt other application audio
-            PauseAudioDevices();
-            [session setActive:NO error:nil];
-            session_active = false;
-
             if (![session setCategory:category mode:mode options:options error:&err]) {
                 NSString *desc = err.description;
                 SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
                 return false;
-            }
-        }
-
-        if ((data.playback || data.recording) && !session_active) {
-            if (![session setActive:YES error:&err]) {
-                if ([err code] == AVAudioSessionErrorCodeResourceNotAvailable &&
-                    category == AVAudioSessionCategoryPlayAndRecord) {
-                    if (UpdateAudioSession(device, open, false)) {
-                        return true;
-                    } else {
-                        return SDL_SetError("Could not activate Audio Session: Resource not available");
-                    }
-                }
-
-                NSString *desc = err.description;
-                return SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
-            }
-            session_active = true;
-            ResumeAudioDevices();
-        } else if (!data.playback && !data.recording && session_active) {
-            PauseAudioDevices();
-            [session setActive:NO error:nil];
-            session_active = false;
-        }
-
-        if (open) {
-            SDLInterruptionListener *listener = [SDLInterruptionListener new];
-            listener.device = device;
-
-            [center addObserver:listener
-                       selector:@selector(audioSessionInterruption:)
-                           name:AVAudioSessionInterruptionNotification
-                         object:session];
-
-            /* An interruption end notification is not guaranteed to be sent if
-             we were previously interrupted... resuming if needed when the app
-             becomes active seems to be the way to go. */
-            // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationDidBecomeActiveNotification
-                         object:nil];
-
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationWillEnterForegroundNotification
-                         object:nil];
-
-            device->hidden->interruption_listener = CFBridgingRetain(listener);
-        } else {
-            SDLInterruptionListener *listener = nil;
-            listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
-            [center removeObserver:listener];
-            @synchronized(listener) {
-                listener.device = NULL;
             }
         }
     }
@@ -640,7 +536,14 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 
     #ifndef MACOSX_COREAUDIO
-    UpdateAudioSession(device, false, true);
+    if (device->hidden->interruption_listener) {
+        SDLInterruptionListener *listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
+        device->hidden->interruption_listener = NULL;
+        [[NSNotificationCenter defaultCenter] removeObserver:listener];
+        @synchronized(listener) {
+            listener.device = NULL;
+        }
+    }
     #endif
 
     if (device->hidden->ready_semaphore) {
@@ -651,6 +554,18 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
     SDL_free(device->hidden->audioBuffer);
     SDL_free(device->hidden->thread_error);
     SDL_free(device->hidden);
+
+    #ifndef MACOSX_COREAUDIO
+    SDL_AtomicDecRef(device->recording ? &open_recording_device_count : &open_playback_device_count);
+
+    SDL_assert(SDL_GetAtomicInt(&open_playback_device_count) >= 0);
+    SDL_assert(SDL_GetAtomicInt(&open_recording_device_count) >= 0);
+
+    if (session_active && !SDL_GetAtomicInt(&open_playback_device_count) && !SDL_GetAtomicInt(&open_recording_device_count)) {
+        [[AVAudioSession sharedInstance] setActive:NO error:nil];
+        session_active = false;
+    }
+    #endif
 }
 
 #ifdef MACOSX_COREAUDIO
@@ -899,26 +814,33 @@ static bool COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     #ifndef MACOSX_COREAUDIO
-    if (!UpdateAudioSession(device, true, true)) {
+    SDL_AtomicIncRef(device->recording ? &open_recording_device_count : &open_playback_device_count);
+    if (!UpdateAudioSession(device, true)) {
         return false;
     }
 
+    AVAudioSession *session = [AVAudioSession sharedInstance];
     // Stop CoreAudio from doing expensive audio rate conversion
-    @autoreleasepool {
-        AVAudioSession *session = [AVAudioSession sharedInstance];
-        [session setPreferredSampleRate:device->spec.freq error:nil];
-        device->spec.freq = (int)session.sampleRate;
-        #ifdef SDL_PLATFORM_TVOS
-        if (device->recording) {
-            [session setPreferredInputNumberOfChannels:device->spec.channels error:nil];
-            device->spec.channels = (int)session.preferredInputNumberOfChannels;
-        } else {
-            [session setPreferredOutputNumberOfChannels:device->spec.channels error:nil];
-            device->spec.channels = (int)session.preferredOutputNumberOfChannels;
+    [session setPreferredSampleRate:device->spec.freq error:nil];
+    device->spec.freq = (int)session.sampleRate;
+    #ifdef SDL_PLATFORM_TVOS
+    if (device->recording) {
+        [session setPreferredInputNumberOfChannels:device->spec.channels error:nil];
+        device->spec.channels = (int)session.preferredInputNumberOfChannels;
+    } else {
+        [session setPreferredOutputNumberOfChannels:device->spec.channels error:nil];
+        device->spec.channels = (int)session.preferredOutputNumberOfChannels;
+    }
+    #else
+    // Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS
+    #endif // SDL_PLATFORM_TVOS
+
+    if (!session_active) {
+        NSError *err = nil;
+        if (![session setActive:YES error:&err]) {
+            return SDL_SetError("Could not activate Audio Session: %s", err.description.UTF8String);
         }
-        #else
-        // Calling setPreferredOutputNumberOfChannels seems to break audio output on iOS
-        #endif // SDL_PLATFORM_TVOS
+        session_active = true;
     }
     #endif
 
@@ -992,13 +914,40 @@ static bool COREAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_DestroySemaphore(device->hidden->ready_semaphore);
     device->hidden->ready_semaphore = NULL;
 
-    if ((device->hidden->thread != NULL) && (device->hidden->thread_error != NULL)) {
+    if (device->hidden->thread_error != NULL) {
         SDL_WaitThread(device->hidden->thread, NULL);
         device->hidden->thread = NULL;
         return SDL_SetError("%s", device->hidden->thread_error);
     }
 
-    return (device->hidden->thread != NULL);
+#ifndef MACOSX_COREAUDIO
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    SDLInterruptionListener *listener = [SDLInterruptionListener new];
+    listener.device = device;
+
+    [center addObserver:listener
+                selector:@selector(audioSessionInterruption:)
+                    name:AVAudioSessionInterruptionNotification
+                  object:session];
+
+    /* An interruption end notification is not guaranteed to be sent if
+       we were previously interrupted... resuming if needed when the app
+       becomes active seems to be the way to go. */
+       // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
+    [center addObserver:listener
+                selector:@selector(applicationBecameActive:)
+                    name:UIApplicationDidBecomeActiveNotification
+                  object:nil];
+
+    [center addObserver:listener
+                selector:@selector(applicationBecameActive:)
+                    name:UIApplicationWillEnterForegroundNotification
+                  object:nil];
+
+    device->hidden->interruption_listener = CFBridgingRetain(listener);
+#endif
+
+    return true;
 }
 
 static void COREAUDIO_DeinitializeStart(void)
