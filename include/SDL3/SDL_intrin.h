@@ -86,6 +86,16 @@
 #define SDL_NEON_INTRINSICS 1
 
 /**
+ * Defined if (and only if) the compiler supports ARM SVE2 intrinsics.
+ *
+ * If this macro is defined, SDL will have already included `<arm_sve.h>`
+ * as appropriate.
+ *
+ * \since This macro is available since SDL 3.4.5.
+ */
+#define SDL_SVE2_INTRINSICS 1
+
+/**
  * Defined if (and only if) the compiler supports PowerPC Altivec intrinsics.
  *
  * If this macro is defined, SDL will have already included `<altivec.h>`
@@ -237,6 +247,10 @@ _m_prefetch(void *__P)
 #  define SDL_NEON_INTRINSICS 1
 #  include <arm_neon.h>
 #endif
+#if defined(__ARM_FEATURE_SVE2) && !defined(SDL_DISABLE_SVE2)
+#  define SDL_SVE2_INTRINSICS 1
+#  include <arm_sve.h>
+#endif
 
 #else
 /* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC to have it included. */
@@ -263,6 +277,25 @@ _m_prefetch(void *__P)
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #      define __ARM_ARCH 8
 #    endif
+#  endif
+#endif
+#ifndef SDL_DISABLE_SVE2
+#  if defined(SDL_PLATFORM_WINDOWS)
+/* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
+#    ifdef _M_ARM
+#      define SDL_SVE2_INTRINSICS 1
+#      include <arm_sve.h>
+#      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
+#    endif
+#    if defined (_M_ARM64)
+#      define SDL_SVE2_INTRINSICS 1
+#      include <arm64_sve.h>
+#      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
+#      define __ARM_ARCH 8
+#    endif
+#  else 
+#    define SDL_SVE2_INTRINSICS 1
+#    include <arm_sve.h>
 #  endif
 #endif
 #endif /* compiler version */
