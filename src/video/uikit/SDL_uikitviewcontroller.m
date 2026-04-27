@@ -581,7 +581,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                 break;
             }
         }
-        if (matchLength < committedText.length) {
+        if (matchLength < committedText.length && !SDL_HasKeyboard()) {
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 // Send distinct down and up events for each backspace action
