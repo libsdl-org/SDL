@@ -478,7 +478,7 @@ static void InitInput(WindowState *ctx)
 {
     /* Prepare a rect for text input */
     ctx->textRect.x = 100.0f;
-	ctx->textRect.y = 250.0f;
+    ctx->textRect.y = 250.0f;
     ctx->textRect.w = DEFAULT_WINDOW_WIDTH - 2 * ctx->textRect.x;
     ctx->textRect.h = 50.0f;
     ctx->markedRect = ctx->textRect;
@@ -1066,7 +1066,7 @@ int main(int argc, char *argv[])
                         SDL_StopTextInput(ctx->window);
                     } else {
                         SDL_Log("Enabling text input\n");
-                        SDL_StartTextInput(ctx->window);
+                        SDL_StartTextInputWithProperties(ctx->window, ctx->text_settings);
                     }
                 }
                 break;
@@ -1113,12 +1113,14 @@ int main(int argc, char *argv[])
                         int index = (event.key.key - SDLK_KP_1);
                         if (index < state->num_windows) {
                             SDL_Window *window = state->windows[index];
+                            ctx = &windowstate[index];
                             if (SDL_TextInputActive(window)) {
                                 SDL_Log("Disabling text input for window %d\n", 1 + index);
                                 SDL_StopTextInput(window);
                             } else {
                                 SDL_Log("Enabling text input for window %d\n", 1 + index);
                                 SDL_StartTextInput(window);
+                                SDL_StartTextInputWithProperties(window, ctx->text_settings);
                             }
                         }
                     }
