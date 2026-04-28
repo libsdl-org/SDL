@@ -942,9 +942,14 @@ if(SDL_ASSEMBLY)
 
     if(HAVE_ARMSVE2)
       sdl_sources(
-        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blitters.c"
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
       )
-      set_source_files_properties("${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blitters.c" PROPERTIES
+      set_source_files_properties("${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c" PROPERTIES
+        COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
+        SKIP_PRECOMPILE_HEADERS ON
+      )
+      set_source_files_properties("${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c" PROPERTIES
         COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
         SKIP_PRECOMPILE_HEADERS ON
       )
