@@ -2236,24 +2236,6 @@ static bool CreateAPKNodes(const char *path)
 {
     SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
 
-    SDL_PathInfo apkinfo;
-    SDL_assert(path[0] == '/');  // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
-    if (!SDL_GetPathInfo(path, &apkinfo)) {
-        SDL_zero(apkinfo);  // we just want the file times here, so oh well.
-    }
-
-    if (!APKRootNode) {
-        APKRootNode = (APKNode *) SDL_calloc(1, sizeof (*APKRootNode));
-        if (!APKRootNode) {
-            SDL_Log("ANDROID: Can't open APK (out of memory). Filesystem enumeration will fail.");
-            return false;
-        }
-        APKRootNode->info.type = SDL_PATHTYPE_DIRECTORY;
-        APKRootNode->info.create_time = apkinfo.create_time;
-        APKRootNode->info.modify_time = apkinfo.modify_time;
-        APKRootNode->info.access_time = apkinfo.access_time;
-    }
-
     SDL_IOStream *io = SDL_IOFromFile(path, "rb");
     if (!io) {
         SDL_Log("ANDROID: Can't open APK '%s' for reading (%s). Filesystem enumeration will fail.", path, SDL_GetError());
@@ -2261,12 +2243,51 @@ static bool CreateAPKNodes(const char *path)
         ProcessZip(io, APKRootNode);
         SDL_CloseIO(io);
     }
-    return true;  // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
+    return true;
+}
+
+static bool PrepareAPK(void)
+{
+    // the assetmanager isn't useful for enumerating directories, so parse the APK directly for that info upfront.
+    bool retval = (APKRootNode != NULL);
+    if (!retval) {
+        // allocate this upfront, so if there's a failure, we'll not try again and just have an empty file tree.
+        APKRootNode = (APKNode *) SDL_calloc(1, sizeof (*APKRootNode));
+        if (!APKRootNode) {
+            return false;  // oh well.
+        }
+        APKRootNode->info.type = SDL_PATHTYPE_DIRECTORY;
+
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+        JNIEnv *env = Android_JNI_GetEnv();
+        if (LocalReferenceHolder_Init(&refs, env)) {
+            jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+            jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getPackageResourcePath", "()Ljava/lang/String;");
+            jstring jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
+            jthrowable jexception = (*env)->ExceptionOccurred(env);
+            if (jexception != NULL) {
+                (*env)->ExceptionClear(env);  // oh well
+            } else {
+                const char *apkpath = (*env)->GetStringUTFChars(env, jstr, NULL);
+                SDL_PathInfo apkinfo;
+                SDL_assert(apkpath[0] == '/');  // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
+                if (SDL_GetPathInfo(apkpath, &apkinfo)) {   // we just want the file times here, so oh well if it fails.
+                    APKRootNode->info.create_time = apkinfo.create_time;
+                    APKRootNode->info.modify_time = apkinfo.modify_time;
+                    APKRootNode->info.access_time = apkinfo.access_time;
+                }
+                CreateAPKNodes(apkpath);
+                (*env)->ReleaseStringUTFChars(env, jstr, apkpath);
+                retval = true;
+            }
+        }
+        LocalReferenceHolder_Cleanup(&refs);
+    }
+    return retval;  // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
 }
 
 static void Internal_Android_Create_AssetManager(void)
 {
-
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
@@ -2298,21 +2319,6 @@ static void Internal_Android_Create_AssetManager(void)
     if (!asset_manager) {
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
         Android_JNI_ExceptionOccurred(true);
-    }
-
-    // the assetmanager isn't useful for enumerating directories, so parse the APK directly for that info upfront.
-    jthrowable jexception = 0;
-    jstring jstr = 0;
-
-    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getPackageResourcePath", "()Ljava/lang/String;");
-    jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
-    jexception = (*env)->ExceptionOccurred(env);
-    if (jexception != NULL) {
-        (*env)->ExceptionClear(env);  // oh well
-    } else {
-        const char *apkpath = (*env)->GetStringUTFChars(env, jstr, NULL);
-        CreateAPKNodes(apkpath);
-        (*env)->ReleaseStringUTFChars(env, jstr, apkpath);
     }
 
     LocalReferenceHolder_Cleanup(&refs);
@@ -2409,17 +2415,13 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
 {
     SDL_assert(path != NULL);
 
-    if (!asset_manager) {
-        Internal_Android_Create_AssetManager();
-        if (!asset_manager) {
-            return SDL_SetError("Couldn't create asset manager");
-        }
+    if (!PrepareAPK()) {
+        return false;
     }
 
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     const char *asset_path = GetAssetPath(path);
 
-    // check our tree we built from the APK first.
     const APKNode *apknode = FindAPKNode(asset_path);
     if (!apknode) {
         return SDL_SetError("No such directory");
@@ -2436,11 +2438,10 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
 
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
 {
-    if (!asset_manager) {
-        Internal_Android_Create_AssetManager();
-        if (!asset_manager) {
-            return SDL_SetError("Couldn't create asset manager");
-        }
+    SDL_assert(path != NULL);
+
+    if (!PrepareAPK()) {
+        return false;
     }
 
     path = GetAssetPath(path);
