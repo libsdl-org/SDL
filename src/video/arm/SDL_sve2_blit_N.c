@@ -26,12 +26,32 @@
 
 #ifdef __ARM_FEATURE_SVE2
 
-#include "SDL_sve2_extension.h"
+
+#undef sdl_sve_blend_op_fill_alpha
+#define sdl_sve_blend_op_fill_alpha(ma_alpha_chn_idx)                           \
+        do {                                                                    \
+            if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
+                /* fill alpha */                                                \
+                sve_target_u16 = svdup_u16(0xFF);                               \
+            } else {                                                            \
+                sve_target_u16 = sve_source_u16;                                \
+            }                                                                   \
+        } while(0)
+
+#undef sdl_sve_blend_op_copy_alpha
+#define sdl_sve_blend_op_copy_alpha(ma_alpha_chn_idx)                           \
+        do {                                                                    \
+            if (sve_src_chn_idx != (ma_alpha_chn_idx)) {                        \
+                sve_target_u16 = sve_source_u16;                                \
+            }                                                                   \
+        } while(0)
+
+#include "SDL_sve2_swizzle.h"
 
 
 void SDLCALL Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
-
+    sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
 void SDLCALL Blit8888to565PixelSVE2(SDL_BlitInfo *info)
