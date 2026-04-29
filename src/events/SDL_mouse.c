@@ -194,16 +194,9 @@ static void SDLCALL SDL_PenTouchEventsChanged(void *userdata, const char *name, 
 
     mouse->pen_touch_events = SDL_GetStringBoolean(hint, true);
 
-    if (mouse->pen_touch_events) {
-        if (!mouse->added_pen_touch_device) {
-            SDL_AddTouch(SDL_PEN_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "pen_input");
-            mouse->added_pen_touch_device = true;
-        }
-    } else {
-        if (mouse->added_pen_touch_device) {
-            SDL_DelTouch(SDL_PEN_TOUCHID);
-            mouse->added_pen_touch_device = false;
-        }
+    if (!mouse->pen_touch_events && mouse->added_pen_touch_device) {
+        SDL_DelTouch(SDL_PEN_TOUCHID);
+        mouse->added_pen_touch_device = false;
     }
 }
 
