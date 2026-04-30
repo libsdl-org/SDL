@@ -463,6 +463,12 @@ if (NGAGE)
   set(SDL_VIRTUAL_JOYSTICK OFF)
 endif()
 
+if (CYGWIN)
+  set(SDL_GPU              OFF)
+  set(SDL_HAPTIC           OFF)
+  set(SDL_JOYSTICK         OFF)
+endif()
+
 if(NOT (SDL_SHARED OR SDL_STATIC))
   message(FATAL_ERROR "SDL_SHARED and SDL_STATIC cannot both be disabled")
 endif()
@@ -2399,9 +2405,11 @@ elseif(WINDOWS OR CYGWIN)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/windows/*.c")
   set(HAVE_SDL_TIMERS TRUE)
 
-  set(SDL_LOADSO_WINDOWS 1)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/windows/*.c")
-  set(HAVE_SDL_LOADSO TRUE)
+  if(NOT CYGWIN)
+    set(SDL_LOADSO_WINDOWS 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/windows/*.c")
+    set(HAVE_SDL_LOADSO TRUE)
+  endif()
 
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/core/windows/*.c"

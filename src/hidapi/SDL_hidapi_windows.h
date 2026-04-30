@@ -28,7 +28,6 @@
 #pragma push_macro("malloc")
 #pragma push_macro("memcmp")
 #pragma push_macro("swprintf")
-#pragma push_macro("towupper")
 #pragma push_macro("wcscmp")
 #pragma push_macro("_wcsdup")
 #pragma push_macro("wcslen")
@@ -54,7 +53,6 @@
 #define malloc      SDL_malloc
 #define memcmp      SDL_memcmp
 #define swprintf    SDL_swprintf
-#define towupper    (wchar_t)SDL_toupper
 #define wcscmp      SDL_wcscmp
 #define _wcsdup     SDL_wcsdup
 #define wcslen      SDL_wcslen
@@ -77,7 +75,6 @@
 #pragma pop_macro("malloc")
 #pragma pop_macro("memcmp")
 #pragma pop_macro("swprintf")
-#pragma pop_macro("towupper")
 #pragma pop_macro("wcscmp")
 #pragma pop_macro("_wcsdup")
 #pragma pop_macro("wcslen")

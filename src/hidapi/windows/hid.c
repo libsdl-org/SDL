@@ -48,7 +48,6 @@ typedef LONG NTSTATUS;
 #ifdef __CYGWIN__
 #include <ntdef.h>
 #include <wctype.h>
-#define _wcsdup wcsdup
 #endif
 
 /*#define HIDAPI_USE_DDK*/
@@ -486,7 +485,7 @@ static void* hid_internal_get_device_interface_property(const wchar_t* interface
 
 static void hid_internal_towupper(wchar_t* string)
 {
-	for (wchar_t* p = string; *p; ++p) *p = towupper(*p);
+	for (wchar_t* p = string; *p; ++p) *p = (wchar_t)SDL_toupper(*p);
 }
 
 static int hid_internal_extract_int_token_value(wchar_t* string, const wchar_t* token)
