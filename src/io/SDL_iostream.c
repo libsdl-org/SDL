@@ -1021,7 +1021,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
 
         return SDL_IOFromFP(fp, true);
-    } else {
+    } else if (SDL_strncmp(file, "assets://", 9) != 0) {
         // Try opening it from internal storage if it's a relative path
         char *path = NULL;
         SDL_asprintf(&path, "%s/%s", SDL_GetAndroidInternalStoragePath(), file);
@@ -1040,8 +1040,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 #endif // HAVE_STDIO_H
 
-    // Try to open the file from the asset system
-
+    // Try to open the file from the asset system?
     void *iodata = NULL;
     if (!Android_JNI_FileOpen(&iodata, file, mode)) {
         return NULL;

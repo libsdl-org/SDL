@@ -1880,9 +1880,16 @@ static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
 
 static const APKNode *FindAPKNode(const char *constpath)
 {
+    //SDL_Log("FindAPKNode('%s') ...", constpath);
+    if (SDL_strncmp(constpath, "assets://", 9) == 0) {
+        constpath += 9;
+    }
+
     APKNode *parent = APKRootNode;
     if (!parent) {
         return NULL;
+    } else if (*constpath == '\0') {
+        return parent;
     }
 
     const size_t pathlen = SDL_strlen(constpath);
@@ -2341,12 +2348,20 @@ static void Internal_Android_Destroy_AssetManager(void)
 
 static const char *GetAssetPath(const char *path)
 {
-    if (path && path[0] == '.' && path[1] == '/') {
-        path += 2;
-        while (*path == '/') {
-            ++path;
-        }
+    if (!path) {
+        return NULL;
     }
+
+    if (path[0] == '.' && ((path[1] == '/') || (path[1] == '\0'))) {
+        path++;
+    } else if (SDL_strncmp(path, "assets://", 9) == 0) {
+        path += 9;
+    }
+
+    while (*path == '/') {
+        ++path;
+    }
+
     return path;
 }
 

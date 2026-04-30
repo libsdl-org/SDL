@@ -212,6 +212,24 @@ Any files you put in the "app/src/main/assets" directory of your project
 directory will get bundled into the application package and you can load
 them using the standard functions in SDL_iostream.h.
 
+As of SDL 3.6.0, SDL APIs, such as SDL_EnumerateDirectory() and
+SDL_IOFromFile(), understand paths that are prefixed with "assets://" and will
+look for paths exclusively inside the APK's "assets" directory. Since this is
+where app-specific data files are meant to be located, SDL_GetBasePath() on
+Android now returns "assets://" to make this work as expected across platforms.
+Note that SDL 3.2.28 to 3.6.0 returned "./" on Android, and before that,
+SDL_GetBasePath() always returned NULL on this platform.
+
+Obviously, paths prefixed with "assets://" are only useful to SDL; other APIs,
+like fopen(), will not understand them at all.
+
+As an alternate approach: SDL APIs on Android treat relative paths in a
+special way. It will look for files under the path returned by
+SDL_GetAndroidInternalStoragePath() first, and failing that, will attempt to
+look for them as if they were prefixed by "assets://", with the relative path
+starting in the base of the assets tree. Absolute paths never check against
+internal storage or assets.
+
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:
 * SDL_GetAndroidInternalStoragePath()
