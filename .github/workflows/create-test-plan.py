@@ -163,6 +163,7 @@ class StaticLibType(Enum):
 
 class SharedLibType(Enum):
     WIN32 = "SDL3.dll"
+    CYGDLL = "cygSDL3-0.dll"
     SO_0 = "libSDL3.so.0"
     SO = "libSDL3.so"
     DYLIB = "libSDL3.0.dylib"
@@ -771,7 +772,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
         case SdlPlatform.Cygwin:
             job.ccache = True
             job.shell = "bash --noprofile --norc -eo pipefail -o igncr {0}"
-            job.shared_lib = SharedLibType.WIN32
+            job.shared_lib = SharedLibType.CYGDLL
             job.static_lib = StaticLibType.A
             job.cygwin_packages.extend([
                 "ccache",
