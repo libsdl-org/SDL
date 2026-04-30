@@ -780,6 +780,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 "gcc-g++",
                 "ninja",
                 "pkg-config",
+                "python",
             ])
         case SdlPlatform.Riscos:
             job.ccache = False  # FIXME: enable when container gets upgrade
