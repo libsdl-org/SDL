@@ -1975,6 +1975,11 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       set(HAVE_INOTIFY 1)
     endif()
 
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/toolkit/*.c"
+      "${SDL3_SOURCE_DIR}/src/toolkit/*.h"
+    )
+        
     if(PKG_CONFIG_FOUND)
       if(SDL_DBUS)
         pkg_search_module(DBUS dbus-1 dbus)
