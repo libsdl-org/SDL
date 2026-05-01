@@ -41,3 +41,6 @@ Use ps3loadx installed on PS3 and ps3load compiled from ps3toolchain to run and 
 - PS3 Screen Mouse
 - Handle video mode/resolution change.
 - Render target Ex.
+
+## Issues:
+- SDL_Quit() is not working.
