@@ -26,8 +26,8 @@
 
 #ifdef __ARM_FEATURE_SVE2
 
-#undef sdl_sve_blend_op_fill_alpha
-#define sdl_sve_blend_op_fill_alpha(ma_alpha_chn_idx)                           \
+#undef sdl_sve_rgb32_blend_op_fill_alpha
+#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)                     \
             if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
                 /* fill alpha */                                                \
                 sve_target_u16 = svdup_u16(0xFF);                               \
@@ -39,15 +39,31 @@
                                                     vMask);                     \
             }
 
-#undef sdl_sve_blend_op_copy_alpha
-#define sdl_sve_blend_op_copy_alpha(ma_alpha_chn_idx)                           \
-            if (sve_src_chn_idx != (ma_alpha_chn_idx)) {                        \
+#undef sdl_sve_rgb32_blend_op_copy_alpha
+#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)                     \
+            if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
+                svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));\
+                sve_target_u16                                                  \
+                    = sdl_sve_chn_blend_with_mask(  svdup_u16(0xFF),            \
+                                                    sve_target_u16,             \
+                                                    vMask);                     \
+            } else {                                                            \
                 svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));\
                 sve_target_u16                                                  \
                     = sdl_sve_chn_blend_with_mask(  sve_source_u16,             \
                                                     sve_target_u16,             \
                                                     vMask);                     \
             }
+
+#undef sdl_sve_rgb32_blend_to_rgb565_op
+#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)                      \
+        do {                                                                    \
+            svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));    \
+                sve_target_u16                                                  \
+                    = sdl_sve_chn_blend_with_mask(  sve_source_u16,             \
+                                                    sve_target_u16,             \
+                                                    vMask);                     \
+        } while(0)
 
 #include "SDL_sve2_swizzle.h"
 
@@ -71,6 +87,8 @@ void SDLCALL Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
     // Set up some basic variables
     srcbpp = srcfmt->bytes_per_pixel;
     dstbpp = dstfmt->bytes_per_pixel;
+
+    assert(0 != srcfmt->Amask);
 
     int srcstride = srcskip + srcbpp * width;
     int dststride = dstskip + dstbpp * width;
@@ -150,6 +168,9 @@ void SDLCALL Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
 
 void SDLCALL Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    assert(0 != srcfmt->Amask);
+    (void)srcfmt;
 
 #if 0
 
@@ -201,6 +222,11 @@ void SDLCALL Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 #else
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 #endif
+}
+
+void SDLCALL Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
+{
+    sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
 

@@ -27,8 +27,8 @@
 #ifdef __ARM_FEATURE_SVE2
 
 
-#undef sdl_sve_blend_op_fill_alpha
-#define sdl_sve_blend_op_fill_alpha(ma_alpha_chn_idx)                           \
+#undef sdl_sve_rgb32_blend_op_fill_alpha
+#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)                           \
         do {                                                                    \
             if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
                 /* fill alpha */                                                \
@@ -38,12 +38,18 @@
             }                                                                   \
         } while(0)
 
-#undef sdl_sve_blend_op_copy_alpha
-#define sdl_sve_blend_op_copy_alpha(ma_alpha_chn_idx)                           \
+#undef sdl_sve_rgb32_blend_op_copy_alpha
+#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)                           \
         do {                                                                    \
             if (sve_src_chn_idx != (ma_alpha_chn_idx)) {                        \
                 sve_target_u16 = sve_source_u16;                                \
             }                                                                   \
+        } while(0)
+
+#undef sdl_sve_rgb32_blend_to_rgb565_op
+#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)                      \
+        do {                                                                    \
+            sve_target_u16 = sve_source_u16;                                    \
         } while(0)
 
 #include "SDL_sve2_swizzle.h"
@@ -54,8 +60,9 @@ void SDLCALL Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
-void SDLCALL Blit8888to565PixelSVE2(SDL_BlitInfo *info)
+void SDLCALL Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
+#if 0
     int width = info->dst_w;
     int height = info->dst_h;
     Uint8 *src = info->src;
@@ -85,6 +92,9 @@ void SDLCALL Blit8888to565PixelSVE2(SDL_BlitInfo *info)
         src += srcstride;
         dst += dststride;
     }
+#else
+    sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
+#endif
 }
 
 

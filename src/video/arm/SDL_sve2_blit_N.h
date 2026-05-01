@@ -28,7 +28,7 @@
 #ifdef SDL_SVE2_INTRINSICS
 
 void SDLCALL Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info);
-void SDLCALL Blit8888to565PixelSVE2(SDL_BlitInfo *info);
+void SDLCALL Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info);
 
 
 #endif /* SDL_SVE2_INTRINSICS */

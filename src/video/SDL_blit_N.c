@@ -3135,7 +3135,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 dstfmt->Rmask == 0x0000F800 &&
                 dstfmt->Gmask == 0x000007E0 &&
                 dstfmt->Bmask == 0x0000001F) {
-                return Blit8888to565PixelSVE2;
+                return Blit8888to565PixelSwizzleSVE2;
             }
         }
 #endif
