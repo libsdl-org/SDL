@@ -564,6 +564,12 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             int dstw = (int)SDL_floorf(dstrect->w);
             int dsth = (int)SDL_floorf(dstrect->h);
 
+            // Apply viewport
+            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
+                dstx += data->drawstate.viewport->x;
+                dsty += data->drawstate.viewport->y;
+            }
+
             // Skip if completely offscreen
             if (dstx + dstw <= 0 ||
                 dsty + dsth <= 0 ||
@@ -575,12 +581,6 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
             gcmAddressToOffset(surface->pixels, &dst_offset);
             gcmAddressToOffset(surface_src->pixels, &src_offset);
-
-            // Apply viewport
-            if (data->drawstate.viewport && (data->drawstate.viewport->x || data->drawstate.viewport->y)) {
-                dstrect->x += data->drawstate.viewport->x;
-                dstrect->y += data->drawstate.viewport->y;
-            }
 
             int srcx = (int)SDL_floorf(srcrect->x);
             int srcy = (int)SDL_floorf(srcrect->y);
