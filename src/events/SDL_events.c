@@ -682,7 +682,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_JBUTTON_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d state=%u percent=%d)",
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d state=%d percent=%d)",
                            event->jbattery.timestamp, (int)event->jbattery.which,
                            event->jbattery.state, event->jbattery.percent);
         break;

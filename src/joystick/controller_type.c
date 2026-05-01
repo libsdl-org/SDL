@@ -31,10 +31,10 @@ static const char *GetControllerTypeOverride( int nVID, int nPID )
 		char key[32];
 		const char *spot = NULL;
 
-		SDL_snprintf(key, sizeof(key), "0x%.4x/0x%.4x=", nVID, nPID);
+		SDL_snprintf(key, sizeof(key), "0x%.4x/0x%.4x=", (unsigned int)nVID, (unsigned int)nPID);
 		spot = SDL_strstr(hint, key);
 		if (!spot) {
-			SDL_snprintf(key, sizeof(key), "0x%.4X/0x%.4X=", nVID, nPID);
+			SDL_snprintf(key, sizeof(key), "0x%.4X/0x%.4X=", (unsigned int)nVID, (unsigned int)nPID);
 			spot = SDL_strstr(hint, key);
 		}
 		if (spot) {

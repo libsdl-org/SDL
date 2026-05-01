@@ -911,7 +911,7 @@ static int SDLCALL pixels_allocFreePalette(void *arg)
         SDLTest_AssertPass("Call to SDL_CreatePalette(%d)", ncolors);
         SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
         if (result != NULL) {
-            SDLTest_AssertCheck(result->ncolors == ncolors, "Verify value of result.ncolors; expected: %u, got %u", ncolors, result->ncolors);
+            SDLTest_AssertCheck(result->ncolors == ncolors, "Verify value of result.ncolors; expected: %d, got %d", ncolors, result->ncolors);
             if (result->ncolors > 0) {
                 SDLTest_AssertCheck(result->colors != NULL, "Verify value of result.colors is not NULL");
                 if (result->colors != NULL) {

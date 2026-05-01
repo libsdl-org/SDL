@@ -789,7 +789,7 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
     case SDL_PROPERTY_TYPE_NUMBER:
         {
             Sint64 value = SDL_GetNumberProperty(props, name, 0);
-            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")", name, value, value);
+            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")", name, value, (Uint64)value);
         }
         break;
     case SDL_PROPERTY_TYPE_FLOAT:

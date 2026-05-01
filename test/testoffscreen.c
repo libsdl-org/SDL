@@ -54,7 +54,7 @@ static void save_surface_to_png(void)
 
     surface = SDL_RenderReadPixels(renderer, NULL);
 
-    (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.png",
+    (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.png",
                        SDL_GetWindowID(window), ++frame_number);
 
     SDL_SavePNG(surface, file);

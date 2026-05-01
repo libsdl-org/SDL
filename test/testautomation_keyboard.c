@@ -61,37 +61,37 @@ static int SDLCALL keyboard_getKeyFromName(void *arg)
     /* Case where Key is known, 1 character input */
     result = SDL_GetKeyFromName("A");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName('A', true)");
-    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_A, result);
+    SDLTest_AssertCheck(result == SDLK_A, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_A, result);
 
     /* Case where Key is known, 2 character input */
     result = SDL_GetKeyFromName("F1");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/double)");
-    SDLTest_AssertCheck(result == SDLK_F1, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_F1, result);
+    SDLTest_AssertCheck(result == SDLK_F1, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_F1, result);
 
     /* Case where Key is known, 3 character input */
     result = SDL_GetKeyFromName("End");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/triple)");
-    SDLTest_AssertCheck(result == SDLK_END, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_END, result);
+    SDLTest_AssertCheck(result == SDLK_END, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_END, result);
 
     /* Case where Key is known, 4 character input */
     result = SDL_GetKeyFromName("Find");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/quad)");
-    SDLTest_AssertCheck(result == SDLK_FIND, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_FIND, result);
+    SDLTest_AssertCheck(result == SDLK_FIND, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_FIND, result);
 
     /* Case where Key is known, multiple character input */
     result = SDL_GetKeyFromName("MediaStop");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(known/multi)");
-    SDLTest_AssertCheck(result == SDLK_MEDIA_STOP, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_MEDIA_STOP, result);
+    SDLTest_AssertCheck(result == SDLK_MEDIA_STOP, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_MEDIA_STOP, result);
 
     /* Case where Key is unknown */
     result = SDL_GetKeyFromName("NotThere");
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(unknown)");
-    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
+    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %u, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
 
     /* Case where input is NULL/invalid */
     result = SDL_GetKeyFromName(NULL);
     SDLTest_AssertPass("Call to SDL_GetKeyFromName(NULL)");
-    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
+    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %u, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
 
     return TEST_COMPLETED;
 }
@@ -126,12 +126,12 @@ static int SDLCALL keyboard_getKeyFromScancode(void *arg)
     /* Case where input is valid */
     result = SDL_GetKeyFromScancode(SDL_SCANCODE_SPACE, SDL_KMOD_NONE, false);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(valid)");
-    SDLTest_AssertCheck(result == SDLK_SPACE, "Verify result from call, expected: %d, got: %" SDL_PRIu32, SDLK_SPACE, result);
+    SDLTest_AssertCheck(result == SDLK_SPACE, "Verify result from call, expected: %u, got: %" SDL_PRIu32, SDLK_SPACE, result);
 
     /* Case where input is zero */
     result = SDL_GetKeyFromScancode(SDL_SCANCODE_UNKNOWN, SDL_KMOD_NONE, false);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(0)");
-    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
+    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %u, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
 
     /* Clear error message */
     SDL_ClearError();
@@ -140,13 +140,13 @@ static int SDLCALL keyboard_getKeyFromScancode(void *arg)
     /* Case where input is invalid (too small) */
     result = SDL_GetKeyFromScancode((SDL_Scancode)-999, SDL_KMOD_NONE, false);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(-999)");
-    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
+    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %u, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
 
     /* Case where input is invalid (too big) */
     result = SDL_GetKeyFromScancode((SDL_Scancode)999, SDL_KMOD_NONE, false);
     SDLTest_AssertPass("Call to SDL_GetKeyFromScancode(999)");
-    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %d, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
+    SDLTest_AssertCheck(result == SDLK_UNKNOWN, "Verify result from call is UNKNOWN, expected: %u, got: %" SDL_PRIu32, SDLK_UNKNOWN, result);
     checkInvalidScancodeError();
 
     return TEST_COMPLETED;

@@ -2494,7 +2494,7 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
             offset += GIP_DecodeLength(&fragment_offset, &bytes[offset], num_bytes - offset);
             if (fragment_offset != attachment->fragment_offset) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received out of sequence fragment, (claimed %" SDL_PRIu64 ", expected %d)",
+                    "GIP: Received out of sequence fragment, (claimed %" SDL_PRIu64 ", expected %u)",
                     fragment_offset, attachment->fragment_offset);
                 GIP_Acknowledge(device,
                     &header,
