@@ -37,8 +37,14 @@
 #define WINAPI_PARTITION_GAMES 0
 #endif // WINAPI_PARTITION_GAMES
 
+#if defined(SDL_PLATFORM_WIN32) && defined(__CYGWIN__)
+  #define _WIN32 1
+#endif
 #define COBJMACROS
 #include "d3d12.h"
+#if defined(SDL_PLATFORM_WIN32) && defined(__CYGWIN__)
+  #undef _WIN32
+#endif
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 
