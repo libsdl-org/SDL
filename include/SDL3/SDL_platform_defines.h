@@ -221,9 +221,9 @@
  */
 #define SDL_PLATFORM_MACOS 1
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
-    #error SDL for macOS only supports deploying on 10.7 and above.
-#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 1070 */
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 101200
+    #error SDL for macOS only supports deploying on 10.12 and above.
+#endif /* MAC_OS_X_VERSION_MIN_REQUIRED < 101200 */
 #endif /* TARGET_OS_IPHONE */
 #endif /* defined(__APPLE__) */
 
