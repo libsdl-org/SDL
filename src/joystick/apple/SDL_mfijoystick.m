@@ -429,7 +429,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 
             // controller.vendorName returns a generic name for Xbox controllers ("Controller"),
             // and controller.productCategory only returns "Xbox One" for those controllers,
-            // so we have to give them proper names based on the ones from "SDL_gamepad_db.h".
+            // so we give them proper names based on the ones from SDL_gamepad_db.h
             name = "Xbox One Elite 2 Controller";
         } else if (device->has_xbox_share_button) {
             // Assume Xbox Series X Controller unless/until GCController flows VID/PID
