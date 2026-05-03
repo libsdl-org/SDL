@@ -10,6 +10,10 @@ import android.hardware.lights.Light;
 import android.hardware.lights.LightsRequest;
 import android.hardware.lights.LightsManager;
 import android.hardware.lights.LightState;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -30,7 +34,8 @@ public class SDLControllerManager
     static native void nativeAddJoystick(int device_id, String name, String desc,
                                                 int vendor_id, int product_id,
                                                 int button_mask,
-                                                int naxes, int axis_mask, int nhats, boolean can_rumble, boolean has_rgb_led);
+                                                int naxes, int axis_mask, int nhats, boolean can_rumble, boolean has_rgb_led,
+                                                boolean has_accelerometer, boolean has_gyroscope);
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
@@ -40,6 +45,7 @@ public class SDLControllerManager
                                           float value);
     static native void onNativeHat(int device_id, int hat_id,
                                           int x, int y);
+    static native void onNativeJoySensor(int device_id, int sensor_type, long sensor_timestamp, float x, float y, float z);
 
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
@@ -79,6 +85,13 @@ public class SDLControllerManager
      */
     static void joystickSetLED(int device_id, int red, int green, int blue) {
         mJoystickHandler.setLED(device_id, red, green, blue);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static void joystickSetSensorsEnabled(int device_id, boolean enabled) {
+        mJoystickHandler.setSensorsEnabled(device_id, enabled);
     }
 
     /**
@@ -153,6 +166,10 @@ class SDLJoystickHandler {
         ArrayList<InputDevice.MotionRange> hats;
         ArrayList<Light> lights;
         LightsManager.LightsSession lightsSession;
+        SensorManager sensorManager;
+        SDLJoySensorListener sensorListener;
+        Sensor accelerometerSensor;
+        Sensor gyroscopeSensor;
     }
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
@@ -241,6 +258,8 @@ class SDLJoystickHandler {
 
                     boolean can_rumble = false;
                     boolean has_rgb_led = false;
+                    boolean has_accelerometer = false;
+                    boolean has_gyroscope = false;
                     if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
                         VibratorManager vibratorManager = joystickDevice.getVibratorManager();
                         int[] vibrators = vibratorManager.getVibratorIds();
@@ -258,12 +277,26 @@ class SDLJoystickHandler {
                             joystick.lightsSession = lightsManager.openSession();
                             has_rgb_led = true;
                         }
+                        SensorManager sensorManager = joystickDevice.getSensorManager();
+                        if (sensorManager != null) {
+                            joystick.sensorManager = sensorManager;
+                            joystick.sensorListener = new SDLJoySensorListener(joystick.device_id);
+                            joystick.accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                            if (joystick.accelerometerSensor != null) {
+                                has_accelerometer = true;
+                            }
+                            joystick.gyroscopeSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+                            if (joystick.gyroscopeSensor != null) {
+                                has_gyroscope = true;
+                            }
+                        }
                     }
 
                     mJoysticks.add(joystick);
                     SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc,
                             getVendorId(joystickDevice), getProductId(joystickDevice),
-                            getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led);
+                            getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led,
+                            has_accelerometer, has_gyroscope);
                 }
             }
         }
@@ -507,6 +540,31 @@ class SDLJoystickHandler {
             }
         }
         joystick.lightsSession.requestLights(lightsRequest.build());
+    }
+
+    void setSensorsEnabled(int device_id, boolean enabled) {
+        if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
+            return;
+        }
+        SDLJoystick joystick = getJoystick(device_id);
+        if (joystick == null || joystick.sensorManager == null) {
+            return;
+        }
+        if (enabled) {
+            if (joystick.accelerometerSensor != null) {
+                joystick.sensorManager.registerListener(joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME, null);
+            }
+            if (joystick.gyroscopeSensor != null) {
+                joystick.sensorManager.registerListener(joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME, null);
+            }
+        } else {
+            if (joystick.accelerometerSensor != null) {
+                joystick.sensorManager.unregisterListener(joystick.sensorListener, joystick.accelerometerSensor);
+            }
+            if (joystick.gyroscopeSensor != null) {
+                joystick.sensorManager.unregisterListener(joystick.sensorListener, joystick.gyroscopeSensor);
+            }
+        }
     }
 }
 
@@ -931,5 +989,21 @@ class SDLGenericMotionListener_API29 extends SDLGenericMotionListener_API26 {
         }
 
         return penDevice.isExternal() ? SDL_PEN_DEVICE_TYPE_INDIRECT : SDL_PEN_DEVICE_TYPE_DIRECT;
+    }
+}
+
+class SDLJoySensorListener implements SensorEventListener {
+    int device_id;
+
+    public SDLJoySensorListener(int device_id) {
+        this.device_id = device_id;
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        SDLControllerManager.onNativeJoySensor(device_id, event.sensor.getType(), event.timestamp, event.values[0], event.values[1], event.values[2]);
     }
 }

@@ -306,7 +306,37 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
     return false;
 }
 
-void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble, bool has_rgb_led)
+void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp, float x, float y, float z)
+{
+    Uint64 timestamp = SDL_GetTicksNS();
+    SDL_joylist_item *item;
+    SDL_SensorType sensor;
+    float data[3];
+
+    if (sensor_type == 1) { // Sensor.TYPE_ACCELEROMETER
+        sensor = SDL_SENSOR_ACCEL;
+    } else if (sensor_type == 4) { // Sensor.TYPE_GYROSCOPE
+        sensor = SDL_SENSOR_GYRO;
+    } else {
+        // Unsupported sensor
+        return;
+    }
+
+    // The axes of sensor events and their signs are the same as SDL's, so no conversion required
+    data[0] = x;
+    data[1] = y;
+    data[2] = z;
+
+    SDL_LockJoysticks();
+    item = JoystickByDeviceId(device_id);
+    if (item && item->joystick) {
+        SDL_SendJoystickSensor(timestamp, item->joystick, sensor, sensor_timestamp, data, 3);
+    }
+    SDL_UnlockJoysticks();
+}
+
+void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
+    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope)
 {
     SDL_joylist_item *item;
     SDL_GUID guid;
@@ -382,6 +412,8 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     item->nhats = nhats;
     item->can_rumble = can_rumble;
     item->has_rgb_led = has_rgb_led;
+    item->has_accelerometer = has_accelerometer;
+    item->has_gyroscope = has_accelerometer;
     item->device_instance = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
@@ -587,6 +619,13 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
     }
 
+    if (item->has_accelerometer) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+    }
+    if (item->has_gyroscope) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+    }
+
     return true;
 }
 
@@ -631,7 +670,15 @@ static bool ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data,
 
 static bool ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item) {
+        return SDL_SetError("SetSensorsEnabled failed, device disconnected");
+    }
+    if (!item->has_accelerometer && !item->has_gyroscope) {
+        return SDL_Unsupported();
+    }
+    Android_JNI_JoystickSetSensorsEnabled(item->device_id, enabled);
+    return true;
 }
 
 static void ANDROID_JoystickUpdate(SDL_Joystick *joystick)
