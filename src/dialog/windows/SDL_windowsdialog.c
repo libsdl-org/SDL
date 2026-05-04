@@ -1035,7 +1035,7 @@ void windows_ShowFileDialog(void *ptr)
             const char *opts[1] = { NULL };
             callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
         } else {
-            SDL_SetError("Windows error, CommDlgExtendedError: %ld", pCommDlgExtendedError());
+            SDL_SetError("Windows error, CommDlgExtendedError: %" SDL_PRIuULONG, pCommDlgExtendedError());
             callback(userdata, NULL, -1);
         }
     }

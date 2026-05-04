@@ -78,7 +78,7 @@ static RawInputIterateResult IterateRawInputThread(void)
     } else if (wait_status == WAIT_INPUT) {
         return RINP_CONTINUE;
     } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Raw input thread exiting, unexpected wait result: %lu", wait_status);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Raw input thread exiting, unexpected wait result: %" SDL_PRIuULONG, wait_status);
         return RINP_QUIT;
     }
 }

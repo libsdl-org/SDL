@@ -146,6 +146,16 @@
 #define SDL_tcsstr       SDL_strstr
 #endif
 
+#if defined(__LP64__)
+#define SDL_PRIdSLONG   "d"
+#define SDL_PRIuULONG   "u"
+#define SDL_PRIxSLONG   "x"
+#else
+#define SDL_PRIdSLONG   "ld"
+#define SDL_PRIuULONG   "lu"
+#define SDL_PRIxSLONG   "lx"
+#endif
+
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {

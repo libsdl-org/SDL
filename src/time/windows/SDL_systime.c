@@ -151,7 +151,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         }
     }
 
-    return SDL_SetError("SDL_DateTime conversion failed (%lu)", GetLastError());
+    return SDL_SetError("SDL_DateTime conversion failed (%" SDL_PRIuULONG ")", GetLastError());
 }
 
 #endif // SDL_TIME_WINDOWS
