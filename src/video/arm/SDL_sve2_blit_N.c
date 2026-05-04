@@ -28,7 +28,7 @@
 
 
 #undef sdl_sve_rgb32_blend_op_fill_alpha
-#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)                           \
+#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)                     \
         do {                                                                    \
             if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
                 /* fill alpha */                                                \
@@ -39,11 +39,9 @@
         } while(0)
 
 #undef sdl_sve_rgb32_blend_op_copy_alpha
-#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)                           \
+#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)                     \
         do {                                                                    \
-            if (sve_src_chn_idx != (ma_alpha_chn_idx)) {                        \
-                sve_target_u16 = sve_source_u16;                                \
-            }                                                                   \
+            sve_target_u16 = sve_source_u16;                                    \
         } while(0)
 
 #undef sdl_sve_rgb32_blend_to_rgb565_op

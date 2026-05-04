@@ -53,7 +53,7 @@
             pTemp = NULL)                                                       \
         for (   size_t SVE_SAFE_NAME(n) = 0,                                    \
                 sve_iteration_advance = svlenu32() * 4;                         \
-                ({  ma_pred_name = svwhilelt_b8( SVE_SAFE_NAME(n),              \
+                ({  ma_pred_name = svwhilelt_b8((int32_t)SVE_SAFE_NAME(n),      \
                                                 (int32_t)(ma_stride_size));     \
                     SVE_SAFE_NAME(n) < (ma_stride_size);                        \
                 });                                                             \
@@ -68,8 +68,8 @@
             pTemp = NULL)                                                       \
         for (   size_t SVE_SAFE_NAME(n) = 0,                                    \
                 sve_iteration_advance = svlenu16();                             \
-                ({  ma_pred_name = svwhilelt_b16(SVE_SAFE_NAME(n),              \
-                                                (int32_t)(ma_stride_size));     \
+                ({  ma_pred_name = svwhilelt_b16((int32_t)SVE_SAFE_NAME(n),     \
+                                                 (int32_t)(ma_stride_size));    \
                     SVE_SAFE_NAME(n) < (ma_stride_size);                        \
                 });                                                             \
                 SVE_SAFE_NAME(n) += sve_iteration_advance)
