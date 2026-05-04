@@ -22,6 +22,8 @@
 #ifndef SDL_SVE2_UTIL_H
 #define SDL_SVE2_UTIL_H
 
+/* *INDENT-OFF* */ // clang-format off
+
 #undef SVE_0_CONNECT2
 #undef SVE_0_CONNECT3
 #undef SVE_0_CONNECT4
@@ -209,5 +211,7 @@
         printf("\n");                                                           \
                                                                                 \
     } while(0)
+
+/* *INDENT-ON* */ // clang-format on
 
 #endif     /* SDL_SVE2_UTIL_H */

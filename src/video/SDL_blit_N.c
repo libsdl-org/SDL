@@ -25,7 +25,10 @@
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
+
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
 #include "./arm/SDL_sve2_blit_N.h"
+#endif
 
 // General optimized routines that write char by char
 #define HAVE_FAST_WRITE_INT8 1
@@ -3118,7 +3121,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 return Blit8888to8888PixelSwizzleSSE41;
             }
 #endif
-#ifdef SDL_SVE2_INTRINSICS
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
             if (SDL_HasSVE2()) {
                 return Blit8888to8888PixelSwizzleSVE2;
             }
@@ -3127,7 +3130,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             return Blit8888to8888PixelSwizzleNEON;
 #endif
         }
-#ifdef SDL_SVE2_INTRINSICS
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
         if (SDL_HasSVE2()) {
             /* RGBA8888/ARGB8888/XRGB8888 -> RGB565 */
             if (srcfmt->bytes_per_pixel == 4 && 

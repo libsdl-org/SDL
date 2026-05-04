@@ -24,7 +24,10 @@
 
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
+
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
 #include "./arm/SDL_sve2_blit_A.h"
+#endif
 
 // Functions to perform alpha blended blitting
 
@@ -1478,7 +1481,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
-#ifdef SDL_SVE2_INTRINSICS
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
             if (SDL_HasSVE2()) {
                 if (sf->bytes_per_pixel == 4 && 
                     df->bytes_per_pixel == 2 &&
@@ -1516,7 +1519,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                     return Blit8888to8888PixelAlphaSwizzleLSX;
                 }
 #endif
-#ifdef SDL_SVE2_INTRINSICS
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
                 if (SDL_HasSVE2()) {
                     // To prevent "unused function" compiler warnings/errors
                     (void)Blit8888to8888PixelAlpha;
