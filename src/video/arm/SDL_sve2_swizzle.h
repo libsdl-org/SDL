@@ -34,15 +34,15 @@
         svuint16x4_t vTargetLow16x4 = svundef4_u16();         \
         svuint16x4_t vTargetHigh16x4 = svundef4_u16();        \
                                                               \
-        SDL_svld4ub_u16(vTailPred,                            \
-                        (uint8_t *)pwSource,                  \
-                        &vSourceLow16x4,                      \
-                        &vSourceHigh16x4);                    \
+        svld4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwSource,                      \
+                    &vSourceLow16x4,                          \
+                    &vSourceHigh16x4);                        \
                                                               \
-        SDL_svld4ub_u16(vTailPred,                            \
-                        (uint8_t *)pwTarget,                  \
-                        &vTargetLow16x4,                      \
-                        &vTargetHigh16x4);                    \
+        svld4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwTarget,                      \
+                    &vTargetLow16x4,                          \
+                    &vTargetHigh16x4);                        \
                                                               \
         /* process low half */                                \
         ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x4,   \
@@ -52,10 +52,10 @@
         ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x4, \
                             __VA_ARGS__);                     \
                                                               \
-        SDL_svst4ub_u16(vTailPred,                            \
-                        (uint8_t *)pwTarget,                  \
-                        vTargetLow16x4,                       \
-                        vTargetHigh16x4);                     \
+        svst4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwTarget,                      \
+                    vTargetLow16x4,                           \
+                    vTargetHigh16x4);                         \
                                                               \
         pwSource += sve_iteration_advance;                    \
         pwTarget += sve_iteration_advance;                    \
@@ -71,10 +71,10 @@
         svuint16x3_t vTargetLow16x3 = svundef3_u16();                 \
         svuint16x3_t vTargetHigh16x3 = svundef3_u16();                \
                                                                       \
-        SDL_svld4ub_u16(vTailPred,                                    \
-                        (uint8_t *)pwSource,                          \
-                        &vSourceLow16x4,                              \
-                        &vSourceHigh16x4);                            \
+        svld4ub_u16(vTailPred,                                        \
+                    (uint8_t *)pwSource,                              \
+                    &vSourceLow16x4,                                  \
+                    &vSourceHigh16x4);                                \
                                                                       \
         svld3rgb565_u16(vTailPred,                                    \
                         phwTarget,                                    \
