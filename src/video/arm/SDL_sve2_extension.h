@@ -704,6 +704,9 @@
         } while (0);                                                      \
     } while (0)
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16x3_t sdl_sve_rgb565_unpack(svuint16_t vPixels)
 {
     svuint16x3_t vRGB16x3 = svundef3_u16();
@@ -730,6 +733,9 @@ static inline svuint16x3_t sdl_sve_rgb565_unpack(svuint16_t vPixels)
     return vRGB16x3;
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_rgb565_pack(svuint16x3_t vRGB16x3)
 {
     svuint16_t vRed = svlsr_n_u16_m(svptrue_b16(), svget3_u16(vRGB16x3, 0), 3);
@@ -752,6 +758,9 @@ static inline svuint16_t sdl_sve_rgb565_pack(svuint16x3_t vRGB16x3)
     //     |   ((svget3_u16(vRGB16x3, 2) & (0x1F << 3)) << 8);
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline ARM_NONNULL(2, 3, 4) void svld3rgb565_u16(svbool_t vPredu8,
                                                         uint16_t *phwSource,
                                                         svuint16x3_t *pvLow,
@@ -782,6 +791,9 @@ static inline ARM_NONNULL(2, 3, 4) void svld3rgb565_u16(svbool_t vPredu8,
                     svlsl_n_u16_m(svptrue_b16(), vHighByteHighHalf, 8)));
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
                                                   uint16_t *phwTarget,
                                                   svuint16x3_t vLow,
@@ -826,8 +838,46 @@ static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC push_options
-#pragma GCC optimize("O0")
+#define svld4ub_u16(ma_pred,                                                                                         \
+                    ma_src_ptr,                                                                                      \
+                    ma_svuint16x4_low_ptr,                                                                           \
+                    ma_svuint16x4_high_ptr)                                                                          \
+    do {                                                                                                             \
+        svuint8x4_t vInput8x4 = svld4_u8((ma_pred), (ma_src_ptr));                                                   \
+                                                                                                                     \
+        *(ma_svuint16x4_low_ptr) = svset4_u16(*(ma_svuint16x4_low_ptr), 0, svunpklo_u16(svget4_u8(vInput8x4, 0)));   \
+        *(ma_svuint16x4_low_ptr) = svset4_u16(*(ma_svuint16x4_low_ptr), 1, svunpklo_u16(svget4_u8(vInput8x4, 1)));   \
+        *(ma_svuint16x4_low_ptr) = svset4_u16(*(ma_svuint16x4_low_ptr), 2, svunpklo_u16(svget4_u8(vInput8x4, 2)));   \
+        *(ma_svuint16x4_low_ptr) = svset4_u16(*(ma_svuint16x4_low_ptr), 3, svunpklo_u16(svget4_u8(vInput8x4, 3)));   \
+                                                                                                                     \
+        *(ma_svuint16x4_high_ptr) = svset4_u16(*(ma_svuint16x4_high_ptr), 0, svunpkhi_u16(svget4_u8(vInput8x4, 0))); \
+        *(ma_svuint16x4_high_ptr) = svset4_u16(*(ma_svuint16x4_high_ptr), 1, svunpkhi_u16(svget4_u8(vInput8x4, 1))); \
+        *(ma_svuint16x4_high_ptr) = svset4_u16(*(ma_svuint16x4_high_ptr), 2, svunpkhi_u16(svget4_u8(vInput8x4, 2))); \
+        *(ma_svuint16x4_high_ptr) = svset4_u16(*(ma_svuint16x4_high_ptr), 3, svunpkhi_u16(svget4_u8(vInput8x4, 3))); \
+    } while (0)
+
+#define svst4ub_u16(ma_pred,                                                                 \
+                    ma_dst_ptr,                                                              \
+                    ma_svuint16x4_low,                                                       \
+                    ma_svuint16x4_high)                                                      \
+    do {                                                                                     \
+        svuint8_t vCH0u8 = svuzp1_u8(svreinterpret_u8(svget4_u16((ma_svuint16x4_low), 0)),   \
+                                     svreinterpret_u8(svget4_u16((ma_svuint16x4_high), 0))); \
+                                                                                             \
+        svuint8_t vCH1u8 = svuzp1_u8(svreinterpret_u8(svget4_u16((ma_svuint16x4_low), 1)),   \
+                                     svreinterpret_u8(svget4_u16((ma_svuint16x4_high), 1))); \
+                                                                                             \
+        svuint8_t vCH2u8 = svuzp1_u8(svreinterpret_u8(svget4_u16((ma_svuint16x4_low), 2)),   \
+                                     svreinterpret_u8(svget4_u16((ma_svuint16x4_high), 2))); \
+                                                                                             \
+        svuint8_t vCH3u8 = svuzp1_u8(svreinterpret_u8(svget4_u16((ma_svuint16x4_low), 3)),   \
+                                     svreinterpret_u8(svget4_u16((ma_svuint16x4_high), 3))); \
+                                                                                             \
+        svst4_u8((ma_pred), (ma_dst_ptr), svcreate4_u8(vCH0u8, vCH1u8, vCH2u8, vCH3u8));     \
+    } while (0)
+#else
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
 #endif
 static inline ARM_NONNULL(2, 3, 4) void svld4ub_u16(svbool_t vPredu8,
                                                     uint8_t *pchSource,
@@ -847,6 +897,9 @@ static inline ARM_NONNULL(2, 3, 4) void svld4ub_u16(svbool_t vPredu8,
     *pvHigh = svset4_u16(*pvHigh, 3, svunpkhi_u16(svget4_u8(vInput8x4, 3)));
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline ARM_NONNULL(2) void svst4ub_u16(svbool_t vPredu8,
                                               uint8_t *pchTarget,
                                               svuint16x4_t vLow,
@@ -867,12 +920,13 @@ static inline ARM_NONNULL(2) void svst4ub_u16(svbool_t vPredu8,
 
     svst4_u8(vPredu8, pchTarget, svcreate4_u8(vCH0u8, vCH1u8, vCH2u8, vCH3u8));
 }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC pop_options
 #endif
 
 /*! \note the Element range of vMask is [0, 0xFF]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint16_t vTarget, svuint16_t vMask)
 {
     vMask = svadd_u16_m(svcmpeq_n_u16(svptrue_b16(), vMask, 255),
@@ -893,6 +947,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
 
 /*! \note the hwOpacity range [0, 0x100]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
                                                         svuint16_t vTarget,
                                                         uint16_t hwOpacity)
@@ -912,6 +969,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
 /*! \note the Element range of vMask is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_mask_and_opacity(svuint16_t vSource,
                                                                  svuint16_t vTarget,
                                                                  svuint16_t vMask,
@@ -938,6 +998,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask_and_opacity(svuint16_t vSou
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_masks(svuint16_t vSource,
                                                       svuint16_t vTarget,
                                                       svuint16_t vMask0,
@@ -970,6 +1033,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks(svuint16_t vSource,
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_masks_and_opacity(
     svuint16_t vSource,
     svuint16_t vTarget,
@@ -1011,6 +1077,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks_and_opacity(
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_3masks(svuint16_t vSource,
                                                        svuint16_t vTarget,
                                                        svuint16_t vMask0,
@@ -1052,6 +1121,9 @@ static inline svuint16_t sdl_sve_chn_blend_with_3masks(svuint16_t vSource,
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 static inline svuint16_t sdl_sve_chn_blend_with_3masks_and_opacity(
     svuint16_t vSource,
     svuint16_t vTarget,
