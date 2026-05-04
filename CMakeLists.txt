@@ -4065,7 +4065,7 @@ if(SDL_SHARED)
       SOVERSION "${SDL_SO_VERSION_MAJOR}"
     )
   else()
-    if(WINDOWS OR CYGWIN)
+    if(WINDOWS)
       set_target_properties(SDL3-shared PROPERTIES
         PREFIX ""
       )
