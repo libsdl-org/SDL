@@ -24,8 +24,6 @@
 
 #ifdef SDL_SVE2_INTRINSICS
 
-#ifdef __ARM_FEATURE_SVE2
-
 #undef sdl_sve_rgb32_blend_op_fill_alpha
 #define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx) \
     do {                                                    \
@@ -51,11 +49,17 @@
 
 #include "SDL_sve2_swizzle.h"
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
 #if 0
@@ -93,5 +97,4 @@ void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 #endif
 }
 
-#endif /* __ARM_FEATURE_SVE2 */
 #endif /* SDL_SVE2_INTRINSICS */
