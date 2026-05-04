@@ -937,7 +937,6 @@ if(SDL_ASSEMBLY)
         set(HAVE_ARMSVE2 TRUE)
         set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
       endif()
-      string(REGEX REPLACE " -march=armv8-a+sve2" "" CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
     cmake_pop_check_state()
 
     if(HAVE_ARMSVE2)
