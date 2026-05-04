@@ -96,10 +96,6 @@
  * SVE Test Helper                                                            *
  * ---------------------------------------------------------------------------*/
 
-#if 0 /* Some source checkers (looking for stdlib usage) might raises error 
-       * when seeing the following code.
-       */
-
 #define SVT_PRINT_VECTOR(ma_VECOTOR, ma_ELEMENT_T, ma_FORMAT_STRING)            \
     do {                                                                        \
         int_fast8_t nElementCount = svcntb_pat(SV_ALL) / sizeof(ma_ELEMENT_T);  \
@@ -118,70 +114,70 @@
         printf("]\r\n");                                                        \
     } while (0)
 
-#define SVT_INIT_VECOTR(ma_VECTOR, ma_ELEMENT_T, ...)                     \
-    do {                                                                  \
-        uint8_t SVE_SAFE_NAME(chVectorBuffer)[svcntb_pat(SV_ALL)];        \
-                                                                          \
-        memset(SVE_SAFE_NAME(chVectorBuffer),                             \
-               0,                                                         \
-               sizeof(SVE_SAFE_NAME(chVectorBuffer)));                    \
-        memcpy(SVE_SAFE_NAME(chVectorBuffer),                             \
-               (ma_ELEMENT_T[]){ ma_VA_ARGSma_ },                         \
-               MIN(sizeof(SVE_SAFE_NAME(chVectorBuffer)),                 \
-                   sizeof((ma_ELEMENT_T[]){ ma_VA_ARGSma_ })));           \
-                                                                          \
-        ma_VECTOR = svld1(svptrue_b8(),                                   \
-                          (ma_ELEMENT_T *)SVE_SAFE_NAME(chVectorBuffer)); \
+#define SVT_INIT_VECOTR(ma_VECTOR, ma_ELEMENT_T, ...)                                 \
+    do {                                                                              \
+        uint8_t SVE_SAFE_NAME(chVectorBuffer)[svcntb_pat(SV_ALL)];                    \
+                                                                                      \
+        memset(SVE_SAFE_NAME(chVectorBuffer), /* This should NOT be SDL_<symbol>() */ \
+               0,                                                                     \
+               sizeof(SVE_SAFE_NAME(chVectorBuffer)));                                \
+        memcpy(SVE_SAFE_NAME(chVectorBuffer), /* This should NOT be SDL_<symbol>() */ \
+               (ma_ELEMENT_T[]){ ma_VA_ARGSma_ },                                     \
+               MIN(sizeof(SVE_SAFE_NAME(chVectorBuffer)),                             \
+                   sizeof((ma_ELEMENT_T[]){ ma_VA_ARGSma_ })));                       \
+                                                                                      \
+        ma_VECTOR = svld1(svptrue_b8(),                                               \
+                          (ma_ELEMENT_T *)SVE_SAFE_NAME(chVectorBuffer));             \
     } while (0)
 
-#define SVT_INIT_PRED(ma_PREDICT, ...)                         \
-    do {                                                       \
-        uint8_t SVE_SAFE_NAME(chBuffer)[svlen(svundef_u64())]; \
-        memset(SVE_SAFE_NAME(chBuffer),                        \
-               0,                                              \
-               sizeof(SVE_SAFE_NAME(chBuffer)));               \
-                                                               \
-        memcpy(SVE_SAFE_NAME(chBuffer),                        \
-               (uint8_t[]){ ma_VA_ARGSma_ },                   \
-               MIN(sizeof(SVE_SAFE_NAME(chBuffer)),            \
-                   sizeof((uint8_t[]){ ma_VA_ARGSma_ })));     \
-                                                               \
-        ma_PREDICT = (*(svbool_t *)SVE_SAFE_NAME(chBuffer));   \
+#define SVT_INIT_PRED(ma_PREDICT, ...)                                          \
+    do {                                                                        \
+        uint8_t SVE_SAFE_NAME(chBuffer)[svlen(svundef_u64())];                  \
+        memset(SVE_SAFE_NAME(chBuffer), /* This should NOT be SDL_<symbol>() */ \
+               0,                                                               \
+               sizeof(SVE_SAFE_NAME(chBuffer)));                                \
+                                                                                \
+        memcpy(SVE_SAFE_NAME(chBuffer), /* This should NOT be SDL_<symbol>() */ \
+               (uint8_t[]){ ma_VA_ARGSma_ },                                    \
+               MIN(sizeof(SVE_SAFE_NAME(chBuffer)),                             \
+                   sizeof((uint8_t[]){ ma_VA_ARGSma_ })));                      \
+                                                                                \
+        ma_PREDICT = (*(svbool_t *)SVE_SAFE_NAME(chBuffer));                    \
     } while (0)
 
-#define SVT_PRINT_PRED(ma_PREDICT, ma_TYPE_T)                          \
-    do {                                                               \
-        printf("%8s\t[", #ma_PREDICT);                                 \
-        uint16_t SVE_SAFE_NAME(hwBuffer)[svlen(svundef_u64()) / 2];    \
-        memset(SVE_SAFE_NAME(hwBuffer),                                \
-               0,                                                      \
-               sizeof(SVE_SAFE_NAME(hwBuffer)));                       \
-        *(volatile svbool_t *)SVE_SAFE_NAME(hwBuffer) = (ma_PREDICT);  \
-                                                                       \
-        uint_fast16_t SVE_SAFE_NAME(nTotalBits) = svlen(svundef_u8()); \
-        uint_fast8_t SVE_SAFE_NAME(nElementBits) = sizeof(ma_TYPE_T);  \
-                                                                       \
-        uint16_t *phwPred = SVE_SAFE_NAME(hwBuffer);                   \
-        do {                                                           \
-            uint16_t hwPred = *phwPred++;                              \
-                                                                       \
-            for (uint_fast8_t n = 0;                                   \
-                 n < 16;                                               \
-                 n += SVE_SAFE_NAME(nElementBits)) {                   \
-                                                                       \
-                if (hwPred & 0x01) {                                   \
-                    printf("True ");                                   \
-                } else {                                               \
-                    printf("False");                                   \
-                }                                                      \
-                printf("%*s\t", (int)sizeof(ma_TYPE_T) - 1, "");       \
-                hwPred >>= SVE_SAFE_NAME(nElementBits);                \
-            }                                                          \
-                                                                       \
-            SVE_SAFE_NAME(nTotalBits) -= 16;                           \
-        } while (SVE_SAFE_NAME(nTotalBits));                           \
-                                                                       \
-        printf("]\r\n");                                               \
+#define SVT_PRINT_PRED(ma_PREDICT, ma_TYPE_T)                                   \
+    do {                                                                        \
+        printf("%8s\t[", #ma_PREDICT);                                          \
+        uint16_t SVE_SAFE_NAME(hwBuffer)[svlen(svundef_u64()) / 2];             \
+        memset(SVE_SAFE_NAME(hwBuffer), /* This should NOT be SDL_<symbol>() */ \
+               0,                                                               \
+               sizeof(SVE_SAFE_NAME(hwBuffer)));                                \
+        *(volatile svbool_t *)SVE_SAFE_NAME(hwBuffer) = (ma_PREDICT);           \
+                                                                                \
+        uint_fast16_t SVE_SAFE_NAME(nTotalBits) = svlen(svundef_u8());          \
+        uint_fast8_t SVE_SAFE_NAME(nElementBits) = sizeof(ma_TYPE_T);           \
+                                                                                \
+        uint16_t *phwPred = SVE_SAFE_NAME(hwBuffer);                            \
+        do {                                                                    \
+            uint16_t hwPred = *phwPred++;                                       \
+                                                                                \
+            for (uint_fast8_t n = 0;                                            \
+                 n < 16;                                                        \
+                 n += SVE_SAFE_NAME(nElementBits)) {                            \
+                                                                                \
+                if (hwPred & 0x01) {                                            \
+                    printf("True ");                                            \
+                } else {                                                        \
+                    printf("False");                                            \
+                }                                                               \
+                printf("%*s\t", (int)sizeof(ma_TYPE_T) - 1, "");                \
+                hwPred >>= SVE_SAFE_NAME(nElementBits);                         \
+            }                                                                   \
+                                                                                \
+            SVE_SAFE_NAME(nTotalBits) -= 16;                                    \
+        } while (SVE_SAFE_NAME(nTotalBits));                                    \
+                                                                                \
+        printf("]\r\n");                                                        \
     } while (0)
 
 #define SVT_PRINT_BUFFER(ma_BUFF_PTR, ma_SIZE, ma_TYPE_T, ma_FMT_STR, ma_STRIDE) \
@@ -206,6 +202,5 @@
         printf("\n");                                                            \
                                                                                  \
     } while (0)
-#endif
 
 #endif /* SDL_SVE2_UTIL_H */

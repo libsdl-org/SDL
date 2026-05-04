@@ -287,7 +287,7 @@ _m_prefetch(void *__P)
 #      include <arm_sve.h>
 #      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
 #    endif
-#    if defined (_M_ARM64)
+#    if defined (_M_ARM64) && 0 /* Please only remove this 0 when MSVC releasing support for SVE2 officially. */
 #      define SDL_SVE2_INTRINSICS 1
 #      include <arm_sve.h>
 #      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
