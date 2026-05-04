@@ -24,91 +24,85 @@
 
 #include "SDL_sve2_extension.h"
 
-/* *INDENT-OFF* */ // clang-format off
-
-#define sdl_sve_rgb32_stride_impl(ma_sve_chn_iterator, ...)                     \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred) {                             \
-                                                                                \
-        svuint16x4_t vSourceLow16x4 = svundef4_u16();                           \
-        svuint16x4_t vSourceHigh16x4 = svundef4_u16();                          \
-                                                                                \
-        svuint16x4_t vTargetLow16x4 = svundef4_u16();                           \
-        svuint16x4_t vTargetHigh16x4 = svundef4_u16();                          \
-                                                                                \
-        svld4ub_u16(vTailPred,                                                  \
-                    (uint8_t *)pwSource,                                        \
-                    &vSourceLow16x4,                                            \
-                    &vSourceHigh16x4);                                          \
-                                                                                \
-        svld4ub_u16(vTailPred,                                                  \
-                    (uint8_t *)pwTarget,                                        \
-                    &vTargetLow16x4,                                            \
-                    &vTargetHigh16x4);                                          \
-                                                                                \
-        /* process low half */                                                  \
-        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x4,                     \
-            __VA_ARGS__                                                         \
-        );                                                                      \
-                                                                                \
-        /* process high half */                                                 \
-        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x4,                   \
-            __VA_ARGS__                                                         \
-        );                                                                      \
-                                                                                \
-        svst4ub_u16(vTailPred,                                                  \
-                    (uint8_t *)pwTarget,                                        \
-                    vTargetLow16x4,                                             \
-                    vTargetHigh16x4);                                           \
-                                                                                \
-        pwSource += sve_iteration_advance;                                      \
-        pwTarget += sve_iteration_advance;                                      \
+#define sdl_sve_rgb32_stride_impl(ma_sve_chn_iterator, ...)   \
+    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    {                                                         \
+                                                              \
+        svuint16x4_t vSourceLow16x4 = svundef4_u16();         \
+        svuint16x4_t vSourceHigh16x4 = svundef4_u16();        \
+                                                              \
+        svuint16x4_t vTargetLow16x4 = svundef4_u16();         \
+        svuint16x4_t vTargetHigh16x4 = svundef4_u16();        \
+                                                              \
+        SDL_svld4ub_u16(vTailPred,                            \
+                        (uint8_t *)pwSource,                  \
+                        &vSourceLow16x4,                      \
+                        &vSourceHigh16x4);                    \
+                                                              \
+        SDL_svld4ub_u16(vTailPred,                            \
+                        (uint8_t *)pwTarget,                  \
+                        &vTargetLow16x4,                      \
+                        &vTargetHigh16x4);                    \
+                                                              \
+        /* process low half */                                \
+        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x4,   \
+                            __VA_ARGS__);                     \
+                                                              \
+        /* process high half */                               \
+        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x4, \
+                            __VA_ARGS__);                     \
+                                                              \
+        SDL_svst4ub_u16(vTailPred,                            \
+                        (uint8_t *)pwTarget,                  \
+                        vTargetLow16x4,                       \
+                        vTargetHigh16x4);                     \
+                                                              \
+        pwSource += sve_iteration_advance;                    \
+        pwTarget += sve_iteration_advance;                    \
     }
 
-#define sdl_sve_rgb32_to_rgb565_stride_impl(ma_sve_chn_iterator, ...)           \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred) {                             \
-                                                                                \
-        svuint16x4_t vSourceLow16x4 = svundef4_u16();                           \
-        svuint16x4_t vSourceHigh16x4 = svundef4_u16();                          \
-                                                                                \
-        svuint16x3_t vTargetLow16x3 = svundef3_u16();                           \
-        svuint16x3_t vTargetHigh16x3 = svundef3_u16();                          \
-                                                                                \
-        svld4ub_u16(vTailPred,                                                  \
-                    (uint8_t *)pwSource,                                        \
-                    &vSourceLow16x4,                                            \
-                    &vSourceHigh16x4);                                          \
-                                                                                \
-        svld3rgb565_u16(vTailPred,                                              \
-                        phwTarget,                                              \
-                        &vTargetLow16x3,                                        \
-                        &vTargetHigh16x3);                                      \
-                                                                                \
-        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x3,                     \
-            __VA_ARGS__                                                         \
-        );                                                                      \
-                                                                                \
-        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x3,                   \
-            __VA_ARGS__                                                         \
-        );                                                                      \
-                                                                                \
-        svst3rgb565_u16(vTailPred,                                              \
-                        phwTarget,                                              \
-                        vTargetLow16x3,                                         \
-                        vTargetHigh16x3);                                       \
-                                                                                \
-        pwSource += sve_iteration_advance;                                      \
-        phwTarget += sve_iteration_advance;                                     \
+#define sdl_sve_rgb32_to_rgb565_stride_impl(ma_sve_chn_iterator, ...) \
+    sdl_sve_stride_loop_rgb32(uStride, vTailPred)                     \
+    {                                                                 \
+                                                                      \
+        svuint16x4_t vSourceLow16x4 = svundef4_u16();                 \
+        svuint16x4_t vSourceHigh16x4 = svundef4_u16();                \
+                                                                      \
+        svuint16x3_t vTargetLow16x3 = svundef3_u16();                 \
+        svuint16x3_t vTargetHigh16x3 = svundef3_u16();                \
+                                                                      \
+        SDL_svld4ub_u16(vTailPred,                                    \
+                        (uint8_t *)pwSource,                          \
+                        &vSourceLow16x4,                              \
+                        &vSourceHigh16x4);                            \
+                                                                      \
+        svld3rgb565_u16(vTailPred,                                    \
+                        phwTarget,                                    \
+                        &vTargetLow16x3,                              \
+                        &vTargetHigh16x3);                            \
+                                                                      \
+        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x3,           \
+                            __VA_ARGS__);                             \
+                                                                      \
+        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x3,         \
+                            __VA_ARGS__);                             \
+                                                                      \
+        svst3rgb565_u16(vTailPred,                                    \
+                        phwTarget,                                    \
+                        vTargetLow16x3,                               \
+                        vTargetHigh16x3);                             \
+                                                                      \
+        pwSource += sve_iteration_advance;                            \
+        phwTarget += sve_iteration_advance;                           \
     }
 
 #ifndef sdl_sve_rgb32_blend_op_fill_alpha
-#   define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)
+#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)
 #endif
 
 #ifndef sdl_sve_rgb32_blend_op_copy_alpha
-#   define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)
+#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)
 #endif
-
-/* *INDENT-ON* */ // clang-format on
 
 static inline ARM_NONNULL(1, 2) void sdl_sve_accc8888_stride_blend_to_nccc888_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
