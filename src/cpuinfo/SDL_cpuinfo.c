@@ -526,8 +526,7 @@ static int CPU_haveNEON(void)
 static int CPU_haveSVE2(void)
 {
 #if defined(__aarch64__) && \
-    ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID)) &&  \
-    !defined(SDL_PLATFORM_MACOS)    /* a patch for known issue in Apple Silicon M4 */
+    ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID))
     return (getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2;
 #else
     return 0;
