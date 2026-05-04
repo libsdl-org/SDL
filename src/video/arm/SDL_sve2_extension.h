@@ -825,10 +825,14 @@ static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
     svst2_u8(vPredu8, (uint8_t *)phwTarget, svcreate2_u8(vLowByte, vHighByte));
 }
 
-static inline ARM_NONNULL(2, 3, 4) void SDL_svld4ub_u16(svbool_t vPredu8,
-                                                        uint8_t *pchSource,
-                                                        svuint16x4_t *pvLow,
-                                                        svuint16x4_t *pvHigh)
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
+static inline ARM_NONNULL(2, 3, 4) void svld4ub_u16(svbool_t vPredu8,
+                                                    uint8_t *pchSource,
+                                                    svuint16x4_t *pvLow,
+                                                    svuint16x4_t *pvHigh)
 {
     svuint8x4_t vInput8x4 = svld4_u8(vPredu8, pchSource);
 
@@ -843,10 +847,10 @@ static inline ARM_NONNULL(2, 3, 4) void SDL_svld4ub_u16(svbool_t vPredu8,
     *pvHigh = svset4_u16(*pvHigh, 3, svunpkhi_u16(svget4_u8(vInput8x4, 3)));
 }
 
-static inline ARM_NONNULL(2) void SDL_svst4ub_u16(svbool_t vPredu8,
-                                                  uint8_t *pchTarget,
-                                                  svuint16x4_t vLow,
-                                                  svuint16x4_t vHigh)
+static inline ARM_NONNULL(2) void svst4ub_u16(svbool_t vPredu8,
+                                              uint8_t *pchTarget,
+                                              svuint16x4_t vLow,
+                                              svuint16x4_t vHigh)
 {
 
     svuint8_t vCH0u8 = svuzp1_u8(svreinterpret_u8(svget4_u16(vLow, 0)),
@@ -863,6 +867,9 @@ static inline ARM_NONNULL(2) void SDL_svst4ub_u16(svbool_t vPredu8,
 
     svst4_u8(vPredu8, pchTarget, svcreate4_u8(vCH0u8, vCH1u8, vCH2u8, vCH3u8));
 }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC pop_options
+#endif
 
 /*! \note the Element range of vMask is [0, 0xFF]
  */
