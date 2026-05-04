@@ -39,8 +39,8 @@ public class SDLControllerManager
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
-    static public native boolean onNativePadDown(int device_id, int keycode);
-    static public native boolean onNativePadUp(int device_id, int keycode);
+    static public native boolean onNativePadDown(int device_id, int keycode, int scancode);
+    static public native boolean onNativePadUp(int device_id, int keycode, int scancode);
     static native void onNativeJoy(int device_id, int axis,
                                           float value);
     static native void onNativeHat(int device_id, int hat_id,

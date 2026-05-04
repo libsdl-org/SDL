@@ -298,11 +298,11 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
@@ -336,8 +336,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 
 static JNINativeMethod SDLControllerManager_tab[] = {
     { "nativeSetupJNI", "()V", SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI) },
-    { "onNativePadDown", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
-    { "onNativePadUp", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
+    { "onNativePadDown", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
+    { "onNativePadUp", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
     { "onNativeJoySensor", "(IIJFFF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor) },
@@ -1159,10 +1159,10 @@ SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboo
 // Paddown
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadDown(device_id, keycode);
+    return Android_OnPadDown(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID
@@ -1171,10 +1171,10 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
 // Padup
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadUp(device_id, keycode);
+    return Android_OnPadUp(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID

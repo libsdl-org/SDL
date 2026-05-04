@@ -713,91 +713,116 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
     char mapping_string[1024];
     int button_mask;
     int axis_mask;
+    Uint16 vendor, product;
+    
+    SDL_strlcpy(mapping_string, "none,", sizeof(mapping_string));
 
-    button_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
-    axis_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
-    if (!button_mask && !axis_mask) {
-        // Accelerometer, shouldn't have a gamepad mapping
-        return NULL;
-    }
-    if (!(button_mask & face_button_mask)) {
-        // We don't know what buttons or axes are supported, don't make up a mapping
-        return NULL;
-    }
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    if (vendor == USB_VENDOR_NINTENDO) {
+        if (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT || product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+            // FIXME: Should we have a separate hint for non-HIDAPI JoyCon handling?
+            // Android doesn't report JoyCon SL/SR presses for some reason, so no horizontal triggers/vertical paddles
+            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, false)) {
+                // Vertical mode
+                if (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
+                    SDL_strlcat(mapping_string, "Nintendo Switch Joy-Con (L),back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:b15,leftx:a0,lefty:a1,misc1:b18,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "Nintendo Switch Joy-Con (R),a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:b16,rightx:a0,righty:a1,start:b6,x:b3,y:b2,", sizeof(mapping_string));
+                }
+            } else {
+                // Mini gamepad mode
+                if (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
+                    SDL_strlcat(mapping_string, "Nintendo Switch Joy-Con (L),a:b13,b:b12,guide:b18,leftstick:b7,leftx:a1,lefty:a0~,start:b4,x:b11,y:b14,paddle2:b9,paddle4:b15,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "Nintendo Switch Joy-Con (R),a:b1,b:b2,guide:b5,leftstick:b8,leftx:a1~,lefty:a0,start:b6,x:b0,y:b3,paddle1:b10,paddle3:b16,", sizeof(mapping_string));
+                }
+            }
+        }
+    } else {
+        button_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 4]));
+        axis_mask = SDL_Swap16LE(*(Uint16 *)(&guid.data[sizeof(guid.data) - 2]));
+        if (!button_mask && !axis_mask) {
+            // Accelerometer, shouldn't have a gamepad mapping
+            return NULL;
+        }
+        if (!(button_mask & face_button_mask)) {
+            // We don't know what buttons or axes are supported, don't make up a mapping
+            return NULL;
+        }
 
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+        SDL_strlcpy(mapping_string, "*,", sizeof(mapping_string));
 
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH)) {
-        SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_EAST)) {
-        SDL_strlcat(mapping_string, "b:b1,", sizeof(mapping_string));
-    } else if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
-        // Use the back button as "B" for easy UI navigation with TV remotes
-        SDL_strlcat(mapping_string, "b:b4,", sizeof(mapping_string));
-        button_mask &= ~(1 << SDL_GAMEPAD_BUTTON_BACK);
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_WEST)) {
-        SDL_strlcat(mapping_string, "x:b2,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_NORTH)) {
-        SDL_strlcat(mapping_string, "y:b3,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
-        SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE)) {
-        // The guide button generally isn't functional (or acts as a home button) on most Android gamepads before Android 11
-        if (SDL_GetAndroidSDKVersion() >= 30 /* Android 11 */) {
-            SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH)) {
+            SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_EAST)) {
+            SDL_strlcat(mapping_string, "b:b1,", sizeof(mapping_string));
+        } else if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
+            // Use the back button as "B" for easy UI navigation with TV remotes
+            SDL_strlcat(mapping_string, "b:b4,", sizeof(mapping_string));
+            button_mask &= ~(1 << SDL_GAMEPAD_BUTTON_BACK);
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_WEST)) {
+            SDL_strlcat(mapping_string, "x:b2,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_NORTH)) {
+            SDL_strlcat(mapping_string, "y:b3,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_BACK)) {
+            SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_GUIDE)) {
+            // The guide button generally isn't functional (or acts as a home button) on most Android gamepads before Android 11
+            if (SDL_GetAndroidSDKVersion() >= 30 /* Android 11 */) {
+                SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
+            }
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
+            SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
+            SDL_strlcat(mapping_string, "leftstick:b7,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+            SDL_strlcat(mapping_string, "rightstick:b8,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
+            SDL_strlcat(mapping_string, "leftshoulder:b9,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
+            SDL_strlcat(mapping_string, "rightshoulder:b10,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_UP)) {
+            SDL_strlcat(mapping_string, "dpup:b11,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN)) {
+            SDL_strlcat(mapping_string, "dpdown:b12,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT)) {
+            SDL_strlcat(mapping_string, "dpleft:b13,", sizeof(mapping_string));
+        }
+        if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) {
+            SDL_strlcat(mapping_string, "dpright:b14,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX)) {
+            SDL_strlcat(mapping_string, "leftx:a0,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTY)) {
+            SDL_strlcat(mapping_string, "lefty:a1,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
+            SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
+            SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER)) {
+            SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
+        }
+        if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
+            SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
         }
     }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_START)) {
-        SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_STICK)) {
-        SDL_strlcat(mapping_string, "leftstick:b7,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
-        SDL_strlcat(mapping_string, "rightstick:b8,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER)) {
-        SDL_strlcat(mapping_string, "leftshoulder:b9,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)) {
-        SDL_strlcat(mapping_string, "rightshoulder:b10,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_UP)) {
-        SDL_strlcat(mapping_string, "dpup:b11,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN)) {
-        SDL_strlcat(mapping_string, "dpdown:b12,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT)) {
-        SDL_strlcat(mapping_string, "dpleft:b13,", sizeof(mapping_string));
-    }
-    if (button_mask & (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) {
-        SDL_strlcat(mapping_string, "dpright:b14,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTX)) {
-        SDL_strlcat(mapping_string, "leftx:a0,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFTY)) {
-        SDL_strlcat(mapping_string, "lefty:a1,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTX)) {
-        SDL_strlcat(mapping_string, "rightx:a2,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHTY)) {
-        SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_LEFT_TRIGGER)) {
-        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
-    }
-    if (axis_mask & (1 << SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)) {
-        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
-    }
-
     return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
 }
 #endif // SDL_PLATFORM_ANDROID

@@ -29,8 +29,10 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../core/android/SDL_android.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "../usb_ids.h"
 
 #include "android/keycodes.h"
+#include <linux/input-event-codes.h>
 
 // As of platform android-14, android/keycodes.h is missing these defines
 #ifndef AKEYCODE_BUTTON_1
@@ -170,6 +172,31 @@ static int keycode_to_SDL(int keycode)
     return button;
 }
 
+static int scancode_to_SDL(int scancode)
+{
+    int button = 0;
+    switch (scancode) {
+    // D-Pad buttons on the left JoyCon
+    case BTN_DPAD_UP:
+        button = SDL_GAMEPAD_BUTTON_DPAD_UP;
+        break;
+    case BTN_DPAD_DOWN:
+        button = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+        break;
+    case BTN_DPAD_LEFT:
+        button = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+        break;
+    case BTN_DPAD_RIGHT:
+        button = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+        break;
+
+    default:
+        return -1;
+    }
+    SDL_assert(button < ANDROID_MAX_NBUTTONS);
+    return button;
+}
+
 static SDL_Scancode button_to_scancode(int button)
 {
     switch (button) {
@@ -195,11 +222,14 @@ static SDL_Scancode button_to_scancode(int button)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-bool Android_OnPadDown(int device_id, int keycode)
+bool Android_OnPadDown(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
+    if (button < 0) {
+        button = scancode_to_SDL(scancode);
+    }
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
@@ -215,11 +245,14 @@ bool Android_OnPadDown(int device_id, int keycode)
     return false;
 }
 
-bool Android_OnPadUp(int device_id, int keycode)
+bool Android_OnPadUp(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
+    if (button < 0) {
+        button = scancode_to_SDL(scancode);
+    }
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
@@ -367,8 +400,9 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats", name, desc, vendor_id, product_id, naxes, nhats);
 #endif
 
-    if (nhats > 0) {
+    if (nhats > 0 || (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT)) {
         // Hat is translated into DPAD buttons
+        // D-Pad on the left JoyCon is a special case, it's not recognized via keycodes or hats, only scancodes
         button_mask |= ((1 << SDL_GAMEPAD_BUTTON_DPAD_UP) |
                         (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN) |
                         (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT) |

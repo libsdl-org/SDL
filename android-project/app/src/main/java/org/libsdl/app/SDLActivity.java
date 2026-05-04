@@ -1478,14 +1478,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
         // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
         // So, retrieve the device itself and check all of its sources
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
+        //
+        // Echo events (event.getRepeatCount() > 0) should be ignored
+        if (SDLControllerManager.isDeviceSDLJoystick(deviceId) && event.getRepeatCount() == 0) {
             // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (SDLControllerManager.onNativePadDown(deviceId, keyCode)) {
+                if (SDLControllerManager.onNativePadDown(deviceId, keyCode, event.getScanCode())) {
                     return true;
                 }
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                if (SDLControllerManager.onNativePadUp(deviceId, keyCode)) {
+                if (SDLControllerManager.onNativePadUp(deviceId, keyCode, event.getScanCode())) {
                     return true;
                 }
             }
