@@ -135,7 +135,9 @@ extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
  * The compiler barrier prevents the compiler from reordering
  * reads and writes to globally visible variables across the call.
  */
-#if defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
+#if _SDL_HAS_BUILTIN(__atomic_signal_fence) || (defined(__GNUC__) && (__GNUC__ >= 5))
+#define SDL_CompilerBarrier()   __atomic_signal_fence(__ATOMIC_SEQ_CST)
+#elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #define SDL_CompilerBarrier()   _ReadWriteBarrier()
@@ -146,8 +148,9 @@ void _ReadWriteBarrier(void);
 extern __inline void SDL_CompilerBarrier(void);
 #pragma aux SDL_CompilerBarrier = "" parm [] modify exact [];
 #else
+/* We don't unlock here to avoid possible infinite recursion */
 #define SDL_CompilerBarrier()   \
-{ SDL_SpinLock _tmp = 0; SDL_AtomicLock(&_tmp); SDL_AtomicUnlock(&_tmp); }
+{ SDL_SpinLock _tmp = 0; SDL_AtomicLock(&_tmp); }
 #endif
 
 /**
@@ -174,12 +177,23 @@ extern __inline void SDL_CompilerBarrier(void);
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
 extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 
-#if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
+#if _SDL_HAS_BUILTIN(__atomic_thread_fence) || (defined(__GNUC__) && (__GNUC__ >= 5))
+#define SDL_MemoryBarrierRelease()   __atomic_thread_fence(__ATOMIC_RELEASE)
+#define SDL_MemoryBarrierAcquire()   __atomic_thread_fence(__ATOMIC_ACQUIRE)
+#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #elif defined(__GNUC__) && defined(__aarch64__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
-#define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
+#define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ishld" : : : "memory")
+#elif defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#include <arm64intr.h>
+#define SDL_MemoryBarrierRelease() __dmb(_ARM64_BARRIER_ISH)
+#define SDL_MemoryBarrierAcquire() __dmb(_ARM64_BARRIER_ISHLD)
+#elif defined(_MSC_VER) && defined(_M_ARM)
+#include <armintr.h>
+#define SDL_MemoryBarrierRelease() __dmb(_ARM_BARRIER_ISH)
+#define SDL_MemoryBarrierAcquire() __dmb(_ARM_BARRIER_ISH)
 #elif defined(__GNUC__) && defined(__arm__)
 #if 0 /* defined(__LINUX__) || defined(__ANDROID__) */
 /* Information from:

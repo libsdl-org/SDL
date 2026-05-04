@@ -84,7 +84,7 @@ SDL_bool SDL_AtomicTryLock(SDL_SpinLock *lock)
 #elif defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     return __sync_lock_test_and_set(lock, 1) == 0;
 
-#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
     return _InterlockedExchange_acq(lock, 1) == 0;
 
 #elif defined(_MSC_VER)
@@ -189,23 +189,16 @@ void SDL_AtomicUnlock(SDL_SpinLock *lock)
 #if defined(HAVE_GCC_ATOMICS) || defined(HAVE_GCC_SYNC_LOCK_TEST_AND_SET)
     __sync_lock_release(lock);
 
-#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+#elif defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
     _InterlockedExchange_rel(lock, 0);
-
-#elif defined(_MSC_VER)
-    _ReadWriteBarrier();
-    *lock = 0;
-
-#elif defined(__WATCOMC__) && defined(__386__)
-    SDL_CompilerBarrier();
-    *lock = 0;
 
 #elif defined(__SOLARIS__)
     /* Used for Solaris when not using gcc. */
-    *lock = 0;
     membar_producer();
+    *lock = 0;
 
 #else
+    SDL_MemoryBarrierRelease();
     *lock = 0;
 #endif
 }

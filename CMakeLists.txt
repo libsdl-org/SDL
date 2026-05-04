@@ -2812,6 +2812,7 @@ elseif(PS2)
     gskit
     dmakit
     ps2_drivers
+    atomic
   )
 
 elseif(OS2)

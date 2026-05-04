@@ -201,6 +201,9 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 
 BOOL WIN_IsWine(void)
 {
+#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
+    return FALSE;
+#else
     static SDL_bool checked;
     static SDL_bool is_wine;
 
@@ -215,6 +218,7 @@ BOOL WIN_IsWine(void)
         checked = SDL_TRUE;
     }
     return is_wine;
+#endif
 }
 
 BOOL WIN_IsWindowsVistaOrGreater(void)
