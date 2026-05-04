@@ -67,7 +67,7 @@
  * Normal Blend with Alpha                                                     *
  *-----------------------------------------------------------------------------*/
 
-void SDLCALL Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
+void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -162,7 +162,7 @@ void SDLCALL Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
  * Swizzle Blend with Alpha                                                    *
  *-----------------------------------------------------------------------------*/
 
-void SDLCALL Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
+void Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     assert(0 != srcfmt->Amask);
@@ -220,7 +220,7 @@ void SDLCALL Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 #endif
 }
 
-void SDLCALL Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
+void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }

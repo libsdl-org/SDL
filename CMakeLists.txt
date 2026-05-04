@@ -937,7 +937,6 @@ if(SDL_ASSEMBLY)
         set(HAVE_ARMSVE2 TRUE)
         set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
       endif()
-      string(REGEX REPLACE " -march=armv8-a+sve2" "" CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
     cmake_pop_check_state()
 
     if(HAVE_ARMSVE2)
@@ -945,13 +944,12 @@ if(SDL_ASSEMBLY)
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
       )
-      set_source_files_properties("${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c" PROPERTIES
-        COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
-        SKIP_PRECOMPILE_HEADERS ON
-      )
-      set_source_files_properties("${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c" PROPERTIES
-        COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
-        SKIP_PRECOMPILE_HEADERS ON
+      set_source_files_properties(
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
+        PROPERTIES
+          COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
+          SKIP_PRECOMPILE_HEADERS ON
       )
     endif()
   endif()
