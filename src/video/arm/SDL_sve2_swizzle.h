@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#if !defined(SD_SVE2_SWIZZLE_H) && (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
+#if !defined(SD_SVE2_SWIZZLE_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SD_SVE2_SWIZZLE_H
 
 #include "SDL_sve2_extension.h"
