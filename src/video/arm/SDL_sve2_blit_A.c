@@ -27,43 +27,39 @@
 #ifdef __ARM_FEATURE_SVE2
 
 #undef sdl_sve_rgb32_blend_op_fill_alpha
-#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)                     \
-            if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
-                /* fill alpha */                                                \
-                sve_target_u16 = svdup_u16(0xFF);                               \
-            } else {                                                            \
-                svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));\
-                sve_target_u16                                                  \
-                    = sdl_sve_chn_blend_with_mask(  sve_source_u16,             \
-                                                    sve_target_u16,             \
-                                                    vMask);                     \
-            }
+#define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)              \
+    if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                         \
+        /* fill alpha */                                                 \
+        sve_target_u16 = svdup_u16(0xFF);                                \
+    } else {                                                             \
+        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx)); \
+        sve_target_u16 = sdl_sve_chn_blend_with_mask(sve_source_u16,     \
+                                                     sve_target_u16,     \
+                                                     vMask);             \
+    }
 
 #undef sdl_sve_rgb32_blend_op_copy_alpha
-#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)                     \
-            if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                        \
-                svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));\
-                sve_target_u16                                                  \
-                    = sdl_sve_chn_blend_with_mask(  svdup_u16(0xFF),            \
-                                                    sve_target_u16,             \
-                                                    vMask);                     \
-            } else {                                                            \
-                svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));\
-                sve_target_u16                                                  \
-                    = sdl_sve_chn_blend_with_mask(  sve_source_u16,             \
-                                                    sve_target_u16,             \
-                                                    vMask);                     \
-            }
+#define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)              \
+    if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                         \
+        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx)); \
+        sve_target_u16 = sdl_sve_chn_blend_with_mask(svdup_u16(0xFF),    \
+                                                     sve_target_u16,     \
+                                                     vMask);             \
+    } else {                                                             \
+        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx)); \
+        sve_target_u16 = sdl_sve_chn_blend_with_mask(sve_source_u16,     \
+                                                     sve_target_u16,     \
+                                                     vMask);             \
+    }
 
 #undef sdl_sve_rgb32_blend_to_rgb565_op
-#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)                      \
-        do {                                                                    \
-            svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));    \
-                sve_target_u16                                                  \
-                    = sdl_sve_chn_blend_with_mask(  sve_source_u16,             \
-                                                    sve_target_u16,             \
-                                                    vMask);                     \
-        } while(0)
+#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)               \
+    do {                                                                 \
+        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx)); \
+        sve_target_u16 = sdl_sve_chn_blend_with_mask(sve_source_u16,     \
+                                                     sve_target_u16,     \
+                                                     vMask);             \
+    } while (0)
 
 #include "SDL_sve2_swizzle.h"
 
@@ -122,41 +118,41 @@ void SDLCALL Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
         /* fill alpha */
         if (3 == dstfmt->Ashift >> 3) {
             /* ACCC */
-            sdl_sve_accc8888_blend_to_nccc888_fill_alpha(   src, 
-                                                            srcstride, 
-                                                            dst, 
-                                                            dststride, 
-                                                            width, 
-                                                            height);
+            sdl_sve_accc8888_blend_to_nccc888_fill_alpha(src,
+                                                         srcstride,
+                                                         dst,
+                                                         dststride,
+                                                         width,
+                                                         height);
         } else {
             /* CCCA */
             assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(   src, 
-                                                            srcstride, 
-                                                            dst, 
-                                                            dststride, 
-                                                            width, 
-                                                            height);
+            sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(src,
+                                                         srcstride,
+                                                         dst,
+                                                         dststride,
+                                                         width,
+                                                         height);
         }
-    } else {                 
+    } else {
         /* copy alpha */
         if (3 == dstfmt->Ashift >> 3) {
             /* ACCC */
-            sdl_sve_accc8888_blend_to_nccc888_copy_alpha(   src, 
-                                                            srcstride, 
-                                                            dst, 
-                                                            dststride, 
-                                                            width, 
-                                                            height);
+            sdl_sve_accc8888_blend_to_nccc888_copy_alpha(src,
+                                                         srcstride,
+                                                         dst,
+                                                         dststride,
+                                                         width,
+                                                         height);
         } else {
             /* CCCA */
             assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(   src, 
-                                                            srcstride, 
-                                                            dst, 
-                                                            dststride, 
-                                                            width, 
-                                                            height);
+            sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(src,
+                                                         srcstride,
+                                                         dst,
+                                                         dststride,
+                                                         width,
+                                                         height);
         }
     }
 #endif
@@ -228,7 +224,6 @@ void SDLCALL Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
-
 
 #endif /* __ARM_FEATURE_SVE2 */
 #endif /* SDL_SVE2_INTRINSICS */

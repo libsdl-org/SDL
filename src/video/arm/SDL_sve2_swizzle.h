@@ -19,9 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#if !defined(SD_SVE2_SWIZZLE_H)                                                 \
-    && (defined(__ARM_FEATURE_SVE2)                                             \
-    && __ARM_FEATURE_SVE2)
+#if !defined(SD_SVE2_SWIZZLE_H) && (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SD_SVE2_SWIZZLE_H
 
 #include "SDL_sve2_extension.h"
@@ -112,575 +110,508 @@
 
 /* *INDENT-ON* */ // clang-format on
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_accc8888_stride_blend_to_nccc888_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_accc8888_stride_blend_to_nccc888_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_accc8888_stride_blend_to_nccc888_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_accc8888_stride_blend_to_nccc888_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_ccca8888_stride_blend_to_cccn888_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_ccca8888_stride_blend_to_cccn888_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_ccca8888_stride_blend_to_cccn888_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_ccca8888_stride_blend_to_cccn888_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_accc8888_blend_to_nccc888_fill_alpha(  
-                                            uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_accc8888_blend_to_nccc888_fill_alpha(
+    uint8_t *SDL_RESTRICT pchSource,
+    size_t uSourceStride,
+    uint8_t *SDL_RESTRICT pchTarget,
+    size_t uTargetStride,
+    int nWidth,
+    int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_accc8888_stride_blend_to_nccc888_fill_alpha(
-                                                        (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+            (uint32_t *)pchSource,
+            (uint32_t *)pchTarget,
+            nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_accc8888_blend_to_nccc888_copy_alpha(  
-                                            uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_accc8888_blend_to_nccc888_copy_alpha(
+    uint8_t *SDL_RESTRICT pchSource,
+    size_t uSourceStride,
+    uint8_t *SDL_RESTRICT pchTarget,
+    size_t uTargetStride,
+    int nWidth,
+    int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_accc8888_stride_blend_to_nccc888_copy_alpha(
-                                                        (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+            (uint32_t *)pchSource,
+            (uint32_t *)pchTarget,
+            nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(  
-                                            uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(
+    uint8_t *SDL_RESTRICT pchSource,
+    size_t uSourceStride,
+    uint8_t *SDL_RESTRICT pchTarget,
+    size_t uTargetStride,
+    int nWidth,
+    int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_ccca8888_stride_blend_to_cccn888_fill_alpha(
-                                                        (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+            (uint32_t *)pchSource,
+            (uint32_t *)pchTarget,
+            nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(  
-                                            uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(
+    uint8_t *SDL_RESTRICT pchSource,
+    size_t uSourceStride,
+    uint8_t *SDL_RESTRICT pchTarget,
+    size_t uTargetStride,
+    int nWidth,
+    int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_ccca8888_stride_blend_to_cccn888_copy_alpha(
-                                                        (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+            (uint32_t *)pchSource,
+            (uint32_t *)pchTarget,
+            nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_a123_stride_blend_to_321a_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_321a_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_a123_stride_blend_to_321a_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_321a_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_a123_blend_to_321a_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_a123_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_a123_stride_blend_to_321a_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_a123_stride_blend_to_321a_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_a123_blend_to_321a_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_a123_blend_to_321a_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_a123_stride_blend_to_321a_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_a123_stride_blend_to_321a_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_123a_stride_blend_to_a321_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_a321_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_123a_stride_blend_to_a321_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_a321_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_123a_blend_to_a321_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_123a_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_123a_stride_blend_to_a321_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_123a_stride_blend_to_a321_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_123a_blend_to_a321_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_123a_blend_to_a321_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_123a_stride_blend_to_a321_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_123a_stride_blend_to_a321_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_accc_stride_blend_to_ccca_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_accc_stride_blend_to_ccca_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_accc_stride_blend_to_ccca_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_accc_stride_blend_to_ccca_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_accc_blend_to_ccca_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_accc_blend_to_ccca_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_accc_stride_blend_to_ccca_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_accc_stride_blend_to_ccca_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_accc_blend_to_ccca_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_accc_blend_to_ccca_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_accc_stride_blend_to_ccca_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_accc_stride_blend_to_ccca_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_ccca_stride_blend_to_accc_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_accc_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_ccca_stride_blend_to_accc_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_accc_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_ccca_blend_to_accc_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_ccca_blend_to_accc_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_ccca_stride_blend_to_accc_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_ccca_stride_blend_to_accc_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_ccca_blend_to_accc_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_ccca_blend_to_accc_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_ccca_stride_blend_to_accc_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_ccca_stride_blend_to_accc_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_a123_stride_blend_to_a321_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_a123_stride_blend_to_a321_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(3);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_a123_blend_to_a321_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_a123_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_a123_stride_blend_to_a321_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_a123_stride_blend_to_a321_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_a123_blend_to_a321_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_a123_blend_to_a321_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_a123_stride_blend_to_a321_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_a123_stride_blend_to_a321_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_123a_stride_blend_to_321a_fill_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_fill_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-        
-        sdl_sve_rgb32_blend_op_fill_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_123a_stride_blend_to_321a_copy_alpha(   
-                                            uint32_t * SDL_RESTRICT pwSource,
-                                            uint32_t * SDL_RESTRICT pwTarget,
-                                            size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_copy_alpha(
+    uint32_t *SDL_RESTRICT pwSource,
+    uint32_t *SDL_RESTRICT pwTarget,
+    size_t uStride)
 {
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-        
-        sdl_sve_rgb32_blend_op_copy_alpha(0);
+
+                              sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_123a_blend_to_321a_fill_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_123a_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_123a_stride_blend_to_321a_fill_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_123a_stride_blend_to_321a_fill_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_123a_blend_to_321a_copy_alpha( uint8_t * SDL_RESTRICT pchSource, 
-                                            size_t uSourceStride,
-                                            uint8_t * SDL_RESTRICT pchTarget,
-                                            size_t uTargetStride,
-                                            int nWidth,
-                                            int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_123a_blend_to_321a_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                                           size_t uSourceStride,
+                                                                           uint8_t *SDL_RESTRICT pchTarget,
+                                                                           size_t uTargetStride,
+                                                                           int nWidth,
+                                                                           int nHeight)
 {
     while (nHeight--) {
-        
-        sdl_sve_123a_stride_blend_to_321a_copy_alpha(   (uint32_t *)pchSource,
-                                                        (uint32_t *)pchTarget,
-                                                        nWidth);
+
+        sdl_sve_123a_stride_blend_to_321a_copy_alpha((uint32_t *)pchSource,
+                                                     (uint32_t *)pchTarget,
+                                                     nWidth);
 
         pchSource += uSourceStride;
         pchTarget += uTargetStride;
     }
 }
 
-static inline 
-ARM_NONNULL(1)
-void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
+static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -710,78 +641,78 @@ void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
         case SDL_PIXELFORMAT_ARGB8888:
         case SDL_PIXELFORMAT_XRGB8888:
             if (fill_alpha) {
-                sdl_sve_accc8888_blend_to_nccc888_fill_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc8888_blend_to_nccc888_fill_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             } else {
-                sdl_sve_accc8888_blend_to_nccc888_copy_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc8888_blend_to_nccc888_copy_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             }
             break;
-        
+
         case SDL_PIXELFORMAT_RGBA8888:
         case SDL_PIXELFORMAT_RGBX8888:
             if (fill_alpha) {
-                sdl_sve_accc_blend_to_ccca_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc_blend_to_ccca_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_accc_blend_to_ccca_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc_blend_to_ccca_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_ABGR8888:
         case SDL_PIXELFORMAT_XBGR8888:
             if (fill_alpha) {
-                sdl_sve_a123_blend_to_a321_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_a321_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_a123_blend_to_a321_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_a321_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_BGRA8888:
         case SDL_PIXELFORMAT_BGRX8888:
             if (fill_alpha) {
-                sdl_sve_a123_blend_to_321a_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_321a_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_a123_blend_to_321a_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_321a_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
         default:
@@ -795,78 +726,78 @@ void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
         case SDL_PIXELFORMAT_ARGB8888:
         case SDL_PIXELFORMAT_XRGB8888:
             if (fill_alpha) {
-                sdl_sve_ccca_blend_to_accc_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca_blend_to_accc_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_ccca_blend_to_accc_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca_blend_to_accc_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
-        
+
         case SDL_PIXELFORMAT_RGBA8888:
         case SDL_PIXELFORMAT_RGBX8888:
             if (fill_alpha) {
-                sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             } else {
-                sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             }
             break;
 
         case SDL_PIXELFORMAT_ABGR8888:
         case SDL_PIXELFORMAT_XBGR8888:
             if (fill_alpha) {
-                sdl_sve_123a_blend_to_a321_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_a321_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_123a_blend_to_a321_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_a321_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_BGRA8888:
         case SDL_PIXELFORMAT_BGRX8888:
             if (fill_alpha) {
-                sdl_sve_123a_blend_to_321a_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_321a_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_123a_blend_to_321a_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_321a_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
         default:
@@ -880,78 +811,78 @@ void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
         case SDL_PIXELFORMAT_ARGB8888:
         case SDL_PIXELFORMAT_XRGB8888:
             if (fill_alpha) {
-                sdl_sve_a123_blend_to_a321_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_a321_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_a123_blend_to_a321_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_a321_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
-        
+
         case SDL_PIXELFORMAT_RGBA8888:
         case SDL_PIXELFORMAT_RGBX8888:
             if (fill_alpha) {
-                sdl_sve_a123_blend_to_321a_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_321a_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_a123_blend_to_321a_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_a123_blend_to_321a_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_ABGR8888:
         case SDL_PIXELFORMAT_XBGR8888:
             if (fill_alpha) {
-                sdl_sve_accc8888_blend_to_nccc888_fill_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc8888_blend_to_nccc888_fill_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             } else {
-                sdl_sve_accc8888_blend_to_nccc888_copy_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc8888_blend_to_nccc888_copy_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             }
             break;
 
         case SDL_PIXELFORMAT_BGRA8888:
         case SDL_PIXELFORMAT_BGRX8888:
             if (fill_alpha) {
-                sdl_sve_accc_blend_to_ccca_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc_blend_to_ccca_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_accc_blend_to_ccca_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_accc_blend_to_ccca_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
         default:
@@ -965,78 +896,78 @@ void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
         case SDL_PIXELFORMAT_ARGB8888:
         case SDL_PIXELFORMAT_XRGB8888:
             if (fill_alpha) {
-                sdl_sve_123a_blend_to_a321_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_a321_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_123a_blend_to_a321_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_a321_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
-        
+
         case SDL_PIXELFORMAT_RGBA8888:
         case SDL_PIXELFORMAT_RGBX8888:
             if (fill_alpha) {
-                sdl_sve_123a_blend_to_321a_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_321a_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_123a_blend_to_321a_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_123a_blend_to_321a_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_ABGR8888:
         case SDL_PIXELFORMAT_XBGR8888:
             if (fill_alpha) {
-                sdl_sve_ccca_blend_to_accc_fill_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca_blend_to_accc_fill_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             } else {
-                sdl_sve_ccca_blend_to_accc_copy_alpha(  src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca_blend_to_accc_copy_alpha(src,
+                                                      srcstride,
+                                                      dst,
+                                                      dststride,
+                                                      width,
+                                                      height);
             }
             break;
 
         case SDL_PIXELFORMAT_BGRA8888:
         case SDL_PIXELFORMAT_BGRX8888:
             if (fill_alpha) {
-                sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             } else {
-                sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(  
-                                                        src, 
-                                                        srcstride, 
-                                                        dst, 
-                                                        dststride, 
-                                                        width, 
-                                                        height);
+                sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(
+                    src,
+                    srcstride,
+                    dst,
+                    dststride,
+                    width,
+                    height);
             }
             break;
         default:
@@ -1052,33 +983,28 @@ void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
 }
 
 #ifndef sdl_sve_rgb32_blend_to_rgb565_op
-#   define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)
+#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)
 #endif
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_argb8888_stride_blend_to_rgb565(   uint32_t * SDL_RESTRICT pwSource,
-                                                uint16_t * SDL_RESTRICT phwTarget,
-                                                size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_argb8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                                             uint16_t *SDL_RESTRICT phwTarget,
+                                                                             size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
-        sdl_sve_pixel_u16x4_foreach_chn_argb_rgb565, 
+        sdl_sve_pixel_u16x4_foreach_chn_argb_rgb565,
 
-        sdl_sve_rgb32_blend_to_rgb565_op(3);
-    )
+        sdl_sve_rgb32_blend_to_rgb565_op(3);)
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_argb8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource, 
-                                        size_t uSourceStride,
-                                        uint8_t * SDL_RESTRICT pchTarget,
-                                        size_t uTargetStride,
-                                        int nWidth,
-                                        int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_argb8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                                      size_t uSourceStride,
+                                                                      uint8_t *SDL_RESTRICT pchTarget,
+                                                                      size_t uTargetStride,
+                                                                      int nWidth,
+                                                                      int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_argb8888_stride_blend_to_rgb565((uint32_t *)pchSource,
                                                 (uint16_t *)pchTarget,
                                                 nWidth);
@@ -1088,30 +1014,25 @@ void sdl_sve_argb8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource,
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_rgba8888_stride_blend_to_rgb565(   uint32_t * SDL_RESTRICT pwSource,
-                                                uint16_t * SDL_RESTRICT phwTarget,
-                                                size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_rgba8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                                             uint16_t *SDL_RESTRICT phwTarget,
+                                                                             size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
-        sdl_sve_pixel_u16x4_foreach_chn_rgba_rgb565, 
-        
-        sdl_sve_rgb32_blend_to_rgb565_op(0);
-    )
+        sdl_sve_pixel_u16x4_foreach_chn_rgba_rgb565,
+
+        sdl_sve_rgb32_blend_to_rgb565_op(0);)
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_rgba8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource, 
-                                        size_t uSourceStride,
-                                        uint8_t * SDL_RESTRICT pchTarget,
-                                        size_t uTargetStride,
-                                        int nWidth,
-                                        int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                                      size_t uSourceStride,
+                                                                      uint8_t *SDL_RESTRICT pchTarget,
+                                                                      size_t uTargetStride,
+                                                                      int nWidth,
+                                                                      int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_rgba8888_stride_blend_to_rgb565((uint32_t *)pchSource,
                                                 (uint16_t *)pchTarget,
                                                 nWidth);
@@ -1121,30 +1042,25 @@ void sdl_sve_rgba8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource,
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_bgra8888_stride_blend_to_rgb565(   uint32_t * SDL_RESTRICT pwSource,
-                                                uint16_t * SDL_RESTRICT phwTarget,
-                                                size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_bgra8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                                             uint16_t *SDL_RESTRICT phwTarget,
+                                                                             size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
-        sdl_sve_pixel_u16x4_foreach_chn_bgra_rgb565, 
-        
-        sdl_sve_rgb32_blend_to_rgb565_op(0);
-    )
+        sdl_sve_pixel_u16x4_foreach_chn_bgra_rgb565,
+
+        sdl_sve_rgb32_blend_to_rgb565_op(0);)
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_bgra8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource, 
-                                        size_t uSourceStride,
-                                        uint8_t * SDL_RESTRICT pchTarget,
-                                        size_t uTargetStride,
-                                        int nWidth,
-                                        int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_bgra8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                                      size_t uSourceStride,
+                                                                      uint8_t *SDL_RESTRICT pchTarget,
+                                                                      size_t uTargetStride,
+                                                                      int nWidth,
+                                                                      int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_bgra8888_stride_blend_to_rgb565((uint32_t *)pchSource,
                                                 (uint16_t *)pchTarget,
                                                 nWidth);
@@ -1154,30 +1070,25 @@ void sdl_sve_bgra8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource,
     }
 }
 
-static inline
-ARM_NONNULL(1,2)
-void sdl_sve_abgr8888_stride_blend_to_rgb565(   uint32_t * SDL_RESTRICT pwSource,
-                                                uint16_t * SDL_RESTRICT phwTarget,
-                                                size_t uStride)
+static inline ARM_NONNULL(1, 2) void sdl_sve_abgr8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                                             uint16_t *SDL_RESTRICT phwTarget,
+                                                                             size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
-        sdl_sve_pixel_u16x4_foreach_chn_abgr_rgb565, 
-        
-        sdl_sve_rgb32_blend_to_rgb565_op(3);
-    )
+        sdl_sve_pixel_u16x4_foreach_chn_abgr_rgb565,
+
+        sdl_sve_rgb32_blend_to_rgb565_op(3);)
 }
 
-static inline
-ARM_NONNULL(1,3)
-void sdl_sve_abgr8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource, 
-                                        size_t uSourceStride,
-                                        uint8_t * SDL_RESTRICT pchTarget,
-                                        size_t uTargetStride,
-                                        int nWidth,
-                                        int nHeight)
+static inline ARM_NONNULL(1, 3) void sdl_sve_abgr8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                                      size_t uSourceStride,
+                                                                      uint8_t *SDL_RESTRICT pchTarget,
+                                                                      size_t uTargetStride,
+                                                                      int nWidth,
+                                                                      int nHeight)
 {
     while (nHeight--) {
-        
+
         sdl_sve_abgr8888_stride_blend_to_rgb565((uint32_t *)pchSource,
                                                 (uint16_t *)pchTarget,
                                                 nWidth);
@@ -1187,9 +1098,7 @@ void sdl_sve_abgr8888_blend_to_rgb565(  uint8_t * SDL_RESTRICT pchSource,
     }
 }
 
-static inline 
-ARM_NONNULL(1)
-void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
+static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -1213,39 +1122,39 @@ void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
 
     switch (srcfmt->format) {
     case SDL_PIXELFORMAT_ARGB8888:
-        sdl_sve_argb8888_blend_to_rgb565(   src, 
-                                            srcstride, 
-                                            dst, 
-                                            dststride, 
-                                            width, 
-                                            height);
+        sdl_sve_argb8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
         break;
-        
+
     case SDL_PIXELFORMAT_RGBA8888:
-        sdl_sve_rgba8888_blend_to_rgb565(   src, 
-                                            srcstride, 
-                                            dst, 
-                                            dststride, 
-                                            width, 
-                                            height);
+        sdl_sve_rgba8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
         break;
 
     case SDL_PIXELFORMAT_ABGR8888:
-        sdl_sve_abgr8888_blend_to_rgb565(   src, 
-                                            srcstride, 
-                                            dst, 
-                                            dststride, 
-                                            width, 
-                                            height);
+        sdl_sve_abgr8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
         break;
 
     case SDL_PIXELFORMAT_BGRA8888:
-        sdl_sve_bgra8888_blend_to_rgb565(   src, 
-                                            srcstride, 
-                                            dst, 
-                                            dststride, 
-                                            width, 
-                                            height);
+        sdl_sve_bgra8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
         break;
 
     default:
@@ -1254,4 +1163,4 @@ void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
     }
 }
 
-#endif  /* SD_SVE2_SWIZZLE_H */
+#endif /* SD_SVE2_SWIZZLE_H */

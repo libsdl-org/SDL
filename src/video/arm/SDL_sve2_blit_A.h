@@ -32,7 +32,6 @@ void SDLCALL Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info);
 
 void SDLCALL Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info);
 
-
 #endif /* SDL_SVE2_INTRINSICS */
 
 #endif /* SDL_sve2_blitters_h_ */

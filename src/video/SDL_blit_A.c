@@ -1483,7 +1483,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         case 2:
 #if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
             if (SDL_HasSVE2()) {
-                if (sf->bytes_per_pixel == 4 && 
+                if (sf->bytes_per_pixel == 4 &&
                     df->bytes_per_pixel == 2 &&
                     df->Rmask == 0x0000F800 &&
                     df->Gmask == 0x000007E0 &&
