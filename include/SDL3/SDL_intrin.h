@@ -282,11 +282,6 @@ _m_prefetch(void *__P)
 #ifndef SDL_DISABLE_SVE2
 #  if defined(SDL_PLATFORM_WINDOWS)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
-#    ifdef _M_ARM
-#      define SDL_SVE2_INTRINSICS 1
-#      include <arm_sve.h>
-#      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
-#    endif
 #    if defined (_M_ARM64) && 0 /* Please only remove this 0 when MSVC releasing support for SVE2 officially. */
 #      define SDL_SVE2_INTRINSICS 1
 #      include <arm_sve.h>
