@@ -289,7 +289,7 @@ _m_prefetch(void *__P)
 #    endif
 #    if defined (_M_ARM64)
 #      define SDL_SVE2_INTRINSICS 1
-#      include <arm64_sve.h>
+#      include <arm_sve.h>
 #      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
 #      define __ARM_ARCH 8
 #    endif

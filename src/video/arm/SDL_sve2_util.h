@@ -96,6 +96,10 @@
  * SVE Test Helper                                                            *
  * ---------------------------------------------------------------------------*/
 
+#if 0 /* Some source checkers (looking for stdlib usage) might raises error 
+       * when seeing the following code.
+       */
+
 #define SVT_PRINT_VECTOR(ma_VECOTOR, ma_ELEMENT_T, ma_FORMAT_STRING)            \
     do {                                                                        \
         int_fast8_t nElementCount = svcntb_pat(SV_ALL) / sizeof(ma_ELEMENT_T);  \
@@ -202,5 +206,6 @@
         printf("\n");                                                            \
                                                                                  \
     } while (0)
+#endif
 
 #endif /* SDL_SVE2_UTIL_H */
