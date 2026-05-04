@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#if !defined(SDL_SVE2_EXTENSION_H) && (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
+#if !defined(SDL_SVE2_EXTENSION_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SDL_SVE2_EXTENSION_H
 
 #include "SDL_sve2_util.h"
@@ -709,28 +709,13 @@ __attribute__((target("arch=armv8-a+sve2")))
 #endif
 static inline svuint16x3_t sdl_sve_rgb565_unpack(svuint16_t vPixels)
 {
-    svuint16x3_t vRGB16x3 = svundef3_u16();
-
-    /* extract and zero-exten blue channel */
     svuint16_t vBlue = svand_n_u16_m(svptrue_b16(), vPixels, 0x1F);
-    vRGB16x3 = svset3_u16(vRGB16x3, 0,
-                          //(vPixels & 0x1F) << 3
-                          svlsl_n_u16_m(svptrue_b16(), vBlue, 3));
-
-    /* extract and zero-exten green channel */
     svuint16_t vGreen = svand_n_u16_m(svptrue_b16(), vPixels, (0x3F << 5));
-    vRGB16x3 = svset3_u16(vRGB16x3, 1,
-                          //(vPixels & (0x3F << 5)) >> 3
-                          svlsr_n_u16_m(svptrue_b16(), vGreen, 3));
-
-    /* extract and zero-exten red channel */
     svuint16_t vRed = svand_n_u16_m(svptrue_b16(), vPixels, (0x1F << 11));
 
-    vRGB16x3 = svset3_u16(vRGB16x3, 2,
-                          //(vPixels & (0x1F << 11)) >> 8
-                          svlsr_n_u16_m(svptrue_b16(), vRed, 8));
-
-    return vRGB16x3;
+    return svcreate3_u16(svlsl_n_u16_m(svptrue_b16(), vBlue, 3), 
+                         svlsr_n_u16_m(svptrue_b16(), vGreen, 3),
+                         svlsr_n_u16_m(svptrue_b16(), vRed, 8));
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
