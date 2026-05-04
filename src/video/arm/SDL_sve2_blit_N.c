@@ -51,12 +51,12 @@
 
 #include "SDL_sve2_swizzle.h"
 
-void SDLCALL Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
+void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
-void SDLCALL Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
+void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
 #if 0
     int width = info->dst_w;
