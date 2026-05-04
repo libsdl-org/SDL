@@ -810,6 +810,19 @@ typedef Sint64 SDL_Time;
 #define SDL_PRIX32 "X"
 #endif
 #endif
+#if defined(__CYGWIN__)
+#define SDL_PRIlDWORD   "d"
+#define SDL_PRIuDWORD   "u"
+#define SDL_PRIdHRESULT "d"
+#define SDL_PRIxHRESULT "x"
+#define SDL_PRIdLONG    "d"
+#else
+#define SDL_PRIlDWORD   "ld"
+#define SDL_PRIuDWORD   "lu"
+#define SDL_PRIdHRESULT "ld"
+#define SDL_PRIxHRESULT "lx"
+#define SDL_PRIdLONG    "ld"
+#endif
 /* Specifically for the `long long` -- SDL-specific. */
 #if defined(SDL_PLATFORM_WINDOWS) && !defined(__CYGWIN__)
 #ifndef SDL_NOLONGLONG
