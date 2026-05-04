@@ -709,20 +709,47 @@ static inline svuint16x3_t sdl_sve_rgb565_unpack(svuint16_t vPixels)
     svuint16x3_t vRGB16x3 = svundef3_u16();
 
     /* extract and zero-exten blue channel */
-    vRGB16x3 = svset3_u16(vRGB16x3, 0, (vPixels & 0x1F) << 3);
+    svuint16_t vBlue = svand_n_u16_m(svptrue_b16(), vPixels, 0x1F);
+    vRGB16x3 = svset3_u16(vRGB16x3, 0,
+                          //(vPixels & 0x1F) << 3
+                          svlsl_n_u16_m(svptrue_b16(), vBlue, 3));
 
     /* extract and zero-exten green channel */
-    vRGB16x3 = svset3_u16(vRGB16x3, 1, (vPixels & (0x3F << 5)) >> 3);
+    svuint16_t vGreen = svand_n_u16_m(svptrue_b16(), vPixels, (0x3F << 5));
+    vRGB16x3 = svset3_u16(vRGB16x3, 1,
+                          //(vPixels & (0x3F << 5)) >> 3
+                          svlsr_n_u16_m(svptrue_b16(), vGreen, 3));
 
-    /* extract and zero-exten green channel */
-    vRGB16x3 = svset3_u16(vRGB16x3, 2, (vPixels & (0x1F << 11)) >> 8);
+    /* extract and zero-exten red channel */
+    svuint16_t vRed = svand_n_u16_m(svptrue_b16(), vPixels, (0x1F << 11));
+
+    vRGB16x3 = svset3_u16(vRGB16x3, 2,
+                          //(vPixels & (0x1F << 11)) >> 8
+                          svlsr_n_u16_m(svptrue_b16(), vRed, 8));
 
     return vRGB16x3;
 }
 
 static inline svuint16_t sdl_sve_rgb565_pack(svuint16x3_t vRGB16x3)
 {
-    return (svget3_u16(vRGB16x3, 0) >> 3) | ((svget3_u16(vRGB16x3, 1) & (0x3F << 2)) << 3) | ((svget3_u16(vRGB16x3, 2) & (0x1F << 3)) << 8);
+    svuint16_t vRed = svlsr_n_u16_m(svptrue_b16(), svget3_u16(vRGB16x3, 0), 3);
+    svuint16_t vGreen = svlsl_n_u16_m(svptrue_b16(),
+                                      svand_n_u16_m(svptrue_b16(),
+                                                    svget3_u16(vRGB16x3, 1),
+                                                    (0x3F << 2)),
+                                      3);
+    svuint16_t vBlue = svlsl_n_u16_m(svptrue_b16(),
+                                     svand_n_u16_m(svptrue_b16(),
+                                                   svget3_u16(vRGB16x3, 2),
+                                                   (0x1F << 3)),
+                                     8);
+
+    svuint16_t vPixel = svorr_u16_m(svptrue_b16(), vRed, vGreen);
+    return svorr_u16_m(svptrue_b16(), vPixel, vBlue);
+
+    // return  (svget3_u16(vRGB16x3, 0) >> 3)
+    //     |   ((svget3_u16(vRGB16x3, 1) & (0x3F << 2)) << 3)
+    //     |   ((svget3_u16(vRGB16x3, 2) & (0x1F << 3)) << 8);
 }
 
 static inline ARM_NONNULL(2, 3, 4) void svld3rgb565_u16(svbool_t vPredu8,
@@ -738,8 +765,21 @@ static inline ARM_NONNULL(2, 3, 4) void svld3rgb565_u16(svbool_t vPredu8,
     svuint16_t vHighByteLowHalf = svunpklo_u16(svget2_u8(vInput8x2, 1));
     svuint16_t vHighByteHighHalf = svunpkhi_u16(svget2_u8(vInput8x2, 1));
 
-    *pvLow = sdl_sve_rgb565_unpack(vLowByteLowHalf | (vHighByteLowHalf << 8));
-    *pvHigh = sdl_sve_rgb565_unpack(vLowByteHighHalf | (vHighByteHighHalf << 8));
+    //*pvLow = sdl_sve_rgb565_unpack  (   vLowByteLowHalf
+    //                                |   (vHighByteLowHalf << 8));
+    *pvLow = sdl_sve_rgb565_unpack(
+        svorr_u16_m(svptrue_b16(),
+                    vLowByteLowHalf,
+                    //(vHighByteLowHalf << 8)
+                    svlsl_n_u16_m(svptrue_b16(), vHighByteLowHalf, 8)));
+
+    //*pvHigh = sdl_sve_rgb565_unpack (   vLowByteHighHalf
+    //                                |   (vHighByteHighHalf << 8));
+    *pvHigh = sdl_sve_rgb565_unpack(
+        svorr_u16_m(svptrue_b16(),
+                    vLowByteHighHalf,
+                    //(vHighByteHighHalf << 8)
+                    svlsl_n_u16_m(svptrue_b16(), vHighByteHighHalf, 8)));
 }
 
 static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
@@ -754,8 +794,11 @@ static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
     do {
         svuint16_t vPixel = sdl_sve_rgb565_pack(vLow);
 
-        vLowByteLowHalf = vPixel & 0xFF;
-        vHighByteLowHalf = vPixel >> 8;
+        // vLowByteLowHalf = vPixel & 0xFF;
+        vLowByteLowHalf = svand_n_u16_m(svptrue_b16(), vPixel, 0xFF);
+
+        // vHighByteLowHalf = vPixel >> 8;
+        vHighByteLowHalf = svlsr_n_u16_m(svptrue_b16(), vPixel, 8);
     } while (0);
 
     svuint16_t vLowByteHighHalf = svundef_u16();
@@ -765,8 +808,11 @@ static inline ARM_NONNULL(2) void svst3rgb565_u16(svbool_t vPredu8,
     do {
         svuint16_t vPixel = sdl_sve_rgb565_pack(vHigh);
 
-        vLowByteHighHalf = vPixel & 0xFF;
-        vHighByteHighHalf = vPixel >> 8;
+        // vLowByteHighHalf = vPixel & 0xFF;
+        vLowByteHighHalf = svand_n_u16_m(svptrue_b16(), vPixel, 0xFF);
+
+        // vHighByteHighHalf = vPixel >> 8;
+        vHighByteHighHalf = svlsr_n_u16_m(svptrue_b16(), vPixel, 8);
     } while (0);
 
     /* save rgb565 pixels */
@@ -826,8 +872,16 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
                         vMask,
                         svdup_u16(1));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the hwOpacity range [0, 0x100]
@@ -836,10 +890,16 @@ static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
                                                         svuint16_t vTarget,
                                                         uint16_t hwOpacity)
 {
-    svuint16_t vOpacity = svdup_u16(hwOpacity);
+    // svuint16_t vOpacity = svdup_u16(hwOpacity);
+    // vTarget = vSource * vOpacity + vTarget * (256 - vOpacity);
 
-    vTarget = vSource * vOpacity + vTarget * (256 - vOpacity);
-    return vTarget >> 8;
+    svuint16_t vTemp0 = svmul_n_u16_m(svptrue_b16(), vSource, hwOpacity);
+    svuint16_t vTemp1 = svmul_n_u16_m(svptrue_b16(),
+                                      vTarget,
+                                      256 - hwOpacity);
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask is [0, 0xFF]
@@ -852,10 +912,21 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask_and_opacity(svuint16_t vSou
 {
     vMask = svsel(svcmpeq_n_u16(svptrue_b16(), vMask, 255),
                   svdup_u16(hwOpacity),
-                  (vMask * hwOpacity) >> 8);
+                  //(vMask * hwOpacity) >> 8,
+                  svlsr_n_u16_m(svptrue_b16(),
+                                svmul_n_u16_m(svptrue_b16(), vMask, hwOpacity),
+                                8));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
@@ -872,10 +943,21 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks(svuint16_t vSource,
     svuint16_t vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask0, 255),
               vMask1,
-              (vMask0 * vMask1) >> 8);
+              //(vMask0 * vMask1) >> 8,
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask0, vMask1),
+                            8));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
@@ -895,14 +977,29 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks_and_opacity(
     svuint16_t vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask1, 255), /* >= 255 */
               vMask0,
-              (vMask0 * vMask1) >> 8);
+              //(vMask0 * vMask1) >> 8
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask0, vMask1),
+                            8));
 
-    vMask = svsel(svcmpge_n_u16(svptrue_b16(), vMask, 255),
-                  svdup_u16(hwOpacity),
-                  (vMask * hwOpacity) >> 8);
+    vMask =
+        svsel(svcmpge_n_u16(svptrue_b16(), vMask, 255),
+              svdup_u16(hwOpacity),
+              //(vMask * hwOpacity) >> 8,
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_n_u16_m(svptrue_b16(), vMask, hwOpacity),
+                            8));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
@@ -920,15 +1017,29 @@ static inline svuint16_t sdl_sve_chn_blend_with_3masks(svuint16_t vSource,
     svuint16_t vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask1, 255),
               vMask0,
-              (vMask0 * vMask1) >> 8);
+              //(vMask0 * vMask1) >> 8
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask0, vMask1),
+                            8));
 
     vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask2, 255),
               vMask,
-              (vMask * vMask2) >> 8);
+              //(vMask * vMask2) >> 8
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask, vMask2),
+                            8));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
@@ -949,19 +1060,37 @@ static inline svuint16_t sdl_sve_chn_blend_with_3masks_and_opacity(
     svuint16_t vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask1, 255),
               vMask0,
-              (vMask0 * vMask1) >> 8);
+              //(vMask0 * vMask1) >> 8
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask0, vMask1),
+                            8));
 
     vMask =
         svsel(svcmpge_n_u16(svptrue_b16(), vMask2, 255),
               vMask,
-              (vMask * vMask2) >> 8);
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_u16_m(svptrue_b16(), vMask, vMask2),
+                            8));
+    //(vMask * vMask2) >> 8);
 
-    vMask = svsel(svcmpge_n_u16(svptrue_b16(), vMask, 255),
-                  svdup_u16(hwOpacity),
-                  (vMask * hwOpacity) >> 8);
+    vMask =
+        svsel(svcmpge_n_u16(svptrue_b16(), vMask, 255),
+              svdup_u16(hwOpacity),
+              //(vMask * hwOpacity) >> 8
+              svlsr_n_u16_m(svptrue_b16(),
+                            svmul_n_u16_m(svptrue_b16(), vMask, hwOpacity),
+                            8));
 
-    vTarget = vSource * vMask + vTarget * (256 - vMask);
-    return vTarget >> 8;
+    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
+                                    vTarget,
+                                    svsub_u16_m(svptrue_b16(),
+                                                svdup_u16(256),
+                                                vMask));
+    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
 }
 
 #endif /* SDL_SVE2_EXTENSION_H */
