@@ -64,11 +64,20 @@
 #ifndef AT_HWCAP
 #define AT_HWCAP 16
 #endif
+#ifndef AT_HWCAP2
+#define AT_HWCAP2 26
+#endif
 #ifndef AT_PLATFORM
 #define AT_PLATFORM 15
 #endif
 #ifndef HWCAP_NEON
 #define HWCAP_NEON (1 << 12)
+#endif
+#ifndef HWCAP_SVE
+#define HWCAP_SVE (1 << 22)
+#endif
+#ifndef HWCAP2_SVE2
+#define HWCAP2_SVE2 (1 << 1)
 #endif
 #endif
 
@@ -515,19 +524,12 @@ static int CPU_haveNEON(void)
 #endif
 }
 
-#ifndef AT_HWCAP2
-#define AT_HWCAP2 26
-#endif
-
-#ifndef HWCAP2_SVE2
-#define HWCAP2_SVE2 (1 << 1)
-#endif
-
 static int CPU_haveSVE2(void)
 {
 #if defined(__aarch64__) && \
     ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID))
-    return (getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2;
+    return ((getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2)
+        && ((getauxval(AT_HWCAP) & HWCAP_SVE) == HWCAP_SVE);
 #else
     return 0;
 #endif
