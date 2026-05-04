@@ -24,8 +24,6 @@
 
 #ifdef SDL_SVE2_INTRINSICS
 
-#ifdef __ARM_FEATURE_SVE2
-
 #undef sdl_sve_rgb32_blend_op_fill_alpha
 #define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)              \
     if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                         \
@@ -66,7 +64,9 @@
 /*-----------------------------------------------------------------------------*
  * Normal Blend with Alpha                                                     *
  *-----------------------------------------------------------------------------*/
-
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
@@ -161,7 +161,9 @@ void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
 /*-----------------------------------------------------------------------------*
  * Swizzle Blend with Alpha                                                    *
  *-----------------------------------------------------------------------------*/
-
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 void Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
@@ -220,10 +222,13 @@ void Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 #endif
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
-#endif /* __ARM_FEATURE_SVE2 */
+
 #endif /* SDL_SVE2_INTRINSICS */
