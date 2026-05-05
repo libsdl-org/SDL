@@ -23,20 +23,11 @@ import SwiftUI
 
 extension SDL_uikitviewcontroller {
     @available(visionOS 26.0, *)
-    @objc func addOrnaments() {
-        // This is called before the SwiftUI runtime is initialized, so run this in a task later
+    @objc func initializeVisionOSCurvedUI() {
         Task {
-            ornaments = [
-                UIHostingOrnament(sceneAnchor: .topTrailing, contentAlignment: .leading) {
-                    Button(action: {
-                        self.ornaments = []
-                        SDL_VisionOS_EnterCurvedMode()
-                    }) {
-                        Image(systemName: "pano")
-                    }
-                    .frame(width: 48, height: 48)
-                }
-            ]
+            let hosting = SDL_CurvedContentHosting()
+            hosting.present(from: self)
+            SDL_VisionOS_SetWindowRealityKitHosting(hosting)
         }
     }
 }

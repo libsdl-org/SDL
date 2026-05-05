@@ -93,96 +93,25 @@ void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uin
     }
 }
 
-// MARK: - Curved Content Mode (UIHostingController-based)
+// MARK: - RealityKit Content Hosting
 
-// Helper function to get the SDL_CurvedContentHosting class
-static Class SDL_GetCurvedContentHostingClass()
-{
-    Class hostingClass = NSClassFromString(@"SDL_CurvedContentHosting");
-    if (!hostingClass) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
-                    "Could not find SDL_CurvedContentHosting class");
-    }
-    return hostingClass;
-}
-
-// Called from Swift to enter curved content mode
-void SDL_VisionOS_EnterCurvedMode()
+// Called from Swift to register the RealityKit hosting object with the SDL window.
+void SDL_VisionOS_SetWindowRealityKitHosting(id hosting)
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (!window) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "VISIONOS: No focused window for RealityKit hosting");
         return;
     }
 
     SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
-
-    if (windowData.curvedContentHosting) {
-        SDL_Log("VISIONOS: Already in curved mode");
-        return;
-    }
-
-    Class hostingClass = SDL_GetCurvedContentHostingClass();
-    if (!hostingClass) {
-        return;
-    }
-
-    // Create the hosting wrapper
-    id hosting = [[hostingClass alloc] init];
-
-    // Configure with size and curvature
-    SEL configureSelector = NSSelectorFromString(@"configureWithSize:curvature:");
-    if ([hosting respondsToSelector:configureSelector]) {
-        NSMethodSignature *signature = [hosting methodSignatureForSelector:configureSelector];
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setSelector:configureSelector];
-        [invocation setTarget:hosting];
-
-        CGSize size = CGSizeMake(window->w, window->h);
-        float curvatureFloat = (float)windowData.curvature;
-        [invocation setArgument:&size atIndex:2];
-        [invocation setArgument:&curvatureFloat atIndex:3];
-        [invocation invoke];
-    }
-
-    // Present from the view controller
-    SEL presentSelector = NSSelectorFromString(@"presentFrom:");
-    if ([hosting respondsToSelector:presentSelector]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        [hosting performSelector:presentSelector withObject:windowData.viewcontroller];
-#pragma clang diagnostic pop
-    }
-
     windowData.curvedContentHosting = hosting;
-    SDL_Log("VISIONOS: Entered curved content mode");
-}
-
-// Called from Swift to leave curved content mode
-void SDL_VisionOS_LeaveCurvedMode()
-{
-    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
-    if (!window) {
-        return;
-    }
-
-    SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
-
-    if (!windowData.curvedContentHosting) {
-        SDL_Log("VISIONOS: Not in curved mode");
-        return;
-    }
-
-    SEL dismissSelector = NSSelectorFromString(@"dismiss");
-    if ([windowData.curvedContentHosting respondsToSelector:dismissSelector]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        [windowData.curvedContentHosting performSelector:dismissSelector];
-#pragma clang diagnostic pop
-    }
-
-    windowData.curvedContentHosting = nil;
-    [windowData.viewcontroller addOrnaments];
-    SDL_Log("VISIONOS: Left curved content mode");
+    
+    // Updating curvedContentHosting updates the view controller so that the "container background" is hidden.
+    // On visionOS, this gets rid of the default glass background effect (not wanted for our content).
+    [windowData.viewcontroller setNeedsUpdateOfPreferredContainerBackgroundStyle];
+    
+    SDL_Log("VISIONOS: RealityKit hosting registered");
 }
 
 bool SDL_UIKit_IsCurvedWindow(SDL_Window *window)

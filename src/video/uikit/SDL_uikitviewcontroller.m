@@ -126,7 +126,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_PLATFORM_VISIONOS
     if (@available(visionOS 26.0, *)) {
-        [self addOrnaments];
+        [self initializeVisionOSCurvedUI];
     }
 #endif
     return self;
@@ -150,6 +150,19 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                         (__bridge void *)self);
 #endif
 }
+
+#ifdef SDL_PLATFORM_VISIONOS
+- (UIContainerBackgroundStyle)preferredContainerBackgroundStyle
+{
+    if (self.window) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)self.window->internal;
+        if (data && data.curvedContentHosting) {
+            return UIContainerBackgroundStyleHidden;
+        }
+    }
+    return UIContainerBackgroundStyleAutomatic;
+}
+#endif
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {

@@ -22,210 +22,300 @@ import RealityKit
 import SwiftUI
 import Metal
 import MetalKit
-import ModelIO
 import simd
 
-/// Swift wrapper for RealityKit functionality to be called from Objective-C
+/// Custom vertex format for the curved plane mesh.
+/// Matches the layout described to LowLevelMesh via vertexAttributes/vertexLayouts.
+private struct CurvedPlaneVertex {
+    var position: SIMD3<Float> = .zero
+    var normal: SIMD3<Float> = .zero
+    var uv: SIMD2<Float> = .zero
+
+    static var vertexAttributes: [LowLevelMesh.Attribute] {
+        [
+            .init(semantic: .position, format: .float3, offset: MemoryLayout<Self>.offset(of: \.position)!),
+            .init(semantic: .normal, format: .float3, offset: MemoryLayout<Self>.offset(of: \.normal)!),
+            .init(semantic: .uv0, format: .float2, offset: MemoryLayout<Self>.offset(of: \.uv)!)
+        ]
+    }
+
+    static var vertexLayouts: [LowLevelMesh.Layout] {
+        [.init(bufferIndex: 0, bufferStride: MemoryLayout<Self>.stride)]
+    }
+
+    static func descriptor(vertexCount: Int, indexCount: Int) -> LowLevelMesh.Descriptor {
+        var desc = LowLevelMesh.Descriptor()
+        desc.vertexAttributes = vertexAttributes
+        desc.vertexLayouts = vertexLayouts
+        desc.vertexCapacity = vertexCount
+        desc.indexCapacity = indexCount
+        desc.indexType = .uint32
+        return desc
+    }
+}
+
+/// Provides RealityKit functionality
 ///
 /// Key responsibilities:
-/// - Generate curved mesh geometry procedurally (CPU-based)
+/// - Generate curved mesh geometry procedurally using LowLevelMesh for fast updates
 /// - Update textures using LowLevelTexture for efficient Metal → RealityKit transfer
-/// - Update materials with SDL-rendered content
-/// - Provide entity for RealityView to display
-@available(visionOS 2.0, *)
+/// - Asynchronously cooks a physics collision mesh of the curved UI to be used as an input target
 @MainActor
 @Observable
-@objc(SDL_RealityKitHelper)
-public class SDL_RealityKitHelper: NSObject {
+internal class SDL_RealityKitHelper {
+    /// A collision shape which should be assigned to the same entity as ``lowLevelMesh``, for input targeting.
+    private(set) var collisionShape: ShapeResource? = nil
+    
+    /// The TextureResource object which should be assigned to an entity in the scene.
+    private(set) var textureResource: TextureResource? = nil
+    
+    /// The LowLevelMesh object which should be assigned to an entity in the scene, positioned at the origin.
+    ///
+    /// This mesh is auomatically updated when you change ``meshGeometry`` via ``updateMeshGeometry()``.
+    /// LowLevelMesh is a class (reference type) so you can add it to your Entity's `MeshResource` once at init time.
+    let lowLevelMesh: LowLevelMesh
 
-    private var curvedEntity: ModelEntity?
-    private var anchorEntity: AnchorEntity?
-    private var anchorPosition: SIMD3<Float> = [0, 0, 0]
-    private(set) var meshWidth: Float = 0.0
-    private(set) var meshHeight: Float = 0.0
-    private(set) var meshCurvature: Float = 0.0 // R value, in millimeters
-    private(set) var meshSize: Size3D = Size3D()
+    /// Topology characteristics of the generated mesh.  This is fixed at initialization time.
+    let meshTopology: CurvedMeshTopology
 
-    /// Content size in points, used by SwiftUI to drive .windowResizability(.contentSize)
-    var contentSizeInPoints: CGSize = .zero
+    /// The current generated mesh geometry.  Update this with ``updateMeshGeometry()``
+    private(set) var meshGeometry: CurvedMeshGeometry = CurvedMeshGeometry(width: 1, height: 1)
+    
+    /// An async task responsible for managing physics mesh cooking.
+    ///
+    /// This guarantees that at most one cooking operation is active at a time.
+    /// Cooking generally takes > 1 frame, so it's important that there is not an explosion of redundant work
+    /// if there is a burst of resize activity.
+    private var physicsCookingTask: Task<Void, Never>?
+    
+    /// ``collisionShape`` is up to date with this `CurvedMeshGeometry`.
+    private var lastCookedGeometry: CurvedMeshGeometry?
 
-    // LowLevelTexture pipeline for efficient Metal → RealityKit texture transfer
+    /// LowLevelTexture that backs ``textureResource``.
     private var lowLevelTexture: LowLevelTexture?
-    private var textureResource: TextureResource?
-    private var textureWidth: Int = 0
-    private var textureHeight: Int = 0
+    
+    struct CurvedMeshTopology: Sendable, Equatable {
+        /// Number of horizontal segments to use to generate the mesh grid
+        var segmentsX: Int = 32
+        
+        /// Number of vertical segments to use to generate the mesh grid
+        var segmentsY: Int = 32
+        
+        /// Total number of vertices required to generate a mesh with this topology
+        var vertexCount: Int { (segmentsX + 1) * (segmentsY + 1) }
+        
+        /// Total size of the index buffer when generating a mesh with this topology
+        var indexCount: Int { segmentsX * segmentsY * 6 }
+    }
+    
+    struct CurvedMeshGeometry: Sendable, Equatable {
+        /// Width of the mesh in meters.
+        var width: Float
 
-    @objc public override init() {
-        super.init()
+        /// Height of the mesh in meters.
+        var height: Float
+
+        /// Radius of the mesh curvature in meters, or `nil` for a flat mesh.
+        var requestedCurvatureRadius: Float?
+        
+        /// The actual curve radius used, or `nil` for a flat mesh.
+        ///
+        /// The curve radius is upper bounded by the half-width of the mesh (pythagoras demands it!).
+        var curvatureRadius: Float? {
+            let halfWidth = width / 2
+            if let requestedCurvatureRadius {
+                return max(requestedCurvatureRadius, halfWidth)
+            } else {
+                return nil
+            }
+        }
+        
+        /// The offset of the curve center from (0, 0, 0), in the z axis.
+        var zOffset: Float? {
+            guard let curvatureRadius else { return nil }
+            let halfWidth = width / 2
+            let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
+            return d
+        }
+
+        /// Converts a 3D position on the mesh surface (in meters, relative to mesh center)
+        /// to normalized texture coordinates (0..1, 0..1).
+        func normalizedUV(fromMeshPosition position: SIMD3<Float>) -> SIMD2<Float> {
+            if let curvatureRadius {
+                let halfWidth = width / 2
+                
+                let theta = asinf(halfWidth / curvatureRadius)
+                let angle = asinf(position.x / curvatureRadius)
+                
+                let u = (angle / theta + 1) / 2
+                let v = (position.y / height) + 0.5
+                return SIMD2(u, v)
+            } else {
+                let u = (position.x / width) + 0.5
+                let v = (position.y / height) + 0.5
+                return SIMD2(u, v)
+            }
+        }
+        
+        /// Inverse of ``normalizedUV(fromMeshPosition:)``.
+        func meshPosition(fromNormalizedUV uv: SIMD2<Float>) -> SIMD3<Float> {
+            let u = uv.x
+            let v = uv.y
+
+            if let curvatureRadius, let zOffset {
+                let halfWidth = width / 2
+                let theta = asinf(halfWidth / curvatureRadius)
+
+                let angle = (2 * u - 1) * theta
+                let x = curvatureRadius * sinf(angle)
+                let y = (v - 0.5) * height
+                let z = curvatureRadius * cosf(angle) - zOffset
+                return SIMD3(x, y, z)
+            } else {
+                let x = (u - 0.5) * width
+                let y = (v - 0.5) * height
+                return SIMD3(x, y, 0)
+            }
+        }
+    }
+    
+    init(meshTopology: CurvedMeshTopology = CurvedMeshTopology(),
+         meshGeometry: CurvedMeshGeometry = CurvedMeshGeometry(width: 1, height: 1)) {
+        self.meshTopology = meshTopology
+        self.meshGeometry = CurvedMeshGeometry(width: -1, height: -1)
+        
+        let lowLevelMesh = try! meshTopology.generateMesh()
+
+        self.lowLevelMesh = lowLevelMesh
+        
+        updateMeshGeometry(meshGeometry)
+    }
+    
+    // MARK: - Mesh Generation (LowLevelMesh)
+    
+    func updateMeshSize(width: Float, height: Float) {
+        var geometry = self.meshGeometry
+        geometry.width = width
+        geometry.height = height
+        updateMeshGeometry(geometry)
+    }
+    
+    func updateMeshCurvature(curvatureRadius: Float?) {
+        var geometry = self.meshGeometry
+        geometry.requestedCurvatureRadius = curvatureRadius
+        updateMeshGeometry(geometry)
     }
 
-    // MARK: - Mesh Generation
-
-    /// Creates a plane entity for displaying SDL content with optional curvature
-    private func createCurvedMesh(width: Float, height: Float, curvature: Float) async {
-        self.meshWidth = width
-        self.meshHeight = height
-        self.meshCurvature = curvature
-
-        NSLog("SDL_RealityKitHelper: Creating display plane %.2fx%.2f (curvature %.2f)",
-              self.meshWidth, self.meshHeight, self.meshCurvature)
-
-        // Generate curved mesh geometry using LowLevelMesh
-        let planeMesh: MeshResource
-        let needsRotation: Bool
-
-        if self.meshCurvature > 0 {
-            // Create curved mesh procedurally (already in correct orientation)
-            planeMesh = generateCurvedPlaneMesh(width: self.meshWidth, height: self.meshHeight, curvature: self.meshCurvature)
-            needsRotation = false  // Curved mesh is generated facing viewer already
-            NSLog("SDL_RealityKitHelper: Created curved mesh geometry")
-        } else {
-            // Use flat plane for zero curvature (needs rotation)
-            planeMesh = MeshResource.generatePlane(width: self.meshWidth, depth: self.meshHeight)
-            needsRotation = true  // Flat plane needs 90° rotation
-            meshSize.width = Double(meshWidth)
-            meshSize.height = Double(meshHeight)
-            meshSize.depth = 0.0
-            NSLog("SDL_RealityKitHelper: Using flat plane")
+    /// Writes vertex position/normal/uv data into the LowLevelMesh buffer.
+    /// This is the fast path — called on every size or curvature change without
+    /// recreating MeshResource or Entity.
+    func updateMeshGeometry(_ meshGeometry: CurvedMeshGeometry) {
+        if meshGeometry == self.meshGeometry {
+            return // nothing to do
         }
+        
+        let width = meshGeometry.width
+        let height = meshGeometry.height
+        let curvatureRadius = meshGeometry.curvatureRadius
+        
+        let segmentsX = meshTopology.segmentsX
+        let segmentsY = meshTopology.segmentsY
+        let indexCount = meshTopology.indexCount
+        
+        let halfWidth = width / 2
+        let halfHeight = height / 2
+        
+        var boundsMin = SIMD3(repeating: Float.infinity)
+        var boundsMax = SIMD3(repeating: -Float.infinity)
+        
+        lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBytes in
+            let vertices = rawBytes.bindMemory(to: CurvedPlaneVertex.self)
 
-        // Use SimpleMaterial (CustomMaterial not supported in volumetric windows)
-        let material = SimpleMaterial(color: .white, isMetallic: false)
+            if let curvatureRadius {
+                let theta = asinf(halfWidth / curvatureRadius)
+                let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
 
-        guard let shape = try? await ShapeResource.generateStaticMesh(from: planeMesh) else {
-            NSLog("SDL_RealityKitHelper: couldn't create static mesh")
-            return
-        }
+                for y in 0...segmentsY {
+                    let v = Float(y) / Float(segmentsY) * 2 - 1
+                    let posY = v * halfHeight
 
-        let entity = ModelEntity(mesh: planeMesh, materials: [material])
-        entity.position = SIMD3<Float>(0, 0, 0)
-        entity.collision = CollisionComponent(shapes: [shape])
-        entity.components.set(InputTargetComponent(allowedInputTypes: .all))
+                    for x in 0...segmentsX {
+                        let u = Float(x) / Float(segmentsX) * 2 - 1
+                        let angle = theta * u
+                        
+                        let posX = curvatureRadius * sin(angle)
+                        let posZ = -curvatureRadius * cos(angle)
+                        
+                        // Postion if the center of the arc is at (0, 0, 0).
+                        let arcCenteredPosition = SIMD3(posX, posY, posZ)
+                        let normal = normalize(-arcCenteredPosition)
+                        
+                        // Shift the mesh forward so the ends of the arc coincide with the edges of the window.
+                        let position = arcCenteredPosition + SIMD3<Float>(0, 0, d)
 
-        // Only rotate flat plane (curved mesh is already in correct orientation)
-        if needsRotation {
-            entity.orientation = simd_quatf(angle: .pi / 2, axis: SIMD3<Float>(1, 0, 0))
-        }
+                        let idx = y * (segmentsX + 1) + x
+                        vertices[idx].position = position
+                        vertices[idx].normal = normal
+                        vertices[idx].uv = SIMD2<Float>((u + 1) / 2, (v + 1) / 2)
+                        
+                        boundsMin = min(boundsMin, position)
+                        boundsMax = max(boundsMax, position)
+                    }
+                }
+            } else {
+                // Flat plane — same grid, z=0
+                for y in 0...segmentsY {
+                    let v = Float(y) / Float(segmentsY)
+                    let posY = (v - 0.5) * height
 
-        // Increase bounds margin for curved mesh
-        if var modelComponent = entity.components[ModelComponent.self] {
-            modelComponent.boundsMargin = 0.5
-            entity.components[ModelComponent.self] = modelComponent
-        }
+                    for x in 0...segmentsX {
+                        let u = Float(x) / Float(segmentsX)
+                        let posX = (u - 0.5) * width
 
-        curvedEntity?.removeFromParent()
-        curvedEntity = entity
-
-        if let anchor = anchorEntity {
-            entity.setPosition(anchorPosition, relativeTo: anchor)
-            anchor.addChild(entity)
-        }
-
-        NSLog("SDL_RealityKitHelper: Created plane entity %.2fx%.2f meters", self.meshWidth, self.meshHeight)
-    }
-
-    /// Generates a curved plane mesh with cylindrical curvature
-    /// Mesh is generated in XY plane with Z varying based on X for horizontal curvature
-    private func generateCurvedPlaneMesh(width: Float, height: Float, curvature: Float) -> MeshResource {
-        let segmentsX = 32
-        let segmentsY = 32
-
-        var positions: [SIMD3<Float>] = []
-        var normals: [SIMD3<Float>] = []
-        var uvs: [SIMD2<Float>] = []
-        var indices: [UInt32] = []
-
-        // Apply cylindrical curve: Z varies with X to create wrap-around
-        var curve_positions: [SIMD3<Float>] = []
-        var curve_normals: [SIMD3<Float>] = []
-        let r = meshCurvature / 1000  // Convert from R value in millimeters to meters
-        let arc_length = width / r
-        for x in 0...segmentsX {
-            let u = Float(x) / Float(segmentsX)
-            let angle = (u - 0.5) * arc_length
-            let vec: SIMD3<Float> = simd_normalize([sin(angle), 0.0, cos(angle)])
-            let pos: SIMD3<Float> = [vec.x, vec.y, 1.0 - vec.z] * r
-            curve_positions.append(pos)
-
-            // Normal points toward viewer for convex curve
-            curve_normals.append(-vec)
-        }
-        meshSize.width = Double(-curve_positions[0].x * 2)
-        meshSize.height = Double(meshHeight)
-        meshSize.depth = Double(curve_positions[0].z)
-
-        // Generate vertices with cylindrical curvature
-        // X = width (left/right), Y = height (up/down), Z = depth (toward/away from viewer)
-        for y in 0...segmentsY {
-            let v = Float(y) / Float(segmentsY)
-            let posY = (v - 0.5) * height  // Height stays vertical
-
-            for x in 0...segmentsX {
-                let u = Float(x) / Float(segmentsX)
-
-                let pos = curve_positions[x];
-                positions.append([pos.x, posY, pos.z])
-
-                let normal = curve_normals[x];
-                normals.append(normal)
-
-                uvs.append(SIMD2<Float>(u, v))
+                        let idx = y * (segmentsX + 1) + x
+                        let position = SIMD3<Float>(posX, posY, 0)
+                        vertices[idx].position = position
+                        vertices[idx].normal = SIMD3<Float>(0, 0, -1)
+                        vertices[idx].uv = SIMD2<Float>(u, v)
+                        
+                        boundsMin = min(boundsMin, position)
+                        boundsMax = max(boundsMax, position)
+                    }
+                }
             }
         }
 
-        // Generate triangle indices (reversed winding for correct front face)
-        for y in 0..<segmentsY {
-            for x in 0..<segmentsX {
-                let i0 = UInt32(y * (segmentsX + 1) + x)
-                let i1 = i0 + 1
-                let i2 = i0 + UInt32(segmentsX + 1)
-                let i3 = i2 + 1
+        let bounds = BoundingBox(min: boundsMin, max: boundsMax)
+        lowLevelMesh.parts.replaceAll([
+            LowLevelMesh.Part(indexCount: indexCount, topology: .triangle, bounds: bounds)
+        ])
+        
+        self.meshGeometry = meshGeometry
+        invalidatePhysicsMesh()
+    }
 
-                // Two triangles per quad (counter-clockwise from viewer)
-                indices.append(contentsOf: [i0, i1, i2, i1, i3, i2])
+    // MARK: - Physics Mesh Cooking
+
+    /// Schedules an async physics mesh cook. If a cook is already in progress,
+    /// it will automatically re-cook when done if the geometry has changed.
+    private func invalidatePhysicsMesh() {
+        guard physicsCookingTask == nil else { return }
+        physicsCookingTask = Task {
+            defer { physicsCookingTask = nil }
+            // Loop until the cooked physics mesh matches the current geometry.
+            // Each iteration cooks against whatever the MeshResource currently reflects.
+            while lastCookedGeometry != meshGeometry {
+                let geometryAtStart = meshGeometry
+                do {
+                    let meshResource = try await MeshResource(from: lowLevelMesh)
+                    let shape = try await ShapeResource.generateStaticMesh(from: meshResource)
+                    collisionShape = shape
+                    lastCookedGeometry = geometryAtStart
+                } catch {
+                    NSLog("SDL_RealityKitHelper: Failed to generate physics mesh: %@", error.localizedDescription)
+                    break
+                }
             }
-        }
-
-        // Create mesh descriptor
-        var descriptor = MeshDescriptor(name: "CurvedPlane")
-        descriptor.positions = MeshBuffer(positions)
-        descriptor.normals = MeshBuffer(normals)
-        descriptor.textureCoordinates = MeshBuffer(uvs)
-        descriptor.primitives = .triangles(indices)
-
-        do {
-            return try MeshResource.generate(from: [descriptor])
-        } catch {
-            NSLog("SDL_RealityKitHelper: Failed to generate curved mesh: %@, using flat plane", error.localizedDescription)
-            return MeshResource.generatePlane(width: width, depth: height)
-        }
-    }
-
-    /// Returns the curved entity for adding to RealityView content
-    func getCurvedEntity() -> ModelEntity? {
-        return curvedEntity
-    }
-
-    func getAnchorEntity() -> AnchorEntity? {
-        return anchorEntity
-    }
-
-    func center(content: RealityViewContent, position: SIMD3<Float>) {
-        if let anchor = anchorEntity {
-            content.remove(anchor)
-        }
-
-        let anchor = AnchorEntity(.head)
-        anchor.anchoring.trackingMode = .once
-        content.add(anchor)
-
-        anchorEntity = anchor
-        anchorPosition = position
-
-        if let entity = curvedEntity {
-            entity.removeFromParent()
-            entity.setPosition(anchorPosition, relativeTo: anchor)
-            anchor.addChild(entity)
         }
     }
 
@@ -234,14 +324,15 @@ public class SDL_RealityKitHelper: NSObject {
     /// Creates or recreates the LowLevelTexture for the given dimensions
     private func ensureLowLevelTexture(width: Int, height: Int, pixelFormat: MTLPixelFormat) {
         // Check if we need to recreate (size or format changed)
-        if lowLevelTexture != nil && textureWidth == width && textureHeight == height {
+        if let lowLevelTexture,
+           lowLevelTexture.descriptor.width == width,
+           lowLevelTexture.descriptor.height == height,
+           lowLevelTexture.descriptor.pixelFormat == pixelFormat
+        {
             return
         }
 
         NSLog("SDL_RealityKitHelper: Creating LowLevelTexture %dx%d", width, height)
-
-        textureWidth = width
-        textureHeight = height
 
         do {
             // Create LowLevelTexture descriptor using Metal pixel format directly
@@ -266,10 +357,6 @@ public class SDL_RealityKitHelper: NSObject {
             textureResource = try TextureResource(from: lowLevelTexture!)
 
             NSLog("SDL_RealityKitHelper: LowLevelTexture created successfully")
-
-            // Update the entity's material to use this texture resource
-            updateEntityMaterial()
-
         } catch {
             NSLog("SDL_RealityKitHelper: ERROR - Failed to create LowLevelTexture: %@", error.localizedDescription)
             lowLevelTexture = nil
@@ -277,28 +364,7 @@ public class SDL_RealityKitHelper: NSObject {
         }
     }
 
-    /// Updates the entity's material to use the current textureResource
-    private func updateEntityMaterial() {
-        guard let entity = curvedEntity, let texResource = textureResource else {
-            return
-        }
-
-        if var modelComponent = entity.components[ModelComponent.self],
-           modelComponent.materials.count > 0 {
-            var material = UnlitMaterial(applyPostProcessToneMap: false)
-            material.color = .init(texture: .init(texResource))
-            modelComponent.materials[0] = material
-            entity.components[ModelComponent.self] = modelComponent
-            NSLog("SDL_RealityKitHelper: Updated entity material with LowLevelTexture")
-        }
-    }
-
     @objc public func getDisplayTexture(_ commandBuffer: MTLCommandBuffer, width: Int, height: Int, pixelFormat: MTLPixelFormat) -> MTLTexture? {
-        // This can happen where we are in the middle of a transition
-        guard curvedEntity != nil else {
-            return nil
-        }
-
         // Ensure LowLevelTexture exists with correct dimensions
         ensureLowLevelTexture(
             width: width,
@@ -314,59 +380,41 @@ public class SDL_RealityKitHelper: NSObject {
         // Get the writable texture from LowLevelTexture
         return llt.replace(using: commandBuffer)
     }
+}
 
-    /// Set the initial size and curvature
-    public func configure(width: Int, height: Int, curvature: Float) {
-        let clampedCurvature = curvature > 1.0 ? curvature : 0.0
-        contentSizeInPoints = CGSize(width: width, height: height);
-        meshCurvature = clampedCurvature
-    }
+extension SDL_RealityKitHelper.CurvedMeshTopology {
+    @MainActor
+    func generateMesh() throws -> LowLevelMesh {
+        NSLog("SDL_RealityKitHelper: Creating LowLevelMesh (%dx%d grid, %d vertices, %d indices)",
+              segmentsX, segmentsY, vertexCount, indexCount)
 
-    /// Updates the mesh dimensions and recreates the mesh
-    public func updateSize(width: Int, height: Int) {
-        // The RealityView will update based on this size change
-        contentSizeInPoints = CGSize(width: width, height: height);
-        SDL_VisionOS_SendSizeChanged(width, height)
-    }
+        // Create LowLevelMesh with our custom vertex format
+        let desc = CurvedPlaneVertex.descriptor(vertexCount: vertexCount, indexCount: indexCount)
+        let mesh = try LowLevelMesh(descriptor: desc)
 
-    public func updateMeshSize(width: Float, height: Float) {
+        // Write index buffer once — topology never changes for a fixed grid
+        mesh.withUnsafeMutableIndices { rawIndices in
+            let indices = rawIndices.bindMemory(to: UInt32.self)
+            var idx = 0
+            for y in 0..<segmentsY {
+                for x in 0..<segmentsX {
+                    let i0 = UInt32(y * (segmentsX + 1) + x)
+                    let i1 = i0 + 1
+                    let i2 = i0 + UInt32(segmentsX + 1)
+                    let i3 = i2 + 1
 
-        if (width == meshWidth && height == meshHeight) {
-            return;
+                    // Two triangles per quad (counter-clockwise winding)
+                    indices[idx]     = i0
+                    indices[idx + 1] = i1
+                    indices[idx + 2] = i2
+                    indices[idx + 3] = i1
+                    indices[idx + 4] = i3
+                    indices[idx + 5] = i2
+                    idx += 6
+                }
+            }
         }
-
-        NSLog("SDL_RealityKitHelper: Updating size from %.2fx%.2f to %.2fx%.2f",
-              meshWidth, meshHeight, width, height)
-
-        meshWidth = width
-        meshHeight = height
-
-        Task {
-            await createCurvedMesh(width: meshWidth, height: meshHeight, curvature: meshCurvature)
-            updateEntityMaterial()
-        }
-    }
-
-    /// Updates the curvature and recreates the mesh
-    public func updateCurvature(curvature: Float) {
-        let clampedCurvature = curvature > 1.0 ? curvature : 0.0
-
-        if abs(meshCurvature - clampedCurvature) < 1 {
-            return
-        }
-
-        NSLog("SDL_RealityKitHelper: Updating curvature from %.2f to %.2f",
-              meshCurvature, clampedCurvature)
-
-        meshCurvature = clampedCurvature
-
-        Task {
-            await createCurvedMesh(width: meshWidth, height: meshHeight, curvature: meshCurvature)
-            updateEntityMaterial()
-        }
-    }
-
-    public func isCurved() -> Bool {
-        return meshCurvature > 0.0
+        
+        return mesh
     }
 }

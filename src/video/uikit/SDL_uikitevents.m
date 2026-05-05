@@ -337,6 +337,8 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
         Uint64 timestamp = SDL_GetTicksNS();
+        
+        SDL_Log("GCMouse: mouseMovedHandler deltaX=%.3f deltaY=%.3f relativeMode=%d", deltaX, deltaY, SDL_GCMouseRelativeMode());
 
         if (SDL_GCMouseRelativeMode()) {
             SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID, true, deltaX, -deltaY);

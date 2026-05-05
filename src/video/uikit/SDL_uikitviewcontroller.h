@@ -60,7 +60,7 @@
 - (void)viewDidLayoutSubviews;
 
 #ifdef SDL_PLATFORM_VISIONOS
-- (void)addOrnaments;
+- (void)initializeVisionOSCurvedUI;
 #endif
 
 #ifndef SDL_PLATFORM_TVOS

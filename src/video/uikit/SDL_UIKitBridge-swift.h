@@ -29,8 +29,5 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature);
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y);
 
-// Called from Swift to enter curved content mode (UIHostingController-based)
-void SDL_VisionOS_EnterCurvedMode();
-
-// Called from Swift to leave curved content mode
-void SDL_VisionOS_LeaveCurvedMode();
+// Called from Swift to register the RealityKit hosting object with the SDL window
+void SDL_VisionOS_SetWindowRealityKitHosting(id hosting);

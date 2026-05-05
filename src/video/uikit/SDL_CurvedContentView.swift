@@ -24,14 +24,52 @@ import GameController
 
 /// SwiftUI view that presents SDL content on a curved RealityKit mesh
 /// inside a UIHostingController
-@available(visionOS 26.0, *)
-struct SDL_CurvedContentView: View {
+internal struct SDL_CurvedContentView: View {
+    /// Helper object used to manage the mesh and texture of the curved UI.
     let helper: SDL_RealityKitHelper
+    
+    /// Settings object provided by the caller which determines the UI state.
+    let settings: SDL_CurvedContentSettings
+    
+    /// Closure which is called when the content is ready to present.
+    let onContentReady: @MainActor () -> Void
+    
+    /// RealityKit entity which is created on appear, to be populated by the curved UI content.
+    @State private var curvedUIEntity: ModelEntity! = nil
+    
+    /// Curved UI material which is created on appear.  Holds the compiled shader and material parameters.
+    @State private var curvedUIMaterial: CurvedUIMaterial! = nil
 
-    @State private var touchOffsetX: CGFloat = 0
-    @State private var touchScale: CGPoint = CGPoint()
-    @State private var addedEntity: ModelEntity?
-    @State private var frameDepth: CGFloat = 0.0
+    /// Converts SwiftUI points to meters (RealityKit coordinates)
+    ///
+    /// - Note: This conversion varies depending on the physical distance between the window and the user.
+    @PhysicalMetric(from: .meters) private var pointsPerMeter: Float = 1
+
+    /// Inverse of ``pointsPerMeter``.
+    var metersPerPoint: Float { 1.0 / pointsPerMeter }
+
+    /// The cursor color which should be passed to `curvedUIMaterial`
+    @State private var cursorColor: UIColor = .white
+
+    /// The cursor color on interact (pinch/drag/click) which should be passed to `curvedUIMaterial`
+    @State private var cursorColorOnInteract: UIColor = .systemCyan
+
+    /// Whether to show the cursor overlay on the mesh surface.  True iff cinematic AND eye input is selected.
+    private var showCursor: Bool {
+        settings.sceneState == .cinematic && settings.inputType == .eyes
+    }
+    
+    /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
+    private var mouseInputEnabled: Bool {
+        settings.sceneState == .cinematic && settings.inputType == .pointer
+    }
+
+    private var shouldPopulateCollisionShape: Bool {
+        return curvedUIEntity != nil && helper.collisionShape != nil && !mouseInputEnabled
+    }
+    
+    /// Value use to animate the screen radius
+    @State private var animatedScreenRadius: Float = 1010
 
     let SDL_EVENT_FINGER_DOWN: UInt32 = 0x700
     let SDL_EVENT_FINGER_UP: UInt32 = 0x701
@@ -40,7 +78,7 @@ struct SDL_CurvedContentView: View {
     private(set) static var last_fingerID: UInt64 = 0
     private(set) static var fingers: [SpatialEventCollection.Event.ID: UInt64] = [:]
 
-    private func sendTouchEvent(event: SpatialEventCollection.Event) {
+    private func sendTouchEvent(event: SpatialEventCollection.Event, proxy: GeometryProxy3D) {
         var fingerID: UInt64
         var eventType: UInt32
         if let value = Self.fingers[event.id] {
@@ -62,11 +100,20 @@ struct SDL_CurvedContentView: View {
         } else {
             return
         }
-        var location = event.location
-        location.x -= touchOffsetX
-        location.x *= touchScale.x
-        location.y *= touchScale.y
-        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, location.x, location.y)
+
+        let loc = Point3D(x: event.location3D.x - proxy.size.width / 2,
+                          y: event.location3D.y - proxy.size.height / 2,
+                          z: event.location3D.z - proxy.size.depth / 2)
+        let meshPos = SIMD3<Float>(Float(loc.x) * metersPerPoint,
+                                   Float(loc.y) * metersPerPoint,
+                                   Float(loc.z) * metersPerPoint)
+        let uv = helper.meshGeometry.normalizedUV(fromMeshPosition: meshPos)
+        
+        NSLog("[SDL_CurvedContentView] Received Touch at UV: \(uv)")
+
+        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType,
+                               CGFloat(uv.x) * proxy.size.width,
+                               CGFloat(uv.y) * proxy.size.height)
     }
 
     var body: some View {
@@ -82,56 +129,199 @@ struct SDL_CurvedContentView: View {
 
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
+            
+            // Compile curved UI shader (may take a while)
+            let material = try! await CurvedUIMaterial()
+            self.curvedUIMaterial = material
+            
+            // Create RealityKit Entity to host the curved UI content
+            let mesh = try! await MeshResource(from: helper.lowLevelMesh)
+            let entity = ModelEntity(mesh: mesh, materials: [material.shaderGraphMaterial])
+            
+            RenderRefreshSystem.registerSystem()
+            entity.components.set(RenderRefreshComponent())
 
+            // Add InputTargetComponent to the mesh to accept indirect input.
+            entity.components.set(InputTargetComponent(allowedInputTypes: .indirect))
+
+            self.curvedUIEntity = entity
+            content.add(entity)
+            
+            // Call the user-provided contentReady closure.
+            onContentReady()
         } update: { content in
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
 
             let frame = proxy.frame(in: .local)
-            helper.updateSize(width: Int(frame.size.width), height: Int(frame.size.height))
-
-            // The entity is created asynchronously by updateMeshSize.
-            // Each time the helper changes (@Observable), this update closure runs.
-            // Add the entity to content when it becomes available, or when it changes.
-            if let entity = helper.getCurvedEntity(), entity !== addedEntity {
-                addedEntity?.removeFromParent()
-                entity.position = SIMD3<Float>(0, 0, -0.2)
-                content.add(entity)
-                Task {
-                    addedEntity = entity
-                }
-                NSLog("SDL_CurvedContentView: Added entity at Z=-0.2, meshWidth=%.3f meshHeight=%.3f curvature=%.3f",
-                      helper.meshWidth, helper.meshHeight, helper.meshCurvature)
-            }
-
-            // Compensate for the curve in the touch event location
-            let meshSize = content.convert(
-                vector: [Float(helper.meshSize.width), 0.0, Float(helper.meshSize.depth)],
-                from: .scene, to: .local)
-            let offset = (frame.size.width - meshSize.x) / 2
-            let scale = CGPoint(x: 1 / meshSize.x, y: 1 / frame.size.height)
-
-            Task {
-                touchOffsetX = offset
-                touchScale = scale
-                frameDepth = meshSize.z
+            SDL_VisionOS_SendSizeChanged(Int(frame.size.width), Int(frame.size.height))
+        }
+        .overlay {
+            if settings.sceneState == .cinematic, settings.inputType == .pointer {
+                Color.white
+                    .opacity(0.001)
+                    .pointerStyle(.shape(Circle(), size: .zero))
             }
         }
-        .ignoresSafeArea()
-        .offset(z: -frameDepth)
         .gesture(
             SpatialEventGesture()
                 .onChanged { events in
+                    guard curvedUIMaterial != nil else { return }
+                    
+                    if settings.sceneState == .interactive {
+                        // Switch to cinematic mode on interacting with the view
+                        settings.sceneState = .cinematic
+                        return
+                    }
+                    
+                    curvedUIMaterial.isInteracting = true
+
                     for event in events {
-                        sendTouchEvent(event: event)
+                        switch settings.inputType {
+                        case .eyes:
+                            if event.kind == .indirectPinch {
+                                sendTouchEvent(event: event, proxy: proxy)
+                            }
+                        case .pointer:
+                            if event.kind == .indirectPinch {
+                                settings.sceneState = .interactive
+                                break
+                            }
+                            if event.kind == .pointer {
+                                sendTouchEvent(event: event, proxy: proxy)
+                            }
+                        }
                     }
                 }
-                .onEnded { events in
-                    for event in events {
-                        sendTouchEvent(event: event)
-                    }
+                .onEnded { _ in
+                    curvedUIMaterial?.isInteracting = false
                 }
         )
+        .onChange(of: sceneActivationOrObject(showCursor), initial: true) {
+            curvedUIMaterial?.showCursor = showCursor
+        }
+        .onChange(of: sceneActivationOrObject(cursorColor), initial: true) {
+            curvedUIMaterial?.cursorColor = cursorColor
+        }
+        .onChange(of: sceneActivationOrObject(cursorColorOnInteract), initial: true) {
+            curvedUIMaterial?.cursorColorOnInteract = cursorColorOnInteract
+        }
+        .onChange(of: sceneActivationOrObject(helper.meshGeometry), initial: true) {
+            guard curvedUIMaterial != nil else { return }
+            let geometry = helper.meshGeometry
+            curvedUIMaterial.cursorSize = geometry.width * 0.02
+            curvedUIMaterial.curveZOffset = geometry.zOffset ?? 0
+            curvedUIMaterial.curveRadius = geometry.curvatureRadius ?? 0
+            curvedUIMaterial.isFlat = geometry.curvatureRadius == nil
+        }
+        .onChange(of: sceneActivationOrObject(helper.textureResource), initial: true) {
+            if let textureResource = helper.textureResource {
+                curvedUIMaterial?.gameTexture = textureResource
+            }
+        }
+        .onChange(of: sceneActivationOrObject(curvedUIMaterial), initial: true) {
+            // Update the materials array of the entity with the updated material parameters.
+            if let curvedUIMaterial, let curvedUIEntity {
+                curvedUIEntity.model!.materials = [curvedUIMaterial.shaderGraphMaterial]
+            }
+        }
+        .onChange(of: settings.curvatureRadius) { oldRadius, curvatureRadius in
+            withAnimation(.smooth) {
+                if let curvatureRadius {
+                    animatedScreenRadius = curvatureRadius / 1000
+                } else {
+                    animatedScreenRadius = AnimatedCurveRadiusModifier.assumedFlatThreshold + 0.01
+                }
+            }
+        }
+        .modifier(AnimatedCurveRadiusModifier(helper: helper, curveRadius: animatedScreenRadius))
+        .onChange(of: sceneActivationOrObject(shouldPopulateCollisionShape ? helper.collisionShape : nil)) {
+            guard let curvedUIEntity else { return }
+            if let shape = helper.collisionShape, shouldPopulateCollisionShape {
+                curvedUIEntity.components.set(CollisionComponent(shapes: [shape]))
+            } else {
+                curvedUIEntity.components.set(CollisionComponent(shapes: []))
+            }
+        }
+        .preferredSurroundingsEffect(settings.isDimmed ? .dark : nil)
+        .frame(depth: 0)
+        .ignoresSafeArea()
+        .persistentSystemOverlays(settings.sceneState == .cinematic ? .hidden : .automatic)
         .handlesGameControllerEvents(matching: .gamepad)
+        .onKeyPress(.escape) {
+            if settings.sceneState == .cinematic {
+                settings.sceneState = .interactive
+                return .handled
+            }
+            return .ignored
+        }
+    }
+}
+
+// MARK: Animating the curve radius
+
+@Animatable
+private struct AnimatedCurveRadiusModifier: @MainActor ViewModifier {
+    /// Curvature radius beyond which we assume it is flat.
+    static let assumedFlatThreshold: Float = 30.0
+    
+    /// Helper object to modify
+    let helper: SDL_RealityKitHelper
+    
+    /// Curve radius > `assumedFlatThreshold` meters is assumed to be flat.
+    var curveRadius: Float
+    
+    func body(content: Content) -> some View {
+        content.onChange(of: curveRadius, initial: true) {
+            if curveRadius > 10 {
+                helper.updateMeshCurvature(curvatureRadius: nil)
+            } else {
+                helper.updateMeshCurvature(curvatureRadius: curveRadius)
+            }
+        }
+    }
+}
+
+// MARK: Bridging SwiftUI and RealityKit
+
+private extension SDL_CurvedContentView {
+    private struct Box<T: Equatable>: Equatable {
+        var sceneActivation: Bool
+        var value: T
+    }
+    
+    /// Convenience function which triggers an `onChange` event either when `object` changes, or when
+    /// ``curvedUIMaterial`` finishes compiling.
+    func sceneActivationOrObject<T: Equatable>(_ object: T) -> some Equatable {
+        return Box(sceneActivation: self.curvedUIMaterial != nil && self.curvedUIEntity != nil, value: object)
+    }
+}
+
+// MARK: Per-frame component refresh
+
+/// Attach this component to an entity to reset a RealityKit component every rendering frame.
+/// This can be used to disable system-default interpolation on any component that applies it.
+///
+/// Example — to reset a platform-specific component every frame:
+///     entity.components.set(RenderRefreshComponent(
+///         componentToRefresh: CustomComponent()
+///     ))
+private struct RenderRefreshComponent: TransientComponent {
+    var componentToRefresh: (any Component)?
+}
+
+private struct RenderRefreshSystem: System {
+    static let query = EntityQuery(where: .has(RenderRefreshComponent.self))
+    init(scene: RealityKit.Scene) {
+        RenderRefreshComponent.registerComponent()
+    }
+
+    func update(context: SceneUpdateContext) {
+        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
+            guard let refresh = entity.components[RenderRefreshComponent.self],
+                  let component = refresh.componentToRefresh else { continue }
+            entity.components.remove(type(of: component))
+            entity.components.set(component)
+        }
     }
 }
