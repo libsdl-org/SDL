@@ -47,6 +47,8 @@ static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice *device)
     if (!phdata->buffer[0] || !phdata->buffer[1])
     {
         SDL_Log("Error: Failed to allocate audio buffers");
+        SDL_free(phdata->buffer[0]);
+        SDL_free(phdata->buffer[1]);
         SDL_free(phdata);
         return false;
     }
