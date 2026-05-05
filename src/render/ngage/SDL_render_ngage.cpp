@@ -183,7 +183,7 @@ CRenderer::CRenderer() : iRenderer(0), iDirectScreen(0), iScreenGc(0), iWsSessio
 
 CRenderer::~CRenderer()
 {
-    SDL_RemoveHintCallback(SDL_HINT_RENDER_SHOW_FPS, NGAGE_ShowFPSChanged, this);
+    SDL_RemoveHintCallback(SDL_HINT_RENDER_NGAGE_SHOW_FPS, NGAGE_ShowFPSChanged, this);
 
     delete iRenderer;
     iRenderer = 0;
@@ -286,7 +286,7 @@ void CRenderer::ConstructL()
         iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
     }
 
-    SDL_AddHintCallback(SDL_HINT_RENDER_SHOW_FPS, NGAGE_ShowFPSChanged, this);
+    SDL_AddHintCallback(SDL_HINT_RENDER_NGAGE_SHOW_FPS, NGAGE_ShowFPSChanged, this);
 }
 
 void CRenderer::Restart(RDirectScreenAccess::TTerminationReasons aReason)
