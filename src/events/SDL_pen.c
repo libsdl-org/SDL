@@ -93,6 +93,33 @@ SDL_PenID SDL_FindPenByCallback(bool (*callback)(void *handle, void *userdata), 
     return result;
 }
 
+static void UpdateTouchEmulationDevicePresence(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    SDL_LockRWLockForReading(pen_device_rwlock);
+    bool has_pen = (pen_device_count != 0);
+    SDL_UnlockRWLock(pen_device_rwlock);
+
+    if (!mouse->pen_touch_events || !has_pen) {
+        if (mouse->added_pen_touch_device) {
+            SDL_DelTouch(SDL_PEN_TOUCHID);
+            mouse->added_pen_touch_device = false;
+        }
+    } else if (!mouse->added_pen_touch_device) {
+        SDL_AddTouch(SDL_PEN_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "pen_input");
+        mouse->added_pen_touch_device = true;
+    }
+}
+
+static void SDLCALL SDL_PenTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    mouse->pen_touch_events = SDL_GetStringBoolean(hint, true);
+
+    UpdateTouchEmulationDevicePresence();
+}
 
 
 // public API ...
@@ -106,11 +133,18 @@ bool SDL_InitPen(void)
     if (!pen_device_rwlock) {
         return false;
     }
+
+    SDL_AddHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
+                        SDL_PenTouchEventsChanged, NULL);
+
     return true;
 }
 
 void SDL_QuitPen(void)
 {
+    SDL_RemoveHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
+                           SDL_PenTouchEventsChanged, NULL);
+
     SDL_RemoveAllPenDevices(NULL, NULL);
     SDL_DestroyRWLock(pen_device_rwlock);
     pen_device_rwlock = NULL;
@@ -251,6 +285,8 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *windo
         SDL_free(namecpy);
     }
 
+    UpdateTouchEmulationDevicePresence();
+
     if (result && in_proximity) {
         SDL_SendPenProximity(timestamp, result, window, true, true);
     }
@@ -291,6 +327,8 @@ void SDL_RemovePenDevice(Uint64 timestamp, SDL_Window *window, SDL_PenID instanc
         }
     }
     SDL_UnlockRWLock(pen_device_rwlock);
+
+    UpdateTouchEmulationDevicePresence();
 }
 
 // This presumably is happening during video quit, so we don't send PROXIMITY_OUT events here.

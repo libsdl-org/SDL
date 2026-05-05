@@ -19,7 +19,11 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+#ifdef SDL_PLATFORM_DOS
+#define NUMTHREADS 3  /* DOS cooperative scheduler has limited thread slots */
+#else
 #define NUMTHREADS 10
+#endif
 
 static SDL_AtomicInt time_for_threads_to_die[NUMTHREADS];
 
@@ -63,7 +67,9 @@ ThreadFunc(void *data)
 
     SDL_Log("Thread '%d' waiting for signal", tid);
     while (SDL_GetAtomicInt(&time_for_threads_to_die[tid]) != 1) {
-        ; /* do nothing */
+#ifdef SDL_PLATFORM_DOS
+        SDL_Delay(0); /* Yield for cooperative threading */
+#endif
     }
 
     SDL_Log("Thread '%d' sending signals to subthreads", tid);

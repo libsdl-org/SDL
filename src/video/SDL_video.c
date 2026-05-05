@@ -149,6 +149,9 @@ static VideoBootStrap *bootstrap[] = {
     &DUMMY_evdev_bootstrap,
 #endif
 #endif
+#ifdef SDL_VIDEO_DRIVER_DOSVESA
+    &DOSVESA_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_OPENVR
     &OPENVR_bootstrap,
 #endif
@@ -1416,16 +1419,21 @@ bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, 
         if (closest) {
             float current_aspect_ratio = (float)mode->w / mode->h;
             float closest_aspect_ratio = (float)closest->w / closest->h;
-            if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) <= SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
-                // The mode we already found has a similar or better aspect ratio match
+            if (SDL_fabsf(aspect_ratio - closest_aspect_ratio) < SDL_fabsf(aspect_ratio - current_aspect_ratio)) {
+                // The mode we already found has a better aspect ratio match
                 continue;
             }
 
-            if (mode->w == closest->w && mode->h == closest->h &&
-                SDL_fabsf(closest->refresh_rate - refresh_rate) <= SDL_fabsf(mode->refresh_rate - refresh_rate)) {
-                /* We already found a mode and the new mode's refresh rate is the same or is further away from our
-                 * refresh rate target */
-                continue;
+            if (mode->w == closest->w && mode->h == closest->h) {
+                if (SDL_fabsf(closest->refresh_rate - refresh_rate) < SDL_fabsf(mode->refresh_rate - refresh_rate)) {
+                    /* We already found a mode and the new mode is further from our
+                     * refresh rate target */
+                    continue;
+                }
+                if (SDL_BYTESPERPIXEL(closest->format) >= SDL_BYTESPERPIXEL(mode->format)) {
+                    // Prefer the highest color depth
+                    continue;
+                }
             }
         }
 
@@ -2576,9 +2584,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     SDL_UpdateWindowHierarchy(window, parent);
 
     if (_this->CreateSDLWindow && !_this->CreateSDLWindow(_this, window, props)) {
-        PUSH_SDL_ERROR()
+        SDL_PushError();
         SDL_DestroyWindow(window);
-        POP_SDL_ERROR()
+        SDL_PopError();
         return NULL;
     }
 

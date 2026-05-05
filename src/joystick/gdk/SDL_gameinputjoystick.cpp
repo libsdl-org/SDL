@@ -487,7 +487,9 @@ static bool GAMEINPUT_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_i
         if (vendor_id == USB_VENDOR_MICROSOFT &&
             product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER) {
             // The Xbox One controller shows up as a hardcoded raw input VID/PID, which we definitely handle
-            return true;
+            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
+                return true;
+            }
         }
 
         for (int i = 0; i < g_GameInputList.count; ++i) {

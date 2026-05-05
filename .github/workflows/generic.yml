@@ -100,6 +100,10 @@ jobs:
         uses: ./.github/actions/setup-loongarch64-toolchain
         id: setup-loongarch64-toolchain
         if: ${{ matrix.platform.platform == 'loongarch64' }}
+      - name: 'Set up DJGPP toolchain'
+        uses: ./.github/actions/setup-djgpp-toolchain
+        id: setup-djgpp-toolchain
+        if: ${{ matrix.platform.platform == 'djgpp' }}
       - name: 'Setup Intel oneAPI toolchain'
         id: intel
         if: ${{ matrix.platform.intel }}

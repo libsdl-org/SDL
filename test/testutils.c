@@ -13,6 +13,55 @@
 
 #include "testutils.h"
 
+#ifdef SDL_PLATFORM_DOS
+static const struct
+{
+    const char *longname;
+    const char *shortname;
+} names83_map[] = {
+    { "unifont-15.1.05.hex", "UNIFONT.HEX" },
+    { "unifont-15.1.05-license.txt", "UNIFONTL.TXT" },
+    { "physaudiodev.png", "PHYSADEV.PNG" },
+    { "logaudiodev.png", "LOGADEV.PNG" },
+    { "audiofile.png", "AUDIOFIL.PNG" },
+    { "soundboard.png", "SNDBRD.PNG" },
+    { "soundboard_levels.png", "SNDLVL.PNG" },
+    { "trashcan.png", "TRASHCAN.PNG" },
+    { "msdf_font.png", "MSDFFONT.PNG" },
+    { "msdf_font.csv", "MSDFFONT.CSV" },
+    { "gamepad_front.png", "GP_FRONT.PNG" },
+    { "gamepad_back.png", "GP_BACK.PNG" },
+    { "gamepad_face_abxy.png", "GP_FABXY.PNG" },
+    { "gamepad_face_axby.png", "GP_FAXBY.PNG" },
+    { "gamepad_face_bayx.png", "GP_FBAYX.PNG" },
+    { "gamepad_face_sony.png", "GP_FSONY.PNG" },
+    { "gamepad_battery.png", "GP_BATT.PNG" },
+    { "gamepad_battery_unknown.png", "GP_BATTX.PNG" },
+    { "gamepad_battery_wired.png", "GP_BATTW.PNG" },
+    { "gamepad_touchpad.png", "GP_TOUCH.PNG" },
+    { "gamepad_button.png", "GP_BTN.PNG" },
+    { "gamepad_button_small.png", "GP_BTNSM.PNG" },
+    { "gamepad_button_background.png", "GP_BTNBG.PNG" },
+    { "gamepad_axis.png", "GP_AXIS.PNG" },
+    { "gamepad_axis_arrow.png", "GP_AXARW.PNG" },
+    { "gamepad_wired.png", "GP_WIRED.PNG" },
+    { "gamepad_wireless.png", "GP_WLESS.PNG" },
+    { "sdl-test_round.png", "SDLROUND.PNG" },
+    { NULL, NULL }
+};
+
+static const char *Map83Filename(const char *file)
+{
+    int i;
+    for (i = 0; names83_map[i].longname; i++) {
+        if (SDL_strcasecmp(file, names83_map[i].longname) == 0) {
+            return names83_map[i].shortname;
+        }
+    }
+    return file;
+}
+#endif
+
 /**
  * Return the absolute path to def in the SDL_GetBasePath() if possible, or
  * the relative path to def on platforms that don't have a working
@@ -23,6 +72,9 @@
 char *GetNearbyFilename(const char *file)
 {
     const char *base = SDL_GetBasePath();
+#ifdef SDL_PLATFORM_DOS
+    file = Map83Filename(file);
+#endif
     char *path;
 
     if (base) {
@@ -59,6 +111,9 @@ char *GetResourceFilename(const char *user_specified, const char *def)
     if (user_specified) {
         return SDL_strdup(user_specified);
     }
+#ifdef SDL_PLATFORM_DOS
+    def = Map83Filename(def);
+#endif
     return GetNearbyFilename(def);
 }
 

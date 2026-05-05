@@ -45,6 +45,9 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Is SurfaceView ready for rendering
     protected boolean mIsSurfaceReady;
 
+    // Is on-screen keyboard visible
+    protected boolean mKeyboardVisible;
+
     // Pinch events
     private final ScaleGestureDetector scaleGestureDetector;
 
@@ -210,9 +213,15 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             SDLActivity.onNativeInsetsChanged(combined.left, combined.right, combined.top, combined.bottom);
 
             if (insets.isVisible(WindowInsets.Type.ime())) {
-                SDLActivity.onNativeScreenKeyboardShown();
+                if (!mKeyboardVisible) {
+                    mKeyboardVisible = true;
+                    SDLActivity.onNativeScreenKeyboardShown();
+                }
             } else {
-                SDLActivity.onNativeScreenKeyboardHidden();
+                if (mKeyboardVisible) {
+                    mKeyboardVisible = false;
+                    SDLActivity.onNativeScreenKeyboardHidden();
+                }
             }
         }
 

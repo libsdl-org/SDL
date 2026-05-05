@@ -52,6 +52,8 @@
 #include <string.h>
 #include <wchar.h>
 
+#include <SDL3/SDL_begin_code.h>
+
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 typedef signed __int8 int8_t;
@@ -237,6 +239,8 @@ void *alloca(size_t);
        typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
 #endif
 
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * The number of elements in a static array.
  *
@@ -249,7 +253,15 @@ void *alloca(size_t);
  *
  * \since This macro is available since SDL 3.2.0.
  */
+#define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))  /* or `_Countof(array)` on recent gcc and clang */
+
+#else
+#if (defined(__GNUC__) && __GNUC__ >= 16) || SDL_HAS_EXTENSION(c_countof)
+#define SDL_arraysize(array) _Countof(array)
+#else
 #define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))
+#endif
+#endif
 
 /**
  * Macro useful for building other macros with strings in them.
@@ -1209,7 +1221,6 @@ SDL_COMPILE_TIME_ASSERT(enum, sizeof(SDL_DUMMY_ENUM) == sizeof(int));
 #endif /* DOXYGEN_SHOULD_IGNORE_THIS */
 /** \endcond */
 
-#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
