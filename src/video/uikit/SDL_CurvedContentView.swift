@@ -257,13 +257,6 @@ internal struct SDL_CurvedContentView: View {
         .ignoresSafeArea()
         .persistentSystemOverlays(settings.sceneState == .cinematic ? .hidden : .automatic)
         .handlesGameControllerEvents(matching: .gamepad)
-        .onKeyPress(.escape) {
-            if settings.sceneState == .cinematic {
-                settings.sceneState = .interactive
-                return .handled
-            }
-            return .ignored
-        }
     }
 }
 
