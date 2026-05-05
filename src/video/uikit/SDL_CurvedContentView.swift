@@ -111,9 +111,7 @@ internal struct SDL_CurvedContentView: View {
         
         NSLog("[SDL_CurvedContentView] Received Touch at UV: \(uv)")
 
-        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType,
-                               CGFloat(uv.x) * proxy.size.width,
-                               CGFloat(uv.y) * proxy.size.height)
+        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, CGFloat(uv.x), CGFloat(uv.y))
     }
 
     var body: some View {
@@ -183,27 +181,36 @@ internal struct SDL_CurvedContentView: View {
                         return
                     }
                     
-                    curvedUIMaterial.isInteracting = true
-
-                    for event in events {
-                        switch settings.inputType {
-                        case .eyes:
+                    if settings.inputType == .eyes {
+                        curvedUIMaterial.isInteracting = true
+                    }
+                    
+                    switch settings.inputType {
+                    case .eyes:
+                        for event in events {
                             if event.kind == .indirectPinch {
                                 sendTouchEvent(event: event, proxy: proxy)
                             }
-                        case .pointer:
+                        }
+                    case .pointer:
+                        for event in events {
                             if event.kind == .indirectPinch {
                                 settings.sceneState = .interactive
                                 break
                             }
-                            if event.kind == .pointer {
-                                sendTouchEvent(event: event, proxy: proxy)
-                            }
                         }
                     }
                 }
-                .onEnded { _ in
-                    curvedUIMaterial?.isInteracting = false
+                .onEnded { events in
+                    guard curvedUIMaterial != nil else { return }
+                    
+                    if settings.inputType == .eyes {
+                        for event in events {
+                            sendTouchEvent(event: event, proxy: proxy)
+                        }
+                    }
+                    
+                    curvedUIMaterial.isInteracting = false
                 }
         )
         .onChange(of: sceneActivationOrObject(showCursor), initial: true) {
