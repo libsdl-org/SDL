@@ -219,7 +219,7 @@ def Xform "Root"
                     }
                 }
             )
-            float3 inputs:CursorPositionWorldSpace.connect = </Root/CurvedUIMaterial/CursorPosition.outputs:out>
+            float3 inputs:CursorPositionWorldSpace.connect = </Root/CurvedUIMaterial/HideCursorIfInactive.outputs:out>
             float inputs:CurveRadius (
                 customData = {
                     dictionary realitykit = {
@@ -580,29 +580,35 @@ def Xform "Root"
             bool inputs:value2.connect = None
             float3 outputs:out
             float2 ui:nodegraph:node:pos = (-1473.7516, 345.9948)
-            int ui:nodegraph:node:stackingOrder = 2030
+            int ui:nodegraph:node:stackingOrder = 2121
         }
 
-        def Shader "CursorPosition"
+        def Shader "HoverState"
         {
-            uniform token info:id = "ND_constant_vector3"
-            float3 inputs:value = (999999, 999999, 999999)
+            uniform token info:id = "ND_realitykit_hover_state"
+            float outputs:intensity
+            bool outputs:isActive
+            float3 outputs:position
+            float outputs:timeSinceHoverStart
+            float2 ui:nodegraph:node:pos = (-2479.6738, 136.51248)
+            int ui:nodegraph:node:stackingOrder = 2142
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:position"]
+        }
+
+        def Shader "HideCursorIfInactive"
+        {
+            uniform token info:id = "ND_ifequal_vector3B"
+            float3 inputs:in1.connect = </Root/CurvedUIMaterial/HoverState.outputs:position>
+            float3 inputs:in2 = (999999, 999999, 999999)
+            bool inputs:value1.connect = </Root/CurvedUIMaterial/HoverState.outputs:isActive>
+            bool inputs:value2 = 1
+            bool inputs:value2.connect = None
             float3 outputs:out
-            float2 ui:nodegraph:node:pos = (-2152.7932, 119.71052)
-            int ui:nodegraph:node:stackingOrder = 2091
-        }
-
-        def Scope "Group3" (
-            kind = "group"
-        )
-        {
-            string ui:group:annotation = "Cursor Position (Placeholder)"
-            string ui:group:annotationDescription = "This node provides the cursor world-space position. Replace the input to this node with your preferred position source (e.g. Bluetooth mouse position, controller raycast hit, or platform hover state)."
-            string[] ui:group:members = ["p:CursorPosition"]
+            float2 ui:nodegraph:node:pos = (-2191.3027, 160.76704)
+            int ui:nodegraph:node:stackingOrder = 2138
         }
     }
 }
-
 
 """
 

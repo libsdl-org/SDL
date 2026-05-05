@@ -138,11 +138,20 @@ internal struct SDL_CurvedContentView: View {
             let mesh = try! await MeshResource(from: helper.lowLevelMesh)
             let entity = ModelEntity(mesh: mesh, materials: [material.shaderGraphMaterial])
             
-            RenderRefreshSystem.registerSystem()
-            entity.components.set(RenderRefreshComponent())
-
             // Add InputTargetComponent to the mesh to accept indirect input.
             entity.components.set(InputTargetComponent(allowedInputTypes: .indirect))
+
+            // Add HoverEffectComponent to visualize the gaze target
+            let shaderInputs = HoverEffectComponent.ShaderHoverEffectInputs.default
+            let hoverEffect = HoverEffectComponent.HoverEffect.shader(shaderInputs)
+            let hoverEffectComponent = HoverEffectComponent(hoverEffect)
+            entity.components.set(hoverEffectComponent)
+
+            // Increase the responsiveness of the hover effect
+            RenderRefreshSystem.registerSystem()
+            entity.components.set(RenderRefreshComponent(
+                componentToRefresh: hoverEffectComponent
+            ))
 
             self.curvedUIEntity = entity
             content.add(entity)
