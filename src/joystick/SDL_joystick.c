@@ -106,6 +106,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_N3DS
     &SDL_N3DS_JoystickDriver,
 #endif
+#ifdef SDL_JOYSTICK_DOS
+    &SDL_DOS_JoystickDriver,
+#endif
 #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
     &SDL_DUMMY_JoystickDriver
 #endif
@@ -448,6 +451,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only)
     MAKE_VIDPID(0x31e3, 0x1310), // Wooting 60HE (ARM)
     MAKE_VIDPID(0x3297, 0x1969), // Moonlander MK1 Keyboard
+    MAKE_VIDPID(0x3434, 0x0121), // Keychron Q3 System Control
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
     MAKE_VIDPID(0x3434, 0x0353), // Keychron V5 System Control
     MAKE_VIDPID(0x3434, 0xd030), // Keychron Link

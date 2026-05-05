@@ -58,6 +58,7 @@ class SdlPlatform(Enum):
     NetBSD = "netbsd"
     OpenBSD = "openbsd"
     NGage = "ngage"
+    DJGPP = "djgpp"
 
 
 class Msys2Platform(Enum):
@@ -149,6 +150,7 @@ JOB_SPECS = {
     "openbsd": JobSpec(name="OpenBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.OpenBSD,     artifact="SDL-openbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
+    "djgpp": JobSpec(name="DOS (DJGPP)",                                    os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
 }
 
 
@@ -821,6 +823,20 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.setup_gage_sdk_path = "C:/ngagesdk"
             job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
             job.test_pkg_config = False
+        case SdlPlatform.DJGPP:
+            build_parallel = False
+            job.ccache = True
+            job.apt_packages = ["ccache", "libfl-dev"]  # djgpp needs libfl.so.2
+            job.cmake_build_type = "Release"
+            job.setup_ninja = True
+            job.static_lib = StaticLibType.A
+            job.shared_lib = None
+            job.clang_tidy = False
+            job.werror = False  # FIXME: enable SDL_WERROR
+            job.shared = False
+            job.run_tests = False
+            job.test_pkg_config = False
+            job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 

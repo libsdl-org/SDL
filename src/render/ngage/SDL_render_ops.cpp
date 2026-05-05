@@ -64,6 +64,36 @@ void ApplyColorMod(void *dest, void *source, int pitch, int width, int height, S
     }
 }
 
+void BlitWithAlphaKey(CFbsBitmap *dst, int dst_x, int dst_y, const void *src, int src_width, int src_height, int src_stride_u16)
+{
+    // Write only non-transparent (alpha != 0) source pixels into the destination bitmap.
+    // Pixels with alpha nibble == 0 are treated as color-key (transparent) and skipped.
+    TUint16 *dst_data = static_cast<TUint16 *>(static_cast<void *>(dst->DataAddress()));
+    const TUint16 *src_pixels = static_cast<const TUint16 *>(src);
+    TSize dst_size = dst->SizeInPixels();
+    int dst_stride_u16 = CFbsBitmap::ScanLineLength(dst_size.iWidth, EColor4K) / 2;
+
+    for (int y = 0; y < src_height; ++y) {
+        int dy = dst_y + y;
+        if (dy < 0 || dy >= dst_size.iHeight) {
+            continue;
+        }
+        const TUint16 *src_row = src_pixels + y * src_stride_u16;
+        TUint16 *dst_row = dst_data + dy * dst_stride_u16;
+        for (int x = 0; x < src_width; ++x) {
+            int dx = dst_x + x;
+            if (dx < 0 || dx >= dst_size.iWidth) {
+                continue;
+            }
+            TUint16 p = src_row[x];
+            if (p & 0xF000) {
+                // Strip the alpha nibble and write the RGB444 pixel.
+                dst_row[dx] = p & 0x0FFF;
+            }
+        }
+    }
+}
+
 void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_FlipMode flip)
 {
     TUint16 *src_pixels = static_cast<TUint16 *>(source);
@@ -87,12 +117,19 @@ void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_F
 
     // Fast path: horizontal flip only.
     if (flip == SDL_FLIP_HORIZONTAL) {
+        int width_minus_1 = width - 1;
         for (int y = 0; y < height; ++y) {
-            int dst_row_offset = y * pitch_offset;
-            int src_row_offset = y * pitch_offset;
-            int width_minus_1 = width - 1;
-            for (int x = 0; x < width; ++x) {
-                dst_pixels[dst_row_offset + x] = src_pixels[src_row_offset + (width_minus_1 - x)];
+            int row_offset = y * pitch_offset;
+            if (dest == source) {
+                for (int x = 0; x < width / 2; ++x) {
+                    TUint16 tmp = src_pixels[row_offset + x];
+                    src_pixels[row_offset + x] = src_pixels[row_offset + (width_minus_1 - x)];
+                    src_pixels[row_offset + (width_minus_1 - x)] = tmp;
+                }
+            } else {
+                for (int x = 0; x < width; ++x) {
+                    dst_pixels[row_offset + x] = src_pixels[row_offset + (width_minus_1 - x)];
+                }
             }
         }
         return;
@@ -114,11 +151,25 @@ void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_F
     // Both horizontal and vertical flip
     int width_minus_1 = width - 1;
     int height_minus_1 = height - 1;
-    for (int y = 0; y < height; ++y) {
-        int dst_row_offset = y * pitch_offset;
-        int src_row_offset = (height_minus_1 - y) * pitch_offset;
-        for (int x = 0; x < width; ++x) {
-            dst_pixels[dst_row_offset + x] = src_pixels[src_row_offset + (width_minus_1 - x)];
+    if (dest == source) {
+        // Swap pixels across the center point.
+        for (int y = 0; y < (height + 1) / 2; ++y) {
+            int top_offset = y * pitch_offset;
+            int bot_offset = (height_minus_1 - y) * pitch_offset;
+            int x_limit = (y == height_minus_1 - y) ? width / 2 : width;
+            for (int x = 0; x < x_limit; ++x) {
+                TUint16 tmp = src_pixels[top_offset + x];
+                src_pixels[top_offset + x] = src_pixels[bot_offset + (width_minus_1 - x)];
+                src_pixels[bot_offset + (width_minus_1 - x)] = tmp;
+            }
+        }
+    } else {
+        for (int y = 0; y < height; ++y) {
+            int dst_row_offset = y * pitch_offset;
+            int src_row_offset = (height_minus_1 - y) * pitch_offset;
+            for (int x = 0; x < width; ++x) {
+                dst_pixels[dst_row_offset + x] = src_pixels[src_row_offset + (width_minus_1 - x)];
+            }
         }
     }
 }

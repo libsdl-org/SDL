@@ -406,7 +406,6 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         NSString *category = AVAudioSessionCategoryPlayback;
         NSString *mode = AVAudioSessionModeDefault;
@@ -502,39 +501,6 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
             [session setActive:NO error:nil];
             session_active = false;
         }
-
-        if (open) {
-            SDLInterruptionListener *listener = [SDLInterruptionListener new];
-            listener.device = device;
-
-            [center addObserver:listener
-                       selector:@selector(audioSessionInterruption:)
-                           name:AVAudioSessionInterruptionNotification
-                         object:session];
-
-            /* An interruption end notification is not guaranteed to be sent if
-             we were previously interrupted... resuming if needed when the app
-             becomes active seems to be the way to go. */
-            // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationDidBecomeActiveNotification
-                         object:nil];
-
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationWillEnterForegroundNotification
-                         object:nil];
-
-            device->hidden->interruption_listener = CFBridgingRetain(listener);
-        } else {
-            SDLInterruptionListener *listener = nil;
-            listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
-            [center removeObserver:listener];
-            @synchronized(listener) {
-                listener.device = NULL;
-            }
-        }
     }
 
     return true;
@@ -626,6 +592,17 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
     if (!device->hidden) {
         return;
     }
+
+    #ifndef MACOSX_COREAUDIO
+    if (device->hidden->interruption_listener) {
+        SDLInterruptionListener *listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
+        device->hidden->interruption_listener = nil;
+        [[NSNotificationCenter defaultCenter] removeObserver:listener];
+        @synchronized(listener) {
+            listener.device = NULL;
+        }
+    }
+    #endif
 
     // dispose of the audio queue before waiting on the thread, or it might stall for a long time!
     if (device->hidden->audioQueue) {
@@ -997,6 +974,33 @@ static bool COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->thread = NULL;
         return SDL_SetError("%s", device->hidden->thread_error);
     }
+
+#ifndef MACOSX_COREAUDIO
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    SDLInterruptionListener *listener = [SDLInterruptionListener new];
+    listener.device = device;
+
+    [center addObserver:listener
+               selector:@selector(audioSessionInterruption:)
+                   name:AVAudioSessionInterruptionNotification
+                 object:[AVAudioSession sharedInstance]];
+
+    /* An interruption end notification is not guaranteed to be sent if
+       we were previously interrupted... resuming if needed when the app
+       becomes active seems to be the way to go. */
+    // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
+    [center addObserver:listener
+               selector:@selector(applicationBecameActive:)
+                   name:UIApplicationDidBecomeActiveNotification
+                 object:nil];
+
+    [center addObserver:listener
+               selector:@selector(applicationBecameActive:)
+                   name:UIApplicationWillEnterForegroundNotification
+                 object:nil];
+
+    device->hidden->interruption_listener = CFBridgingRetain(listener);
+#endif
 
     return (device->hidden->thread != NULL);
 }

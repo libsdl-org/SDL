@@ -34,6 +34,7 @@
 #include "SDL_triangle.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_rotate.h"
+#include "../../video/SDL_sysvideo.h"
 
 // SDL surface based renderer implementation
 
@@ -54,12 +55,13 @@ typedef struct
 static SDL_Surface *SW_ActivateRenderer(SDL_Renderer *renderer)
 {
     SW_RenderData *data = (SW_RenderData *)renderer->internal;
+    SDL_Window *window = renderer->window;
 
     if (!data->surface) {
         data->surface = data->window;
     }
-    if (!data->surface) {
-        SDL_Surface *surface = SDL_GetWindowSurface(renderer->window);
+    if (window && (!data->surface || !window->surface_valid)) {
+        SDL_Surface *surface = SDL_GetWindowSurface(window);
         if (surface) {
             data->surface = data->window = surface;
         }

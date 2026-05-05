@@ -3551,6 +3551,8 @@ static void METAL_INTERNAL_PerformPendingDestroys(
     Sint32 i;
     Uint32 j;
 
+    SDL_LockMutex(renderer->disposeLock);
+
     for (i = renderer->bufferContainersToDestroyCount - 1; i >= 0; i -= 1) {
         referenceCount = 0;
         for (j = 0; j < renderer->bufferContainersToDestroy[i]->bufferCount; j += 1) {
@@ -3580,6 +3582,8 @@ static void METAL_INTERNAL_PerformPendingDestroys(
             renderer->textureContainersToDestroyCount -= 1;
         }
     }
+
+    SDL_UnlockMutex(renderer->disposeLock);
 }
 
 // Fences

@@ -75,6 +75,10 @@ void NGAGE_DestroyTextureData(NGAGE_TextureData *data)
             delete data->device;
             data->device = NULL;
         }
+        if (data->mask_bitmap) {
+            delete data->mask_bitmap;
+            data->mask_bitmap = NULL;
+        }
         delete data->bitmap;
         data->bitmap = NULL;
     }
@@ -86,6 +90,14 @@ void *NGAGE_GetBitmapDataAddress(NGAGE_TextureData *data)
         return NULL;
     }
     return data->bitmap->DataAddress();
+}
+
+int NGAGE_GetBitmapScanLineLength(NGAGE_TextureData *data)
+{
+    if (!data || !data->bitmap) {
+        return 0;
+    }
+    return (int)CFbsBitmap::ScanLineLength(data->bitmap->SizeInPixels().iWidth, EColor4K);
 }
 
 void NGAGE_DrawLines(NGAGE_Vertex *verts, const int count)
@@ -150,7 +162,7 @@ CRenderer *CRenderer::NewL()
     return self;
 }
 
-CRenderer::CRenderer() : iRenderer(0), iDirectScreen(0), iScreenGc(0), iWsSession(), iWsWindowGroup(), iWsWindowGroupID(0), iWsWindow(), iWsScreen(0), iWsEventStatus(), iWsEvent(), iShowFPS(EFalse), iFPS(0), iFont(0), iCurrentRenderTarget(0), iPixelBufferA(0), iPixelBufferB(0), iPixelBufferSize(0), iPointsBuffer(0), iPointsBufferSize(0) {}
+CRenderer::CRenderer() : iRenderer(0), iDirectScreen(0), iScreenGc(0), iWsSession(), iWsWindowGroup(), iWsWindowGroupID(0), iWsWindow(), iWsScreen(0), iWsEventStatus(), iWsEvent(), iShowFPS(EFalse), iFPS(0), iFont(0), iCurrentRenderTarget(0), iPixelBufferA(0), iPixelBufferB(0), iPixelBufferSize(0), iScratchBitmap(0), iMaskBitmap(0), iPointsBuffer(0), iPointsBufferSize(0) {}
 
 CRenderer::~CRenderer()
 {
@@ -159,6 +171,10 @@ CRenderer::~CRenderer()
 
     SDL_free(iPixelBufferA);
     SDL_free(iPixelBufferB);
+    delete iScratchBitmap;
+    iScratchBitmap = 0;
+    delete iMaskBitmap;
+    iMaskBitmap = 0;
     delete[] iPointsBuffer;
 }
 
@@ -326,18 +342,55 @@ bool CRenderer::Copy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rec
     }
 
     SDL_FColor *c = &texture->color;
-    int w = texture->w;
-    int h = texture->h;
     const int bytes_per_pixel = 2;
-    int pitch = w * bytes_per_pixel;
-    void *source = phdata->bitmap->DataAddress();
-    void *dest;
 
-    if (!source) {
+    int sw = srcrect->w;
+    int sh = srcrect->h;
+
+    // Fast path: render target texture with no color mod.
+    // BitBlt directly from its bitmap — DataAddress() is unreliable
+    // for bitmaps that have been drawn into via a CFbsBitGc.
+    bool no_color_mod = (c->a == 1.f && c->r == 1.f && c->g == 1.f && c->b == 1.f);
+    float sx, sy;
+    SDL_GetRenderScale(renderer, &sx, &sy);
+    bool no_scale = (sx == 1.f && sy == 1.f);
+
+    SDL_BlendMode blend;
+    SDL_GetTextureBlendMode(texture, &blend);
+    bool no_color_key = (blend != SDL_BLENDMODE_BLEND);
+
+    if (phdata->gc && no_color_mod && no_scale && no_color_key) {
+        CFbsBitGc *gc = GetCurrentGc();
+        if (gc) {
+            TRect aSource(TPoint(srcrect->x, srcrect->y), TSize(sw, sh));
+            TPoint aDest(dstrect->x, dstrect->y);
+            gc->BitBlt(aDest, phdata->bitmap, aSource);
+        }
+        return true;
+    }
+
+    // Fast path: color-key with no color mod and no scale.
+    // Blit directly from the source bitmap into the destination, skipping transparent pixels.
+    if (no_color_mod && no_scale && !no_color_key && phdata->has_color_key) {
+        void *tex_data_ck = phdata->bitmap->DataAddress();
+        CFbsBitmap *dst_bmp = GetCurrentBitmap();
+        if (dst_bmp && tex_data_ck) {
+            int tex_stride_ck = CFbsBitmap::ScanLineLength(phdata->bitmap->SizeInPixels().iWidth, EColor4K) / 2;
+            TUint16 *src_base = static_cast<TUint16 *>(tex_data_ck) + srcrect->y * tex_stride_ck + srcrect->x;
+            BlitWithAlphaKey(dst_bmp, dstrect->x, dstrect->y, src_base, sw, sh, tex_stride_ck);
+        }
+        return true;
+    }
+
+    int src_pitch = sw * bytes_per_pixel;
+    int tex_pitch = CFbsBitmap::ScanLineLength(texture->w, EColor4K);
+
+    void *tex_data = phdata->bitmap->DataAddress();
+    if (!tex_data) {
         return false;
     }
 
-    TInt required_size = pitch * h;
+    TInt required_size = src_pitch * sh;
     if (required_size > iPixelBufferSize) {
         void *new_buffer_a = SDL_realloc(iPixelBufferA, required_size);
         if (!new_buffer_a) {
@@ -354,39 +407,82 @@ bool CRenderer::Copy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rec
         iPixelBufferSize = required_size;
     }
 
-    dest = iPixelBufferA;
-
-    if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f) {
-        ApplyColorMod(dest, source, pitch, w, h, texture->color);
-
-        source = dest;
+    // Ensure scratch bitmap is allocated and large enough.
+    if (!iScratchBitmap) {
+        iScratchBitmap = new CFbsBitmap();
+        if (!iScratchBitmap) {
+            return false;
+        }
+    }
+    TSize scratch_size = iScratchBitmap->SizeInPixels();
+    if (scratch_size.iWidth < sw || scratch_size.iHeight < sh) {
+        iScratchBitmap->Reset();
+        TInt err = iScratchBitmap->Create(TSize(sw, sh), EColor4K);
+        if (err != KErrNone) {
+            return false;
+        }
     }
 
-    float sx;
-    float sy;
-    SDL_GetRenderScale(renderer, &sx, &sy);
+    // Extract the srcrect region from the texture into buffer A.
+    {
+        TUint16 *tex_pixels = (TUint16 *)tex_data;
+        TUint16 *buf_pixels = (TUint16 *)iPixelBufferA;
+        int tex_pitch_u16 = tex_pitch / 2;
+        for (int y = 0; y < sh; ++y) {
+            TUint16 *src_row = tex_pixels + (srcrect->y + y) * tex_pitch_u16 + srcrect->x;
+            TUint16 *dst_row = buf_pixels + y * sw;
+            Mem::Copy(dst_row, src_row, src_pitch);
+        }
+    }
 
-    if (sx != 1.f || sy != 1.f) {
+    void *source = iPixelBufferA;
+    void *dest = iPixelBufferB;
+
+    if (!no_color_mod) {
+        ApplyColorMod(dest, source, src_pitch, sw, sh, texture->color);
+        void *tmp = source;
+        source = dest;
+        dest = tmp;
+    }
+
+    if (!no_scale) {
         TFixed scale_x = Real2Fix(sx);
         TFixed scale_y = Real2Fix(sy);
-        TFixed center_x = Int2Fix(w / 2);
-        TFixed center_y = Int2Fix(h / 2);
-
-        dest == iPixelBufferA ? dest = iPixelBufferB : dest = iPixelBufferA;
-
-        ApplyScale(dest, source, pitch, w, h, center_x, center_y, scale_x, scale_y);
-
+        TFixed center_x = Int2Fix(sw / 2);
+        TFixed center_y = Int2Fix(sh / 2);
+        ApplyScale(dest, source, src_pitch, sw, sh, center_x, center_y, scale_x, scale_y);
+        void *tmp = source;
         source = dest;
+        dest = tmp;
     }
 
-    Mem::Copy(phdata->bitmap->DataAddress(), source, pitch * h);
+    // Copy result into scratch bitmap and blit from there.
+    // The source texture is never modified.
+    {
+        TUint16 *scratch_pixels = (TUint16 *)iScratchBitmap->DataAddress();
+        TUint16 *res_pixels = (TUint16 *)source;
+        int scratch_pitch_u16 = CFbsBitmap::ScanLineLength(iScratchBitmap->SizeInPixels().iWidth, EColor4K) / 2;
 
-    if (phdata->bitmap) {
+        // Always copy all pixels into the scratch bitmap.
+        for (int y = 0; y < sh; ++y) {
+            TUint16 *dst_row = scratch_pixels + y * scratch_pitch_u16;
+            TUint16 *src_row = res_pixels + y * sw;
+            Mem::Copy(dst_row, src_row, src_pitch);
+        }
+
         CFbsBitGc *gc = GetCurrentGc();
         if (gc) {
-            TRect aSource(TPoint(srcrect->x, srcrect->y), TSize(srcrect->w, srcrect->h));
+            TRect aSource(TPoint(0, 0), TSize(sw, sh));
             TPoint aDest(dstrect->x, dstrect->y);
-            gc->BitBlt(aDest, phdata->bitmap, aSource);
+
+            if (!no_color_key && phdata->has_color_key) {
+                CFbsBitmap *dst_bmp = GetCurrentBitmap();
+                if (dst_bmp) {
+                    BlitWithAlphaKey(dst_bmp, dstrect->x, dstrect->y, res_pixels, sw, sh, sw);
+                }
+            } else {
+                gc->BitBlt(aDest, iScratchBitmap, aSource);
+            }
         }
     }
 
@@ -401,18 +497,19 @@ bool CRenderer::CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const NGAGE
     }
 
     SDL_FColor *c = &texture->color;
-    int w = texture->w;
-    int h = texture->h;
     const int bytes_per_pixel = 2;
-    int pitch = w * bytes_per_pixel;
-    void *source = phdata->bitmap->DataAddress();
-    void *dest;
 
-    if (!source) {
+    int sw = copydata->srcrect.w;
+    int sh = copydata->srcrect.h;
+    int src_pitch = sw * bytes_per_pixel;
+    int tex_pitch = CFbsBitmap::ScanLineLength(texture->w, EColor4K);
+
+    void *tex_data = phdata->bitmap->DataAddress();
+    if (!tex_data) {
         return false;
     }
 
-    TInt required_size = pitch * h;
+    TInt required_size = src_pitch * sh;
     if (required_size > iPixelBufferSize) {
         void *new_buffer_a = SDL_realloc(iPixelBufferA, required_size);
         if (!new_buffer_a) {
@@ -429,39 +526,96 @@ bool CRenderer::CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const NGAGE
         iPixelBufferSize = required_size;
     }
 
-    dest = iPixelBufferA;
+    // Ensure scratch bitmap is allocated and large enough for the srcrect.
+    if (!iScratchBitmap) {
+        iScratchBitmap = new CFbsBitmap();
+        if (!iScratchBitmap) {
+            return false;
+        }
+    }
+    TSize scratch_size = iScratchBitmap->SizeInPixels();
+    if (scratch_size.iWidth < sw || scratch_size.iHeight < sh) {
+        iScratchBitmap->Reset();
+        TInt err = iScratchBitmap->Create(TSize(sw, sh), EColor4K);
+        if (err != KErrNone) {
+            return false;
+        }
+    }
+
+    // Extract the srcrect region from the texture into buffer A.
+    {
+        TUint16 *tex_pixels = (TUint16 *)tex_data;
+        TUint16 *buf_pixels = (TUint16 *)iPixelBufferA;
+        int tex_pitch_u16 = tex_pitch / 2;
+        for (int y = 0; y < sh; ++y) {
+            TUint16 *src_row = tex_pixels + (copydata->srcrect.y + y) * tex_pitch_u16 + copydata->srcrect.x;
+            TUint16 *dst_row = buf_pixels + y * sw;
+            Mem::Copy(dst_row, src_row, src_pitch);
+        }
+    }
+
+    void *source = iPixelBufferA;
+    void *dest = iPixelBufferB;
 
     if (copydata->flip) {
-        ApplyFlip(dest, source, pitch, w, h, copydata->flip);
+        ApplyFlip(dest, source, src_pitch, sw, sh, copydata->flip);
+        void *tmp = source;
         source = dest;
+        dest = tmp;
     }
 
     if (copydata->scale_x != 1.f || copydata->scale_y != 1.f) {
-        dest == iPixelBufferA ? dest = iPixelBufferB : dest = iPixelBufferA;
-        ApplyScale(dest, source, pitch, w, h, copydata->center.x, copydata->center.y, copydata->scale_x, copydata->scale_y);
+        ApplyScale(dest, source, src_pitch, sw, sh, copydata->center.x, copydata->center.y, copydata->scale_x, copydata->scale_y);
+        void *tmp = source;
         source = dest;
+        dest = tmp;
     }
 
     if (copydata->angle) {
-        dest == iPixelBufferA ? dest = iPixelBufferB : dest = iPixelBufferA;
-        ApplyRotation(dest, source, pitch, w, h, copydata->center.x, copydata->center.y, copydata->angle);
+        ApplyRotation(dest, source, src_pitch, sw, sh, copydata->center.x, copydata->center.y, copydata->angle);
+        void *tmp = source;
         source = dest;
+        dest = tmp;
     }
 
     if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f) {
-        dest == iPixelBufferA ? dest = iPixelBufferB : dest = iPixelBufferA;
-        ApplyColorMod(dest, source, pitch, w, h, texture->color);
+        ApplyColorMod(dest, source, src_pitch, sw, sh, texture->color);
+        void *tmp = source;
         source = dest;
+        dest = tmp;
     }
 
-    Mem::Copy(phdata->bitmap->DataAddress(), source, pitch * h);
+    // Copy the final result into the scratch bitmap and blit from there.
+    // The source texture is never modified.
+    {
+        SDL_BlendMode blend;
+        SDL_GetTextureBlendMode(texture, &blend);
+        bool has_color_key = (blend == SDL_BLENDMODE_BLEND);
 
-    if (phdata->bitmap) {
+        TUint16 *scratch_pixels = (TUint16 *)iScratchBitmap->DataAddress();
+        TUint16 *res_pixels = (TUint16 *)source;
+        int scratch_pitch_u16 = CFbsBitmap::ScanLineLength(iScratchBitmap->SizeInPixels().iWidth, EColor4K) / 2;
+
+        // Always copy all pixels into the scratch bitmap.
+        for (int y = 0; y < sh; ++y) {
+            TUint16 *dst_row = scratch_pixels + y * scratch_pitch_u16;
+            TUint16 *src_row = res_pixels + y * sw;
+            Mem::Copy(dst_row, src_row, src_pitch);
+        }
+
         CFbsBitGc *gc = GetCurrentGc();
         if (gc) {
-            TRect aSource(TPoint(copydata->srcrect.x, copydata->srcrect.y), TSize(copydata->srcrect.w, copydata->srcrect.h));
+            TRect aSource(TPoint(0, 0), TSize(sw, sh));
             TPoint aDest(copydata->dstrect.x, copydata->dstrect.y);
-            gc->BitBlt(aDest, phdata->bitmap, aSource);
+
+            if (has_color_key && phdata->has_color_key) {
+                CFbsBitmap *dst_bmp = GetCurrentBitmap();
+                if (dst_bmp) {
+                    BlitWithAlphaKey(dst_bmp, copydata->dstrect.x, copydata->dstrect.y, res_pixels, sw, sh, sw);
+                }
+            } else {
+                gc->BitBlt(aDest, iScratchBitmap, aSource);
+            }
         }
     }
 
@@ -682,6 +836,14 @@ CFbsBitGc *CRenderer::GetCurrentGc()
         return iCurrentRenderTarget->gc;
     }
     return iRenderer ? iRenderer->Gc() : NULL;
+}
+
+CFbsBitmap *CRenderer::GetCurrentBitmap()
+{
+    if (iCurrentRenderTarget && iCurrentRenderTarget->bitmap) {
+        return iCurrentRenderTarget->bitmap;
+    }
+    return iRenderer ? iRenderer->Bitmap() : NULL;
 }
 
 static SDL_Scancode ConvertScancode(int key)

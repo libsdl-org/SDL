@@ -23,8 +23,10 @@
 #define ngage_video_render_ops_hpp
 
 #include <3dtypes.h>
+#include <fbs.h>
 
 void ApplyColorMod(void *dest, void *source, int pitch, int width, int height, SDL_FColor color);
+void BlitWithAlphaKey(CFbsBitmap *dst, int dst_x, int dst_y, const void *src, int src_width, int src_height, int src_stride_u16);
 void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_FlipMode flip);
 void ApplyRotation(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle);
 void ApplyScale(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y);

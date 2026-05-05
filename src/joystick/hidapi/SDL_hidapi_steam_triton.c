@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2023 Max Maisel <max.maisel@posteo.de>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,7 +84,7 @@ typedef enum
 	STEAM_BUTTON_LEFTPAD_CLICKED_MASK,  // Left Pressure Click  0x04000000
 	STEAM_LEFT_TRIGGER_MASK,            // Left Trigger Click   0x08000000
     STEAM_RIGHT_AUX_MASK,               // Right Pinky Touch   0x10000000
-	STEAM_LEFT_AUX_MASK,                // Left Pinky Touch    0x20000000 
+	STEAM_LEFT_AUX_MASK,                // Left Pinky Touch    0x20000000
     */
 } TritonButtons;
 

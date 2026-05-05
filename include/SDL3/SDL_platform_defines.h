@@ -484,6 +484,16 @@
 #define SDL_PLATFORM_NGAGE 1
 #endif
 
+#ifdef __MSDOS__
+
+/**
+ * A preprocessor macro that is only defined if compiling for MS-DOS.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PLATFORM_DOS 1
+#endif
+
 #ifdef __GNU__
 
 /**

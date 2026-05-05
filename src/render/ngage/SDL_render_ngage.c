@@ -116,6 +116,7 @@ static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->npot_texture_wrap_unsupported = true;
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB4444);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB4444);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
     SDL_SetHintWithPriority(SDL_HINT_RENDER_LINE_METHOD, "2", SDL_HINT_OVERRIDE);
 
@@ -161,6 +162,12 @@ static bool NGAGE_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
 
     texture->internal = data;
+
+    // ARGB4444 textures are color-keyed: alpha=0 pixels are transparent.
+    if (texture->format == SDL_PIXELFORMAT_ARGB4444) {
+        data->has_color_key = true;
+        data->mask_dirty = true;
+    }
 
     return true;
 }
@@ -454,7 +461,7 @@ static bool NGAGE_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
     }
 
     const int bytes_per_pixel = 2;
-    const int bitmap_pitch = texture->w * bytes_per_pixel;
+    const int bitmap_pitch = NGAGE_GetBitmapScanLineLength(phdata);
 
     const Uint8 *src = (const Uint8 *)pixels;
     dst += rect->y * bitmap_pitch + rect->x * bytes_per_pixel;
@@ -465,6 +472,8 @@ static bool NGAGE_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
         src += pitch;
         dst += bitmap_pitch;
     }
+
+    phdata->mask_dirty = true;
 
     return true;
 }
@@ -483,7 +492,7 @@ static bool NGAGE_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
     }
 
     const int bytes_per_pixel = 2;
-    const int bitmap_pitch = texture->w * bytes_per_pixel;
+    const int bitmap_pitch = NGAGE_GetBitmapScanLineLength(phdata);
 
     *pixels = (void *)(data + rect->y * bitmap_pitch + rect->x * bytes_per_pixel);
     *pitch = bitmap_pitch;
@@ -492,6 +501,10 @@ static bool NGAGE_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
 
 static void NGAGE_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+    NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
+    if (phdata) {
+        phdata->mask_dirty = true;
+    }
 }
 
 static bool NGAGE_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)

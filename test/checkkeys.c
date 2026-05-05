@@ -434,7 +434,7 @@ static void loop(void)
     }
 
     /* Slow down framerate */
-    SDL_Delay(100);
+    SDL_Delay(10);
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {

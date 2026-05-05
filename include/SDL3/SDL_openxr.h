@@ -19,14 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: OpenXR */
+
 /**
  * # CategoryOpenXR
  *
- * Functions for creating OpenXR handles for SDL_gpu contexts.
+ * Functions for creating OpenXR handles for [GPU API](CategoryGPU) contexts.
  *
- * For the most part, OpenXR operates independent of SDL, but 
- * the graphics initialization depends on direct support from SDL_gpu.
- *
+ * For the most part, OpenXR operates independent of SDL, but the graphics
+ * initialization depends on direct support from the GPU API.
  */
 
 #ifndef SDL_openxr_h_
@@ -40,6 +41,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 
 #if defined(OPENXR_H_)
 #define NO_SDL_OPENXR_TYPEDEFS 1
@@ -78,6 +81,9 @@ typedef enum XrResult {
 
 #define PFN_xrGetInstanceProcAddr SDL_FunctionPointer
 #endif /* NO_SDL_OPENXR_TYPEDEFS */
+
+#endif /* !SDL_WIKI_DOCUMENTATION_SECTION */
+
 
 /**
  * Creates an OpenXR session.

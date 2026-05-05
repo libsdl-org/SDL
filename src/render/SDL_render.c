@@ -1799,6 +1799,13 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
                     break;
                 }
             }
+        } else if (surface->format == SDL_PIXELFORMAT_XRGB4444) {
+            for (i = 0; i < renderer->num_texture_formats; ++i) {
+                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ARGB4444) {
+                    format = SDL_PIXELFORMAT_ARGB4444;
+                    break;
+                }
+            }
         }
     } else {
         // Exact match would be fine
@@ -1893,7 +1900,8 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, surface->w);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, surface->h);
-    texture = SDL_CreateTextureWithProperties(renderer, props);
+
+texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
         return NULL;

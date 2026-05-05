@@ -66,6 +66,8 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("sceKernelCreateThread() failed");
     }
 
+    thread->threadid = (SDL_ThreadID) thread->handle;
+
     sceKernelStartThread(thread->handle, 4, &thread);
     return true;
 }

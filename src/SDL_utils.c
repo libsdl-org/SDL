@@ -111,7 +111,8 @@ void SDL_CalculateFraction(float x, int *numerator, int *denominator)
 
 bool SDL_startswith(const char *string, const char *prefix)
 {
-    if (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
+    if (string && prefix &&
+        SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
         return true;
     }
     return false;

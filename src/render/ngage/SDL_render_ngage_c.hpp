@@ -49,7 +49,8 @@ class CRenderer : public MDirectScreenAccess
 
     // Render target management.
     void SetRenderTarget(NGAGE_TextureData *aTarget);
-    CFbsBitGc* GetCurrentGc();
+    CFbsBitGc *GetCurrentGc();
+    CFbsBitmap *GetCurrentBitmap();
 
     // Event handling.
     void DisableKeyBlocking();
@@ -98,6 +99,8 @@ class CRenderer : public MDirectScreenAccess
     void *iPixelBufferA;
     void *iPixelBufferB;
     TInt iPixelBufferSize;
+    CFbsBitmap *iScratchBitmap;
+    CFbsBitmap *iMaskBitmap;
     TPoint *iPointsBuffer;
     TInt iPointsBufferSize;
 };

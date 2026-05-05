@@ -105,6 +105,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 // Joystick support
 void Android_JNI_PollInputDevices(void);
 void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue);
+void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled);
 
 // Haptic support
 void Android_JNI_PollHapticDevices(void);
