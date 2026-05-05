@@ -25,6 +25,10 @@
 #define NGAGE_SCREEN_WIDTH  176
 #define NGAGE_SCREEN_HEIGHT 208
 
+#ifndef SDL_HINT_RENDER_SHOW_FPS
+#define SDL_HINT_RENDER_SHOW_FPS "SDL_RENDER_SHOW_FPS"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -108,6 +112,8 @@ void NGAGE_SetDrawColor(const Uint32 color);
 void NGAGE_PumpEventsInternal(void);
 void NGAGE_SuspendScreenSaverInternal(bool suspend);
 void NGAGE_SetRenderTargetInternal(NGAGE_TextureData *target);
+void *NGAGE_GetBackbufferAddress(void);
+int NGAGE_GetBackbufferPitch(void);
 
 #ifdef __cplusplus
 }

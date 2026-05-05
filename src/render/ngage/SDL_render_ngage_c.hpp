@@ -46,6 +46,7 @@ class CRenderer : public MDirectScreenAccess
     void SetClipRect(TInt aX, TInt aY, TInt aWidth, TInt aHeight);
     void UpdateFPS();
     void SuspendScreenSaver(TBool aSuspend);
+    void SetShowFPS(TBool aShow) { iShowFPS = aShow; }
 
     // Render target management.
     void SetRenderTarget(NGAGE_TextureData *aTarget);
