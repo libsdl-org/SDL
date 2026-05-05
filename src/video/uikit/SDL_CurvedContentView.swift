@@ -56,12 +56,12 @@ internal struct SDL_CurvedContentView: View {
 
     /// Whether to show the cursor overlay on the mesh surface.  True iff cinematic AND eye input is selected.
     private var showCursor: Bool {
-        settings.sceneState == .cinematic && settings.inputType == .eyes
+        settings.inputType == .eyes && (!settings.enableCinematicState || settings.sceneState == .cinematic)
     }
     
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
     private var mouseInputEnabled: Bool {
-        settings.sceneState == .cinematic && settings.inputType == .pointer
+        settings.inputType == .pointer && (!settings.enableCinematicState || settings.sceneState == .cinematic)
     }
 
     private var shouldPopulateCollisionShape: Bool {
@@ -166,7 +166,7 @@ internal struct SDL_CurvedContentView: View {
             SDL_VisionOS_SendSizeChanged(Int(frame.size.width), Int(frame.size.height))
         }
         .overlay {
-            if settings.sceneState == .cinematic, settings.inputType == .pointer {
+            if mouseInputEnabled {
                 Color.white
                     .opacity(0.001)
                     .pointerStyle(.shape(Circle(), size: .zero))
@@ -177,7 +177,7 @@ internal struct SDL_CurvedContentView: View {
                 .onChanged { events in
                     guard curvedUIMaterial != nil else { return }
                     
-                    if settings.sceneState == .interactive {
+                    if settings.sceneState == .interactive && settings.enableCinematicState {
                         // Switch to cinematic mode on interacting with the view
                         settings.sceneState = .cinematic
                         return

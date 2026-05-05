@@ -100,7 +100,7 @@ internal class SDL_CurvedContentHosting: NSObject {
         UIView.animate(withDuration: 0.1) {
             if sceneState == .interactive {
                 hostingController.ornaments = [
-                    UIHostingOrnament(sceneAnchor: .bottom, contentAlignment: .center) {
+                    UIHostingOrnament(sceneAnchor: .bottom, contentAlignment: .top) {
                         SDL_SettingsPanelView(settings: settings)
                     }
                 ]
@@ -148,6 +148,7 @@ internal class SDL_CurvedContentSettings {
     var isDimmed: Bool = false
     var curvatureRadius: Float?
     var sceneState: SceneState = .interactive
+    var enableCinematicState: Bool = false
 }
 
 struct SDL_SettingsPanelView: View {
