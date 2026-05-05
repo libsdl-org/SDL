@@ -1843,8 +1843,7 @@ static inline Uint32 D3D12_INTERNAL_CalcSubresourceWithPlane(
     Uint32 layer,
     Uint32 planeSlice,
     Uint32 numLevels,
-    Uint32 arraySize
-)
+    Uint32 arraySize)
 {
     return mipLevel + (layer * numLevels) + (planeSlice * numLevels * arraySize);
 }
