@@ -70,6 +70,7 @@
 #include "pointer-warp-v1-client-protocol.h"
 #include "pointer-gestures-unstable-v1-client-protocol.h"
 #include "single-pixel-buffer-v1-client-protocol.h"
+#include "xx-zones-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -455,6 +456,7 @@ static void handle_wl_output_done(void *data, struct wl_output *output);
 // Initialization/Query functions
 static bool Wayland_VideoInit(SDL_VideoDevice *_this);
 static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
+static bool Wayland_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect);
 static void Wayland_VideoQuit(SDL_VideoDevice *_this);
 
 static const char *SDL_WAYLAND_surface_tag = "sdl-window";
@@ -674,6 +676,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->VideoInit = Wayland_VideoInit;
     device->VideoQuit = Wayland_VideoQuit;
     device->GetDisplayBounds = Wayland_GetDisplayBounds;
+    device->GetDisplayUsableBounds = Wayland_GetDisplayUsableBounds;
     device->SuspendScreenSaver = Wayland_SuspendScreenSaver;
 
     device->PumpEvents = Wayland_PumpEvents;
@@ -720,6 +723,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->GetWindowSizeInPixels = Wayland_GetWindowSizeInPixels;
     device->GetWindowContentScale = Wayland_GetWindowContentScale;
     device->GetWindowICCProfile = Wayland_GetWindowICCProfile;
+    device->GetWindowBordersSize = Wayland_GetWindowBorderSize;
     device->GetDisplayForWindow = Wayland_GetDisplayForWindow;
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
@@ -790,7 +794,86 @@ VideoBootStrap Wayland_bootstrap = {
     false
 };
 
-static void handle_xdg_output_logical_position(void *data, struct zxdg_output_v1 *xdg_output, int32_t x, int32_t y)
+static void handle_zone_size(void *data, struct xx_zone_v1 *ext_zone_v1, int32_t width, int32_t height)
+{
+    SDL_DisplayData *disp = (SDL_DisplayData *)data;
+
+    // Negative size values mean that zone creation on this output was denied.
+    if (width < 0 || height < 0) {
+        xx_zone_v1_destroy(disp->ext_zone_v1);
+        disp->ext_zone_v1 = NULL;
+        return;
+    }
+
+    disp->logical.zone_width = width ? width : SDL_MAX_SINT32;
+    disp->logical.zone_height = height ? height : SDL_MAX_SINT32;
+
+    if (disp->display) {
+        SDL_VideoDisplay *display = SDL_GetVideoDisplay(disp->display);
+        if (display) {
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, width, height);
+        }
+    }
+}
+
+static void handle_zone_handle(void *data, struct xx_zone_v1 *ext_zone_v1, const char *handle)
+{
+    // NOP
+}
+
+static void handle_zone_done(void *data, struct xx_zone_v1 *ext_zone_v1)
+{
+    // NOP
+}
+
+static void handle_zone_item_blocked(void *data, struct xx_zone_v1 *ext_zone_v1, struct xx_zone_item_v1 *item)
+{
+    SDL_WindowData *wind = (SDL_WindowData *)xx_zone_item_v1_get_user_data(item);
+    wind->entering_new_zone = false;
+}
+
+static void handle_zone_item_entered(void *data, struct xx_zone_v1 *ext_zone_v1, struct xx_zone_item_v1 *item)
+{
+    if (item) {
+        SDL_WindowData *wind = (SDL_WindowData *)xx_zone_item_v1_get_user_data(item);
+        wind->current_ext_zone_v1 = ext_zone_v1;
+
+        if (wind->entering_new_zone) {
+            Wayland_ApplyZoneItemPosition(wind);
+        }
+
+        wind->entering_new_zone = false;
+    }
+}
+
+static void handle_zone_item_left(void *data, struct xx_zone_v1 *ext_zone_v1, struct xx_zone_item_v1 *item)
+{
+    if (item) {
+        SDL_WindowData *wind = (SDL_WindowData *)xx_zone_item_v1_get_user_data(item);
+        wind->current_ext_zone_v1 = NULL;
+
+        if (!wind->entering_new_zone) {
+            // If leaving a zone without a new join pending, find a new zone to join.
+            const SDL_DisplayData *display = Wayland_GetDisplayForWindowZone(wind, wind->sdlwindow->floating.x, wind->sdlwindow->floating.y, ext_zone_v1);
+
+            if (display) {
+                xx_zone_v1_add_item(display->ext_zone_v1, item);
+            }
+        }
+    }
+}
+
+static const struct xx_zone_v1_listener zone_listener = {
+    handle_zone_size,
+    handle_zone_handle,
+    handle_zone_done,
+    handle_zone_item_blocked,
+    handle_zone_item_entered,
+    handle_zone_item_left
+};
+
+static void handle_xdg_output_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
+                                               int32_t x, int32_t y)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -1258,6 +1341,10 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
             Wayland_GetColorInfoForOutput(data, true);
         }
     }
+    if (data->videodata->ext_zone_manager_v1) {
+        data->ext_zone_v1 = xx_zone_manager_v1_get_zone(d->ext_zone_manager_v1, output);
+        xx_zone_v1_add_listener(data->ext_zone_v1, &zone_listener, data);
+    }
     return true;
 }
 
@@ -1278,6 +1365,10 @@ static void Wayland_free_display(SDL_VideoDisplay *display, bool send_event)
         if (display_data->wp_color_management_output) {
             Wayland_FreeColorInfoState(display_data->color_info_state);
             wp_color_management_output_v1_destroy(display_data->wp_color_management_output);
+        }
+
+        if (display_data->ext_zone_v1) {
+            xx_zone_v1_destroy(display_data->ext_zone_v1);
         }
 
         if (display_data->xdg_output) {
@@ -1322,6 +1413,16 @@ static void Wayland_InitColorManager(SDL_VideoData *d)
         disp->wp_color_management_output = wp_color_manager_v1_get_output(disp->videodata->wp_color_manager_v1, disp->output);
         wp_color_management_output_v1_add_listener(disp->wp_color_management_output, &wp_color_management_output_listener, disp);
         Wayland_GetColorInfoForOutput(disp, true);
+    }
+}
+
+static void Wayland_InitZoneManager(SDL_VideoData *d)
+{
+    for (int i = 0; i < d->output_count; ++i) {
+        SDL_DisplayData *disp = d->output_list[i];
+        disp->ext_zone_v1 = xx_zone_manager_v1_get_zone(d->ext_zone_manager_v1, disp->output);
+        xx_zone_v1_add_listener(disp->ext_zone_v1, &zone_listener, disp);
+
     }
 }
 
@@ -1424,6 +1525,11 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         Wayland_DisplayInitPointerGestureManager(d);
     } else if (SDL_strcmp(interface, wp_single_pixel_buffer_manager_v1_interface.name) == 0) {
         d->single_pixel_buffer_manager = wl_registry_bind(d->registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, xx_zone_manager_v1_interface.name) == 0) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_ENABLE_ZONES, false)) {
+            d->ext_zone_manager_v1 = wl_registry_bind(d->registry, id, &xx_zone_manager_v1_interface, 1);
+            Wayland_InitZoneManager(d);
+        }
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, wl_fixes_interface.name) == 0) {
@@ -1632,6 +1738,8 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
     Wayland_InitMouse(data);
     Wayland_InitKeyboard(_this);
 
+    SDL_SetBooleanProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_HAS_ZONES_BOOLEAN, !!data->ext_zone_manager_v1);
+
     if (data->primary_selection_device_manager) {
         _this->SetPrimarySelectionText = Wayland_SetPrimarySelectionText;
         _this->GetPrimarySelectionText = Wayland_GetPrimarySelectionText;
@@ -1677,6 +1785,30 @@ static bool Wayland_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *d
         }
     }
     return true;
+}
+
+static bool Wayland_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+{
+    SDL_VideoData *viddata = _this->internal;
+    SDL_DisplayData *internal = display->internal;
+
+    if (internal->ext_zone_v1) {
+        if (!viddata->scale_to_display_enabled) {
+            rect->x = internal->logical.x;
+            rect->y = internal->logical.y;
+            rect->w = internal->logical.zone_width;
+            rect->h = internal->logical.zone_height;
+        } else {
+            rect->x = internal->pixel.x;
+            rect->y = internal->pixel.y;
+            rect->w = internal->pixel.zone_width;
+            rect->h = internal->pixel.zone_height;
+        }
+
+        return true;
+    }
+
+    return Wayland_GetDisplayBounds(_this, display, rect);
 }
 
 static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
@@ -1810,6 +1942,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->xdg_toplevel_icon_manager_v1) {
         xdg_toplevel_icon_manager_v1_destroy(data->xdg_toplevel_icon_manager_v1);
         data->xdg_toplevel_icon_manager_v1 = NULL;
+    }
+
+    if (data->ext_zone_manager_v1) {
+        xx_zone_manager_v1_destroy(data->ext_zone_manager_v1);
+        data->ext_zone_manager_v1 = NULL;
     }
 
     if (data->frog_color_management_factory_v1) {
