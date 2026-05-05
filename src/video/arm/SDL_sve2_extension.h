@@ -713,7 +713,7 @@ static inline svuint16x3_t sdl_sve_rgb565_unpack(svuint16_t vPixels)
     svuint16_t vGreen = svand_n_u16_m(svptrue_b16(), vPixels, (0x3F << 5));
     svuint16_t vRed = svand_n_u16_m(svptrue_b16(), vPixels, (0x1F << 11));
 
-    return svcreate3_u16(svlsl_n_u16_m(svptrue_b16(), vBlue, 3), 
+    return svcreate3_u16(svlsl_n_u16_m(svptrue_b16(), vBlue, 3),
                          svlsr_n_u16_m(svptrue_b16(), vGreen, 3),
                          svlsr_n_u16_m(svptrue_b16(), vRed, 8));
 }
@@ -914,6 +914,7 @@ __attribute__((target("arch=armv8-a+sve2")))
 #endif
 static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint16_t vTarget, svuint16_t vMask)
 {
+#if 0
     vMask = svadd_u16_m(svcmpeq_n_u16(svptrue_b16(), vMask, 255),
                         vMask,
                         svdup_u16(1));
@@ -928,6 +929,41 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
     vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
 
     return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
+#else
+    /* use the same algorithm as ALPHA_BLEND_CHANNEL()
+     * Blend a single color channel or alpha value
+     * dC = ((sC * sA) + (dC * (255 - sA))) / 255
+     *  #define ALPHA_BLEND_CHANNEL(sC, dC, sA)                  \
+     *      do {                                                 \
+     *          Uint16 x;                                        \
+     *          x = ((sC - dC) * sA) + ((dC << 8) - dC);         \
+     *          x += 0x1U;                                       \
+     *          x += x >> 8;                                     \
+     *          dC = x >> 8;                                     \
+     *      } while (0)
+     */
+
+    /* (sC - dC) * sA */
+    svuint16_t vTemp0 = svsub_u16_m(svptrue_b16(), vSource, vTarget);
+    vTemp0 = svmul_u16_m(svptrue_b16(), vTemp0, vMask);
+
+    /* (dC << 8) - dC */
+    svuint16_t vTemp1 = svlsl_n_u16_m(svptrue_b16(), vTarget, 8);
+    vTemp1 = svsub_u16_m(svptrue_b16(), vTemp1, vTarget);
+
+    /* x = ((sC - dC) * sA) + ((dC << 8) - dC); */
+    svuint16_t vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    /* x += 1 */
+    vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
+
+    /* x += x >> 8 */
+    vTemp1 = svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
+    vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+
+    /* dC = x >> 8 */
+    return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
+#endif
 }
 
 /*! \note the hwOpacity range [0, 0x100]
