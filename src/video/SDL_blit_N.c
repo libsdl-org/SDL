@@ -3127,7 +3127,9 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             }
 #endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-            return Blit8888to8888PixelSwizzleNEON;
+            if (SDL_HasNEON()) {
+                return Blit8888to8888PixelSwizzleNEON;
+            }
 #endif
         }
 #if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))

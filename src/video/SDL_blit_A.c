@@ -1533,17 +1533,15 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 #endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-                // To prevent "unused function" compiler warnings/errors
-                (void)Blit8888to8888PixelAlpha;
-                (void)Blit8888to8888PixelAlphaSwizzle;
-                return Blit8888to8888PixelAlphaSwizzleNEON;
-#else
+                if (SDL_HasNEON()) {
+                    return Blit8888to8888PixelAlphaSwizzleNEON;
+                }
+#endif
                 if (sf->format == df->format) {
                     return Blit8888to8888PixelAlpha;
                 } else {
                     return Blit8888to8888PixelAlphaSwizzle;
                 }
-#endif
             }
             return BlitNtoNPixelAlpha;
 
