@@ -713,6 +713,15 @@ static void Emscripten_UpdateMouseFromEvent(SDL_WindowData *window_data, const E
 {
     SDL_assert(event->pointer_type == PTRTYPE_MOUSE);
 
+    // Hidden windows (e.g. a shared GL-context window) may share the DOM canvas with the
+    // visible window. Their pointer-event listeners would otherwise fire alongside the
+    // visible window's, fighting over `mouse->focus` and producing events tagged with the
+    // hidden window's ID -- causing downstream consumers that key by window ID to silently
+    // drop them. Hidden windows shouldn't take part in user-input dispatch.
+    if (window_data->window->flags & SDL_WINDOW_HIDDEN) {
+        return;
+    }
+
     // rescale (in case canvas is being scaled)
     double client_w, client_h;
     emscripten_get_element_css_size(window_data->canvas_id, &client_w, &client_h);
@@ -837,6 +846,11 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
 static void Emscripten_HandleMouseFocus(SDL_WindowData *window_data, const Emscripten_PointerEvent *event, bool isenter)
 {
     SDL_assert(event->pointer_type == PTRTYPE_MOUSE);
+
+    // Hidden windows shouldn't ever become the mouse-focus target.
+    if (window_data->window->flags & SDL_WINDOW_HIDDEN) {
+        return;
+    }
 
     const bool isPointerLocked = window_data->has_pointer_lock;
 
