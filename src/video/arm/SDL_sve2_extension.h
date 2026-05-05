@@ -952,7 +952,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
     vTemp1 = svsub_u16_m(svptrue_b16(), vTemp1, vTarget);
 
     /* x = ((sC - dC) * sA) + ((dC << 8) - dC); */
-    svuint16_t vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+    vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
 
     /* x += 1 */
     vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
