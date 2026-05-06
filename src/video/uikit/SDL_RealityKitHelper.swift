@@ -116,33 +116,24 @@ internal class SDL_RealityKitHelper {
         var height: Float
 
         /// Radius of the mesh curvature in meters, or `nil` for a flat mesh.
-        var requestedCurvatureRadius: Float?
+        var curvatureRadius: Float?
         
-        /// The actual curve radius used, or `nil` for a flat mesh.
-        ///
-        /// The curve radius is upper bounded by the half-width of the mesh (pythagoras demands it!).
-        var curvatureRadius: Float? {
-            let halfWidth = width / 2
-            if let requestedCurvatureRadius {
-                return max(requestedCurvatureRadius, halfWidth)
-            } else {
-                return nil
-            }
-        }
+        /// The bounding box of the mesh
+        var bounds: BoundingBox = BoundingBox()
         
         /// The offset of the curve center from (0, 0, 0), in the z axis.
         var zOffset: Float? {
             guard let curvatureRadius else { return nil }
-            let halfWidth = width / 2
+            let halfWidth = bounds.extents.x / 2
             let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
             return d
         }
-
+    
         /// Converts a 3D position on the mesh surface (in meters, relative to mesh center)
         /// to normalized texture coordinates (0..1, 0..1).
         func normalizedUV(fromMeshPosition position: SIMD3<Float>) -> SIMD2<Float> {
             if let curvatureRadius {
-                let halfWidth = width / 2
+                let halfWidth = bounds.extents.x / 2
                 
                 let theta = asinf(halfWidth / curvatureRadius)
                 let angle = asinf(position.x / curvatureRadius)
@@ -163,7 +154,7 @@ internal class SDL_RealityKitHelper {
             let v = uv.y
 
             if let curvatureRadius, let zOffset {
-                let halfWidth = width / 2
+                let halfWidth = bounds.extents.x / 2
                 let theta = asinf(halfWidth / curvatureRadius)
 
                 let angle = (2 * u - 1) * theta
@@ -202,7 +193,7 @@ internal class SDL_RealityKitHelper {
     
     func updateMeshCurvature(curvatureRadius: Float?) {
         var geometry = self.meshGeometry
-        geometry.requestedCurvatureRadius = curvatureRadius
+        geometry.curvatureRadius = curvatureRadius
         updateMeshGeometry(geometry)
     }
 
@@ -222,9 +213,6 @@ internal class SDL_RealityKitHelper {
         let segmentsY = meshTopology.segmentsY
         let indexCount = meshTopology.indexCount
         
-        let halfWidth = width / 2
-        let halfHeight = height / 2
-        
         var boundsMin = SIMD3(repeating: Float.infinity)
         var boundsMax = SIMD3(repeating: -Float.infinity)
         
@@ -232,26 +220,33 @@ internal class SDL_RealityKitHelper {
             let vertices = rawBytes.bindMemory(to: CurvedPlaneVertex.self)
 
             if let curvatureRadius {
-                let theta = asinf(halfWidth / curvatureRadius)
-                let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
 
+                // Apply cylindrical curve: Z varies with X to create wrap-around
+                var curve_positions: [SIMD3<Float>] = []
+                var curve_normals: [SIMD3<Float>] = []
+                let r = curvatureRadius
+                let arc_length = width / r
+                for x in 0...segmentsX {
+                    let u = Float(x) / Float(segmentsX)
+                    let angle = (u - 0.5) * arc_length
+                    let vec: SIMD3<Float> = simd_normalize([sin(angle), 0.0, cos(angle)])
+                    let pos: SIMD3<Float> = [vec.x, vec.y, 1.0 - vec.z] * r
+                    curve_positions.append(pos)
+
+                    // Normal points toward viewer for convex curve
+                    curve_normals.append(-vec)
+                }
+                let offsetZ = -curve_positions[0].z
+                
                 for y in 0...segmentsY {
                     let v = Float(y) / Float(segmentsY) * 2 - 1
-                    let posY = v * halfHeight
+                    let posY = v * height / 2
 
                     for x in 0...segmentsX {
                         let u = Float(x) / Float(segmentsX) * 2 - 1
-                        let angle = theta * u
                         
-                        let posX = curvatureRadius * sin(angle)
-                        let posZ = -curvatureRadius * cos(angle)
-                        
-                        // Postion if the center of the arc is at (0, 0, 0).
-                        let arcCenteredPosition = SIMD3(posX, posY, posZ)
-                        let normal = normalize(-arcCenteredPosition)
-                        
-                        // Shift the mesh forward so the ends of the arc coincide with the edges of the window.
-                        let position = arcCenteredPosition + SIMD3<Float>(0, 0, d)
+                        let position = curve_positions[x] + SIMD3<Float>(0, posY, offsetZ)
+                        let normal = curve_normals[x]
 
                         let idx = y * (segmentsX + 1) + x
                         vertices[idx].position = position
@@ -291,6 +286,7 @@ internal class SDL_RealityKitHelper {
         ])
         
         self.meshGeometry = meshGeometry
+        self.meshGeometry.bounds = bounds
         invalidatePhysicsMesh()
     }
 
