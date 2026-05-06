@@ -91,7 +91,7 @@
  * If this macro is defined, SDL will have already included `<arm_sve.h>`
  * as appropriate.
  *
- * \since This macro is available since SDL 3.4.5.
+ * \since This macro is available since SDL 3.6.0.
  */
 #define SDL_SVE2_INTRINSICS 1
 
