@@ -303,6 +303,9 @@ static bool SetGCMouseRelativeMode(bool enabled)
 {
     mouse_relative_mode = enabled;
     UpdatePointerLock();
+#ifdef SDL_PLATFORM_VISIONOS
+    SDL_VisionOS_UpdateCursorVisibility();
+#endif
     return true;
 }
 

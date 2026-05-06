@@ -168,6 +168,11 @@ internal class SDL_CurvedContentHosting: NSObject {
         }
     }
 
+    /// Set cursor visibility
+    @objc public func setCursorVisible(_ visible: Bool) {
+        self.settings.cursorVisible = visible
+    }
+
     /// Get the display texture for this frame.
     @objc public func getDisplayTexture(_ commandBuffer: MTLCommandBuffer, width: Int, height: Int, pixelFormat: MTLPixelFormat) -> MTLTexture? {
         return helper.getDisplayTexture(commandBuffer, width: width, height: height, pixelFormat: pixelFormat)
@@ -196,6 +201,7 @@ internal class SDL_CurvedContentSettings {
     var isDimmed: Bool = false
     var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
+    var cursorVisible: Bool = true
 }
 
 struct SDL_SettingsPanelView: View {
