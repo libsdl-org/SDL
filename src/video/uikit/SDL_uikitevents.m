@@ -312,6 +312,12 @@ static bool SetGCMouseRelativeMode(bool enabled)
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
     Uint64 timestamp = SDL_GetTicksNS();
+
+#ifdef SDL_PLATFORM_VISIONOS
+    if (!SDL_VisionOS_PointerModeEnabled() && SDL_UIKit_HasCurvedWindow()) {
+        return;
+    }
+#endif
     SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button, pressed);
 }
 
@@ -334,7 +340,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     int auxiliary_button = SDL_BUTTON_X1;
     for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
         btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-          OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
+            OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
         };
         ++auxiliary_button;
     }

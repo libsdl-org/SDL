@@ -166,6 +166,15 @@ void SDL_VisionOS_SetWindowRealityKitHosting(id hosting)
     SDL_Log("VISIONOS: RealityKit hosting registered");
 }
 
+bool SDL_UIKit_HasCurvedWindow()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (window) {
+        return SDL_UIKit_IsCurvedWindow(window);
+    }
+    return false;
+}
+
 bool SDL_UIKit_IsCurvedWindow(SDL_Window *window)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;

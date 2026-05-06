@@ -177,24 +177,10 @@ internal struct SDL_CurvedContentView: View {
                     
                     if settings.inputType == .eyes {
                         curvedUIMaterial.isInteracting = true
-                    }
-                    
-                    switch settings.inputType {
-                    case .eyes:
+                        
                         for event in events {
                             if event.kind != .pointer {
                                 sendTouchEvent(event: event, proxy: proxy)
-                            } else if event.kind == .pointer {
-                                settings.inputType = .pointer
-                                settings.sceneState = .cinematic
-                            }
-                        }
-                    case .pointer:
-                        for event in events {
-                            if event.kind != .pointer {
-                                settings.inputType = .eyes
-                                settings.sceneState = .interactive
-                                break
                             }
                         }
                     }
@@ -205,6 +191,16 @@ internal struct SDL_CurvedContentView: View {
                     for event in events {
                         if event.kind != .pointer {
                             sendTouchEvent(event: event, proxy: proxy)
+                            
+                            if settings.inputType == .pointer {
+                                settings.inputType = .eyes
+                                settings.sceneState = .interactive
+                            }
+                        } else {
+                            if settings.inputType == .eyes {
+                                settings.inputType = .pointer
+                                settings.sceneState = .cinematic
+                            }
                         }
                     }
                     

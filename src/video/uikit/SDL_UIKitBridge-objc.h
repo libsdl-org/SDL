@@ -35,6 +35,11 @@ bool SDL_VisionOS_PointerModeEnabled();
 void SDL_VisionOS_UpdateCursorVisibility();
 
 /**
+ * Check if any window is using curved content mode (UIHostingController-based).
+ */
+bool SDL_UIKit_HasCurvedWindow();
+
+/**
  * Check if a window is using curved content mode (UIHostingController-based).
  *
  * @param window The SDL window to check.
