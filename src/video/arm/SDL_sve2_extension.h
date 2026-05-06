@@ -914,21 +914,25 @@ __attribute__((target("arch=armv8-a+sve2")))
 #endif
 static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint16_t vTarget, svuint16_t vMask)
 {
-#if 0
-    vMask = svadd_u16_m(svcmpeq_n_u16(svptrue_b16(), vMask, 255),
-                        vMask,
-                        svdup_u16(1));
-
-    // vTarget = vSource * vMask + vTarget * (256 - vMask);
+#if 1
+    // vTarget = vSource * vMask + vTarget * (255 - vMask);
     svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
-    svuint16_t vTemp1 = svmul_u16_m(svptrue_b16(),
-                                    vTarget,
-                                    svsub_u16_m(svptrue_b16(),
-                                                svdup_u16(256),
-                                                vMask));
-    vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+    vTemp0 = svmla_u16_m(svptrue_b16(),
+                        vTemp0,
+                        vTarget,
+                        svsub_u16_m(svptrue_b16(),
+                                    svdup_u16(255),
+                                    vMask));
 
-    return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
+    vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
+
+    svuint16_t vTemp1 = svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
+    /* x += x >> 8 */
+    vTemp0 = svadd_u16_m(   svptrue_b16(), 
+                            vTemp0, 
+                            vTemp1);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8); // vTarget >> 8;
 #else
     /* use the same algorithm as ALPHA_BLEND_CHANNEL()
      * Blend a single color channel or alpha value
@@ -942,27 +946,30 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
      *          dC = x >> 8;                                     \
      *      } while (0)
      */
-
-    /* (sC - dC) * sA */
-    svuint16_t vTemp0 = svsub_u16_m(svptrue_b16(), vSource, vTarget);
-    vTemp0 = svmul_u16_m(svptrue_b16(), vTemp0, vMask);
-
+    
     /* (dC << 8) - dC */
     svuint16_t vTemp1 = svlsl_n_u16_m(svptrue_b16(), vTarget, 8);
     vTemp1 = svsub_u16_m(svptrue_b16(), vTemp1, vTarget);
 
     /* x = ((sC - dC) * sA) + ((dC << 8) - dC); */
-    vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
-
+    vTemp1 = svmla_u16_m(   svptrue_b16(), 
+                            vTemp1, 
+                            /* ((sC - dC) * sA) */
+                            svsub_u16_m(svptrue_b16(), 
+                                        vSource, 
+                                        vTarget), 
+                            vMask);
     /* x += 1 */
-    vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
+    vTemp1 = svadd_n_u16_m(svptrue_b16(), vTemp1, 1);
 
+    svuint16_t vTemp0 = svlsr_n_u16_m(svptrue_b16(), vTemp1, 8);
     /* x += x >> 8 */
-    vTemp1 = svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
-    vTemp0 = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
+    vTemp1 = svadd_u16_m(   svptrue_b16(), 
+                            vTemp0, 
+                            vTemp1);
 
     /* dC = x >> 8 */
-    return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
+    return svlsr_n_u16_m(svptrue_b16(), vTemp1, 8);
 #endif
 }
 
