@@ -730,8 +730,8 @@ public:
 			if ( m_reportResponse.size() > 0 )
 			{
 				// Make sure we preserve the report value if it isn't already in the report.
-				bool bHasReportAlready = *pData == *m_reportResponse.data();
-				
+				bool bHasReportAlready = ( *pData == *m_reportResponse.data() );
+
 				// Make sure we only copy as much as will fit, deducting one byte for the report if we need to leave it intact.
 				size_t nSafeDataLen = nDataLen - ( bHasReportAlready ? 0 : 1 );
 				uBytesToCopy = m_reportResponse.size() < nSafeDataLen ? m_reportResponse.size() : nSafeDataLen;
