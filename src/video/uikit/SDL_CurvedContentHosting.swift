@@ -274,7 +274,7 @@ struct SDL_SettingsPanelView: View {
                     } else {
                         let radius = curvatureSlider * Self.minimumCurvatureRadius
                             + (1.0 - curvatureSlider) * Self.maximumCurvatureRadius
-                        settings.curvatureRadius = radius
+                        settings.curvatureRadius = roundf(radius)
                     }
                 }
             }
