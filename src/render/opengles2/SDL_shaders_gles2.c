@@ -244,7 +244,7 @@ static const char GLES2_Fragment_TexturePalette_PixelArt_Colorswap[] =
 ;
 
 // RGB to ABGR conversion
-static const char GLES2_Fragment_TextureRGB[] =
+static const char GLES2_Fragment_TextureOpaque_Colorswap[] =
     RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
@@ -256,7 +256,7 @@ static const char GLES2_Fragment_TextureRGB[] =
 ;
 
 // RGB to ABGR conversion
-static const char GLES2_Fragment_TextureRGB_PixelArt[] =
+static const char GLES2_Fragment_TextureOpaque_PixelArt_Colorswap[] =
     RGB_PIXELART_SHADER_PROLOGUE
     PIXELART_SHADER_FUNCTIONS
 "\n"
@@ -269,7 +269,7 @@ static const char GLES2_Fragment_TextureRGB_PixelArt[] =
 ;
 
 // BGR to ABGR conversion
-static const char GLES2_Fragment_TextureBGR[] =
+static const char GLES2_Fragment_TextureOpaque[] =
     RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
@@ -281,7 +281,7 @@ static const char GLES2_Fragment_TextureBGR[] =
 ;
 
 // BGR to ABGR conversion
-static const char GLES2_Fragment_TextureBGR_PixelArt[] =
+static const char GLES2_Fragment_TextureOpaque_PixelArt[] =
     RGB_PIXELART_SHADER_PROLOGUE
     PIXELART_SHADER_FUNCTIONS
 "\n"
@@ -294,7 +294,7 @@ static const char GLES2_Fragment_TextureBGR_PixelArt[] =
 ;
 
 // ARGB to ABGR conversion
-static const char GLES2_Fragment_TextureARGB[] =
+static const char GLES2_Fragment_Texture_Colorswap[] =
     RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
@@ -306,7 +306,7 @@ static const char GLES2_Fragment_TextureARGB[] =
 ;
 
 // ARGB to ABGR conversion
-static const char GLES2_Fragment_TextureARGB_PixelArt[] =
+static const char GLES2_Fragment_Texture_PixelArt_Colorswap[] =
     RGB_PIXELART_SHADER_PROLOGUE
     PIXELART_SHADER_FUNCTIONS
 "\n"
@@ -318,7 +318,7 @@ static const char GLES2_Fragment_TextureARGB_PixelArt[] =
 "}\n"
 ;
 
-static const char GLES2_Fragment_TextureABGR[] =
+static const char GLES2_Fragment_Texture[] =
     RGB_SHADER_PROLOGUE
 "\n"
 "void main()\n"
@@ -329,7 +329,7 @@ static const char GLES2_Fragment_TextureABGR[] =
 "}\n"
 ;
 
-static const char GLES2_Fragment_TextureABGR_PixelArt[] =
+static const char GLES2_Fragment_Texture_PixelArt[] =
     RGB_PIXELART_SHADER_PROLOGUE
     PIXELART_SHADER_FUNCTIONS
 "\n"
@@ -562,22 +562,22 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TexturePalette_Linear_Colorswap;
     case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART_COLORSWAP:
         return GLES2_Fragment_TexturePalette_PixelArt_Colorswap;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_RGB:
-        return GLES2_Fragment_TextureRGB;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_RGB_PIXELART:
-        return GLES2_Fragment_TextureRGB_PixelArt;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_BGR:
-        return GLES2_Fragment_TextureBGR;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_BGR_PIXELART:
-        return GLES2_Fragment_TextureBGR_PixelArt;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB:
-        return GLES2_Fragment_TextureARGB;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_PIXELART:
-        return GLES2_Fragment_TextureARGB_PixelArt;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR:
-        return GLES2_Fragment_TextureABGR;
-    case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_PIXELART:
-        return GLES2_Fragment_TextureABGR_PixelArt;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_OPAQUE_COLORSWAP:
+        return GLES2_Fragment_TextureOpaque_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_OPAQUE_PIXELART_COLORSWAP:
+        return GLES2_Fragment_TextureOpaque_PixelArt_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_OPAQUE:
+        return GLES2_Fragment_TextureOpaque;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_OPAQUE_PIXELART:
+        return GLES2_Fragment_TextureOpaque_PixelArt;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_COLORSWAP:
+        return GLES2_Fragment_Texture_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PIXELART_COLORSWAP:
+        return GLES2_Fragment_Texture_PixelArt_Colorswap;
+    case GLES2_SHADER_FRAGMENT_TEXTURE:
+        return GLES2_Fragment_Texture;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PIXELART:
+        return GLES2_Fragment_Texture_PixelArt;
 #ifdef SDL_HAVE_YUV
     case GLES2_SHADER_FRAGMENT_TEXTURE_YUV:
         return GLES2_Fragment_TextureYUV;
