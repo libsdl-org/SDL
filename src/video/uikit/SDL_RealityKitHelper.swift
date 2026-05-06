@@ -121,6 +121,9 @@ internal class SDL_RealityKitHelper {
         /// The bounding box of the mesh
         var bounds: BoundingBox = BoundingBox()
         
+        /// Current snapped status
+        var snapped: Bool = false
+
         /// The offset of the curve center from (0, 0, 0), in the z axis.
         var zOffset: Float {
             if curvatureRadius > 0 {
@@ -187,6 +190,12 @@ internal class SDL_RealityKitHelper {
     
     // MARK: - Mesh Generation (LowLevelMesh)
     
+    func updateSnappedStatus(snapped: Bool) {
+        var geometry = self.meshGeometry
+        geometry.snapped = snapped
+        updateMeshGeometry(geometry)
+    }
+    
     func updateMeshSize(width: Float, height: Float) {
         var geometry = self.meshGeometry
         geometry.width = width
@@ -239,7 +248,7 @@ internal class SDL_RealityKitHelper {
                     // Normal points toward viewer for convex curve
                     curve_normals.append(-vec)
                 }
-                let offsetZ = -curve_positions[0].z
+                let offsetZ = meshGeometry.snapped ? 0 : -curve_positions[0].z
                 
                 for y in 0...segmentsY {
                     let v = Float(y) / Float(segmentsY) * 2 - 1
