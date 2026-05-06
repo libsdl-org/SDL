@@ -57,8 +57,19 @@ void SDL_VisionOS_SendSizeChanged(long width, long height)
     }
 }
 
+// Called from Swift scene delegates to get the initial curvature
+float SDL_VisionOS_GetCurvature()
+{
+    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
+    if (window) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+        return data.curvature;
+    }
+    return 0.0f;
+}
+
 // Called from Swift scene delegates when window curvature changes
-void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
+void SDL_VisionOS_SendCurvatureChanged(float curvature)
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {

@@ -194,7 +194,7 @@ internal class SDL_CurvedContentSettings {
 
     var inputType: InputType = .eyes
     var isDimmed: Bool = false
-    var curvatureRadius: Float?
+    var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
 }
 
@@ -225,8 +225,8 @@ struct SDL_SettingsPanelView: View {
     }
 
     private var curvatureLabel: String {
-        if let r = settings.curvatureRadius {
-            return "\(Int(r))R"
+        if settings.curvatureRadius > 0 {
+            return "\(Int(settings.curvatureRadius))R"
         } else {
             return ""
         }
@@ -250,16 +250,14 @@ struct SDL_SettingsPanelView: View {
 
                 Divider().frame(height: 20)
                 
-                if let r = settings.curvatureRadius {
-                    if r > 1000.0 {
-                        CurvedButtonIcon()
-                            .frame(width: 24, height: 24)
-                    } else {
-                        CurviestButtonIcon()
-                            .frame(width: 24, height: 24)
-                    }
-                } else {
+                if settings.curvatureRadius == 0 {
                     FlatButtonIcon()
+                        .frame(width: 24, height: 24)
+                } else if settings.curvatureRadius > 1000.0 {
+                    CurvedButtonIcon()
+                        .frame(width: 24, height: 24)
+                } else {
+                    CurviestButtonIcon()
                         .frame(width: 24, height: 24)
                 }
             }
@@ -308,13 +306,10 @@ struct SDL_SettingsPanelView: View {
                         SliderTickContentForEach(Self.curvatureStepsSliderValue, id: \.self) { value in
                             SliderTick(value)
                         }
-                    } onEditingChanged: { editing in
-                        if !editing {
-                            SDL_VisionOS_SendCurvatureChanged(CGFloat(curvatureSlider))
-                        }
                     }
                     .onAppear {
-                        if let curvature = settings.curvatureRadius {
+                        let curvature = settings.curvatureRadius
+                        if curvature > 0 {
                             curvatureSlider = 1.0 - (curvature - Self.minimumCurvatureRadius)
                             / (Self.maximumCurvatureRadius - Self.minimumCurvatureRadius)
                         } else {
@@ -324,12 +319,13 @@ struct SDL_SettingsPanelView: View {
                     .onChange(of: curvatureSlider) {
                         let clamped = max(0.0, min(1.0, curvatureSlider))
                         if clamped == 0 {
-                            settings.curvatureRadius = nil
+                            settings.curvatureRadius = 0
                         } else {
-                            let radius = curvatureSlider * Self.minimumCurvatureRadius
-                            + (1.0 - curvatureSlider) * Self.maximumCurvatureRadius
-                            settings.curvatureRadius = roundf(radius)
+                            let radius = roundf(curvatureSlider * Self.minimumCurvatureRadius
+                                                + (1.0 - curvatureSlider) * Self.maximumCurvatureRadius)
+                            settings.curvatureRadius = radius
                         }
+                        SDL_VisionOS_SendCurvatureChanged(settings.curvatureRadius)
                     }
                 
                     CurviestButtonIcon()

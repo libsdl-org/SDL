@@ -116,23 +116,26 @@ internal class SDL_RealityKitHelper {
         var height: Float
 
         /// Radius of the mesh curvature in meters, or `nil` for a flat mesh.
-        var curvatureRadius: Float?
+        var curvatureRadius: Float = 0
         
         /// The bounding box of the mesh
         var bounds: BoundingBox = BoundingBox()
         
         /// The offset of the curve center from (0, 0, 0), in the z axis.
-        var zOffset: Float? {
-            guard let curvatureRadius else { return nil }
-            let halfWidth = bounds.extents.x / 2
-            let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
-            return d
+        var zOffset: Float {
+            if curvatureRadius > 0 {
+                let halfWidth = bounds.extents.x / 2
+                let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
+                return d
+            } else {
+                return 0
+            }
         }
     
         /// Converts a 3D position on the mesh surface (in meters, relative to mesh center)
         /// to normalized texture coordinates (0..1, 0..1).
         func normalizedUV(fromMeshPosition position: SIMD3<Float>) -> SIMD2<Float> {
-            if let curvatureRadius {
+            if curvatureRadius > 0 {
                 let halfWidth = bounds.extents.x / 2
                 
                 let theta = asinf(halfWidth / curvatureRadius)
@@ -153,7 +156,7 @@ internal class SDL_RealityKitHelper {
             let u = uv.x
             let v = uv.y
 
-            if let curvatureRadius, let zOffset {
+            if curvatureRadius > 0 {
                 let halfWidth = bounds.extents.x / 2
                 let theta = asinf(halfWidth / curvatureRadius)
 
@@ -191,7 +194,7 @@ internal class SDL_RealityKitHelper {
         updateMeshGeometry(geometry)
     }
     
-    func updateMeshCurvature(curvatureRadius: Float?) {
+    func updateMeshCurvature(curvatureRadius: Float) {
         var geometry = self.meshGeometry
         geometry.curvatureRadius = curvatureRadius
         updateMeshGeometry(geometry)
@@ -219,7 +222,7 @@ internal class SDL_RealityKitHelper {
         lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBytes in
             let vertices = rawBytes.bindMemory(to: CurvedPlaneVertex.self)
 
-            if let curvatureRadius {
+            if curvatureRadius > 0 {
 
                 // Apply cylindrical curve: Z varies with X to create wrap-around
                 var curve_positions: [SIMD3<Float>] = []

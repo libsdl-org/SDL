@@ -224,9 +224,9 @@ internal struct SDL_CurvedContentView: View {
             guard curvedUIMaterial != nil else { return }
             let geometry = helper.meshGeometry
             curvedUIMaterial.cursorSize = geometry.height * 0.01
-            curvedUIMaterial.curveZOffset = geometry.zOffset ?? 0
-            curvedUIMaterial.curveRadius = geometry.curvatureRadius ?? 0
-            curvedUIMaterial.isFlat = geometry.curvatureRadius == nil
+            curvedUIMaterial.curveZOffset = geometry.zOffset
+            curvedUIMaterial.curveRadius = geometry.curvatureRadius
+            curvedUIMaterial.isFlat = geometry.curvatureRadius == 0
         }
         .onChange(of: sceneActivationOrObject(helper.textureResource), initial: true) {
             if let textureResource = helper.textureResource {
@@ -246,9 +246,17 @@ internal struct SDL_CurvedContentView: View {
                 SDL_VisionOS_SendPointerMode(false)
             }
         }
-        .onChange(of: settings.curvatureRadius) { oldRadius, curvatureRadius in
-            withAnimation(.smooth) {
-                if let curvatureRadius {
+        .onChange(of: settings.curvatureRadius, initial: true) { oldRadius, curvatureRadius in
+            if oldRadius != curvatureRadius {
+                withAnimation(.smooth) {
+                    if curvatureRadius > 0 {
+                        animatedScreenRadius = curvatureRadius / 1000
+                    } else {
+                        animatedScreenRadius = AnimatedCurveRadiusModifier.assumedFlatThreshold + 0.01
+                    }
+                }
+            } else {
+                if curvatureRadius > 0 {
                     animatedScreenRadius = curvatureRadius / 1000
                 } else {
                     animatedScreenRadius = AnimatedCurveRadiusModifier.assumedFlatThreshold + 0.01
@@ -288,7 +296,7 @@ private struct AnimatedCurveRadiusModifier: @MainActor ViewModifier {
     func body(content: Content) -> some View {
         content.onChange(of: curveRadius, initial: true) {
             if curveRadius > 10 {
-                helper.updateMeshCurvature(curvatureRadius: nil)
+                helper.updateMeshCurvature(curvatureRadius: 0)
             } else {
                 helper.updateMeshCurvature(curvatureRadius: curveRadius)
             }
