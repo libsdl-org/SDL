@@ -71,6 +71,18 @@ void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature)
     }
 }
 
+static bool SDL_pointer_mode;
+
+void SDL_VisionOS_SendPointerMode(bool enabled)
+{
+    SDL_pointer_mode = enabled;
+}
+
+bool SDL_VisionOS_PointerModeEnabled()
+{
+    return SDL_pointer_mode;
+}
+
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y)
 {

@@ -96,22 +96,11 @@ internal class SDL_CurvedContentHosting: NSObject {
         guard let hostingController else { return }
         let settings = self.settings
         let sceneState = settings.sceneState
-        let inputType = settings.inputType
         UIView.animate(withDuration: 0.1) {
             if sceneState == .interactive {
                 hostingController.ornaments = [
                     UIHostingOrnament(sceneAnchor: .bottom, contentAlignment: .top) {
                         SDL_SettingsPanelView(settings: settings)
-                    }
-                ]
-            } else if sceneState == .cinematic, inputType == .eyes {
-                hostingController.ornaments = [
-                    UIHostingOrnament(sceneAnchor: .topLeading, contentAlignment: .trailing) {
-                        Button(action: { settings.sceneState = .interactive }) {
-                            Image(systemName: "xmark")
-                        }
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.circle)
                     }
                 ]
             } else {
@@ -148,7 +137,6 @@ internal class SDL_CurvedContentSettings {
     var isDimmed: Bool = false
     var curvatureRadius: Float?
     var sceneState: SceneState = .interactive
-    var enableCinematicState: Bool = false
 }
 
 struct SDL_SettingsPanelView: View {
@@ -197,9 +185,6 @@ struct SDL_SettingsPanelView: View {
     private var collapsedBar: some View {
         Button(action: { withAnimation { isExpanded = true } }) {
             HStack(spacing: 12) {
-                Image(systemName: settings.inputType == .eyes ? "eye" : "cursorarrow")
-                    .foregroundStyle(.primary)
-
                 Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
@@ -224,15 +209,6 @@ struct SDL_SettingsPanelView: View {
             @Bindable var settings = self.settings
             
             Text("Settings").font(.title).padding(8)
-            
-            HStack {
-                Text("Mouse Input:")
-                Picker("Input", selection: $settings.inputType) {
-                    ForEach(SDL_CurvedContentSettings.InputType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }.pickerStyle(.segmented)
-            }
             
             HStack {
                 Text("Dim surroundings:")

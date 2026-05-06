@@ -26,6 +26,9 @@ void SDL_VisionOS_SendSizeChanged(long width, long height);
 // Called from Swift scene delegates when window curvature changes
 void SDL_VisionOS_SendCurvatureChanged(CGFloat curvature);
 
+// Called from Swift scene delegates when pointer mode changes
+void SDL_VisionOS_SendPointerMode(bool enabled);
+
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y);
 

@@ -54,14 +54,14 @@ internal struct SDL_CurvedContentView: View {
     /// The cursor color on interact (pinch/drag/click) which should be passed to `curvedUIMaterial`
     @State private var cursorColorOnInteract: UIColor = .systemCyan
 
-    /// Whether to show the cursor overlay on the mesh surface.  True iff cinematic AND eye input is selected.
+    /// Whether to show the cursor overlay on the mesh surface.
     private var showCursor: Bool {
-        settings.inputType == .eyes && (!settings.enableCinematicState || settings.sceneState == .cinematic)
+        settings.inputType == .eyes
     }
     
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
     private var mouseInputEnabled: Bool {
-        settings.inputType == .pointer && (!settings.enableCinematicState || settings.sceneState == .cinematic)
+        settings.inputType == .pointer
     }
 
     private var shouldPopulateCollisionShape: Bool {
@@ -136,8 +136,8 @@ internal struct SDL_CurvedContentView: View {
             let mesh = try! await MeshResource(from: helper.lowLevelMesh)
             let entity = ModelEntity(mesh: mesh, materials: [material.shaderGraphMaterial])
             
-            // Add InputTargetComponent to the mesh to accept indirect input.
-            entity.components.set(InputTargetComponent(allowedInputTypes: .indirect))
+            // Add InputTargetComponent to the mesh to accept input.
+            entity.components.set(InputTargetComponent(allowedInputTypes: .all))
 
             // Add HoverEffectComponent to visualize the gaze target
             let shaderInputs = HoverEffectComponent.ShaderHoverEffectInputs.default
@@ -175,12 +175,6 @@ internal struct SDL_CurvedContentView: View {
                 .onChanged { events in
                     guard curvedUIMaterial != nil else { return }
                     
-                    if settings.sceneState == .interactive && settings.enableCinematicState {
-                        // Switch to cinematic mode on interacting with the view
-                        settings.sceneState = .cinematic
-                        return
-                    }
-                    
                     if settings.inputType == .eyes {
                         curvedUIMaterial.isInteracting = true
                     }
@@ -188,13 +182,17 @@ internal struct SDL_CurvedContentView: View {
                     switch settings.inputType {
                     case .eyes:
                         for event in events {
-                            if event.kind == .indirectPinch {
+                            if event.kind != .pointer {
                                 sendTouchEvent(event: event, proxy: proxy)
+                            } else if event.kind == .pointer {
+                                settings.inputType = .pointer
+                                settings.sceneState = .cinematic
                             }
                         }
                     case .pointer:
                         for event in events {
-                            if event.kind == .indirectPinch {
+                            if event.kind != .pointer {
+                                settings.inputType = .eyes
                                 settings.sceneState = .interactive
                                 break
                             }
@@ -204,8 +202,8 @@ internal struct SDL_CurvedContentView: View {
                 .onEnded { events in
                     guard curvedUIMaterial != nil else { return }
                     
-                    if settings.inputType == .eyes {
-                        for event in events {
+                    for event in events {
+                        if event.kind != .pointer {
                             sendTouchEvent(event: event, proxy: proxy)
                         }
                     }
@@ -239,6 +237,13 @@ internal struct SDL_CurvedContentView: View {
             // Update the materials array of the entity with the updated material parameters.
             if let curvedUIMaterial, let curvedUIEntity {
                 curvedUIEntity.model!.materials = [curvedUIMaterial.shaderGraphMaterial]
+            }
+        }
+        .onChange(of: settings.inputType, initial: true) { oldInputType, inputType in
+            if inputType == .pointer {
+                SDL_VisionOS_SendPointerMode(true)
+            } else {
+                SDL_VisionOS_SendPointerMode(false)
             }
         }
         .onChange(of: settings.curvatureRadius) { oldRadius, curvatureRadius in

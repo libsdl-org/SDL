@@ -25,6 +25,11 @@
 #import <Metal/Metal.h>
 
 /**
+ * Return true if the curved content pointer mode is enabled
+ */
+bool SDL_VisionOS_PointerModeEnabled();
+
+/**
  * Check if a window is using curved content mode (UIHostingController-based).
  *
  * @param window The SDL window to check.
