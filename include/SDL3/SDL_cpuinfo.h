@@ -289,7 +289,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasNEON(void);
  *
  * \returns true if the CPU has SVE2, false otherwise.
  *
- * \since This function is available since SDL 3.4.5.
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasSVE2(void);
 
