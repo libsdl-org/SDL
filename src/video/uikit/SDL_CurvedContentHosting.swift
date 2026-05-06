@@ -22,6 +22,65 @@ import SwiftUI
 import RealityKit
 import Metal
 
+// Icons used by buttons below
+
+// Flat button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133.333 400H666.667" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct FlatButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16667*width, y: 0.5*height))
+        strokePath.addLine(to: CGPoint(x: 0.83333*width, y: 0.5*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curved button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133 380C311 317.333 489 317.333 667 380" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurvedButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.475*height))
+        strokePath.addCurve(to: CGPoint(x: 0.83375*width, y: 0.475*height), control1: CGPoint(x: 0.38875*width, y: 0.39667*height), control2: CGPoint(x: 0.61125*width, y: 0.39667*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
+// Curviest button
+/* SVG:
+ <svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <path d="M133 370C310.667 230 488.333 230 666 370" stroke="black" stroke-width="66.6667" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>
+ */
+struct CurviestButtonIcon : Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.size.width
+        let height = rect.size.height
+        var strokePath = Path()
+        strokePath.move(to: CGPoint(x: 0.16625*width, y: 0.4625*height))
+        strokePath.addCurve(to: CGPoint(x: 0.8325*width, y: 0.4625*height), control1: CGPoint(x: 0.38833*width, y: 0.2875*height), control2: CGPoint(x: 0.61042*width, y: 0.2875*height))
+        path.addPath(strokePath.strokedPath(StrokeStyle(lineWidth: 0.08333*width, lineCap: .round, lineJoin: .round, miterLimit: 4)))
+        return path
+    }
+}
+
 /// UIHostingController subclass that hides the visionOS glass background.
 internal class SDL_ClearHostingController<Content: View>: UIHostingController<Content> {
     override var preferredContainerBackgroundStyle: UIContainerBackgroundStyle {
@@ -167,9 +226,10 @@ struct SDL_SettingsPanelView: View {
 
     private var curvatureLabel: String {
         if let r = settings.curvatureRadius {
-            return "\(Int(r))mm"
+            return "\(Int(r))R"
+        } else {
+            return ""
         }
-        return "Flat"
     }
 
     var body: some View {
@@ -189,10 +249,19 @@ struct SDL_SettingsPanelView: View {
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
                 Divider().frame(height: 20)
-
-                Text(curvatureLabel)
-                    .font(.caption)
-                    .monospacedDigit()
+                
+                if let r = settings.curvatureRadius {
+                    if r > 1000.0 {
+                        CurvedButtonIcon()
+                            .frame(width: 24, height: 24)
+                    } else {
+                        CurviestButtonIcon()
+                            .frame(width: 24, height: 24)
+                    }
+                } else {
+                    FlatButtonIcon()
+                        .frame(width: 24, height: 24)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -208,50 +277,63 @@ struct SDL_SettingsPanelView: View {
             // Input type and dim controls
             @Bindable var settings = self.settings
             
-            Text("Settings").font(.title).padding(8)
+            Text("").font(.title).padding(8)
             
-            HStack {
-                Text("Dim surroundings:")
+            HStack() {
+                Spacer()
+                Image(systemName: "sun.max")
+
                 Toggle(isOn: $settings.isDimmed) {
-                    Label("", systemImage: settings.isDimmed ? "moon.fill" : "sun.max")
-                }.toggleStyle(.button)
+                }
+                .labelsHidden()
+                .tint(.secondary)
+
+                Image(systemName: "moon.fill")
+                Spacer()
             }
 
             // Curvature slider
             VStack(spacing: 4) {
-                Text("Curved Screen Radius: \(curvatureLabel)")
+                Text("\(curvatureLabel)")
                     .font(.caption)
-                Slider(value: $curvatureSlider, in: 0...1) {
-                    Text("Curvature")
-                } currentValueLabel: {
-                    Text("\(curvatureLabel)")
-                } ticks: {
-                    SliderTickContentForEach(Self.curvatureStepsSliderValue, id: \.self) { value in
-                        SliderTick(value)
+                
+                HStack() {
+                    FlatButtonIcon()
+                        .frame(width: 24, height: 24)
+                    
+                    Slider(value: $curvatureSlider, in: 0...1) {
+                    } currentValueLabel: {
+                        Text("\(curvatureLabel)")
+                    } ticks: {
+                        SliderTickContentForEach(Self.curvatureStepsSliderValue, id: \.self) { value in
+                            SliderTick(value)
+                        }
+                    } onEditingChanged: { editing in
+                        if !editing {
+                            SDL_VisionOS_SendCurvatureChanged(CGFloat(curvatureSlider))
+                        }
                     }
-                } onEditingChanged: { editing in
-                    if !editing {
-                        SDL_VisionOS_SendCurvatureChanged(CGFloat(curvatureSlider))
-                    }
-                }
-                .frame(width: 300)
-                .onAppear {
-                    if let curvature = settings.curvatureRadius {
-                        curvatureSlider = 1.0 - (curvature - Self.minimumCurvatureRadius)
+                    .onAppear {
+                        if let curvature = settings.curvatureRadius {
+                            curvatureSlider = 1.0 - (curvature - Self.minimumCurvatureRadius)
                             / (Self.maximumCurvatureRadius - Self.minimumCurvatureRadius)
-                    } else {
-                        curvatureSlider = 0.0
+                        } else {
+                            curvatureSlider = 0.0
+                        }
                     }
-                }
-                .onChange(of: curvatureSlider) {
-                    let clamped = max(0.0, min(1.0, curvatureSlider))
-                    if clamped == 0 {
-                        settings.curvatureRadius = nil
-                    } else {
-                        let radius = curvatureSlider * Self.minimumCurvatureRadius
+                    .onChange(of: curvatureSlider) {
+                        let clamped = max(0.0, min(1.0, curvatureSlider))
+                        if clamped == 0 {
+                            settings.curvatureRadius = nil
+                        } else {
+                            let radius = curvatureSlider * Self.minimumCurvatureRadius
                             + (1.0 - curvatureSlider) * Self.maximumCurvatureRadius
-                        settings.curvatureRadius = roundf(radius)
+                            settings.curvatureRadius = roundf(radius)
+                        }
                     }
+                
+                    CurviestButtonIcon()
+                        .frame(width: 24, height: 24)
                 }
             }
         }
