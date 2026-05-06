@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
     test_rgb32_swizzle_test(SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ARGB8888);
 
     test_rgb32_rgb565_swizzle_test(SDL_PIXELFORMAT_RGBA8888);
+    test_rgb32_rgb565_swizzle_test(SDL_PIXELFORMAT_ARGB8888);
 
     return 0;
 }

@@ -54,39 +54,8 @@ else
     exit 1
 fi
 
-# ============================================================
-# Step 1: Clean and create build directory
-# ============================================================
-echo "[1/5] Cleaning build directory..."
-rm -rf "${BUILD_DIR}"
-mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-# ============================================================
-# Step 2: Configure CMake (pure-C software renderer)
-# ============================================================
-echo ""
-echo "[2/5] Configuring CMake (pure-C software renderer)..."
-cmake .. -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DSDL_UNIX_CONSOLE_BUILD=ON \
-    -DSDL_TESTS=OFF \
-    -DSDL_SHARED=OFF \
-    -DSDL_STATIC=ON \
-    -DSDL_METAL=OFF \
-    -DSDL_RENDER_METAL=OFF \
-    -DSDL_OPENGL=OFF \
-    -DSDL_OPENGLES=OFF \
-    -DSDL_VULKAN=OFF \
-    -DSDL_GPU=OFF \
-    -DSDL_RENDER_GPU=OFF \
-    -DSDL_RENDER_VULKAN=OFF \
-    -DSDL_KMSDRM=OFF \
-    -DSDL_WAYLAND=OFF \
-    -DSDL_X11=OFF \
-    -DSDL_ARMNEON=OFF \
-    -DSDL_ARMSVE2=ON \
-    ${CMAKE_EXTRA}
 
 # ============================================================
 # Step 3: Build SDL3 static library
@@ -132,13 +101,16 @@ echo "OK: test_sve2_visual_ref compiled"
 # ============================================================
 echo ""
 echo "[5/5] Running baseline tests..."
-echo ""
-echo "--- Performance Baseline ---"
-"${BUILD_DIR}/test_sve2_baseline"
+#echo ""
+#echo "--- Performance Baseline 1 ---"
+#taskset -c 10 "${BUILD_DIR}/test_sve2_baseline"
 
 echo ""
 echo "--- Generating Reference Images ---"
 "${BUILD_DIR}/test_sve2_visual_ref"
+
+mv /tmp/sve2_ref_01_gradient_alpha_blend.bmp /tmp/sve2_new.bmp
+vbindiff /tmp/sw.bmp /tmp/sve2_new.bmp
 
 echo ""
 echo "=== Baseline Complete ==="
@@ -148,6 +120,3 @@ echo ""
 echo "Next steps:"
 echo "  1. Inspect images (macOS): open /tmp/sve2_ref_*.bmp"
 echo "  2. Inspect images (Linux):  xdg-open /tmp/sve2_ref_*.bmp"
-echo "  3. Commit tests:            git add -A && git commit -m 'Add SVE2 baseline tests'"
-echo "  4. Push to fork:            git push origin feature/sve2-armv9-blitter"
-echo "  5. On Radxa O6N:           clone, checkout branch, run this same script"
