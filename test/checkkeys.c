@@ -467,6 +467,9 @@ int main(int argc, char *argv[])
     /* Disable mouse emulation */
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
 
+    /* Enable text editing events and tell SDL that we'll handle rendering compositions. */
+    SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition");
+
     /* Initialize SDL */
     if (!SDLTest_CommonInit(state)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
