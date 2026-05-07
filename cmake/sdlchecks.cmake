@@ -888,7 +888,7 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 macro(CheckEGL)
-  if(SDL_OPENGL OR SDL_OPENGLES)
+  if((SDL_OPENGL OR SDL_OPENGLES) AND HAVE_SDL_LOADSO)
     cmake_push_check_state()
     find_package(OpenGL MODULE)
     list(APPEND CMAKE_REQUIRED_INCLUDES ${OPENGL_EGL_INCLUDE_DIRS})
@@ -1405,7 +1405,7 @@ macro(CheckKMSDRM)
       set(PC_LIBDRM_FOUND FALSE)
       set(PC_GBM_FOUND FALSE)
     endif()
-    if(PC_LIBDRM_FOUND AND PC_GBM_FOUND AND HAVE_OPENGL_EGL)
+    if(PC_LIBDRM_FOUND AND PC_GBM_FOUND AND SDL_VIDEO_OPENGL_EGL)
       set(HAVE_KMSDRM TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
