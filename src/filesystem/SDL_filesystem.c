@@ -142,7 +142,7 @@ bool SDL_GetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_SYS_GetPathInfo(path, info);
 }
 
-bool SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *userdata)
+bool SDL_AddPathWatch(const char *path, SDL_FileWatchCallback cb, void *userdata)
 {
     CHECK_PARAM(!path) {
         return SDL_InvalidParamError("path");
@@ -150,7 +150,18 @@ bool SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *u
     CHECK_PARAM(path[0] == '\0') {
         return SDL_InvalidParamError("path");
     }
-    return SDL_SYS_WatchPathForChanges(path, cb, userdata);
+    return SDL_SYS_AddPathWatch(path, cb, userdata);
+}
+
+void SDL_RemovePathWatch(const char *path, SDL_FileWatchCallback cb, void *userdata)
+{
+    CHECK_PARAM(!path) {
+        return;
+    }
+    CHECK_PARAM(path[0] == '\0') {
+        return;
+    }
+    SDL_SYS_RemovePathWatch(path, cb, userdata);
 }
 
 static bool EverythingMatch(const char *pattern, const char *str, bool *matched_to_dir)

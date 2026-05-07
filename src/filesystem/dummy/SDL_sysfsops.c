@@ -58,9 +58,13 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return SDL_Unsupported();
 }
 
-bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *userdata)
+bool SDL_SYS_AddPathWatch(const char *path, SDL_FileWatchCallback cb, void *userdata)
 {
     return SDL_Unsupported();
+}
+
+void SDL_SYS_RemovePathWatch(const char *path, SDL_FileWatchCallback cb, void *userdata)
+{
 }
 
 void SDL_SYS_QuitPathWatch(void)

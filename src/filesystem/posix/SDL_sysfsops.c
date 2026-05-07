@@ -451,9 +451,10 @@ static int SDL_inotify_init1(void)
     return fd;
 }
 #endif // HAVE_INOTIFY_INIT1
+
 #endif // HAVE_INOTIFY
 
-bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, void *user_data)
+bool SDL_SYS_AddPathWatch(const char *path, SDL_FileWatchCallback cb, void *user_data)
 {
 #ifdef HAVE_INOTIFY
     if (!watch_descriptor_table) {
@@ -487,7 +488,11 @@ bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, voi
             return false;
         }
     }
+
     const size_t slen = SDL_strlen(path);
+    if (slen >= PATH_MAX) {
+        return SDL_SetError("path too long");
+    }
     WatchEntry *watch_entry = SDL_malloc(sizeof(*watch_entry) + slen + 1);
     if (!watch_entry) {
         return false;
@@ -507,7 +512,7 @@ bool SDL_SYS_WatchPathForChanges(const char *path, SDL_FileWatchCallback cb, voi
         SDL_free(watch_entry);
         return SDL_SetError("inotify_add_watch failed: %s", strerror(errno));
     }
-    if (!SDL_InsertIntoHashTable(watch_descriptor_table, (void *)(intptr_t)wd, watch_entry, false)) {
+    if (!SDL_InsertIntoHashTable(watch_descriptor_table, (void *) (intptr_t) wd, watch_entry, false)) {
         inotify_rm_watch(inotify_fd, wd);
         SDL_UnlockMutex(file_watch_lock);
         SDL_free(watch_entry);
@@ -561,20 +566,24 @@ static int SDL_FileWatchThread(void *userdata)
 
         while (remain > 0) {
             const WatchEntry *watch_entry;
-            if (SDL_FindInHashTable(watch_descriptor_table, (void *)(intptr_t)buf.event.wd, (const void **)&watch_entry)) {
+            if (SDL_FindInHashTable(watch_descriptor_table, (void *) (intptr_t) buf.event.wd, (const void **) &watch_entry)) {
                 if (buf.event.mask & IN_Q_OVERFLOW) {
                     SendFileWatchEvent(SDL_EVENT_FILE_WATCH_ERROR, NULL);
+                } else if (buf.event.mask & IN_IGNORED) {
+                    // removing a watch generate an IN_IGNORED event
+                } else if (buf.event.mask & IN_UNMOUNT) {
+                    // file system containing watched path was unmounted
                 } else if (buf.event.len != 0) {
                     (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watch_entry->path, buf.event.name);
                     if (watch_entry->callback) {
                         watch_entry->callback(watch_entry->user_data, path);
                     }
-                    SendFileWatchEvent(SDL_EVENT_FILE_CHANGED, path);
+                    SendFileWatchEvent(SDL_EVENT_FILE_DATA_WRITTEN, path);
                 } else {
                     if (watch_entry->callback) {
                         watch_entry->callback(watch_entry->user_data, watch_entry->path);
                     }
-                    SendFileWatchEvent(SDL_EVENT_FILE_CHANGED, watch_entry->path);
+                    SendFileWatchEvent(SDL_EVENT_FILE_DATA_WRITTEN, watch_entry->path);
                 }
             }
 
@@ -589,7 +598,63 @@ static int SDL_FileWatchThread(void *userdata)
     }
     return 0;
 }
+
+typedef struct FindWatchEntryByValueData {
+    WatchEntry *entry_to_find;
+    const void *key_found;
+} FindWatchEntryByValueData;
+
+static bool SDLCALL FindWatchEntryByValue(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    FindWatchEntryByValueData *d = (FindWatchEntryByValueData *) userdata;
+    const WatchEntry *iterator = (const WatchEntry *) value;
+    if (SDL_strcmp(iterator->path, d->entry_to_find->path) == 0
+        && iterator->callback == d->entry_to_find->user_data
+        && iterator->user_data == d->entry_to_find->user_data) {
+        d->key_found = key;
+        return false;
+    }
+    return true;
+}
 #endif // HAVE_INOTIFY
+
+void SDL_SYS_RemovePathWatch(const char *path, SDL_FileWatchCallback cb, void *user_data)
+{
+#ifdef HAVE_INOTIFY
+    if (!watch_descriptor_table) {
+        return;
+    }
+    const size_t slen = SDL_strlen(path);
+    if (slen >= PATH_MAX) {
+        return;
+    }
+
+    union LongestWatchEntry{
+        WatchEntry entry;
+        char enougn_for_longest_path[sizeof(WatchEntry) + PATH_MAX];
+    } watch_entry;
+    watch_entry.entry.callback = cb;
+    watch_entry.entry.user_data = user_data;
+    SDL_memcpy(watch_entry.entry.path, path, slen + 1);
+    // remove separator at the end of the path, it is added back when
+    // concatenating directory path and file name
+    if (watch_entry.entry.path[slen - 1] == '/') {
+        watch_entry.entry.path[slen - 1] = '\0';
+    }
+
+    FindWatchEntryByValueData data = {&watch_entry.entry, (void *) (intptr_t) -1};
+    SDL_LockMutex(file_watch_lock);
+    if (!SDL_IterateHashTable(watch_descriptor_table, FindWatchEntryByValue, &data)) {
+        SDL_UnlockMutex(file_watch_lock);
+        return;
+    }
+    if (data.key_found != (void *) (intptr_t) -1) {
+        SDL_RemoveFromHashTable(watch_descriptor_table, data.key_found);
+        inotify_rm_watch(inotify_fd, (int) (intptr_t) data.key_found);
+    }
+    SDL_UnlockMutex(file_watch_lock);
+#endif // HAVE_INOTIFY
+}
 
 void SDL_SYS_QuitPathWatch(void)
 {

@@ -532,7 +532,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 /**
  * A function pointer used for callbacks that watch for files change.
  *
- * \param userdata what was passed as `userdata` to SDL_WatchPathForChanges().
+ * \param userdata what was passed as `userdata` to SDL_AddPathWatch().
  * \param path path of file that was modified.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
@@ -543,9 +543,9 @@ typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path);
 
 /**
  * This function adds a file watcher that will fires an app-provided callback
- * and send an SDL_EVENT_FILE_CHANGED event every time the file is modified. If
- * path is a directory, the callback will be called for every file modified in
- * that directory.
+ * and send an SDL_EVENT_FILE_CHANGED event every time data is written in the
+ * file. If path is a directory, the callback will be called for every file
+ * in that directory that has data written into.
  *
  * \param path file or directory path to watch.
  * \param callback a function that is called when the watched file is modified.
@@ -558,8 +558,25 @@ typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \sa SDL_FileWatchEvent
+ * \sa SDL_RemovePathWatch
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_WatchPathForChanges(const char *path, SDL_FileWatchCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddPathWatch(const char *path, SDL_FileWatchCallback callback, void *userdata);
+
+/**
+ * Remove an file watch callback added with SDL_AddPathWatch().
+ *
+ * This function takes the same input as SDL_AddPathWatch() to identify and
+ * delete the corresponding callback.
+ *
+ * \param path the path originally passed to SDL_AddPathWatch().
+ * \param callback the callback originally passed to SDL_AddPathWatch().
+ * \param userdata the pointer originally passed to SDL_AddPathWatch().
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \sa SDL_AddPathWatch
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_RemovePathWatch(const char *path, SDL_FileWatchCallback callback, void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

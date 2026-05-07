@@ -260,8 +260,8 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
     /* File watch events */
-    SDL_EVENT_FILE_CHANGED = 0x1500, /**< A watched file was written. */
-    SDL_EVENT_FILE_WATCH_ERROR,      /**< Watched files may have been modified, but the events are lost. */
+    SDL_EVENT_FILE_DATA_WRITTEN = 0x1500, /**< Data was written in a watched file. */
+    SDL_EVENT_FILE_WATCH_ERROR,           /**< Watched files may have been modified, but the events are lost. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -977,16 +977,16 @@ typedef struct SDL_SensorEvent
 /**
  * File watch event structure (event.file_watch.*)
  *
- * You can add file to the watch list with SDL_WatchPathForChanges().
+ * You can add file to the watch list with SDL_AddPathWatch().
  *
- * \sa SDL_WatchPathForChanges
+ * \sa SDL_AddPathWatch
  */
 typedef struct SDL_FileWatchEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_FILE_CHANGED or SDL_EVENT_FILE_WATCH_ERROR */
+    SDL_EventType type; /**< SDL_EVENT_FILE_DATA_WRITTEN or SDL_EVENT_FILE_WATCH_ERROR */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    const char *path;   /**< Path of the modified file for SDL_EVENT_FILE_CHANGED, NULL for SDL_EVENT_FILE_WATCH_ERROR */
+    const char *path;   /**< Path of the modified file for SDL_EVENT_FILE_DATA_WRITTEN, NULL for SDL_EVENT_FILE_WATCH_ERROR */
 } SDL_FileWatchEvent;
 
 /**
