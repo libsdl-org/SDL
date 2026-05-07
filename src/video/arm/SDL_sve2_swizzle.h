@@ -720,7 +720,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
 
-    assert(srcbpp == dstbpp == 4);
+    assert((srcbpp == 4) && (dstbpp == 4));
 
     bool fill_alpha = (!dstfmt->Amask);
 
@@ -901,7 +901,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
         }
         break;
 
-    case SDL_PIXELFORMAT_XBRG8888:
+    case SDL_PIXELFORMAT_XBGR8888:
     case SDL_PIXELFORMAT_ABGR8888:
         switch (dstfmt->format) {
         case SDL_PIXELFORMAT_ARGB8888:
