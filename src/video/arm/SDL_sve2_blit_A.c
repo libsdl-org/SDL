@@ -118,41 +118,41 @@ void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
         /* fill alpha */
         if (3 == dstfmt->Ashift >> 3) {
             /* ACCC */
-            sdl_sve_accc8888_blend_to_nccc888_fill_alpha(src,
-                                                         srcstride,
-                                                         dst,
-                                                         dststride,
-                                                         width,
-                                                         height);
+            sdl_sve_accc_blend_to_accc_fill_alpha(  src,
+                                                    srcstride,
+                                                    dst,
+                                                    dststride,
+                                                    width,
+                                                    height);
         } else {
             /* CCCA */
             assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca8888_blend_to_cccn888_fill_alpha(src,
-                                                         srcstride,
-                                                         dst,
-                                                         dststride,
-                                                         width,
-                                                         height);
+            sdl_sve_ccca_blend_to_ccca_fill_alpha(  src,
+                                                    srcstride,
+                                                    dst,
+                                                    dststride,
+                                                    width,
+                                                    height);
         }
     } else {
         /* copy alpha */
         if (3 == dstfmt->Ashift >> 3) {
             /* ACCC */
-            sdl_sve_accc8888_blend_to_nccc888_copy_alpha(src,
-                                                         srcstride,
-                                                         dst,
-                                                         dststride,
-                                                         width,
-                                                         height);
+            sdl_sve_accc_blend_to_accc_copy_alpha(  src,
+                                                    srcstride,
+                                                    dst,
+                                                    dststride,
+                                                    width,
+                                                    height);
         } else {
             /* CCCA */
             assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca8888_blend_to_cccn888_copy_alpha(src,
-                                                         srcstride,
-                                                         dst,
-                                                         dststride,
-                                                         width,
-                                                         height);
+            sdl_sve_ccca_blend_to_ccca_copy_alpha(  src,
+                                                    srcstride,
+                                                    dst,
+                                                    dststride,
+                                                    width,
+                                                    height);
         }
     }
 #endif
@@ -230,5 +230,9 @@ void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
+size_t SDL_GetSVEVectorSize(void)
+{
+    return svlen(svundef_u8()) * 8;
+}
 
 #endif /* SDL_SVE2_INTRINSICS */

@@ -31,6 +31,7 @@ void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info);
 void Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info);
 
 void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info);
+size_t SDL_GetSVEVectorSize(void);
 
 #endif /* SDL_SVE2_INTRINSICS */
 
