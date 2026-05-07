@@ -1976,20 +1976,24 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 state = SDL_POWERSTATE_ON_BATTERY;
                 break;
             }
-            switch (battery_info->BatteryLevel) {
-            case BATTERY_LEVEL_EMPTY:
-                percent = 10;
-                break;
-            case BATTERY_LEVEL_LOW:
-                percent = 40;
-                break;
-            case BATTERY_LEVEL_MEDIUM:
-                percent = 70;
-                break;
-            default:
-            case BATTERY_LEVEL_FULL:
-                percent = 100;
-                break;
+            if (state == SDL_POWERSTATE_ON_BATTERY || SDL_POWERSTATE_CHARGING) {
+                switch (battery_info->BatteryLevel) {
+                case BATTERY_LEVEL_EMPTY:
+                    percent = 10;
+                    break;
+                case BATTERY_LEVEL_LOW:
+                    percent = 40;
+                    break;
+                case BATTERY_LEVEL_MEDIUM:
+                    percent = 70;
+                    break;
+                default:
+                case BATTERY_LEVEL_FULL:
+                    percent = 100;
+                    break;
+                }
+            } else {
+                percent = -1;
             }
             SDL_SendJoystickPowerInfo(joystick, state, percent);
         }
