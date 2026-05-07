@@ -84,12 +84,12 @@
                     &vTargetLow16x4,                          \
                     &vTargetHigh16x4);                        \
                                                               \
-        svset4(vSourceLow16x4,                                \
-               (ma_alpha_idx),                                \
-               svdup_u16(0xFF));                              \
-        svset4(vSourceHigh16x4,                               \
-               (ma_alpha_idx),                                \
-               svdup_u16(0xFF));                              \
+        vSourceLow16x4 = svset4(vSourceLow16x4,               \
+                                (ma_alpha_idx),               \
+                                svdup_u16(0xFF));             \
+        vSourceHigh16x4 = svset4(vSourceHigh16x4,             \
+                                 (ma_alpha_idx),              \
+                                 svdup_u16(0xFF));            \
                                                               \
         /* process low half */                                \
         ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x4,   \
@@ -151,10 +151,6 @@
 #define sdl_sve_rgb32_blend_op_copy_alpha(ma_alpha_chn_idx)
 #endif
 
-#ifndef sdl_sve_rgb32_blend_op_preprocessing
-#define sdl_sve_rgb32_blend_op_preprocessing(ma_alpha_chn_idx)
-#endif
-
 /*
  * Source: ACCC and CCCA
  */
@@ -184,7 +180,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_accc_stride_blend_to_accc_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
@@ -198,9 +193,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_ccca_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(0);
-
     );
 }
 
@@ -322,7 +315,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_321a_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
@@ -338,7 +330,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_321a_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
@@ -396,7 +387,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_a321_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
@@ -412,7 +402,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_a321_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
@@ -470,7 +459,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_accc_stride_blend_to_ccca_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
@@ -486,7 +474,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_accc_stride_blend_to_ccca_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
@@ -544,7 +531,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_accc_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
@@ -560,9 +546,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_accc_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 
@@ -618,9 +602,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(3);
-
     );
 }
 
@@ -634,9 +616,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(3);
-
     );
 }
 
@@ -692,9 +672,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-
                               sdl_sve_rgb32_blend_op_fill_alpha(0);
-
     );
 }
 
@@ -707,9 +685,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_copy_alph
     size_t uStride)
 {
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-
                               sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 
@@ -770,9 +746,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_fill_alpha(3);
-
     );
 }
 
@@ -787,8 +761,8 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
-                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
+    );
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -802,7 +776,6 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_ccca_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
@@ -819,9 +792,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_ccca_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 
@@ -928,9 +899,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_fill_alpha(3);
-
     );
 }
 
@@ -945,9 +914,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_copy_alpha(3);
-
     );
 }
 
@@ -1004,9 +971,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_fill_alpha(0);
-
     );
 }
 
@@ -1021,9 +986,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 
@@ -1080,9 +1043,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_fill_alpha(3);
-
     );
 }
 
@@ -1097,9 +1058,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_copy_alpha(3);
-
     );
 }
 
@@ -1156,9 +1115,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_fill_alpha(0);
-
     );
 }
 
@@ -1173,9 +1130,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 
@@ -1232,9 +1187,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_fill_alpha(3);
-
     );
 }
 
@@ -1249,9 +1202,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                                       sdl_sve_rgb32_blend_op_preprocessing(3);
                                        sdl_sve_rgb32_blend_op_copy_alpha(3);
-
     );
 }
 
@@ -1308,9 +1259,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_fill_alpha(0);
-
     );
 }
 
@@ -1324,9 +1273,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_copy_alph
 {
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                                       sdl_sve_rgb32_blend_op_preprocessing(0);
                                        sdl_sve_rgb32_blend_op_copy_alpha(0);
-
     );
 }
 

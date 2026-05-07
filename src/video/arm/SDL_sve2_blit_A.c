@@ -50,15 +50,6 @@
                                                      vMask);             \
     }
 
-#undef sdl_sve_rgb32_blend_op_preprocessing
-#define sdl_sve_rgb32_blend_op_preprocessing(ma_alpha_chn_idx)          \
-    do {                                                                \
-        if (sve_src_chn_idx == (ma_alpha_chn_idx)) {                    \
-            sve_source_u16 = svdup_u16(0xFF);                           \
-        }                                                               \
-        svset4(sve_source_u16x4, (ma_alpha_chn_idx), svdup_u16(0xFF));  \
-    } while(0)
-
 #undef sdl_sve_rgb32_blend_to_rgb565_op
 #define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)               \
     do {                                                                 \
