@@ -31,6 +31,9 @@ internal struct SDL_CurvedContentView: View {
     /// Settings object provided by the caller which determines the UI state.
     let settings: SDL_CurvedContentSettings
     
+    /// Information about the window snap status
+    @Environment(\.surfaceSnappingInfo) private var snappedStatus
+    
     /// Closure which is called when the content is ready to present.
     let onContentReady: @MainActor () -> Void
     
@@ -161,10 +164,12 @@ internal struct SDL_CurvedContentView: View {
             let frame = proxy.frame(in: .local)
             SDL_VisionOS_SendSizeChanged(Int(frame.size.width), Int(frame.size.height))
         }
-        .background {
-            Color.white
-                .opacity(0.001)
-                .pointerStyle(.shape(Circle(), size: .zero))
+        .overlay {
+            if mouseInputEnabled {
+                Color.white
+                    .opacity(0.001)
+                    .pointerStyle(.shape(Circle(), size: .zero))
+            }
         }
         .gesture(
             SpatialEventGesture()
@@ -260,6 +265,9 @@ internal struct SDL_CurvedContentView: View {
             } else {
                 curvedUIEntity.components.set(CollisionComponent(shapes: []))
             }
+        }
+        .onChange(of: snappedStatus) {
+            helper.updateSnappedStatus(snapped: snappedStatus.isSnapped)
         }
         .preferredSurroundingsEffect(settings.isDimmed ? .dark : nil)
         .frame(depth: 0)

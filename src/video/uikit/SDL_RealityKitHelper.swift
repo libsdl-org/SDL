@@ -121,6 +121,9 @@ internal class SDL_RealityKitHelper {
         /// The bounding box of the mesh
         var bounds: BoundingBox = BoundingBox()
     
+        /// Current snapped status
+        var snapped: Bool = false
+
         /// Converts a 3D position on the mesh surface (in meters, relative to mesh center)
         /// to normalized texture coordinates (0..1, 0..1).
         func normalizedUV(fromMeshPosition position: SIMD3<Float>) -> SIMD2<Float> {
@@ -140,7 +143,7 @@ internal class SDL_RealityKitHelper {
             }
         }
     }
-    
+
     init(meshTopology: CurvedMeshTopology = CurvedMeshTopology(),
          meshGeometry: CurvedMeshGeometry = CurvedMeshGeometry(width: 1, height: 1)) {
         self.meshTopology = meshTopology
@@ -154,6 +157,12 @@ internal class SDL_RealityKitHelper {
     }
     
     // MARK: - Mesh Generation (LowLevelMesh)
+    
+    func updateSnappedStatus(snapped: Bool) {
+        var geometry = self.meshGeometry
+        geometry.snapped = snapped
+        updateMeshGeometry(geometry)
+    }
     
     func updateMeshSize(width: Float, height: Float) {
         var geometry = self.meshGeometry
@@ -179,7 +188,6 @@ internal class SDL_RealityKitHelper {
         let width = meshGeometry.width
         let height = meshGeometry.height
         let curvatureRadius = meshGeometry.curvatureRadius
-        let offsetZ: Float = 0.005
         
         let segmentsX = meshTopology.segmentsX
         let segmentsY = meshTopology.segmentsY
@@ -208,7 +216,8 @@ internal class SDL_RealityKitHelper {
                     // Normal points toward viewer for convex curve
                     curve_normals.append(-vec)
                 }
-             
+                let offsetZ = meshGeometry.snapped ? 0 : -curve_positions[0].z
+                
                 for y in 0...segmentsY {
                     let v = Float(y) / Float(segmentsY) * 2 - 1
                     let posY = v * height / 2
@@ -239,7 +248,7 @@ internal class SDL_RealityKitHelper {
                         let posX = (u - 0.5) * width
 
                         let idx = y * (segmentsX + 1) + x
-                        let position = SIMD3<Float>(posX, posY, offsetZ)
+                        let position = SIMD3<Float>(posX, posY, 0)
                         vertices[idx].position = position
                         vertices[idx].normal = SIMD3<Float>(0, 0, -1)
                         vertices[idx].uv = SIMD2<Float>(u, v)

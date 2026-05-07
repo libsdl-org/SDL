@@ -158,7 +158,7 @@ internal class SDL_CurvedContentHosting: NSObject {
         UIView.animate(withDuration: 0.1) {
             if sceneState == .interactive {
                 hostingController.ornaments = [
-                    UIHostingOrnament(sceneAnchor: .bottom, contentAlignment: .top) {
+                    UIHostingOrnament(sceneAnchor: .leading, contentAlignment: .trailing) {
                         SDL_SettingsPanelView(settings: settings)
                     }
                 ]
@@ -250,7 +250,7 @@ struct SDL_SettingsPanelView: View {
 
     private var collapsedBar: some View {
         Button(action: { withAnimation { isExpanded = true } }) {
-            HStack(spacing: 12) {
+            VStack(spacing: 12) {
                 Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
