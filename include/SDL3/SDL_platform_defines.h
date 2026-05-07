@@ -317,7 +317,7 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(__NGAGE__)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__NGAGE__)
 
 /**
  * A preprocessor macro that is only defined if compiling for Windows.
@@ -417,7 +417,7 @@
 #define SDL_PLATFORM_WIN32 1
 
 #endif
-#endif /* defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN) */
+#endif /* (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__NGAGE__) */
 
 
 /* This is to support generic "any GDK" separate from a platform-specific GDK */
