@@ -120,17 +120,6 @@ internal class SDL_RealityKitHelper {
         
         /// The bounding box of the mesh
         var bounds: BoundingBox = BoundingBox()
-        
-        /// The offset of the curve center from (0, 0, 0), in the z axis.
-        var zOffset: Float {
-            if curvatureRadius > 0 {
-                let halfWidth = bounds.extents.x / 2
-                let d = sqrt(curvatureRadius * curvatureRadius - halfWidth * halfWidth)
-                return d
-            } else {
-                return 0
-            }
-        }
     
         /// Converts a 3D position on the mesh surface (in meters, relative to mesh center)
         /// to normalized texture coordinates (0..1, 0..1).
@@ -148,27 +137,6 @@ internal class SDL_RealityKitHelper {
                 let u = (position.x / width) + 0.5
                 let v = (position.y / height) + 0.5
                 return SIMD2(u, v)
-            }
-        }
-        
-        /// Inverse of ``normalizedUV(fromMeshPosition:)``.
-        func meshPosition(fromNormalizedUV uv: SIMD2<Float>) -> SIMD3<Float> {
-            let u = uv.x
-            let v = uv.y
-
-            if curvatureRadius > 0 {
-                let halfWidth = bounds.extents.x / 2
-                let theta = asinf(halfWidth / curvatureRadius)
-
-                let angle = (2 * u - 1) * theta
-                let x = curvatureRadius * sinf(angle)
-                let y = (v - 0.5) * height
-                let z = curvatureRadius * cosf(angle) - zOffset
-                return SIMD3(x, y, z)
-            } else {
-                let x = (u - 0.5) * width
-                let y = (v - 0.5) * height
-                return SIMD3(x, y, 0)
             }
         }
     }

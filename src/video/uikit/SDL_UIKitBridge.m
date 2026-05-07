@@ -124,7 +124,7 @@ void SDL_VisionOS_UpdateRelativeMode()
 }
 
 // Called from Swift scene delegates when visionOS delivers a touch event
-void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y)
+void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, float x, float y)
 {
     const SDL_TouchID directTouchId = 1;
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();

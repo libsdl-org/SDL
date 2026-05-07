@@ -108,10 +108,8 @@ internal struct SDL_CurvedContentView: View {
                                    Float(loc.y) * metersPerPoint,
                                    Float(loc.z) * metersPerPoint)
         let uv = helper.meshGeometry.normalizedUV(fromMeshPosition: meshPos)
-        
-        NSLog("[SDL_CurvedContentView] Received Touch at UV: \(uv)")
 
-        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, CGFloat(uv.x), CGFloat(uv.y))
+        SDL_VisionOS_SendTouch(event.timestamp, fingerID, eventType, uv.x, uv.y)
     }
 
     var body: some View {

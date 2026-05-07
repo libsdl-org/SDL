@@ -33,7 +33,7 @@ void SDL_VisionOS_SendCurvatureChanged(float curvature);
 void SDL_VisionOS_SendPointerMode(bool enabled);
 
 // Called from Swift scene delegates when visionOS delivers a touch event
-void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, CGFloat x, CGFloat y);
+void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, float x, float y);
 
 // Called from Swift to register the RealityKit hosting object with the SDL window
 void SDL_VisionOS_SetWindowRealityKitHosting(id hosting);
