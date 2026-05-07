@@ -728,6 +728,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
     int dststride = dstskip + dstbpp * width;
 
     switch (srcfmt->format) {
+    case SDL_PIXELFORMAT_XRGB8888:
     case SDL_PIXELFORMAT_ARGB8888:
 
         switch (dstfmt->format) {
@@ -814,6 +815,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
         }
         break;
 
+    case SDL_PIXELFORMAT_RGBX8888:
     case SDL_PIXELFORMAT_RGBA8888:
         switch (dstfmt->format) {
         case SDL_PIXELFORMAT_ARGB8888:
@@ -899,6 +901,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
         }
         break;
 
+    case SDL_PIXELFORMAT_XBRG8888:
     case SDL_PIXELFORMAT_ABGR8888:
         switch (dstfmt->format) {
         case SDL_PIXELFORMAT_ARGB8888:
@@ -984,6 +987,7 @@ static inline ARM_NONNULL(1) void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_Bl
         }
         break;
 
+    case SDL_PIXELFORMAT_BGRX8888:
     case SDL_PIXELFORMAT_BGRA8888:
         switch (dstfmt->format) {
         case SDL_PIXELFORMAT_ARGB8888:
@@ -1241,6 +1245,7 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
     int dststride = dstskip + dstbpp * width;
 
     switch (srcfmt->format) {
+    case SDL_PIXELFORMAT_XRGB8888:
     case SDL_PIXELFORMAT_ARGB8888:
         sdl_sve_argb8888_blend_to_rgb565(src,
                                          srcstride,
@@ -1250,6 +1255,7 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
                                          height);
         break;
 
+    case SDL_PIXELFORMAT_RGBX8888:
     case SDL_PIXELFORMAT_RGBA8888:
         sdl_sve_rgba8888_blend_to_rgb565(src,
                                          srcstride,
@@ -1259,6 +1265,7 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
                                          height);
         break;
 
+    case SDL_PIXELFORMAT_XBGR8888:
     case SDL_PIXELFORMAT_ABGR8888:
         sdl_sve_abgr8888_blend_to_rgb565(src,
                                          srcstride,
@@ -1268,6 +1275,7 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
                                          height);
         break;
 
+    case SDL_PIXELFORMAT_BGRX8888:
     case SDL_PIXELFORMAT_BGRA8888:
         sdl_sve_bgra8888_blend_to_rgb565(src,
                                          srcstride,
