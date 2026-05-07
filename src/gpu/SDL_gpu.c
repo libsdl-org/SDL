@@ -1363,10 +1363,6 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
         } else {
             if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
                 // Array Texture Validation
-                if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
-                    SDL_assert_release(!"For array textures: usage must not contain DEPTH_STENCIL_TARGET");
-                    failed = true;
-                }
                 if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
                     SDL_assert_release(!"For array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
                     failed = true;
