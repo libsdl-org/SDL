@@ -61,6 +61,53 @@
         pwTarget += sve_iteration_advance;                    \
     }
 
+#define sdl_sve_rgb32_no_alpha_stride_impl(                   \
+    ma_alpha_idx,                                             \
+    ma_sve_chn_iterator,                                      \
+    ...)                                                      \
+    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    {                                                         \
+                                                              \
+        svuint16x4_t vSourceLow16x4 = svundef4_u16();         \
+        svuint16x4_t vSourceHigh16x4 = svundef4_u16();        \
+                                                              \
+        svuint16x4_t vTargetLow16x4 = svundef4_u16();         \
+        svuint16x4_t vTargetHigh16x4 = svundef4_u16();        \
+                                                              \
+        svld4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwSource,                      \
+                    &vSourceLow16x4,                          \
+                    &vSourceHigh16x4);                        \
+                                                              \
+        svld4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwTarget,                      \
+                    &vTargetLow16x4,                          \
+                    &vTargetHigh16x4);                        \
+                                                              \
+        svset4(vSourceLow16x4,                                \
+               (ma_alpha_idx),                                \
+               svdup_u16(0xFF));                              \
+        svset4(vSourceHigh16x4,                               \
+               (ma_alpha_idx),                                \
+               svdup_u16(0xFF));                              \
+                                                              \
+        /* process low half */                                \
+        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x4,   \
+                            __VA_ARGS__);                     \
+                                                              \
+        /* process high half */                               \
+        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x4, \
+                            __VA_ARGS__);                     \
+                                                              \
+        svst4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwTarget,                      \
+                    vTargetLow16x4,                           \
+                    vTargetHigh16x4);                         \
+                                                              \
+        pwSource += sve_iteration_advance;                    \
+        pwTarget += sve_iteration_advance;                    \
+    }
+
 #define sdl_sve_rgb32_to_rgb565_stride_impl(ma_sve_chn_iterator, ...) \
     sdl_sve_stride_loop_rgb32(uStride, vTailPred)                     \
     {                                                                 \
@@ -721,10 +768,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_fill_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
@@ -738,9 +785,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_copy_alpha(3););
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -752,10 +800,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_ccca_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
@@ -769,10 +817,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_ccca_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
@@ -878,9 +926,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_fill_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
@@ -894,9 +943,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_copy_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
@@ -952,9 +1002,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
@@ -968,9 +1019,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
@@ -1026,9 +1078,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_fill_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
@@ -1042,9 +1095,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_copy_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
@@ -1100,9 +1154,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
@@ -1116,9 +1171,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
@@ -1174,9 +1230,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_fill_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
 
     );
 }
@@ -1190,9 +1247,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_copy_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                              sdl_sve_rgb32_blend_op_preprocessing(3);
-                              sdl_sve_rgb32_blend_op_copy_alpha(3);
+    sdl_sve_rgb32_no_alpha_stride_impl(3,
+                                       sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
+                                       sdl_sve_rgb32_blend_op_preprocessing(3);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
 
     );
 }
@@ -1248,9 +1306,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_fill_alph
     size_t uStride)
 {
 
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
 
     );
 }
@@ -1263,9 +1322,10 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_copy_alph
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
 {
-    sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                              sdl_sve_rgb32_blend_op_preprocessing(0);
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
+    sdl_sve_rgb32_no_alpha_stride_impl(0,
+                                       sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
+                                       sdl_sve_rgb32_blend_op_preprocessing(0);
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
 
     );
 }
@@ -1311,7 +1371,6 @@ static inline ARM_NONNULL(1, 3) void sdl_sve_123x_blend_to_321a_copy_alpha(uint8
         pchTarget += uTargetStride;
     }
 }
-
 
 #if defined(SDL_PLATFORM_ANDROID)
 __attribute__((target("arch=armv8-a+sve2")))
