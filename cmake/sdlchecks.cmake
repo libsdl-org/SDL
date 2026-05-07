@@ -1437,6 +1437,7 @@ macro(CheckKMSDRM)
 endmacro()
 
 macro(CheckLibUDev)
+  set(HAVE_LIBUDEV_H FALSE)
   if(SDL_LIBUDEV)
     check_include_file("libudev.h" HAVE_LIBUDEV_HEADER)
     if(HAVE_LIBUDEV_HEADER)
