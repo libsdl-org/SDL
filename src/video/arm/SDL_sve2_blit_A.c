@@ -230,6 +230,9 @@ void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
+#if defined(SDL_PLATFORM_ANDROID)
+__attribute__((target("arch=armv8-a+sve2")))
+#endif
 size_t SDL_GetSVEVectorSize(void)
 {
     return svlen(svundef_u8()) * 8;
