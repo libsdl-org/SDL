@@ -956,7 +956,7 @@ macro(CheckOpenGLES)
 endmacro()
 
 macro(CheckVulkan)
-  if(SDL_VULKAN)
+  if(SDL_VULKAN AND HAVE_SDL_LOADSO)
     set(SDL_VIDEO_VULKAN 1)
     set(HAVE_VULKAN TRUE)
     if(SDL_RENDER_VULKAN)
