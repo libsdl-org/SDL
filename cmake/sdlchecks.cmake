@@ -671,7 +671,7 @@ endmacro()
 # - SDL_WAYLAND_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
-  if(SDL_WAYLAND)
+  if(SDL_WAYLAND AND SDL_VIDEO_OPENGL_EGL)
     set(WAYLAND_PKG_CONFIG_SPEC "wayland-client>=1.18" wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
     if(PKG_CONFIG_FOUND)
       pkg_check_modules(PC_WAYLAND IMPORTED_TARGET ${WAYLAND_PKG_CONFIG_SPEC})
