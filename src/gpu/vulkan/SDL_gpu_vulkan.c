@@ -2696,8 +2696,10 @@ static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
     memoryBarrier.subresourceRange.baseArrayLayer = textureSubresource->layer;
     memoryBarrier.subresourceRange.layerCount = 1;
 
-    // VK_KHR_maintenance9 adds the ability to independently transition arbitrary subsets of slices in a 3D texture,
-    // we need to extend the barrier layer count in order to preserve intended behaviour when that extension is enabled.
+    // VK_KHR_maintenance9 adds the ability to independently transition arbitrary subsets of slices in a 3D texture
+    // but otherwise it is not necessarily supported by the driver.
+    // As a workaround we have to transition the whole texture instead of just the subresource.
+    // If VK_KHR_maintenance9 becomes widely supported, this can be removed.
     // See https://docs.vulkan.org/features/latest/features/proposals/VK_KHR_maintenance9.html#_barriers_with_2d_array_compatible_3d_images
     if (textureSubresource->parent->container->header.info.type == SDL_GPU_TEXTURETYPE_3D) {
         memoryBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
