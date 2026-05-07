@@ -45,7 +45,7 @@ typedef LONG NTSTATUS;
 #define _WIN32_WINNT_WIN8 0x0602
 #endif
 
-#if defined(__CYGWIN__) && !defined(HIDAPI_USING_SDL_RUNTIME)
+#if defined(__CYGWIN__) && !defined(HIDAPI_USING_SDL_RUNTIME) && !defined(__MSYS__)
 #include <ntdef.h>
 #include <wctype.h>
 #define _wcsdup wcsdup

@@ -307,7 +307,7 @@
 #define SDL_PLATFORM_SOLARIS 1
 #endif
 
-#if defined(__CYGWIN__)
+#if defined(__CYGWIN__) && !defined(__MSYS__)
 
 /**
  * A preprocessor macro that is only defined if compiling for Cygwin.
