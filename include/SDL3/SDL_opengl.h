@@ -84,7 +84,7 @@
 #  else
 #    define GLAPIENTRY __stdcall
 #  endif
-#elif defined(__CYGWIN__) && defined(USE_OPENGL32) /* use native windows opengl32 */
+#elif defined(__CYGWIN__) /* && defined(USE_OPENGL32) */ /* use native windows opengl32 */
 #  define GLAPI extern
 #  define GLAPIENTRY __stdcall
 #elif (defined(__GNUC__) && __GNUC__ >= 4) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))

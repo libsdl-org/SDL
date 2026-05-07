@@ -48,7 +48,7 @@
 // These headers have system specific definitions, so aren't included above
 #include <SDL3/SDL_vulkan.h>
 
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -451,7 +451,7 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 
 // Obviously we can't use SDL_LoadObject() to load SDL.  :)
 // Also obviously, we never close the loaded library, once we accept it.
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 static HMODULE sdlapi_lib = NULL;  // The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
 
 static SDL_INLINE void unload_sdlapi_library(void)
@@ -509,7 +509,7 @@ static void dynapi_warn(const char *msg)
     const char *caption = "SDL Dynamic API Failure!";
     (void)caption;
 // SDL_ShowSimpleMessageBox() is a too heavy for here.
-#if (defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
 #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);

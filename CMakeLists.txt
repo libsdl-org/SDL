@@ -369,9 +369,9 @@ dep_option(SDL_WAYLAND_LIBDECOR_SHARED     "Dynamically load libdecor support" O
 dep_option(SDL_RPI                 "Use Raspberry Pi video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_ROCKCHIP            "Use ROCKCHIP Hardware Acceleration video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_COCOA               "Use Cocoa video driver" ON "APPLE" OFF)
-dep_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ON "SDL_AUDIO OR SDL_VIDEO;WINDOWS" OFF)
-dep_option(SDL_XINPUT              "Use Xinput for Windows" ON "WINDOWS" OFF)
-dep_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ON "WINDOWS;SDL_AUDIO" OFF)
+dep_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ON "SDL_AUDIO OR SDL_VIDEO;WINDOWS OR CYGWIN" OFF)
+dep_option(SDL_XINPUT              "Use Xinput for Windows" ON "WINDOWS OR CYGWIN" OFF)
+dep_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ON "WINDOWS OR CYGWIN;SDL_AUDIO" OFF)
 dep_option(SDL_RENDER_D3D          "Enable the Direct3D 9 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D11        "Enable the Direct3D 11 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
@@ -562,19 +562,6 @@ else()
    # silently ignored by the compiler and the build will still succeed.
    if(((LINUX AND LIBC_IS_GLIBC) OR ANDROID) AND (NOT USE_TCC))
     message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
-  endif()
-endif()
-
-if(CYGWIN)
-  # We build SDL on cygwin without the UNIX emulation layer
-  sdl_include_directories(PUBLIC SYSTEM "/usr/include/mingw")
-  cmake_push_check_state()
-  string(APPEND CMAKE_REQUIRED_FLAGS " -mno-cygwin")
-  check_c_source_compiles("int main(int argc, char **argv) { return 0; }"
-    HAVE_GCC_NO_CYGWIN)
-  cmake_pop_check_state()
-  if(HAVE_GCC_NO_CYGWIN)
-    sdl_shared_link_options("-mno-cygwin")
   endif()
 endif()
 
@@ -1165,7 +1152,7 @@ if(SDL_LIBC)
     vsnprintf vsscanf
     wcsnlen wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr wcstol
   )
-  if(WINDOWS)
+  if(WINDOWS OR CYGWIN)
     list(APPEND symbols_to_check
       _copysign _fseeki64 _strrev _ui64toa _uitoa _ultoa _wcsdup
     )
@@ -1444,7 +1431,7 @@ if(SDL_CAMERA)
   #endif()
 endif()
 
-if(UNIX OR APPLE)
+if((UNIX OR APPLE) AND (NOT CYGWIN))
   # Relevant for Unix/Darwin only
   set(DYNAPI_NEEDS_DLOPEN 1)
   CheckDLOPEN()
@@ -1843,7 +1830,7 @@ elseif(EMSCRIPTEN)
   CheckPTHREAD()
   CheckLibUnwind()
 
-elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
 
   set(SDL_DISABLE_DLOPEN_NOTES TRUE)
   if(SDL_DLOPEN_NOTES)
@@ -2234,7 +2221,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set (HAVE_VSNPRINTF 0)
     set (USE_POSIX_SPAWN 1)
   endif()
-elseif(WINDOWS)
+elseif(WINDOWS OR CYGWIN)
   enable_language(CXX)
   check_c_source_compiles("
     #include <windows.h>
@@ -2268,7 +2255,7 @@ elseif(WINDOWS)
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
         set(USE_WINSDK_DIRECTX TRUE)
     endif()
-    if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
+    if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
       if("$ENV{DXSDK_DIR}" STREQUAL "")
         message(FATAL_ERROR "DIRECTX requires the \$DXSDK_DIR environment variable to be set")
       endif()
@@ -2287,7 +2274,7 @@ elseif(WINDOWS)
     cmake_pop_check_state()
     if(HAVE_D3D9_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
-      if(NOT MINGW AND NOT USE_WINSDK_DIRECTX)
+      if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
           set(PROCESSOR_ARCH "x64")
         else()
@@ -4105,12 +4092,13 @@ if(SDL_SHARED)
       )
     endif()
   elseif(UNIX AND NOT ANDROID)
+    # NOTE: the includes CYGWIN, too
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
       SOVERSION "${SDL_SO_VERSION_MAJOR}"
     )
   else()
-    if(WINDOWS OR CYGWIN)
+    if(WINDOWS)
       set_target_properties(SDL3-shared PROPERTIES
         PREFIX ""
       )

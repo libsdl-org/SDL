@@ -374,7 +374,7 @@ if(MACOS)
             testnativecocoa.m
             testnativex11.c
     )
-elseif(WINDOWS)
+elseif(WINDOWS OR CYGWIN)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
@@ -671,7 +671,7 @@ function(add_sdl_test TEST TARGET)
             COMMAND ${command}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
-        if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+        if((WIN32 OR CYGWIN) AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
             set_property(TEST ${TEST} APPEND PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>")
         endif()
         if(NOT notrackmem)
