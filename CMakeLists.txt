@@ -2199,7 +2199,7 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
 
   set(SDL_STORAGE_GENERIC 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/storage/generic/*.c")
-  if(LINUX)
+  if(LINUX AND HAVE_SDL_LOADSO)
     set(SDL_STORAGE_STEAM 1)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/storage/steam/*.c"
