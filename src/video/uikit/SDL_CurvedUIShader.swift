@@ -79,35 +79,11 @@ def Xform "Root"
                 }
             }
         )
-        float inputs:CurveRadius = 0 (
-            customData = {
-                dictionary realitykit = {
-                    float2 positionInSubgraph = (-2136.7615, 305.1112)
-                    int stackingOrderInSubgraph = 2074
-                }
-            }
-        )
-        float inputs:CurveZOffset = 0 (
-            customData = {
-                dictionary realitykit = {
-                    float2 positionInSubgraph = (-2137.3552, 387.32452)
-                    int stackingOrderInSubgraph = 2074
-                }
-            }
-        )
         asset inputs:GameTexture (
             customData = {
                 dictionary realitykit = {
                     float2 positionInSubgraph = (-1270.7656, -315.35458)
                     int stackingOrderInSubgraph = 1834
-                }
-            }
-        )
-        bool inputs:IsFlat = 1 (
-            customData = {
-                dictionary realitykit = {
-                    float2 positionInSubgraph = (-2116.5073, 464.0024)
-                    int stackingOrderInSubgraph = 2074
                 }
             }
         )
@@ -122,8 +98,8 @@ def Xform "Root"
         bool inputs:ShowCursor = 1 (
             customData = {
                 dictionary realitykit = {
-                    float2 positionInSubgraph = (-1763.0038, 151.51582)
-                    int stackingOrderInSubgraph = 2026
+                    float2 positionInSubgraph = (-1721.0664, 367.89142)
+                    int stackingOrderInSubgraph = 2360
                 }
             }
         )
@@ -169,8 +145,8 @@ def Xform "Root"
             uniform token info:id = "ND_position_vector3"
             string inputs:space = "world"
             float3 outputs:out
-            float2 ui:nodegraph:node:pos = (-1200.3792, 443.91644)
-            int ui:nodegraph:node:stackingOrder = 2013
+            float2 ui:nodegraph:node:pos = (-1205.6492, 445.2142)
+            int ui:nodegraph:node:stackingOrder = 2314
         }
 
         def Shader "Image2D"
@@ -207,215 +183,6 @@ def Xform "Root"
             string ui:group:annotation = "Sample game texture"
             string ui:group:annotationDescription = ""
             string[] ui:group:members = ["i:inputs:GameTexture", "p:Image2D", "p:TextureCoordinates"]
-        }
-
-        def NodeGraph "CursorPositionOnScreen"
-        {
-            float3 inputs:CursorPositionWorldSpace = (0, 0, 0) (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (3.9784517, -16.922163)
-                        int stackingOrderInSubgraph = 1300
-                    }
-                }
-            )
-            float3 inputs:CursorPositionWorldSpace.connect = </Root/CurvedUIMaterial/HideCursorIfInactive.outputs:out>
-            float inputs:CurveRadius (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (904.7494, 253.36803)
-                        int stackingOrderInSubgraph = 1232
-                    }
-                }
-            )
-            float inputs:CurveRadius.connect = </Root/CurvedUIMaterial.inputs:CurveRadius>
-            float inputs:CurveZOffset (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (267.9172, 228.77568)
-                        int stackingOrderInSubgraph = 1232
-                    }
-                }
-            )
-            float inputs:CurveZOffset.connect = </Root/CurvedUIMaterial.inputs:CurveZOffset>
-            bool inputs:IsFlat (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (1482.5782, 456.10135)
-                        int stackingOrderInSubgraph = 1285
-                    }
-                }
-            )
-            bool inputs:IsFlat.connect = </Root/CurvedUIMaterial.inputs:IsFlat>
-            float3 outputs:PositionOnCurve (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (1077.2037, 84.80776)
-                        int stackingOrderInSubgraph = 1295
-                    }
-                }
-            )
-            float3 outputs:PositionOnCurve.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Mix.outputs:out>
-            float2 ui:nodegraph:node:pos = (-1831.8951, 362.77548)
-            int ui:nodegraph:node:stackingOrder = 2079
-            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["inputs:Arc_Center_in2", "inputs:CurveZOffset"]
-            float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (2151.0342, -48.566147)
-            int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 1297
-
-            def Shader "MTLSelect"
-            {
-                uniform token info:id = "ND_MTL_select_float"
-                bool inputs:c.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.inputs:IsFlat>
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (1674.1554, 423.68167)
-                int ui:nodegraph:node:stackingOrder = 1285
-            }
-
-            def Shader "Add_1"
-            {
-                uniform token info:id = "ND_add_vector2"
-                float2 inputs:in1.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Multiply_1.outputs:out>
-                float2 inputs:in2.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Dot_6.outputs:out>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (1193.7814, 299.91156)
-                int ui:nodegraph:node:stackingOrder = 1262
-            }
-
-            def Shader "Dot_4"
-            {
-                uniform token info:id = "ND_dot_vector3"
-                float3 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.inputs:CursorPositionWorldSpace>
-                float3 outputs:out
-                float2 ui:nodegraph:node:pos = (260.76218, -45.778774)
-                int ui:nodegraph:node:stackingOrder = 1291
-            }
-
-            def Shader "Arc_Center"
-            {
-                uniform token info:id = "ND_combine2_vector2"
-                float inputs:in1.connect = None
-                float inputs:in2.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.inputs:CurveZOffset>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (486.28143, 220.5678)
-                int ui:nodegraph:node:stackingOrder = 1232
-            }
-
-            def Shader "Dot_6"
-            {
-                uniform token info:id = "ND_dot_vector2"
-                float2 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Arc_Center.outputs:out>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (692.85626, 308.20447)
-                int ui:nodegraph:node:stackingOrder = 1237
-            }
-
-            def Shader "Combine_XYZ"
-            {
-                uniform token info:id = "ND_combine3_vector3"
-                float inputs:in1.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Separate_XZ.outputs:outx>
-                float inputs:in2.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Dot_2.outputs:out>
-                float inputs:in3.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Separate_XZ.outputs:outy>
-                float3 outputs:out
-                float2 ui:nodegraph:node:pos = (1572.742, 82.99775)
-                int ui:nodegraph:node:stackingOrder = 1270
-            }
-
-            def Shader "Dot_5"
-            {
-                uniform token info:id = "ND_dot_vector3"
-                float3 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.inputs:CursorPositionWorldSpace>
-                float3 outputs:out
-                float2 ui:nodegraph:node:pos = (260.25458, 16.080389)
-                int ui:nodegraph:node:stackingOrder = 1243
-            }
-
-            def Shader "Dot_2"
-            {
-                uniform token info:id = "ND_dot_float"
-                float inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Extract_Y.outputs:out>
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (1418.2761, 16.57526)
-                int ui:nodegraph:node:stackingOrder = 1272
-            }
-
-            def Shader "Subtract"
-            {
-                uniform token info:id = "ND_subtract_vector2"
-                float2 inputs:in1.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Extract_XZ.outputs:out>
-                float2 inputs:in2.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Arc_Center.outputs:out>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (698.53143, 156.1928)
-                int ui:nodegraph:node:stackingOrder = 1232
-            }
-
-            def Shader "Extract_XZ"
-            {
-                uniform token info:id = "ND_swizzle_vector3_vector2"
-                string inputs:channels = "xz"
-                float3 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Dot_5.outputs:out>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (486.28143, 91.817795)
-                int ui:nodegraph:node:stackingOrder = 1232
-            }
-
-            def Shader "Mix"
-            {
-                uniform token info:id = "ND_mix_vector3"
-                float3 inputs:bg.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Combine_XYZ.outputs:out>
-                float3 inputs:fg.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Dot_4.outputs:out>
-                float inputs:mix.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/MTLSelect.outputs:out>
-                float3 outputs:out
-                float2 ui:nodegraph:node:pos = (1898.034, -48.566147)
-                int ui:nodegraph:node:stackingOrder = 1261
-            }
-
-            def Shader "Multiply_1"
-            {
-                uniform token info:id = "ND_multiply_vector2FA"
-                float2 inputs:in1.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Normalize.outputs:out>
-                float inputs:in2.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.inputs:CurveRadius>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (1077.0314, 219.5053)
-                int ui:nodegraph:node:stackingOrder = 1232
-            }
-
-            def Shader "Separate_XZ"
-            {
-                uniform token info:id = "ND_separate2_vector2"
-                float2 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Add_1.outputs:out>
-                float outputs:outx
-                float outputs:outy
-                float2 ui:nodegraph:node:pos = (1358.9594, 87.817635)
-                int ui:nodegraph:node:stackingOrder = 1270
-            }
-
-            def Shader "Normalize"
-            {
-                uniform token info:id = "ND_normalize_vector2"
-                float2 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Subtract.outputs:out>
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (911.03143, 156.1928)
-                int ui:nodegraph:node:stackingOrder = 1232
-            }
-
-            def Shader "Extract_Y"
-            {
-                uniform token info:id = "ND_swizzle_vector3_float"
-                string inputs:channels = "y"
-                float3 inputs:in.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen/Dot_5.outputs:out>
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (483.2419, 20.142643)
-                int ui:nodegraph:node:stackingOrder = 1241
-            }
-
-            def Scope "Group" (
-                kind = "group"
-            )
-            {
-                string ui:group:annotation = "Clamp position to curve"
-                string ui:group:annotationDescription = ""
-                string[] ui:group:members = ["p:Dot_4", "p:Separate_XZ", "p:Dot_6", "p:Dot_5", "p:Extract_Y", "p:Dot_2", "p:Extract_XZ", "p:Multiply_1", "p:Combine_XYZ", "p:Add_1", "p:Normalize", "i:inputs:CurveZOffset", "p:Subtract", "i:inputs:CurveRadius", "p:Arc_Center"]
-            }
         }
 
         def Shader "SelectCursorColor"
@@ -573,14 +340,14 @@ def Xform "Root"
         def Shader "HideCursorIfDisabled"
         {
             uniform token info:id = "ND_ifequal_vector3B"
-            float3 inputs:in1.connect = </Root/CurvedUIMaterial/CursorPositionOnScreen.outputs:PositionOnCurve>
+            float3 inputs:in1.connect = </Root/CurvedUIMaterial/HoverState.outputs:position>
             float3 inputs:in2 = (999999, 999999, 999999)
-            bool inputs:value1.connect = </Root/CurvedUIMaterial.inputs:ShowCursor>
+            bool inputs:value1.connect = </Root/CurvedUIMaterial/And.outputs:out>
             bool inputs:value2 = 1
             bool inputs:value2.connect = None
             float3 outputs:out
-            float2 ui:nodegraph:node:pos = (-1473.7516, 345.9948)
-            int ui:nodegraph:node:stackingOrder = 2121
+            float2 ui:nodegraph:node:pos = (-1281.8472, 322.0585)
+            int ui:nodegraph:node:stackingOrder = 2361
         }
 
         def Shader "HoverState"
@@ -590,22 +357,19 @@ def Xform "Root"
             bool outputs:isActive
             float3 outputs:position
             float outputs:timeSinceHoverStart
-            float2 ui:nodegraph:node:pos = (-2479.6738, 136.51248)
-            int ui:nodegraph:node:stackingOrder = 2142
+            float2 ui:nodegraph:node:pos = (-1730.769, 258.70575)
+            int ui:nodegraph:node:stackingOrder = 2360
             string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:position"]
         }
 
-        def Shader "HideCursorIfInactive"
+        def Shader "And"
         {
-            uniform token info:id = "ND_ifequal_vector3B"
-            float3 inputs:in1.connect = </Root/CurvedUIMaterial/HoverState.outputs:position>
-            float3 inputs:in2 = (999999, 999999, 999999)
-            bool inputs:value1.connect = </Root/CurvedUIMaterial/HoverState.outputs:isActive>
-            bool inputs:value2 = 1
-            bool inputs:value2.connect = None
-            float3 outputs:out
-            float2 ui:nodegraph:node:pos = (-2191.3027, 160.76704)
-            int ui:nodegraph:node:stackingOrder = 2138
+            uniform token info:id = "ND_realitykit_logical_and"
+            bool inputs:in1.connect = </Root/CurvedUIMaterial/HoverState.outputs:isActive>
+            bool inputs:in2.connect = </Root/CurvedUIMaterial.inputs:ShowCursor>
+            bool outputs:out
+            float2 ui:nodegraph:node:pos = (-1571.7467, 334.56076)
+            int ui:nodegraph:node:stackingOrder = 2360
         }
     }
 }
@@ -669,24 +433,6 @@ struct CurvedUIMaterial: @MainActor Equatable {
         set { try! shaderGraphMaterial.setParameter(.cursorSize, value: newValue) }
     }
     
-    /// Z offset of the screen curve in world space, used to project the cursor onto the curved surface.
-    var curveZOffset: Float! {
-        get { shaderGraphMaterial.getParameter(.curveZOffset) }
-        set { try! shaderGraphMaterial.setParameter(.curveZOffset, value: newValue) }
-    }
-    
-    /// Radius of the screen curve in meters, used to project the cursor onto the curved surface.
-    var curveRadius: Float! {
-        get { shaderGraphMaterial.getParameter(.curveRadius) }
-        set { try! shaderGraphMaterial.setParameter(.curveRadius, value: newValue) }
-    }
-    
-    /// Whether the screen is flat (no curve).  When true, cursor position is used directly without curve projection.
-    var isFlat: Bool! {
-        get { shaderGraphMaterial.getParameter(.isFlat) }
-        set { try! shaderGraphMaterial.setParameter(.isFlat, value: newValue) }
-    }
-    
     /// Whether to show the cursor overlay on the mesh surface.
     var showCursor: Bool! {
         get { shaderGraphMaterial.getParameter(.showCursor) }
@@ -704,9 +450,6 @@ struct CurvedUIMaterial: @MainActor Equatable {
             && lhs.cursorColor == rhs.cursorColor
             && lhs.cursorColorOnInteract == rhs.cursorColorOnInteract
             && lhs.cursorSize == rhs.cursorSize
-            && lhs.curveZOffset == rhs.curveZOffset
-            && lhs.curveRadius == rhs.curveRadius
-            && lhs.isFlat == rhs.isFlat
             && lhs.showCursor == rhs.showCursor
             && lhs.isInteracting == rhs.isInteracting
     }
@@ -718,9 +461,6 @@ private extension MaterialParameters.Handle {
     static let cursorColor = ShaderGraphMaterial.parameterHandle(name: "CursorColor")
     static let cursorColorOnInteract = ShaderGraphMaterial.parameterHandle(name: "CursorColorOnInteract")
     static let cursorSize = ShaderGraphMaterial.parameterHandle(name: "CursorSize")
-    static let curveZOffset = ShaderGraphMaterial.parameterHandle(name: "CurveZOffset")
-    static let curveRadius = ShaderGraphMaterial.parameterHandle(name: "CurveRadius")
-    static let isFlat = ShaderGraphMaterial.parameterHandle(name: "IsFlat")
     static let showCursor = ShaderGraphMaterial.parameterHandle(name: "ShowCursor")
     static let isInteracting = ShaderGraphMaterial.parameterHandle(name: "IsInteracting")
 }

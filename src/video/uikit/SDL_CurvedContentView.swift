@@ -223,9 +223,6 @@ internal struct SDL_CurvedContentView: View {
             guard curvedUIMaterial != nil else { return }
             let geometry = helper.meshGeometry
             curvedUIMaterial.cursorSize = geometry.height * 0.01
-            curvedUIMaterial.curveZOffset = geometry.zOffset
-            curvedUIMaterial.curveRadius = geometry.curvatureRadius
-            curvedUIMaterial.isFlat = geometry.curvatureRadius == 0
         }
         .onChange(of: sceneActivationOrObject(helper.textureResource), initial: true) {
             if let textureResource = helper.textureResource {
