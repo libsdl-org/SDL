@@ -193,8 +193,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_ccca_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn,
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
-    );
+                              sdl_sve_rgb32_blend_op_fill_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -546,8 +545,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_ccca_stride_blend_to_accc_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                              sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -602,8 +600,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                              sdl_sve_rgb32_blend_op_fill_alpha(3);
-    );
+                              sdl_sve_rgb32_blend_op_fill_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -616,8 +613,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_a123_stride_blend_to_a321_copy_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                              sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+                              sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -672,8 +668,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_fill_alph
 {
 
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                              sdl_sve_rgb32_blend_op_fill_alpha(0);
-    );
+                              sdl_sve_rgb32_blend_op_fill_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -685,8 +680,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123a_stride_blend_to_321a_copy_alph
     size_t uStride)
 {
     sdl_sve_rgb32_stride_impl(sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                              sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                              sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -746,8 +740,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -761,8 +754,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_accc_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -792,8 +784,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_ccca_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -899,8 +890,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -914,8 +904,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_321a_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -971,8 +960,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -986,8 +974,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_a321_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_src_dst_rev,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1043,8 +1030,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1058,8 +1044,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_xccc_stride_blend_to_ccca_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_accc_ccca,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1115,8 +1100,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1130,8 +1114,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_cccx_stride_blend_to_accc_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_ccca_accc,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1187,8 +1170,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1202,8 +1184,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_x123_stride_blend_to_a321_copy_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(3,
                                        sdl_sve_pixel_u16x4_foreach_chn_a123_a321,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(3);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(3););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1259,8 +1240,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_fill_alph
 
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                                       sdl_sve_rgb32_blend_op_fill_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_fill_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)
@@ -1273,8 +1253,7 @@ static inline ARM_NONNULL(1, 2) void sdl_sve_123x_stride_blend_to_321a_copy_alph
 {
     sdl_sve_rgb32_no_alpha_stride_impl(0,
                                        sdl_sve_pixel_u16x4_foreach_chn_123a_321a,
-                                       sdl_sve_rgb32_blend_op_copy_alpha(0);
-    );
+                                       sdl_sve_rgb32_blend_op_copy_alpha(0););
 }
 
 #if defined(SDL_PLATFORM_ANDROID)

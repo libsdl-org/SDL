@@ -1520,7 +1520,12 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 #endif
 #if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-                if (SDL_HasSVE2()) {
+                if (SDL_HasSVE2() 
+            /* NEON is faster than SVE2 when vector size is 128bit */
+            #if defined(SDL_NEON_INTRINSICS)
+                && SDL_GetSVEVectorSize() > 128
+            #endif
+                ) {
                     // To prevent "unused function" compiler warnings/errors
                     (void)Blit8888to8888PixelAlpha;
                     (void)Blit8888to8888PixelAlphaSwizzle;

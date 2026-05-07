@@ -230,5 +230,9 @@ void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
+size_t SDL_GetSVEVectorSize(void)
+{
+    return svlen(svundef_u8()) * 8;
+}
 
 #endif /* SDL_SVE2_INTRINSICS */
