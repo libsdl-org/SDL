@@ -29,9 +29,6 @@
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "../core/windows/SDL_windows.h" // For GetDoubleClickTime()
 #endif
-#if defined(SDL_PLATFORM_VISIONOS)
-extern void SDL_VisionOS_UpdateCursorVisibility();
-#endif
 
 // #define DEBUG_MOUSE
 
@@ -1913,10 +1910,6 @@ bool SDL_ShowCursor(void)
         mouse->cursor_visible = true;
         SDL_RedrawCursor();
     }
-
-#if defined(SDL_PLATFORM_VISIONOS)
-    SDL_VisionOS_UpdateCursorVisibility();
-#endif
     return true;
 }
 
@@ -1928,10 +1921,6 @@ bool SDL_HideCursor(void)
         mouse->cursor_visible = false;
         SDL_RedrawCursor();
     }
-
-#if defined(SDL_PLATFORM_VISIONOS)
-    SDL_VisionOS_UpdateCursorVisibility();
-#endif
     return true;
 }
 

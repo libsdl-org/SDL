@@ -94,14 +94,14 @@ bool SDL_VisionOS_PointerModeEnabled()
     return SDL_pointer_mode;
 }
 
-void SDL_VisionOS_UpdateCursorVisibility()
+void SDL_VisionOS_UpdateRelativeMode()
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         bool visible;
 
-        if (!SDL_GetMouse()->cursor_visible || SDL_GCMouseRelativeMode()) {
+        if (SDL_GCMouseRelativeMode()) {
             visible = false;
         } else {
             visible = true;
