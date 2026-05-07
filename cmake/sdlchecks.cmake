@@ -50,6 +50,7 @@ macro(FindLibraryAndSONAME _LIB)
 endmacro()
 
 macro(CheckDLOPEN)
+  set(dl_libs )
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
   if(NOT HAVE_DLOPEN_IN_LIBC)
     cmake_push_check_state()
@@ -57,11 +58,34 @@ macro(CheckDLOPEN)
     check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBDL)
     cmake_pop_check_state()
     if(HAVE_DLOPEN_IN_LIBDL)
+      set(dl_libs dl)
       sdl_link_dependency(dl LIBS dl)
     endif()
   endif()
   if(HAVE_DLOPEN_IN_LIBC OR HAVE_DLOPEN_IN_LIBDL)
-    set(HAVE_DLOPEN TRUE)
+    set(working_dl TRUE)
+    check_linker_flag(C "-Wl,--fatal-warnings" LINKER_FATAL_WARNINGS)
+    if(LINKER_FATAL_WARNINGS)
+      # Check we're not linking against a static runtime which does not support dlopen
+      cmake_push_check_state()
+      string(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-Wl,--fatal-warnings")
+      list(APPEND CMAKE_REQUIRED_LIBRARIES ${dl_libs})
+      check_c_source_compiles([===[
+        #include <dlfcn.h>
+        int main(int argc, char *argv[]) {
+          void *handle = dlopen("libc.so.6", RTLD_NOW | RTLD_GLOBAL);
+          void(*ptr_puts)(const char*)=dlsym(handle, "puts");
+          dlclose(handle);
+          (void) argc; (void) argv;
+          return 0;
+          }
+        ]===] HAVE_LINKING_DLOPEN)
+      set(working_dl ${HAVE_LINKING_DLOPEN})
+      cmake_pop_check_state()
+    endif()
+    if(working_dl)
+      set(HAVE_DLOPEN TRUE)
+    endif()
   endif()
 endmacro()
 
