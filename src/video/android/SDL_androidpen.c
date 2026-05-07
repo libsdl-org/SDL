@@ -69,7 +69,16 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         for (Uint8 i = 1; i <= 5; ++i) {
             Uint8 mask = (1 << i);
             if (diff & mask) {
-                SDL_SendPenButton(0, pen, window, i, (button & mask) != 0);
+                // Android convention: Primary(1) = Left; Secondary(2) = Right; Ternary(3) = Middle
+                static const Uint8 mouse_buttons[] = {
+                    SDL_BUTTON_LEFT,
+                    SDL_BUTTON_RIGHT,
+                    SDL_BUTTON_MIDDLE,
+                    SDL_BUTTON_X1,
+                    SDL_BUTTON_X2,
+					SDL_BUTTON_X2 + 1
+                };
+                SDL_SendPenButton(0, pen, window, mouse_buttons[i], (button & mask) != 0);
             }
         }
     }
