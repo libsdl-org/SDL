@@ -50,6 +50,10 @@
                                                      vMask);             \
     }
 
+#undef sdl_sve_rgb32_blend_op_preprocessing
+#define sdl_sve_rgb32_blend_op_preprocessing(ma_alpha_chn_idx)          \
+    svset4(sve_source_u16x4, (ma_alpha_chn_idx), svdup_u16(0xFF))
+
 #undef sdl_sve_rgb32_blend_to_rgb565_op
 #define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)               \
     do {                                                                 \
@@ -147,12 +151,12 @@ void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
         } else {
             /* CCCA */
             assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca_blend_to_ccca_copy_alpha(src,
-                                                         srcstride,
-                                                         dst,
-                                                         dststride,
-                                                         width,
-                                                         height);
+            sdl_sve_ccca_blend_to_ccca_copy_alpha(  src,
+                                                    srcstride,
+                                                    dst,
+                                                    dststride,
+                                                    width,
+                                                    height);
         }
     }
 #endif
