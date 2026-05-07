@@ -429,7 +429,7 @@ typedef struct WatchEntry
 } WatchEntry;
 static SDL_HashTable *watch_descriptor_table = NULL; // stores WatchEntry for a watch descriptor
 
-static int SDL_FileWatchThread(void *user_data);
+static int SDLCALL SDL_FileWatchThread(void *user_data);
 static SDL_Thread *file_watch_thread = NULL;
 static SDL_Mutex *file_watch_lock = NULL;
 static SDL_AtomicInt quit_watch_file;
