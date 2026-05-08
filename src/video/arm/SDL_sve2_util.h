@@ -77,7 +77,7 @@
 
 #define SVE_CONNECT(...)          \
     ALT_SVE_CONNECT2(SVE_CONNECT, \
-                     SVE_VA_NUM_ARGS(ma_VA_ARGSma_))(ma_VA_ARGSma_)
+                     SVE_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__)
 
 #ifndef SVE_VA_NUM_ARGS_IMPL
 #define SVE_VA_NUM_ARGS_IMPL(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, \
@@ -85,8 +85,8 @@
 #endif
 
 #ifndef SVE_VA_NUM_ARGS
-#define SVE_VA_NUM_ARGS(...)                                                \
-    SVE_VA_NUM_ARGS_IMPL(0, ##ma_VA_ARGSma_, 16, 15, 14, 13, 12, 11, 10, 9, \
+#define SVE_VA_NUM_ARGS(...)                                              \
+    SVE_VA_NUM_ARGS_IMPL(0, ##__VA_ARGS__, 16, 15, 14, 13, 12, 11, 10, 9, \
                          8, 7, 6, 5, 4, 3, 2, 1, 0)
 #endif
 
@@ -122,9 +122,9 @@
                0,                                                                   \
                sizeof(SVE_SAFE_NAME(chVectorBuffer)));                              \
         memcpy(SVE_SAFE_NAME(chVectorBuffer), /* This should NOT be SDL_memcpy() */ \
-               (ma_ELEMENT_T[]){ ma_VA_ARGSma_ },                                   \
+               (ma_ELEMENT_T[]){ __VA_ARGS__ },                                     \
                MIN(sizeof(SVE_SAFE_NAME(chVectorBuffer)),                           \
-                   sizeof((ma_ELEMENT_T[]){ ma_VA_ARGSma_ })));                     \
+                   sizeof((ma_ELEMENT_T[]){ __VA_ARGS__ })));                       \
                                                                                     \
         ma_VECTOR = svld1(svptrue_b8(),                                             \
                           (ma_ELEMENT_T *)SVE_SAFE_NAME(chVectorBuffer));           \
@@ -138,9 +138,9 @@
                sizeof(SVE_SAFE_NAME(chBuffer)));                              \
                                                                               \
         memcpy(SVE_SAFE_NAME(chBuffer), /* This should NOT be SDL_memcpy() */ \
-               (uint8_t[]){ ma_VA_ARGSma_ },                                  \
+               (uint8_t[]){ __VA_ARGS__ },                                    \
                MIN(sizeof(SVE_SAFE_NAME(chBuffer)),                           \
-                   sizeof((uint8_t[]){ ma_VA_ARGSma_ })));                    \
+                   sizeof((uint8_t[]){ __VA_ARGS__ })));                      \
                                                                               \
         ma_PREDICT = (*(svbool_t *)SVE_SAFE_NAME(chBuffer));                  \
     } while (0)
