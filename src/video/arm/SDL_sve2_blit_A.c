@@ -62,177 +62,25 @@
 #include "SDL_sve2_swizzle.h"
 
 /*-----------------------------------------------------------------------------*
- * Normal Blend with Alpha                                                     *
- *-----------------------------------------------------------------------------*/
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-void Blit8888to8888PixelAlphaSVE2(SDL_BlitInfo *info)
-{
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint8 *src = info->src;
-    int srcskip = info->src_skip;
-    Uint8 *dst = info->dst;
-    int dstskip = info->dst_skip;
-    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
-    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    int srcbpp;
-    int dstbpp;
-
-    // Set up some basic variables
-    srcbpp = srcfmt->bytes_per_pixel;
-    dstbpp = dstfmt->bytes_per_pixel;
-
-    assert(0 != srcfmt->Amask);
-
-    int srcstride = srcskip + srcbpp * width;
-    int dststride = dstskip + dstbpp * width;
-
-#if 0 /* keep a default C implementation for reference and tests */
-    while (height--) {
-
-        Uint32 Pixel;
-        unsigned sR, sG, sB, sA;
-        unsigned dR, dG, dB, dA;
-        uint8_t *srcline = src;
-        uint8_t *dstline = dst;
-        DUFFS_LOOP(
-        {
-        DISEMBLE_RGBA(srcline, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-        if (sA) {
-            DISEMBLE_RGBA(dstline, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
-            ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
-            ASSEMBLE_RGBA(dstline, dstbpp, dstfmt, dR, dG, dB, dA);
-        }
-        srcline += srcbpp;
-        dstline += dstbpp;
-        },
-        width);
-
-        src += srcstride;
-        dst += dststride;
-    }
-#else
-    if (!dstfmt->Amask) {
-        /* fill alpha */
-        if (3 == dstfmt->Ashift >> 3) {
-            /* ACCC */
-            sdl_sve_accc_blend_to_accc_fill_alpha(  src,
-                                                    srcstride,
-                                                    dst,
-                                                    dststride,
-                                                    width,
-                                                    height);
-        } else {
-            /* CCCA */
-            assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca_blend_to_ccca_fill_alpha(  src,
-                                                    srcstride,
-                                                    dst,
-                                                    dststride,
-                                                    width,
-                                                    height);
-        }
-    } else {
-        /* copy alpha */
-        if (3 == dstfmt->Ashift >> 3) {
-            /* ACCC */
-            sdl_sve_accc_blend_to_accc_copy_alpha(  src,
-                                                    srcstride,
-                                                    dst,
-                                                    dststride,
-                                                    width,
-                                                    height);
-        } else {
-            /* CCCA */
-            assert(0 == (dstfmt->Ashift >> 3));
-            sdl_sve_ccca_blend_to_ccca_copy_alpha(  src,
-                                                    srcstride,
-                                                    dst,
-                                                    dststride,
-                                                    width,
-                                                    height);
-        }
-    }
-#endif
-}
-
-/*-----------------------------------------------------------------------------*
  * Swizzle Blend with Alpha                                                    *
  *-----------------------------------------------------------------------------*/
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
+SDL_TARGETING("arch=armv8-a+sve2")
 void Blit8888to8888PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     assert(0 != srcfmt->Amask);
     (void)srcfmt;
 
-#if 0
-
-    int width = info->dst_w;
-    int height = info->dst_h;
-    uint8_t *src = info->src;
-    int srcskip = info->src_skip;
-    uint8_t *dst = info->dst;
-    int dstskip = info->dst_skip;
-
-    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
-    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-
-    // Set up some basic variables
-    int srcbpp = srcfmt->bytes_per_pixel;
-    int dstbpp = dstfmt->bytes_per_pixel;
-
-    assert(srcbpp == dstbpp == 4);
-    assert(0 != srcfmt->Amask);
-    bool fill_alpha = (!dstfmt->Amask);
-
-    int srcstride = srcskip + srcbpp * width;
-    int dststride = dstskip + dstbpp * width;
-
-
-    while (height--) {
-
-        uint32_t Pixel;
-        unsigned sR, sG, sB, sA;
-        unsigned dR, dG, dB, dA;
-        uint8_t *srcline = src;
-        uint8_t *dstline = dst;
-        DUFFS_LOOP(
-        {
-        DISEMBLE_RGBA(srcline, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-        if (sA) {
-            DISEMBLE_RGBA(dstline, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
-            ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
-            ASSEMBLE_RGBA(dstline, dstbpp, dstfmt, dR, dG, dB, dA);
-        }
-        srcline += srcbpp;
-        dstline += dstbpp;
-        },
-        width);
-
-        src += srcstride;
-        dst += dststride;
-    }
-#else
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
-#endif
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
+SDL_TARGETING("arch=armv8-a+sve2")
 void Blit8888to565PixelAlphaSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
+SDL_TARGETING("arch=armv8-a+sve2")
 size_t SDL_GetSVEVectorSize(void)
 {
     return svlen(svundef_u8()) * 8;

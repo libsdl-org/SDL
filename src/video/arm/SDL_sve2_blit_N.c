@@ -49,52 +49,16 @@
 
 #include "SDL_sve2_swizzle.h"
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
+SDL_TARGETING(("arch=armv8-a+sve2")
 void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
+SDL_TARGETING(("arch=armv8-a+sve2")
 void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
-#if 0
-    int width = info->dst_w;
-    int height = info->dst_h;
-    Uint8 *src = info->src;
-    int srcskip = info->src_skip;
-    Uint8 *dst = info->dst;
-    int dstskip = info->dst_skip;
-    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
-    int srcbpp = srcfmt->bytes_per_pixel;
-    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    int dstbpp = dstfmt->bytes_per_pixel;
-    
-    int srcstride = srcskip + srcbpp * width;
-    int dststride = dstskip + dstbpp * width;
-
-    while (height--) {
-
-        uint8_t *srcline = src;
-        uint8_t *dstline = dst;
-        for (int c = width; c; --c) {
-            Uint32 Pixel;
-            unsigned sR, sG, sB, sA;
-            DISEMBLE_RGBA(srcline, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-            ASSEMBLE_RGBA(dstline, dstbpp, dstfmt, sR, sG, sB, sA);
-            dstline += dstbpp;
-            srcline += srcbpp;
-        }
-        src += srcstride;
-        dst += dststride;
-    }
-#else
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
-#endif
 }
 
 #endif /* SDL_SVE2_INTRINSICS */
