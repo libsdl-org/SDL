@@ -954,7 +954,6 @@ if(SDL_ASSEMBLY)
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
         set(HAVE_ARMSVE2 TRUE)
-        set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
       endif()
     cmake_pop_check_state()
 
@@ -967,7 +966,6 @@ if(SDL_ASSEMBLY)
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
         PROPERTIES
-          COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
           SKIP_PRECOMPILE_HEADERS ON
       )
     endif()
