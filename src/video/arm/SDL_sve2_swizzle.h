@@ -2183,7 +2183,7 @@ static inline void sdl_sve_rgbx8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRIC
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+static inline void sdl_sve_rgbx8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
                                                     size_t uSourceStride,
                                                     uint8_t *SDL_RESTRICT pchTarget,
                                                     size_t uTargetStride,
