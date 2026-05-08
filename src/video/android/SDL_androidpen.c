@@ -76,7 +76,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
                     SDL_BUTTON_MIDDLE,
                     SDL_BUTTON_X1,
                     SDL_BUTTON_X2,
-					SDL_BUTTON_X2 + 1
+                    SDL_BUTTON_X2 + 1
                 };
                 SDL_SendPenButton(0, pen, window, mouse_buttons[i], (button & mask) != 0);
             }
