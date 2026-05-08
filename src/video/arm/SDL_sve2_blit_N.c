@@ -49,13 +49,13 @@
 
 #include "SDL_sve2_swizzle.h"
 
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_8888_to_8888_swizzle_dispatcher(info);
 }
 
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info)
 {
     sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(info);
