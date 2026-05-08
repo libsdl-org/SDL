@@ -39,6 +39,7 @@ static const struct
     { "gamepad_battery_unknown.png", "GP_BATTX.PNG" },
     { "gamepad_battery_wired.png", "GP_BATTW.PNG" },
     { "gamepad_touchpad.png", "GP_TOUCH.PNG" },
+    { "gamepad_dual_touchpad.png", "GP_DUALT.PNG" },
     { "gamepad_button.png", "GP_BTN.PNG" },
     { "gamepad_button_small.png", "GP_BTNSM.PNG" },
     { "gamepad_button_background.png", "GP_BTNBG.PNG" },
