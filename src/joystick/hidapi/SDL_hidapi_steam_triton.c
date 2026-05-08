@@ -244,13 +244,13 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
     SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
                              pTritonReport->sPressureLeft > 0,
                              pTritonReport->sLeftPadX / 65536.0f + 0.5f,
-                             pTritonReport->sLeftPadY / 65536.0f + 0.5f,
+                             -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f,
                              pTritonReport->sPressureLeft / 32768.0f);
 
     SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
                              pTritonReport->sPressureRight > 0,
                              pTritonReport->sRightPadX / 65536.0f + 0.5f,
-                             pTritonReport->sRightPadY / 65536.0f + 0.5f,
+                             -(float)pTritonReport->sRightPadY / 65536.0f + 0.5f,
                              pTritonReport->sPressureRight / 32768.0f);
 }
 
