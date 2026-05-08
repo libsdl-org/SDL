@@ -1241,12 +1241,12 @@ static inline void sdl_sve_123x_stride_blend_to_321a_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inlinevoid sdl_sve_123x_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                        size_t uSourceStride,
-                                                        uint8_t *SDL_RESTRICT pchTarget,
-                                                        size_t uTargetStride,
-                                                        int nWidth,
-                                                        int nHeight)
+static inline void sdl_sve_123x_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
