@@ -2501,8 +2501,7 @@ static void VULKAN_INTERNAL_TrackTextureTransfer(
     VulkanTexture *texture)
 {
     // Textures not managed by our allocator (i.e. the swapchain) don't need to be refcounted.
-    if (texture->usedRegion == NULL)
-    {
+    if (texture->usedRegion == NULL) {
         return;
     }
 
