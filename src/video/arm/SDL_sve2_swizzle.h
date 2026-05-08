@@ -2140,6 +2140,7 @@ static inline void sdl_sve_xrgb8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRIC
                                                            size_t uStride)
 {
     sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        3,
         sdl_sve_pixel_u16x4_foreach_chn_argb_rgb565,
         {
             sdl_sve_rgb32_blend_to_rgb565_op(3);
@@ -2173,6 +2174,7 @@ static inline void sdl_sve_rgbx8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRIC
                                                            size_t uStride)
 {
     sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        0,
         sdl_sve_pixel_u16x4_foreach_chn_rgba_rgb565,
         {
             sdl_sve_rgb32_blend_to_rgb565_op(0);
@@ -2206,6 +2208,7 @@ static inline void sdl_sve_bgrx8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRIC
                                                            size_t uStride)
 {
     sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        0,
         sdl_sve_pixel_u16x4_foreach_chn_bgra_rgb565,
         {
             sdl_sve_rgb32_blend_to_rgb565_op(0);
@@ -2239,6 +2242,7 @@ static inline void sdl_sve_xbgr8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRIC
                                                            size_t uStride)
 {
     sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        3,
         sdl_sve_pixel_u16x4_foreach_chn_abgr_rgb565,
         {
             sdl_sve_rgb32_blend_to_rgb565_op(3);
