@@ -143,6 +143,51 @@
         phwTarget += sve_iteration_advance;                           \
     }
 
+#define sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(         \
+    ma_alpha_idx,                                             \
+    ma_sve_chn_iterator,                                      \
+    ...)                                                      \
+    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    {                                                         \
+                                                              \
+        svuint16x4_t vSourceLow16x4 = svundef4_u16();         \
+        svuint16x4_t vSourceHigh16x4 = svundef4_u16();        \
+                                                              \
+        svuint16x3_t vTargetLow16x3 = svundef3_u16();         \
+        svuint16x3_t vTargetHigh16x3 = svundef3_u16();        \
+                                                              \
+        svld4ub_u16(vTailPred,                                \
+                    (uint8_t *)pwSource,                      \
+                    &vSourceLow16x4,                          \
+                    &vSourceHigh16x4);                        \
+                                                              \
+        vSourceLow16x4 = svset4(vSourceLow16x4,               \
+                                (ma_alpha_idx),               \
+                                svdup_u16(0xFF));             \
+        vSourceHigh16x4 = svset4(vSourceHigh16x4,             \
+                                 (ma_alpha_idx),              \
+                                 svdup_u16(0xFF));            \
+                                                              \
+        svld3rgb565_u16(vTailPred,                            \
+                        phwTarget,                            \
+                        &vTargetLow16x3,                      \
+                        &vTargetHigh16x3);                    \
+                                                              \
+        ma_sve_chn_iterator(vSourceLow16x4, vTargetLow16x3,   \
+                            __VA_ARGS__);                     \
+                                                              \
+        ma_sve_chn_iterator(vSourceHigh16x4, vTargetHigh16x3, \
+                            __VA_ARGS__);                     \
+                                                              \
+        svst3rgb565_u16(vTailPred,                            \
+                        phwTarget,                            \
+                        vTargetLow16x3,                       \
+                        vTargetHigh16x3);                     \
+                                                              \
+        pwSource += sve_iteration_advance;                    \
+        phwTarget += sve_iteration_advance;                   \
+    }
+
 #ifndef sdl_sve_rgb32_blend_op_fill_alpha
 #define sdl_sve_rgb32_blend_op_fill_alpha(ma_alpha_chn_idx)
 #endif
@@ -156,7 +201,7 @@
  */
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_accc_stride_blend_to_accc_fill_alpha(
+static inline void sdl_sve_accc_stride_blend_to_accc_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -171,7 +216,7 @@ static inline  void sdl_sve_accc_stride_blend_to_accc_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_accc_stride_blend_to_accc_copy_alpha(
+static inline void sdl_sve_accc_stride_blend_to_accc_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -183,7 +228,7 @@ static inline  void sdl_sve_accc_stride_blend_to_accc_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_ccca_stride_blend_to_ccca_fill_alpha(
+static inline void sdl_sve_ccca_stride_blend_to_ccca_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -195,7 +240,7 @@ static inline  void sdl_sve_ccca_stride_blend_to_ccca_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_ccca_stride_blend_to_ccca_copy_alpha(
+static inline void sdl_sve_ccca_stride_blend_to_ccca_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -210,7 +255,7 @@ static inline  void sdl_sve_ccca_stride_blend_to_ccca_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_accc_blend_to_accc_fill_alpha(
+static inline void sdl_sve_accc_blend_to_accc_fill_alpha(
     uint8_t *SDL_RESTRICT pchSource,
     size_t uSourceStride,
     uint8_t *SDL_RESTRICT pchTarget,
@@ -232,7 +277,7 @@ static inline  void sdl_sve_accc_blend_to_accc_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_accc_blend_to_accc_copy_alpha(
+static inline void sdl_sve_accc_blend_to_accc_copy_alpha(
     uint8_t *SDL_RESTRICT pchSource,
     size_t uSourceStride,
     uint8_t *SDL_RESTRICT pchTarget,
@@ -254,7 +299,7 @@ static inline  void sdl_sve_accc_blend_to_accc_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_ccca_blend_to_ccca_fill_alpha(
+static inline void sdl_sve_ccca_blend_to_ccca_fill_alpha(
     uint8_t *SDL_RESTRICT pchSource,
     size_t uSourceStride,
     uint8_t *SDL_RESTRICT pchTarget,
@@ -276,7 +321,7 @@ static inline  void sdl_sve_ccca_blend_to_ccca_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_ccca_blend_to_ccca_copy_alpha(
+static inline void sdl_sve_ccca_blend_to_ccca_copy_alpha(
     uint8_t *SDL_RESTRICT pchSource,
     size_t uSourceStride,
     uint8_t *SDL_RESTRICT pchTarget,
@@ -298,7 +343,7 @@ static inline  void sdl_sve_ccca_blend_to_ccca_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_a123_stride_blend_to_321a_fill_alpha(
+static inline void sdl_sve_a123_stride_blend_to_321a_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -312,7 +357,7 @@ static inline  void sdl_sve_a123_stride_blend_to_321a_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_a123_stride_blend_to_321a_copy_alpha(
+static inline void sdl_sve_a123_stride_blend_to_321a_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -326,12 +371,12 @@ static inline  void sdl_sve_a123_stride_blend_to_321a_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_a123_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_a123_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -346,12 +391,12 @@ static inline  void sdl_sve_a123_blend_to_321a_fill_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_a123_blend_to_321a_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_a123_blend_to_321a_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -366,7 +411,7 @@ static inline  void sdl_sve_a123_blend_to_321a_copy_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_123a_stride_blend_to_a321_fill_alpha(
+static inline void sdl_sve_123a_stride_blend_to_a321_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -380,7 +425,7 @@ static inline  void sdl_sve_123a_stride_blend_to_a321_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_123a_stride_blend_to_a321_copy_alpha(
+static inline void sdl_sve_123a_stride_blend_to_a321_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -394,12 +439,12 @@ static inline  void sdl_sve_123a_stride_blend_to_a321_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_123a_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_123a_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -414,12 +459,12 @@ static inline  void sdl_sve_123a_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_123a_blend_to_a321_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_123a_blend_to_a321_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -434,7 +479,7 @@ static inline  void sdl_sve_123a_blend_to_a321_copy_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_accc_stride_blend_to_ccca_fill_alpha(
+static inline void sdl_sve_accc_stride_blend_to_ccca_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -448,7 +493,7 @@ static inline  void sdl_sve_accc_stride_blend_to_ccca_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_accc_stride_blend_to_ccca_copy_alpha(
+static inline void sdl_sve_accc_stride_blend_to_ccca_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -462,12 +507,12 @@ static inline  void sdl_sve_accc_stride_blend_to_ccca_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_accc_blend_to_ccca_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_accc_blend_to_ccca_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -482,12 +527,12 @@ static inline  void sdl_sve_accc_blend_to_ccca_fill_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_accc_blend_to_ccca_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_accc_blend_to_ccca_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -502,7 +547,7 @@ static inline  void sdl_sve_accc_blend_to_ccca_copy_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_ccca_stride_blend_to_accc_fill_alpha(
+static inline void sdl_sve_ccca_stride_blend_to_accc_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -516,7 +561,7 @@ static inline  void sdl_sve_ccca_stride_blend_to_accc_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_ccca_stride_blend_to_accc_copy_alpha(
+static inline void sdl_sve_ccca_stride_blend_to_accc_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -528,12 +573,12 @@ static inline  void sdl_sve_ccca_stride_blend_to_accc_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_ccca_blend_to_accc_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_ccca_blend_to_accc_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -548,12 +593,12 @@ static inline  void sdl_sve_ccca_blend_to_accc_fill_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_ccca_blend_to_accc_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_ccca_blend_to_accc_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -568,7 +613,7 @@ static inline  void sdl_sve_ccca_blend_to_accc_copy_alpha(uint8_t *SDL_RESTRICT 
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_a123_stride_blend_to_a321_fill_alpha(
+static inline void sdl_sve_a123_stride_blend_to_a321_fill_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -580,7 +625,7 @@ static inline  void sdl_sve_a123_stride_blend_to_a321_fill_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 2)
-static inline  void sdl_sve_a123_stride_blend_to_a321_copy_alpha(
+static inline void sdl_sve_a123_stride_blend_to_a321_copy_alpha(
     uint32_t *SDL_RESTRICT pwSource,
     uint32_t *SDL_RESTRICT pwTarget,
     size_t uStride)
@@ -592,12 +637,12 @@ static inline  void sdl_sve_a123_stride_blend_to_a321_copy_alpha(
 
 SDL_TARGETING("arch=armv8-a+sve2")
 ARM_NONNULL(1, 3)
-static inline  void sdl_sve_a123_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
-                                                                           size_t uSourceStride,
-                                                                           uint8_t *SDL_RESTRICT pchTarget,
-                                                                           size_t uTargetStride,
-                                                                           int nWidth,
-                                                                           int nHeight)
+static inline void sdl_sve_a123_blend_to_a321_fill_alpha(uint8_t *SDL_RESTRICT pchSource,
+                                                         size_t uSourceStride,
+                                                         uint8_t *SDL_RESTRICT pchTarget,
+                                                         size_t uTargetStride,
+                                                         int nWidth,
+                                                         int nHeight)
 {
     while (nHeight--) {
 
@@ -1950,28 +1995,30 @@ static inline void sdl_sve_8888_to_8888_swizzle_dispatcher(SDL_BlitInfo *info)
 #define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)
 #endif
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 2) void sdl_sve_argb8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
-                                                                             uint16_t *SDL_RESTRICT phwTarget,
-                                                                             size_t uStride)
+/*
+ * ACCC or CCCA
+ */
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_argb8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
         sdl_sve_pixel_u16x4_foreach_chn_argb_rgb565,
-
-        sdl_sve_rgb32_blend_to_rgb565_op(3);)
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(3);
+        });
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 3) void sdl_sve_argb8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
-                                                                      size_t uSourceStride,
-                                                                      uint8_t *SDL_RESTRICT pchTarget,
-                                                                      size_t uTargetStride,
-                                                                      int nWidth,
-                                                                      int nHeight)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_argb8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
 {
     while (nHeight--) {
 
@@ -1984,28 +2031,27 @@ static inline ARM_NONNULL(1, 3) void sdl_sve_argb8888_blend_to_rgb565(uint8_t *S
     }
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 2) void sdl_sve_rgba8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
-                                                                             uint16_t *SDL_RESTRICT phwTarget,
-                                                                             size_t uStride)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_rgba8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
         sdl_sve_pixel_u16x4_foreach_chn_rgba_rgb565,
-
-        sdl_sve_rgb32_blend_to_rgb565_op(0);)
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(0);
+        });
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 3) void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
-                                                                      size_t uSourceStride,
-                                                                      uint8_t *SDL_RESTRICT pchTarget,
-                                                                      size_t uTargetStride,
-                                                                      int nWidth,
-                                                                      int nHeight)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
 {
     while (nHeight--) {
 
@@ -2018,28 +2064,27 @@ static inline ARM_NONNULL(1, 3) void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *S
     }
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 2) void sdl_sve_bgra8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
-                                                                             uint16_t *SDL_RESTRICT phwTarget,
-                                                                             size_t uStride)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_bgra8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
         sdl_sve_pixel_u16x4_foreach_chn_bgra_rgb565,
-
-        sdl_sve_rgb32_blend_to_rgb565_op(0);)
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(0);
+        });
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 3) void sdl_sve_bgra8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
-                                                                      size_t uSourceStride,
-                                                                      uint8_t *SDL_RESTRICT pchTarget,
-                                                                      size_t uTargetStride,
-                                                                      int nWidth,
-                                                                      int nHeight)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_bgra8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
 {
     while (nHeight--) {
 
@@ -2052,28 +2097,27 @@ static inline ARM_NONNULL(1, 3) void sdl_sve_bgra8888_blend_to_rgb565(uint8_t *S
     }
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 2) void sdl_sve_abgr8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
-                                                                             uint16_t *SDL_RESTRICT phwTarget,
-                                                                             size_t uStride)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_abgr8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
 {
     sdl_sve_rgb32_to_rgb565_stride_impl(
         sdl_sve_pixel_u16x4_foreach_chn_abgr_rgb565,
-
-        sdl_sve_rgb32_blend_to_rgb565_op(3);)
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(3);
+        });
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1, 3) void sdl_sve_abgr8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
-                                                                      size_t uSourceStride,
-                                                                      uint8_t *SDL_RESTRICT pchTarget,
-                                                                      size_t uTargetStride,
-                                                                      int nWidth,
-                                                                      int nHeight)
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_abgr8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
 {
     while (nHeight--) {
 
@@ -2086,10 +2130,144 @@ static inline ARM_NONNULL(1, 3) void sdl_sve_abgr8888_blend_to_rgb565(uint8_t *S
     }
 }
 
-#if defined(SDL_PLATFORM_ANDROID)
-__attribute__((target("arch=armv8-a+sve2")))
-#endif
-static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
+/*
+ * XCCC or CCCX
+ */
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_xrgb8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
+{
+    sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        sdl_sve_pixel_u16x4_foreach_chn_argb_rgb565,
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(3);
+        });
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_xrgb8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
+{
+    while (nHeight--) {
+
+        sdl_sve_xrgb8888_stride_blend_to_rgb565((uint32_t *)pchSource,
+                                                (uint16_t *)pchTarget,
+                                                nWidth);
+
+        pchSource += uSourceStride;
+        pchTarget += uTargetStride;
+    }
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_rgbx8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
+{
+    sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        sdl_sve_pixel_u16x4_foreach_chn_rgba_rgb565,
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(0);
+        });
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_rgba8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
+{
+    while (nHeight--) {
+
+        sdl_sve_rgbx8888_stride_blend_to_rgb565((uint32_t *)pchSource,
+                                                (uint16_t *)pchTarget,
+                                                nWidth);
+
+        pchSource += uSourceStride;
+        pchTarget += uTargetStride;
+    }
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_bgrx8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
+{
+    sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        sdl_sve_pixel_u16x4_foreach_chn_bgra_rgb565,
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(0);
+        });
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_bgrx8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
+{
+    while (nHeight--) {
+
+        sdl_sve_bgrx8888_stride_blend_to_rgb565((uint32_t *)pchSource,
+                                                (uint16_t *)pchTarget,
+                                                nWidth);
+
+        pchSource += uSourceStride;
+        pchTarget += uTargetStride;
+    }
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 2)
+static inline void sdl_sve_xbgr8888_stride_blend_to_rgb565(uint32_t *SDL_RESTRICT pwSource,
+                                                           uint16_t *SDL_RESTRICT phwTarget,
+                                                           size_t uStride)
+{
+    sdl_sve_rgb32_no_alpha_to_rgb565_stride_impl(
+        sdl_sve_pixel_u16x4_foreach_chn_abgr_rgb565,
+        {
+            sdl_sve_rgb32_blend_to_rgb565_op(3);
+        });
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1, 3)
+static inline void sdl_sve_xbgr8888_blend_to_rgb565(uint8_t *SDL_RESTRICT pchSource,
+                                                    size_t uSourceStride,
+                                                    uint8_t *SDL_RESTRICT pchTarget,
+                                                    size_t uTargetStride,
+                                                    int nWidth,
+                                                    int nHeight)
+{
+    while (nHeight--) {
+
+        sdl_sve_xbgr8888_stride_blend_to_rgb565((uint32_t *)pchSource,
+                                                (uint16_t *)pchTarget,
+                                                nWidth);
+
+        pchSource += uSourceStride;
+        pchTarget += uTargetStride;
+    }
+}
+
+SDL_TARGETING("arch=armv8-a+sve2")
+ARM_NONNULL(1)
+static inline void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -2113,6 +2291,14 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
 
     switch (srcfmt->format) {
     case SDL_PIXELFORMAT_XRGB8888:
+        sdl_sve_xrgb8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
+        break;
+
     case SDL_PIXELFORMAT_ARGB8888:
         sdl_sve_argb8888_blend_to_rgb565(src,
                                          srcstride,
@@ -2123,6 +2309,14 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
         break;
 
     case SDL_PIXELFORMAT_RGBX8888:
+        sdl_sve_rgbx8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
+        break;
+
     case SDL_PIXELFORMAT_RGBA8888:
         sdl_sve_rgba8888_blend_to_rgb565(src,
                                          srcstride,
@@ -2133,6 +2327,14 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
         break;
 
     case SDL_PIXELFORMAT_XBGR8888:
+        sdl_sve_xbgr8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
+        break;
+
     case SDL_PIXELFORMAT_ABGR8888:
         sdl_sve_abgr8888_blend_to_rgb565(src,
                                          srcstride,
@@ -2143,6 +2345,14 @@ static inline ARM_NONNULL(1) void sdl_sve_rgb32_to_rgb565_swizzle_dispatcher(SDL
         break;
 
     case SDL_PIXELFORMAT_BGRX8888:
+        sdl_sve_bgrx8888_blend_to_rgb565(src,
+                                         srcstride,
+                                         dst,
+                                         dststride,
+                                         width,
+                                         height);
+        break;
+
     case SDL_PIXELFORMAT_BGRA8888:
         sdl_sve_bgra8888_blend_to_rgb565(src,
                                          srcstride,
