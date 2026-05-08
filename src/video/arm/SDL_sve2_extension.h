@@ -901,7 +901,7 @@ static inline void svst4ub_u16(svbool_t vPredu8,
 
 /*! \note the Element range of vMask is [0, 0xFF]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint16_t vTarget, svuint16_t vMask)
 {
     // vTarget = vSource * vMask + vTarget * (255 - vMask);
@@ -926,7 +926,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
 
 /*! \note the hwOpacity range [0, 0x100]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
                                                         svuint16_t vTarget,
                                                         uint16_t hwOpacity)
@@ -946,7 +946,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
 /*! \note the Element range of vMask is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_mask_and_opacity(svuint16_t vSource,
                                                                  svuint16_t vTarget,
                                                                  svuint16_t vMask,
@@ -973,7 +973,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask_and_opacity(svuint16_t vSou
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_masks(svuint16_t vSource,
                                                       svuint16_t vTarget,
                                                       svuint16_t vMask0,
@@ -1006,7 +1006,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks(svuint16_t vSource,
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_masks_and_opacity(
     svuint16_t vSource,
     svuint16_t vTarget,
@@ -1048,7 +1048,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_masks_and_opacity(
 
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_3masks(svuint16_t vSource,
                                                        svuint16_t vTarget,
                                                        svuint16_t vMask0,
@@ -1090,7 +1090,7 @@ static inline svuint16_t sdl_sve_chn_blend_with_3masks(svuint16_t vSource,
 /*! \note the Element range of vMask0/1 is [0, 0xFF]
  *  \note the hwOpacity range [0, 0x100]
  */
-SDL_TARGETING(("arch=armv8-a+sve2")
+SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_3masks_and_opacity(
     svuint16_t vSource,
     svuint16_t vTarget,
