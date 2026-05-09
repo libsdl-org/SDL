@@ -297,9 +297,15 @@ int SDL_GetAtomicInt(SDL_AtomicInt *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
-#elif defined(HAVE_MSC_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
-    return _InterlockedOr((long *)&a->value, 0);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_int, sizeof(__int32) == sizeof(a->value));
+    return (int)__ldar32((unsigned __int32 *)&a->value);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_int, sizeof(int) == sizeof(a->value));
+    SDL_CompilerBarrier();
+    int value = *(volatile int *)&a->value;
+    SDL_CompilerBarrier();
+    return value;
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_or_and_fetch(&a->value, 0);
 #elif defined(SDL_PLATFORM_MACOS) // this is deprecated in 10.12 sdk; favor gcc atomics.
@@ -319,9 +325,15 @@ Uint32 SDL_GetAtomicU32(SDL_AtomicU32 *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
-#elif defined(HAVE_MSC_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
-    return (Uint32)_InterlockedOr((long *)&a->value, 0);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_u32, sizeof(__int32) == sizeof(a->value));
+    return __ldar32((unsigned __int32 *)&a->value);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_u32, sizeof(Uint32) == sizeof(a->value));
+    SDL_CompilerBarrier();
+    Uint32 value = *(volatile Uint32 *)&a->value;
+    SDL_CompilerBarrier();
+    return value;
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_or_and_fetch(&a->value, 0);
 #elif defined(SDL_PLATFORM_MACOS) // this is deprecated in 10.12 sdk; favor gcc atomics.
@@ -342,8 +354,14 @@ void *SDL_GetAtomicPointer(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
-#elif defined(HAVE_MSC_ATOMICS)
-    return _InterlockedCompareExchangePointer(a, NULL, NULL);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_ptr, sizeof(__int64) == sizeof(*a));
+    return (void *)__ldar64((unsigned __int64 *)a);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
+    SDL_CompilerBarrier();
+    void *value = *(void * volatile *)a;
+    SDL_CompilerBarrier();
+    return value;
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_val_compare_and_swap(a, (void *)0, (void *)0);
 #elif defined(SDL_PLATFORM_SOLARIS)
