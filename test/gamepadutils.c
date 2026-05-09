@@ -1676,7 +1676,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         int num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
         if (num_touchpads > 0) {
             for (i = 0; i < num_touchpads; ++i) {
-                int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, 0);
+                int num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, i);
                 for (int j = 0; j < num_fingers; ++j) {
                     bool down;
                     float finger_x, finger_y, finger_pressure;
