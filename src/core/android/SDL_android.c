@@ -688,7 +688,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZLjava/lang/String;ZI)Z");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
@@ -3374,7 +3374,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 bool Android_JNI_OpenFileDialog(
     SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple)
+    bool multiple, const char* defaultLocation)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
@@ -3408,9 +3408,11 @@ bool Android_JNI_OpenFileDialog(
     mAndroidFileDialogData.userdata = userdata;
     mAndroidFileDialogData.callback = callback;
 
+    jstring jstringDefaultLocation = (*env)->NewStringUTF(env, defaultLocation);
+
     // Invoke JNI
     jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
-        midShowFileDialog, filtersArray, (jboolean) multiple, (jboolean) forwrite, mAndroidFileDialogData.request_code);
+        midShowFileDialog, filtersArray, (jboolean) multiple, jstringDefaultLocation, (jboolean) forwrite, mAndroidFileDialogData.request_code);
     (*env)->DeleteLocalRef(env, filtersArray);
     if (!success) {
         mAndroidFileDialogData.callback = NULL;

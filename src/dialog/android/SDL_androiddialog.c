@@ -28,6 +28,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
+    const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, "");
     bool is_save;
 
     if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
@@ -51,7 +52,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         return;
     }
 
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, is_save, allow_many)) {
+    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, is_save, allow_many, default_location)) {
         // SDL_SetError is already called when it fails
         callback(userdata, NULL, -1);
     }

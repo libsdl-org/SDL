@@ -2043,7 +2043,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static boolean showFileDialog(String[] filters, boolean allowMultiple, boolean forWrite, int requestCode) {
+    public static boolean showFileDialog(String[] filters, boolean allowMultiple, String defaultLocation, boolean forWrite, int requestCode) {
         if (mSingleton == null) {
             return false;
         }
@@ -2077,6 +2077,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Intent intent = new Intent(forWrite ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
+
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        intent.putExtra("android.intent.extra.TITLE", defaultLocation);
+
         switch (mimes.size()) {
             case 0:
                 intent.setType("*/*");
