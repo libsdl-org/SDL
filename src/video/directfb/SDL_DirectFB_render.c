@@ -1130,19 +1130,17 @@ static int DirectFB_RenderWritePixels(SDL_Renderer * renderer, const SDL_Rect * 
 #endif
 
 
-SDL_Renderer *DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
+static int DirectFB_CreateRenderer(SDL_Renderer *renderer, SDL_Window * window, Uint32 flags)
 {
     IDirectFBSurface *winsurf = get_dfb_surface(window);
     /*SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);*/
-    SDL_Renderer *renderer = NULL;
     DirectFB_RenderData *data = NULL;
     DFBSurfaceCapabilities scaps;
 
     if (!winsurf) {
-        return NULL;
+        return -1;
     }
 
-    SDL_DFB_ALLOC_CLEAR(renderer, sizeof(*renderer));
     SDL_DFB_ALLOC_CLEAR(data, sizeof(*data));
 
     renderer->WindowEvent = DirectFB_WindowEvent;
@@ -1207,12 +1205,11 @@ SDL_Renderer *DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 #endif
 
-    return renderer;
+    return 0;
 
   error:
-    SDL_DFB_FREE(renderer);
     SDL_DFB_FREE(data);
-    return NULL;
+    return -1;
 }
 
 
