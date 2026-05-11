@@ -30,11 +30,6 @@
 bool SDL_VisionOS_PointerModeEnabled();
 
 /**
- * Set whether the gaze cursor should be visible
- */
-void SDL_VisionOS_UpdateRelativeMode();
-
-/**
  * Check if any window is using curved content mode (UIHostingController-based).
  */
 bool SDL_UIKit_HasCurvedWindow();

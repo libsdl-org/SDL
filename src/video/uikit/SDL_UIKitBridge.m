@@ -94,35 +94,6 @@ bool SDL_VisionOS_PointerModeEnabled()
     return SDL_pointer_mode;
 }
 
-void SDL_VisionOS_UpdateRelativeMode()
-{
-    SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
-    if (window) {
-        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        bool visible;
-
-        if (SDL_GCMouseRelativeMode()) {
-            visible = false;
-        } else {
-            visible = true;
-        }
-
-        id hosting = data.curvedContentHosting;
-        SEL setCursorVisibleSelector = NSSelectorFromString(@"setCursorVisible:");
-        if (![hosting respondsToSelector:setCursorVisibleSelector]) {
-            return nil;
-        }
-
-        NSMethodSignature *signature = [hosting methodSignatureForSelector:setCursorVisibleSelector];
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setSelector:setCursorVisibleSelector];
-        [invocation setTarget:hosting];
-
-        [invocation setArgument:&visible atIndex:2];
-        [invocation invoke];
-    }
-}
-
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, float x, float y)
 {
