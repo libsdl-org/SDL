@@ -52,7 +52,7 @@ internal struct SDL_CurvedContentView: View {
     var metersPerPoint: Float { 1.0 / pointsPerMeter }
 
     /// The cursor color which should be passed to `curvedUIMaterial`
-    @State private var cursorColor: UIColor = .white
+    @State private var cursorColor: UIColor = .lightGray
 
     /// The cursor color on interact (pinch/drag/click) which should be passed to `curvedUIMaterial`
     @State private var cursorColorOnInteract: UIColor = .systemCyan
