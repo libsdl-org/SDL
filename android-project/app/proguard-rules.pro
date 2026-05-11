@@ -68,6 +68,7 @@
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLControllerManager {
+    void joystickSetSensorsEnabled(int, boolean);
     void pollInputDevices();
     void joystickSetLED(int, int, int, int);
     void pollHapticDevices();
