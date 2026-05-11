@@ -127,8 +127,8 @@ internal class SDL_CurvedContentHosting: NSObject {
         // Spin up an async task to present / dismiss ornaments when there are updates to the scene state.
         let settings = self.settings
         let sceneStateObservations = Observations { [weak settings] in
-            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, SDL_CurvedContentSettings.InputType)? }
-            return (settings.sceneState, settings.inputType)
+            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, Bool)? }
+            return (settings.sceneState, settings.isPointer)
         }
         Task { [weak self] in
             for await _ in sceneStateObservations {
@@ -192,12 +192,8 @@ internal class SDL_CurvedContentSettings {
         case cinematic
     }
 
-    enum InputType: String, CaseIterable {
-        case eyes = "Eyes"
-        case pointer = "Pointer"
-    }
-
-    var inputType: InputType = .eyes
+    let setInputModeOnClick: Bool = true
+    var isPointer: Bool = false
     var isDimmed: Bool = false
     var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
@@ -251,10 +247,15 @@ struct SDL_SettingsPanelView: View {
     private var collapsedBar: some View {
         Button(action: { withAnimation { isExpanded = true } }) {
             VStack(spacing: 12) {
+                if !settings.setInputModeOnClick {
+                    Image(systemName: settings.isPointer ? "cursorarrow" : "eye")
+                        .foregroundStyle(.primary)
+                }
+                
                 Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
-                Divider().frame(height: 20)
+                Divider().frame(height: 8)
                 
                 if settings.curvatureRadius == 0 {
                     FlatButtonIcon()
@@ -268,7 +269,7 @@ struct SDL_SettingsPanelView: View {
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
         .glassBackgroundEffect()
@@ -284,6 +285,18 @@ struct SDL_SettingsPanelView: View {
             Text("").font(.title).padding(8)
             
             HStack() {
+                if !settings.setInputModeOnClick {
+                    Spacer()
+                    Image(systemName: "eye")
+                    
+                    Toggle(isOn: $settings.isPointer) {
+                    }
+                    .labelsHidden()
+                    .tint(.secondary)
+                    
+                    Image(systemName: "cursorarrow")
+                }
+                
                 Spacer()
                 Image(systemName: "sun.max")
 

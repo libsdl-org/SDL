@@ -59,12 +59,12 @@ internal struct SDL_CurvedContentView: View {
 
     /// Whether to show the cursor overlay on the mesh surface.
     private var showCursor: Bool {
-        settings.inputType == .eyes && settings.cursorVisible
+        return !mouseInputEnabled
     }
     
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
     private var mouseInputEnabled: Bool {
-        settings.inputType == .pointer
+        return settings.isPointer
     }
 
     private var shouldPopulateCollisionShape: Bool {
@@ -166,6 +166,7 @@ internal struct SDL_CurvedContentView: View {
         }
         .overlay {
             if mouseInputEnabled {
+                // This enables mouse motion events, but blocks hover location
                 Color.white
                     .opacity(0.001)
                     .pointerStyle(.shape(Circle(), size: .zero))
@@ -176,12 +177,15 @@ internal struct SDL_CurvedContentView: View {
                 .onChanged { events in
                     guard curvedUIMaterial != nil else { return }
                     
-                    if settings.inputType == .eyes {
+                    if !mouseInputEnabled {
                         curvedUIMaterial.isInteracting = true
                         
                         for event in events {
                             if event.kind != .pointer {
                                 sendTouchEvent(event: event, proxy: proxy)
+                            } else if settings.setInputModeOnClick {
+                                settings.isPointer = true
+                                settings.sceneState = .cinematic
                             }
                         }
                     }
@@ -189,23 +193,32 @@ internal struct SDL_CurvedContentView: View {
                 .onEnded { events in
                     guard curvedUIMaterial != nil else { return }
                     
-                    for event in events {
-                        if event.kind != .pointer {
-                            sendTouchEvent(event: event, proxy: proxy)
-                            
-                            if settings.inputType == .pointer {
-                                settings.inputType = .eyes
-                                settings.sceneState = .interactive
+                    if !mouseInputEnabled {
+                        for event in events {
+                            if event.kind != .pointer {
+                                sendTouchEvent(event: event, proxy: proxy)
                             }
-                        } else {
-                            if settings.inputType == .eyes {
-                                settings.inputType = .pointer
-                                settings.sceneState = .cinematic
+                        }
+                        
+                        curvedUIMaterial.isInteracting = false
+                    } else {
+                        for event in events {
+                            if event.kind == .pointer {
+                                if settings.sceneState == .interactive {
+                                    settings.sceneState = .cinematic
+                                }
+                            } else if settings.setInputModeOnClick {
+                                settings.isPointer = false
+                                settings.sceneState = .interactive
+                            } else {
+                                if settings.sceneState == .cinematic {
+                                    settings.sceneState = .interactive
+                                } else {
+                                    settings.sceneState = .cinematic
+                                }
                             }
                         }
                     }
-                    
-                    curvedUIMaterial.isInteracting = false
                 }
         )
         .onChange(of: sceneActivationOrObject(showCursor), initial: true) {
@@ -233,8 +246,8 @@ internal struct SDL_CurvedContentView: View {
                 curvedUIEntity.model!.materials = [curvedUIMaterial.shaderGraphMaterial]
             }
         }
-        .onChange(of: settings.inputType, initial: true) { oldInputType, inputType in
-            if inputType == .pointer {
+        .onChange(of: settings.isPointer, initial: true) { oldIsPointer, isPointer in
+            if isPointer {
                 SDL_VisionOS_SendPointerMode(true)
             } else {
                 SDL_VisionOS_SendPointerMode(false)
