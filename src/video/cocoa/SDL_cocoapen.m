@@ -138,8 +138,8 @@ static void Cocoa_HandlePenPointEvent(SDL_CocoaWindowData *_data, NSEvent *event
 
     SDL_SendPenTouch(timestamp, pen, window, handle->is_eraser, is_touching);
     SDL_SendPenMotion(timestamp, pen, window, (float) point.x, (float) (window->h - point.y));
-    SDL_SendPenButton(timestamp, pen, window, 1, ((buttons & NSEventButtonMaskPenLowerSide) != 0));
-    SDL_SendPenButton(timestamp, pen, window, 2, ((buttons & NSEventButtonMaskPenUpperSide) != 0));
+    SDL_SendPenButton(timestamp, pen, window, 1, SDL_BUTTON_RIGHT, ((buttons & NSEventButtonMaskPenLowerSide) != 0));
+    SDL_SendPenButton(timestamp, pen, window, 2, SDL_BUTTON_MIDDLE, ((buttons & NSEventButtonMaskPenUpperSide) != 0));
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, [event pressure]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, [event rotation]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float) tilt.x) * 90.0f);
