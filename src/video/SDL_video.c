@@ -6463,7 +6463,10 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
         return "ns-resize";
 
     case SDL_SYSTEM_CURSOR_MOVE:
-        return "all-scroll";
+        if (fallback_name) {
+            *fallback_name = "all-scroll";
+        }
+        return "move";
 
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         return "not-allowed";
@@ -6494,6 +6497,51 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
 
     case SDL_SYSTEM_CURSOR_W_RESIZE:
         return "w-resize";
+
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        return "context-menu";
+
+    case SDL_SYSTEM_CURSOR_HELP:
+        return "help";
+
+    case SDL_SYSTEM_CURSOR_CELL:
+        return "cell";
+
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        return "vertical-text";
+
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        return "alias";
+
+    case SDL_SYSTEM_CURSOR_COPY:
+        return "copy";
+
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        return "no-drop";
+
+    case SDL_SYSTEM_CURSOR_GRAB:
+        return "grab";
+
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        return "grabbing";
+
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        return "col-resize";
+
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        return "row-resize";
+
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        if (fallback_name) {
+            *fallback_name = "move";
+        }
+        return "all-scroll";
+
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        return "zoom-in";
+
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        return "zoom-out";
 
     default:
         return "default";

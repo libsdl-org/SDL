@@ -170,26 +170,40 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     // Cursor types
     // private static final int SDL_SYSTEM_CURSOR_NONE = -1;
-    private static final int SDL_SYSTEM_CURSOR_ARROW = 0;
-    private static final int SDL_SYSTEM_CURSOR_IBEAM = 1;
+    private static final int SDL_SYSTEM_CURSOR_DEFAULT = 0;
+    private static final int SDL_SYSTEM_CURSOR_TEXT = 1;
     private static final int SDL_SYSTEM_CURSOR_WAIT = 2;
     private static final int SDL_SYSTEM_CURSOR_CROSSHAIR = 3;
-    private static final int SDL_SYSTEM_CURSOR_WAITARROW = 4;
-    private static final int SDL_SYSTEM_CURSOR_SIZENWSE = 5;
-    private static final int SDL_SYSTEM_CURSOR_SIZENESW = 6;
-    private static final int SDL_SYSTEM_CURSOR_SIZEWE = 7;
-    private static final int SDL_SYSTEM_CURSOR_SIZENS = 8;
-    private static final int SDL_SYSTEM_CURSOR_SIZEALL = 9;
-    private static final int SDL_SYSTEM_CURSOR_NO = 10;
-    private static final int SDL_SYSTEM_CURSOR_HAND = 11;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT = 12;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_TOP = 13;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT = 14;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_RIGHT = 15;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT = 16;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_BOTTOM = 17;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT = 18;
-    private static final int SDL_SYSTEM_CURSOR_WINDOW_LEFT = 19;
+    private static final int SDL_SYSTEM_CURSOR_PROGRESS = 4;
+    private static final int SDL_SYSTEM_CURSOR_NWSE_RESIZE = 5;
+    private static final int SDL_SYSTEM_CURSOR_NESW_RESIZE = 6;
+    private static final int SDL_SYSTEM_CURSOR_EW_RESIZE = 7;
+    private static final int SDL_SYSTEM_CURSOR_NS_RESIZE = 8;
+    private static final int SDL_SYSTEM_CURSOR_MOVE = 9;
+    private static final int SDL_SYSTEM_CURSOR_NOT_ALLOWED = 10;
+    private static final int SDL_SYSTEM_CURSOR_POINTER = 11;
+    private static final int SDL_SYSTEM_CURSOR_NW_RESIZE = 12;
+    private static final int SDL_SYSTEM_CURSOR_N_RESIZE = 13;
+    private static final int SDL_SYSTEM_CURSOR_NE_RESIZE = 14;
+    private static final int SDL_SYSTEM_CURSOR_E_RESIZE = 15;
+    private static final int SDL_SYSTEM_CURSOR_SE_RESIZE = 16;
+    private static final int SDL_SYSTEM_CURSOR_S_RESIZE = 17;
+    private static final int SDL_SYSTEM_CURSOR_SW_RESIZE = 18;
+    private static final int SDL_SYSTEM_CURSOR_W_RESIZE = 19;
+    private static final int SDL_SYSTEM_CURSOR_CONTEXT_MENU = 20;
+    private static final int SDL_SYSTEM_CURSOR_HELP = 21;
+    private static final int SDL_SYSTEM_CURSOR_CELL = 22;
+    private static final int SDL_SYSTEM_CURSOR_VERTICAL_TEXT = 23;
+    private static final int SDL_SYSTEM_CURSOR_ALIAS = 24;
+    private static final int SDL_SYSTEM_CURSOR_COPY = 25;
+    private static final int SDL_SYSTEM_CURSOR_NO_DROP = 26;
+    private static final int SDL_SYSTEM_CURSOR_GRAB = 27;
+    private static final int SDL_SYSTEM_CURSOR_GRABBING = 28;
+    private static final int SDL_SYSTEM_CURSOR_COL_RESIZE = 29;
+    private static final int SDL_SYSTEM_CURSOR_ROW_RESIZE = 30;
+    private static final int SDL_SYSTEM_CURSOR_ALL_SCROLL = 31;
+    private static final int SDL_SYSTEM_CURSOR_ZOOM_IN = 32;
+    private static final int SDL_SYSTEM_CURSOR_ZOOM_OUT = 33;
 
     protected static final int SDL_ORIENTATION_UNKNOWN = 0;
     protected static final int SDL_ORIENTATION_LANDSCAPE = 1;
@@ -1862,10 +1876,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean setSystemCursor(int cursorID) {
         int cursor_type = 0; //PointerIcon.TYPE_NULL;
         switch (cursorID) {
-        case SDL_SYSTEM_CURSOR_ARROW:
+        case SDL_SYSTEM_CURSOR_DEFAULT:
             cursor_type = 1000; //PointerIcon.TYPE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_IBEAM:
+        case SDL_SYSTEM_CURSOR_TEXT:
             cursor_type = 1008; //PointerIcon.TYPE_TEXT;
             break;
         case SDL_SYSTEM_CURSOR_WAIT:
@@ -1874,53 +1888,95 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
             cursor_type = 1007; //PointerIcon.TYPE_CROSSHAIR;
             break;
-        case SDL_SYSTEM_CURSOR_WAITARROW:
+        case SDL_SYSTEM_CURSOR_PROGRESS:
             cursor_type = 1004; //PointerIcon.TYPE_WAIT;
             break;
-        case SDL_SYSTEM_CURSOR_SIZENWSE:
+        case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
             cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_SIZENESW:
+        case SDL_SYSTEM_CURSOR_NESW_RESIZE:
             cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_SIZEWE:
+        case SDL_SYSTEM_CURSOR_EW_RESIZE:
             cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_SIZENS:
+        case SDL_SYSTEM_CURSOR_NS_RESIZE:
             cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_SIZEALL:
+        case SDL_SYSTEM_CURSOR_MOVE:
             cursor_type = 1020; //PointerIcon.TYPE_GRAB;
             break;
-        case SDL_SYSTEM_CURSOR_NO:
+        case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
             cursor_type = 1012; //PointerIcon.TYPE_NO_DROP;
             break;
-        case SDL_SYSTEM_CURSOR_HAND:
+        case SDL_SYSTEM_CURSOR_POINTER:
             cursor_type = 1002; //PointerIcon.TYPE_HAND;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPLEFT:
+        case SDL_SYSTEM_CURSOR_NW_RESIZE:
             cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOP:
+        case SDL_SYSTEM_CURSOR_N_RESIZE:
             cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_TOPRIGHT:
+        case SDL_SYSTEM_CURSOR_NE_RESIZE:
             cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_RIGHT:
+        case SDL_SYSTEM_CURSOR_E_RESIZE:
             cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMRIGHT:
+        case SDL_SYSTEM_CURSOR_SE_RESIZE:
             cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOM:
+        case SDL_SYSTEM_CURSOR_S_RESIZE:
             cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_BOTTOMLEFT:
+        case SDL_SYSTEM_CURSOR_SW_RESIZE:
             cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
             break;
-        case SDL_SYSTEM_CURSOR_WINDOW_LEFT:
+        case SDL_SYSTEM_CURSOR_W_RESIZE:
             cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+            cursor_type = 1001; //PointerIcon.TYPE_CONTEXT_MENU;
+            break;
+        case SDL_SYSTEM_CURSOR_HELP:
+            cursor_type = 1003; //PointerIcon.TYPE_HELP;
+            break;
+        case SDL_SYSTEM_CURSOR_CELL:
+            cursor_type = 1006; //PointerIcon.TYPE_CELL;
+            break;
+        case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+            cursor_type = 1009; //PointerIcon.TYPE_VERTICAL_TEXT;
+            break;
+        case SDL_SYSTEM_CURSOR_ALIAS:
+            cursor_type = 1010; //PointerIcon.TYPE_ALIAS;
+            break;
+        case SDL_SYSTEM_CURSOR_COPY:
+            cursor_type = 1011; //PointerIcon.TYPE_COPY;
+            break;
+        case SDL_SYSTEM_CURSOR_NO_DROP:
+            cursor_type = 1012; //PointerIcon.TYPE_NO_DROP;
+            break;
+        case SDL_SYSTEM_CURSOR_GRAB:
+            cursor_type = 1020; //PointerIcon.TYPE_GRAB;
+            break;
+        case SDL_SYSTEM_CURSOR_GRABBING:
+            cursor_type = 1021; //PointerIcon.TYPE_GRABBING;
+            break;
+        case SDL_SYSTEM_CURSOR_COL_RESIZE:
+            cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+            cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
+            break;
+        case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+            cursor_type = 1013; //PointerIcon.TYPE_ALL_SCROLL;
+            break;
+        case SDL_SYSTEM_CURSOR_ZOOM_IN:
+            cursor_type = 1018; //PointerIcon.TYPE_ZOOM_IN;
+            break;
+        case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+            cursor_type = 1019; //PointerIcon.TYPE_ZOOM_OUT;
             break;
         }
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {

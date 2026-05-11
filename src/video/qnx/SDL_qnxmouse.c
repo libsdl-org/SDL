@@ -36,15 +36,19 @@ static int SDLToScreenCursorShape(SDL_SystemCursor id)
     {
     case SDL_SYSTEM_CURSOR_DEFAULT:
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
+    case SDL_SYSTEM_CURSOR_NO_DROP:
         shape = SCREEN_CURSOR_SHAPE_ARROW;
         break;
     case SDL_SYSTEM_CURSOR_TEXT:
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
         shape = SCREEN_CURSOR_SHAPE_IBEAM;
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
+    case SDL_SYSTEM_CURSOR_PROGRESS:
         shape = SCREEN_CURSOR_SHAPE_WAIT;
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
+    case SDL_SYSTEM_CURSOR_CELL:
         shape = SCREEN_CURSOR_SHAPE_CROSS;
         break;
     case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
@@ -52,10 +56,39 @@ static int SDLToScreenCursorShape(SDL_SystemCursor id)
     case SDL_SYSTEM_CURSOR_EW_RESIZE:
     case SDL_SYSTEM_CURSOR_NS_RESIZE:
     case SDL_SYSTEM_CURSOR_MOVE:
+    case SDL_SYSTEM_CURSOR_NW_RESIZE:
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
+    case SDL_SYSTEM_CURSOR_SE_RESIZE:
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
+    case SDL_SYSTEM_CURSOR_SW_RESIZE:
+    case SDL_SYSTEM_CURSOR_W_RESIZE:
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
         shape = SCREEN_CURSOR_SHAPE_MOVE;
         break;
     case SDL_SYSTEM_CURSOR_POINTER:
+    case SDL_SYSTEM_CURSOR_HELP:
+    case SDL_SYSTEM_CURSOR_ALIAS:
+    case SDL_SYSTEM_CURSOR_COPY:
         shape = SCREEN_CURSOR_SHAPE_HAND;
+        break;
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        shape = SCREEN_CURSOR_SHAPE_MENU;
+        break;
+    case SDL_SYSTEM_CURSOR_GRAB:
+        shape = SCREEN_CURSOR_SHAPE_GRAB;
+        break;
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        shape = SCREEN_CURSOR_SHAPE_GRABBING;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        shape = SCREEN_CURSOR_SHAPE_ZOOM_IN;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        shape = SCREEN_CURSOR_SHAPE_ZOOM_OUT;
         break;
     default:
         break;
