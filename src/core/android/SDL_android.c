@@ -3374,7 +3374,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 bool Android_JNI_OpenFileDialog(
     SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple, const char* defaultLocation)
+    bool multiple, const char *defaultLocation)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
