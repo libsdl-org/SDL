@@ -462,9 +462,9 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     msg->payload.hapticRumble.type = 0;
     msg->payload.hapticRumble.intensity = 0;
     msg->payload.hapticRumble.left.speed = low_frequency_rumble;
-    msg->payload.hapticRumble.left.gain = low_frequency_rumble;
+    msg->payload.hapticRumble.left.gain = 0;
     msg->payload.hapticRumble.right.speed = high_frequency_rumble;
-    msg->payload.hapticRumble.right.gain = high_frequency_rumble;
+    msg->payload.hapticRumble.right.gain = 0;
 
     rc = SDL_hid_write(device->dev, buffer, sizeof(buffer));
     if (rc < 0) {
