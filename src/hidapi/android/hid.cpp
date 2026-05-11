@@ -727,7 +727,7 @@ public:
 
 			size_t uBytesToCopy = 0;
 
-			if ( m_reportResponse.size() > 0 )
+			if ( bFeature && m_reportResponse.size() > 0 )
 			{
 				// Make sure we preserve the report value if it isn't already in the report.
 				bool bHasReportAlready = ( *pData == *m_reportResponse.data() );
