@@ -127,8 +127,8 @@ internal class SDL_CurvedContentHosting: NSObject {
         // Spin up an async task to present / dismiss ornaments when there are updates to the scene state.
         let settings = self.settings
         let sceneStateObservations = Observations { [weak settings] in
-            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, Bool)? }
-            return (settings.sceneState, settings.isPointer)
+            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, SDL_CurvedContentSettings.InputType)? }
+            return (settings.sceneState, settings.inputType)
         }
         Task { [weak self] in
             for await _ in sceneStateObservations {
@@ -192,8 +192,12 @@ internal class SDL_CurvedContentSettings {
         case cinematic
     }
 
-    let setInputModeOnClick: Bool = true
-    var isPointer: Bool = false
+    enum InputType {
+        case eyes
+        case pointer
+    }
+
+    var inputType: InputType = .eyes
     var isDimmed: Bool = false
     var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
@@ -247,11 +251,6 @@ struct SDL_SettingsPanelView: View {
     private var collapsedBar: some View {
         Button(action: { withAnimation { isExpanded = true } }) {
             VStack(spacing: 12) {
-                if !settings.setInputModeOnClick {
-                    Image(systemName: settings.isPointer ? "cursorarrow" : "eye")
-                        .foregroundStyle(.primary)
-                }
-                
                 Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
@@ -285,18 +284,6 @@ struct SDL_SettingsPanelView: View {
             Text("").font(.title).padding(8)
             
             HStack() {
-                if !settings.setInputModeOnClick {
-                    Spacer()
-                    Image(systemName: "eye")
-                    
-                    Toggle(isOn: $settings.isPointer) {
-                    }
-                    .labelsHidden()
-                    .tint(.secondary)
-                    
-                    Image(systemName: "cursorarrow")
-                }
-                
                 Spacer()
                 Image(systemName: "sun.max")
 

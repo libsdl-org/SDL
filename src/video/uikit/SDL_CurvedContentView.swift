@@ -64,7 +64,7 @@ internal struct SDL_CurvedContentView: View {
     
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
     private var mouseInputEnabled: Bool {
-        return settings.isPointer
+        return settings.inputType == .pointer
     }
 
     private var shouldPopulateCollisionShape: Bool {
@@ -183,8 +183,8 @@ internal struct SDL_CurvedContentView: View {
                         for event in events {
                             if event.kind != .pointer {
                                 sendTouchEvent(event: event, proxy: proxy)
-                            } else if settings.setInputModeOnClick {
-                                settings.isPointer = true
+                            } else {
+                                settings.inputType = .pointer
                                 settings.sceneState = .cinematic
                             }
                         }
@@ -199,26 +199,16 @@ internal struct SDL_CurvedContentView: View {
                                 sendTouchEvent(event: event, proxy: proxy)
                             }
                         }
-                        
-                        curvedUIMaterial.isInteracting = false
                     } else {
                         for event in events {
-                            if event.kind == .pointer {
-                                if settings.sceneState == .interactive {
-                                    settings.sceneState = .cinematic
-                                }
-                            } else if settings.setInputModeOnClick {
-                                settings.isPointer = false
+                            if event.kind != .pointer {
+                                settings.inputType = .eyes
                                 settings.sceneState = .interactive
-                            } else {
-                                if settings.sceneState == .cinematic {
-                                    settings.sceneState = .interactive
-                                } else {
-                                    settings.sceneState = .cinematic
-                                }
                             }
                         }
                     }
+                    
+                    curvedUIMaterial.isInteracting = false
                 }
         )
         .onChange(of: sceneActivationOrObject(showCursor), initial: true) {
@@ -246,8 +236,8 @@ internal struct SDL_CurvedContentView: View {
                 curvedUIEntity.model!.materials = [curvedUIMaterial.shaderGraphMaterial]
             }
         }
-        .onChange(of: settings.isPointer, initial: true) { oldIsPointer, isPointer in
-            if isPointer {
+        .onChange(of: settings.inputType, initial: true) { oldInputType, inputType in
+            if inputType == .pointer {
                 SDL_VisionOS_SendPointerMode(true)
             } else {
                 SDL_VisionOS_SendPointerMode(false)
