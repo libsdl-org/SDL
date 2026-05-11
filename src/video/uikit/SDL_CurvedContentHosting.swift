@@ -94,13 +94,13 @@ internal class SDL_ClearHostingController<Content: View>: UIHostingController<Co
 @objc(SDL_CurvedContentHosting)
 internal class SDL_CurvedContentHosting: NSObject {
     private let settings = SDL_CurvedContentSettings()
-    
+
     private let helper = SDL_RealityKitHelper()
-    
+
     private var hostingController: SDL_ClearHostingController<SDL_CurvedContentView>?
 
     @objc public override init() {
-        NSLog("SDL_CurvedContentHosting init")
+        //NSLog("SDL_CurvedContentHosting init")
         super.init()
     }
 
@@ -118,12 +118,12 @@ internal class SDL_CurvedContentHosting: NSObject {
             hc.removeFromParent()
             hc.view.layer.opacity = 1
 
-            NSLog("SDL_CurvedContentHosting: RealityView content ready - presenting modally")
+            //NSLog("SDL_CurvedContentHosting: RealityView content ready - presenting modally")
             viewController.present(hc, animated: false) { [weak self] in
                 self?.updateOrnaments()
             }
         })
-        
+
         // Spin up an async task to present / dismiss ornaments when there are updates to the scene state.
         let settings = self.settings
         let sceneStateObservations = Observations { [weak settings] in
@@ -136,7 +136,7 @@ internal class SDL_CurvedContentHosting: NSObject {
                 self.updateOrnaments()
             }
         }
-        
+
         let hc = SDL_ClearHostingController(rootView: contentView)
         hc.modalPresentationStyle = .fullScreen
         hc.view.backgroundColor = .clear
@@ -148,9 +148,9 @@ internal class SDL_CurvedContentHosting: NSObject {
         viewController.view.addSubview(hc.view)
         hc.didMove(toParent: viewController)
 
-        NSLog("SDL_CurvedContentHosting: Bootstrapping RealityView as hidden child")
+        //NSLog("SDL_CurvedContentHosting: Bootstrapping RealityView as hidden child")
     }
-    
+
     private func updateOrnaments() {
         guard let hostingController else { return }
         let settings = self.settings
@@ -205,7 +205,7 @@ struct SDL_SettingsPanelView: View {
 
     static let minimumCurvatureRadius: Float = 800.0
     static let maximumCurvatureRadius: Float = 4500.0
-    
+
     static let curvatureSteps: [Float] = [
         0,
         4000,
@@ -216,7 +216,7 @@ struct SDL_SettingsPanelView: View {
         1000,
         800
     ]
-    
+
     static let curvatureStepsSliderValue: [Float] = curvatureSteps.map {
         if $0 <= 0.01 {
             return 0 // flat
@@ -249,7 +249,7 @@ struct SDL_SettingsPanelView: View {
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
                 Divider().frame(height: 8)
-                
+
                 if settings.curvatureRadius == 0 {
                     FlatButtonIcon()
                         .frame(width: 24, height: 24)
@@ -274,9 +274,9 @@ struct SDL_SettingsPanelView: View {
         VStack(spacing: 16) {
             // Input type and dim controls
             @Bindable var settings = self.settings
-            
+
             Text("").font(.title).padding(8)
-            
+
             HStack() {
                 Spacer()
                 Image(systemName: "sun.max")
@@ -294,11 +294,11 @@ struct SDL_SettingsPanelView: View {
             VStack(spacing: 4) {
                 Text("\(curvatureLabel)")
                     .font(.caption)
-                
+
                 HStack() {
                     FlatButtonIcon()
                         .frame(width: 24, height: 24)
-                    
+
                     Slider(value: $curvatureSlider, in: 0...1) {
                     } currentValueLabel: {
                         Text("\(curvatureLabel)")
@@ -327,7 +327,7 @@ struct SDL_SettingsPanelView: View {
                         }
                         SDL_VisionOS_SendCurvatureChanged(settings.curvatureRadius)
                     }
-                
+
                     CurviestButtonIcon()
                         .frame(width: 24, height: 24)
                 }

@@ -129,12 +129,12 @@ void SDL_VisionOS_SetWindowRealityKitHosting(id hosting)
 
     SDL_UIKitWindowData *windowData = (__bridge SDL_UIKitWindowData *)window->internal;
     windowData.curvedContentHosting = hosting;
-    
+
     // Updating curvedContentHosting updates the view controller so that the "container background" is hidden.
     // On visionOS, this gets rid of the default glass background effect (not wanted for our content).
     [windowData.viewcontroller setNeedsUpdateOfPreferredContainerBackgroundStyle];
-    
-    SDL_Log("VISIONOS: RealityKit hosting registered");
+
+    //SDL_Log("VISIONOS: RealityKit hosting registered");
 }
 
 bool SDL_UIKit_HasCurvedWindow()

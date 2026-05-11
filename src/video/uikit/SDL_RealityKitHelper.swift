@@ -308,7 +308,7 @@ internal class SDL_RealityKitHelper {
             return
         }
 
-        NSLog("SDL_RealityKitHelper: Creating LowLevelTexture %dx%d", width, height)
+        //NSLog("SDL_RealityKitHelper: Creating LowLevelTexture %dx%d", width, height)
 
         do {
             // Create LowLevelTexture descriptor using Metal pixel format directly
@@ -332,7 +332,7 @@ internal class SDL_RealityKitHelper {
             // Create TextureResource from LowLevelTexture (this is reusable)
             textureResource = try TextureResource(from: lowLevelTexture!)
 
-            NSLog("SDL_RealityKitHelper: LowLevelTexture created successfully")
+            //NSLog("SDL_RealityKitHelper: LowLevelTexture created successfully")
         } catch {
             NSLog("SDL_RealityKitHelper: ERROR - Failed to create LowLevelTexture: %@", error.localizedDescription)
             lowLevelTexture = nil
@@ -361,8 +361,8 @@ internal class SDL_RealityKitHelper {
 extension SDL_RealityKitHelper.CurvedMeshTopology {
     @MainActor
     func generateMesh() throws -> LowLevelMesh {
-        NSLog("SDL_RealityKitHelper: Creating LowLevelMesh (%dx%d grid, %d vertices, %d indices)",
-              segmentsX, segmentsY, vertexCount, indexCount)
+        //NSLog("SDL_RealityKitHelper: Creating LowLevelMesh (%dx%d grid, %d vertices, %d indices)",
+        //      segmentsX, segmentsY, vertexCount, indexCount)
 
         // Create LowLevelMesh with our custom vertex format
         let desc = CurvedPlaneVertex.descriptor(vertexCount: vertexCount, indexCount: indexCount)

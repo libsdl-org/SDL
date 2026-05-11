@@ -27,19 +27,19 @@ import GameController
 internal struct SDL_CurvedContentView: View {
     /// Helper object used to manage the mesh and texture of the curved UI.
     let helper: SDL_RealityKitHelper
-    
+
     /// Settings object provided by the caller which determines the UI state.
     let settings: SDL_CurvedContentSettings
-    
+
     /// Information about the window snap status
     @Environment(\.surfaceSnappingInfo) private var snappedStatus
-    
+
     /// Closure which is called when the content is ready to present.
     let onContentReady: @MainActor () -> Void
-    
+
     /// RealityKit entity which is created on appear, to be populated by the curved UI content.
     @State private var curvedUIEntity: ModelEntity! = nil
-    
+
     /// Curved UI material which is created on appear.  Holds the compiled shader and material parameters.
     @State private var curvedUIMaterial: CurvedUIMaterial! = nil
 
@@ -61,7 +61,7 @@ internal struct SDL_CurvedContentView: View {
     private var showCursor: Bool {
         return !mouseInputEnabled
     }
-    
+
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.
     private var mouseInputEnabled: Bool {
         return settings.inputType == .pointer
@@ -70,7 +70,7 @@ internal struct SDL_CurvedContentView: View {
     private var shouldPopulateCollisionShape: Bool {
         return curvedUIEntity != nil && helper.collisionShape != nil && !mouseInputEnabled
     }
-    
+
     /// Value use to animate the screen radius
     @State private var animatedScreenRadius: Float = 1010
 
@@ -124,19 +124,19 @@ internal struct SDL_CurvedContentView: View {
 
     private func realityContent(_ proxy: GeometryProxy3D) -> some View {
         RealityView { content in
-            NSLog("SDL_CurvedContentView: RealityView setup")
+            //NSLog("SDL_CurvedContentView: RealityView setup")
 
             let frameInMeters: BoundingBox = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
             helper.updateMeshSize(width: frameInMeters.extents.x, height: frameInMeters.extents.y)
-            
+
             // Compile curved UI shader (may take a while)
             let material = try! await CurvedUIMaterial()
             self.curvedUIMaterial = material
-            
+
             // Create RealityKit Entity to host the curved UI content
             let mesh = try! await MeshResource(from: helper.lowLevelMesh)
             let entity = ModelEntity(mesh: mesh, materials: [material.shaderGraphMaterial])
-            
+
             // Add InputTargetComponent to the mesh to accept input.
             entity.components.set(InputTargetComponent(allowedInputTypes: .all))
 
@@ -154,7 +154,7 @@ internal struct SDL_CurvedContentView: View {
 
             self.curvedUIEntity = entity
             content.add(entity)
-            
+
             // Call the user-provided contentReady closure.
             onContentReady()
         } update: { content in
@@ -176,10 +176,10 @@ internal struct SDL_CurvedContentView: View {
             SpatialEventGesture()
                 .onChanged { events in
                     guard curvedUIMaterial != nil else { return }
-                    
+
                     if !mouseInputEnabled {
                         curvedUIMaterial.isInteracting = true
-                        
+
                         for event in events {
                             if event.kind != .pointer {
                                 sendTouchEvent(event: event, proxy: proxy)
@@ -192,7 +192,7 @@ internal struct SDL_CurvedContentView: View {
                 }
                 .onEnded { events in
                     guard curvedUIMaterial != nil else { return }
-                    
+
                     if !mouseInputEnabled {
                         for event in events {
                             if event.kind != .pointer {
@@ -207,7 +207,7 @@ internal struct SDL_CurvedContentView: View {
                             }
                         }
                     }
-                    
+
                     curvedUIMaterial.isInteracting = false
                 }
         )
@@ -286,13 +286,13 @@ internal struct SDL_CurvedContentView: View {
 private struct AnimatedCurveRadiusModifier: @MainActor ViewModifier {
     /// Curvature radius beyond which we assume it is flat.
     static let assumedFlatThreshold: Float = 30.0
-    
+
     /// Helper object to modify
     let helper: SDL_RealityKitHelper
-    
+
     /// Curve radius > `assumedFlatThreshold` meters is assumed to be flat.
     var curveRadius: Float
-    
+
     func body(content: Content) -> some View {
         content.onChange(of: curveRadius, initial: true) {
             if curveRadius > 10 {
@@ -311,7 +311,7 @@ private extension SDL_CurvedContentView {
         var sceneActivation: Bool
         var value: T
     }
-    
+
     /// Convenience function which triggers an `onChange` event either when `object` changes, or when
     /// ``curvedUIMaterial`` finishes compiling.
     func sceneActivationOrObject<T: Equatable>(_ object: T) -> some Equatable {
