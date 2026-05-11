@@ -469,8 +469,8 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     rc = SDL_hid_write(device->dev, buffer, sizeof(buffer));
     if (rc < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_INPUT, 
-            "Steam Controller HID Write FAILED! rc: %d, expected: %zu. SDL_Error: %s", 
-            rc, sizeof(buffer), SDL_GetError());
+            "Steam Controller HID Write FAILED! rc: %d. SDL_Error: %s", 
+            rc, SDL_GetError());
 
         return false;
     }
