@@ -112,8 +112,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
 #ifdef SDL_PLATFORM_VISIONOS
-    // Set this property to -1 to disable curved mode entirely
-    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, 0.0f);
+    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, -1.0f);
     if (curvature > 0.0f && curvature <= 1.0f) {
         curvature = 0.0f;
     }
