@@ -113,8 +113,12 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
 
 #ifdef SDL_PLATFORM_VISIONOS
     // Set this property to -1 to disable curved mode entirely
-    data.curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, 0.0f);
-    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CURVATURE_FLOAT, data.curvature);
+    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, 0.0f);
+    if (curvature > 0.0f && curvature <= 1.0f) {
+        curvature = 0.0f;
+    }
+    data.curvature = curvature;
+    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
 #endif
 
     /* The View Controller will handle rotating the view when the device
