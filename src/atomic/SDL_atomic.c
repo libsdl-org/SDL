@@ -263,9 +263,21 @@ int SDL_AtomicGet(SDL_atomic_t *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
-#elif defined(HAVE_MSC_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
-    return _InterlockedOr((long *)&a->value, 0);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_int, sizeof(__int32) == sizeof(a->value));
+    return (int)__ldar32((unsigned __int32 *)&a->value);
+#elif defined(HAVE_MSC_ATOMICS) && defined(_M_ARM)
+    SDL_COMPILE_TIME_ASSERT(atomic_get_int, sizeof(__int32) == sizeof(a->value));
+    __dmb(_ARM_BARRIER_ISH);
+    int value = __iso_volatile_load32((volatile __int32 *)&a->value);
+    __dmb(_ARM_BARRIER_ISH);
+    return value;
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_int, sizeof(int) == sizeof(a->value));
+    SDL_CompilerBarrier();
+    int value = *(volatile int *)&a->value;
+    SDL_CompilerBarrier();
+    return value;
 #elif defined(HAVE_WATCOM_ATOMICS)
     return _SDL_xadd_watcom(&a->value, 0);
 #elif defined(HAVE_GCC_ATOMICS)
@@ -287,8 +299,20 @@ void *SDL_AtomicGetPtr(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
-#elif defined(HAVE_MSC_ATOMICS)
-    return _InterlockedCompareExchangePointer(a, NULL, NULL);
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+    SDL_COMPILE_TIME_ASSERT(atomic_get_ptr, sizeof(__int64) == sizeof(*a));
+    return (void *)__ldar64((unsigned __int64 *)a);
+#elif defined(HAVE_MSC_ATOMICS) && defined(_M_ARM)
+    SDL_COMPILE_TIME_ASSERT(atomic_get_ptr, sizeof(__int32) == sizeof(*a));
+    __dmb(_ARM_BARRIER_ISH);
+    void *value = (void*)__iso_volatile_load32((volatile __int32 *)a);
+    __dmb(_ARM_BARRIER_ISH);
+    return value;
+#elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
+    SDL_CompilerBarrier();
+    void *value = *(void * volatile *)a;
+    SDL_CompilerBarrier();
+    return value;
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_val_compare_and_swap(a, (void *)0, (void *)0);
 #elif defined(__SOLARIS__)
