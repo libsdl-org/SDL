@@ -59,7 +59,7 @@ internal struct SDL_CurvedContentView: View {
 
     /// Whether to show the cursor overlay on the mesh surface.
     private var showCursor: Bool {
-        return !mouseInputEnabled
+        return !mouseInputEnabled && settings.showHover
     }
 
     /// Whether mouse input is enabled.  When this is the case, the collision shape for indirect input should be disabled.

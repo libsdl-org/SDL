@@ -193,6 +193,7 @@ internal class SDL_CurvedContentSettings {
     }
 
     var inputType: InputType = .eyes
+    var showHover: Bool = true
     var isDimmed: Bool = false
     var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
@@ -245,6 +246,8 @@ struct SDL_SettingsPanelView: View {
     private var collapsedBar: some View {
         Button(action: { withAnimation { isExpanded = true } }) {
             VStack(spacing: 12) {
+                Image(systemName: settings.showHover ? "eye" : "eye.slash")
+
                 Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                     .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
@@ -278,6 +281,17 @@ struct SDL_SettingsPanelView: View {
             Text("").font(.title).padding(8)
 
             HStack() {
+                Spacer()
+                Image(systemName: "eye.slash")
+
+                Toggle(isOn: $settings.showHover) {
+                }
+                .labelsHidden()
+                .tint(.secondary)
+
+                Image(systemName: "eye")
+                Spacer()
+
                 Spacer()
                 Image(systemName: "sun.max")
 
