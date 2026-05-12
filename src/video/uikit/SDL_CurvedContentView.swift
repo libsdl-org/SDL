@@ -270,6 +270,7 @@ internal struct SDL_CurvedContentView: View {
             }
         }
         .onChange(of: snappedStatus) {
+            settings.isSnapped = snappedStatus.isSnapped
             helper.updateSnappedStatus(snapped: snappedStatus.isSnapped)
         }
         .preferredSurroundingsEffect(settings.isDimmed ? .dark : nil)

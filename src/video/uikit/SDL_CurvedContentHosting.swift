@@ -127,8 +127,8 @@ internal class SDL_CurvedContentHosting: NSObject {
         // Spin up an async task to present / dismiss ornaments when there are updates to the scene state.
         let settings = self.settings
         let sceneStateObservations = Observations { [weak settings] in
-            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, SDL_CurvedContentSettings.InputType)? }
-            return (settings.sceneState, settings.inputType)
+            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, SDL_CurvedContentSettings.InputType, Bool, Bool)? }
+            return (settings.sceneState, settings.inputType, settings.isSnapped, settings.settingsExpanded)
         }
         Task { [weak self] in
             for await _ in sceneStateObservations {
@@ -155,10 +155,29 @@ internal class SDL_CurvedContentHosting: NSObject {
         guard let hostingController else { return }
         let settings = self.settings
         let sceneState = settings.sceneState
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: 0.0) {
             if sceneState == .interactive {
+                var sceneAnchor: UnitPoint
+                var contentAlignment: Alignment
+                if settings.isSnapped {
+                    if settings.settingsExpanded {
+                        sceneAnchor = .bottom
+                        contentAlignment = .center
+                    } else {
+                        sceneAnchor = .bottom
+                        contentAlignment = .top
+                    }
+                } else {
+                    if settings.settingsExpanded {
+                        sceneAnchor = .leading
+                        contentAlignment = .center
+                    } else {
+                        sceneAnchor = .leading
+                        contentAlignment = .trailing
+                    }
+                }
                 hostingController.ornaments = [
-                    UIHostingOrnament(sceneAnchor: .leading, contentAlignment: .trailing) {
+                    UIHostingOrnament(sceneAnchor: sceneAnchor, contentAlignment: contentAlignment) {
                         SDL_SettingsPanelView(settings: settings)
                     }
                 ]
@@ -197,11 +216,12 @@ internal class SDL_CurvedContentSettings {
     var isDimmed: Bool = false
     var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
     var sceneState: SceneState = .interactive
+    var isSnapped: Bool = false
+    var settingsExpanded: Bool = false
 }
 
 struct SDL_SettingsPanelView: View {
     let settings: SDL_CurvedContentSettings
-    @State private var isExpanded: Bool = false
     @State private var curvatureSlider: Float = 0.0
 
     static let minimumCurvatureRadius: Float = 800.0
@@ -234,7 +254,7 @@ struct SDL_SettingsPanelView: View {
     }
 
     var body: some View {
-        if isExpanded {
+        if settings.settingsExpanded {
             expandedPanel
         } else {
             collapsedBar
@@ -244,28 +264,52 @@ struct SDL_SettingsPanelView: View {
     // MARK: Collapsed
 
     private var collapsedBar: some View {
-        Button(action: { withAnimation { isExpanded = true } }) {
-            VStack(spacing: 12) {
-                Image(systemName: settings.showHover ? "eye" : "eye.slash")
+        Button(action: { withAnimation { settings.settingsExpanded = true } }) {
+            if settings.isSnapped {
+                HStack(spacing: 12) {
+                    Image(systemName: settings.showHover ? "eye" : "eye.slash")
 
-                Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
-                    .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+                    Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
+                        .foregroundStyle(settings.isDimmed ? .primary : .secondary)
 
-                Divider().frame(height: 8)
+                    Divider().frame(height: 8)
 
-                if settings.curvatureRadius == 0 {
-                    FlatButtonIcon()
-                        .frame(width: 24, height: 24)
-                } else if settings.curvatureRadius > 1000.0 {
-                    CurvedButtonIcon()
-                        .frame(width: 24, height: 24)
-                } else {
-                    CurviestButtonIcon()
-                        .frame(width: 24, height: 24)
+                    if settings.curvatureRadius == 0 {
+                        FlatButtonIcon()
+                            .frame(width: 24, height: 24)
+                    } else if settings.curvatureRadius > 1000.0 {
+                        CurvedButtonIcon()
+                            .frame(width: 24, height: 24)
+                    } else {
+                        CurviestButtonIcon()
+                            .frame(width: 24, height: 24)
+                    }
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 16)
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: settings.showHover ? "eye" : "eye.slash")
+
+                    Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
+                        .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+
+                    Divider().frame(height: 8)
+
+                    if settings.curvatureRadius == 0 {
+                        FlatButtonIcon()
+                            .frame(width: 24, height: 24)
+                    } else if settings.curvatureRadius > 1000.0 {
+                        CurvedButtonIcon()
+                            .frame(width: 24, height: 24)
+                    } else {
+                        CurviestButtonIcon()
+                            .frame(width: 24, height: 24)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 16)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
         }
         .buttonStyle(.plain)
         .glassBackgroundEffect()
@@ -348,10 +392,10 @@ struct SDL_SettingsPanelView: View {
             }
         }
         .padding(20)
-        .frame(width: 360)
+        .frame(width: 340)
         .overlay(alignment: .topLeading) {
             // X button
-            Button(action: { withAnimation { isExpanded = false } }) {
+            Button(action: { withAnimation { settings.settingsExpanded = false } }) {
                 Image(systemName: "xmark")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .padding(8)
