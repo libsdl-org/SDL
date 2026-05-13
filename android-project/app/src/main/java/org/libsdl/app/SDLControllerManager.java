@@ -91,7 +91,13 @@ public class SDLControllerManager
      * This method is called by SDL using JNI.
      */
     static void joystickSetSensorsEnabled(int device_id, boolean enabled) {
-        mJoystickHandler.setSensorsEnabled(device_id, enabled);
+        // Run this on the UI thread so we don't race with enableSensor() in SDLSurface.java
+        SDL.getContext().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mJoystickHandler.setSensorsEnabled(device_id, enabled);
+            }
+        });
     }
 
     /**
