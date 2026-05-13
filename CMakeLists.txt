@@ -1772,6 +1772,10 @@ elseif(EMSCRIPTEN)
     )
   endif()
 
+  if(SDL_HIDAPI)
+    CheckHIDAPI()
+  endif()
+
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_EMSCRIPTEN 1)
     sdl_glob_sources(

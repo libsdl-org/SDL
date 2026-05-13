@@ -28,6 +28,7 @@
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 static SDL_joylist_item *JoystickByIndex(int index);
 
@@ -120,6 +121,17 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product)
+{
+    MAIN_THREAD_EM_ASM({
+        if ("hid" in navigator) {
+            navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
+        }
+    }, vendor, product);
+}
+#endif
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
@@ -147,6 +159,15 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (HIDAPI_IsDeviceSupported(vendor, product, 0, "")) {
+        SDL_RequestWebHIDDevice(vendor, product);
+        printf("HIDAPI_IsDeviceSupported\n");
+        SDL_free(item);
+        goto done;
+    }
+#endif
 
     // Use a generic VID/PID representing an XInput controller
     if (!vendor && !product && is_xinput) {

@@ -180,6 +180,8 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
 
+extern bool HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+
 // Return true if a HID device is present and supported as a joystick of the given type
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
 

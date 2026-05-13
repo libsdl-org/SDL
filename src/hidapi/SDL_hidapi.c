@@ -595,6 +595,8 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #include "SDL_hidapi_android.h"
 #elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 #include "SDL_hidapi_ios.h"
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
+#include "SDL_hidapi_emscripten.h"
 #endif
 
 #undef api_version

@@ -1034,6 +1034,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 1, touchpad_down, touchpad_x * TOUCHPAD_SCALEX, touchpad_y * TOUCHPAD_SCALEY, touchpad_down ? 1.0f : 0.0f);
     }
 
+    printf("PS4 Packet usb1 %d\n", packet->rgucButtonsHatAndCounter[0]);
     if (ctx->last_state.rgucButtonsHatAndCounter[0] != packet->rgucButtonsHatAndCounter[0]) {
         {
             Uint8 data = (packet->rgucButtonsHatAndCounter[0] >> 4);
@@ -1295,7 +1296,9 @@ static bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_PS4_PROTOCOL
         HIDAPI_DumpPacket("PS4 packet: size = %d", data, size);
 #endif
+        printf("PS4 Packet start\n");
         if (!HIDAPI_DriverPS4_IsPacketValid(ctx, data, size)) {
+            printf("PS4 Packet invalid\n");
             continue;
         }
 
@@ -1303,11 +1306,13 @@ static bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         ctx->last_packet = now;
 
         if (!joystick) {
+            printf("PS4 Packet no joystick\n");
             continue;
         }
 
         switch (data[0]) {
         case k_EPS4ReportIdUsbState:
+            printf("PS4 Packet usb, packet[1]=%d\n", +data[1]);
             HIDAPI_DriverPS4_HandleStatePacket(joystick, device->dev, ctx, (PS4StatePacket_t *)&data[1], size - 1);
             break;
         case k_EPS4ReportIdBluetoothState1:
