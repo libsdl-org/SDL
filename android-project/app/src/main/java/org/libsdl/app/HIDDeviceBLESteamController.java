@@ -37,6 +37,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     private boolean mIsConnected = false;
     private boolean mIsChromebook = false;
     private boolean mIsReconnecting = false;
+    private boolean mHasEnabledNotifications = false;
+    private boolean mHasSeenInputUpdate = false;
     private boolean mFrozen = false;
     private LinkedList<GattOperation> mOperations;
     GattOperation mCurrentOperation = null;
@@ -73,6 +75,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         byte[] mValue;
         BluetoothGatt mGatt;
         boolean mResult = true;
+        int mDelayMs = 0;
 
         private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid) {
             mGatt = gatt;
@@ -80,11 +83,26 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             mUuid = uuid;
         }
 
+        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, int delayMs) {
+            mGatt = gatt;
+            mOp = operation;
+            mUuid = uuid;
+            mDelayMs = delayMs;
+        }        
+
         private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, byte[] value) {
             mGatt = gatt;
             mOp = operation;
             mUuid = uuid;
             mValue = value;
+        }
+
+        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, byte[] value, int delayMs) {
+            mGatt = gatt;
+            mOp = operation;
+            mUuid = uuid;
+            mValue = value;
+            mDelayMs = delayMs;
         }
 
         public void run() {
@@ -148,6 +166,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             return mResult;
         }
 
+        public int getDelayMs() { return mDelayMs; }
+
         private BluetoothGattCharacteristic getCharacteristic(UUID uuid) {
             BluetoothGattService valveService = mGatt.getService(steamControllerService);
             if (valveService == null)
@@ -166,6 +186,10 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         static public GattOperation enableNotification(BluetoothGatt gatt, UUID uuid) {
             return new GattOperation(gatt, Operation.ENABLE_NOTIFICATION, uuid);
         }
+
+        static public GattOperation enableNotification(BluetoothGatt gatt, UUID uuid, int delayMs) {
+            return new GattOperation(gatt, Operation.ENABLE_NOTIFICATION, uuid, delayMs);
+        }
     }
 
     HIDDeviceBLESteamController(HIDDeviceManager manager, BluetoothDevice device) {
@@ -178,6 +202,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         mHandler = new Handler(Looper.getMainLooper());
 
         mGatt = connectGatt();
+        mHasEnabledNotifications = false;
+        mHasSeenInputUpdate = false;
         // final HIDDeviceBLESteamController finalThis = this;
         // mHandler.postDelayed(new Runnable() {
         //     @Override
@@ -414,21 +440,30 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             mCurrentOperation = mOperations.removeFirst();
         }
 
-        // Run in main thread
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mOperations) {
-                    if (mCurrentOperation == null) {
-                        Log.e(TAG, "Current operation null in executor?");
-                        return;
-                    }
+        Runnable gattOperationRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (mOperations) {
+                        if (mCurrentOperation == null) {
+                            Log.e(TAG, "Current operation null in executor?");
+                            return;
+                        }
 
-                    mCurrentOperation.run();
-                    // now wait for the GATT callback and when it comes, finish this operation
+                        mCurrentOperation.run();
+                        // now wait for the GATT callback and when it comes, finish this operation
+                    }
                 }
-            }
-        });
+            };
+
+        if (mCurrentOperation.getDelayMs() == 0) {
+            // Run in main thread
+            mHandler.post(gattOperationRunnable);
+        }
+        else {
+            // If we have a delay on this operation, wait before we post it.
+            mHandler.postDelayed(gattOperationRunnable, mCurrentOperation.getDelayMs());
+        }
+
     }
 
     private void queueGattOperation(GattOperation op) {
@@ -439,8 +474,39 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     }
 
     private void enableNotification(UUID chrUuid) {
-        GattOperation op = HIDDeviceBLESteamController.GattOperation.enableNotification(mGatt, chrUuid);
+        // Add a 500ms delay to notification write for Amazon Fire TV devices, as otherwise if we do this too quickly after connecting
+        // it will return success and then silently drop the operation on the floor.
+        GattOperation op = HIDDeviceBLESteamController.GattOperation.enableNotification(mGatt, chrUuid, 500);
         queueGattOperation(op);
+
+        // Amazon Fire devices can also silently timeout on writeDescriptor, so
+        // set up a little delayed check that will attempt to write a second time.
+        //
+        // While this only seems to be needed on Amazon Fire TV devices at present, it
+        // doesn't hurt to have a retry on other devices as well.
+        //
+        final HIDDeviceBLESteamController finalThis = this;
+        final UUID finalUuid = chrUuid;
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!finalThis.mHasEnabledNotifications) {
+
+                    if (finalThis.mHasSeenInputUpdate) {
+                        // Amazon Five devices may have enabled notifications on the input characteristic and not given us a callback. If we've seen
+                        // input reports, though, somewhat by definition notifications are enabled.
+                        Log.w(TAG, "WriteDescriptor has never returned, but we've seen input reports. Moving on with controller initialization.");
+                        finalThis.mHasEnabledNotifications = true;
+                        finalThis.enableValveMode();
+                        return;
+                    }
+
+                    // Give one more try.
+                    GattOperation retry = HIDDeviceBLESteamController.GattOperation.enableNotification(finalThis.mGatt, finalUuid, 500);
+                    finalThis.queueGattOperation(retry);
+                }
+            }
+        }, 1000);            
     }
 
     void writeCharacteristic(UUID uuid, byte[] value) {
@@ -538,6 +604,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         //Log.v(TAG, "onCharacteristicChanged uuid=" + characteristic.getUuid() + " data=" + HexDump.dumpHexString(characteristic.getValue()));
 
         if (characteristic.getUuid().equals(getInputCharacteristic()) && !mFrozen) {
+            mHasSeenInputUpdate = true;
             mManager.HIDDeviceInputReport(getId(), characteristic.getValue());
         }
     }
@@ -547,27 +614,36 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         //Log.v(TAG, "onDescriptorRead status=" + status);
     }
 
+    private void enableValveMode()
+    {
+        BluetoothGattService valveService = mGatt.getService(steamControllerService);
+        if (valveService == null)
+            return;
+
+        BluetoothGattCharacteristic reportChr = valveService.getCharacteristic(reportCharacteristic);
+        if (reportChr != null) {
+            if (getProductId() == TRITON_BLE_PID) {
+                // For Triton we just mark things registered.
+                Log.v(TAG, "Registering Triton Steam Controller with ID: " + getId());
+                mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true);
+                setRegistered();
+            } else {
+                // For the original controller, we need to manually enter Valve mode.
+                Log.v(TAG, "Writing report characteristic to enter valve mode");
+                reportChr.setValue(enterValveMode);
+                mGatt.writeCharacteristic(reportChr);
+            }
+        }
+    }
+
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         BluetoothGattCharacteristic chr = descriptor.getCharacteristic();
         //Log.v(TAG, "onDescriptorWrite status=" + status + " uuid=" + chr.getUuid() + " descriptor=" + descriptor.getUuid());
 
         if (chr.getUuid().equals(getInputCharacteristic())) {
-            boolean hasWrittenInputDescriptor = true;
-            BluetoothGattCharacteristic reportChr = chr.getService().getCharacteristic(reportCharacteristic);
-            if (reportChr != null) {
-                if (getProductId() == TRITON_BLE_PID) {
-                    // For Triton we just mark things registered.
-                    Log.v(TAG, "Registering Triton Steam Controller with ID: " + getId());
-                    mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true);
-                    setRegistered();
-                } else {
-                    // For the original controller, we need to manually enter Valve mode.
-                    Log.v(TAG, "Writing report characteristic to enter valve mode");
-                    reportChr.setValue(enterValveMode);
-                    gatt.writeCharacteristic(reportChr);
-                }
-            }
+            mHasEnabledNotifications = true;
+            enableValveMode();
         }
 
         finishCurrentGattOperation();
