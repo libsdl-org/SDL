@@ -529,7 +529,7 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         // Clear the framebuffer
         {
             Uint8 zero_buf[320];
-            SDL_memset(zero_buf, 0, sizeof(zero_buf));
+            SDL_zeroa(zero_buf);
             Uint32 vga_base = (Uint32)VGA_MODE_13H_SEGMENT << 4;
             for (int row = 0; row < 200; row++) {
                 dosmemput(zero_buf, 320, vga_base + row * 320);
@@ -590,7 +590,7 @@ bool DOSVESA_SetDisplayMode(SDL_VideoDevice *device, SDL_VideoDisplay *sdl_displ
         Uint32 win_size_bytes = (Uint32)modedata->win_size * 1024;
         Uint32 win_base = (Uint32)modedata->win_a_segment << 4;
         Uint8 zero_buf[1024];
-        SDL_memset(zero_buf, 0, sizeof(zero_buf));
+        SDL_zeroa(zero_buf);
 
         Uint32 offset = 0;
         int current_bank = -1;
