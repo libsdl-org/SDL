@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 
 static bool SDL_StretchSurfaceUncheckedNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
@@ -93,7 +94,7 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
     }
 
     if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
+        if (src->format != SDL_PromotePixelFormatTo8888(src->format)) {
             return SDL_SetError("Wrong format");
         }
     }

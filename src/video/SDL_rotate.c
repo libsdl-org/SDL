@@ -30,6 +30,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 */
 #include "SDL_internal.h"
 
+#include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_rotate.h"
 
@@ -500,8 +501,7 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     }
     // This function requires a 32-bit surface or 8-bit surface with a colorkey
     is8bit = (src->format == SDL_PIXELFORMAT_INDEX8) && colorKeyAvailable;
-    if (!is8bit &&
-        !(SDL_BITSPERPIXEL(src->format) == 32 && SDL_PIXELLAYOUT(src->format) == SDL_PACKEDLAYOUT_8888)) {
+    if (!is8bit && src->format != SDL_PromotePixelFormatTo8888(src->format)) {
         return NULL;
     }
 

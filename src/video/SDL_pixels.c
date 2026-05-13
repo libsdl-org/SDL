@@ -702,6 +702,83 @@ SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
+SDL_PixelFormat SDL_PromotePixelFormatToAlpha(SDL_PixelFormat format)
+{
+    switch (format) {
+    case SDL_PIXELFORMAT_XRGB4444:
+        return SDL_PIXELFORMAT_ARGB4444;
+    case SDL_PIXELFORMAT_XBGR4444:
+        return SDL_PIXELFORMAT_ABGR4444;
+    case SDL_PIXELFORMAT_XRGB1555:
+        return SDL_PIXELFORMAT_ARGB1555;
+    case SDL_PIXELFORMAT_XBGR1555:
+        return SDL_PIXELFORMAT_ABGR1555;
+    case SDL_PIXELFORMAT_XRGB8888:
+        return SDL_PIXELFORMAT_ARGB8888;
+    case SDL_PIXELFORMAT_XBGR8888:
+        return SDL_PIXELFORMAT_ABGR8888;
+    case SDL_PIXELFORMAT_RGBX8888:
+        return SDL_PIXELFORMAT_RGBA8888;
+    case SDL_PIXELFORMAT_BGRX8888:
+        return SDL_PIXELFORMAT_BGRA8888;
+    case SDL_PIXELFORMAT_XRGB2101010:
+        return SDL_PIXELFORMAT_ARGB2101010;
+    case SDL_PIXELFORMAT_XBGR2101010:
+        return SDL_PIXELFORMAT_ABGR2101010;
+    default:
+        if (SDL_ISPIXELFORMAT_ALPHA(format)) {
+            return format;
+        } else {
+            return SDL_PIXELFORMAT_UNKNOWN;
+        }
+    }
+}
+
+SDL_PixelFormat SDL_PromotePixelFormatTo8888(SDL_PixelFormat format)
+{
+    if (SDL_ISPIXELFORMAT_PACKED(format)) {
+        switch (SDL_PIXELORDER(format)) {
+        case SDL_PACKEDORDER_BGRX:
+            return SDL_PIXELFORMAT_BGRX8888;
+        case SDL_PACKEDORDER_BGRA:
+            return SDL_PIXELFORMAT_BGRA8888;
+        case SDL_PACKEDORDER_RGBX:
+            return SDL_PIXELFORMAT_RGBX8888;
+        case SDL_PACKEDORDER_RGBA:
+            return SDL_PIXELFORMAT_RGBA8888;
+        case SDL_PACKEDORDER_XBGR:
+            return SDL_PIXELFORMAT_XBGR8888;
+        case SDL_PACKEDORDER_ABGR:
+            return SDL_PIXELFORMAT_ABGR8888;
+        case SDL_PACKEDORDER_XRGB:
+            return SDL_PIXELFORMAT_XRGB8888;
+        case SDL_PACKEDORDER_ARGB:
+            return SDL_PIXELFORMAT_ARGB8888;
+        default:
+            break;
+        }
+    } else if (SDL_ISPIXELFORMAT_ARRAY(format)) {
+        switch (SDL_PIXELORDER(format)) {
+        case SDL_ARRAYORDER_RGB:
+            return SDL_PIXELFORMAT_RGBX32;
+        case SDL_ARRAYORDER_RGBA:
+            return SDL_PIXELFORMAT_RGBA32;
+        case SDL_ARRAYORDER_ARGB:
+            return SDL_PIXELFORMAT_ARGB32;
+        case SDL_ARRAYORDER_BGR:
+            return SDL_PIXELFORMAT_BGRX32;
+        case SDL_ARRAYORDER_BGRA:
+            return SDL_PIXELFORMAT_BGRA32;
+        case SDL_ARRAYORDER_ABGR:
+            return SDL_PIXELFORMAT_ABGR32;
+        default:
+            break;
+        }
+    }
+
+    return SDL_PIXELFORMAT_ARGB8888;
+}
+
 static SDL_InitState SDL_format_details_init;
 static SDL_HashTable *SDL_format_details;
 

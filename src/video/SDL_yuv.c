@@ -641,7 +641,9 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
         return result;
     }
 
-    if (dst_format != SDL_PIXELFORMAT_ARGB8888) {
+    // TODO: Use RGB565 or RGB24 for smaller pixel formats?
+    SDL_PixelFormat tmp_format = SDL_PromotePixelFormatTo8888(dst_format);
+    if (dst_format != tmp_format) {
         bool result;
         void *tmp;
         int tmp_pitch = (width * sizeof(Uint32));
@@ -651,15 +653,15 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
             return false;
         }
 
-        // convert src/src_format to tmp/ARGB8888
-        result = SDL_ConvertPixels_YUV_to_RGB(width, height, src_format, src_colorspace, src_properties, src, src_pitch, SDL_PIXELFORMAT_ARGB8888, SDL_COLORSPACE_SRGB, 0, tmp, tmp_pitch);
+        // convert src/src_format to tmp/8888
+        result = SDL_ConvertPixels_YUV_to_RGB(width, height, src_format, src_colorspace, src_properties, src, src_pitch, tmp_format, SDL_COLORSPACE_SRGB, 0, tmp, tmp_pitch);
         if (!result) {
             SDL_free(tmp);
             return false;
         }
 
-        // convert tmp/ARGB8888 to dst/RGB
-        result = SDL_ConvertPixelsAndColorspace(width, height, SDL_PIXELFORMAT_ARGB8888, SDL_COLORSPACE_SRGB, 0, tmp, tmp_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+        // convert tmp/8888 to dst/dst_format
+        result = SDL_ConvertPixelsAndColorspace(width, height, tmp_format, SDL_COLORSPACE_SRGB, 0, tmp, tmp_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
         SDL_free(tmp);
         return result;
     }
