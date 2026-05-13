@@ -424,7 +424,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
             !SDL_ISPIXELFORMAT_INDEXED(texture_format) &&
-            transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
+            (!transparent || SDL_ISPIXELFORMAT_ALPHA(texture_format))) {
             *format = texture_format;
             break;
         }
