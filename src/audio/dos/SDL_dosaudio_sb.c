@@ -485,12 +485,8 @@ static void DOSSOUNDBLASTER_CloseDevice(SDL_AudioDevice *device)
         }
 
         // Free ring buffer resources.
-        if (hidden->ring_buffer) {
-            SDL_free(hidden->ring_buffer);
-        }
-        if (hidden->staging_buffer) {
-            SDL_free(hidden->staging_buffer);
-        }
+        SDL_free(hidden->ring_buffer);
+        SDL_free(hidden->staging_buffer);
 
         // Clear ISR-visible statics.
         isr_ring_buffer = NULL;
