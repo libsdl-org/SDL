@@ -428,7 +428,17 @@ const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
         name = "Mouse";
         break;
     case SDL_TOUCH_MOUSEID:
-        name = "Touch";
+        // We can't tell which touch device it was, just use the first one
+        {
+            SDL_TouchID *devices = SDL_GetTouchDevices(NULL);
+            if (devices) {
+                name = SDL_GetTouchDeviceName(devices[0]);
+                SDL_free(devices);
+            }
+        }
+        if (!name) {
+            name = "Touch";
+        }
         break;
     case SDL_PEN_MOUSEID:
         name = "Pen";
