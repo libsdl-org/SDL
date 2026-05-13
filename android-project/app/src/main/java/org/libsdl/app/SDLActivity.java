@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.LocaleList;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
@@ -730,6 +731,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
+    // File dialog types
+    private static final int SDL_FILEDIALOG_OPENFILE = 0;
+    private static final int SDL_FILEDIALOG_SAVEFILE = 1;
+    private static final int SDL_FILEDIALOG_OPENFOLDER = 2;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -738,7 +744,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             /* This is our file dialog */
             String[] filelist = null;
 
-            if (data != null) {
+            if (data != null && resultCode == Activity.RESULT_OK) {
                 Uri singleFileUri = data.getData();
 
                 if (singleFileUri == null) {
@@ -753,6 +759,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                         filelist[i] = uri;
                     }
                 } else {
+                    /* If the user selected a directory and the persistent permission hint has been set,
+                       make the permission persistable */
+                    if (mFileDialogState.type == SDL_FILEDIALOG_OPENFOLDER && mFileDialogState.persistable) {
+                        mSingleton.getContentResolver().takePersistableUriPermission(singleFileUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                            Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    }
                     /* Only one file is selected. */
                     filelist = new String[]{singleFileUri.toString()};
                 }
@@ -2043,19 +2056,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static boolean showFileDialog(String[] filters, boolean allowMultiple, boolean forWrite, int requestCode) {
+    public static boolean showFileDialog(String[] filters, boolean allowMultiple,
+        int type, String initialPath, int requestCode) {
         if (mSingleton == null) {
             return false;
         }
 
-        if (forWrite) {
-            allowMultiple = false;
-        }
-
-        /* Convert string list of extensions to their respective MIME types */
+        /* Convert string list of extensions to their respective MIME types (not needed for folder selection) */
         ArrayList<String> mimes = new ArrayList<>();
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-        if (filters != null) {
+        if (filters != null && type != SDL_FILEDIALOG_OPENFOLDER) {
             for (String pattern : filters) {
                 String[] extensions = pattern.split(";");
 
@@ -2073,40 +2083,89 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
         }
 
-        /* Display the file dialog */
-        Intent intent = new Intent(forWrite ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
-        switch (mimes.size()) {
-            case 0:
-                intent.setType("*/*");
-                break;
-            case 1:
-                intent.setType(mimes.get(0));
-                break;
-            default:
-                intent.setType("*/*");
-                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimes.toArray(new String[]{}));
+        /* Handle the initial path, if set */
+        Uri initialPathUri = null;
+
+        if (initialPath != null && !initialPath.isEmpty()) {
+            try {
+                initialPathUri = Uri.parse(initialPath);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to parse initial path URI, ignoring initial path", e);
+            }
         }
 
+        boolean persistable = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_ALLOW_PERSISTENT_FOLDER_ACCESS", false);
+
+        /* Select the intent based on the type */
+        String action;
+        switch (type) {
+            case SDL_FILEDIALOG_OPENFILE:
+                action = Intent.ACTION_OPEN_DOCUMENT;
+                break;
+            case SDL_FILEDIALOG_SAVEFILE:
+                action = Intent.ACTION_CREATE_DOCUMENT;
+                allowMultiple = false;
+                break;
+            case SDL_FILEDIALOG_OPENFOLDER:
+                action = Intent.ACTION_OPEN_DOCUMENT_TREE;
+                break;
+            default:
+                Log.e(TAG, "Unsupported file dialog type: " + type);
+                return false;
+        }
+
+        /* Prepare the intent with the proper values */
+        Intent intent = new Intent(action);
+        if (type != SDL_FILEDIALOG_OPENFOLDER) {
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple);
+            switch (mimes.size()) {
+                case 0:
+                    intent.setType("*/*");
+                    break;
+                case 1:
+                    intent.setType(mimes.get(0));
+                    break;
+                default:
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, mimes.toArray(new String[]{}));
+            }
+        } else {
+            int intent_flags = Intent.FLAG_GRANT_READ_URI_PERMISSION |
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+            if (persistable) {
+                intent_flags |= Intent.FLAG_GRANT_PREFIX_URI_PERMISSION |
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+            }
+            intent.addFlags(intent_flags);
+        }
+
+        if (initialPathUri != null) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialPathUri);
+        }
+
+        /* Display the file/folder dialog */
         try {
             mSingleton.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "Unable to open file dialog.", e);
+            Log.e(TAG, "Unable to open dialog.", e);
             return false;
         }
 
         /* Save current dialog state */
         mFileDialogState = new SDLFileDialogState();
         mFileDialogState.requestCode = requestCode;
-        mFileDialogState.multipleChoice = allowMultiple;
+        mFileDialogState.type = type;
+        mFileDialogState.persistable = persistable;
+
         return true;
     }
 
-    /* Internal class used to track active open file dialog */
+    /* Internal class used to track active file dialog */
     static class SDLFileDialogState {
         int requestCode;
-        boolean multipleChoice;
+        int type;
+        boolean persistable;
     }
 
     /**
