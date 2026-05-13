@@ -1320,3 +1320,5 @@ SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateStorageBuffers,(SDL_GPURenderState *a,
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendRenderer,(SDL_Renderer *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_GDKResumeRenderer,(SDL_Renderer *a),(a),)
 SDL_DYNAPI_PROC(bool,SDL_IsPhone,(void),(),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadJPG_IO,(SDL_IOStream *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadJPG,(const char *a),(a),return)

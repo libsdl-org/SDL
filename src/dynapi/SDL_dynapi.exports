@@ -1285,3 +1285,5 @@ _SDL_SetGPURenderStateStorageBuffers
 _SDL_GDKSuspendRenderer
 _SDL_GDKResumeRenderer
 _SDL_IsPhone
+_SDL_LoadJPG_IO
+_SDL_LoadJPG

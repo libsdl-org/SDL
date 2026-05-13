@@ -1312,3 +1312,5 @@
 #define SDL_GDKSuspendRenderer SDL_GDKSuspendRenderer_REAL
 #define SDL_GDKResumeRenderer SDL_GDKResumeRenderer_REAL
 #define SDL_IsPhone SDL_IsPhone_REAL
+#define SDL_LoadJPG_IO SDL_LoadJPG_IO_REAL
+#define SDL_LoadJPG SDL_LoadJPG_REAL
