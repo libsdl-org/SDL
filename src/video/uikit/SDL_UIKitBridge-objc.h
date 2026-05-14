@@ -18,38 +18,33 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-/*
- * @author Mark Callow, www.edgewise-consulting.com.
- *
- * Thanks to @slime73 on GitHub for their gist showing how to add a CAMetalLayer
- * backed view.
- */
-
-#ifndef SDL_uikitmetalview_h_
-#define SDL_uikitmetalview_h_
-
-#include "../SDL_sysvideo.h"
-#include "SDL_uikitwindow.h"
-
-#if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
+#ifndef SDL_uikitvisionosscene_h_
+#define SDL_uikitvisionosscene_h_
 
 #import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
 
-@interface SDL_uikitmetalview : SDL_uikitview
+/**
+ * Return true if the curved content pointer mode is enabled
+ */
+bool SDL_VisionOS_PointerModeEnabled();
 
-- (instancetype)initWithFrame:(CGRect)frame
-                        scale:(CGFloat)scale;
+/**
+ * Check if any window is using curved content mode (UIHostingController-based).
+ */
+bool SDL_UIKit_HasCurvedWindow();
 
-- (void)updateDrawableSize;
+/**
+ * Check if a window is using curved content mode (UIHostingController-based).
+ *
+ * @param window The SDL window to check.
+ * @return true if the window is in curved mode, false otherwise.
+ */
+bool SDL_UIKit_IsCurvedWindow(SDL_Window *window);
 
-@end
+/**
+ * Get the curved content display texture.
+ */
+id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat);
 
-SDL_MetalView UIKit_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window);
-void UIKit_Metal_DestroyView(SDL_VideoDevice *_this, SDL_MetalView view);
-void *UIKit_Metal_GetLayer(SDL_VideoDevice *_this, SDL_MetalView view);
-
-#endif // SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
-
-#endif // SDL_uikitmetalview_h_
+#endif /* SDL_uikitvisionosscene_h_ */

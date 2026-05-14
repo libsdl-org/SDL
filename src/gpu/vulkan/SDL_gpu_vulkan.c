@@ -2500,6 +2500,11 @@ static void VULKAN_INTERNAL_TrackTextureTransfer(
     VulkanCommandBuffer *commandBuffer,
     VulkanTexture *texture)
 {
+    // Textures not managed by our allocator (i.e. the swapchain) don't need to be refcounted.
+    if (texture->usedRegion == NULL) {
+        return;
+    }
+
     TRACK_RESOURCE(
         texture,
         VulkanTexture *,
@@ -2739,10 +2744,19 @@ static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
     memoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     memoryBarrier.image = textureSubresource->parent->image;
     memoryBarrier.subresourceRange.aspectMask = textureSubresource->parent->aspectFlags;
-    memoryBarrier.subresourceRange.baseArrayLayer = textureSubresource->layer;
-    memoryBarrier.subresourceRange.layerCount = 1;
     memoryBarrier.subresourceRange.baseMipLevel = textureSubresource->level;
     memoryBarrier.subresourceRange.levelCount = 1;
+    memoryBarrier.subresourceRange.baseArrayLayer = textureSubresource->layer;
+    memoryBarrier.subresourceRange.layerCount = 1;
+
+    // VK_KHR_maintenance9 adds the ability to independently transition arbitrary subsets of slices in a 3D texture
+    // but otherwise it is not necessarily supported by the driver.
+    // As a workaround we have to transition the whole texture instead of just the subresource.
+    // If VK_KHR_maintenance9 becomes widely supported, this can be removed.
+    // See https://docs.vulkan.org/features/latest/features/proposals/VK_KHR_maintenance9.html#_barriers_with_2d_array_compatible_3d_images
+    if (textureSubresource->parent->container->header.info.type == SDL_GPU_TEXTURETYPE_3D) {
+        memoryBarrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    }
 
     if (sourceUsageMode == VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED) {
         srcStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -6004,12 +6018,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
         renderer,
         &container->header.info);
 
-    VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
-        renderer,
-        commandBuffer,
-        VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
-        texture);
-
     if (!texture) {
         return;
     }
@@ -6027,6 +6035,13 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     container->textureCount += 1;
 
     container->activeTexture = texture;
+
+    // Transition texture after storing it as the memory barrier might need to read the texture's container info
+    VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+        renderer,
+        commandBuffer,
+        VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
+        texture);
 }
 
 static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(

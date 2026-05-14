@@ -391,7 +391,7 @@ jobs:
       - name: Set up ninja
         uses: ./.github/actions/setup-ninja
       - name: 'Configure vcvars x86'
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64_x86
       - name: 'CMake (configure + build + tests) x86'
@@ -411,7 +411,7 @@ jobs:
           cmake --build build_x86 --config Release --verbose
           ctest --test-dir build_x86 --no-tests=error -C Release --output-on-failure
       - name: 'Configure vcvars x64'
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64
       - name: 'CMake (configure + build + tests) x64'
@@ -431,7 +431,7 @@ jobs:
           cmake --build build_x64 --config Release --verbose
           ctest --test-dir build_x64 --no-tests=error -C Release --output-on-failure
       - name: 'Configure vcvars arm64'
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64_arm64
       - name: 'CMake (configure + build) arm64'

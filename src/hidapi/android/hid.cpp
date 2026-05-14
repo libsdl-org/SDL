@@ -725,9 +725,27 @@ public:
 				}
 			}
 
-			size_t uBytesToCopy = m_reportResponse.size() > nDataLen ? nDataLen : m_reportResponse.size();
-			SDL_memcpy( pData, m_reportResponse.data(), uBytesToCopy );
-			m_reportResponse.clear();
+			size_t uBytesToCopy = 0;
+
+			if ( bFeature && m_reportResponse.size() > 0 )
+			{
+				// Make sure we preserve the report value if it isn't already in the report.
+				bool bHasReportAlready = ( *pData == *m_reportResponse.data() );
+
+				// Make sure we only copy as much as will fit, deducting one byte for the report if we need to leave it intact.
+				size_t nSafeDataLen = nDataLen - ( bHasReportAlready ? 0 : 1 );
+				uBytesToCopy = m_reportResponse.size() < nSafeDataLen ? m_reportResponse.size() : nSafeDataLen;
+
+				SDL_memcpy( pData + ( bHasReportAlready ? 0 : 1 ), m_reportResponse.data(), uBytesToCopy );
+				m_reportResponse.clear();
+
+				if ( !bHasReportAlready )
+				{
+					// Add the report byte back on to return the real length.
+					uBytesToCopy++;
+				}
+			}
+
 			LOGV( "=== Got %zu bytes", uBytesToCopy );
 
 			return (int)uBytesToCopy;

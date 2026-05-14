@@ -306,6 +306,35 @@ static bool NGAGE_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
 static bool NGAGE_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture, const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride, int num_vertices, const void *indices, int num_indices, int size_indices, float scale_x, float scale_y)
 {
+    int count = indices ? num_indices : num_vertices;
+    NGAGE_Vertex *verts = (NGAGE_Vertex *)SDL_AllocateRenderVertices(renderer, count * sizeof(NGAGE_Vertex), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return false;
+    }
+    cmd->data.draw.count = count;
+
+    for (int i = 0; i < count; i++) {
+        int src_idx = i;
+        if (indices) {
+            if (size_indices == 4) {
+                src_idx = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                src_idx = ((const Uint16 *)indices)[i];
+            } else {
+                src_idx = ((const Uint8 *)indices)[i];
+            }
+        }
+        const float *pos = (const float *)(((const Uint8 *)xy) + src_idx * xy_stride);
+        const SDL_FColor *c = (const SDL_FColor *)(((const Uint8 *)color) + src_idx * color_stride);
+
+        verts[i].x = (int)(pos[0] * scale_x);
+        verts[i].y = (int)(pos[1] * scale_y);
+        verts[i].color.r = (Uint8)(c->r * 255.0f);
+        verts[i].color.g = (Uint8)(c->g * 255.0f);
+        verts[i].color.b = (Uint8)(c->b * 255.0f);
+        verts[i].color.a = (Uint8)(c->a * 255.0f);
+    }
+
     return true;
 }
 
@@ -438,6 +467,17 @@ static bool NGAGE_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
         case SDL_RENDERCMD_GEOMETRY:
         {
+            NGAGE_Vertex *verts = (NGAGE_Vertex *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            const int count = cmd->data.draw.count;
+
+            if (phdata->viewport && (phdata->viewport->x || phdata->viewport->y)) {
+                for (int i = 0; i < count; i++) {
+                    verts[i].x += phdata->viewport->x;
+                    verts[i].y += phdata->viewport->y;
+                }
+            }
+
+            NGAGE_DrawGeometry(verts, count);
             break;
         }
         }

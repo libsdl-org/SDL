@@ -424,7 +424,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
             !SDL_ISPIXELFORMAT_10BIT(texture_format) &&
             !SDL_ISPIXELFORMAT_FLOAT(texture_format) &&
             !SDL_ISPIXELFORMAT_INDEXED(texture_format) &&
-            transparent == SDL_ISPIXELFORMAT_ALPHA(texture_format)) {
+            (!transparent || SDL_ISPIXELFORMAT_ALPHA(texture_format))) {
             *format = texture_format;
             break;
         }
@@ -1533,9 +1533,13 @@ bool SDL_SetDisplayModeForDisplay(SDL_VideoDisplay *display, SDL_DisplayMode *mo
         mode = &display->desktop_mode;
     }
 
+    // On RISC OS, it's necessary to switch from the desktop to single-tasking
+    // fullscreen so that it can handle switching back to the desktop correctly.
+#ifndef SDL_PLATFORM_RISCOS
     if (mode == display->current_mode) {
         return true;
     }
+#endif
 
     // Actually change the display mode
     if (_this->SetDisplayMode) {
@@ -3235,10 +3239,15 @@ bool SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_as
 
     window->min_aspect = min_aspect;
     window->max_aspect = max_aspect;
+
     if (_this->SetWindowAspectRatio) {
         _this->SetWindowAspectRatio(_this, window);
     }
-    return SDL_SetWindowSize(window, window->floating.w, window->floating.h);
+
+    // Ensure that window has the correct aspect ratio
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 bool SDL_GetWindowAspectRatio(SDL_Window *window, float *min_aspect, float *max_aspect)
@@ -3342,8 +3351,6 @@ bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     // Ensure that window is not smaller than minimal size
     int w = window->last_size_pending ? window->pending.w : window->floating.w;
     int h = window->last_size_pending ? window->pending.h : window->floating.h;
-    w = window->min_w ? SDL_max(w, window->min_w) : w;
-    h = window->min_h ? SDL_max(h, window->min_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -3384,8 +3391,6 @@ bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     // Ensure that window is not larger than maximal size
     int w = window->last_size_pending ? window->pending.w : window->floating.w;
     int h = window->last_size_pending ? window->pending.h : window->floating.h;
-    w = window->max_w ? SDL_min(w, window->max_w) : w;
-    h = window->max_h ? SDL_min(h, window->max_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -6459,7 +6464,10 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
         return "ns-resize";
 
     case SDL_SYSTEM_CURSOR_MOVE:
-        return "all-scroll";
+        if (fallback_name) {
+            *fallback_name = "all-scroll";
+        }
+        return "move";
 
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         return "not-allowed";
@@ -6490,6 +6498,51 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
 
     case SDL_SYSTEM_CURSOR_W_RESIZE:
         return "w-resize";
+
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        return "context-menu";
+
+    case SDL_SYSTEM_CURSOR_HELP:
+        return "help";
+
+    case SDL_SYSTEM_CURSOR_CELL:
+        return "cell";
+
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        return "vertical-text";
+
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        return "alias";
+
+    case SDL_SYSTEM_CURSOR_COPY:
+        return "copy";
+
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        return "no-drop";
+
+    case SDL_SYSTEM_CURSOR_GRAB:
+        return "grab";
+
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        return "grabbing";
+
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        return "col-resize";
+
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        return "row-resize";
+
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        if (fallback_name) {
+            *fallback_name = "move";
+        }
+        return "all-scroll";
+
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        return "zoom-in";
+
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        return "zoom-out";
 
     default:
         return "default";

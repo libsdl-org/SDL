@@ -91,7 +91,13 @@ public class SDLControllerManager
      * This method is called by SDL using JNI.
      */
     static void joystickSetSensorsEnabled(int device_id, boolean enabled) {
-        mJoystickHandler.setSensorsEnabled(device_id, enabled);
+        // Run this on the UI thread so we don't race with enableSensor() in SDLSurface.java
+        SDL.getContext().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mJoystickHandler.setSensorsEnabled(device_id, enabled);
+            }
+        });
     }
 
     /**
@@ -340,7 +346,7 @@ class SDLJoystickHandler {
         }
     }
 
-    synchronized protected SDLJoystick getJoystick(int device_id) {
+    protected SDLJoystick getJoystick(int device_id) {
         for (SDLJoystick joystick : mJoysticks) {
             if (joystick.device_id == device_id) {
                 return joystick;
@@ -354,7 +360,7 @@ class SDLJoystickHandler {
      * @param event the event to be handled.
      * @return if given event was processed.
      */
-    boolean handleMotionEvent(MotionEvent event) {
+    synchronized boolean handleMotionEvent(MotionEvent event) {
         int actionPointerIndex = event.getActionIndex();
         int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_MOVE) {
@@ -524,7 +530,7 @@ class SDLJoystickHandler {
         return button_mask;
     }
 
-    void setLED(int device_id, int red, int green, int blue) {
+    synchronized void setLED(int device_id, int red, int green, int blue) {
         if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
             return;
         }
@@ -542,7 +548,7 @@ class SDLJoystickHandler {
         joystick.lightsSession.requestLights(lightsRequest.build());
     }
 
-    void setSensorsEnabled(int device_id, boolean enabled) {
+    synchronized void setSensorsEnabled(int device_id, boolean enabled) {
         if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
             return;
         }

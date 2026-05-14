@@ -35,6 +35,9 @@
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
+#ifdef SDL_PLATFORM_VISIONOS
+#import "../../video/uikit/SDL_UIKitBridge-objc.h"
+#endif
 #endif
 
 // Regenerate these with build-metal-shaders.sh
@@ -139,6 +142,9 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, assign) METAL_ShaderPipelines *activepipelines;
 @property(nonatomic, assign) METAL_ShaderPipelines *allpipelines;
 @property(nonatomic, assign) int pipelinescount;
+#ifdef SDL_PLATFORM_VISIONOS
+@property(nonatomic, retain) id<MTLTexture> mtlrealitykittexture;
+#endif
 @end
 
 @implementation SDL3METAL_RenderData
@@ -453,16 +459,25 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             SDL3METAL_TextureData *texdata = (__bridge SDL3METAL_TextureData *)renderer->target->internal;
             mtltexture = texdata.mtltexture;
         } else {
-            if (data.mtlbackbuffer == nil) {
-                /* The backbuffer's contents aren't guaranteed to persist after
-                 * presenting, so we can leave it undefined when loading it. */
-                data.mtlbackbuffer = [data.mtllayer nextDrawable];
-                if (load == MTLLoadActionLoad) {
-                    load = MTLLoadActionDontCare;
+#ifdef SDL_PLATFORM_VISIONOS
+            if (renderer->window && SDL_UIKit_IsCurvedWindow(renderer->window)) {
+                data.mtlrealitykittexture = SDL_UIKit_GetCurvedDisplayTexture(renderer->window, [data.mtlcmdqueue commandBuffer], (int)data.mtllayer.drawableSize.width, (int)data.mtllayer.drawableSize.height, data.mtllayer.pixelFormat);
+                mtltexture = data.mtlrealitykittexture;
+            } else
+#endif
+            {
+                // Standard rendering path: use CAMetalLayer drawable
+                if (data.mtlbackbuffer == nil) {
+                    // The backbuffer's contents aren't guaranteed to persist after
+                    // presenting, so we can leave it undefined when loading it.
+                    data.mtlbackbuffer = [data.mtllayer nextDrawable];
+                    if (load == MTLLoadActionLoad) {
+                        load = MTLLoadActionDontCare;
+                    }
                 }
-            }
-            if (data.mtlbackbuffer != nil) {
-                mtltexture = data.mtlbackbuffer.texture;
+                if (data.mtlbackbuffer != nil) {
+                    mtltexture = data.mtlbackbuffer.texture;
+                }
             }
         }
 
@@ -1922,12 +1937,57 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     }
 }
 
+#ifdef SDL_PLATFORM_VISIONOS
+static id<MTLTexture> METAL_CopyToStagingTexture(SDL_Renderer *renderer, id<MTLTexture> texture, SDL_Rect *rect)
+{
+    SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
+    MTLTextureDescriptor *desc;
+    id<MTLTexture> stagingtex;
+    id<MTLBlitCommandEncoder> blitcmd;
+
+    desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:texture.pixelFormat
+                                                              width:rect->w
+                                                             height:rect->h
+                                                          mipmapped:NO];
+    if (desc == nil) {
+        SDL_OutOfMemory();
+        return nil;
+    }
+
+    stagingtex = [data.mtldevice newTextureWithDescriptor:desc];
+    if (stagingtex == nil) {
+        SDL_OutOfMemory();
+        return nil;
+    }
+
+    blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromTexture:texture
+                 sourceSlice:0
+                 sourceLevel:0
+                sourceOrigin:MTLOriginMake(rect->x, rect->y, 0)
+                  sourceSize:MTLSizeMake(rect->w, rect->h, 1)
+                   toTexture:stagingtex
+            destinationSlice:0
+            destinationLevel:0
+           destinationOrigin:MTLOriginMake(0, 0, 0)];
+
+    [blitcmd endEncoding];
+
+    rect->x = 0;
+    rect->y = 0;
+
+    return stagingtex;
+}
+#endif // SDL_PLATFORM_VISIONOS
+
 static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
         id<MTLTexture> mtltexture;
         MTLRegion mtlregion;
+        SDL_Rect read_rect = *rect;
         Uint32 format;
         SDL_Surface *surface;
 
@@ -1951,6 +2011,15 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         }
 #endif
 
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!renderer->target && data.mtlrealitykittexture) {
+            mtltexture = METAL_CopyToStagingTexture(renderer, mtltexture, &read_rect);
+            if (mtltexture == nil) {
+                return NULL;
+            }
+        }
+#endif
+
         /* Commit the current command buffer and wait until it's completed, to make
          * sure the GPU has finished rendering to it by the time we read it. */
         [data.mtlcmdbuffer commit];
@@ -1958,7 +2027,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         data.mtlcmdencoder = nil;
         data.mtlcmdbuffer = nil;
 
-        mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
+        mtlregion = MTLRegionMake2D(read_rect.x, read_rect.y, read_rect.w, read_rect.h);
 
         switch (mtltexture.pixelFormat) {
         case MTLPixelFormatBGRA8Unorm:
@@ -1991,9 +2060,16 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
             SDL_SetError("Unknown framebuffer pixel format");
             return NULL;
         }
-        surface = SDL_CreateSurface(rect->w, rect->h, format);
+        surface = SDL_CreateSurface(read_rect.w, read_rect.h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
+            if (SDL_RenderingLinearSpace(renderer) &&
+                (!SDL_ISPIXELFORMAT_10BIT(format) && !SDL_ISPIXELFORMAT_FLOAT(format))) {
+                if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, format, SDL_COLORSPACE_SRGB_LINEAR, 0, surface->pixels, surface->pitch, format, SDL_COLORSPACE_SRGB, 0, surface->pixels, surface->pitch)) {
+                    SDL_DestroySurface(surface);
+                    return NULL;
+                }
+            }
         }
         return surface;
     }
@@ -2022,8 +2098,22 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
         // If we don't have a drawable to present, don't try to present it.
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
-            SDL_assert(data.mtlbackbuffer != nil);
-            [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+#ifdef SDL_PLATFORM_VISIONOS
+            if (data.mtlrealitykittexture) {
+                // Generate mipmaps
+                id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+                [blitcmd generateMipmapsForTexture:data.mtlrealitykittexture];
+                [blitcmd endEncoding];
+
+                data.mtlrealitykittexture = nil;
+            }
+            else
+#endif
+            {
+                SDL_assert(data.mtlbackbuffer != nil);
+                [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+            }
         }
 
         [data.mtlcmdbuffer commit];
@@ -2055,6 +2145,11 @@ static void METAL_DestroyRenderer(SDL_Renderer *renderer)
 
             if (data.mtlcmdencoder != nil) {
                 [data.mtlcmdencoder endEncoding];
+            }
+
+            if (data.mtlcmdbuffer != nil) {
+                [data.mtlcmdbuffer commit];
+                [data.mtlcmdbuffer waitUntilCompleted];
             }
 
             DestroyAllPipelines(data.allpipelines, data.pipelinescount);

@@ -25,6 +25,10 @@
 #define NGAGE_SCREEN_WIDTH  176
 #define NGAGE_SCREEN_HEIGHT 208
 
+#ifndef SDL_HINT_RENDER_NGAGE_SHOW_FPS
+#define SDL_HINT_RENDER_NGAGE_SHOW_FPS "SDL_RENDER_NGAGE_SHOW_FPS"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -99,6 +103,7 @@ bool NGAGE_CreateTextureData(NGAGE_TextureData *data, const int width, const int
 void NGAGE_DestroyTextureData(NGAGE_TextureData *data);
 void *NGAGE_GetBitmapDataAddress(NGAGE_TextureData *data);
 int NGAGE_GetBitmapScanLineLength(NGAGE_TextureData *data);
+void NGAGE_DrawGeometry(NGAGE_Vertex *verts, const int count);
 void NGAGE_DrawLines(NGAGE_Vertex *verts, const int count);
 void NGAGE_DrawPoints(NGAGE_Vertex *verts, const int count);
 void NGAGE_FillRects(NGAGE_Vertex *verts, const int count);
@@ -108,6 +113,8 @@ void NGAGE_SetDrawColor(const Uint32 color);
 void NGAGE_PumpEventsInternal(void);
 void NGAGE_SuspendScreenSaverInternal(bool suspend);
 void NGAGE_SetRenderTargetInternal(NGAGE_TextureData *target);
+void *NGAGE_GetBackbufferAddress(void);
+int NGAGE_GetBackbufferPitch(void);
 
 #ifdef __cplusplus
 }

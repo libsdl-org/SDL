@@ -896,14 +896,19 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
     }
 
+    char *path = SDL_strdup(info->path);
+    if (!path) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     device = (SDL_HIDAPI_Device *)SDL_calloc(1, sizeof(*device));
     if (!device) {
+        SDL_free(path);
         return NULL;
     }
     SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, true);
-    if (info->path) {
-        device->path = SDL_strdup(info->path);
-    }
+    device->path = path;
     device->seen = true;
     device->vendor_id = info->vendor_id;
     device->product_id = info->product_id;
@@ -1133,6 +1138,11 @@ static void HIDAPI_UpdateDeviceList(void)
         devs = SDL_hid_enumerate(0, 0);
         if (devs) {
             for (info = devs; info; info = info->next) {
+                if (!info->path) {
+                    // We can't open this, ignore it
+                    continue;
+                }
+
                 device = HIDAPI_GetJoystickByInfo(info->path, info->vendor_id, info->product_id);
                 if (device) {
                     device->seen = true;

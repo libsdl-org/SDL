@@ -54,15 +54,6 @@
  * Context structures                                                                            *
  *************************************************************************************************/
 
-typedef struct GLES2_FBOList GLES2_FBOList;
-
-struct GLES2_FBOList
-{
-    Uint32 w, h;
-    GLuint FBO;
-    GLES2_FBOList *next;
-};
-
 typedef struct
 {
     GLuint texture;
@@ -71,6 +62,7 @@ typedef struct
 typedef struct
 {
     GLuint texture;
+    GLuint fbo;  // framebuffer object; this is zero unless this texture is a render target.
     bool texture_external;
     GLenum texture_type;
     GLenum pixel_format;
@@ -90,7 +82,6 @@ typedef struct
     SDL_ScaleMode texture_scale_mode;
     SDL_TextureAddressMode texture_address_mode_u;
     SDL_TextureAddressMode texture_address_mode_v;
-    GLES2_FBOList *fbo;
 } GLES2_TextureData;
 
 typedef enum
@@ -193,7 +184,6 @@ typedef struct GLES2_RenderData
 #define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC
-    GLES2_FBOList *framebuffers;
     GLuint window_framebuffer;
 
     GLuint shader_id_cache[GLES2_SHADER_COUNT];
@@ -299,23 +289,6 @@ static bool GLES2_LoadFunctions(GLES2_RenderData *data)
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC
     return true;
-}
-
-static GLES2_FBOList *GLES2_GetFBO(GLES2_RenderData *data, Uint32 w, Uint32 h)
-{
-    GLES2_FBOList *result = data->framebuffers;
-    while ((result) && ((result->w != w) || (result->h != h))) {
-        result = result->next;
-    }
-    if (!result) {
-        result = (GLES2_FBOList *)SDL_malloc(sizeof(GLES2_FBOList));
-        result->w = w;
-        result->h = h;
-        data->glGenFramebuffers(1, &result->FBO);
-        result->next = data->framebuffers;
-        data->framebuffers = result;
-    }
-    return result;
 }
 
 static bool GLES2_ActivateRenderer(SDL_Renderer *renderer)
@@ -1685,14 +1658,6 @@ static void GLES2_DestroyRenderer(SDL_Renderer *renderer)
         }
 
         if (data->context) {
-            while (data->framebuffers) {
-                GLES2_FBOList *nextnode = data->framebuffers->next;
-                data->glDeleteFramebuffers(1, &data->framebuffers->FBO);
-                GL_CheckError("", renderer);
-                SDL_free(data->framebuffers);
-                data->framebuffers = nextnode;
-            }
-
 #if USE_VERTEX_BUFFER_OBJECTS
             data->glDeleteBuffers(SDL_arraysize(data->vertex_buffers), data->vertex_buffers);
             GL_CheckError("", renderer);
@@ -1956,6 +1921,11 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     if (texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
         renderdata->glTexImage2D(data->texture_type, 0, format, texture->w, texture->h, 0, format, type, NULL);
         if (!GL_CheckError("glTexImage2D()", renderer)) {
+            if (!data->texture_external) {
+                renderdata->glDeleteTextures(1, &data->texture);
+            }
+            SDL_free(data->pixel_data);
+            SDL_free(data);
             return false;
         }
     }
@@ -1965,9 +1935,20 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, data->texture_type);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        data->fbo = GLES2_GetFBO((GLES2_RenderData *)renderer->internal, texture->w, texture->h);
-    } else {
-        data->fbo = NULL;
+        renderdata->glGenFramebuffers(1, &data->fbo);
+        renderdata->glBindFramebuffer(GL_FRAMEBUFFER, data->fbo);
+        renderdata->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, data->texture_type, data->texture, 0);
+        const GLenum status = renderdata->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        renderdata->glBindFramebuffer(GL_FRAMEBUFFER, renderer->target ? ((GLES2_TextureData *)renderer->target->internal)->fbo : renderdata->window_framebuffer);  // rebind previous fbo.
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            renderdata->glDeleteFramebuffers(1, &data->fbo);
+            if (!data->texture_external) {
+                renderdata->glDeleteTextures(1, &data->texture);
+            }
+            SDL_free(data->pixel_data);
+            SDL_free(data);
+            return SDL_SetError("Texture framebuffer was incomplete");
+        }
     }
 
     return GL_CheckError("", renderer);
@@ -2206,24 +2187,8 @@ static void GLES2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static bool GLES2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *texturedata = NULL;
-    GLenum status;
-
     data->drawstate.viewport_dirty = true;
-
-    if (!texture) {
-        data->glBindFramebuffer(GL_FRAMEBUFFER, data->window_framebuffer);
-    } else {
-        texturedata = (GLES2_TextureData *)texture->internal;
-        data->glBindFramebuffer(GL_FRAMEBUFFER, texturedata->fbo->FBO);
-        // TODO: check if texture pixel format allows this operation
-        data->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texturedata->texture_type, texturedata->texture, 0);
-        // Check FBO status
-        status = data->glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (status != GL_FRAMEBUFFER_COMPLETE) {
-            return SDL_SetError("glFramebufferTexture2D() failed");
-        }
-    }
+    data->glBindFramebuffer(GL_FRAMEBUFFER, texture ? ((GLES2_TextureData *)texture->internal)->fbo : data->window_framebuffer);
     return true;
 }
 
@@ -2244,6 +2209,9 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     // Destroy the texture
     if (tdata) {
+        if (tdata->fbo) {
+            data->glDeleteFramebuffers(1, &tdata->fbo);
+        }
         if (tdata->texture && !tdata->texture_external) {
             data->glDeleteTextures(1, &tdata->texture);
         }
@@ -2433,7 +2401,6 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     data->glGenBuffers(SDL_arraysize(data->vertex_buffers), data->vertex_buffers);
 #endif
 
-    data->framebuffers = NULL;
     data->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &window_framebuffer);
     data->window_framebuffer = (GLuint)window_framebuffer;
 

@@ -44,9 +44,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
-    if (sem) {
-        SDL_free(sem);
-    }
+    SDL_free(sem);
 }
 
 bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)

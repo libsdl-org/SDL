@@ -397,6 +397,34 @@ static const char *get_active_cursor_name()
         return "Window resize bottom-left";
     case SDL_SYSTEM_CURSOR_W_RESIZE:
         return "Window resize left";
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        return "Context menu";
+    case SDL_SYSTEM_CURSOR_HELP:
+        return "Help";
+    case SDL_SYSTEM_CURSOR_CELL:
+        return "Cell";
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        return "Vertical text";
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        return "Alias";
+    case SDL_SYSTEM_CURSOR_COPY:
+        return "Copy";
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        return "No drop";
+    case SDL_SYSTEM_CURSOR_GRAB:
+        return "Grab";
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        return "Grabbing";
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        return "Column resize";
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        return "Row resize";
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        return "All scroll: Four pointed arrow pointing north, south, east, and west";
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        return "Zoom in";
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        return "Zoom out";
     default:
         return "UNKNOWN CURSOR TYPE, FIX THIS PROGRAM.";
     }

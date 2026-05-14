@@ -3118,6 +3118,8 @@ SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
         return SDL_LoadBMP_IO(src, closeio);
     } else if (SDL_IsPNG(src)) {
         return SDL_LoadPNG_IO(src, closeio);
+    } else if (SDL_IsJPG(src)) {
+        return SDL_LoadJPG_IO(src, closeio);
     } else {
         if (closeio) {
             SDL_CloseIO(src);

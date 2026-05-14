@@ -42,18 +42,20 @@ static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
     device->hidden = phdata;
 
-    phdata->buffer = SDL_calloc(1, device->buffer_size);
-    if (!phdata->buffer) {
-        SDL_OutOfMemory();
+    phdata->buffer[0] = SDL_calloc(1, device->buffer_size);
+    phdata->buffer[1] = SDL_calloc(1, device->buffer_size);
+    if (!phdata->buffer[0] || !phdata->buffer[1])
+    {
+        SDL_Log("Error: Failed to allocate audio buffers");
+        SDL_free(phdata->buffer[0]);
+        SDL_free(phdata->buffer[1]);
         SDL_free(phdata);
         return false;
     }
-    devptr = device;
 
-    // Since the phone can change the sample rate during a phone call,
-    // we set the sample rate to 8KHz to be safe.  Even though it
-    // might be possible to adjust the sample rate dynamically, it's
-    // not supported by the current implementation.
+    phdata->fill_index = 0;
+
+    devptr = device;
 
     device->spec.format = SDL_AUDIO_S16LE;
     device->spec.channels = 1;
@@ -64,6 +66,13 @@ static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice *device)
     return true;
 }
 
+/*********************************************
+
+NGAGEAUDIO_GetDeviceBuf -
+
+Return the buffer that is currently being filled by SDL
+
+**********************************************/
 static Uint8 *NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     SDL_PrivateAudioData *phdata = (SDL_PrivateAudioData *)device->hidden;
@@ -71,19 +80,24 @@ static Uint8 *NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
         *buffer_size = 0;
         return 0;
     }
-
+     
     *buffer_size = device->buffer_size;
-    return phdata->buffer;
+    
+    return phdata->buffer[phdata->fill_index];
 }
+
+
 
 static void NGAGEAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        SDL_free(device->hidden->buffer);
-        SDL_free(device->hidden);
-    }
+        SDL_PrivateAudioData *phdata = (SDL_PrivateAudioData *)device->hidden;
 
-    return;
+        SDL_free(phdata->buffer[0]);
+        SDL_free(phdata->buffer[1]);
+        SDL_free(phdata);
+        device->hidden = NULL;
+    }
 }
 
 static bool NGAGEAUDIO_Init(SDL_AudioDriverImpl *impl)
