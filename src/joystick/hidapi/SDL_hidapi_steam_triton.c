@@ -475,6 +475,13 @@ static bool HIDAPI_DriverSteamTriton_SetJoystickLED(SDL_HIDAPI_Device *device, S
 
 static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
+    if (size == HID_FEATURE_REPORT_BYTES) {
+        int rc = SDL_hid_send_feature_report(device->dev, data, size);
+        if (rc != size) {
+            return false;
+        }
+        return true;
+    }
     return SDL_Unsupported();
 }
 
