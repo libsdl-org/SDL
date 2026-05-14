@@ -3235,10 +3235,15 @@ bool SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_as
 
     window->min_aspect = min_aspect;
     window->max_aspect = max_aspect;
+
     if (_this->SetWindowAspectRatio) {
         _this->SetWindowAspectRatio(_this, window);
     }
-    return SDL_SetWindowSize(window, window->floating.w, window->floating.h);
+
+    // Ensure that window has the correct aspect ratio
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    return SDL_SetWindowSize(window, w, h);
 }
 
 bool SDL_GetWindowAspectRatio(SDL_Window *window, float *min_aspect, float *max_aspect)
@@ -3342,8 +3347,6 @@ bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     // Ensure that window is not smaller than minimal size
     int w = window->last_size_pending ? window->pending.w : window->floating.w;
     int h = window->last_size_pending ? window->pending.h : window->floating.h;
-    w = window->min_w ? SDL_max(w, window->min_w) : w;
-    h = window->min_h ? SDL_max(h, window->min_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -3384,8 +3387,6 @@ bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     // Ensure that window is not larger than maximal size
     int w = window->last_size_pending ? window->pending.w : window->floating.w;
     int h = window->last_size_pending ? window->pending.h : window->floating.h;
-    w = window->max_w ? SDL_min(w, window->max_w) : w;
-    h = window->max_h ? SDL_min(h, window->max_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
