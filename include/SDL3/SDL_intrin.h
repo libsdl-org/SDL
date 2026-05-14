@@ -291,8 +291,8 @@ _m_prefetch(void *__P)
 #  elif defined(SDL_PLATFORM_MACOS)
 /* Apple has no AArch64 device supporting SVE2 */
 #  elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-#      define SDL_SVE2_INTRINSICS 1
-#      include <arm_sve.h>
+#    define SDL_SVE2_INTRINSICS 1
+#    include <arm_sve.h>
 #  endif
 #endif
 #endif /* compiler version */
