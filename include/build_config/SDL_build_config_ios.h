@@ -226,4 +226,7 @@
 /* Enable tray subsystem */
 #define SDL_TRAY_DUMMY 1
 
+/* Disable ARM SVE2 intrinsics until we confirm they're available on all Apple mobile and TV hardware */
+#define SDL_DISABLE_SVE2 1
+
 #endif /* SDL_build_config_ios_h_ */

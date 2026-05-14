@@ -27,18 +27,6 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_gameinput.h"
 
-// Default value for SDL_HINT_JOYSTICK_GAMEINPUT
-#if defined(SDL_PLATFORM_GDK)
-#define SDL_GAMEINPUT_DEFAULT true
-#else
-#define SDL_GAMEINPUT_DEFAULT false
-#endif
-
-// Enable sensor support in GameInput 2.0, once we have a device that can be used for testing
-#if GAMEINPUT_API_VERSION >= 2
-//#define GAMEINPUT_SENSOR_SUPPORT
-#endif
-
 enum
 {
     SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
@@ -86,10 +74,6 @@ static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = 0;
 static Uint64 g_GameInputTimestampOffset;
 
-extern "C"
-{
-    extern bool SDL_XINPUT_Enabled(void);
-}
 
 static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
 {
@@ -247,9 +231,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #endif
 
     if (!GAMEINPUT_InternalIsGamepad(info) && raw_type == SDL_GAMEINPUT_RAWTYPE_NONE) {
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
-        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) || SDL_XINPUT_Enabled()) {
-            // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
+#if defined(SDL_JOYSTICK_DINPUT)
+        // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
+        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {
             return true;
         }
 #endif
@@ -285,7 +269,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     // Generate a device path
     for (idx = 0; idx < APP_LOCAL_DEVICE_ID_SIZE; ++idx) {
-        SDL_snprintf(tmp, SDL_arraysize(tmp), "%02hhX", info->deviceId.value[idx]);
+        SDL_snprintf(tmp, SDL_arraysize(tmp), "%02X", info->deviceId.value[idx]);
         SDL_strlcat(elem->path, tmp, SDL_arraysize(elem->path));
     }
 
@@ -651,17 +635,17 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
 
-#ifdef GAMEINPUT_SENSOR_SUPPORT
+#if GAMEINPUT_API_VERSION >= 3
     if (info->supportedInput & GameInputKindSensors) {
-        // FIXME: What's the sensor update rate?
         if (info->sensorsInfo->supportedSensors & GameInputSensorsGyrometer) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 60.0f);
         }
         if (info->sensorsInfo->supportedSensors & GameInputSensorsAccelerometer) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 60.0f);
         }
     }
-#endif
+#endif // GAMEINPUT_API_VERSION >= 3
+
     return true;
 }
 
@@ -907,7 +891,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         GAMEINPUT_ControllerUpdate(joystick, reading, timestamp);
     }
 
-#ifdef GAMEINPUT_SENSOR_SUPPORT
+#if GAMEINPUT_API_VERSION >= 3
     if (hwdata->report_sensors) {
         GameInputSensorsState sensor_state;
 
@@ -930,7 +914,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             }
         }
     }
-#endif // GAMEINPUT_SENSOR_SUPPORT
+#endif // GAMEINPUT_API_VERSION >= 3
 
     reading->Release();
 
@@ -1085,6 +1069,5 @@ SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
     GAMEINPUT_JoystickQuit,
     GAMEINPUT_JoystickGetGamepadMapping
 };
-
 
 #endif // SDL_JOYSTICK_GAMEINPUT

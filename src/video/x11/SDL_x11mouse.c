@@ -298,6 +298,20 @@ static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_S_RESIZE: return XC_bottom_side;
         case SDL_SYSTEM_CURSOR_SW_RESIZE: return XC_bottom_left_corner;
         case SDL_SYSTEM_CURSOR_W_RESIZE: return XC_left_side;
+        case SDL_SYSTEM_CURSOR_CONTEXT_MENU: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_HELP: return XC_question_arrow;
+        case SDL_SYSTEM_CURSOR_CELL: return XC_cross;
+        case SDL_SYSTEM_CURSOR_VERTICAL_TEXT: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_ALIAS: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_COPY: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_NO_DROP: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_GRAB: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_GRABBING: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_COL_RESIZE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_ROW_RESIZE: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_ALL_SCROLL: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_ZOOM_IN: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_ZOOM_OUT: return XC_hand2;
         case SDL_SYSTEM_CURSOR_COUNT: break;  // so the compiler might notice if an enum value is missing here.
     }
 

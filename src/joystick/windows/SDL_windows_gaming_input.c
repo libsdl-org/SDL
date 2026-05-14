@@ -24,6 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "SDL_rawinputjoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
@@ -586,7 +587,8 @@ static bool WGI_JoystickInit(void)
 {
     HRESULT hr;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, false)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, false) ||
+        SDL_UsingGameInputForXInputControllers()) {
         return true;
     }
 

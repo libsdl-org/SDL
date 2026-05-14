@@ -750,7 +750,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
             return NULL;
         }
 
-        SDL_strlcpy(mapping_string, "*,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "*,", sizeof(mapping_string));
 
         if (button_mask & (1 << SDL_GAMEPAD_BUTTON_SOUTH)) {
             SDL_strlcat(mapping_string, "a:b0,", sizeof(mapping_string));

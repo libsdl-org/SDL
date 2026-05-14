@@ -50,6 +50,7 @@ include(CheckIncludeFiles)
 include(CheckLanguage)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
+include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -314,6 +315,7 @@ dep_option(SDL_SSE4_2              "Use SSE4.2 assembly routines" ON "SDL_ASSEMB
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_POWERPC32 OR SDL_CPU_POWERPC64" OFF)
 dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
+dep_option(SDL_ARMSVE2             "Use SVE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM64" OFF)
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
@@ -939,6 +941,37 @@ if(SDL_ASSEMBLY)
     endif()
   endif()
 
+  if(SDL_ARMSVE2)
+    cmake_push_check_state()
+      string(APPEND CMAKE_REQUIRED_FLAGS " -march=armv8-a+sve2")
+      check_arm_source_compiles([==[
+        #include <arm_sve.h>
+        svuint32_t sve2_test(svuint32_t a, svuint32_t b) {
+          return svadd_u32_x(svptrue_b32(), a, b);
+        }
+        int main(int argc, char *argv[]) {
+          sve2_test(svdup_u32(0), svdup_u32(0));
+          return 0;
+        }]==] COMPILER_SUPPORTS_ARMSVE2)
+      if(COMPILER_SUPPORTS_ARMSVE2)
+        set(HAVE_ARMSVE2 TRUE)
+      endif()
+    cmake_pop_check_state()
+
+    if(HAVE_ARMSVE2)
+      sdl_sources(
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
+      )
+      set_source_files_properties(
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
+        "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
+        PROPERTIES
+          SKIP_PRECOMPILE_HEADERS ON
+      )
+    endif()
+  endif()
+
   if(USE_GCC OR USE_CLANG)
     # TODO: Those all seem to be quite GCC specific - needs to be
     # reworked for better compiler support
@@ -1053,6 +1086,10 @@ endif()
 
 if(NOT HAVE_ARMNEON)
   set(SDL_DISABLE_NEON 1)
+endif()
+
+if(NOT HAVE_ARMSVE2)
+  set(SDL_DISABLE_SVE2 1)
 endif()
 
 set(SDL_DISABLE_ALLOCA 0)
@@ -2278,7 +2315,7 @@ elseif(WINDOWS)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
-  check_c_source_compiles("
+  check_cxx_source_compiles("
     #include <stdbool.h>
     #define COBJMACROS
     #include <gameinput.h>

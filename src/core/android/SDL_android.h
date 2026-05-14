@@ -154,9 +154,9 @@ bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
 
 // File Dialogs
-bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple);
+bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

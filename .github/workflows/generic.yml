@@ -81,7 +81,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: TheMrMilchmann/setup-msvc-dev@v4
         if: ${{ matrix.platform.platform == 'msvc' }}
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
@@ -323,7 +323,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.32.0
+        uses: cross-platform-actions/action@v1
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'

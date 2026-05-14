@@ -53,7 +53,7 @@
 
 @end
 
-static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
+static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_PropertiesID create_props, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -106,6 +106,19 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
 #endif
     window->w = width;
     window->h = height;
+    
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
+
+#ifdef SDL_PLATFORM_VISIONOS
+    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, -1.0f);
+    if (curvature > 0.0f && curvature <= 1.0f) {
+        curvature = 0.0f;
+    }
+    data.curvature = curvature;
+    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
+#endif
 
     /* The View Controller will handle rotating the view when the device
      * orientation changes. This will trigger resize events, if appropriate. */
@@ -118,10 +131,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
     /* Sets this view as the controller's view, and adds the view to the window
      * hierarchy. */
     [view setSDLWindow:window];
-
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
     return true;
 }
@@ -228,7 +237,7 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         }
 #endif
 
-        if (!SetupWindowData(_this, window, uiwindow, true)) {
+        if (!SetupWindowData(_this, window, uiwindow, create_props, true)) {
             return false;
         }
     }

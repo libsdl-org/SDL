@@ -82,7 +82,7 @@ void DOS_SchedulerInit(void)
         return;
     }
 
-    SDL_memset(threads, 0, sizeof(threads));
+    SDL_zeroa(threads);
 
     // Thread 0 is the main thread (already running)
     threads[0].state = DOS_THREAD_RUNNING;
@@ -146,7 +146,7 @@ int DOS_CreateThread(int (*fn)(void *), void *arg, size_t stack_size)
     _go32_dpmi_lock_data(stack, stack_size);
 
     DOS_ThreadContext *ctx = &threads[tid];
-    SDL_memset(ctx, 0, sizeof(*ctx));
+    SDL_zerop(ctx);
     ctx->id = tid;
     ctx->state = DOS_THREAD_READY;
     ctx->stack_base = stack;

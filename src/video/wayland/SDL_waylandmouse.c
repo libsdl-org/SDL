@@ -989,7 +989,7 @@ static enum wp_cursor_shape_device_v1_shape Wayland_GetSystemCursorShape(SDL_Sys
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE;
         break;
     case SDL_SYSTEM_CURSOR_MOVE:
-        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE;
         break;
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NOT_ALLOWED;
@@ -1020,6 +1020,48 @@ static enum wp_cursor_shape_device_v1_shape Wayland_GetSystemCursorShape(SDL_Sys
         break;
     case SDL_SYSTEM_CURSOR_W_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CONTEXT_MENU;
+        break;
+    case SDL_SYSTEM_CURSOR_HELP:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP;
+        break;
+    case SDL_SYSTEM_CURSOR_CELL:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CELL;
+        break;
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_VERTICAL_TEXT;
+        break;
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALIAS;
+        break;
+    case SDL_SYSTEM_CURSOR_COPY:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COPY;
+        break;
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP;
+        break;
+    case SDL_SYSTEM_CURSOR_GRAB:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB;
+        break;
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING;
+        break;
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ZOOM_IN;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ZOOM_OUT;
         break;
     default:
         SDL_assert(0); // Should never be here...

@@ -397,26 +397,26 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
         if (data->viewport && data->waylandData->subcompositor && !data->is_fullscreen) {
             if (window->min_w) {
-                window_width = viewport_width = SDL_max(viewport_width, window->min_w);
+                viewport_width = SDL_max(viewport_width, window->min_w);
             }
             if (window->min_h) {
-                window_height = viewport_height = SDL_max(viewport_height, window->min_h);
+                viewport_height = SDL_max(viewport_height, window->min_h);
             }
             if (window->max_w) {
-                window_width = viewport_width = SDL_min(viewport_width, window->max_w);
+                viewport_width = SDL_min(viewport_width, window->max_w);
             }
             if (window->max_h) {
-                window_height = viewport_height = SDL_min(viewport_height, window->max_h);
+                viewport_height = SDL_min(viewport_height, window->max_h);
             }
 
             float aspect = (float)viewport_width / (float)viewport_height;
             if (window->min_aspect != 0.f && aspect < window->min_aspect) {
-                viewport_height = SDL_lroundf((float)viewport_width / window->min_aspect);
+                viewport_height = SDL_max(SDL_lroundf((float)viewport_width / window->min_aspect), 1);
             } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
-                viewport_width = SDL_lroundf((float)viewport_height * window->max_aspect);
+                viewport_width = SDL_max(SDL_lroundf((float)viewport_height * window->max_aspect), 1);
             }
 
-            // At this point, the viewport matches the window dimensions, but the viewport might be clamped to window dimensions beyond here.
+            // At this point, the viewport matches the virtual window dimensions, but the viewport might be clamped to the output window dimensions beyond here.
             window_width = viewport_width;
             window_height = viewport_height;
 
@@ -446,6 +446,9 @@ static void ConfigureWindowGeometry(SDL_Window *window)
                     }
                 }
             }
+
+            viewport_width = SDL_max(viewport_width, 1);
+            viewport_height = SDL_max(viewport_height, 1);
         } else {
             window_width = viewport_width;
             window_height = viewport_height;
@@ -1107,9 +1110,9 @@ static void handle_xdg_toplevel_configure(void *data,
                 const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
 
                 if (window->min_aspect != 0.f && aspect < window->min_aspect) {
-                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                    wind->requested.logical_height = SDL_max(SDL_lroundf((float)wind->requested.logical_width / window->min_aspect), 1);
                 } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
-                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
+                    wind->requested.logical_width = SDL_max(SDL_lroundf((float)wind->requested.logical_height * window->max_aspect), 1);
                 }
             } else {
                 if (window->max_w > 0) {
@@ -1126,9 +1129,9 @@ static void handle_xdg_toplevel_configure(void *data,
                 const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
 
                 if (window->min_aspect != 0.f && aspect < window->min_aspect) {
-                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                    wind->requested.pixel_height = SDL_max(SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect), 1);
                 } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
-                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
+                    wind->requested.pixel_width = SDL_max(SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect), 1);
                 }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);
@@ -1594,9 +1597,9 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 const float aspect = (float)wind->requested.logical_width / (float)wind->requested.logical_height;
 
                 if (window->min_aspect != 0.f && aspect < window->min_aspect) {
-                    wind->requested.logical_height = SDL_lroundf((float)wind->requested.logical_width / window->min_aspect);
+                    wind->requested.logical_height = SDL_max(SDL_lroundf((float)wind->requested.logical_width / window->min_aspect), 1);
                 } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
-                    wind->requested.logical_width = SDL_lroundf((float)wind->requested.logical_height * window->max_aspect);
+                    wind->requested.logical_width = SDL_max(SDL_lroundf((float)wind->requested.logical_height * window->max_aspect), 1);
                 }
             } else {
                 if (window->max_w > 0) {
@@ -1613,9 +1616,9 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 const float aspect = (float)wind->requested.pixel_width / (float)wind->requested.pixel_height;
 
                 if (window->min_aspect != 0.f && aspect < window->min_aspect) {
-                    wind->requested.pixel_height = SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect);
+                    wind->requested.pixel_height = SDL_max(SDL_lroundf((float)wind->requested.pixel_width / window->min_aspect), 1);
                 } else if (window->max_aspect != 0.f && aspect > window->max_aspect) {
-                    wind->requested.pixel_width = SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect);
+                    wind->requested.pixel_width = SDL_max(SDL_lroundf((float)wind->requested.pixel_height * window->max_aspect), 1);
                 }
 
                 wind->requested.logical_width = PixelToPoint(window, wind->requested.pixel_width);

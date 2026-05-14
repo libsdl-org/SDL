@@ -37,6 +37,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 /* SDL_JOYSTICK_RAWINPUT_XINPUT is disabled because using XInput at the same time as
@@ -1022,7 +1023,8 @@ static bool RAWINPUT_JoystickInit(void)
 {
     SDL_assert(!SDL_RAWINPUT_inited);
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, false)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, false) ||
+        SDL_UsingGameInputForXInputControllers()) {
         return true;
     }
 
@@ -1976,20 +1978,24 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 state = SDL_POWERSTATE_ON_BATTERY;
                 break;
             }
-            switch (battery_info->BatteryLevel) {
-            case BATTERY_LEVEL_EMPTY:
-                percent = 10;
-                break;
-            case BATTERY_LEVEL_LOW:
-                percent = 40;
-                break;
-            case BATTERY_LEVEL_MEDIUM:
-                percent = 70;
-                break;
-            default:
-            case BATTERY_LEVEL_FULL:
-                percent = 100;
-                break;
+            if (state == SDL_POWERSTATE_ON_BATTERY || state == SDL_POWERSTATE_CHARGING) {
+                switch (battery_info->BatteryLevel) {
+                case BATTERY_LEVEL_EMPTY:
+                    percent = 10;
+                    break;
+                case BATTERY_LEVEL_LOW:
+                    percent = 40;
+                    break;
+                case BATTERY_LEVEL_MEDIUM:
+                    percent = 70;
+                    break;
+                default:
+                case BATTERY_LEVEL_FULL:
+                    percent = 100;
+                    break;
+                }
+            } else {
+                percent = -1;
             }
             SDL_SendJoystickPowerInfo(joystick, state, percent);
         }

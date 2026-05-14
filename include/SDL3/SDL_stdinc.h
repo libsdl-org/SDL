@@ -256,7 +256,7 @@ void *alloca(size_t);
 #define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))  /* or `_Countof(array)` on recent gcc and clang */
 
 #else
-#if (defined(__GNUC__) && __GNUC__ >= 16) || SDL_HAS_EXTENSION(c_countof)
+#if !defined(__cplusplus) && ((defined(__GNUC__) && __GNUC__ >= 16) || SDL_HAS_EXTENSION(c_countof))
 #define SDL_arraysize(array) _Countof(array)
 #else
 #define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))

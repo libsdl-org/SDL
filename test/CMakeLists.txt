@@ -89,7 +89,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
 endif()
 
 if(DOS)
-    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;sdl-test_round.png")
+    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_dual_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;sdl-test_round.png")
     set(DOS83_SHORT "UNIFONT.HEX;UNIFONTL.TXT;PHYSADEV.PNG;LOGADEV.PNG;AUDIOFIL.PNG;SNDBRD.PNG;SNDLVL.PNG;TRASHCAN.PNG;MSDFFONT.PNG;MSDFFONT.CSV;GP_FRONT.PNG;GP_BACK.PNG;GP_FABXY.PNG;GP_FAXBY.PNG;GP_FBAYX.PNG;GP_FSONY.PNG;GP_BATT.PNG;GP_BATTX.PNG;GP_BATTW.PNG;GP_TOUCH.PNG;GP_BTN.PNG;GP_BTNSM.PNG;GP_BTNBG.PNG;GP_AXIS.PNG;GP_AXARW.PNG;GP_WIRED.PNG;GP_WLESS.PNG;SDLROUND.PNG")
 endif()
 
@@ -296,6 +296,7 @@ files2headers(gamepad_image_headers
     gamepad_button_background.png
     gamepad_button.png
     gamepad_button_small.png
+    gamepad_dual_touchpad.png
     gamepad_face_abxy.png
     gamepad_face_axby.png
     gamepad_face_bayx.png

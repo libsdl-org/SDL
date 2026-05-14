@@ -565,6 +565,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_CURVATURE_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
 
 #define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->kdevice.timestamp, (uint)event->kdevice.which)

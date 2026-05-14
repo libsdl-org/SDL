@@ -688,7 +688,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
@@ -1901,9 +1901,16 @@ static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
 
 static const APKNode *FindAPKNode(const char *constpath)
 {
+    //SDL_Log("FindAPKNode('%s') ...", constpath);
+    if (SDL_strncmp(constpath, "assets://", 9) == 0) {
+        constpath += 9;
+    }
+
     APKNode *parent = APKRootNode;
     if (!parent) {
         return NULL;
+    } else if (*constpath == '\0') {
+        return parent;
     }
 
     const size_t pathlen = SDL_strlen(constpath);
@@ -2255,7 +2262,7 @@ ioerr:
 
 static bool CreateAPKNodes(const char *path)
 {
-    SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
+    //SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
 
     SDL_IOStream *io = SDL_IOFromFile(path, "rb");
     if (!io) {
@@ -2362,12 +2369,20 @@ static void Internal_Android_Destroy_AssetManager(void)
 
 static const char *GetAssetPath(const char *path)
 {
-    if (path && path[0] == '.' && path[1] == '/') {
-        path += 2;
-        while (*path == '/') {
-            ++path;
-        }
+    if (!path) {
+        return NULL;
     }
+
+    if (path[0] == '.' && ((path[1] == '/') || (path[1] == '\0'))) {
+        path++;
+    } else if (SDL_strncmp(path, "assets://", 9) == 0) {
+        path += 9;
+    }
+
+    while (*path == '/') {
+        ++path;
+    }
+
     return path;
 }
 
@@ -3371,18 +3386,34 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     }
 }
 
-bool Android_JNI_OpenFileDialog(
+bool Android_JNI_ShowFileDialog(
     SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple)
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
         return false;
     }
 
-    if (forwrite) {
+    // Setup type
+    int dialogType = 0;
+
+    switch (type) {
+    case SDL_FILEDIALOG_OPENFILE:
+        dialogType = 0;
+        break;
+    case SDL_FILEDIALOG_SAVEFILE:
         multiple = false;
+        dialogType = 1;
+        break;
+    case SDL_FILEDIALOG_OPENFOLDER:
+        multiple = false;
+        dialogType = 2;
+        break;
+    default:
+        SDL_SetError("Invalid file dialog type");
+        return false;
     }
 
     JNIEnv *env = Android_JNI_GetEnv();
@@ -3402,6 +3433,12 @@ bool Android_JNI_OpenFileDialog(
         }
     }
 
+    // Setup initial path
+    jstring initialPathString = NULL;
+    if (initialPath && *initialPath) {
+        initialPathString = (*env)->NewStringUTF(env, initialPath);
+    }
+
     // Setup data
     static SDL_AtomicInt next_request_code;
     mAndroidFileDialogData.request_code = SDL_AddAtomicInt(&next_request_code, 1);
@@ -3410,8 +3447,10 @@ bool Android_JNI_OpenFileDialog(
 
     // Invoke JNI
     jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
-        midShowFileDialog, filtersArray, (jboolean) multiple, (jboolean) forwrite, mAndroidFileDialogData.request_code);
+        midShowFileDialog, filtersArray, (jboolean) multiple,
+        dialogType, initialPathString, mAndroidFileDialogData.request_code);
     (*env)->DeleteLocalRef(env, filtersArray);
+    (*env)->DeleteLocalRef(env, initialPathString);
     if (!success) {
         mAndroidFileDialogData.callback = NULL;
         SDL_AddAtomicInt(&next_request_code, -1);
