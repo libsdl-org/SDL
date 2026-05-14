@@ -40,11 +40,17 @@
 
 enum
 {
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_QAM = 11,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE1,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE1,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE2,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE2,
+    SDL_GAMEPAD_BUTTON_TRITON_QAM = 11,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_PADDLE1,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE1,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_PADDLE2,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE2,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TOUCHPAD,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_JOYSTICK_TOUCH,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_JOYSTICK_TOUCH,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_GRIP_TOUCH,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_GRIP_TOUCH,
     SDL_GAMEPAD_NUM_TRITON_BUTTONS,
 };
 
@@ -76,19 +82,18 @@ typedef enum
     TRITON_LBUTTON_L5           = 0x00040000,
     TRITON_LBUTTON_L            = 0x00080000,
 
-    /*
-	STEAM_RIGHTSTICK_FINGERDOWN_MASK,   // Right Stick Touch    0x00100000
-	STEAM_RIGHTPAD_FINGERDOWN_MASK,     // Right Pad Touch      0x00200000
-	STEAM_BUTTON_RIGHTPAD_CLICKED_MASK, // Right Pressure Click 0x00400000
-	STEAM_RIGHT_TRIGGER_MASK,           // Right Trigger Click  0x00800000
+    TRITON_RIGHT_JOYSTICK_TOUCH = 0x00100000,
+    TRITON_RIGHT_TOUCHPAD_TOUCH = 0x00200000,
+    TRITON_RIGHT_TOUCHPAD_CLICK = 0x00400000,
+    TRITON_RIGHT_TRIGGER_CLICK  = 0x00800000,
 
-	STEAM_LEFTSTICK_FINGERDOWN_MASK,    // Left Stick Touch     0x01000000
-	STEAM_LEFTPAD_FINGERDOWN_MASK,      // Left Pad Touch       0x02000000
-	STEAM_BUTTON_LEFTPAD_CLICKED_MASK,  // Left Pressure Click  0x04000000
-	STEAM_LEFT_TRIGGER_MASK,            // Left Trigger Click   0x08000000
-    STEAM_RIGHT_AUX_MASK,               // Right Pinky Touch   0x10000000
-	STEAM_LEFT_AUX_MASK,                // Left Pinky Touch    0x20000000
-    */
+    TRITON_LEFT_JOYSTICK_TOUCH  = 0x01000000,
+    TRITON_LEFT_TOUCHPAD_TOUCH  = 0x02000000,
+    TRITON_LEFT_TOUCHPAD_CLICK  = 0x04000000,
+    TRITON_LEFT_TRIGGER_CLICK   = 0x08000000,
+
+    TRITON_RIGHT_GRIP_TOUCH     = 0x10000000,
+    TRITON_LEFT_GRIP_TOUCH      = 0x20000000,
 } TritonButtons;
 
 typedef struct
@@ -160,7 +165,7 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
                                ((pTritonReport->buttons & TRITON_LBUTTON_VIEW) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,
                                ((pTritonReport->buttons & TRITON_LBUTTON_STEAM) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_QAM,
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_QAM,
                                ((pTritonReport->buttons & TRITON_HBUTTON_QAM) != 0));
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,
@@ -168,14 +173,29 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK,
                                ((pTritonReport->buttons & TRITON_LBUTTON_R3) != 0));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE1,
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_PADDLE1,
                                ((pTritonReport->buttons & TRITON_HBUTTON_R4) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE1,
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE1,
                                ((pTritonReport->buttons & TRITON_HBUTTON_L4) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_PADDLE2,
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_PADDLE2,
                                ((pTritonReport->buttons & TRITON_LBUTTON_R5) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE2,
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE2,
                                ((pTritonReport->buttons & TRITON_LBUTTON_L5) != 0));
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TOUCHPAD,
+                               ((pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_CLICK) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
+                               ((pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_CLICK) != 0));
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_JOYSTICK_TOUCH,
+                               ((pTritonReport->buttons & TRITON_RIGHT_JOYSTICK_TOUCH) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_JOYSTICK_TOUCH,
+                               ((pTritonReport->buttons & TRITON_LEFT_JOYSTICK_TOUCH) != 0));
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_GRIP_TOUCH,
+                               ((pTritonReport->buttons & TRITON_RIGHT_GRIP_TOUCH) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_GRIP_TOUCH,
+                               ((pTritonReport->buttons & TRITON_LEFT_GRIP_TOUCH) != 0));
 
         if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_UP) {
             hat |= SDL_HAT_UP;
@@ -226,6 +246,18 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
 
         ctx->last_sensor_tick = pTritonReport->imu.timestamp;
     }
+
+    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
+                             pTritonReport->sPressureLeft > 0,
+                             pTritonReport->sLeftPadX / 65536.0f + 0.5f,
+                             -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f,
+                             pTritonReport->sPressureLeft / 32768.0f);
+
+    SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
+                             pTritonReport->sPressureRight > 0,
+                             pTritonReport->sRightPadX / 65536.0f + 0.5f,
+                             -(float)pTritonReport->sRightPadY / 65536.0f + 0.5f,
+                             pTritonReport->sPressureRight / 32768.0f);
 }
 
 static void HIDAPI_DriverSteamTriton_HandleBatteryStatus(SDL_HIDAPI_Device *device,
@@ -444,6 +476,9 @@ static bool HIDAPI_DriverSteamTriton_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
+
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
 
     return true;
 }
