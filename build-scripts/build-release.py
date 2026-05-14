@@ -175,12 +175,15 @@ class VisualStudio:
         assert msbuild_path.is_file(), "MSBuild.exe does not exist"
         return msbuild_path
 
-    def build(self, arch_platform: VsArchPlatformConfig, projects: list[Path]):
+    def build(self, arch_platform: VsArchPlatformConfig, projects: list[Path], include_paths: list[str]):
         assert projects, "Need at least one project to build"
 
         vsdev_cmd_str = f"\"{self.vsdevcmd}\" -arch={arch_platform.arch}"
         msbuild_cmd_str = " && ".join([f"\"{self.msbuild}\" \"{project}\" /m /p:BuildInParallel=true /p:Platform={arch_platform.platform} /p:Configuration={arch_platform.configuration}" for project in projects])
-        bat_contents = f"{vsdev_cmd_str} && {msbuild_cmd_str}\n"
+        include_contents = "%INCLUDE%"
+        if include_paths:
+            include_contents = f"{';'.join(str(p) for p in include_paths)};" + include_contents
+        bat_contents = textwrap.dedent(f"{vsdev_cmd_str} && set INCLUDE={include_contents} && {msbuild_cmd_str}")
         bat_path = Path(tempfile.gettempdir()) / "cmd.bat"
         with bat_path.open("w") as f:
             f.write(bat_contents)
@@ -740,6 +743,12 @@ class Releaser:
                     member.name = "/".join(Path(member.name).parts[1:])
                 return member
             for dep in self.release_info.get("dependencies", {}):
+                if "command" in self.release_info["dependencies"][dep]:
+                    for arch, triplet in ARCH_TO_TRIPLET.items():
+                        shutil.copytree(self.deps_path / dep, str(mingw_deps_path / triplet), dirs_exist_ok=True)
+                        (mingw_deps_path / triplet / "bin").mkdir(exist_ok=True)
+                        (mingw_deps_path / triplet / "lib/pkgconfig").mkdir(exist_ok=True, parents=True)
+                    continue
                 extract_path = mingw_deps_path / f"extract-{dep}"
                 extract_path.mkdir()
                 with chdir(extract_path):
@@ -856,8 +865,8 @@ class Releaser:
                             f"cmake",
                             f"-S", str(self.root), "-B", str(build_path),
                             f"-DCMAKE_BUILD_TYPE={build_type}",
-                            f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
-                            f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                            f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}" "-I{str(mingw_deps_path / triplet)}/include"''',
+                            f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}" "-I{str(mingw_deps_path / triplet)}/include"''',
                             f"-DCMAKE_PREFIX_PATH={mingw_deps_path / triplet}",
                             f"-DCMAKE_INSTALL_PREFIX={install_path}",
                             f"-DCMAKE_INSTALL_INCLUDEDIR=include",
@@ -1129,6 +1138,15 @@ class Releaser:
                 f.write(f"dep-path={self.deps_path.absolute()}\n")
 
         for dep, depinfo in self.release_info.get("dependencies", {}).items():
+            if "command" in depinfo:
+                (self.deps_path / dep).mkdir(exist_ok=True, parents=True)
+                command_args = configure_text_list(shlex.split(depinfo["command"]), context=self.get_context(extra_context={
+                    "DEPS_PATH": str(self.deps_path / dep),
+                }))
+                if command_args[0].endswith(".py"):
+                    command_args.insert(0, sys.executable)
+                self.executer.run(command_args)
+                continue
             startswith = depinfo["startswith"]
             dep_repo = depinfo["repo"]
             dep_string_data = self.executer.check_output(["gh", "-R", dep_repo, "release", "list", "--exclude-drafts", "--exclude-pre-releases", "--json", "name,createdAt,tagName", "--jq", f'[.[]|select(.name|startswith("{startswith}"))]|max_by(.createdAt)']).strip()
@@ -1143,6 +1161,10 @@ class Releaser:
 
     def verify_dependencies(self):
         for dep, depinfo in self.release_info.get("dependencies", {}).items():
+            if "command" in depinfo:
+                command_matches = glob.glob(depinfo["artifact"], root_dir=self.deps_path)
+                assert len(command_matches) == 1, f"Exactly one archive matches command {dep} dependency: {command_matches}"
+                continue
             if "mingw" in self.release_info:
                 mingw_matches = glob.glob(self.release_info["mingw"]["dependencies"][dep]["artifact"], root_dir=self.deps_path)
                 assert len(mingw_matches) == 1, f"Exactly one archive matches mingw {dep} dependency: {mingw_matches}"
@@ -1174,7 +1196,12 @@ class Releaser:
             deps_path = self.root / "msvc-deps"
             shutil.rmtree(deps_path, ignore_errors=True)
             dep_roots = []
-            for dep, depinfo in self.release_info["msvc"].get("dependencies", {}).items():
+            dep_includes = []
+            for dep in self.release_info.get("dependencies"):
+                if "command" in self.release_info["dependencies"][dep]:
+                    dep_includes.append(self.deps_path / dep / "include")
+                    continue
+                depinfo = self.release_info["msvc"]["dependencies"][dep]
                 dep_extract_path = deps_path / f"extract-{dep}"
                 msvc_zip = self.deps_path / glob.glob(depinfo["artifact"], root_dir=self.deps_path)[0]
                 with zipfile.ZipFile(msvc_zip, "r") as zf:
@@ -1184,13 +1211,18 @@ class Releaser:
                 dep_roots.append(contents_msvc_zip[0])
 
             for arch in self.release_info["msvc"].get("cmake", {}).get("archs", []):
-                self._build_msvc_cmake(arch_platform=self._arch_to_vs_platform(arch=arch), dep_roots=dep_roots)
+                self._build_msvc_cmake(arch_platform=self._arch_to_vs_platform(arch=arch), dep_roots=dep_roots, dep_includes=dep_includes)
         with self.section_printer.group("Create SDL VC development zip"):
             self._build_msvc_devel()
 
     def _build_msvc_msbuild(self, arch_platform: VsArchPlatformConfig, vs: VisualStudio):
         platform_context = self.get_context(arch_platform.extra_context())
-        for dep, depinfo in self.release_info["msvc"].get("dependencies", {}).items():
+        include_paths = []
+        for dep in self.release_info.get("dependencies", {}):#release_info["msvc"].get("dependencies", {}).items():
+            if "command" in self.release_info["dependencies"][dep]:
+                include_paths.append(self.deps_path / dep / "include")
+                continue
+            depinfo = self.release_info["msvc"]["dependencies"][dep]
             msvc_zip = self.deps_path / glob.glob(depinfo["artifact"], root_dir=self.deps_path)[0]
 
             src_globs = [configure_text(instr["src"], context=platform_context) for instr in depinfo["copy"]]
@@ -1238,7 +1270,7 @@ class Releaser:
                 shutil.copy(src=src, dst=dir_b_props)
 
         with self.section_printer.group(f"Build {arch_platform.arch} VS binary"):
-            vs.build(arch_platform=arch_platform, projects=projects)
+            vs.build(arch_platform=arch_platform, projects=projects, include_paths=include_paths)
 
         if self.dry:
             for b in built_paths:
@@ -1274,7 +1306,7 @@ class Releaser:
     def _arch_platform_to_install_path(self, arch_platform: VsArchPlatformConfig) -> Path:
         return self._arch_platform_to_build_path(arch_platform) / "prefix"
 
-    def _build_msvc_cmake(self, arch_platform: VsArchPlatformConfig, dep_roots: list[Path]):
+    def _build_msvc_cmake(self, arch_platform: VsArchPlatformConfig, dep_roots: list[Path], dep_includes: list[Path]):
         build_path = self._arch_platform_to_build_path(arch_platform)
         install_path = self._arch_platform_to_install_path(arch_platform)
         platform_context = self.get_context(extra_context=arch_platform.extra_context())
@@ -1290,7 +1322,7 @@ class Releaser:
         if not self.fast:
             for b in built_paths:
                 b.unlink(missing_ok=True)
-
+        cppflags = list(f"-I{inc}" for inc in dep_includes)
         shutil.rmtree(install_path, ignore_errors=True)
         build_path.mkdir(parents=True, exist_ok=True)
         with self.section_printer.group(f"Configure VC CMake project for {arch_platform.arch}"):
@@ -1303,6 +1335,8 @@ class Releaser:
                 "-DCMAKE_INSTALL_LIBDIR=lib",
                 f"-DCMAKE_BUILD_TYPE={build_type}",
                 f"-DCMAKE_INSTALL_PREFIX={install_path}",
+                f"-DCMAKE_C_FLAGS={shlex.join(cppflags)}",
+                f"-DCMAKE_CXX_FLAGS={shlex.join(cppflags)}",
                 # MSVC debug information format flags are selected by an abstraction
                 "-DCMAKE_POLICY_DEFAULT_CMP0141=NEW",
                 # MSVC debug information format

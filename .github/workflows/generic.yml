@@ -167,6 +167,14 @@ jobs:
               echo '#error "System SDL headers must not be used by build system"' >"$dest"
             done
           done
+      - name: 'Set up Microsoft.GameInput headers'
+        if: ${{ matrix.platform.microsoft-gameinput-version != '' }}
+        run: |
+          python build-scripts/download-gameinput-headers.py \
+            --version ${{ matrix.platform.microsoft-gameinput-version }} \
+            -o $HOME/gameinput
+          echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
+          echo "INCLUDE=$INCLUDE;$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
 
       - name: 'Calculate ccache key'
         if: ${{ matrix.platform.ccache }}

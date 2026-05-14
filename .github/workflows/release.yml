@@ -345,7 +345,7 @@ jobs:
         id: releaser
         run: |
           python build-scripts/build-release.py `
-            --actions msvc `
+            --actions download msvc `
             --commit ${{ inputs.commit }} `
             --root "${{ steps.zip.outputs.path }}" `
             --github `
@@ -507,7 +507,7 @@ jobs:
         id: releaser
         run: |
           python build-scripts/build-release.py \
-            --actions mingw \
+            --actions download mingw \
             --commit ${{ inputs.commit }} \
             --root "${{ steps.tar.outputs.path }}" \
             --github \
@@ -619,7 +619,7 @@ jobs:
         id: releaser
         run: |
           python build-scripts/build-release.py \
-            --actions android \
+            --actions download android \
             --android-api 21 \
             --android-ndk-home "${{ steps.setup-ndk.outputs.ndk-path }}" \
             --commit ${{ inputs.commit }} \

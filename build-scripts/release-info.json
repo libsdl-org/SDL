@@ -1,6 +1,12 @@
 {
   "name": "SDL3",
   "remote": "libsdl-org/SDL",
+  "dependencies": {
+    "gameinput": {
+      "command": "build-scripts/download-gameinput-headers.py -o @<@DEPS_PATH@>@/include --version v3.3.195.0",
+      "artifact": "gameinput/include/gameinput.h"
+    }
+  },
   "version": {
     "file": "include/SDL3/SDL_version.h",
     "re_major": "^#define SDL_MAJOR_VERSION\\s+([0-9]+)$",
@@ -54,6 +60,9 @@
         "build-scripts/pkg-support/mingw/cmake/SDL3Config.cmake",
         "build-scripts/pkg-support/mingw/cmake/SDL3ConfigVersion.cmake"
       ]
+    },
+    "dependencies": {
+      "gameinput": {}
     }
   },
   "msvc": {
@@ -129,6 +138,9 @@
       "include/SDL3": [
         "include/SDL3/*.h"
       ]
+    },
+    "dependencies": {
+      "gameinput": {}
     }
   },
   "android": {
