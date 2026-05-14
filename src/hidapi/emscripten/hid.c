@@ -27,6 +27,10 @@
 
 EM_JS_DEPS(hidapi, "$dynCall");
 
+#if 0
+#define HIDAPI_WEBHID_DEBUG
+#endif
+
 struct hid_device_ {
     int device_id;
     unsigned char *last_report;
@@ -66,26 +70,8 @@ HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
     return HID_API_VERSION_STR;
 }
 
-// static void test(hid_device *dev, unsigned char *data, size_t length)
-// static void test(unsigned char *data)
-// {
-//     // printf("Test function, device_id=%d\n", dev->device_id);
-//     printf("Test function\n");
-//     for (int i = 0; i < 3; i++) {
-//         printf("Test function, data[%d]=%d\n", i, data[i]);
-//     }
-//     free(data);
-// }
-
 int HID_API_EXPORT hid_init(void)
 {
-    // MAIN_THREAD_EM_ASM({
-    //     const typedArray = Uint8Array.from([1,2,3]);
-    //     const heapPointer = _malloc(typedArray.length * typedArray.BYTES_PER_ELEMENT);
-    //     HEAPU8.set(typedArray, heapPointer);
-    //     dynCall('vi', $0, [heapPointer]);
-    // }, &test);
-
     return MAIN_THREAD_EM_ASM_INT({
         return "hid" in navigator ? 0 : -1;
     });
@@ -167,12 +153,14 @@ static struct hid_device_info * create_device_info_for_device(int device_id)
 
     cur_dev->next = NULL;
 
+#ifdef HIDAPI_WEBHID_DEBUG
     printf("HIDAPI: New device found: %d %d\n", cur_dev->vendor_id, cur_dev->product_id);
+#endif
 end:
     return root;
 }
 
-// TODO: remove all EM_ASYNC_JS
+// TODO: remove all EM_ASYNC_JS for non-blocking operations
 EM_ASYNC_JS(int, hid_js_get_device_count, (), {
     window._hidDeviceList = await navigator.hid.getDevices();
     return window._hidDeviceList.length;
@@ -188,7 +176,9 @@ struct hid_device_info HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, u
 
     device_count = hid_js_get_device_count();
 
+#ifdef HIDAPI_WEBHID_DEBUG
     printf("hid_enumerate, device_count=%d\n", device_count);
+#endif
 
     int device_id;
     for (device_id = 0; device_id < device_count; device_id++) {
@@ -277,7 +267,9 @@ static void set_byte(unsigned char *data, size_t length, int byte, size_t offset
     if (offset >= length)
         return;
     data[offset] = (unsigned char)byte;
+#ifdef HIDAPI_WEBHID_DEBUG
     // printf("set_byte: offset=%d byte=%d\n", (int)offset, byte);
+#endif
 }
 
 static void set_report(hid_device *dev, unsigned char *data, size_t length)
@@ -292,16 +284,14 @@ static void set_report(hid_device *dev, unsigned char *data, size_t length)
 
 EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetByteCallback callback, SetReportCallback set_report_callback), {
     let device = window._hidDeviceList[device_id];
-    console.log("Opening device1 " + device_id);
     if (device) {
-        console.log("Opening device2 " + device_id);
         await device.open();
         device.addEventListener("inputreport", function (event) {
             const { data, device, reportId } = event;
-
+            
             let dataLength = data['byteLength']+1;
             let pointer = _malloc(dataLength);
-            dynCall("viiii", callback, [pointer, dataLength, report_id, 0]);
+            dynCall("viiii", callback, [pointer, dataLength, reportId, 0]);
             for (let i = 0; i < data['byteLength']; i++) {
                 dynCall("viiii", callback, [pointer, dataLength, data['getUint8'](i), i+1]);
             }
@@ -318,16 +308,22 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
     hid_init();
     /* register_global_error: global error is reset by hid_init */
 
+#ifdef HIDAPI_WEBHID_DEBUG
     printf("hid_open_path: %s\n", path);
+#endif
     dev = new_hid_device();
     if (!dev) {
+#ifdef HIDAPI_WEBHID_DEBUG
         printf("hid_open_path: no memory\n");
+#endif
         return NULL;
     }
 
     if (sscanf(path, "hid%d", &device_id) != 1) {
         free(dev);
+#ifdef HIDAPI_WEBHID_DEBUG
         printf("hid_open_path: invalid path\n");
+#endif
         return NULL;
     }
 
@@ -342,7 +338,6 @@ EM_ASYNC_JS(int, hid_js_write, (int device_id, int report_id, const unsigned cha
     if (device) {
         let dataArray = new Uint8Array(length);
         for (let i = 0; i < length; i++) {
-            // console.log("hid_write: offset=" + i + " byte=" + HEAPU8[data+i]);
             dataArray[i] = HEAPU8[data+i];
         }
         await device.sendReport(report_id, dataArray);
@@ -362,8 +357,8 @@ EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_
     if (device) {
         let [report_id, dataView] = await new Promise(function(resolve, reject) {
             device.addEventListener("inputreport", function (event) {
-                const { data, device, reportId } = event;
-                resolve([reportId, data]); // done
+                const { data, device, report_id } = event;
+                resolve([report_id, data]); // done
             }, {once: true});
         });
         dynCall("viiii", callback, [data, length, report_id, 0]);

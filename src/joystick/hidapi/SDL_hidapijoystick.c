@@ -642,6 +642,7 @@ void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16
     device->guid = SDL_CreateJoystickGUID(device->guid.data[0], vendor_id, product_id, device->version, device->manufacturer_string, device->product_string, 'h', 0);
 }
 
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
 {
     int i;
@@ -656,6 +657,7 @@ static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
         }
     }
 }
+#endif
 
 static bool HIDAPI_SerialIsEmpty(SDL_HIDAPI_Device *device)
 {
@@ -675,13 +677,18 @@ static bool HIDAPI_SerialIsEmpty(SDL_HIDAPI_Device *device)
 
 void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't include the serial number for the web to decrease the fingerprinting surface
+#else
     if (serial && *serial && (!device->serial || SDL_strcmp(serial, device->serial) != 0)) {
         SDL_free(device->serial);
         device->serial = SDL_strdup(serial);
         HIDAPI_UpdateJoystickSerial(device);
     }
+#endif
 }
 
+#ifndef SDL_PLATFORM_EMSCRIPTEN
 static int wcstrcmp(const wchar_t *str1, const char *str2)
 {
     int result;
@@ -696,14 +703,19 @@ static int wcstrcmp(const wchar_t *str1, const char *str2)
     }
     return result;
 }
+#endif
 
 static void HIDAPI_SetDeviceSerialW(SDL_HIDAPI_Device *device, const wchar_t *serial)
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't include the serial number for the web to decrease the fingerprinting surface
+#else
     if (serial && *serial && (!device->serial || wcstrcmp(serial, device->serial) != 0)) {
         SDL_free(device->serial);
         device->serial = HIDAPI_ConvertString(serial);
         HIDAPI_UpdateJoystickSerial(device);
     }
+#endif
 }
 
 bool HIDAPI_HasConnectedUSBDevice(const char *serial)
