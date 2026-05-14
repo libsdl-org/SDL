@@ -20,21 +20,12 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_gameinputjoystick_c.h"
-
 #ifdef SDL_JOYSTICK_GAMEINPUT
 
 #include "../SDL_sysjoystick.h"
 #include "../usb_ids.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_gameinput.h"
-
-// Default value for SDL_HINT_JOYSTICK_GAMEINPUT
-#if defined(SDL_PLATFORM_GDK) || (GAMEINPUT_API_VERSION >= 3)
-#define SDL_GAMEINPUT_DEFAULT true
-#else
-#define SDL_GAMEINPUT_DEFAULT false
-#endif
 
 enum
 {
@@ -1053,15 +1044,6 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     return true;
 }
 
-bool SDL_UsingGameInputForXInputControllers(void)
-{
-    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT) &&
-        SDL_GameInputReady()) {
-        return true;
-    }
-    return false;
-}
-
 
 SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
 {
@@ -1087,13 +1069,5 @@ SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
     GAMEINPUT_JoystickQuit,
     GAMEINPUT_JoystickGetGamepadMapping
 };
-
-
-#else
-
-bool SDL_UsingGameInputForXInputControllers(void)
-{
-    return false;
-}
 
 #endif // SDL_JOYSTICK_GAMEINPUT

@@ -28,8 +28,8 @@
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
-#include "../gdk/SDL_gameinputjoystick_c.h"
 
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL 0x80000000

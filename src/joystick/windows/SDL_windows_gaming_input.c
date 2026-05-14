@@ -24,7 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
-#include "../gdk/SDL_gameinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "SDL_rawinputjoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"

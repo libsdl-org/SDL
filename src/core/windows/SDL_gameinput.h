@@ -48,10 +48,27 @@ using namespace GameInput::v2;
 using namespace GameInput::v1;
 #endif
 
+// Default value for SDL_HINT_JOYSTICK_GAMEINPUT
+#if defined(SDL_PLATFORM_GDK) || (GAMEINPUT_API_VERSION >= 3)
+#define SDL_GAMEINPUT_DEFAULT true
+#else
+#define SDL_GAMEINPUT_DEFAULT false
+#endif
+
 extern bool SDL_InitGameInput(IGameInput **ppGameInput);
 extern bool SDL_GameInputReady(void);
 extern void SDL_QuitGameInput(void);
 
 #endif // HAVE_GAMEINPUT_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern bool SDL_UsingGameInputForXInputControllers(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SDL_gameinput_h_
