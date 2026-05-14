@@ -50,6 +50,7 @@ include(CheckIncludeFiles)
 include(CheckLanguage)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
+include(CheckCXXSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
@@ -2314,7 +2315,7 @@ elseif(WINDOWS)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
-  check_c_source_compiles("
+  check_cxx_source_compiles("
     #include <stdbool.h>
     #define COBJMACROS
     #include <gameinput.h>
