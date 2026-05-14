@@ -25,7 +25,16 @@
 
 #ifdef HAVE_GAMEINPUT_H
 
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundef"
+#endif
+
 #include <gameinput.h>
+
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
+#endif
 
 #ifndef GAMEINPUT_API_VERSION
 #define GAMEINPUT_API_VERSION 0
