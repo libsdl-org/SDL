@@ -280,7 +280,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     // Generate a device path
     for (idx = 0; idx < APP_LOCAL_DEVICE_ID_SIZE; ++idx) {
-        SDL_snprintf(tmp, SDL_arraysize(tmp), "%02hhX", info->deviceId.value[idx]);
+        SDL_snprintf(tmp, SDL_arraysize(tmp), "%02X", info->deviceId.value[idx]);
         SDL_strlcat(elem->path, tmp, SDL_arraysize(elem->path));
     }
 
