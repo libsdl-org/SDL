@@ -453,10 +453,10 @@ typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata, SDL_EGLDi
 /**
  * An enumeration of OpenGL configuration attributes.
  *
- * While you can set most OpenGL attributes normally, the attributes listed
- * above must be known before SDL creates the window that will be used with
- * the OpenGL context. These attributes are set and read with
- * SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
+ * While you can set most OpenGL attributes normally, they must be known before
+ * SDL creates the window that will be used with the OpenGL context.
+ * These attributes are set and read with SDL_GL_SetAttribute() and
+ * SDL_GL_GetAttribute().
  *
  * In some cases, these attributes are minimum requests; the GL does not
  * promise to give you exactly what you asked for. It's possible to ask for a
