@@ -779,17 +779,21 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.cflags.append("-I$GAMEINPUT_INCLUDE")
             job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Cygwin:
-            job.ccache = True
+            job.ccache = False # Missing evict-older-than option
+            job.clang_tidy = False # error finding files [clang-diagnostic-error] cause might be space in command path
+            job.test_pkg_config = False # Linefeed issue in test_pkgconfig.sh
             job.shell = "bash --noprofile --norc -eo pipefail -o igncr {0}"
             job.shared_lib = SharedLibType.CYGDLL
             job.static_lib = StaticLibType.A
+            job.cmake_arguments.append("-DSDLTEST_GDB=ON")
             job.cygwin_packages.extend([
-                "ccache",
                 "cmake",
                 "gcc-core",
                 "gcc-g++",
+                "gdb",
                 "ninja",
                 "pkg-config",
+                "perl",
                 "python",
             ])
         case SdlPlatform.Riscos:
