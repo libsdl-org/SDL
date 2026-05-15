@@ -4091,8 +4091,7 @@ if(SDL_SHARED)
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
     endif()
-  elseif(UNIX AND NOT ANDROID)
-    # NOTE: the includes CYGWIN, too
+  elseif(UNIX AND NOT (ANDROID OR CYGWIN))
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
       SOVERSION "${SDL_SO_VERSION_MAJOR}"
