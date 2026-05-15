@@ -301,7 +301,7 @@ static int HIDAPI_DriverFlydigi_WritePacket(SDL_HIDAPI_Device *device, const Uin
     // If other Flydigi things prove to do the same, we can tweak this check to be more general.
     bool bUsesUnnumberedReports = (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && device->product_id == USB_PRODUCT_FLYDIGI_V2_VADER);
 
-    if (bUsesUnnumberedReports && data[0] == FLYDIGI_V2_CMD_REPORT_ID ) {
+    if (bUsesUnnumberedReports && data[0] == FLYDIGI_V2_CMD_REPORT_ID) {
         // Zero out the report byte.
         Uint8 output[USB_PACKET_LENGTH];
         SDL_memcpy(output, data, SDL_min(size, USB_PACKET_LENGTH));
