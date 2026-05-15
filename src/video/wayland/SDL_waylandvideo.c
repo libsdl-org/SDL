@@ -732,6 +732,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->SyncWindow = Wayland_SyncWindow;
     device->SetWindowFocusable = Wayland_SetWindowFocusable;
     device->ReconfigureWindow = Wayland_ReconfigureWindow;
+    device->AcceptDragAndDrop = Wayland_AcceptDragAndDrop;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())

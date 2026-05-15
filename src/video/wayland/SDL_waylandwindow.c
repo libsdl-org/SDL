@@ -3426,6 +3426,11 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
+void Wayland_AcceptDragAndDrop(SDL_Window *window, bool accept)
+{
+    window->internal->accepts_drag_and_drop = accept;
+}
+
 bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
 {
     if (window->flags & SDL_WINDOW_POPUP_MENU) {
