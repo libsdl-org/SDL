@@ -354,6 +354,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafb ), k_eControllerType_XBox360Controller, NULL },	// Aplay Controller
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller, NULL },	// Afterglow Gamepad 3
+	{ MAKE_CONTROLLER_ID( 0x3537, 0x103e ), k_eControllerType_XBox360Controller, "Gamesir Xbox Controller" }, // Gamesir dongle for Supernova (and maybe others) in Xinput mode
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller, NULL },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x3651, 0x1000 ), k_eControllerType_XBox360Controller, NULL },	// CRKD Guitar
 	{ MAKE_CONTROLLER_ID( 0x3651, 0x6000 ), k_eControllerType_XBox360Controller, NULL },	// CRKD Guitar
