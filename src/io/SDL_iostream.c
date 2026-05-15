@@ -670,7 +670,7 @@ SDL_IOStream *SDL_IOFromFD(int fd, bool autoclose)
 
     return iostr;
 }
-#endif // defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
+#endif // SDL_PLATFORM_WINDOWS && !SDL_PLATFORM_CYGWIN
 
 #if defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN))
 
@@ -869,7 +869,7 @@ SDL_IOStream *SDL_IOFromFP(FILE *fp, bool autoclose)
 
     return iostr;
 }
-#endif // defined(HAVE_STDIO_H) && !(defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN))
+#endif // HAVE_STDIO_H && !SDL_PLATFORM_WINDOWS && !SDL_PLATFORM_CYGWIN
 
 // Functions to read/write memory pointers
 

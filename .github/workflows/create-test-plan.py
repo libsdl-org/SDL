@@ -164,7 +164,7 @@ class StaticLibType(Enum):
 
 class SharedLibType(Enum):
     WIN32 = "SDL3.dll"
-    CYGDLL = "cygSDL3-0.dll"
+    CYGDLL = "cygSDL3.dll"
     SO_0 = "libSDL3.so.0"
     SO = "libSDL3.so"
     DYLIB = "libSDL3.0.dylib"

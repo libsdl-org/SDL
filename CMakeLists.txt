@@ -1431,7 +1431,7 @@ if(SDL_CAMERA)
   #endif()
 endif()
 
-if((UNIX OR APPLE) AND (NOT CYGWIN))
+if((UNIX OR APPLE) AND NOT CYGWIN)
   # Relevant for Unix/Darwin only
   set(DYNAPI_NEEDS_DLOPEN 1)
   CheckDLOPEN()
