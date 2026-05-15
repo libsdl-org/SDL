@@ -4900,6 +4900,9 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         windowData->textureContainers[i].activeTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
         windowData->textureContainers[i].activeTexture->depth = 1;
         windowData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+        windowData->textureContainers[i].activeTexture->levelCount = 1;
+        windowData->textureContainers[i].activeTexture->layerCount = 1;
+        windowData->textureContainers[i].activeTexture->type = SDL_GPU_TEXTURETYPE_2D;
         windowData->textureContainers[i].activeTexture->container = &windowData->textureContainers[i];
         SDL_SetAtomicInt(&windowData->textureContainers[i].activeTexture->referenceCount, 0);
 
