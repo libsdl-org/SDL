@@ -28,6 +28,11 @@ jobs:
         with:
           msystem: ${{ matrix.platform.msys2-msystem }}
           install: ${{ matrix.platform.msys2-packages }}
+      - name: 'Set up Cygwin'
+        if: ${{ matrix.platform.platform == 'cygwin' }}
+        uses: cygwin/cygwin-install-action@master
+        with:
+          packages: ${{ matrix.platform.cygwin-packages }}
       - name: 'About this job'
         run: |
           echo "key=${{ matrix.platform.key }}"
