@@ -543,14 +543,16 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             SetSurfaceOpaqueRegion(data->mask.surface, 0, 0);
         }
 
-        data->mask.offset_x = -(data->current.logical_width - viewport_width) / 2;
-        data->mask.offset_y = -(data->current.logical_height - viewport_height) / 2;
-
         // Can't use an offset subsurface with libdecor (yet), or the decorations won't line up properly.
         if (data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
-            wl_subsurface_set_position(data->mask.subsurface, data->mask.offset_x, data->mask.offset_y);
+            data->mask.offset_x = -(data->current.logical_width - viewport_width) / 2;
+            data->mask.offset_y = -(data->current.logical_height - viewport_height) / 2;
+        } else {
+            data->mask.offset_x = 0;
+            data->mask.offset_y = 0;
         }
 
+        wl_subsurface_set_position(data->mask.subsurface, data->mask.offset_x, data->mask.offset_y);
         wl_surface_commit(data->mask.surface);
 
         if (old_buffer) {

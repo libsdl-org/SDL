@@ -98,6 +98,7 @@ struct SDL_WaylandDataDevice
     const char *mime_type;
     bool has_mime_file, has_mime_text;
     SDL_Window *dnd_window;
+    struct wl_surface *dnd_surface;
 
     // Clipboard and Primary Selection
     uint32_t selection_serial;

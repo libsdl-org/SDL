@@ -2843,9 +2843,20 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
 
             // Set the destination window and send the initial position.
             data_device->dnd_window = window->sdlwindow;
-            const float dx = (float)(wl_fixed_to_double(x) * data_device->dnd_window->internal->pointer_scale.x);
-            const float dy = (float)(wl_fixed_to_double(y) * data_device->dnd_window->internal->pointer_scale.y);
-            SDL_SendDropPosition(data_device->dnd_window, dx, dy);
+            data_device->dnd_surface = surface;
+            double dx = wl_fixed_to_double(x);
+            double dy = wl_fixed_to_double(y);
+
+            // If over the mask, adjust the offset.
+            if (surface == window->mask.surface) {
+                dx += (double)window->mask.offset_x;
+                dy += (double)window->mask.offset_y;
+            }
+
+            dx *= window->pointer_scale.x;
+            dy *= window->pointer_scale.y;
+
+            SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d into window %d for serial %d",
                          WAYLAND_wl_proxy_get_id((struct wl_proxy *)id),
@@ -2863,6 +2874,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         }
     } else {
         data_device->dnd_window = NULL;
+        data_device->dnd_surface = NULL;
 
         // Decline the offer.
         if (id) {
@@ -2912,14 +2924,24 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
     SDL_WaylandDataDevice *data_device = data;
 
     if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->has_mime_text)) {
-        const float dx = (float)(wl_fixed_to_double(x) * data_device->dnd_window->internal->pointer_scale.x);
-        const float dy = (float)(wl_fixed_to_double(y) * data_device->dnd_window->internal->pointer_scale.y);
+        SDL_WindowData *window_data = data_device->dnd_window->internal;
+        double dx = wl_fixed_to_double(x);
+        double dy = wl_fixed_to_double(y);
+
+        // If over the mask, adjust the offset.
+        if (data_device->dnd_surface == window_data->mask.surface) {
+            dx += (double)window_data->mask.offset_x;
+            dy += (double)window_data->mask.offset_y;
+        }
+
+        dx *= window_data->pointer_scale.x;
+        dy *= window_data->pointer_scale.y;
 
         /* XXX: Send the filename here if the event system ever starts passing it though.
          *      Any future implementation should cache the filenames, as otherwise this could
          *      hammer the DBus interface hundreds or even thousands of times per second.
          */
-        SDL_SendDropPosition(data_device->dnd_window, dx, dy);
+        SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In wl_data_device_listener . data_device_handle_motion on data_offer 0x%08x at %d x %d in window %d serial %d",
                      WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
