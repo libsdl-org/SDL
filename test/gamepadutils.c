@@ -3643,6 +3643,8 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "Joy-Con Pair";
     case SDL_GAMEPAD_TYPE_GAMECUBE:
         return "GameCube";
+    case SDL_GAMEPAD_TYPE_STEAM:
+        return "Steam";
     default:
         return "";
     }

@@ -3173,6 +3173,14 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                 type = SDL_GAMEPAD_TYPE_STANDARD;
             }
             break;
+        case k_eControllerType_SteamController:
+        case k_eControllerType_SteamControllerV2:
+        case k_eControllerType_SteamControllerNeptune:
+        case k_eControllerType_SteamControllerTriton:
+        case k_eControllerType_HoriSteamController:
+        case k_eControllerType_UnknownSteamController:
+            type = SDL_GAMEPAD_TYPE_STEAM;
+            break;
         default:
             break;
         }
