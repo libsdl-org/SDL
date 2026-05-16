@@ -35,11 +35,18 @@ else()
 endif()
 set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}" PARENT_SCOPE)
 
+if(CYGWIN)
+# FindOpenGL from cmake >= 3.19 or cygwin-provided cmake versions don't
+# test for native windows opengl32, but we want native windows opengl32.
+    set(OPENGL_gl_LIBRARY opengl32)
+    set(OPENGL_FOUND TRUE)
+else()
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
 if(NOT (MSVC AND SDL_CPU_ARM64))
     # Prefer GLVND, if present
     set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
+endif()
 endif()
 
 add_library(sdltests_utils OBJECT
