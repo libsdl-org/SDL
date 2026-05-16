@@ -31,6 +31,10 @@
 
 #include <SDL3/SDL_platform.h>
 
+#if defined(SDL_PLATFORM_CYGWIN) && !defined(USE_OPENGL32)
+#define USE_OPENGL32 1     /* use native windows opengl32 */
+#endif
+
 #ifndef SDL_PLATFORM_IOS  /* No OpenGL on iOS. */
 
 /*
@@ -84,7 +88,7 @@
 #  else
 #    define GLAPIENTRY __stdcall
 #  endif
-#elif defined(__CYGWIN__) /* && defined(USE_OPENGL32) */ /* use native windows opengl32 */
+#elif defined(__CYGWIN__) && defined(USE_OPENGL32) /* use native windows opengl32 */
 #  define GLAPI extern
 #  define GLAPIENTRY __stdcall
 #elif (defined(__GNUC__) && __GNUC__ >= 4) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
