@@ -506,7 +506,7 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble');
+        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble');
         }, item->index);
 
     if (item->rumble_available) {
@@ -515,7 +515,7 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble');
+        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble');
         }, item->index);
 
     if (item->trigger_rumble_available) {
