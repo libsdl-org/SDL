@@ -1489,7 +1489,8 @@ static const char *map_StringForGamepadType[] = {
     "joyconleft",
     "joyconright",
     "joyconpair",
-    "gamecube"
+    "gamecube",
+    "steam"
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_COUNT);
 
