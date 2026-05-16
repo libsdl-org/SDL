@@ -28,6 +28,7 @@
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 #ifndef DIDFT_OPTIONAL
@@ -238,11 +239,12 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     SDL_GamepadType type;
 
-    // XInput and RawInput backends will pick up XInput-compatible devices
+    // Some other backends will pick up XInput-compatible devices
     if (!SDL_XINPUT_Enabled()
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
 #endif
+        && !SDL_UsingGameInputForXInputControllers()
     ) {
         return false;
     }

@@ -87,9 +87,15 @@ GLDEF_C TInt E32Main()
               TInt targetLatency = 225;
               InitAudio(&targetLatency);
 
-              // Wait until audio is ready.
-              while (!AudioIsReady()) {
+              // Wait until audio is ready (timeout after ~5 seconds).
+              TInt audioWaitMs = 0;
+              while (!AudioIsReady() && audioWaitMs < 5000) {
                   User::After(100000); // 100ms.
+                  audioWaitMs += 100;
+              }
+              if (!AudioIsReady()) {
+                  SDL_Log("Error: Audio failed to initialise within timeout");
+                  User::Leave(KErrTimedOut);
               }
 
               // Create and start the rendering backend.
@@ -104,8 +110,8 @@ GLDEF_C TInt E32Main()
               // Start the active scheduler to handle events.
               CActiveScheduler::Start();
 
-              CleanupStack::PopAndDestroy(gRenderer);
               CleanupStack::PopAndDestroy(mainApp);
+              CleanupStack::PopAndDestroy(gRenderer);
 
               User::SwitchHeap(oldHeap);
 
@@ -154,6 +160,7 @@ static bool callbacks_initialized = false;
 
 static void ShutdownApp(SDL_AppResult result)
 {
+    callbacks_initialized = false;
     DeinitAudio();
     SDL_AppQuit(NULL, result);
     SDL_Quit();

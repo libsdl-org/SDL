@@ -641,6 +641,11 @@ struct VulkanTexture
     VkImageAspectFlags aspectFlags;
     Uint32 depth; // used for cleanup only
 
+    // used to avoid indirection on barriers
+    Uint32 levelCount;
+    Uint32 layerCount;
+    SDL_GPUTextureType type;
+
     // FIXME: It'd be nice if we didn't have to have this on the texture...
     SDL_GPUTextureUsageFlags usage; // used for defrag transitions only.
 
@@ -2500,6 +2505,11 @@ static void VULKAN_INTERNAL_TrackTextureTransfer(
     VulkanCommandBuffer *commandBuffer,
     VulkanTexture *texture)
 {
+    // Textures not managed by our allocator (i.e. the swapchain) don't need to be refcounted.
+    if (texture->usedRegion == NULL) {
+        return;
+    }
+
     TRACK_RESOURCE(
         texture,
         VulkanTexture *,
@@ -2718,12 +2728,16 @@ static void VULKAN_INTERNAL_BufferMemoryBarrier(
     buffer->transitioned = true;
 }
 
-static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
+static void VULKAN_INTERNAL_TextureMemoryBarrier(
     VulkanRenderer *renderer,
     VulkanCommandBuffer *commandBuffer,
     VulkanTextureUsageMode sourceUsageMode,
     VulkanTextureUsageMode destinationUsageMode,
-    VulkanTextureSubresource *textureSubresource)
+    Uint32 baseLevel,
+    Uint32 levelCount,
+    Uint32 baseLayer,
+    Uint32 layerCount,
+    VulkanTexture *texture)
 {
     VkPipelineStageFlags srcStages = 0;
     VkPipelineStageFlags dstStages = 0;
@@ -2737,12 +2751,12 @@ static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
     memoryBarrier.newLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     memoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     memoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    memoryBarrier.image = textureSubresource->parent->image;
-    memoryBarrier.subresourceRange.aspectMask = textureSubresource->parent->aspectFlags;
-    memoryBarrier.subresourceRange.baseArrayLayer = textureSubresource->layer;
-    memoryBarrier.subresourceRange.layerCount = 1;
-    memoryBarrier.subresourceRange.baseMipLevel = textureSubresource->level;
-    memoryBarrier.subresourceRange.levelCount = 1;
+    memoryBarrier.image = texture->image;
+    memoryBarrier.subresourceRange.aspectMask = texture->aspectFlags;
+    memoryBarrier.subresourceRange.baseMipLevel = baseLevel;
+    memoryBarrier.subresourceRange.levelCount = levelCount;
+    memoryBarrier.subresourceRange.baseArrayLayer = baseLayer;
+    memoryBarrier.subresourceRange.layerCount = layerCount;
 
     if (sourceUsageMode == VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED) {
         srcStages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -2837,6 +2851,56 @@ static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
         NULL,
         1,
         &memoryBarrier);
+}
+
+// Transitions the entire texture with a single barrier call.
+static void VULKAN_INTERNAL_FullTextureMemoryBarrier(
+    VulkanRenderer *renderer,
+    VulkanCommandBuffer *commandBuffer,
+    VulkanTextureUsageMode sourceUsageMode,
+    VulkanTextureUsageMode destinationUsageMode,
+    VulkanTexture *texture)
+{
+    VULKAN_INTERNAL_TextureMemoryBarrier(
+        renderer,
+        commandBuffer,
+        sourceUsageMode,
+        destinationUsageMode,
+        0,
+        texture->levelCount,
+        0,
+        texture->layerCount,
+        texture);
+}
+
+static void VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
+    VulkanRenderer *renderer,
+    VulkanCommandBuffer *commandBuffer,
+    VulkanTextureUsageMode sourceUsageMode,
+    VulkanTextureUsageMode destinationUsageMode,
+    VulkanTextureSubresource *textureSubresource)
+{
+    Uint32 layerCount = 1;
+
+    // VK_KHR_maintenance9 adds the ability to independently transition arbitrary subsets of slices in a 3D texture
+    // but otherwise it is not necessarily supported by the driver.
+    // As a workaround we have to transition the whole texture instead of just the subresource.
+    // If VK_KHR_maintenance9 becomes widely supported, this can be removed.
+    // See https://docs.vulkan.org/features/latest/features/proposals/VK_KHR_maintenance9.html#_barriers_with_2d_array_compatible_3d_images
+    if (textureSubresource->parent->type == SDL_GPU_TEXTURETYPE_3D) {
+        layerCount = VK_REMAINING_ARRAY_LAYERS;
+    }
+
+    VULKAN_INTERNAL_TextureMemoryBarrier(
+        renderer,
+        commandBuffer,
+        sourceUsageMode,
+        destinationUsageMode,
+        textureSubresource->level,
+        1,
+        textureSubresource->layer,
+        layerCount,
+        textureSubresource->parent);
 }
 
 static VulkanBufferUsageMode VULKAN_INTERNAL_DefaultBufferUsageMode(
@@ -2936,13 +3000,12 @@ static void VULKAN_INTERNAL_TextureTransitionFromDefaultUsage(
     VulkanTextureUsageMode destinationUsageMode,
     VulkanTexture *texture)
 {
-    for (Uint32 i = 0; i < texture->subresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
-            renderer,
-            commandBuffer,
-            destinationUsageMode,
-            &texture->subresources[i]);
-    }
+    VULKAN_INTERNAL_FullTextureMemoryBarrier(
+        renderer,
+        commandBuffer,
+        VULKAN_INTERNAL_DefaultTextureUsageMode(texture),
+        destinationUsageMode,
+        texture);
 }
 
 static void VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
@@ -2965,14 +3028,12 @@ static void VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
     VulkanTextureUsageMode sourceUsageMode,
     VulkanTexture *texture)
 {
-    // FIXME: could optimize this barrier
-    for (Uint32 i = 0; i < texture->subresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
-            renderer,
-            commandBuffer,
-            sourceUsageMode,
-            &texture->subresources[i]);
-    }
+    VULKAN_INTERNAL_FullTextureMemoryBarrier(
+        renderer,
+        commandBuffer,
+        sourceUsageMode,
+        VULKAN_INTERNAL_DefaultTextureUsageMode(texture),
+        texture);
 }
 
 // Resource Disposal
@@ -4839,6 +4900,9 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
         windowData->textureContainers[i].activeTexture->aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
         windowData->textureContainers[i].activeTexture->depth = 1;
         windowData->textureContainers[i].activeTexture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+        windowData->textureContainers[i].activeTexture->levelCount = 1;
+        windowData->textureContainers[i].activeTexture->layerCount = 1;
+        windowData->textureContainers[i].activeTexture->type = SDL_GPU_TEXTURETYPE_2D;
         windowData->textureContainers[i].activeTexture->container = &windowData->textureContainers[i];
         SDL_SetAtomicInt(&windowData->textureContainers[i].activeTexture->referenceCount, 0);
 
@@ -5724,6 +5788,9 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     texture->swizzle = SwizzleForSDLFormat(createinfo->format);
     texture->depth = depth;
     texture->usage = createinfo->usage;
+    texture->levelCount = createinfo->num_levels;
+    texture->layerCount = (createinfo->type == SDL_GPU_TEXTURETYPE_3D) ? 1 : createinfo->layer_count_or_depth;
+    texture->type = createinfo->type;
     SDL_SetAtomicInt(&texture->referenceCount, 0);
 
     if (IsDepthFormat(createinfo->format)) {
@@ -6004,12 +6071,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
         renderer,
         &container->header.info);
 
-    VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
-        renderer,
-        commandBuffer,
-        VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
-        texture);
-
     if (!texture) {
         return;
     }
@@ -6027,6 +6088,13 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     container->textureCount += 1;
 
     container->activeTexture = texture;
+
+    // Transition texture after storing it as the memory barrier might need to read the texture's container info
+    VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+        renderer,
+        commandBuffer,
+        VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
+        texture);
 }
 
 static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -6944,7 +7012,9 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
             barrierCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
             texture);
+
         VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
+
         if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
             VULKAN_ReleaseTexture((SDL_GPURenderer *)renderer, (SDL_GPUTexture *)container);
             return NULL;
@@ -8386,7 +8456,6 @@ static void VULKAN_BindComputeStorageTextures(
                 vulkanCommandBuffer,
                 VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ,
                 textureContainer->activeTexture);
-
 
             VULKAN_INTERNAL_TrackTexture(
                 vulkanCommandBuffer,
@@ -11104,23 +11173,25 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
             }
 
             SDL_GPUTextureCreateInfo info = currentRegion->vulkanTexture->container->header.info;
+
+            VULKAN_INTERNAL_TextureTransitionFromDefaultUsage(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+                currentRegion->vulkanTexture);
+
+            VULKAN_INTERNAL_FullTextureMemoryBarrier(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
+                newTexture
+            );
+
+            // Can only copy one mip level at a time
             for (Uint32 subresourceIndex = 0; subresourceIndex < currentRegion->vulkanTexture->subresourceCount; subresourceIndex += 1) {
-                // copy subresource if necessary
                 VulkanTextureSubresource *srcSubresource = &currentRegion->vulkanTexture->subresources[subresourceIndex];
                 VulkanTextureSubresource *dstSubresource = &newTexture->subresources[subresourceIndex];
-
-                VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
-                    renderer,
-                    commandBuffer,
-                    VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
-                    srcSubresource);
-
-                VULKAN_INTERNAL_TextureSubresourceMemoryBarrier(
-                    renderer,
-                    commandBuffer,
-                    VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
-                    VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
-                    dstSubresource);
 
                 VkImageCopy imageCopy;
                 imageCopy.srcOffset.x = 0;
@@ -11150,15 +11221,15 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                     1,
                     &imageCopy);
 
-                VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
-                    renderer,
-                    commandBuffer,
-                    VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
-                    dstSubresource);
-
                 VULKAN_INTERNAL_TrackTexture(commandBuffer, srcSubresource->parent);
                 VULKAN_INTERNAL_TrackTexture(commandBuffer, dstSubresource->parent);
             }
+
+            VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
+                newTexture);
 
             // re-point original container to new texture
             newTexture->container = currentRegion->vulkanTexture->container;

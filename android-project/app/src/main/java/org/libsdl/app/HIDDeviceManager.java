@@ -256,6 +256,7 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2c22, // Qanba
             0x2dc8, // 8BitDo
+            0x3537, // GameSir
             0x37d7, // Flydigi
             0x9886, // ASTRO Gaming
         };

@@ -298,11 +298,11 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
@@ -312,10 +312,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y);
 
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint sensor_type, jlong sensor_timestamp, jfloat x, jfloat y, jfloat z);
+
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led);
+    jint button_mask, jint naxes, jint axis_mask, jint nhats,
+    jboolean can_rumble, jboolean has_rgb_led, jboolean has_accelerometer, jboolean has_gyroscope);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
@@ -331,11 +336,12 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 
 static JNINativeMethod SDLControllerManager_tab[] = {
     { "nativeSetupJNI", "()V", SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI) },
-    { "onNativePadDown", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
-    { "onNativePadUp", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
+    { "onNativePadDown", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
+    { "onNativePadUp", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "onNativeJoySensor", "(IIJFFF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor) },
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
     { "nativeAddHaptic", "(ILjava/lang/String;)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
     { "nativeRemoveHaptic", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
@@ -408,6 +414,7 @@ static jclass mControllerManagerClass;
 // method signatures
 static jmethodID midPollInputDevices;
 static jmethodID midJoystickSetLED;
+static jmethodID midJoystickSetSensorsEnabled;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticRumble;
@@ -681,7 +688,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
@@ -756,6 +763,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
                                                     "pollInputDevices", "()V");
     midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "joystickSetLED", "(IIII)V");
+    midJoystickSetSensorsEnabled = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                              "joystickSetSensorsEnabled", "(IZ)V");
     midPollHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                      "pollHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -765,7 +774,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midJoystickSetLED || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midPollInputDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -1150,10 +1159,10 @@ SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboo
 // Paddown
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadDown(device_id, keycode);
+    return Android_OnPadDown(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID
@@ -1162,10 +1171,10 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
 // Padup
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadUp(device_id, keycode);
+    return Android_OnPadUp(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID
@@ -1191,17 +1200,29 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 #endif // SDL_JOYSTICK_ANDROID
 }
 
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint sensor_type, jlong sensor_timestamp, jfloat x, jfloat y, jfloat z)
+{
+#ifdef SDL_JOYSTICK_ANDROID
+    // In Java there's no Uint64 type, so pass Sint64 as if it was Uint64.
+    Android_OnJoySensor(device_id, sensor_type, sensor_timestamp, x, y, z);
+#endif // SDL_JOYSTICK_ANDROID
+}
+
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led)
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led,
+    jboolean has_accelerometer, jboolean has_gyroscope)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble, has_rgb_led);
+    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats,
+        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -1880,9 +1901,21 @@ static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
 
 static const APKNode *FindAPKNode(const char *constpath)
 {
+    //SDL_Log("FindAPKNode('%s') ...", constpath);
+
+    if (*constpath == '\0') {  // don't allow paths of "".
+        return NULL;
+    }
+
+    if (SDL_strncmp(constpath, "assets://", 9) == 0) {
+        constpath += 9;
+    }
+
     APKNode *parent = APKRootNode;
     if (!parent) {
         return NULL;
+    } else if (*constpath == '\0') {
+        return parent;
     }
 
     const size_t pathlen = SDL_strlen(constpath);
@@ -2234,7 +2267,7 @@ ioerr:
 
 static bool CreateAPKNodes(const char *path)
 {
-    SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
+    //SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
 
     SDL_IOStream *io = SDL_IOFromFile(path, "rb");
     if (!io) {
@@ -2341,12 +2374,20 @@ static void Internal_Android_Destroy_AssetManager(void)
 
 static const char *GetAssetPath(const char *path)
 {
-    if (path && path[0] == '.' && path[1] == '/') {
-        path += 2;
-        while (*path == '/') {
-            ++path;
-        }
+    if (!path) {
+        return NULL;
     }
+
+    if (path[0] == '.' && ((path[1] == '/') || (path[1] == '\0'))) {
+        path++;
+    } else if (SDL_strncmp(path, "assets://", 9) == 0) {
+        path += 9;
+    }
+
+    while (*path == '/') {
+        ++path;
+    }
+
     return path;
 }
 
@@ -2624,6 +2665,12 @@ void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetLED, device_id, red, green, blue);
+}
+
+void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetSensorsEnabled, device_id, (enabled == 1));
 }
 
 void Android_JNI_PollHapticDevices(void)
@@ -3344,18 +3391,34 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     }
 }
 
-bool Android_JNI_OpenFileDialog(
+bool Android_JNI_ShowFileDialog(
     SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple)
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
         return false;
     }
 
-    if (forwrite) {
+    // Setup type
+    int dialogType = 0;
+
+    switch (type) {
+    case SDL_FILEDIALOG_OPENFILE:
+        dialogType = 0;
+        break;
+    case SDL_FILEDIALOG_SAVEFILE:
         multiple = false;
+        dialogType = 1;
+        break;
+    case SDL_FILEDIALOG_OPENFOLDER:
+        multiple = false;
+        dialogType = 2;
+        break;
+    default:
+        SDL_SetError("Invalid file dialog type");
+        return false;
     }
 
     JNIEnv *env = Android_JNI_GetEnv();
@@ -3375,6 +3438,12 @@ bool Android_JNI_OpenFileDialog(
         }
     }
 
+    // Setup initial path
+    jstring initialPathString = NULL;
+    if (initialPath && *initialPath) {
+        initialPathString = (*env)->NewStringUTF(env, initialPath);
+    }
+
     // Setup data
     static SDL_AtomicInt next_request_code;
     mAndroidFileDialogData.request_code = SDL_AddAtomicInt(&next_request_code, 1);
@@ -3383,8 +3452,10 @@ bool Android_JNI_OpenFileDialog(
 
     // Invoke JNI
     jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
-        midShowFileDialog, filtersArray, (jboolean) multiple, (jboolean) forwrite, mAndroidFileDialogData.request_code);
+        midShowFileDialog, filtersArray, (jboolean) multiple,
+        dialogType, initialPathString, mAndroidFileDialogData.request_code);
     (*env)->DeleteLocalRef(env, filtersArray);
+    (*env)->DeleteLocalRef(env, initialPathString);
     if (!success) {
         mAndroidFileDialogData.callback = NULL;
         SDL_AddAtomicInt(&next_request_code, -1);

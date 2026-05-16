@@ -48,7 +48,7 @@
 /* Thread synchronization primitives */
 #include <SDL3/SDL_atomic.h>
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
@@ -296,7 +296,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 
 /* The real implementation, hidden from the wiki, so it can show this as real functions that don't have macro magic. */
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
-#  if defined(SDL_PLATFORM_WINDOWS)
+#  if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #    ifndef SDL_BeginThreadFunction
 #      define SDL_BeginThreadFunction _beginthreadex
 #    endif

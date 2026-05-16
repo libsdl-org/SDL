@@ -423,7 +423,7 @@ SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
 
 bool SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM(!SDL_SurfaceValid(surface) || !SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -3118,6 +3118,8 @@ SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
         return SDL_LoadBMP_IO(src, closeio);
     } else if (SDL_IsPNG(src)) {
         return SDL_LoadPNG_IO(src, closeio);
+    } else if (SDL_IsJPG(src)) {
+        return SDL_LoadJPG_IO(src, closeio);
     } else {
         if (closeio) {
             SDL_CloseIO(src);

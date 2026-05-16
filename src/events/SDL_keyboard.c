@@ -201,14 +201,22 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     const char *name = NULL;
-    if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
-        SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
-        return NULL;
-    }
-    if (!name) {
-        // SDL_strdup() failed during insert
-        SDL_OutOfMemory();
-        return NULL;
+
+    switch (instance_id) {
+    case SDL_GLOBAL_KEYBOARD_ID:
+        name = "Keyboard";
+        break;
+    default:
+        if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+            SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        break;
     }
     return name;
 }

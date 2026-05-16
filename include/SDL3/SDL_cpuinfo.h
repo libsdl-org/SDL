@@ -282,6 +282,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasARMSIMD(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_HasNEON(void);
 
 /**
+ * Determine whether the CPU has SVE2 (Scalable Vector Extension 2).
+ *
+ * This is only relevant on ARM64 Linux. On other platforms it always returns
+ * false.
+ *
+ * \returns true if the CPU has SVE2, false otherwise.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_HasSVE2(void);
+
+/**
  * Determine whether the CPU has LSX (LOONGARCH SIMD) features.
  *
  * This always returns false on CPUs that aren't using LOONGARCH instruction

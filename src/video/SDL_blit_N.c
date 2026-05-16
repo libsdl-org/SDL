@@ -26,6 +26,10 @@
 #include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+#include "./arm/SDL_sve2_blit_N.h"
+#endif
+
 // General optimized routines that write char by char
 #define HAVE_FAST_WRITE_INT8 1
 
@@ -3117,10 +3121,27 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 return Blit8888to8888PixelSwizzleSSE41;
             }
 #endif
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+            if (SDL_HasSVE2()) {
+                return Blit8888to8888PixelSwizzleSVE2;
+            }
+#endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
             return Blit8888to8888PixelSwizzleNEON;
 #endif
         }
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+        if (SDL_HasSVE2()) {
+            /* RGBA8888/ARGB8888/XRGB8888 -> RGB565 */
+            if (srcfmt->bytes_per_pixel == 4 &&
+                dstfmt->bytes_per_pixel == 2 &&
+                dstfmt->Rmask == 0x0000F800 &&
+                dstfmt->Gmask == 0x000007E0 &&
+                dstfmt->Bmask == 0x0000001F) {
+                return Blit8888to565PixelSwizzleSVE2;
+            }
+        }
+#endif
 
         blitfun = NULL;
         if (dstfmt->bits_per_pixel > 8) {

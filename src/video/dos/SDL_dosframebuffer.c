@@ -105,7 +105,7 @@ static SDL_Surface *GetConvertedCursorSurface(SDL_CursorData *curdata, SDL_Surfa
 
     // Track which palette indices are used by opaque pixels.
     bool used[256];
-    SDL_memset(used, 0, sizeof(used));
+    SDL_zeroa(used);
 
     // First pass: blit with BLENDMODE_NONE to get raw color-matched indices.
     SDL_SetSurfaceBlendMode(src, SDL_BLENDMODE_NONE);
@@ -181,7 +181,7 @@ static SDL_Surface *CreateSystemSurface(SDL_VideoData *data, int w, int h, SDL_P
             // Initialize palette to all-black so that transitions start
             // from black instead of flashing uninitialized (white) colors.
             SDL_Color black[256];
-            SDL_memset(black, 0, sizeof(black));
+            SDL_zeroa(black);
             for (int i = 0; i < 256; i++) {
                 black[i].a = SDL_ALPHA_OPAQUE;
             }

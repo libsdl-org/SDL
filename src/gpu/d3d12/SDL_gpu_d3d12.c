@@ -1838,6 +1838,16 @@ static inline Uint32 D3D12_INTERNAL_CalcSubresource(
     return mipLevel + (layer * numLevels);
 }
 
+static inline Uint32 D3D12_INTERNAL_CalcSubresourceWithPlane(
+    Uint32 mipLevel,
+    Uint32 layer,
+    Uint32 planeSlice,
+    Uint32 numLevels,
+    Uint32 arraySize)
+{
+    return mipLevel + (layer * numLevels) + (planeSlice * numLevels * arraySize);
+}
+
 static void D3D12_INTERNAL_ResourceBarrier(
     D3D12CommandBuffer *commandBuffer,
     D3D12_RESOURCE_STATES sourceState,
@@ -1894,6 +1904,27 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
         textureSubresource->parent->resource,
         textureSubresource->index,
         needsUAVBarrier);
+
+    // D3D12 stores planar values on a separate subresource.
+    // Since depth-stencil is our only supported planar format,
+    // just force an extra transition if we're using a stencil format.
+    if (IsStencilFormat(textureSubresource->parent->container->header.info.format)) {
+        Uint32 planeSubresourceIndex = D3D12_INTERNAL_CalcSubresourceWithPlane(
+            textureSubresource->level,
+            textureSubresource->layer,
+            1,
+            textureSubresource->parent->container->header.info.num_levels,
+            textureSubresource->parent->container->header.info.layer_count_or_depth
+        );
+
+        D3D12_INTERNAL_ResourceBarrier(
+            commandBuffer,
+            sourceState,
+            destinationState,
+            textureSubresource->parent->resource,
+            planeSubresourceIndex,
+            needsUAVBarrier);
+    }
 }
 
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
@@ -9005,7 +9036,7 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         IDXGIAdapter1 *adapter;
         res = IDXGIFactory1_EnumAdapters1(factory, adapterIndex, &adapter);
         if (FAILED(res)) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %d, res: %ld", adapterIndex, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %d, res: %" SDL_PRIdSLONG, adapterIndex, res);
             return false;
         }
 
@@ -9013,7 +9044,7 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         res = IDXGIAdapter1_GetDesc1(adapter, &adapterDesc);
         if (FAILED(res)) {
             IDXGIAdapter1_Release(adapter);
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %d, res %ld", adapterIndex, res);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %d, res %" SDL_PRIdSLONG, adapterIndex, res);
             return false;
         }
         if (SDL_memcmp(&adapterDesc.AdapterLuid, &luid, sizeof(luid)) == 0) {

@@ -335,11 +335,6 @@ void SDL_RunThread(SDL_Thread *thread)
     // Perform any system-dependent setup - this function may not fail
     SDL_SYS_SetupThread(thread->name);
 
-    // Get the thread id
-    thread->threadid = SDL_GetCurrentThreadID();
-
-    SDL_SignalSemaphore(thread->ready_sem);  // the thread is officially ready to run!
-
     // Run the function
     *statusloc = userfunc(userdata);
 
@@ -396,13 +391,6 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
         }
     }
 
-    thread->ready_sem = SDL_CreateSemaphore(0);
-    if (!thread->ready_sem) {
-        SDL_free(thread->name);
-        SDL_free(thread);
-        return NULL;
-    }
-
     thread->userfunc = fn;
     thread->userdata = userdata;
     thread->stacksize = stacksize;
@@ -413,15 +401,10 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
     if (!SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread)) {
         // Oops, failed.  Gotta free everything
         SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
-        SDL_DestroySemaphore(thread->ready_sem);
         SDL_free(thread->name);
         SDL_free(thread);
 		return NULL;
     }
-
-    SDL_WaitSemaphore(thread->ready_sem);
-    SDL_DestroySemaphore(thread->ready_sem);
-    thread->ready_sem = NULL;
 
     // Everything is running now
     return thread;

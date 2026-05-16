@@ -340,8 +340,6 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         name = "MFi Gamepad";
     }
 
-    device->name = SDL_CreateJoystickName(0, 0, NULL, name);
-
 #ifdef DEBUG_CONTROLLER_PROFILE
     NSLog(@"Product name: %@\n", controller.vendorName);
     NSLog(@"Product category: %@\n", controller.productCategory);
@@ -428,12 +426,19 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         if (device->has_xbox_paddles) {
             // Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID
             product = USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2_BLUETOOTH;
+
+            // controller.vendorName returns a generic name for Xbox controllers ("Controller"),
+            // and controller.productCategory only returns "Xbox One" for those controllers,
+            // so we give them proper names based on the ones from SDL_gamepad_db.h
+            name = "Xbox One Elite 2 Controller";
         } else if (device->has_xbox_share_button) {
             // Assume Xbox Series X Controller unless/until GCController flows VID/PID
             product = USB_PRODUCT_XBOX_SERIES_X_BLE;
+            name = "Xbox Series X Controller";
         } else {
             // Assume Xbox One S Bluetooth Controller unless/until GCController flows VID/PID
             product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+            name = "Xbox One Wireless Controller";
         }
     } else if (device->is_ps4) {
         // Assume DS4 Slim unless/until GCController flows VID/PID
@@ -611,6 +616,8 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         // We don't know how to get input events from this device
         return false;
     }
+    
+    device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
     Uint16 signature;
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {

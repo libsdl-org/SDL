@@ -422,14 +422,38 @@ SDL_MouseID *SDL_GetMice(int *count)
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
 {
     const char *name = NULL;
-    if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
-        SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
-        return NULL;
-    }
-    if (!name) {
-        // SDL_strdup() failed during insert
-        SDL_OutOfMemory();
-        return NULL;
+
+    switch (instance_id) {
+    case SDL_GLOBAL_MOUSE_ID:
+        name = "Mouse";
+        break;
+    case SDL_TOUCH_MOUSEID:
+        // We can't tell which touch device it was, just use the first one
+        {
+            SDL_TouchID *devices = SDL_GetTouchDevices(NULL);
+            if (devices) {
+                name = SDL_GetTouchDeviceName(devices[0]);
+                SDL_free(devices);
+            }
+        }
+        if (!name) {
+            name = "Touch";
+        }
+        break;
+    case SDL_PEN_MOUSEID:
+        name = "Pen";
+        break;
+    default:
+        if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+            SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        break;
     }
     return name;
 }

@@ -13,9 +13,15 @@ set(SDL3_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
 
 include(CheckIncludeFile)
+include(CheckLanguage)
 include(CheckStructHasMember)
 include(CMakePushCheckState)
 include(sdlcompilers)
+
+check_language(CXX)
+if(CMAKE_CXX_COMPILER)
+    enable_language(CXX)
+endif()
 
 find_package(Python3 COMPONENTS Interpreter)
 if(NOT PYTHON3_EXECUTABLE)
@@ -89,7 +95,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
 endif()
 
 if(DOS)
-    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;sdl-test_round.png")
+    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_dual_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;sdl-test_round.png")
     set(DOS83_SHORT "UNIFONT.HEX;UNIFONTL.TXT;PHYSADEV.PNG;LOGADEV.PNG;AUDIOFIL.PNG;SNDBRD.PNG;SNDLVL.PNG;TRASHCAN.PNG;MSDFFONT.PNG;MSDFFONT.CSV;GP_FRONT.PNG;GP_BACK.PNG;GP_FABXY.PNG;GP_FAXBY.PNG;GP_FBAYX.PNG;GP_FSONY.PNG;GP_BATT.PNG;GP_BATTX.PNG;GP_BATTW.PNG;GP_TOUCH.PNG;GP_BTN.PNG;GP_BTNSM.PNG;GP_BTNBG.PNG;GP_AXIS.PNG;GP_AXARW.PNG;GP_WIRED.PNG;GP_WLESS.PNG;SDLROUND.PNG")
 endif()
 
@@ -296,6 +302,7 @@ files2headers(gamepad_image_headers
     gamepad_button_background.png
     gamepad_button.png
     gamepad_button_small.png
+    gamepad_dual_touchpad.png
     gamepad_face_abxy.png
     gamepad_face_axby.png
     gamepad_face_bayx.png
@@ -373,7 +380,7 @@ if(MACOS)
             testnativecocoa.m
             testnativex11.c
     )
-elseif(WINDOWS)
+elseif(WINDOWS OR CYGWIN)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
@@ -448,6 +455,9 @@ add_sdl_test_executable(testsoftwaretransparent SOURCES testsoftwaretransparent.
 add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c NAME83 sprite)
 add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 spritmin)
 add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 spritsrf)
+if(CMAKE_CXX_COMPILER)
+    add_sdl_test_executable(testspritecxx MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.cpp NAME83 spritexx)
+endif()
 add_sdl_test_executable(testpalette SOURCES testpalette.c NAME83 palette)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c NAME83 timer)
 add_sdl_test_executable(testurl SOURCES testurl.c NAME83 url)
@@ -670,7 +680,7 @@ function(add_sdl_test TEST TARGET)
             COMMAND ${command}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
-        if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+        if((WIN32 OR CYGWIN) AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
             set_property(TEST ${TEST} APPEND PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>")
         endif()
         if(NOT notrackmem)

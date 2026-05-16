@@ -32,7 +32,7 @@ runs:
         echo "cache-key=${archive}-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}" >> ${GITHUB_OUTPUT}
     - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
       id: cache-restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}
@@ -43,7 +43,7 @@ runs:
         Invoke-WebRequest "${{ steps.calc.outputs.url }}" -OutFile "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
     - name: 'Cache ${{ steps.calc.outputs.archive }}'
       if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}

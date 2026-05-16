@@ -25,6 +25,10 @@
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+#include "./arm/SDL_sve2_blit_A.h"
+#endif
+
 // Functions to perform alpha blended blitting
 
 // N->1 blending with per-surface alpha
@@ -1477,6 +1481,17 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+            if (SDL_HasSVE2()) {
+                if (sf->bytes_per_pixel == 4 &&
+                    df->bytes_per_pixel == 2 &&
+                    df->Rmask == 0x0000F800 &&
+                    df->Gmask == 0x000007E0 &&
+                    df->Bmask == 0x0000001F) {
+                    return Blit8888to565PixelAlphaSwizzleSVE2;
+                }
+            }
+#endif
             if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
                 if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
@@ -1502,6 +1517,19 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 #ifdef SDL_LSX_INTRINSICS
                 if (SDL_HasLSX()) {
                     return Blit8888to8888PixelAlphaSwizzleLSX;
+                }
+#endif
+#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+                if (SDL_HasSVE2() 
+            /* NEON is faster than SVE2 when vector size is 128bit */
+            #if defined(SDL_NEON_INTRINSICS)
+                && SDL_GetSVEVectorSize() > 128
+            #endif
+                ) {
+                    // To prevent "unused function" compiler warnings/errors
+                    (void)Blit8888to8888PixelAlpha;
+                    (void)Blit8888to8888PixelAlphaSwizzle;
+                    return Blit8888to8888PixelAlphaSwizzleSVE2;
                 }
 #endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))

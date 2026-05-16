@@ -51,6 +51,8 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
     }
 
     thread->handle = tid;
+    thread->threadid = (SDL_ThreadID) tid;
+
     return true;
 }
 

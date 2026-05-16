@@ -561,9 +561,7 @@ void DestroyMenu(SDL_TrayMenu *menu)
         SDL_ListClear(&menu_dbus->menu);
     }
 
-    if (menu_dbus->array_representation) {
-        SDL_free(menu_dbus->array_representation);
-    }
+    SDL_free(menu_dbus->array_representation);
 
     SDL_free(menu_dbus);
     SDL_free(menu);
@@ -656,9 +654,7 @@ void SetTrayTooltip(SDL_Tray *tray, const char *text)
     driver = (SDL_TrayDriverDBus *)tray->driver->internal;
     tray_dbus = (SDL_TrayDBus *)tray->internal;
 
-    if (tray_dbus->tooltip) {
-        SDL_free(tray_dbus->tooltip);
-    }
+    SDL_free(tray_dbus->tooltip);
 
     if (text) {
         tray_dbus->tooltip = SDL_strdup(text);
@@ -907,9 +903,7 @@ SDL_TrayEntry **GetTrayEntries(SDL_TrayMenu *menu, int *count)
 
     menu_dbus = (SDL_TrayMenuDBus *)menu->internal;
 
-    if (menu_dbus->array_representation) {
-        SDL_free(menu_dbus->array_representation);
-    }
+    SDL_free(menu_dbus->array_representation);
 
     sz = SDL_ListCountEntries(&menu_dbus->menu);
     array_representation = SDL_calloc(sz + 1, sizeof(SDL_TrayEntry *));
