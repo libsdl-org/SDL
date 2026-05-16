@@ -452,7 +452,10 @@ static void Cocoa_OnGCMouseDisconnected(GCMouse *mouse)
 void Cocoa_InitGCMouse(void)
 {
     @autoreleasepool {
-        if (@available(macOS 11.0, *)) {
+        // These APIs are available starting in macOS Big Sur, but we don't enable
+        // GCMouse until Sonoma due to broken motion and button events on MacBooks
+        // running Monterey and Ventura.
+        if (@available(macOS 14.0, *)) {
             NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
             cocoa_mouse_connect_observer = [center
@@ -494,7 +497,7 @@ bool Cocoa_HasGCMouse(void)
 void Cocoa_QuitGCMouse(void)
 {
     @autoreleasepool {
-        if (@available(macOS 11.0, *)) {
+        if (@available(macOS 14.0, *)) {
             NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
             if (cocoa_mouse_connect_observer) {
