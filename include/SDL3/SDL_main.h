@@ -149,7 +149,7 @@
         /* Private platforms may have their own ideas about entry points. */
         #include "SDL_main_private.h"
 
-    #elif defined(SDL_PLATFORM_WIN32)
+    #elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
         /* On Windows SDL provides WinMain(), which parses the command line and passes
            the arguments to your main function.
 

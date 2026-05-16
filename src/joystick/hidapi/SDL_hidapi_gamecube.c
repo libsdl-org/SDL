@@ -202,7 +202,7 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->pc_mode) {
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
         // We get a separate device for each slot
         ResetAxisRange(ctx, 0);
         HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
@@ -283,7 +283,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     Sint16 axis_value;
     Uint64 timestamp = SDL_GetTicksNS();
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     // We get a separate device for each slot
     i = 0;
 #else

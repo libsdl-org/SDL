@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_main_callbacks.h"
@@ -46,4 +46,4 @@ int MINGW32_FORCEALIGN SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunc
     return result;
 }
 
-#endif // SDL_PLATFORM_WIN32
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN

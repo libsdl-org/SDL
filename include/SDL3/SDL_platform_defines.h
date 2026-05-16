@@ -414,7 +414,9 @@
  *
  * \since This macro is available since SDL 3.2.0.
  */
+#ifndef __CYGWIN__
 #define SDL_PLATFORM_WIN32 1
+#endif
 
 #endif
 #endif /* (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__NGAGE__) */

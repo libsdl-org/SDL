@@ -50,7 +50,7 @@ SDL_ELF_NOTE_DLOPEN(
 )
 #endif
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -110,7 +110,7 @@ static struct
     bool m_bCanGetNotifications;
     Uint64 m_unLastDetect;
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     SDL_ThreadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
@@ -130,7 +130,7 @@ static struct
 #endif
 } SDL_HIDAPI_discovery;
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
 struct _DEV_BROADCAST_HDR
 {
     DWORD dbch_size;
@@ -176,7 +176,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_WINGDK || SDL_PLATFORM_CYGWIN
 
 #ifdef SDL_PLATFORM_MACOS
 static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
@@ -239,7 +239,7 @@ static void HIDAPI_InitializeDiscovery(void)
     SDL_HIDAPI_discovery.m_bCanGetNotifications = false;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     SDL_HIDAPI_discovery.m_nThreadID = SDL_GetCurrentThreadID();
 
     SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
@@ -266,7 +266,7 @@ static void HIDAPI_InitializeDiscovery(void)
         SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification(SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
         SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_hNotify != 0);
     }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_WINGDK || SDL_PLATFORM_CYGWIN
 
 #ifdef SDL_PLATFORM_MACOS
     SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMainPortDefault);
@@ -387,7 +387,7 @@ static void HIDAPI_UpdateDiscovery(void)
         return;
     }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     if (SDL_IsVideoThread()) {
         // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 2998. --ryan.
     } else {
@@ -402,7 +402,7 @@ static void HIDAPI_UpdateDiscovery(void)
             }
         }
     }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_WINGDK || SDL_PLATFORM_CYGWIN
 
 #ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -496,7 +496,7 @@ static void HIDAPI_ShutdownDiscovery(void)
         return;
     }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     if (SDL_HIDAPI_discovery.m_hNotify) {
         UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
     }
@@ -589,7 +589,7 @@ typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 #include "SDL_hidapi_netbsd.h"
 #elif defined(SDL_PLATFORM_MACOS)
 #include "SDL_hidapi_mac.h"
-#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
 #include "SDL_hidapi_windows.h"
 #elif defined(SDL_PLATFORM_ANDROID)
 #include "SDL_hidapi_android.h"
@@ -1075,7 +1075,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
         if (vendor_id == USB_VENDOR_VALVE) {
             // Ignore the mouse/keyboard interface on Steam Controllers
             if (
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
                 // Check the usage page and usage on both USB and Bluetooth
 #else
                 // Only check the usage page and usage on USB

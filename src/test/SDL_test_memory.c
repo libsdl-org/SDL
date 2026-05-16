@@ -29,7 +29,7 @@ static bool s_unwind_symbol_names = true;
 #endif
 #endif
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 #include <windows.h>
 #include <dbghelp.h>
 
@@ -177,7 +177,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             }
         }
     }
-#elif defined(SDL_PLATFORM_WIN32)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     {
         Uint32 count;
         PVOID frames[63];
@@ -309,7 +309,7 @@ void SDLTest_TrackAllocations(void)
         }
     } while (0);
 
-#elif defined(SDL_PLATFORM_WIN32)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     do {
         dyn_dbghelp.module = SDL_LoadObject("dbghelp.dll");
         if (!dyn_dbghelp.module) {
@@ -414,7 +414,7 @@ void SDLTest_LogAllocations(void)
                     (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%llx", name, (long long unsigned int)offset);
 #endif
                 }
-#elif defined(SDL_PLATFORM_WIN32)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
                 {
                     DWORD64 dwDisplacement = 0;
                     char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];

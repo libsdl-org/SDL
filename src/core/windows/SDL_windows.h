@@ -24,7 +24,7 @@
 #ifndef SDL_windows_h_
 #define SDL_windows_h_
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 
 #ifndef _WIN32_WINNT_NT4
 #define _WIN32_WINNT_NT4 0x0400

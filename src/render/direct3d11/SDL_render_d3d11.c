@@ -876,7 +876,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             goto done;
         }
     } else {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
         HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(renderer->window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
         if (!hwnd) {
             SDL_SetError("Couldn't get window handle");
@@ -900,7 +900,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #else
         SDL_SetError(SDL_FUNCTION ", Unable to find something to attach a swap chain to");
         goto done;
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
+#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN) / else
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 

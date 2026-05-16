@@ -24,6 +24,7 @@
 // Add your platform here if you define a custom SDL_RunApp() implementation
 #if !defined(SDL_PLATFORM_WIN32) && \
     !defined(SDL_PLATFORM_GDK) && \
+    !defined(SDL_PLATFORM_CYGWIN) && \
     !defined(SDL_PLATFORM_IOS) && \
     !defined(SDL_PLATFORM_TVOS) && \
     !defined(SDL_PLATFORM_EMSCRIPTEN) && \

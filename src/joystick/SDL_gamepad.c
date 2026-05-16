@@ -35,7 +35,7 @@
 #include "../events/SDL_events_c.h"
 #include "../SDL_hints_c.h"
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -2044,7 +2044,7 @@ static char *SDL_PrivateGetGamepadGUIDFromMappingString(const char *pMapping)
         pchGUID[pFirstComma - pMapping] = '\0';
 
         // Convert old style GUIDs to the new style in 2.0.5
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
         if (SDL_strlen(pchGUID) == 32 &&
             SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
             SDL_memcpy(&pchGUID[20], "000000000000", 12);
@@ -3294,7 +3294,7 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
 #else
     const char *hint = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
     bool allow_steam_virtual_gamepad = SDL_GetStringBoolean(hint, false);
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     if (allow_steam_virtual_gamepad && WIN_IsWine()) {
         // We are launched by Steam and running under Proton or Wine
         // We can't tell whether this controller is a Steam Virtual Gamepad,
@@ -3302,7 +3302,7 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         // and anything we see here is fine to use.
         return false;
     }
-#endif // SDL_PLATFORM_WIN32
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN
 
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !allow_steam_virtual_gamepad;

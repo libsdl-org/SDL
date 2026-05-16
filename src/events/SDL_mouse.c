@@ -53,7 +53,7 @@ static void SDLCALL SDL_MouseDoubleClickTimeChanged(void *userdata, const char *
     if (hint && *hint) {
         mouse->double_click_time = SDL_atoi(hint);
     } else {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
         mouse->double_click_time = GetDoubleClickTime();
 #else
         mouse->double_click_time = 500;
@@ -1487,7 +1487,7 @@ bool SDL_CaptureMouse(bool enabled)
         return SDL_Unsupported();
     }
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     /* Windows mouse capture is tied to the current thread, and must be called
      * from the thread that created the window being captured. Since we update
      * the mouse capture state from the event processing, any application state
@@ -1496,7 +1496,7 @@ bool SDL_CaptureMouse(bool enabled)
     if (!SDL_OnVideoThread()) {
         return SDL_SetError("SDL_CaptureMouse() must be called on the main thread");
     }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_WINGDK || SDL_PLATFORM_CYGWIN
 
     if (enabled && SDL_GetKeyboardFocus() == NULL) {
         return SDL_SetError("No window has focus");
@@ -1516,12 +1516,12 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     const Uint32 black = 0xFF000000;
     const Uint32 white = 0xFFFFFFFF;
     const Uint32 transparent = 0x00000000;
-#if defined(SDL_PLATFORM_WIN32)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     // Only Windows backend supports inverted pixels in mono cursors.
     const Uint32 inverted = 0x00FFFFFF;
 #else
     const Uint32 inverted = 0xFF000000;
-#endif // defined(SDL_PLATFORM_WIN32)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN
 
     // Make sure the width is a multiple of 8
     w = ((w + 7) & ~7);

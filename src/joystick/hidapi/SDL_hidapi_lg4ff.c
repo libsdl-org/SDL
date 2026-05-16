@@ -110,7 +110,7 @@ static void HIDAPI_DriverLg4ff_UnregisterHints(SDL_HintCallback callback, void *
 
 static bool HIDAPI_DriverLg4ff_IsEnabled(void)
 {
-    #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     /*
      * hid.dll simply cannot send 7 bytes reports unlike other platforms
      * it enforces full length repots of 17 from the device's descriptor, which does not work on the device

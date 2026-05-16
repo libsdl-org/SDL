@@ -106,7 +106,7 @@ static bool HIDAPI_DriverPS3_IsEnabled(void)
 #ifdef SDL_PLATFORM_MACOS
     // This works well on macOS
     default_value = true;
-#elif defined(SDL_PLATFORM_WIN32)
+#elif defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     /* For official Sony driver (sixaxis.sys) use SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER.
      *
      * See https://github.com/ViGEm/DsHidMini as an alternative driver
@@ -1122,7 +1122,7 @@ static void HIDAPI_DriverPS3SonySixaxis_UnregisterHints(SDL_HintCallback callbac
 
 static bool HIDAPI_DriverPS3SonySixaxis_IsEnabled(void)
 {
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER, false);
 #else
     return false;

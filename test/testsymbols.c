@@ -55,7 +55,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetLinuxThreadPriority(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(void);
 #endif
 
-#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK))
+#if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN))
 extern SDL_DECLSPEC void SDLCALL SDL_GetDXGIOutputInfo(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetDirect3D9AdapterIndex(void);
 #endif

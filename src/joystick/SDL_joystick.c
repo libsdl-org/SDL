@@ -36,7 +36,7 @@
 // This is included in only one place because it has a large static list of controllers
 #include "controller_type.h"
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
 // Needed for checking for input remapping programs
 #include "../core/windows/SDL_windows.h"
 

@@ -62,10 +62,10 @@
 #include <CoreVideo/CoreVideo.h>
 #endif
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 #define COBJMACROS
 #include <libavutil/hwcontext_d3d11va.h>
-#endif /* SDL_PLATFORM_WIN32 */
+#endif /* SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN */
 
 #include "testffmpeg_vulkan.h"
 
@@ -90,7 +90,7 @@ static bool has_EGL_EXT_image_dma_buf_import_modifiers;
 static PFNGLACTIVETEXTUREARBPROC glActiveTextureARBFunc;
 static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #endif
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
 #endif
@@ -214,7 +214,7 @@ static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *dr
     }
 #endif /* HAVE_EGL */
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     d3d11_device = (ID3D11Device *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, NULL);
     if (d3d11_device) {
         ID3D11Device_AddRef(d3d11_device);
@@ -341,7 +341,7 @@ static bool SupportedPixelFormat(enum AVPixelFormat format)
             return true;
         }
 #endif
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
         if (d3d11_device && format == AV_PIX_FMT_D3D11) {
             return true;
         }
@@ -423,7 +423,7 @@ static AVCodecContext *OpenVideoStream(AVFormatContext *ic, int stream, const AV
             continue;
         }
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
         if (d3d11_device && config->device_type == AV_HWDEVICE_TYPE_D3D11VA) {
             AVD3D11VADeviceContext *device_context;
 
@@ -965,7 +965,7 @@ static bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
 
 static bool GetTextureForD3D11Frame(AVFrame *frame, SDL_Texture **texture)
 {
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     int texture_width = 0, texture_height = 0;
     ID3D11Texture2D *pTexture = (ID3D11Texture2D *)frame->data[0];
@@ -1374,7 +1374,7 @@ int main(int argc, char *argv[])
     window_flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 #ifdef SDL_PLATFORM_APPLE
     window_flags |= SDL_WINDOW_METAL;
-#elif !defined(SDL_PLATFORM_WIN32)
+#elif !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN))
     window_flags |= SDL_WINDOW_OPENGL;
 #endif
     if (SDL_GetHint(SDL_HINT_RENDER_DRIVER) != NULL) {
@@ -1391,7 +1391,7 @@ int main(int argc, char *argv[])
         CreateWindowAndRenderer(window_flags, "metal");
     }
 #endif
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     if (!window) {
         CreateWindowAndRenderer(window_flags, "direct3d11");
     }
@@ -1576,7 +1576,7 @@ int main(int argc, char *argv[])
     }
     return_code = 0;
 quit:
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     if (d3d11_context) {
         ID3D11DeviceContext_Release(d3d11_context);
         d3d11_context = NULL;

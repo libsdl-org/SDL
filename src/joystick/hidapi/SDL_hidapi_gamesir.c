@@ -143,7 +143,7 @@ static bool HIDAPI_DriverGameSir_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
 static SDL_hid_device *HIDAPI_DriverGameSir_GetOutputHandle(SDL_HIDAPI_Device *device)
 {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
     return ctx->output_handle;
 #else
@@ -196,7 +196,7 @@ static bool SendGameSirModeSwitch(SDL_HIDAPI_Device *device)
 /* This helper requires full desktop Win32 HID APIs.
  * These APIs are NOT available on GDK platforms.
  */
-#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_GDK)
 
 /* --- Win32 HID includes ------------------------------------------------- */
 #include <windows.h>
@@ -315,7 +315,7 @@ static char *FindHIDInterfacePath(Uint16 vid, Uint16 pid, int collection_index)
     return NULL;
 }
 
-#endif // SDL_PLATFORM_WIN32 && !SDL_PLATFORM_GDK
+#endif // (SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN) && !SDL_PLATFORM_GDK
 
 static SDL_hid_device *GetOutputHandle(SDL_HIDAPI_Device *device)
 {
@@ -325,7 +325,7 @@ static SDL_hid_device *GetOutputHandle(SDL_HIDAPI_Device *device)
     struct SDL_hid_device_info *devs = SDL_hid_enumerate(vendor_id, product_id);
     for (struct SDL_hid_device_info *info = devs; info && !output_handle; info = info->next) {
         if (info->interface_number == 0) {
-#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#if (defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_GDK)
             char *col02_path = FindHIDInterfacePath(vendor_id, product_id, 2);
             if (col02_path) {
                 output_handle = SDL_hid_open_path(col02_path);
@@ -333,7 +333,7 @@ static SDL_hid_device *GetOutputHandle(SDL_HIDAPI_Device *device)
             }
 #endif
         } else if (info->interface_number == -1) {
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
             if (info->usage_page == 0x0001 && info->usage == 0x0005) {
                 output_handle = SDL_hid_open_path(info->path);
             }

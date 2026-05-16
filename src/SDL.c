@@ -897,7 +897,7 @@ SDL_Sandbox SDL_GetSandbox(void)
     return sandbox;
 }
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 
 #if !defined(HAVE_LIBC) && !defined(SDL_STATIC_LIB)
 BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
@@ -913,4 +913,4 @@ BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_rea
 }
 #endif // Building DLL
 
-#endif // defined(SDL_PLATFORM_WIN32)
+#endif // SDL_PLATFORM_WIN32 || SDL_PLATFORM_CYGWIN

@@ -651,7 +651,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 }
 
-#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
+#if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK) || defined(SDL_PLATFORM_CYGWIN)
 enum {
     CONSOLE_UNATTACHED = 0,
     CONSOLE_ATTACHED_CONSOLE = 1,
@@ -804,7 +804,8 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
     !(defined(SDL_PLATFORM_NGAGE)) && \
-    !(defined(SDL_PLATFORM_WIN32))
+    !(defined(SDL_PLATFORM_WIN32)) && \
+    !(defined(SDL_PLATFORM_CYGWIN))
     (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif
 }

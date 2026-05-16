@@ -26,7 +26,7 @@
 #ifdef SDL_PLATFORM_LINUX
 #include "../core/unix/SDL_appid.h"
 #endif
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
 #include "../core/windows/SDL_windows.h"
 #else
 #include <sys/types.h>
@@ -44,7 +44,7 @@ static Uint64 GetFileModificationTime(const char *file)
 {
     Uint64 modification_time = 0;
 
-#ifdef SDL_PLATFORM_WIN32
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_CYGWIN)
     WCHAR *wFile = WIN_UTF8ToStringW(file);
     if (wFile) {
         HANDLE hFile = CreateFileW(wFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);

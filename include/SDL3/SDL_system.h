@@ -97,7 +97,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHoo
 
 #endif /* defined(SDL_PLATFORM_WINDOWS) */
 
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) || defined(SDL_PLATFORM_CYGWIN)
 
 /**
  * Get the D3D9 adapter index that matches the specified display.
@@ -130,7 +130,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDirect3D9AdapterIndex(SDL_DisplayID displ
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex);
 
-#endif /* defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) */
+#endif /* SDL_PLATFORM_WIN32 || SDL_PLATFORM_WINGDK || SDL_PLATFORM_CYGWIN */
 
 
 /*
