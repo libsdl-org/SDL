@@ -247,6 +247,22 @@ typedef enum SDL_GamepadCapSenseType
     SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,   /**< Activated by touching the top of the right thumbstick */
     SDL_GAMEPAD_CAPSENSE_LEFT_GRIP,     /**< Activated by gripping the left handle of the controller */
     SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP,    /**< Activated by gripping the right handle of the controller */
+    SDL_GAMEPAD_CAPSENSE_LEFT_BUMPER,   /**< Activated by touching the surface of the left bumper */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_BUMPER,  /**< Activated by touching the surface of the right bumper */
+    SDL_GAMEPAD_CAPSENSE_LEFT_TRIGGER,  /**< Activated by touching the surface of the left trigger */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_TRIGGER, /**< Activated by touching the surface of the right trigger */
+    SDL_GAMEPAD_CAPSENSE_LEFT_THUMB,    /**< Activated by touching the surface of the left thumbrest */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_THUMB,   /**< Activated by touching the surface of the right thumbrest */
+    SDL_GAMEPAD_CAPSENSE_SEWN,          /**< Activated by touching the surface of the SEWN buttons */
+    SDL_GAMEPAD_CAPSENSE_SOUTH,         /**< Activated by touching the surface of the South button */
+    SDL_GAMEPAD_CAPSENSE_EAST,          /**< Activated by touching the surface of the East button */
+    SDL_GAMEPAD_CAPSENSE_WEST,          /**< Activated by touching the surface of the West button */
+    SDL_GAMEPAD_CAPSENSE_NORTH,         /**< Activated by touching the surface of the North button */
+    SDL_GAMEPAD_CAPSENSE_DPAD,          /**< Activated by touching the surface of the Dpad buttons */
+    SDL_GAMEPAD_CAPSENSE_DOWN,          /**< Activated by touching the surface of the Down button */
+    SDL_GAMEPAD_CAPSENSE_RIGHT,         /**< Activated by touching the surface of the Right button */
+    SDL_GAMEPAD_CAPSENSE_LEFT,          /**< Activated by touching the surface of the Left button */
+    SDL_GAMEPAD_CAPSENSE_UP,            /**< Activated by touching the surface of the Up button */
     SDL_GAMEPAD_CAPSENSE_COUNT
 } SDL_GamepadCapSenseType;
 
