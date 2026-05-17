@@ -111,6 +111,7 @@ struct SDL_WindowData
 
     bool pending_size;
     bool pending_position;
+    bool fs_repositioned;
     bool window_was_maximized;
     bool previous_borders_nonzero;
     bool toggle_borders;

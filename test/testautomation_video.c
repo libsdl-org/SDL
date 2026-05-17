@@ -845,6 +845,7 @@ static int SDLCALL video_getSetWindowPosition(void *arg)
 {
     const char *title = "video_getSetWindowPosition Test Window";
     SDL_Window *window;
+    SDL_WindowFlags flags;
     int result;
     int maxxVariation, maxyVariation;
     int xVariation, yVariation;
@@ -973,6 +974,95 @@ static int SDLCALL video_getSetWindowPosition(void *arg)
             SDL_GetWindowPosition(window, NULL, &currentY);
             SDLTest_AssertPass("Call to SDL_GetWindowPosition(&x=NULL)");
             SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+        }
+    }
+
+    /* Fullscreen test */
+    desiredX = 100;
+    desiredY = 100;
+    SDL_SetWindowPosition(window, desiredX, desiredY);
+    SDLTest_AssertPass("Call to SDL_SetWindowPosition(...,%d,%d)", desiredX, desiredY);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Get position */
+    currentX = desiredX + 1;
+    currentY = desiredY + 1;
+    SDL_GetWindowPosition(window, &currentX, &currentY);
+    SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
+
+    if (desiredX == currentX && desiredY == currentY) {
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+    } else {
+        bool hasEvent;
+        /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+         * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+        currentX = desiredX + 1;
+        currentY = desiredY + 1;
+        hasEvent = getPositionFromEvent(&currentX, &currentY);
+        SDLTest_AssertCheck(hasEvent == true, "Changing position was not honored by WM, checking present of SDL_EVENT_WINDOW_MOVED");
+        if (hasEvent) {
+            SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position is the position from SDL event; expected: %d, got: %d", desiredX, currentX);
+            SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position is the position from SDL event; expected: %d, got: %d", desiredY, currentY);
+        }
+    }
+
+    /* Test setting position while fullscreen */
+    result = SDL_SetWindowFullscreen(window, true);
+    SDLTest_AssertPass("SDL_SetWindowFullscreen()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Verify that window is in fullscreen */
+    flags = SDL_GetWindowFlags(window);
+    SDLTest_AssertPass("SDL_GetWindowFlags()");
+    SDLTest_AssertCheck(flags & SDL_WINDOW_FULLSCREEN, "Verify the `SDL_WINDOW_FULLSCREEN` flag is set: %s", (flags & SDL_WINDOW_FULLSCREEN) ? "true" : "false");
+
+    /* Set the fullscreen window position */
+    desiredX = desiredX + 10;
+    desiredY = desiredY + 10;
+    SDL_SetWindowPosition(window, desiredX, desiredY);
+    SDLTest_AssertPass("Call to SDL_SetWindowPosition(...,%d,%d)", desiredX, desiredY);
+
+    result = SDL_SetWindowFullscreen(window, false);
+    SDLTest_AssertPass("SDL_SetWindowFullscreen()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Verify that window left fullscreen */
+    flags = SDL_GetWindowFlags(window);
+    SDLTest_AssertPass("SDL_GetWindowFlags()");
+    SDLTest_AssertCheck(!(flags & SDL_WINDOW_FULLSCREEN), "Verify the `SDL_WINDOW_FULLSCREEN` flag is not set: %s", !(flags & SDL_WINDOW_FULLSCREEN) ? "true" : "false");
+
+    /* Get position */
+    currentX = desiredX + 1;
+    currentY = desiredY + 1;
+    SDL_GetWindowPosition(window, &currentX, &currentY);
+    SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
+
+    if (desiredX == currentX && desiredY == currentY) {
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+    } else {
+        bool hasEvent;
+        /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+         * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+        currentX = desiredX + 1;
+        currentY = desiredY + 1;
+        hasEvent = getPositionFromEvent(&currentX, &currentY);
+        SDLTest_AssertCheck(hasEvent == true, "Changing position was not honored by WM, checking present of SDL_EVENT_WINDOW_MOVED");
+        if (hasEvent) {
+            SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position is the position from SDL event; expected: %d, got: %d", desiredX, currentX);
+            SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position is the position from SDL event; expected: %d, got: %d", desiredY, currentY);
         }
     }
 
