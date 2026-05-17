@@ -1548,7 +1548,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasCapSense(SDL_Gamepad *gamepad, SD
  *
  * \param gamepad a gamepad.
  * \param type the type of capsense to query.
- * \returns true if the capsense is activated, false otherwise.
+ * \returns true if the capsense is touched, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

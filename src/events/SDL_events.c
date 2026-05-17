@@ -761,11 +761,11 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define PRINT_CAPSENSE_EVENT(event)                                                                            \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d capsense=%u state=%s)", \
                        event->gcapsense.timestamp, (int)event->gcapsense.which,                                \
-                       event->gcapsense.capsense, event->gcapsense.down ? "activated" : "deactivated")
-        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_DOWN)
+                       event->gcapsense.capsense, event->gcapsense.down ? "touch" : "release")
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH)
         PRINT_CAPSENSE_EVENT(event);
         break;
-        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_UP)
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE)
         PRINT_CAPSENSE_EVENT(event);
         break;
 #undef PRINT_CAPSENSE_EVENT

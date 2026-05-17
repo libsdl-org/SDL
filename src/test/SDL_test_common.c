@@ -1895,13 +1895,13 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->gbutton.which, event->gbutton.button,
                 GamepadButtonName((SDL_GamepadButton)event->gbutton.button));
         break;
-    case SDL_EVENT_GAMEPAD_CAPSENSE_DOWN:
-        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "capsense %u ('%s') activated",
+    case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "capsense %u ('%s') touch",
                 event->gcapsense.which, event->gcapsense.capsense,
                 CapSenseName((SDL_GamepadCapSenseType)event->gcapsense.capsense));
         break;
-    case SDL_EVENT_GAMEPAD_CAPSENSE_UP:
-        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " capsense %u ('%s') deactivated",
+    case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " capsense %u ('%s') release",
                 event->gcapsense.which, event->gcapsense.capsense,
                 CapSenseName((SDL_GamepadCapSenseType)event->gcapsense.capsense));
         break;

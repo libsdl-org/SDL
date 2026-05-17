@@ -4006,9 +4006,9 @@ void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_Game
             joystick->update_complete = timestamp;
 
             if (down) {
-                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_DOWN;
+                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH;
             } else {
-                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_UP;
+                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE;
             }
 
             // Post the event, if desired

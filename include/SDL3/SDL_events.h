@@ -210,8 +210,8 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION,      /**< Gamepad touchpad finger was moved */
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,          /**< Gamepad touchpad finger was lifted */
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
-    SDL_EVENT_GAMEPAD_CAPSENSE_DOWN,        /**< Gamepad capsense was activated */
-    SDL_EVENT_GAMEPAD_CAPSENSE_UP,          /**< Gamepad capsense was deactivated */
+    SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
+    SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
 
@@ -720,12 +720,12 @@ typedef struct SDL_GamepadSensorEvent
  */
 typedef struct SDL_GamepadCapSenseEvent
 {
-    SDL_EventType type;     /**< SDL_EVENT_GAMEPAD_CAPSENSE_DOWN or SDL_EVENT_GAMEPAD_CAPSENSE_UP */
+    SDL_EventType type;     /**< SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH or SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE */
     Uint32 reserved;
     Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which;   /**< The joystick instance id */
     Uint8 capsense;         /**< The capsense type (SDL_GamepadCapSenseType) */
-    bool down;              /**< true if the capsense is activated */
+    bool down;              /**< true if the capsense is touched */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GamepadCapSenseEvent;
