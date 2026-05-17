@@ -242,8 +242,8 @@ typedef enum SDL_GamepadAxis
 typedef enum SDL_GamepadCapSenseType
 {
     SDL_GAMEPAD_CAPSENSE_INVALID = -1,
-    SDL_GAMEPAD_CAPSENSE_LEFT_STICK,    /**< Activated by touching the top of the left joystick*/
-    SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,   /**< Activated by touching the top of the right joystick*/
+    SDL_GAMEPAD_CAPSENSE_LEFT_STICK,    /**< Activated by touching the top of the left thumbstick */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,   /**< Activated by touching the top of the right thumbstick */
     SDL_GAMEPAD_CAPSENSE_LEFT_GRIP,     /**< Activated by gripping the left handle of the controller */
     SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP,    /**< Activated by gripping the right handle of the controller */
     SDL_GAMEPAD_CAPSENSE_COUNT
