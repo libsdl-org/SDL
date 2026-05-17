@@ -3051,6 +3051,14 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     window->pending.x = x;
     window->pending.y = y;
+
+    /* Windows are placed at the coordinates received while in fullscreen after leaving fullscreen.
+     * Asynchronous backends need special handling in this case.
+     */
+    if (!_this->SyncWindow && (window->flags & SDL_WINDOW_FULLSCREEN)) {
+        window->floating.x = window->windowed.x = x;
+        window->floating.y = window->windowed.y = y;
+    }
     window->undefined_x = false;
     window->undefined_y = false;
     window->last_position_pending = true;
