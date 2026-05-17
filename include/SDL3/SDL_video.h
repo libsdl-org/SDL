@@ -1386,7 +1386,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * These are additional supported properties with visionOS:
  *
- * - `SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING`: the settings of the window in JSON format. If this isn't set, the window will have standard UIKit behavior. If this is set to "" or a valid setting string then the window is created with enhanced features allowing curved display. The curvature in the settings is defined as a radius in millimeters. A common value for a gaming monitor is 1000 and a setting string for that would be "{\"curvatureRadius\":1000}".
+ * - `SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING`: the settings of the
+ *   window in JSON format. If this isn't set, the window will have standard
+ *   UIKit behavior. If this is set to "" or a valid setting string then the
+ *   window is created with enhanced features allowing curved display. The
+ *   curvature in the settings is defined as a radius in millimeters. A common
+ *   value for a gaming monitor is 1000 and a setting string for that would be
+ *   "{\"curvatureRadius\":1000}".
  *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
@@ -1631,7 +1637,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * On visionOS:
  *
- * - `SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING`: the current settings of the window in JSON format, or NULL if the window has standard UIKit behavior. SDL_EVENT_WINDOW_SETTINGS_CHANGED is sent when this value changes.
+ * - `SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING`: the current settings of the
+ *   window in JSON format, or NULL if the window has standard UIKit behavior.
+ *   SDL_EVENT_WINDOW_SETTINGS_CHANGED is sent when this value changes.
  *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
