@@ -311,8 +311,8 @@ static const struct
     int x;
     int y;
 } capsense_positions[] = {
-    {  98, 157 }, /* SDL_GAMEPAD_CAPSENSE_LEFT_STICK */
-    { 331, 237 }, /* SDL_GAMEPAD_CAPSENSE_RIGHT_STICK */
+    {  97, 194 }, /* SDL_GAMEPAD_CAPSENSE_LEFT_STICK */
+    { 330, 270 }, /* SDL_GAMEPAD_CAPSENSE_RIGHT_STICK */
     {  50, 260 }, /* SDL_GAMEPAD_CAPSENSE_LEFT_GRIP */
     { 462, 260 }, /* SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP */
 };
@@ -1001,24 +1001,28 @@ void RenderGamepadImage(GamepadImage *ctx)
     }
 
     if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->showing_front) {
-        for (i = 0; i < SDL_arraysize(capsense_positions); ++i) {
+        SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE / 2);
+        for (i = 0; i < 2; ++i) {
             if (ctx->capsense_elements[i]) {
-                if (i < 2) {
-                    dst.w = ctx->button_width / 2;
-                    dst.h = ctx->button_height / 2;
-                } else {
-                    dst.w = ctx->grip_sense_width;
-                    dst.h = ctx->grip_sense_height;
-                }
+                dst.w = ctx->button_width / 2;
+                dst.h = ctx->button_height / 2;
                 dst.x = ctx->x + capsense_positions[i].x - dst.w / 2;
                 dst.y = ctx->y + capsense_positions[i].y - dst.h / 2;
-                if (i < 2) {
-                    SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
-                } else {
-                    SDL_RenderTexture(ctx->renderer, ctx->grip_sense_texture, NULL, &dst);
-                }
+                SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
             }
         }
+        SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
+        SDL_SetTextureAlphaMod(ctx->grip_sense_texture, SDL_ALPHA_OPAQUE / 2);
+        for (i = 2; i < SDL_arraysize(capsense_positions); ++i) {
+            if (ctx->capsense_elements[i]) {
+                dst.w = ctx->grip_sense_width;
+                dst.h = ctx->grip_sense_height;
+                dst.x = ctx->x + capsense_positions[i].x - dst.w / 2;
+                dst.y = ctx->y + capsense_positions[i].y - dst.h / 2;
+                SDL_RenderTexture(ctx->renderer, ctx->grip_sense_texture, NULL, &dst);
+            }
+        }
+        SDL_SetTextureAlphaMod(ctx->grip_sense_texture, SDL_ALPHA_OPAQUE);
     }
 }
 
