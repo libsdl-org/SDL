@@ -706,6 +706,7 @@ static void FreeTouchpads(GamepadImage *ctx)
 void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 {
     int i;
+    int num_touchpads;
 
     if (!ctx) {
         return;
@@ -763,9 +764,12 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     ctx->connection_state = SDL_GetGamepadConnectionState(gamepad);
     ctx->battery_state = SDL_GetGamepadPowerInfo(gamepad, &ctx->battery_percent);
 
-    FreeTouchpads(ctx);
-    ctx->num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
-    ctx->num_touchpads = SDL_min(ctx->num_touchpads, MAX_TOUCHPADS);
+    num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
+    num_touchpads = SDL_min(num_touchpads, MAX_TOUCHPADS);
+    if (num_touchpads != ctx->num_touchpads) {
+        FreeTouchpads(ctx);
+        ctx->num_touchpads = num_touchpads;
+    }
     if (ctx->num_touchpads > 0) {
         ctx->touchpads = (GamepadTouchpad *)SDL_malloc(sizeof(*ctx->touchpads) * ctx->num_touchpads);
         if (ctx->touchpads) {
