@@ -127,7 +127,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #ifdef SDL_PLATFORM_VISIONOS
     if (@available(visionOS 26.0, *)) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)self.window->internal;
-        if (data.curvature >= 0.0f) {
+        if (data.settings != nil) {
             [self initializeVisionOSCurvedUI];
         }
     }

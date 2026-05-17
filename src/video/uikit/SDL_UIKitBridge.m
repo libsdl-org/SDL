@@ -57,27 +57,27 @@ void SDL_VisionOS_SendSizeChanged(long width, long height)
     }
 }
 
-// Called from Swift scene delegates to get the initial curvature
-float SDL_VisionOS_GetCurvature()
+// Called from Swift scene delegates to get the initial window settings
+NSString *SDL_VisionOS_GetWindowSettings()
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        return data.curvature;
+        return data.settings;
     }
-    return 0.0f;
+    return nil;
 }
 
 // Called from Swift scene delegates when window curvature changes
-void SDL_VisionOS_SendCurvatureChanged(float curvature)
+void SDL_VisionOS_SendWindowSettings(NSString *settings)
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        if (curvature != data.curvature) {
-            data.curvature = curvature;
-            SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_CURVATURE_CHANGED, (int)curvature, 0);
+        if (![settings isEqualToString:data.settings]) {
+            data.settings = settings;
+            SDL_SetStringProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING, settings.UTF8String);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SETTINGS_CHANGED, 0, 0);
         }
     }
 }

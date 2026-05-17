@@ -106,18 +106,19 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
 #endif
     window->w = width;
     window->h = height;
-    
+
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
 #ifdef SDL_PLATFORM_VISIONOS
-    float curvature = SDL_GetFloatProperty(create_props, SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT, -1.0f);
-    if (curvature > 0.0f && curvature <= 1.0f) {
-        curvature = 0.0f;
+    const char *settings = SDL_GetStringProperty(create_props, SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING, NULL);
+    if (settings) {
+        data.settings = [NSString stringWithUTF8String:settings];
+    } else {
+        data.settings = nil;
     }
-    data.curvature = curvature;
-    SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING, settings);
 #endif
 
     /* The View Controller will handle rotating the view when the device

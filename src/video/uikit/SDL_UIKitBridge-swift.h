@@ -23,11 +23,11 @@
 // Called from Swift scene delegates when window size changes
 void SDL_VisionOS_SendSizeChanged(long width, long height);
 
-// Called from Swift scene delegates to get the initial curvature
-float SDL_VisionOS_GetCurvature();
+// Called from Swift scene delegates to get the initial window settings
+NSString *SDL_VisionOS_GetWindowSettings();
 
-// Called from Swift scene delegates when window curvature changes
-void SDL_VisionOS_SendCurvatureChanged(float curvature);
+// Called from Swift scene delegates when window settings change
+void SDL_VisionOS_SendWindowSettings(NSString *settings);
 
 // Called from Swift scene delegates when pointer mode changes
 void SDL_VisionOS_SendPointerMode(bool enabled);

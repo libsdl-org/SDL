@@ -1386,11 +1386,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * These are additional supported properties with visionOS:
  *
- * - `SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT`: the curvature of the window on
- *   visionOS. Curved windows have square corners and additional controls for
- *   more immersive gaming. This can be -1 (disabled), which is the default, 0
- *   (no curve), or set to a specific curvature radius in millimeters. A
- *   common value for a gaming monitor is 1000.
+ * - `SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING`: the settings of the window in JSON format. If this isn't set, the window will have standard UIKit behavior. If this is set to "" or a valid setting string then the window is created with enhanced features allowing curved display. The curvature in the settings is defined as a radius in millimeters. A common value for a gaming monitor is 1000 and a setting string for that would be "{\"curvatureRadius\":1000}".
  *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
@@ -1454,7 +1450,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
-#define SDL_PROP_WINDOW_CREATE_CURVATURE_FLOAT                     "SDL.window.create.curvature"
+#define SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING            "SDL.window.create.visionos.settings"
 
 /**
  * Get the numeric ID of a window.
@@ -1635,10 +1631,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * On visionOS:
  *
- * - `SDL_PROP_WINDOW_CURVATURE_FLOAT`: the curvature of the window in curved
- *   mode on visionOS. This value is updated dynamically when changed via the
- *   screen ornaments. This can be 0 (no curve), or a specific curvature
- *   radius in millimeters. A common value for a gaming monitor is 1000.
+ * - `SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING`: the current settings of the window in JSON format, or NULL if the window has standard UIKit behavior. SDL_EVENT_WINDOW_SETTINGS_CHANGED is sent when this value changes.
  *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -1689,7 +1682,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
-#define SDL_PROP_WINDOW_CURVATURE_FLOAT                             "SDL.window.curvature"
+#define SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING                    "SDL.window.visionos.settings"
 
 /**
  * Get the window flags.
