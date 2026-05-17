@@ -47,6 +47,7 @@ static const struct
     { "gamepad_axis_arrow.png", "GP_AXARW.PNG" },
     { "gamepad_wired.png", "GP_WIRED.PNG" },
     { "gamepad_wireless.png", "GP_WLESS.PNG" },
+    { "gamepad_grip_sense.png", "GP_GRIPS.PNG" },
     { "sdl-test_round.png", "SDLROUND.PNG" },
     { NULL, NULL }
 };

@@ -72,6 +72,12 @@ typedef struct SDL_JoystickSensorInfo
     float data[3]; // If this needs to expand, update SDL_GamepadSensorEvent
 } SDL_JoystickSensorInfo;
 
+typedef struct SDL_JoystickCapSenseInfo
+{
+    SDL_GamepadCapSenseType type;
+    bool down;
+} SDL_JoystickCapSenseInfo;
+
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
 struct SDL_Joystick
@@ -104,6 +110,9 @@ struct SDL_Joystick
     int nsensors _guarded; // Number of sensors on the joystick
     int nsensors_enabled _guarded;
     SDL_JoystickSensorInfo *sensors _guarded;
+
+    int ncapsenses _guarded;                      // Number of capsense sources on the joystick
+    SDL_JoystickCapSenseInfo *capsenses _guarded; // Current capsense states
 
     Uint16 low_frequency_rumble _guarded;
     Uint16 high_frequency_rumble _guarded;

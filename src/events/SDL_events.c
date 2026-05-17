@@ -758,6 +758,18 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
                            event->gsensor.data[0], event->gsensor.data[1], event->gsensor.data[2]);
         break;
 
+#define PRINT_CAPSENSE_EVENT(event)                                                                            \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d capsense=%u state=%s)", \
+                       event->gcapsense.timestamp, (int)event->gcapsense.which,                                \
+                       event->gcapsense.capsense, event->gcapsense.down ? "activated" : "deactivated")
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_DOWN)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_UP)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+#undef PRINT_CAPSENSE_EVENT
+
 #define PRINT_FINGER_EVENT(event)                                                                                                                      \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \
                        event->tfinger.timestamp, event->tfinger.touchID,                                                              \

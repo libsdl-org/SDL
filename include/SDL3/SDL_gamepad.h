@@ -232,6 +232,24 @@ typedef enum SDL_GamepadAxis
 } SDL_GamepadAxis;
 
 /**
+ * The list of capsense types on a gamepad
+ *
+ * \since This enum is available since SDL 3.X.X. // FIXME
+ *
+ * \sa SDL_GamepadHasCapSense
+ * \sa SDL_GetGamepadCapSense
+ */
+typedef enum SDL_GamepadCapSenseType
+{
+    SDL_GAMEPAD_CAPSENSE_INVALID = -1,
+    SDL_GAMEPAD_CAPSENSE_LEFT_STICK,    /**< Activated by touching the top of the left joystick*/
+    SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,   /**< Activated by touching the top of the right joystick*/
+    SDL_GAMEPAD_CAPSENSE_LEFT_GRIP,     /**< Activated by gripping the left handle of the controller */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP,    /**< Activated by gripping the right handle of the controller */
+    SDL_GAMEPAD_CAPSENSE_COUNT
+} SDL_GamepadCapSenseType;
+
+/**
  * Types of gamepad control bindings.
  *
  * A gamepad is a collection of bindings that map arbitrary joystick buttons,
@@ -1509,6 +1527,36 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *game
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
+
+/**
+ * Return whether a gamepad has a particular capsense.
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the type of capsense to query.
+ * \returns true if the capsense exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.X.X. // FIXME
+ *
+ * \sa SDL_GetGamepadCapSense
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasCapSense(SDL_Gamepad *gamepad, SDL_GamepadCapSenseType type);
+
+/**
+ * Get the current state of a capsense on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the type of capsense to query.
+ * \returns true if the capsense is activated, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.X.X. // FIXME
+ *
+ * \sa SDL_GamepadHasCapSense
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadCapSense(SDL_Gamepad *gamepad, SDL_GamepadCapSenseType type);
 
 /**
  * Start a rumble effect on a gamepad.

@@ -1288,3 +1288,5 @@ _SDL_IsPhone
 _SDL_LoadJPG_IO
 _SDL_LoadJPG
 _SDL_HasSVE2
+_SDL_GamepadHasCapSense
+_SDL_GetGamepadCapSense

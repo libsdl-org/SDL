@@ -47,10 +47,6 @@ enum
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE2,
     SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TOUCHPAD,
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
-    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_JOYSTICK_TOUCH,
-    SDL_GAMEPAD_BUTTON_TRITON_LEFT_JOYSTICK_TOUCH,
-    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_GRIP_TOUCH,
-    SDL_GAMEPAD_BUTTON_TRITON_LEFT_GRIP_TOUCH,
     SDL_GAMEPAD_NUM_TRITON_BUTTONS,
 };
 
@@ -187,15 +183,15 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
                                ((pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_CLICK) != 0));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_JOYSTICK_TOUCH,
-                               ((pTritonReport->buttons & TRITON_RIGHT_JOYSTICK_TOUCH) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_JOYSTICK_TOUCH,
-                               ((pTritonReport->buttons & TRITON_LEFT_JOYSTICK_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,
+                                 ((pTritonReport->buttons & TRITON_RIGHT_JOYSTICK_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_LEFT_STICK,
+                                 ((pTritonReport->buttons & TRITON_LEFT_JOYSTICK_TOUCH) != 0));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_GRIP_TOUCH,
-                               ((pTritonReport->buttons & TRITON_RIGHT_GRIP_TOUCH) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_GRIP_TOUCH,
-                               ((pTritonReport->buttons & TRITON_LEFT_GRIP_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP,
+                                 ((pTritonReport->buttons & TRITON_RIGHT_GRIP_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_LEFT_GRIP,
+                                 ((pTritonReport->buttons & TRITON_LEFT_GRIP_TOUCH) != 0));
 
         if (pTritonReport->buttons & TRITON_LBUTTON_DPAD_UP) {
             hat |= SDL_HAT_UP;
@@ -479,6 +475,11 @@ static bool HIDAPI_DriverSteamTriton_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 
     SDL_PrivateJoystickAddTouchpad(joystick, 1);
     SDL_PrivateJoystickAddTouchpad(joystick, 1);
+
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_LEFT_STICK);
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK);
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_LEFT_GRIP);
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP);
 
     return true;
 }

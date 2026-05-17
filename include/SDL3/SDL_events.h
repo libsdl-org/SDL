@@ -210,6 +210,8 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION,      /**< Gamepad touchpad finger was moved */
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,          /**< Gamepad touchpad finger was lifted */
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
+    SDL_EVENT_GAMEPAD_CAPSENSE_DOWN,        /**< Gamepad capsense was activated */
+    SDL_EVENT_GAMEPAD_CAPSENSE_UP,          /**< Gamepad capsense was deactivated */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
 
@@ -712,6 +714,23 @@ typedef struct SDL_GamepadSensorEvent
 } SDL_GamepadSensorEvent;
 
 /**
+ * Gamepad capsense event structure (event.gcapsense.*)
+ *
+ * \since This struct is available since SDL 3.X.X. // FIXME
+ */
+typedef struct SDL_GamepadCapSenseEvent
+{
+    SDL_EventType type;     /**< SDL_EVENT_GAMEPAD_CAPSENSE_DOWN or SDL_EVENT_GAMEPAD_CAPSENSE_UP */
+    Uint32 reserved;
+    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_JoystickID which;   /**< The joystick instance id */
+    Uint8 capsense;         /**< The capsense type (SDL_GamepadCapSenseType) */
+    bool down;              /**< true if the capsense is activated */
+    Uint8 padding1;
+    Uint8 padding2;
+} SDL_GamepadCapSenseEvent;
+
+/**
  * Audio device event structure (event.adevice.*)
  *
  * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
@@ -1040,6 +1059,7 @@ typedef union SDL_Event
     SDL_GamepadButtonEvent gbutton;         /**< Gamepad button event data */
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
+    SDL_GamepadCapSenseEvent gcapsense;     /**< Gamepad capsense event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_CameraDeviceEvent cdevice;          /**< Camera device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */

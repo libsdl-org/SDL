@@ -41,8 +41,6 @@ enum
     SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_PADDLE2,
     SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_TOUCHPAD,
     SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_TOUCHPAD,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_JOYSTICK_TOUCH,
-    SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_JOYSTICK_TOUCH,
     SDL_GAMEPAD_NUM_STEAM_DECK_BUTTONS,
 };
 
@@ -202,10 +200,10 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_TOUCHPAD,
                                ((pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_LEFT_PAD) != 0));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_RIGHT_JOYSTICK_TOUCH,
-                               ((pInReport->payload.deckState.ulButtonsH & STEAMDECK_HBUTTON_RSTICK_TOUCH) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_STEAM_DECK_LEFT_JOYSTICK_TOUCH,
-                               ((pInReport->payload.deckState.ulButtonsH & STEAMDECK_HBUTTON_LSTICK_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,
+                                 ((pInReport->payload.deckState.ulButtonsH & STEAMDECK_HBUTTON_RSTICK_TOUCH) != 0));
+        SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_LEFT_STICK,
+                                 ((pInReport->payload.deckState.ulButtonsH & STEAMDECK_HBUTTON_LSTICK_TOUCH) != 0));
 
         if (pInReport->payload.deckState.ulButtonsL & STEAMDECK_LBUTTON_DPAD_UP) {
             hat |= SDL_HAT_UP;
@@ -396,6 +394,9 @@ static bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
 
     SDL_PrivateJoystickAddTouchpad(joystick, 1);
     SDL_PrivateJoystickAddTouchpad(joystick, 1);
+
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_LEFT_STICK);
+    SDL_PrivateJoystickAddCapSense(joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK);
 
     return true;
 }

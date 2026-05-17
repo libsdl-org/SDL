@@ -2441,6 +2441,26 @@ void SDL_PrivateJoystickSensorRate(SDL_Joystick *joystick, SDL_SensorType type, 
     }
 }
 
+void SDL_PrivateJoystickAddCapSense(SDL_Joystick *joystick, SDL_GamepadCapSenseType type)
+{
+    int ncapsenses;
+    SDL_JoystickCapSenseInfo *capsenses;
+
+    SDL_AssertJoysticksLocked();
+
+    ncapsenses = joystick->ncapsenses + 1;
+    capsenses = (SDL_JoystickCapSenseInfo *)SDL_realloc(joystick->capsenses, (ncapsenses * sizeof(SDL_JoystickCapSenseInfo)));
+    if (capsenses) {
+        SDL_JoystickCapSenseInfo *capsense = &capsenses[ncapsenses - 1];
+
+        capsense->type = type;
+        capsense->down = false;
+
+        joystick->ncapsenses = ncapsenses;
+        joystick->capsenses = capsenses;
+    }
+}
+
 void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
 {
     SDL_JoystickDriver *driver;
@@ -3953,6 +3973,53 @@ void SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_Sensor
                     SDL_PushEvent(&event);
                 }
             }
+            break;
+        }
+    }
+}
+
+void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadCapSenseType type, bool down)
+{
+    SDL_AssertJoysticksLocked();
+
+    // We ignore events if we don't have keyboard focus, except for button
+    // (capsense) release
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if (down) {
+            return;
+        }
+    }
+
+    for (int i = 0; i < joystick->ncapsenses; ++i) {
+        SDL_JoystickCapSenseInfo *capsense = &joystick->capsenses[i];
+
+        if (capsense->type == type) {
+            SDL_Event event;
+
+            // Ignore duplicate events
+            if (down == capsense->down) {
+                return;
+            }
+
+            // Update internal joystick state
+            capsense->down = down;
+            joystick->update_complete = timestamp;
+
+            if (down) {
+                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_DOWN;
+            } else {
+                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_UP;
+            }
+
+            // Post the event, if desired
+            if (SDL_EventEnabled(event.type)) {
+                event.common.timestamp = timestamp;
+                event.gcapsense.which = joystick->instance_id;
+                event.gcapsense.capsense = type;
+                event.gcapsense.down = down;
+                SDL_PushEvent(&event);
+            }
+
             break;
         }
     }
