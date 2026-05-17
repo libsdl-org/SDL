@@ -716,7 +716,7 @@ typedef struct SDL_GamepadSensorEvent
 /**
  * Gamepad capsense event structure (event.gcapsense.*)
  *
- * \since This struct is available since SDL 3.X.X. // FIXME
+ * \since This struct is available since SDL 3.6.0.
  */
 typedef struct SDL_GamepadCapSenseEvent
 {

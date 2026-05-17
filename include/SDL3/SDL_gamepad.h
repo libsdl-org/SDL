@@ -234,7 +234,7 @@ typedef enum SDL_GamepadAxis
 /**
  * The list of capsense types on a gamepad
  *
- * \since This enum is available since SDL 3.X.X. // FIXME
+ * \since This enum is available since SDL 3.6.0.
  *
  * \sa SDL_GamepadHasCapSense
  * \sa SDL_GetGamepadCapSense
@@ -1537,7 +1537,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.X.X. // FIXME
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_GetGamepadCapSense
  */
@@ -1552,7 +1552,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasCapSense(SDL_Gamepad *gamepad, SD
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.X.X. // FIXME
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_GamepadHasCapSense
  */
