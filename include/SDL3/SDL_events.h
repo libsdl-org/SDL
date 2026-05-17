@@ -210,10 +210,10 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION,      /**< Gamepad touchpad finger was moved */
     SDL_EVENT_GAMEPAD_TOUCHPAD_UP,          /**< Gamepad touchpad finger was lifted */
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
-    SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
-    SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
+    SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
+    SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,
