@@ -254,8 +254,8 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
     bool downRight = pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH ? true : false;
     if (downLeft || ctx->left_touch_down){
         if (downLeft){
-            ctx->left_touch_x=pTritonReport->sLeftPadX / 65536.0f + 0.5f;
-            ctx->left_touch_y=-(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f;
+            ctx->left_touch_x = pTritonReport->sLeftPadX / 65536.0f + 0.5f;
+            ctx->left_touch_y = -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f;
 
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
