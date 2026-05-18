@@ -1059,16 +1059,12 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         SDL_DebugIMELog("WM_IME_SETCONTEXT");
 
         LPARAM element_mask;
-        if (videodata->ime_internal_composition && videodata->ime_internal_candidates) {
-            element_mask = 0;
-        } else {
-            element_mask = ISC_SHOWUIALL;
-            if (videodata->ime_internal_composition) {
-                element_mask &= ~ISC_SHOWUICOMPOSITIONWINDOW;
-            }
-            if (videodata->ime_internal_candidates) {
-                element_mask &= ~ISC_SHOWUIALLCANDIDATEWINDOW;
-            }
+        element_mask = ISC_SHOWUIALL;
+        if (videodata->ime_internal_composition) {
+            element_mask &= ~ISC_SHOWUICOMPOSITIONWINDOW;
+        }
+        if (videodata->ime_internal_candidates) {
+            element_mask &= ~ISC_SHOWUIALLCANDIDATEWINDOW;
         }
         *lParam &= element_mask;
 
