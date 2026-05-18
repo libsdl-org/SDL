@@ -804,37 +804,40 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     if (num_touchpads != ctx->num_touchpads) {
         FreeTouchpads(ctx);
         ctx->num_touchpads = num_touchpads;
-    }
-    if (ctx->num_touchpads > 0) {
-        ctx->touchpads = (GamepadTouchpad *)SDL_malloc(sizeof(*ctx->touchpads) * ctx->num_touchpads);
-        if (ctx->touchpads) {
-            for (i = 0; i < ctx->num_touchpads; ++i) {
-                GamepadTouchpad *touchpad = &ctx->touchpads[i];
-                touchpad->num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, i);
-                touchpad->num_fingers = SDL_min(touchpad->num_fingers, MAX_FINGERS);
-                if (touchpad->num_fingers > 0) {
-                    touchpad->fingers = (GamepadTouchpadFinger *)SDL_malloc(sizeof(*touchpad->fingers) * touchpad->num_fingers);
-                    if (touchpad->fingers) {
-                        for (int j = 0; j < touchpad->num_fingers; ++j) {
-                            GamepadTouchpadFinger *finger = &touchpad->fingers[j];
-                            SDL_GetGamepadTouchpadFinger(gamepad, i, j, &finger->down, &finger->x, &finger->y, &finger->pressure);
+        if (ctx->num_touchpads > 0) {
+            ctx->touchpads = (GamepadTouchpad *)SDL_malloc(sizeof(*ctx->touchpads) * ctx->num_touchpads);
+            if (ctx->touchpads) {
+                for (i = 0; i < ctx->num_touchpads; ++i) {
+                    GamepadTouchpad *touchpad = &ctx->touchpads[i];
+                    touchpad->num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, i);
+                    touchpad->num_fingers = SDL_min(touchpad->num_fingers, MAX_FINGERS);
+                    if (touchpad->num_fingers > 0) {
+                        touchpad->fingers = (GamepadTouchpadFinger *)SDL_malloc(sizeof(*touchpad->fingers) * touchpad->num_fingers);
+                        if (touchpad->fingers == NULL) {
+                            touchpad->num_fingers = 0;
                         }
-                    } else {
-                        touchpad->num_fingers = 0;
                     }
                 }
-            }
-            if (ctx->num_touchpads == 1) {
-                SDL_memcpy(&ctx->touchpads[0].area, &touchpad_area, sizeof(SDL_FRect));
+                if (ctx->num_touchpads == 1) {
+                    SDL_memcpy(&ctx->touchpads[0].area, &touchpad_area, sizeof(SDL_FRect));
+                } else {
+                    SDL_memcpy(&ctx->touchpads[0].area, &dual_touchpad_area[0], sizeof(SDL_FRect));
+                    SDL_memcpy(&ctx->touchpads[1].area, &dual_touchpad_area[1], sizeof(SDL_FRect));
+                }
             } else {
-                SDL_memcpy(&ctx->touchpads[0].area, &dual_touchpad_area[0], sizeof(SDL_FRect));
-                SDL_memcpy(&ctx->touchpads[1].area, &dual_touchpad_area[1], sizeof(SDL_FRect));
+                ctx->num_touchpads = 0;
             }
-        } else {
-            ctx->num_touchpads = 0;
+        }
+        ctx->showing_touchpad = (ctx->num_touchpads > 0);
+    }
+
+    for (i = 0; i < ctx->num_touchpads; ++i) {
+        GamepadTouchpad *touchpad = &ctx->touchpads[i];
+        for (int j = 0; j < touchpad->num_fingers; ++j) {
+            GamepadTouchpadFinger *finger = &touchpad->fingers[j];
+            SDL_GetGamepadTouchpadFinger(gamepad, i, j, &finger->down, &finger->x, &finger->y, &finger->pressure);
         }
     }
-    ctx->showing_touchpad = (ctx->num_touchpads > 0);
 }
 
 void RenderGamepadImage(GamepadImage *ctx)
