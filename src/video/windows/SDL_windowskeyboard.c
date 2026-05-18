@@ -828,6 +828,11 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, LPARAM
     }
     length /= sizeof(WCHAR);
 
+    if (!(*lParam & GCS_CURSORPOS)) {
+        // If the IME doesn't support GCS_CURSORPOS, default the cursor to the end of the composition.
+        videodata->ime_cursor = length;
+    }
+
     if ((dwLang == LANG_CHT || dwLang == LANG_CHS) &&
         videodata->ime_cursor > 0 &&
         videodata->ime_cursor < (int)(videodata->ime_composition_length / sizeof(WCHAR)) &&
@@ -889,7 +894,7 @@ static void IME_SendInputEvent(SDL_VideoData *videodata)
 
     videodata->ime_composition[0] = 0;
     videodata->ime_readingstring[0] = 0;
-    videodata->ime_cursor = 1; // Korean IME cursor
+    videodata->ime_cursor = 0;
 }
 
 static void IME_SendEditingEvent(SDL_VideoData *videodata)
@@ -1072,7 +1077,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     } else if (msg == WM_IME_STARTCOMPOSITION) {
         SDL_DebugIMELog("WM_IME_STARTCOMPOSITION");
         if (videodata->ime_internal_composition) {
-            videodata->ime_cursor = 1; // Korean IME cursor
+            videodata->ime_cursor = 0;
             // Windows may still display a composition dialog even with
             // ISC_SHOWUICOMPOSITIONWINDOW cleared, so trap the message
             // here to prevent that (even when the IME is disabled).
