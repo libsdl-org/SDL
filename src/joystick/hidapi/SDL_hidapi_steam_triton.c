@@ -259,7 +259,7 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
 
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
-                                 downLeft,
+                                 left_touch_down,
                                  ctx->left_touch_x,
                                  ctx->left_touch_y,
                                  pTritonReport->sPressureLeft / 32768.0f);
