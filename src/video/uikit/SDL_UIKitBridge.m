@@ -152,6 +152,28 @@ bool SDL_UIKit_IsCurvedWindow(SDL_Window *window)
     return data && data.curvedContentHosting;
 }
 
+void SDL_UIKit_HideCurvedWindow(SDL_Window *window)
+{
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+    if (!data || !data.curvedContentHosting) {
+        return nil;
+    }
+
+    id hosting = data.curvedContentHosting;
+    SEL dismissSelector = NSSelectorFromString(@"dismiss");
+    if (![hosting respondsToSelector:dismissSelector]) {
+        return nil;
+    }
+
+    NSMethodSignature *signature = [hosting methodSignatureForSelector:dismissSelector];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setSelector:dismissSelector];
+    [invocation setTarget:hosting];
+    [invocation invoke];
+
+    data.curvedContentHosting = nil;
+}
+
 id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
