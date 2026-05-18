@@ -263,6 +263,7 @@ internal class SDL_CurvedContentSettings {
 
     var inputType: InputType = .eyes
     var showHover: Bool = true
+    var enableDimming: Bool = false // Doesn't seem to be reliable at the moment
     var isDimmed: Bool = false
     var curvatureRadius: Float = 0.0
     var sceneState: SceneState = .interactive
@@ -319,8 +320,10 @@ struct SDL_SettingsPanelView: View {
                 HStack(spacing: 12) {
                     Image(systemName: settings.showHover ? "eye" : "eye.slash")
 
-                    Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
-                        .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+                    if settings.enableDimming {
+                        Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
+                            .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -341,8 +344,10 @@ struct SDL_SettingsPanelView: View {
                 VStack(spacing: 12) {
                     Image(systemName: settings.showHover ? "eye" : "eye.slash")
 
-                    Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
-                        .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+                    if settings.enableDimming {
+                        Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
+                            .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -389,19 +394,21 @@ struct SDL_SettingsPanelView: View {
                 Image(systemName: "eye")
                 Spacer()
 
-                Spacer()
-                Image(systemName: "sun.max")
+                if settings.enableDimming {
+                    Spacer()
+                    Image(systemName: "sun.max")
 
-                Toggle(isOn: $settings.isDimmed) {
-                }
-                .onChange(of: settings.isDimmed) {
-                    settings.save()
-                }
-                .labelsHidden()
-                .tint(.secondary)
+                    Toggle(isOn: $settings.isDimmed) {
+                    }
+                    .onChange(of: settings.isDimmed) {
+                        settings.save()
+                    }
+                    .labelsHidden()
+                    .tint(.secondary)
 
-                Image(systemName: "moon.fill")
-                Spacer()
+                    Image(systemName: "moon.fill")
+                    Spacer()
+                }
             }
 
             // Curvature slider
