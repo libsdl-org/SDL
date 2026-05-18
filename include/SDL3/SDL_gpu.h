@@ -4571,7 +4571,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUFence(
  *
  * \sa SDL_CreateGPUQueryPool
  */
-extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetGPUTimestampFrequency(SDL_GPUDevice *device);
+extern SDL_DECLSPEC float SDLCALL SDL_GetGPUTimestampFrequency(SDL_GPUDevice *device);
 
 /**
  * Creates a query pool object to be used in queries.

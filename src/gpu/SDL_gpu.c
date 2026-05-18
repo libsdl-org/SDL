@@ -3541,6 +3541,13 @@ void SDL_ReleaseGPUFence(
         fence);
 }
 
+float SDL_GetGPUTimestampFrequency(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    return device->GetTimestampFrequency(device->driverData);
+}
+
 SDL_GPUQueryPool *SDL_CreateGPUQueryPool(
     SDL_GPUDevice *device,
     SDL_GPUQueryPoolCreateInfo *createinfo)

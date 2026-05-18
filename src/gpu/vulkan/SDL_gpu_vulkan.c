@@ -7123,6 +7123,12 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
         debugName);
 }
 
+static float VULKAN_GetTimestampFrequency(SDL_GPURenderer *driverData)
+{
+    VulkanRenderer *renderer = (VulkanRenderer *)driverData;
+    return renderer->physicalDeviceProperties.properties.limits.timestampPeriod;
+}
+
 static SDL_GPUQueryPool *VULKAN_CreateQueryPool(
     SDL_GPURenderer *driverData,
     SDL_GPUQueryPoolCreateInfo *createinfo)
