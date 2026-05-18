@@ -167,7 +167,7 @@ internal struct SDL_CurvedContentView: View {
         .overlay {
             if mouseInputEnabled {
                 // This enables mouse motion events, but blocks hover location
-                Color.white
+                Color.black
                     .opacity(0.001)
                     .pointerStyle(.shape(Circle(), size: .zero))
             }
