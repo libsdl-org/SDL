@@ -71,6 +71,10 @@ internal struct SDL_CurvedContentView: View {
         return curvedUIEntity != nil && helper.collisionShape != nil && !mouseInputEnabled
     }
 
+    private var shouldEnableDimming: Bool {
+        return settings.isDimmed && settings.dimmingReady
+    }
+
     /// Value use to animate the screen radius
     @State private var animatedScreenRadius: Float = 1010
 
@@ -265,6 +269,13 @@ internal struct SDL_CurvedContentView: View {
             guard let curvedUIEntity else { return }
             if let shape = helper.collisionShape, shouldPopulateCollisionShape {
                 curvedUIEntity.components.set(CollisionComponent(shapes: [shape]))
+
+                // Dimming is possible now that we have a collision component
+                Task {
+                    try await Task.sleep(nanoseconds: 1_000_000_000 / 4)
+
+                    settings.dimmingReady = true
+                }
             } else {
                 curvedUIEntity.components.set(CollisionComponent(shapes: []))
             }
@@ -273,7 +284,7 @@ internal struct SDL_CurvedContentView: View {
             settings.isSnapped = snappedStatus.isSnapped
             helper.updateSnappedStatus(snapped: snappedStatus.isSnapped)
         }
-        .preferredSurroundingsEffect(settings.enableDimming && settings.isDimmed ? .dark : nil)
+        .preferredSurroundingsEffect(shouldEnableDimming ? .dark : nil)
         .frame(depth: 0)
         .ignoresSafeArea()
         .persistentSystemOverlays(settings.sceneState == .cinematic ? .hidden : .automatic)

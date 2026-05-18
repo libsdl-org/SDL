@@ -33,6 +33,7 @@
 #include "SDL_uikitappdelegate.h"
 #include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
+#include "SDL_UIKitBridge-objc.h"
 
 #include <Foundation/Foundation.h>
 
@@ -386,6 +387,9 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             [data.viewcontroller stopAnimation];
 
+#ifdef SDL_PLATFORM_VISIONOS
+            SDL_UIKit_HideCurvedWindow(window);
+#endif
             /* Detach all views from this window. We use a copy of the array
              * because setSDLWindow will remove the object from the original
              * array, which would be undesirable if we were iterating over it. */
