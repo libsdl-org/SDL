@@ -263,7 +263,7 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
                                  ctx->left_touch_x,
                                  ctx->left_touch_y,
                                  pTritonReport->sPressureLeft / 32768.0f);
-        ctx->left_touch_down=downLeft;
+        ctx->left_touch_down = left_touch_down;
     }
     if (downRight || ctx->right_touch_down){
         if (downRight){
