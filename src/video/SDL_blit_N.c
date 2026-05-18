@@ -26,7 +26,7 @@
 #include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
-#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+#ifdef SDL_SVE2_INTRINSICS
 #include "./arm/SDL_sve2_blit_N.h"
 #endif
 
@@ -3121,7 +3121,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 return Blit8888to8888PixelSwizzleSSE41;
             }
 #endif
-#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+#ifdef SDL_SVE2_INTRINSICS
             if (SDL_HasSVE2()) {
                 return Blit8888to8888PixelSwizzleSVE2;
             }
@@ -3132,7 +3132,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             }
 #endif
         }
-#if defined(SDL_SVE2_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+#ifdef SDL_SVE2_INTRINSICS
         if (SDL_HasSVE2()) {
             /* RGBA8888/ARGB8888/XRGB8888 -> RGB565 */
             if (srcfmt->bytes_per_pixel == 4 &&
