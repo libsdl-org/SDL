@@ -250,10 +250,10 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
         ctx->last_sensor_tick = pTritonReport->imu.timestamp;
     }
 
-    bool downLeft = pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_TOUCH ? true : false;
-    bool downRight = pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH ? true : false;
-    if (downLeft || ctx->left_touch_down){
-        if (downLeft){
+    bool left_touch_down = (pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_TOUCH) ? true : false;
+    bool right_touch_down = (pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH) ? true : false;
+    if (left_touch_down || ctx->left_touch_down) {
+        if (left_touch_down) {
             ctx->left_touch_x = pTritonReport->sLeftPadX / 65536.0f + 0.5f;
             ctx->left_touch_y = -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f;
 
