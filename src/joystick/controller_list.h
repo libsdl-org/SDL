@@ -601,7 +601,7 @@ static const ControllerDescription_t arrControllers[] = {
     // * ZhiXu Gamepad Wireless
     // * Sunwaytek Wireless Motion Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Switch Pro Controller
-	{ MAKE_CONTROLLER_ID( 0x057e, 0x2069 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Switch 2 Pro Controller
+	{ MAKE_CONTROLLER_ID( 0x057e, 0x2069 ), k_eControllerType_Switch2ProController, NULL },        // Nintendo Switch 2 Pro Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x2017 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SNES Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x2019 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online N64 Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x201e ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SEGA Genesis Controller

@@ -3163,6 +3163,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
             }
             break;
         case k_eControllerType_SwitchProController:
+        case k_eControllerType_Switch2ProController:
         case k_eControllerType_SwitchInputOnlyController:
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             break;
@@ -3287,7 +3288,9 @@ bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id)
 bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
-    return eType == k_eControllerType_SwitchProController || eType == k_eControllerType_SwitchInputOnlyController;
+    return eType == k_eControllerType_SwitchProController ||
+           eType == k_eControllerType_Switch2ProController ||
+           eType == k_eControllerType_SwitchInputOnlyController;
 }
 
 bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
