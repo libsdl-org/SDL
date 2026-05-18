@@ -42,6 +42,8 @@ typedef struct SDL_joylist_item
 {
     int device_instance;
     int device_id; // Android's device id
+    Uint16 vendor_id;
+    Uint16 product_id;
     char *name;    // "SideWinder 3D Pro" or whatever
     SDL_GUID guid;
     SDL_Joystick *joystick;

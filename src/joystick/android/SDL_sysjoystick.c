@@ -344,7 +344,6 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     SDL_SensorType sensor;
-    float data[3];
 
     if (sensor_type == 1) { // Sensor.TYPE_ACCELEROMETER
         sensor = SDL_SENSOR_ACCEL;
@@ -355,14 +354,29 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
         return;
     }
 
-    // The axes of sensor events and their signs are the same as SDL's, so no conversion required
-    data[0] = x;
-    data[1] = y;
-    data[2] = z;
-
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
+        float data[3];
+
+        if (item->vendor_id == USB_VENDOR_NINTENDO) {
+            // The Nintendo driver uses a different axis order than SDL
+            data[0] = -y;
+            data[1] = z;
+            data[2] = -x;
+
+            if (sensor == SDL_SENSOR_GYRO) {
+                // The values are experimentally 3x what they should be
+                data[0] /= 3;
+                data[1] /= 3;
+                data[2] /= 3;
+            }
+        } else {
+            // The axes of sensor events and their signs are the same as SDL's, so no conversion required
+            data[0] = x;
+            data[1] = y;
+            data[2] = z;
+        }
         SDL_SendJoystickSensor(timestamp, item->joystick, sensor, sensor_timestamp, data, 3);
     }
     SDL_UnlockJoysticks();
@@ -427,6 +441,8 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_zerop(item);
     item->guid = guid;
     item->device_id = device_id;
+    item->vendor_id = vendor_id;
+    item->product_id = product_id;
     item->name = SDL_CreateJoystickName(vendor_id, product_id, NULL, name);
     if (!item->name) {
         SDL_free(item);
