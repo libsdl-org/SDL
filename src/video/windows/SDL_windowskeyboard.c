@@ -802,12 +802,14 @@ static void IME_ClearComposition(SDL_VideoData *videodata)
     IME_SendClearComposition(videodata);
 }
 
-static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD string)
+static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, LPARAM *lParam, DWORD string)
 {
     LONG length;
     DWORD dwLang = ((DWORD_PTR)videodata->ime_hkl & 0xffff);
 
-    videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
+    if (*lParam & GCS_CURSORPOS) {
+        videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
+    }
     videodata->ime_selected_start = 0;
     videodata->ime_selected_length = 0;
     SDL_DebugIMELog("Cursor = %d", videodata->ime_cursor);
@@ -887,7 +889,7 @@ static void IME_SendInputEvent(SDL_VideoData *videodata)
 
     videodata->ime_composition[0] = 0;
     videodata->ime_readingstring[0] = 0;
-    videodata->ime_cursor = 0;
+    videodata->ime_cursor = 1; // Korean IME cursor
 }
 
 static void IME_SendEditingEvent(SDL_VideoData *videodata)
@@ -1070,6 +1072,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     } else if (msg == WM_IME_STARTCOMPOSITION) {
         SDL_DebugIMELog("WM_IME_STARTCOMPOSITION");
         if (videodata->ime_internal_composition) {
+            videodata->ime_cursor = 1; // Korean IME cursor
             // Windows may still display a composition dialog even with
             // ISC_SHOWUICOMPOSITIONWINDOW cleared, so trap the message
             // here to prevent that (even when the IME is disabled).
@@ -1109,14 +1112,14 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
             himc = ImmGetContext(hwnd);
             if (*lParam & GCS_RESULTSTR) {
                 SDL_DebugIMELog("GCS_RESULTSTR");
-                IME_GetCompositionString(videodata, himc, GCS_RESULTSTR);
+                IME_GetCompositionString(videodata, himc, lParam, GCS_RESULTSTR);
                 IME_SendClearComposition(videodata);
                 IME_SendInputEvent(videodata);
             }
             if (*lParam & GCS_COMPSTR) {
                 SDL_DebugIMELog("GCS_COMPSTR");
                 videodata->ime_readingstring[0] = 0;
-                IME_GetCompositionString(videodata, himc, GCS_COMPSTR);
+                IME_GetCompositionString(videodata, himc, lParam, GCS_COMPSTR);
                 IME_SendEditingEvent(videodata);
             }
             ImmReleaseContext(hwnd, himc);
