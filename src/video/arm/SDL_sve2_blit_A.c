@@ -51,12 +51,12 @@
     }
 
 #undef sdl_sve_rgb32_blend_to_rgb565_op
-#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)               \
-    do {                                                                 \
-        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx)); \
-        sve_target_u16 = sdl_sve_chn_blend_with_mask(sve_source_u16,     \
-                                                     sve_target_u16,     \
-                                                     vMask);             \
+#define sdl_sve_rgb32_blend_to_rgb565_op(ma_alpha_chn_idx)                \
+    do {                                                                  \
+        svuint16_t vMask = svget4(sve_source_u16x4, (ma_alpha_chn_idx));  \
+        sve_target_u16 = sdl_sve_chn_blend_with_mask_fast(sve_source_u16, \
+                                                          sve_target_u16, \
+                                                          vMask);         \
     } while (0)
 
 #include "SDL_sve2_swizzle.h"
