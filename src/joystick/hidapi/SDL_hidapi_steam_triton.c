@@ -103,6 +103,8 @@ typedef struct
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
     Uint64 last_rumble_time;
+    bool left_touch_down;
+    bool right_touch_down;
 } SDL_DriverSteamTriton_Context;
 
 static bool IsProteusDongle(Uint16 product_id)
@@ -243,17 +245,24 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
         ctx->last_sensor_tick = pTritonReport->imu.timestamp;
     }
 
-    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
-                             pTritonReport->sPressureLeft > 0,
-                             pTritonReport->sLeftPadX / 65536.0f + 0.5f,
-                             -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f,
-                             pTritonReport->sPressureLeft / 32768.0f);
-
-    SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
-                             pTritonReport->sPressureRight > 0,
-                             pTritonReport->sRightPadX / 65536.0f + 0.5f,
-                             -(float)pTritonReport->sRightPadY / 65536.0f + 0.5f,
-                             pTritonReport->sPressureRight / 32768.0f);
+    bool downLeft = pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_TOUCH ? true : false;
+    bool downRight = pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH ? true : false;
+    if (downLeft || ctx->left_touch_down){
+        SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
+                                 downLeft,
+                                 pTritonReport->sLeftPadX / 65536.0f + 0.5f,
+                                 -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f,
+                                 pTritonReport->sPressureLeft / 32768.0f);
+        ctx->left_touch_down=downLeft;
+    }
+    if (downRight || ctx->right_touch_down){
+        SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
+                                 downRight,
+                                 pTritonReport->sRightPadX / 65536.0f + 0.5f,
+                                 -(float)pTritonReport->sRightPadY / 65536.0f + 0.5f,
+                                 pTritonReport->sPressureRight / 32768.0f);
+        ctx->right_touch_down=downRight;
+    }
 }
 
 static void HIDAPI_DriverSteamTriton_HandleBatteryStatus(SDL_HIDAPI_Device *device,
