@@ -1571,6 +1571,11 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                             return Blit565to565SurfaceAlphaMMX;
                         } else
 #endif
+#ifdef SDL_SVE2_INTRINSICS
+                        if (SDL_HasSVE2()) {
+                            return Blit565to565SurfaceAlphaSVE2;
+                        } else 
+#endif
                         {
                             return Blit565to565SurfaceAlpha;
                         }
