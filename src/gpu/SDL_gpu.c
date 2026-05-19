@@ -3020,12 +3020,12 @@ void SDL_DownloadFromGPUBuffer(
         destination);
 }
 
-void SDL_CopyGPUQueryResultsToBuffer(
+void SDL_DownloadGPUQueryResults(
     SDL_GPUCopyPass *copy_pass,
     SDL_GPUQueryPool *pool,
     Uint32 first_query,
     Uint32 count,
-    SDL_GPUBufferLocation *destination)
+    SDL_GPUTransferBufferLocation *destination)
 {
     CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
@@ -3042,7 +3042,7 @@ void SDL_CopyGPUQueryResultsToBuffer(
         return;
     }
 
-    COPYPASS_DEVICE->CopyQueryResultsToBuffer(
+    COPYPASS_DEVICE->DownloadQueryResults(
         COPYPASS_COMMAND_BUFFER,
         pool,
         first_query,

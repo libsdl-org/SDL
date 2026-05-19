@@ -606,7 +606,7 @@ typedef struct SDL_GPUFence SDL_GPUFence;
  * \sa SDL_ReleaseGPUQueryPool
  * \sa SDL_BeginGPUQuery
  * \sa SDL_EndGPUQuery
- * \sa SDL_CopyGPUQueryResultsToBuffer
+ * \sa SDL_DownloadGPUQueryResults
  * \sa SDL_GetGPUTimestampFrequency
  */
 typedef struct SDL_GPUQueryPool SDL_GPUQueryPool;
@@ -4088,12 +4088,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_DownloadFromGPUBuffer(
  *
  * \since This struct is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUQueryResultsToBuffer(
+extern SDL_DECLSPEC void SDLCALL SDL_DownloadGPUQueryResults(
     SDL_GPUCopyPass *copy_pass,
     SDL_GPUQueryPool *pool,
     Uint32 first_query,
     Uint32 count,
-    SDL_GPUBufferLocation *destination);
+    SDL_GPUTransferBufferLocation *destination);
 
 /**
  * Ends the current copy pass.
@@ -4586,7 +4586,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGPUTimestampFrequency(SDL_GPUDevice *de
  * \sa SDL_GetGPUTimestampFrequency
  * \sa SDL_BeginGPUQuery
  * \sa SDL_EndGPUQuery
- * \sa SDL_CopyGPUQueryResultsToBuffer
+ * \sa SDL_DownloadGPUQueryResults
  * \sa SDL_ReleaseGPUQueryPool
  */
 extern SDL_DECLSPEC SDL_GPUQueryPool * SDLCALL SDL_CreateGPUQueryPool(

@@ -995,12 +995,12 @@ struct SDL_GPUDevice
         Uint32 size,
         bool cycle);
 
-    void (*CopyQueryResultsToBuffer)(
+    void (*DownloadQueryResults)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_GPUQueryPool *pool,
         Uint32 first_query,
         Uint32 count,
-        const SDL_GPUBufferLocation *destination);
+        const SDL_GPUTransferBufferLocation *destination);
 
     void (*GenerateMipmaps)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -1222,7 +1222,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DownloadFromBuffer, name)            \
     ASSIGN_DRIVER_FUNC(CopyTextureToTexture, name)          \
     ASSIGN_DRIVER_FUNC(CopyBufferToBuffer, name)            \
-    ASSIGN_DRIVER_FUNC(CopyQueryResultsToBuffer, name)      \
+    ASSIGN_DRIVER_FUNC(DownloadQueryResults, name)          \
     ASSIGN_DRIVER_FUNC(GenerateMipmaps, name)               \
     ASSIGN_DRIVER_FUNC(EndCopyPass, name)                   \
     ASSIGN_DRIVER_FUNC(Blit, name)                          \

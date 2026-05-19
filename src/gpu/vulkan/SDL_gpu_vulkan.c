@@ -9368,46 +9368,34 @@ static void VULKAN_CopyBufferToBuffer(
     SDL_UnlockRWLock(renderer->defragLock);
 }
 
-static void VULKAN_CopyQueryResultsToBuffer(
+static void VULKAN_DownloadQueryResults(
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_GPUQueryPool *pool,
     Uint32 firstQuery,
     Uint32 count,
-    const SDL_GPUBufferLocation *destination)
+    const SDL_GPUTransferBufferLocation *destination)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanQueryPool *vulkanQueryPool = (VulkanQueryPool *)pool;
-    VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
+    VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->transfer_buffer;
 
     SDL_LockRWLockForReading(renderer->defragLock);
 
-    VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
-        renderer,
-        vulkanCommandBuffer,
-        dstContainer,
-        false, // TODO: should this function take a cycle param?
-        VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION);
+    // Note that the transfer buffer does not need a barrier, as it is synced by the client
 
     renderer->vkCmdCopyQueryPoolResults(
         vulkanCommandBuffer->commandBuffer,
         vulkanQueryPool->pool,
         firstQuery,
         count,
-        dstBuffer->buffer,
+        dstContainer->activeBuffer->buffer,
         destination->offset,
         8, // Result for timing and occlusion is one 64-bit integer
         VK_QUERY_RESULT_64_BIT);
 
-    VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
-        renderer,
-        vulkanCommandBuffer,
-        VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
-        dstBuffer);
-
     VULKAN_INTERNAL_TrackQueryPool(vulkanCommandBuffer, vulkanQueryPool);
-    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
-    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstContainer->activeBuffer);
 
     SDL_UnlockRWLock(renderer->defragLock);
 }
