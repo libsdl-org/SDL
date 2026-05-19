@@ -65,6 +65,9 @@ static bool immdevice_initialized = false;
 static bool supports_recording_on_playback_devices = false;
 
 #ifdef __IAudioClient2_INTERFACE_DEFINED__
+// AUDCLNT_STREAMOPTIONS and AudioClientProperties->Options were
+// added in Windows 8.1: This ugliness is here to make sure that
+// we can build against older SDK versions.
 #define SDL_AUDCLNT_STREAMOPTIONS_RAW 0x1
 typedef union SDL_AudioClientProperties {
     AudioClientProperties a;
