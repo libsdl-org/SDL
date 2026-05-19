@@ -609,7 +609,7 @@ static bool WGI_JoystickInit(void)
          * As a workaround, we will keep a reference to the MTA to prevent COM from unloading DLLs later.
          * See https://github.com/libsdl-org/SDL/issues/5552 for more details.
          */
-        static HANDLE cookie = NULL; // CO_MTA_USAGE_COOKIE*
+        static HANDLE cookie = NULL; // CO_MTA_USAGE_COOKIE
         if (!cookie) {
             hr = wgi.CoIncrementMTAUsage(&cookie);
             if (FAILED(hr)) {
