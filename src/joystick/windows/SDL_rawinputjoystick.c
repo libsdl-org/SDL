@@ -57,7 +57,7 @@
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
 #include "../../core/windows/SDL_windows.h"
-typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
+struct WindowsGamingInputGamepadState;
 #define GamepadButtons_GUIDE 0x40000000
 #define COBJMACROS
 #include "windows.gaming.input.h"
@@ -158,7 +158,7 @@ struct joystick_hwdata
     Uint8 wgi_correlation_id;
     Uint8 wgi_correlation_count;
     Uint8 wgi_uncorrelate_count;
-    WindowsGamingInputGamepadState *wgi_slot;
+    struct WindowsGamingInputGamepadState *wgi_slot;
     struct __x_ABI_CWindows_CGaming_CInput_CGamepadVibration vibration;
 #endif
 
