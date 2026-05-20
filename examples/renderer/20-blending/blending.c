@@ -167,9 +167,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     for (int i = 0; i < ROWS*COLS; i++)
     {
         /* Loop through the panel pixels */
-        for (int y = (int)panels[i].y; y < PANEL_SIZE + (int)panels[i].y; y += GRID_SIZE)
+        for (float y = panels[i].y; y < PANEL_SIZE + panels[i].y; y += GRID_SIZE)
         {
-            for (int x = (int)panels[i].x; x < PANEL_SIZE + (int)panels[i].x; x += GRID_SIZE)
+            for (float x = panels[i].x; x < PANEL_SIZE + panels[i].x; x += GRID_SIZE)
             {
                 SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
                 bool dark      = (int)(x/GRID_SIZE + y/GRID_SIZE) % 2;
