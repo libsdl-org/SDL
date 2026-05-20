@@ -183,10 +183,14 @@ static SDL_MimeDataList *mime_data_list_find(struct wl_list *list,
 {
     SDL_MimeDataList *found = NULL;
 
-    SDL_MimeDataList *mime_list = NULL;
-    wl_list_for_each (mime_list, list, link) {
-        if (SDL_strcmp(mime_list->mime_type, mime_type) == 0) {
-            found = mime_list;
+    SDL_MimeDataList *item = NULL;
+    wl_list_for_each (item, list, link) {
+        if (!item->mime_type) {
+            continue;
+        }
+
+        if (SDL_strcmp(item->mime_type, mime_type) == 0) {
+            found = item;
             break;
         }
     }
