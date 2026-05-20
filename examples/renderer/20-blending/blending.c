@@ -203,26 +203,26 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     SDL_DestroyTexture(blue_rect_texture);
 }
 
-static void init_panels(SDL_FRect *panels)
+static void init_panels(SDL_FRect *rects)
 {
     for (int row = 0; row < ROWS; row++)
     {
         for (int col = 0; col < COLS; col++)
         {
-            panels[col + row*COLS] = (SDL_FRect){ col*PANEL_SIZE + col*COL_OFFSET, row*PANEL_SIZE + (row+1)*ROW_OFFSET, PANEL_SIZE, PANEL_SIZE };
+            rects[col + row*COLS] = (SDL_FRect){ col*PANEL_SIZE + col*COL_OFFSET, row*PANEL_SIZE + (row+1)*ROW_OFFSET, PANEL_SIZE, PANEL_SIZE };
         }
     }
 }
 
-static void render_panels(SDL_Renderer *renderer, const SDL_FRect *panels)
+static void render_panels(SDL_Renderer *renderer, const SDL_FRect *rects)
 {
     /* loop through the panels */
     for (int i = 0; i < ROWS*COLS; i++)
     {
         /* Loop through the panel pixels */
-        for (int y = panels[i].y; y < PANEL_SIZE + panels[i].y; y += GRID_SIZE)
+        for (int y = rects[i].y; y < PANEL_SIZE + (int)rects[i].y; y += GRID_SIZE)
         {
-            for (int x = panels[i].x; x < PANEL_SIZE + panels[i].x; x += GRID_SIZE)
+            for (int x = rects[i].x; x < PANEL_SIZE + (int)rects[i].x; x += GRID_SIZE)
             {
                 SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
                 bool dark      = (x/GRID_SIZE + y/GRID_SIZE) % 2;
@@ -236,9 +236,9 @@ static void render_panels(SDL_Renderer *renderer, const SDL_FRect *panels)
 
         /* Label the blend mode */
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-        SDL_RenderDebugText(renderer, panels[i].x, panels[i].y - 15, blend_mode_names[i]);
+        SDL_RenderDebugText(renderer, rects[i].x, rects[i].y - 15, blend_mode_names[i]);
     }
 
     /* Render panels */
-    SDL_RenderRects(renderer, panels, ROWS*COLS);
+    SDL_RenderRects(renderer, rects, ROWS*COLS);
 }
