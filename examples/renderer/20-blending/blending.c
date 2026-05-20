@@ -94,9 +94,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
-    for (int row = 0; row < ROWS; row++)
+    int row = 0;
+    int col = 0;
+    for (row = 0; row < ROWS; row++)
     {
-        for (int col = 0; col < COLS; col++)
+        for (col = 0; col < COLS; col++)
         {
             panels[col + row*COLS] = (SDL_FRect){ col*PANEL_SIZE + col*COL_OFFSET, row*PANEL_SIZE + (row+1)*ROW_OFFSET, PANEL_SIZE, PANEL_SIZE };
         }
@@ -163,13 +165,16 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
+    int i = 0;
+    float x;
+    float y;
     /* Render checkerboard panels */
-    for (int i = 0; i < ROWS*COLS; i++)
+    for (i = 0; i < ROWS*COLS; i++)
     {
         /* Loop through the panel pixels */
-        for (float y = panels[i].y; y < PANEL_SIZE + panels[i].y; y += GRID_SIZE)
+        for (y = panels[i].y; y < PANEL_SIZE + panels[i].y; y += GRID_SIZE)
         {
-            for (float x = panels[i].x; x < PANEL_SIZE + panels[i].x; x += GRID_SIZE)
+            for (x = panels[i].x; x < PANEL_SIZE + panels[i].x; x += GRID_SIZE)
             {
                 SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
                 bool dark      = (int)(x/GRID_SIZE + y/GRID_SIZE) % 2;
@@ -199,7 +204,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetTextureAlphaMod(blue_rect_texture,  alpha);
 
     /* Render panels */
-    for (int i = 0; i < ROWS*COLS; i++) {
+    for (i = 0; i < ROWS*COLS; i++) {
         /* Update rects destination */
         SDL_FRect red_dst   = { panels[i].x + RED_OFFSET,   panels[i].y + RED_OFFSET,   RECT_SIZE, RECT_SIZE };
         SDL_FRect green_dst = { panels[i].x + GREEN_OFFSET, panels[i].y + GREEN_OFFSET, RECT_SIZE, RECT_SIZE };
