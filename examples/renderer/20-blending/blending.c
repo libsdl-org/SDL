@@ -54,7 +54,7 @@ static SDL_Texture   *blue_rect_texture  = NULL;
 static Uint8         alpha               = 255;
 static SDL_BlendMode blend_modes[]       = {
     /*The default no blending: dstRGB := srcRGB
-                                dstA   := srcA   */
+                                dstA  := srcA   */
     SDL_BLENDMODE_NONE,
 
     /* Alpha blending: dstRGB := srcA * srcRGB + (1 - srcA) * dstRGB
@@ -174,7 +174,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
                 SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
                 bool dark      = (int)(x/GRID_SIZE + y/GRID_SIZE) % 2;
 
-                if (dark) SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);    /* Darker color */
+                if (dark) SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);    /* Darker color  */
                 else      SDL_SetRenderDrawColor(renderer, 110, 110, 110, 255); /* Lighter color */
 
                 SDL_RenderFillRect(renderer, &grid);
