@@ -36,7 +36,7 @@
 /* UI Constants */
 #define ROWS 2
 #define COLS 3
-#define GRID_SIZE    ((WINDOW_WIDTH - 1) / 18)
+#define GRID_SIZE    ((WINDOW_WIDTH - 1) / 18.0f)
 #define PANEL_SIZE   (GRID_SIZE * 4)
 #define ROW_OFFSET   ((WINDOW_HEIGHT - ROWS * PANEL_SIZE) / 4)
 #define COL_OFFSET   (GRID_SIZE * COLS)
@@ -172,7 +172,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             for (int x = (int)panels[i].x; x < PANEL_SIZE + (int)panels[i].x; x += GRID_SIZE)
             {
                 SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
-                bool dark      = (x/GRID_SIZE + y/GRID_SIZE) % 2;
+                bool dark      = (int)(x/GRID_SIZE + y/GRID_SIZE) % 2;
 
                 if (dark) SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);    /* Darker color */
                 else      SDL_SetRenderDrawColor(renderer, 110, 110, 110, 255); /* Lighter color */
