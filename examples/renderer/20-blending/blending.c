@@ -112,7 +112,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_BLENDOPERATION_ADD               /* A      operation := +            */
     );
 
-    surface = SDL_CreateSurface(RECT_SIZE, RECT_SIZE, SDL_PIXELFORMAT_RGBA8888);
+    surface = SDL_CreateSurface((int)RECT_SIZE, (int)RECT_SIZE, SDL_PIXELFORMAT_RGBA8888);
     if (!surface) {
         SDL_Log("Couldn't create surface: %s", SDL_GetError());
         return SDL_APP_FAILURE;
