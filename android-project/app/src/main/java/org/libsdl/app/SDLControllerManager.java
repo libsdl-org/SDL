@@ -91,13 +91,7 @@ public class SDLControllerManager
      * This method is called by SDL using JNI.
      */
     static void joystickSetSensorsEnabled(int device_id, boolean enabled) {
-        // Run this on the UI thread so we don't race with enableSensor() in SDLSurface.java
-        SDL.getContext().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mJoystickHandler.setSensorsEnabled(device_id, enabled);
-            }
-        });
+        mJoystickHandler.setSensorsEnabled(device_id, enabled);
     }
 
     /**
@@ -558,17 +552,17 @@ class SDLJoystickHandler {
         }
         if (enabled) {
             if (joystick.accelerometerSensor != null) {
-                joystick.sensorManager.registerListener(joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME, null);
+                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
             }
             if (joystick.gyroscopeSensor != null) {
-                joystick.sensorManager.registerListener(joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME, null);
+                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
             }
         } else {
             if (joystick.accelerometerSensor != null) {
-                joystick.sensorManager.unregisterListener(joystick.sensorListener, joystick.accelerometerSensor);
+                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
             }
             if (joystick.gyroscopeSensor != null) {
-                joystick.sensorManager.unregisterListener(joystick.sensorListener, joystick.gyroscopeSensor);
+                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
             }
         }
     }
