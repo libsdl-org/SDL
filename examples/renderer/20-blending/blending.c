@@ -201,9 +201,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     /* Render panels */
     for (int i = 0; i < ROWS*COLS; i++) {
         /* Update rects destination */
-        SDL_FRect red_dst   = { panels[i].x + RED_OFFSET,   panels[i].y + RED_OFFSET,   RECT_SIZE, RECT_SIZE, };
-        SDL_FRect green_dst = { panels[i].x + GREEN_OFFSET, panels[i].y + GREEN_OFFSET, RECT_SIZE, RECT_SIZE, };
-        SDL_FRect blue_dst  = { panels[i].x + BLUE_OFFSET,  panels[i].y + BLUE_OFFSET,  RECT_SIZE, RECT_SIZE, };
+        SDL_FRect red_dst   = { panels[i].x + RED_OFFSET,   panels[i].y + RED_OFFSET,   RECT_SIZE, RECT_SIZE };
+        SDL_FRect green_dst = { panels[i].x + GREEN_OFFSET, panels[i].y + GREEN_OFFSET, RECT_SIZE, RECT_SIZE };
+        SDL_FRect blue_dst  = { panels[i].x + BLUE_OFFSET,  panels[i].y + BLUE_OFFSET,  RECT_SIZE, RECT_SIZE };
 
         /* Apply the current blend mode */
         SDL_SetTextureBlendMode(red_rect_texture,   blend_modes[i]);
