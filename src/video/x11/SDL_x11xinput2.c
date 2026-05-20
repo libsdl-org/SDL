@@ -611,8 +611,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             int x_ticks = 0, y_ticks = 0;
 
             if (xev->deviceid != videodata->xinput_master_pointer_device) {
-                // Ignore slave button events on non-focused windows, or focus can be incorrectly set while a grab is active.
-                if (SDL_GetMouseFocus() != windowdata->window) {
+                /* Ignore slave button events on non-focused windows, as they can arrive before FocusIn events,
+                 * or result in focus being incorrectly set while a grab is active.
+                 */
+                if (SDL_GetMouseFocus() != windowdata->window || SDL_GetKeyboardFocus() != windowdata->window) {
                     break;
                 }
 
