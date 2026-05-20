@@ -407,7 +407,7 @@ static jmethodID midAudioSetThreadPriority;
 static jclass mControllerManagerClass;
 
 // method signatures
-static jmethodID midPollInputDevices;
+static jmethodID midDetectDevices;
 static jmethodID midJoystickSetLED;
 static jmethodID midJoystickSetSensorsEnabled;
 static jmethodID midPollHapticDevices;
@@ -752,8 +752,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 
     mControllerManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
-    midPollInputDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                    "pollInputDevices", "()V");
+    midDetectDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                    "detectDevices", "()V");
     midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "joystickSetLED", "(IIII)V");
     midJoystickSetSensorsEnabled = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -767,7 +767,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -2639,10 +2639,10 @@ void Android_JNI_InitTouch(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
 }
 
-void Android_JNI_PollInputDevices(void)
+void Android_JNI_DetectDevices(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollInputDevices);
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midDetectDevices);
 }
 
 void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue)

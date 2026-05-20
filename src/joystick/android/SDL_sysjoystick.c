@@ -535,11 +535,9 @@ done:
     SDL_UnlockJoysticks();
 }
 
-static void ANDROID_JoystickDetect(void);
-
 static bool ANDROID_JoystickInit(void)
 {
-    ANDROID_JoystickDetect();
+    Android_JNI_DetectDevices();
     return true;
 }
 
@@ -550,16 +548,9 @@ static int ANDROID_JoystickGetCount(void)
 
 static void ANDROID_JoystickDetect(void)
 {
-    /* Support for device connect/disconnect is API >= 16 only,
-     * so we poll every three seconds
+    /* Support for device connect/disconnect is implemented using InputDeviceListener
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint64 timeout = 0;
-    Uint64 now = SDL_GetTicks();
-    if (!timeout || now >= timeout) {
-        timeout = now + 3000;
-        Android_JNI_PollInputDevices();
-    }
 }
 
 static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -588,16 +579,6 @@ static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 static SDL_joylist_item *JoystickByDeviceId(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
-
-    while (item) {
-        if (item->device_id == device_id) {
-            return item;
-        }
-        item = item->next;
-    }
-
-    // Joystick not found, try adding it
-    ANDROID_JoystickDetect();
 
     while (item) {
         if (item->device_id == device_id) {
