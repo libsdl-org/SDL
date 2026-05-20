@@ -7140,7 +7140,7 @@ static SDL_GPUQueryPool *VULKAN_CreateQueryPool(
 
     vkQueryPoolCreateInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
     vkQueryPoolCreateInfo.pNext = NULL;
-    vkQueryPoolCreateInfo.flags = VK_QUERY_POOL_CREATE_RESET_BIT_KHR;
+    vkQueryPoolCreateInfo.flags = 0;
     vkQueryPoolCreateInfo.pipelineStatistics = 0;
     vkQueryPoolCreateInfo.queryCount = createinfo->query_count;
     vkQueryPoolCreateInfo.queryType = SDLToVK_QueryType[createinfo->type];
@@ -10019,6 +10019,12 @@ static void VULKAN_BeginQuery(
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanQueryPool *vulkanQueryPool = (VulkanQueryPool *)pool;
+
+    renderer->vkCmdResetQueryPool(
+        vulkanCommandBuffer->commandBuffer,
+        vulkanQueryPool->pool,
+        index,
+        1);
 
     // Timestamp queries don't begin and end, we just need a distinction between
     // a timestamp written when preceding commands are taken and when preceding commands are finished.
