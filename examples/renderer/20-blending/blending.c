@@ -75,7 +75,7 @@ static SDL_BlendMode blend_modes[]       = {
 
     /* Our custom blending 'Screen Blending': dstRGB := 1 - (1 - dstRGB) * (1 - srcRGB)
                                               dstA   := dstA                            */
-    0,
+    0
 };
 static const char *blend_mode_names[] = { "NONE", "BLEND", "ADD", "MOD", "MUL", "SCREEN \"CUSTOM\"" };
 
