@@ -79,10 +79,6 @@ static SDL_BlendMode blend_modes[]       = {
 };
 static const char *blend_mode_names[] = { "NONE", "BLEND", "ADD", "MOD", "MUL", "SCREEN \"CUSTOM\"" };
 
-/* UI Functions Declarations */
-static void init_panels(SDL_FRect *panels);
-static void render_panels(SDL_Renderer *renderer, const SDL_FRect *panels);
-
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_Surface *surface  = NULL;
@@ -98,7 +94,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
-    init_panels(panels);
+    for (int row = 0; row < ROWS; row++)
+    {
+        for (int col = 0; col < COLS; col++)
+        {
+            panels[col + row*COLS] = (SDL_FRect){ col*PANEL_SIZE + col*COL_OFFSET, row*PANEL_SIZE + (row+1)*ROW_OFFSET, PANEL_SIZE, PANEL_SIZE };
+        }
+    }
 
     /* Create 'screen blend' mode */
     blend_modes[ROWS*COLS - 1] = SDL_ComposeCustomBlendMode(
@@ -162,7 +164,30 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
 
     /* Render checkerboard panels */
-    render_panels(renderer, panels);
+    for (int i = 0; i < ROWS*COLS; i++)
+    {
+        /* Loop through the panel pixels */
+        for (int y = (int)panels[i].y; y < PANEL_SIZE + (int)panels[i].y; y += GRID_SIZE)
+        {
+            for (int x = (int)panels[i].x; x < PANEL_SIZE + (int)panels[i].x; x += GRID_SIZE)
+            {
+                SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
+                bool dark      = (x/GRID_SIZE + y/GRID_SIZE) % 2;
+
+                if (dark) SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);    /* Darker color */
+                else      SDL_SetRenderDrawColor(renderer, 110, 110, 110, 255); /* Lighter color */
+
+                SDL_RenderFillRect(renderer, &grid);
+            }
+        }
+
+        /* Label the blend mode */
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderDebugText(renderer, panels[i].x, panels[i].y - 15, blend_mode_names[i]);
+    }
+
+    /* Render panels */
+    SDL_RenderRects(renderer, panels, ROWS*COLS);
 
     /* Render UI text */
     SDL_RenderDebugText(renderer, WINDOW_WIDTH - 176, WINDOW_HEIGHT - 20, "UP/DOWN: CHANGE ALPHA");
@@ -201,44 +226,4 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
     SDL_DestroyTexture(red_rect_texture);
     SDL_DestroyTexture(green_rect_texture);
     SDL_DestroyTexture(blue_rect_texture);
-}
-
-static void init_panels(SDL_FRect *rects)
-{
-    for (int row = 0; row < ROWS; row++)
-    {
-        for (int col = 0; col < COLS; col++)
-        {
-            rects[col + row*COLS] = (SDL_FRect){ col*PANEL_SIZE + col*COL_OFFSET, row*PANEL_SIZE + (row+1)*ROW_OFFSET, PANEL_SIZE, PANEL_SIZE };
-        }
-    }
-}
-
-static void render_panels(SDL_Renderer *renderer, const SDL_FRect *rects)
-{
-    /* loop through the panels */
-    for (int i = 0; i < ROWS*COLS; i++)
-    {
-        /* Loop through the panel pixels */
-        for (int y = rects[i].y; y < PANEL_SIZE + (int)rects[i].y; y += GRID_SIZE)
-        {
-            for (int x = rects[i].x; x < PANEL_SIZE + (int)rects[i].x; x += GRID_SIZE)
-            {
-                SDL_FRect grid = { x, y, GRID_SIZE, GRID_SIZE };
-                bool dark      = (x/GRID_SIZE + y/GRID_SIZE) % 2;
-
-                if (dark) SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);    /* Darker color */
-                else      SDL_SetRenderDrawColor(renderer, 110, 110, 110, 255); /* Lighter color */
-
-                SDL_RenderFillRect(renderer, &grid);
-            }
-        }
-
-        /* Label the blend mode */
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-        SDL_RenderDebugText(renderer, rects[i].x, rects[i].y - 15, blend_mode_names[i]);
-    }
-
-    /* Render panels */
-    SDL_RenderRects(renderer, rects, ROWS*COLS);
 }
