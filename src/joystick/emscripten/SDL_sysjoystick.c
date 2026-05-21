@@ -149,7 +149,7 @@ static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product, int device_in
                 while (true) {
                     try {
                         let devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
-                        if (devices) {
+                        if (devices["length"]) {
                             dynCall("vi", $2, [$3]);
                         }
                         return;
