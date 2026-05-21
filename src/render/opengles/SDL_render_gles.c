@@ -1372,6 +1372,8 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     GLES_InvalidateCachedState(renderer);
     renderer->window = window;
 
+    renderer->name = GLES_RenderDriver.name;
+
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
         goto error;
