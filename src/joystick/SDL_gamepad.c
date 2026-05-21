@@ -3275,7 +3275,7 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
 
                 case GAMEPAD_BLACKLIST_ANYWHERE:
                     if (SDL_strstr(name, blacklist_word->str) != NULL) {
-                        if (SDL_startswith(name, "PG-") {
+                        if (SDL_startswith(name, "PG-")) {
                             // Ipega gamepads have modes with keyboard keys in addition to gamepad controls
                             break;
                         }
