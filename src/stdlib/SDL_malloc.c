@@ -28,7 +28,7 @@
 #define LACKS_STRINGS_H
 #define LACKS_STRING_H
 #define LACKS_STDLIB_H
-#define ABORT
+#define ABORT do {} while (0)
 #define NO_MALLOC_STATS 1
 #define USE_LOCKS 1
 #define USE_DL_PREFIX
