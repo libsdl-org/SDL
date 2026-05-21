@@ -285,18 +285,22 @@ static void set_report(hid_device *dev, unsigned char *data, size_t length)
 EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetByteCallback callback, SetReportCallback set_report_callback), {
     let device = window._hidDeviceList[device_id];
     if (device) {
-        await device.open();
-        device.addEventListener("inputreport", function (event) {
-            const { data, device, reportId } = event;
-            
-            let dataLength = data['byteLength']+1;
-            let pointer = _malloc(dataLength);
-            dynCall("viiii", callback, [pointer, dataLength, reportId, 0]);
-            for (let i = 0; i < data['byteLength']; i++) {
-                dynCall("viiii", callback, [pointer, dataLength, data['getUint8'](i), i+1]);
-            }
-            dynCall("viii", set_report_callback, [dev, pointer, dataLength]);
-        });
+        try {
+            await device.open();
+            device.addEventListener("inputreport", function (event) {
+                const { data, device, reportId } = event;
+                
+                let dataLength = data['byteLength']+1;
+                let pointer = _malloc(dataLength);
+                dynCall("viiii", callback, [pointer, dataLength, reportId, 0]);
+                for (let i = 0; i < data['byteLength']; i++) {
+                    dynCall("viiii", callback, [pointer, dataLength, data['getUint8'](i), i+1]);
+                }
+                dynCall("viii", set_report_callback, [dev, pointer, dataLength]);
+            });
+        } catch (e) {
+            // Pass?
+        }
     }
 });
 
