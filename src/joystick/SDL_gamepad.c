@@ -206,7 +206,7 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
     {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
     {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
     {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
-    // "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
+    // "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
     {" Keyboard",       GAMEPAD_BLACKLIST_ANYWHERE},
     {" Laptop ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "Framework Laptop 16 Numpad Module System Control"
     {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
@@ -3275,6 +3275,10 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
 
                 case GAMEPAD_BLACKLIST_ANYWHERE:
                     if (SDL_strstr(name, blacklist_word->str) != NULL) {
+                        if (SDL_startswith(name, "PG-") {
+                            // Ipega gamepads have modes with keyboard keys in addition to gamepad controls
+                            break;
+                        }
                         return true;
                     }
                     break;
