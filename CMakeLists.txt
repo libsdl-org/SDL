@@ -1139,8 +1139,8 @@ if(SDL_LIBC)
     _Exit exp expf
     fabs fabsf floor floorf fmod fmodf fopen64 fseeko fseeko64
     getenv
-    _i64toa index itoa
-    log log10 log10f logf lround lroundf _ltoa
+    _i64toa _i64toa_s index itoa _itoa_s
+    log log10 log10f logf lround lroundf _ltoa _ltoa_s
     malloc memcmp memcpy memmove memset modf modff
     pow powf putenv
     rindex round roundf
@@ -1154,7 +1154,7 @@ if(SDL_LIBC)
   )
   if(WINDOWS OR CYGWIN)
     list(APPEND symbols_to_check
-      _copysign _fseeki64 _strrev _ui64toa _uitoa _ultoa _wcsdup
+      _copysign _fseeki64 _strrev _ui64toa _ui64toa_s _uitoa _ultoa _ultoa_s _wcsdup
     )
   else()
     list(APPEND symbols_to_check

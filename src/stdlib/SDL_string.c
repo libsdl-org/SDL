@@ -1155,7 +1155,10 @@ static const char ntoa_table[] = {
 
 char *SDL_itoa(int value, char *string, int radix)
 {
-#ifdef HAVE_ITOA
+#ifdef HAVE__ITOA_S
+    (void)_ltoa_s(value, string, 12, radix);
+    return string;
+#elif defined(HAVE_ITOA)
     return itoa(value, string, radix);
 #else
     return SDL_ltoa((long)value, string, radix);
@@ -1173,7 +1176,10 @@ char *SDL_uitoa(unsigned int value, char *string, int radix)
 
 char *SDL_ltoa(long value, char *string, int radix)
 {
-#ifdef HAVE__LTOA
+#ifdef HAVE__LTOA_S
+    (void)_ltoa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__LTOA)
     return _ltoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1191,7 +1197,10 @@ char *SDL_ltoa(long value, char *string, int radix)
 
 char *SDL_ultoa(unsigned long value, char *string, int radix)
 {
-#ifdef HAVE__ULTOA
+#ifdef HAVE__ULTOA_S
+    (void)_ultoa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__ULTOA)
     return _ultoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1215,7 +1224,10 @@ char *SDL_ultoa(unsigned long value, char *string, int radix)
 
 char *SDL_lltoa(long long value, char *string, int radix)
 {
-#ifdef HAVE__I64TOA
+#ifdef HAVE__I64TOA_S
+    (void)_i64toa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__I64TOA)
     return _i64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -1233,7 +1245,10 @@ char *SDL_lltoa(long long value, char *string, int radix)
 
 char *SDL_ulltoa(unsigned long long value, char *string, int radix)
 {
-#ifdef HAVE__UI64TOA
+#ifdef HAVE__UI64TOA_S
+    (void)_ui64toa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__UI64TOA)
     return _ui64toa(value, string, radix);
 #else
     char *bufp = string;
