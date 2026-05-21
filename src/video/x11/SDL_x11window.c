@@ -22,25 +22,25 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include "SDL_hints.h"
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
+#include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
-#include "../../events/SDL_events_c.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
+#include "SDL_hints.h"
 
-#include "SDL_x11video.h"
 #include "SDL_x11mouse.h"
 #include "SDL_x11shape.h"
-#include "SDL_x11xinput2.h"
+#include "SDL_x11video.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11xinput2.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
-#include "SDL_timer.h"
 #include "SDL_syswm.h"
+#include "SDL_timer.h"
 
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
@@ -336,7 +336,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
         ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
          SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
 #ifdef SDL_VIDEO_OPENGL_GLX
-        && (!_this->gl_data || X11_GL_UseEGL(_this) )
+        && (!_this->gl_data || X11_GL_UseEGL(_this))
 #endif
     ) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -452,7 +452,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         if (((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_FORCE_EGL, SDL_FALSE))
 #ifdef SDL_VIDEO_OPENGL_GLX
-            && (!_this->gl_data || X11_GL_UseEGL(_this) )
+            && (!_this->gl_data || X11_GL_UseEGL(_this))
 #endif
         ) {
             vinfo = X11_GLES_GetVisual(_this, display, screen);
@@ -1452,7 +1452,6 @@ static void X11_SetWindowFullscreenViaWM(_THIS, SDL_Window *window, SDL_VideoDis
             X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
         }
 
-
         /* Wait a brief time to see if the window manager decided to let this happen.
            If the window changes at all, even to an unexpected value, we break out. */
         X11_XSync(display, False);
@@ -1528,9 +1527,9 @@ void X11_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *_displ
     X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
 }
 
-int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
+int X11_SetWindowGammaRamp(_THIS, SDL_Window *window, const Uint16 *ramp)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display = data->videodata->display;
     Visual *visual = data->visual;
     Colormap colormap = data->colormap;
@@ -1594,7 +1593,8 @@ int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     return 0;
 }
 
-typedef struct {
+typedef struct
+{
     unsigned char *data;
     int format, count;
     Atom type;
@@ -1809,9 +1809,9 @@ void X11_DestroyWindow(_THIS, SDL_Window *window)
     window->driverdata = NULL;
 }
 
-SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     Display *display;
 
     if (!data) {
@@ -1907,7 +1907,10 @@ int SDL_X11_SetWindowTitle(Display *display, Window xwindow, char *title)
     Status status;
 
     if (X11_XSupportsLocale() != True) {
-        return SDL_SetError("Current locale not supported by X server, cannot continue.");
+        /* Locale not supported by X server on some embeded systems. Continue with locale-independent XStoreName instead */
+        X11_XStoreName(display, xwindow, title);
+        X11_XFlush(display);
+        return 0;
     }
 
     if (conv == 0) {

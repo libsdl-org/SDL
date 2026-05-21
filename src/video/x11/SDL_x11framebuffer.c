@@ -75,6 +75,9 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
 
     *format = X11_GetPixelFormatFromVisualInfo(display, &vinfo);
     if (*format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_Log("X11 framebuffer: visual class=%d depth=%d red=0x%lx green=0x%lx blue=0x%lx",
+            vinfo.class, vinfo.depth,
+            vinfo.visual->red_mask, vinfo.visual->green_mask, vinfo.visual->blue_mask);
         return SDL_SetError("Unknown window pixel format");
     }
 

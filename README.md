@@ -1,6 +1,11 @@
 
-# Simple DirectMedia Layer (SDL) Version 2.0
+# Simple DirectMedia Layer Version 2 E-Ink Patch (SDL-EP)
 
+SDL-EP is a patched version of SDL2 to work with Kindles running firmware 5.16.3+(tested on PW6 running 5.17.1.0.4)
+
+[example-repo](https://github.com/SkylarPlayz348/sdl2-kindle)
+
+## Original README:
 https://www.libsdl.org/
 
 Simple DirectMedia Layer is a cross-platform development library designed

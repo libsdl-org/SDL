@@ -23,8 +23,8 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_hints.h"
-#include "SDL_x11video.h"
 #include "SDL_timer.h"
+#include "SDL_x11video.h"
 #include "edid.h"
 
 /* #define X11MODES_DEBUG */
@@ -117,7 +117,37 @@ Uint32 X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo)
             }
         }
 
-        return SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+        {
+            Uint32 fmt = SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+            if (fmt == SDL_PIXELFORMAT_UNKNOWN && bpp == 8) {
+                /*
+                    8bpp DirectColor with non-standard mask ordering (e.g. Kindle e-ink: R=0x07 G=0x38 B=0xC0)
+                    Choose the closest 8bpp packed-RGB format. Color chanels could not be tested as I do not have
+                    a color e-ink display
+                */
+                return SDL_PIXELFORMAT_RGB332;
+            }
+            return fmt;
+        }
+    }
+
+    if (vinfo->class == GrayScale || vinfo->class == StaticGray) {
+        switch (vinfo->depth) {
+        case 8:
+            return SDL_PIXELFORMAT_INDEX8;
+        case 4:
+            if (BitmapBitOrder(display) == LSBFirst) {
+                return SDL_PIXELFORMAT_INDEX4LSB;
+            } else {
+                return SDL_PIXELFORMAT_INDEX4MSB;
+            }
+        case 1:
+            if (BitmapBitOrder(display) == LSBFirst) {
+                return SDL_PIXELFORMAT_INDEX1LSB;
+            } else {
+                return SDL_PIXELFORMAT_INDEX1MSB;
+            }
+        }
     }
 
     if (vinfo->class == PseudoColor || vinfo->class == StaticColor) {
