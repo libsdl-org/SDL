@@ -140,11 +140,24 @@ static void SDL_WebHID_DisconnectEmscriptenGamepad(int device_index)
 static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product, int device_index)
 {
     MAIN_THREAD_EM_ASM({
+        function timeout(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
         if ("hid" in navigator) {
             async function handler() {
-                let devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
-                if (devices) {
-                    dynCall("vi", $2, [$3]);
+                while (true) {
+                    try {
+                        let devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
+                        if (devices) {
+                            dynCall("vi", $2, [$3]);
+                        }
+                        return;
+                    } catch(e) {
+                        // Exception, most likely because the user hasn't interacted with the page yet.
+                        // Let's wait until they do, hopefully.
+                        await timeout(500);
+                    }
                 }
             }
             handler();
