@@ -121,14 +121,35 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData);
+
 #ifdef SDL_JOYSTICK_HIDAPI
-static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product)
+
+static void SDL_WebHID_DisconnectEmscriptenGamepad(int device_index)
+{
+    int rc;
+    EmscriptenGamepadEvent gamepadState;
+    rc = emscripten_get_gamepad_status(device_index, &gamepadState);
+    if (rc == EMSCRIPTEN_RESULT_SUCCESS) {
+        Emscripten_JoyStickDisconnected(EMSCRIPTEN_EVENT_GAMEPADDISCONNECTED,
+                                        &gamepadState,
+                                        NULL);
+    }
+}
+
+static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product, int device_index)
 {
     MAIN_THREAD_EM_ASM({
         if ("hid" in navigator) {
-            navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
+            async function handler() {
+                let devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
+                if (devices) {
+                    dynCall("vi", $2, [$3]);
+                }
+            }
+            handler();
         }
-    }, vendor, product);
+    }, vendor, product, SDL_WebHID_DisconnectEmscriptenGamepad, device_index);
 }
 #endif
 
@@ -162,10 +183,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
 #ifdef SDL_JOYSTICK_HIDAPI
     if (HIDAPI_IsDeviceSupported(vendor, product, 0, "")) {
-        SDL_RequestWebHIDDevice(vendor, product);
-        printf("HIDAPI_IsDeviceSupported\n");
-        SDL_free(item);
-        goto done;
+        SDL_RequestWebHIDDevice(vendor, product, gamepadEvent->index);
     }
 #endif
 
@@ -308,7 +326,7 @@ done:
     return 1;
 }
 
-static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
