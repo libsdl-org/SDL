@@ -695,10 +695,10 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
 
         sx *= window_data->pointer_scale.x;
         sy *= window_data->pointer_scale.y;
-        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
+        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
 
-        seat->pointer.last_motion.x = (int)SDL_floorf(sx);
-        seat->pointer.last_motion.y = (int)SDL_floorf(sy);
+        seat->pointer.last_motion.x = (int)SDL_floor(sx);
+        seat->pointer.last_motion.y = (int)SDL_floor(sy);
 
         // If the pointer should be confined, but wasn't for some reason, keep trying until it is.
         if (!SDL_RectEmpty(&window->mouse_rect) && !seat->pointer.is_confined) {
