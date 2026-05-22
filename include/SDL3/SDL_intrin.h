@@ -88,8 +88,7 @@
 /**
  * Defined if (and only if) the compiler supports ARM SVE2 intrinsics.
  *
- * If this macro is defined, SDL will have already included `<arm_sve.h>` as
- * appropriate.
+ * Even if this macro is defined, SDL will NOT included `<arm_sve.h>` globally.
  *
  * \since This macro is available since SDL 3.6.0.
  */
@@ -284,8 +283,8 @@ _m_prefetch(void *__P)
 /* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    if defined (_M_ARM64) && 0 /* Please only remove this 0 when MSVC releasing support for SVE2 officially. */
 #      define SDL_SVE2_INTRINSICS 1
-#      include <arm_sve.h>
 #      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
+#      define __ARM_FEATURE_SVE 1 /* Set __ARM_FEATURE_SVE so that it can be used elsewhere, at compile time */
 #      define __ARM_ARCH 8
 #    endif
 #  elif defined(SDL_PLATFORM_APPLE)
@@ -293,7 +292,12 @@ _m_prefetch(void *__P)
 #  elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64)) && \
         defined(__has_include) && __has_include(<arm_sve.h>)
 #    define SDL_SVE2_INTRINSICS 1
-#    include <arm_sve.h>
+/*
+ * IMPORTANT: Please do NOT put #include <arm_sve.h> here. Some versions of LLVM compilers provide arm_sve.h that 
+ *            raise error when failling in checking the existance of __ARM_FEATURE_SVE, while others are not. To
+ *            improve the portability, we only include arm_sve.h in the source files that are dedicated to SVE 
+ *            accelerations. 
+ */
 #  endif
 #endif
 #endif /* compiler version */
