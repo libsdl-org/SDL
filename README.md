@@ -3,6 +3,9 @@
 
 SDL-EP is a patched version of SDL2 to work with Kindles running firmware 5.16.3+(tested on PW6 running 5.17.1.0.4)
 
+## Color E-ink Displays:
+Color e-ink displays have not been tested. So if colors are wrong open an issue and it will be looked into
+
 [example-repo](https://github.com/SkylarPlayz348/sdl2-kindle)
 
 ## Original README:
