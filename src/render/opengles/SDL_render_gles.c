@@ -844,27 +844,6 @@ static bool GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, S
 static void SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
-    //case SDL_RENDERCMD_SETDRAWCOLOR:
-    {
-            const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
-            const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
-            const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
-            const float a = cmd->data.color.color.a;
-            if (data->drawstate.color_dirty ||
-                (r != data->drawstate.color.r) ||
-                (g != data->drawstate.color.g) ||
-                (b != data->drawstate.color.b) ||
-                (a != data->drawstate.color.a)) {
-                data->glColor4f(r, g, b, a);
-                data->drawstate.color.r = r;
-                data->drawstate.color.g = g;
-                data->drawstate.color.b = b;
-                data->drawstate.color.a = a;
-                data->drawstate.color_dirty = false;
-            }
-    }
-
-
 
     if (data->drawstate.viewport_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
@@ -991,7 +970,23 @@ static bool GLES_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         switch (cmd->command) {
         case SDL_RENDERCMD_SETDRAWCOLOR:
         {
-            break; /* not used in this render backend. */
+            const float r = cmd->data.color.color.r * cmd->data.color.color_scale;
+            const float g = cmd->data.color.color.g * cmd->data.color.color_scale;
+            const float b = cmd->data.color.color.b * cmd->data.color.color_scale;
+            const float a = cmd->data.color.color.a;
+            if (data->drawstate.color_dirty ||
+                (r != data->drawstate.color.r) ||
+                (g != data->drawstate.color.g) ||
+                (b != data->drawstate.color.b) ||
+                (a != data->drawstate.color.a)) {
+                data->glColor4f(r, g, b, a);
+                data->drawstate.color.r = r;
+                data->drawstate.color.g = g;
+                data->drawstate.color.b = b;
+                data->drawstate.color.a = a;
+                data->drawstate.color_dirty = false;
+            }
+            break;
         }
 
         case SDL_RENDERCMD_SETVIEWPORT:
