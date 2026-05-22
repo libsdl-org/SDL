@@ -195,8 +195,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderRects(renderer, panels, ROWS*COLS);
 
     /* Render UI text */
-    SDL_RenderDebugText(renderer, WINDOW_WIDTH - 176, WINDOW_HEIGHT - 20, "UP/DOWN: CHANGE ALPHA");
-    SDL_RenderDebugTextFormat(renderer, 0, WINDOW_HEIGHT - 20, "ALPHA: %d", alpha);
+    SDL_RenderDebugText(renderer, (WINDOW_WIDTH - 176) / 2, WINDOW_HEIGHT - 30, "UP/DOWN: CHANGE ALPHA");
+    SDL_RenderDebugTextFormat(renderer, (WINDOW_WIDTH - 80) / 2, WINDOW_HEIGHT - 20, "ALPHA: %d", alpha);
 
     /* Update textures alpha mod */
     SDL_SetTextureAlphaMod(red_rect_texture,   alpha);
