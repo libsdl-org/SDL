@@ -1048,6 +1048,11 @@ static void pointer_dispatch_button(SDL_WaylandSeat *seat, Uint8 sdl_button, boo
                 window->sdlwindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
             } else {
                 window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+
+                // If ending the capture on a subsurface, dispatch a leave event to remove focus.
+                if (seat->pointer.focus_surface != window->surface) {
+                    seat->pointer.pending_frame.leave_surface = window->surface;
+                }
             }
         }
 
