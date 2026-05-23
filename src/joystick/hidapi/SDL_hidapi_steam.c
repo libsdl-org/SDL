@@ -75,17 +75,9 @@ typedef struct SteamControllerStateInternal_t
     short sRightPadX;
     short sRightPadY;
 
-    // Center pad coordinates
-    short sCenterPadX;
-    short sCenterPadY;
-
     // Left analog stick coordinates
     short sLeftStickX;
     short sLeftStickY;
-
-    // Right analog stick coordinates
-    short sRightStickX;
-    short sRightStickY;
 
     unsigned short sTriggerL;
     unsigned short sTriggerR;
