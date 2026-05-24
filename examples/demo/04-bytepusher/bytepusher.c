@@ -74,6 +74,8 @@ static bool load(BytePusher* vm, SDL_IOStream* stream, bool closeio) {
     size_t bytes_read = 0;
     bool ok = true;
 
+    vm->display_help = true;  // will set to false if load succeeds.
+
     SDL_memset(vm->ram, 0, RAM_SIZE);
 
     if (!stream) {
