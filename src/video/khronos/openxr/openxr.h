@@ -26,7 +26,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 59)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 60)
 
 // OpenXR 1.0 version number
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
@@ -948,6 +948,9 @@ typedef enum XrStructureType {
     XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT = 1000763002,
     XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT = 1000763003,
     XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT = 1000763004,
+    XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT = 1000775000,
+    XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT = 1000775001,
+    XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT = 1000775002,
     XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT = 1000781000,
     XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT = 1000781001,
     XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT = 1000781002,
@@ -12867,6 +12870,83 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialPersistenceContextCompleteEXT(
 
 XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialPersistenceContextEXT(
     XrSpatialPersistenceContextEXT              persistenceContext);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_EXT_haptic_parametric is a preprocessor guard. Do not pass it to API calls.
+#define XR_EXT_haptic_parametric 1
+
+#define XR_HAPTIC_PARAMETRIC_MAX_POINTS_TRANSIENTS_EXT 500
+
+
+#define XR_HAPTIC_PARAMETRIC_VIBRATION_EXTEND_DURATION_EXT 50000000
+
+
+#define XR_HAPTIC_PARAMETRIC_FREQUENCY_MIN_HZ_EXT 1
+
+
+#define XR_HAPTIC_PARAMETRIC_FREQUENCY_MAX_HZ_EXT 1000
+
+#define XR_EXT_haptic_parametric_SPEC_VERSION 1
+#define XR_EXT_HAPTIC_PARAMETRIC_EXTENSION_NAME "XR_EXT_haptic_parametric"
+
+typedef enum XrHapticParametricStreamFrameTypeEXT {
+    XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_NONE_EXT = 0,
+    XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_FIRST_FRAME_EXT = 1,
+    XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_INTERMEDIATE_FRAME_EXT = 2,
+    XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_LAST_FRAME_EXT = 3,
+    XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_MAX_ENUM_EXT = 0x7FFFFFFF
+} XrHapticParametricStreamFrameTypeEXT;
+typedef struct XrHapticParametricPropertiesEXT {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrDuration            idealFrameSubmissionRate;
+    XrDuration            minimumFirstFrameDuration;
+    float                 minFrequencyHz;
+    float                 maxFrequencyHz;
+} XrHapticParametricPropertiesEXT;
+
+typedef struct XrHapticParametricPointEXT {
+    XrDuration    time;
+    float         value;
+} XrHapticParametricPointEXT;
+
+typedef struct XrHapticParametricTransientEXT {
+    XrDuration    time;
+    float         amplitude;
+    float         frequency;
+} XrHapticParametricTransientEXT;
+
+typedef struct XrHapticParametricVibrationEXT {
+    XrStructureType                          type;
+    const void* XR_MAY_ALIAS                 next;
+    uint32_t                                 amplitudePointCount;
+    const XrHapticParametricPointEXT*        amplitudePoints;
+    uint32_t                                 frequencyPointCount;
+    const XrHapticParametricPointEXT*        frequencyPoints;
+    uint32_t                                 transientCount;
+    const XrHapticParametricTransientEXT*    transients;
+    float                                    minFrequencyHz;
+    float                                    maxFrequencyHz;
+    XrHapticParametricStreamFrameTypeEXT     streamFrameType;
+} XrHapticParametricVibrationEXT;
+
+// XrSystemHapticParametricPropertiesEXT extends XrSystemProperties
+typedef struct XrSystemHapticParametricPropertiesEXT {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsParametricHaptics;
+} XrSystemHapticParametricPropertiesEXT;
+
+typedef XrResult (XRAPI_PTR *PFN_xrHapticParametricGetPropertiesEXT)(XrSession session, const XrHapticActionInfo* hapticActionInfo, XrHapticParametricPropertiesEXT* parametricProperties);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrHapticParametricGetPropertiesEXT(
+    XrSession                                   session,
+    const XrHapticActionInfo*                   hapticActionInfo,
+    XrHapticParametricPropertiesEXT*            parametricProperties);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
 
