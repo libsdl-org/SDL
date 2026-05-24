@@ -22,6 +22,8 @@ jobs:
       matrix:
         platform: ${{ fromJSON(inputs.platforms) }}
     steps:
+      - name: 'Install unzip'
+        runs: sudo apt install unzip
       - name: 'Set up MSYS2'
         if: ${{ matrix.platform.platform == 'msys2' }}
         uses: msys2/setup-msys2@v2
