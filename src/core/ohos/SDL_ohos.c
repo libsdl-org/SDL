@@ -468,6 +468,24 @@ bool OHOS_ThemeDark()
     return data->ret.data.i;
 }
 
+bool OHOS_IsPhone()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "isPhone";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+
+    int d = data->ret.data.i;
+    SDL_free(data);
+    return d;
+}
+
 const char* OHOS_Locale()
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));

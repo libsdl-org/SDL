@@ -3,7 +3,7 @@ import sdl from 'libSDL3.so';
 import { intl } from '@kit.LocalizationKit';
 import { promptAction, ShowDialogSuccessResponse } from '@kit.ArkUI';
 import { inputMethod } from '@kit.IMEKit'
-import { pasteboard } from '@kit.BasicServicesKit';
+import { deviceInfo, pasteboard } from '@kit.BasicServicesKit';
 import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { batteryInfo } from '@kit.BasicServicesKit';
 
@@ -157,6 +157,10 @@ export class ArkNapiCallback {
   themeIsDark(): number {
     let contextt = context.getHostContext() as common.UIAbilityContext
     return (contextt.config.colorMode == ConfigurationConstant.ColorMode.COLOR_MODE_DARK) ? 1 : 0;
+  }
+
+  isPhone(): number {
+    return deviceInfo.deviceType == "phone" ? 1 : 0;
   }
 }
 

@@ -23,6 +23,8 @@ void OHOS_SetClipboardText(const char* data);
 char* OHOS_GetStoragePath();
 bool OHOS_ThemeDark();
 
+bool OHOS_IsPhone();
+
 void OHOS_FileDialog(int id, const char* defpath, int allowmany, const char* filter);
 
 bool OHOS_IsScreenKeyboardShown(); 
