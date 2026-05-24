@@ -59,6 +59,10 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
+#ifdef SDL_PLATFORM_VISIONOS
+- (void)initializeVisionOSCurvedUI;
+#endif
+
 #ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
@@ -75,7 +79,9 @@
 - (void)deinitKeyboard;
 
 - (void)keyboardWillShow:(NSNotification *)notification;
+- (void)keyboardDidShow:(NSNotification *)notification;
 - (void)keyboardWillHide:(NSNotification *)notification;
+- (void)keyboardDidHide:(NSNotification *)notification;
 
 - (void)updateKeyboard;
 

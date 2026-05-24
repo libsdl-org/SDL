@@ -1,3 +1,15 @@
+/*
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely.
+*/
+
 #include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -60,11 +72,12 @@ static bool SDLCALL tray2_middleclick(void *userdata, SDL_Tray *tray)
 
 static bool trays_destroyed = false;
 static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
 static SDL_TrayEntry *entry_toggle = NULL;
 
 static void SDLCALL tray_close(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_Tray **trays = (SDL_Tray **) ptr;
+    SDL_Tray **trays = (SDL_Tray **)ptr;
 
     trays_destroyed = true;
 
@@ -87,7 +100,7 @@ static void SDLCALL toggle_window(void *ptr, SDL_TrayEntry *entry)
     }
 }
 
-static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filter)
+static void SDLCALL apply_icon(void *ptr, const char *const *filelist, int filter)
 {
     if (!*filelist) {
         return;
@@ -100,7 +113,7 @@ static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filt
         return;
     }
 
-    SDL_Tray *tray = (SDL_Tray *) ptr;
+    SDL_Tray *tray = (SDL_Tray *)ptr;
     SDL_SetTrayIcon(tray, icon);
 
     SDL_DestroySurface(icon);
@@ -123,31 +136,31 @@ static void SDLCALL print_entry(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL set_entry_enabled(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayEntry *target = (SDL_TrayEntry *) ptr;
+    SDL_TrayEntry *target = (SDL_TrayEntry *)ptr;
     SDL_SetTrayEntryEnabled(target, true);
 }
 
 static void SDLCALL set_entry_disabled(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayEntry *target = (SDL_TrayEntry *) ptr;
+    SDL_TrayEntry *target = (SDL_TrayEntry *)ptr;
     SDL_SetTrayEntryEnabled(target, false);
 }
 
 static void SDLCALL set_entry_checked(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayEntry *target = (SDL_TrayEntry *) ptr;
+    SDL_TrayEntry *target = (SDL_TrayEntry *)ptr;
     SDL_SetTrayEntryChecked(target, true);
 }
 
 static void SDLCALL set_entry_unchecked(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayEntry *target = (SDL_TrayEntry *) ptr;
+    SDL_TrayEntry *target = (SDL_TrayEntry *)ptr;
     SDL_SetTrayEntryChecked(target, false);
 }
 
 static void SDLCALL remove_entry(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayEntry *target = (SDL_TrayEntry *) ptr;
+    SDL_TrayEntry *target = (SDL_TrayEntry *)ptr;
     SDL_RemoveTrayEntry(target);
 
     SDL_TrayMenu *ctrl_submenu = SDL_GetTrayEntryParent(entry);
@@ -163,7 +176,7 @@ static void SDLCALL remove_entry(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayMenu *menu = (SDL_TrayMenu *) ptr;
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)ptr;
     SDL_TrayMenu *submenu;
     SDL_TrayEntry *new_ctrl;
     SDL_TrayEntry *new_ctrl_remove;
@@ -242,7 +255,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayMenu *menu = (SDL_TrayMenu *) ptr;
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)ptr;
     SDL_TrayMenu *submenu;
     SDL_TrayEntry *new_ctrl;
     SDL_TrayEntry *new_ctrl_remove;
@@ -349,7 +362,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayMenu *menu = (SDL_TrayMenu *) ptr;
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)ptr;
     SDL_TrayMenu *submenu;
     SDL_TrayEntry *new_ctrl;
     SDL_TrayEntry *new_ctrl_remove;
@@ -398,7 +411,7 @@ static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_TrayMenu *menu = (SDL_TrayMenu *) ptr;
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)ptr;
     SDL_TrayMenu *submenu;
     SDL_TrayMenu *entry_submenu;
     SDL_TrayEntry *new_ctrl;
@@ -579,10 +592,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    window = SDL_CreateWindow("testtray", 640, 480, 0);
-
-    if (!window) {
-        SDL_Log("Couldn't create window: %s", SDL_GetError());
+    if (!SDL_CreateWindowAndRenderer("testtray", 640, 480, 0, &window, &renderer)) {
+        SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         goto quit;
     }
 
@@ -626,10 +637,10 @@ int main(int argc, char **argv)
     SDL_DestroySurface(icon);
     SDL_DestroySurface(icon2);
 
-#define CHECK(name) \
-    if (!name) { \
+#define CHECK(name)                                               \
+    if (!name) {                                                  \
         SDL_Log("Couldn't create " #name ": %s", SDL_GetError()); \
-        goto clean_all; \
+        goto clean_all;                                           \
     }
 
     SDL_TrayMenu *menu = SDL_CreateTrayMenu(tray);
@@ -703,6 +714,10 @@ int main(int argc, char **argv)
                 break;
             }
             toggle_window(NULL, entry_toggle);
+        } else if (e.type == SDL_EVENT_WINDOW_EXPOSED) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+            SDL_RenderPresent(renderer);
         }
     }
 
@@ -718,6 +733,9 @@ clean_tray1:
     SDL_free(trays);
 
 clean_window:
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+    }
     if (window) {
         SDL_DestroyWindow(window);
     }

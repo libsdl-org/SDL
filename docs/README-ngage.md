@@ -33,14 +33,6 @@ software renderer has been removed.
 The outcome is a significantly leaner and more efficient SDL port, which we hope
 will breathe new life into this beloved yet obscure platform.
 
-## To the Stubborn Legends of the DC Scene
-
-This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene --
-because if we managed to pull this off for the N-Gage (yes, the N-Gage), surely
-you guys can stop clinging to SDL2 like it's a rare Shenmue prototype and finally
-make the leap to SDL3.  It's 2025, not 1999 -- and let's be honest, you're rocking
-a state-of-the-art C23 compiler.  The irony writes itself.
-
 ## Existing Issues and Limitations
 
 - For now, the new
@@ -62,3 +54,6 @@ a state-of-the-art C23 compiler.  The irony writes itself.
  expected to be resolved in a future update.
 
 - Dependency tracking is currently non-functional.
+
+- The compiler doesn't support aggregate initialization for structs, so
+  each field must be assigned explicitly.

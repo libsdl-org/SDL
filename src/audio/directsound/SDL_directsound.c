@@ -545,6 +545,7 @@ static bool DSOUND_OpenDevice(SDL_AudioDevice *device)
             tried_format = true;
 
             device->spec.format = test_format;
+            device->spec.freq = SDL_min(DSBFREQUENCY_MAX, device->spec.freq);
 
             // Update the fragment size as size in bytes
             SDL_UpdatedAudioDeviceFormat(device);

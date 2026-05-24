@@ -168,7 +168,7 @@ build-scripts/create-android-project.py --variant aar com.yourcompany.yourapp < 
 Customizing your application name
 ================================================================================
 
-To customize your application name, edit AndroidManifest.xml and build.gradle to replace
+To customize your application name, edit build.gradle to replace
 "org.libsdl.app" with an identifier for your product package.
 
 Then create a Java class extending SDLActivity and place it in a directory
@@ -194,6 +194,8 @@ Here's an example of a minimal class file:
 Then replace "SDLActivity" in AndroidManifest.xml with the name of your
 class, .e.g. "MyGame"
 
+Then edit app/src/main/res/values/strings.xml and change the name there.
+
 
 Customizing your application icon
 ================================================================================
@@ -209,6 +211,24 @@ Loading assets
 Any files you put in the "app/src/main/assets" directory of your project
 directory will get bundled into the application package and you can load
 them using the standard functions in SDL_iostream.h.
+
+As of SDL 3.6.0, SDL APIs, such as SDL_EnumerateDirectory() and
+SDL_IOFromFile(), understand paths that are prefixed with "assets://" and will
+look for paths exclusively inside the APK's "assets" directory. Since this is
+where app-specific data files are meant to be located, SDL_GetBasePath() on
+Android now returns "assets://" to make this work as expected across platforms.
+Note that SDL 3.2.28 to 3.6.0 returned "./" on Android, and before that,
+SDL_GetBasePath() always returned NULL on this platform.
+
+Obviously, paths prefixed with "assets://" are only useful to SDL; other APIs,
+like fopen(), will not understand them at all.
+
+As an alternate approach: SDL APIs on Android treat relative paths in a
+special way. It will look for files under the path returned by
+SDL_GetAndroidInternalStoragePath() first, and failing that, will attempt to
+look for them as if they were prefixed by "assets://", with the relative path
+starting in the base of the assets tree. Absolute paths never check against
+internal storage or assets.
 
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:
@@ -252,7 +272,7 @@ e.g.
             */
             return false;
         case SDL_EVENT_LOW_MEMORY:
-            /* You will get this when your app is paused and iOS wants more memory.
+            /* You will get this when your app is paused and Android wants more memory.
                Release as much memory as possible.
             */
             return false;

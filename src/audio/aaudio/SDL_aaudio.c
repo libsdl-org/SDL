@@ -285,6 +285,28 @@ static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
     }
 }
 
+static void SetOptionalStreamUsage(AAudioStreamBuilder *builder)
+{
+    if (ctx.AAudioStreamBuilder_setUsage) {    // optional API: requires Android 28
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
+        if (hint) {
+            aaudio_usage_t usage = AAUDIO_USAGE_MEDIA;  // covers most things, and is the system default.
+            if ((SDL_strcasecmp(hint, "Communications") == 0) || (SDL_strcasecmp(hint, "GameChat") == 0)) {
+                usage = AAUDIO_USAGE_VOICE_COMMUNICATION;
+            } else if (SDL_strcasecmp(hint, "Game") == 0) {
+                usage = AAUDIO_USAGE_GAME;
+            }
+            ctx.AAudioStreamBuilder_setUsage(builder, usage);
+
+            // !!! FIXME: I _think_ this is okay with the current set of usages we support, but the docs
+            // !!! FIXME:  say you need to dip down into Java to call android.app.Activity.setVolumeControlStream(usage)
+            // !!! FIXME:  so the physical volume buttons control this stream, but that might be more for special cases
+            // !!! FIXME:  like notification sounds, etc, and it's possible you _don't_ want to override this for those
+            // !!! FIXME:  special cases, too! We'll revisit if there are bug reports.
+        }
+    }
+}
+
 static bool BuildAAudioStream(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
@@ -342,6 +364,8 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     } else {
         SDL_Log("Low latency audio disabled");
     }
+
+    SetOptionalStreamUsage(builder);
 
     if (recording && ctx.AAudioStreamBuilder_setInputPreset) {    // optional API: requires Android 28
         // try to use a microphone that is for recording external audio. Otherwise Android might choose the mic used for talking

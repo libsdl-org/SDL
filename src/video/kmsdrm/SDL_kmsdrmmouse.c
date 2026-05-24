@@ -32,6 +32,9 @@
 
 #include "../SDL_pixels_c.h"
 
+// !!! FIXME: atomic cursors are broken right now.
+#define USE_ATOMIC_CURSOR 0
+
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void);
 static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y);
 static bool KMSDRM_ShowCursor(SDL_Cursor *cursor);
@@ -40,10 +43,10 @@ static void KMSDRM_FreeCursor(SDL_Cursor *cursor);
 
 /**************************************************************************************/
 // BEFORE CODING ANYTHING MOUSE/CURSOR RELATED, REMEMBER THIS.
-// How does SDL manage cursors internally? First, mouse =! cursor. The mouse can have
+// How does SDL manage cursors internally? First, mouse != cursor. The mouse can have
 // many cursors in mouse->cursors.
 // -SDL tells us to create a cursor with KMSDRM_CreateCursor(). It can create many
-// cursosr with this, not only one.
+// cursors with this, not only one.
 // -SDL stores those cursors in a cursors array, in mouse->cursors.
 // -Whenever it wants (or the programmer wants) takes a cursor from that array
 // and shows it on screen with KMSDRM_ShowCursor().
@@ -68,7 +71,7 @@ void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     // Destroy the curso GBM BO.
     if (dispdata->cursor_bo) {
         SDL_VideoData *viddata = (SDL_VideoData *) _this->internal;
-        if (viddata->is_atomic) {
+        if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
             if (dispdata->cursor_plane) {
                 // Unset the the cursor BO from the cursor plane.
                 KMSDRM_PlaneInfo info;
@@ -99,7 +102,7 @@ bool KMSDRM_CreateCursorBO(SDL_VideoDisplay *display)
     SDL_VideoData *viddata = dev->internal;
     SDL_DisplayData *dispdata = display->internal;
 
-    if (viddata->is_atomic) {
+    if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
         setup_plane(dev, dispdata, &dispdata->cursor_plane, DRM_PLANE_TYPE_CURSOR);
     }
 
@@ -141,7 +144,7 @@ static bool KMSDRM_RemoveCursorFromBO(SDL_VideoDisplay *display)
     SDL_VideoDevice *video_device = SDL_GetVideoDevice();
     SDL_VideoData *viddata = video_device->internal;
 
-    if (viddata->is_atomic) {
+    if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
         if (dispdata->cursor_plane) {
             KMSDRM_PlaneInfo info;
             SDL_zero(info);
@@ -207,10 +210,15 @@ static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Mouse *mouse, S
         goto cleanup;
     }
 
-    if (viddata->is_atomic) {
+    if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
         // Get the fb_id for the GBM BO so we can show it on the cursor plane.
         KMSDRM_FBInfo *fb = KMSDRM_FBFromBO(video_device, dispdata->cursor_bo);
         KMSDRM_PlaneInfo info;
+
+        if (!fb) {
+            result = SDL_SetError("Failed to get cursor FB from BO");
+            goto cleanup;
+        }
 
         // Show the GBM BO buffer on the cursor plane.
         SDL_zero(info);
@@ -400,7 +408,7 @@ static bool KMSDRM_WarpMouseGlobal(float x, float y)
         if (dispdata->cursor_bo) {
             SDL_VideoDevice *dev = SDL_GetVideoDevice();
             SDL_VideoData *viddata = dev->internal;
-            if (viddata->is_atomic) {
+            if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
                 const SDL_CursorData *curdata = (const SDL_CursorData *) mouse->cur_cursor->internal;
                 drm_atomic_movecursor(dispdata, curdata, (uint16_t) (int) x, (uint16_t) (int) y);
             } else {
@@ -467,7 +475,7 @@ static bool KMSDRM_MoveCursor(SDL_Cursor *cursor)
             return SDL_SetError("Cursor not initialized properly.");
         }
 
-        if (viddata->is_atomic) {
+        if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
             /* !!! FIXME: Some programs expect cursor movement even while they don't do SwapWindow() calls,
                and since we ride on the atomic_commit() in SwapWindow() for cursor movement,
                cursor won't move in these situations. We could do an atomic_commit() here

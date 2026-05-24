@@ -37,6 +37,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 /* SDL_JOYSTICK_RAWINPUT_XINPUT is disabled because using XInput at the same time as
@@ -56,7 +57,7 @@
 
 #ifdef SDL_JOYSTICK_RAWINPUT_WGI
 #include "../../core/windows/SDL_windows.h"
-typedef struct WindowsGamingInputGamepadState WindowsGamingInputGamepadState;
+struct WindowsGamingInputGamepadState;
 #define GamepadButtons_GUIDE 0x40000000
 #define COBJMACROS
 #include "windows.gaming.input.h"
@@ -157,7 +158,7 @@ struct joystick_hwdata
     Uint8 wgi_correlation_id;
     Uint8 wgi_correlation_count;
     Uint8 wgi_uncorrelate_count;
-    WindowsGamingInputGamepadState *wgi_slot;
+    struct WindowsGamingInputGamepadState *wgi_slot;
     struct __x_ABI_CWindows_CGaming_CInput_CGamepadVibration vibration;
 #endif
 
@@ -705,12 +706,12 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadAdded(wgi_state.gamepad_statics, &gamepad_added.iface, &wgi_state.gamepad_added_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadAdded() failed: 0x%lx", hr);
+                        SDL_SetError("add_GamepadAdded() failed: 0x%" SDL_PRIxSLONG, hr);
                     }
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadRemoved(wgi_state.gamepad_statics, &gamepad_removed.iface, &wgi_state.gamepad_removed_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx", hr);
+                        SDL_SetError("add_GamepadRemoved() failed: 0x%" SDL_PRIxSLONG, hr);
                     }
                 }
             }
@@ -1022,7 +1023,8 @@ static bool RAWINPUT_JoystickInit(void)
 {
     SDL_assert(!SDL_RAWINPUT_inited);
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, false)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, false) ||
+        SDL_UsingGameInputForXInputControllers()) {
         return true;
     }
 
@@ -1506,7 +1508,7 @@ static bool RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_
         WindowsGamingInputGamepadState *gamepad_state = ctx->wgi_slot;
         HRESULT hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, ctx->vibration);
         if (!SUCCEEDED(hr)) {
-            return SDL_SetError("Setting vibration failed: 0x%lx", hr);
+            return SDL_SetError("Setting vibration failed: 0x%" SDL_PRIxSLONG, hr);
         }
         ctx->triggers_rumbling = (left_rumble > 0 || right_rumble > 0);
         return true;
@@ -1976,20 +1978,24 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                 state = SDL_POWERSTATE_ON_BATTERY;
                 break;
             }
-            switch (battery_info->BatteryLevel) {
-            case BATTERY_LEVEL_EMPTY:
-                percent = 10;
-                break;
-            case BATTERY_LEVEL_LOW:
-                percent = 40;
-                break;
-            case BATTERY_LEVEL_MEDIUM:
-                percent = 70;
-                break;
-            default:
-            case BATTERY_LEVEL_FULL:
-                percent = 100;
-                break;
+            if (state == SDL_POWERSTATE_ON_BATTERY || state == SDL_POWERSTATE_CHARGING) {
+                switch (battery_info->BatteryLevel) {
+                case BATTERY_LEVEL_EMPTY:
+                    percent = 10;
+                    break;
+                case BATTERY_LEVEL_LOW:
+                    percent = 40;
+                    break;
+                case BATTERY_LEVEL_MEDIUM:
+                    percent = 70;
+                    break;
+                default:
+                case BATTERY_LEVEL_FULL:
+                    percent = 100;
+                    break;
+                }
+            } else {
+                percent = -1;
             }
             SDL_SendJoystickPowerInfo(joystick, state, percent);
         }

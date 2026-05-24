@@ -36,7 +36,7 @@
 #define SDL_SIZEOF_WCHAR_T __SIZEOF_WCHAR_T__
 #elif defined(SDL_PLATFORM_NGAGE)
 #define SDL_SIZEOF_WCHAR_T 2
-#elif defined(SDL_PLATFORM_WINDOWS)
+#elif defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_DOS)
 #define SDL_SIZEOF_WCHAR_T 2
 #else  // assume everything else is UTF-32 (add more tests if compiler-assert fails below!)
 #define SDL_SIZEOF_WCHAR_T 4
@@ -1155,7 +1155,10 @@ static const char ntoa_table[] = {
 
 char *SDL_itoa(int value, char *string, int radix)
 {
-#ifdef HAVE_ITOA
+#ifdef HAVE__ITOA_S
+    (void)_itoa_s(value, string, 12, radix);
+    return string;
+#elif defined(HAVE_ITOA)
     return itoa(value, string, radix);
 #else
     return SDL_ltoa((long)value, string, radix);
@@ -1173,7 +1176,10 @@ char *SDL_uitoa(unsigned int value, char *string, int radix)
 
 char *SDL_ltoa(long value, char *string, int radix)
 {
-#ifdef HAVE__LTOA
+#ifdef HAVE__LTOA_S
+    (void)_ltoa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__LTOA)
     return _ltoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1191,7 +1197,10 @@ char *SDL_ltoa(long value, char *string, int radix)
 
 char *SDL_ultoa(unsigned long value, char *string, int radix)
 {
-#ifdef HAVE__ULTOA
+#ifdef HAVE__ULTOA_S
+    (void)_ultoa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__ULTOA)
     return _ultoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1215,7 +1224,10 @@ char *SDL_ultoa(unsigned long value, char *string, int radix)
 
 char *SDL_lltoa(long long value, char *string, int radix)
 {
-#ifdef HAVE__I64TOA
+#ifdef HAVE__I64TOA_S
+    (void)_i64toa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__I64TOA)
     return _i64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -1233,7 +1245,10 @@ char *SDL_lltoa(long long value, char *string, int radix)
 
 char *SDL_ulltoa(unsigned long long value, char *string, int radix)
 {
-#ifdef HAVE__UI64TOA
+#ifdef HAVE__UI64TOA_S
+    (void)_ui64toa_s(value, string, 64, radix);
+    return string;
+#elif defined(HAVE__UI64TOA)
     return _ui64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -2358,6 +2373,10 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FO
 
 int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap)
 {
+    if (text) {
+        text[0] = 0;
+    }
+
     char *fmt_utf8 = NULL;
     if (fmt) {
         fmt_utf8 = SDL_iconv_string("UTF-8", "WCHAR_T", (const char *)fmt, (SDL_wcslen(fmt) + 1) * sizeof(wchar_t));

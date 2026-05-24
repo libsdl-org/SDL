@@ -934,7 +934,9 @@ static int SDLCALL stdlib_sscanf(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef _WIN64
+#if defined(SDL_PLATFORM_CYGWIN)
+#define SIZE_FORMAT "zu"
+#elif defined(_WIN64)
 #define SIZE_FORMAT "I64u"
 #elif defined(SDL_PLATFORM_WIN32)
 #define SIZE_FORMAT "I32u"

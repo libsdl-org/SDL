@@ -22,26 +22,40 @@ static SDLTest_CommonState *state;
 static int done;
 
 static const char *cursorNames[] = {
-    "arrow",
-    "ibeam",
+    "default",
+    "text",
     "wait",
     "crosshair",
-    "waitarrow",
-    "sizeNWSE",
-    "sizeNESW",
-    "sizeWE",
-    "sizeNS",
-    "sizeALL",
-    "NO",
-    "hand",
-    "window top left",
-    "window top",
-    "window top right",
-    "window right",
-    "window bottom right",
-    "window bottom",
-    "window bottom left",
-    "window left"
+    "progress",
+    "NWSE resize",
+    "NESW resize",
+    "EW resize",
+    "NS resize",
+    "move",
+    "not allowed",
+    "pointer",
+    "NW resize",
+    "N resize",
+    "NE resize",
+    "E resize",
+    "SE resize",
+    "S resize",
+    "SW resize",
+    "W resize",
+    "context menu",
+    "help",
+    "cell",
+    "vertical text",
+    "alias",
+    "copy",
+    "no drop",
+    "grab",
+    "grabbing",
+    "column resize",
+    "row resize",
+    "all scroll",
+    "zoom in",
+    "zoom out"
 };
 SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_SYSTEM_CURSOR_COUNT);
 
@@ -106,6 +120,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
             for (j = 0; modes[j]; ++j) {
                 SDL_FRect cell_rect;
                 const SDL_DisplayMode *mode = modes[j];
+                if (mode->format == SDL_PIXELFORMAT_INDEX8) {
+                    continue;
+                }
 
                 (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gx %gHz",
                                    SDL_GetDisplayName(display),

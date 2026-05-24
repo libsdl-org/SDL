@@ -2912,6 +2912,11 @@ __EOF__
         $brief = shift @briefsplit;
         $brief = dewikify($wikitype, $brief);
 
+        # Hack: `apropros` doesn't like escaped character things like `\[char46]` for `.`...since almost every
+        # manpage will end their Brief section with a period and it won't wordwrap to risk being a groff control
+        # character, just replace it.
+        $brief =~ s/\\\[char46\]/./g;
+
         if (defined $remarks) {
             $remarks = dewikify($wikitype, join("\n", @briefsplit) . $remarks);
         }

@@ -61,6 +61,12 @@ const char *SDL_GetAppID(void)
 {
     const char *id_str = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
 
+#ifdef SDL_PLATFORM_LINUX
+    if (!id_str) {
+        id_str = SDL_getenv("FLATPAK_ID");
+    }
+#endif
+
     if (!id_str) {
         // If the hint isn't set, try to use the application's executable name
         id_str = SDL_GetExeName();

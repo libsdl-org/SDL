@@ -565,6 +565,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SETTINGS_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
 
 #define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->kdevice.timestamp, (uint)event->kdevice.which)
@@ -756,6 +757,18 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
                            event->gsensor.timestamp, (int)event->gsensor.which, (int)event->gsensor.sensor,
                            event->gsensor.data[0], event->gsensor.data[1], event->gsensor.data[2]);
         break;
+
+#define PRINT_CAPSENSE_EVENT(event)                                                                            \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d capsense=%u state=%s)", \
+                       event->gcapsense.timestamp, (int)event->gcapsense.which,                                \
+                       event->gcapsense.capsense, event->gcapsense.down ? "touch" : "release")
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+#undef PRINT_CAPSENSE_EVENT
 
 #define PRINT_FINGER_EVENT(event)                                                                                                                      \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \

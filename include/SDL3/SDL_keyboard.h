@@ -449,6 +449,14 @@ typedef enum SDL_Capitalization
  *   are allowed. This defaults to true if SDL_HINT_RETURN_KEY_HIDES_IME is
  *   "0" or is not set, and defaults to false if SDL_HINT_RETURN_KEY_HIDES_IME
  *   is "1".
+ * - `SDL_PROP_TEXTINPUT_TITLE_STRING` - a title for the top of the on-screen
+ *   keyboard window, if it has one.
+ * - `SDL_PROP_TEXTINPUT_PLACEHOLDER_STRING` - the placeholder shown before
+ *   the user starts typing, when the field is empty.
+ * - `SDL_PROP_TEXTINPUT_DEFAULT_TEXT_STRING` - text to prefill the text field
+ *   with.
+ * - `SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER` - maximum length for the text
+ *   field, in characters (not bytes).
  *
  * On Android you can directly specify the input type:
  *
@@ -476,6 +484,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInputWithProperties(SDL_Window *wi
 #define SDL_PROP_TEXTINPUT_CAPITALIZATION_NUMBER        "SDL.textinput.capitalization"
 #define SDL_PROP_TEXTINPUT_AUTOCORRECT_BOOLEAN          "SDL.textinput.autocorrect"
 #define SDL_PROP_TEXTINPUT_MULTILINE_BOOLEAN            "SDL.textinput.multiline"
+#define SDL_PROP_TEXTINPUT_TITLE_STRING                 "SDL.textinput.title"
+#define SDL_PROP_TEXTINPUT_PLACEHOLDER_STRING           "SDL.textinput.placeholder"
+#define SDL_PROP_TEXTINPUT_DEFAULT_TEXT_STRING          "SDL.textinput.default_text"
+#define SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER            "SDL.textinput.max_length"
 #define SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER     "SDL.textinput.android.inputtype"
 
 /**

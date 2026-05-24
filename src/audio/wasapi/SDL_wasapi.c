@@ -64,6 +64,22 @@ static const IID SDL_IID_IAudioClient3 = { 0x7ed4ee07, 0x8e67, 0x4cd4, { 0x8c, 0
 static bool immdevice_initialized = false;
 static bool supports_recording_on_playback_devices = false;
 
+#ifdef __IAudioClient2_INTERFACE_DEFINED__
+// AUDCLNT_STREAMOPTIONS and AudioClientProperties->Options were
+// added in Windows 8.1: This ugliness is here to make sure that
+// we can build against older SDK versions.
+#define SDL_AUDCLNT_STREAMOPTIONS_RAW 0x1
+typedef union SDL_AudioClientProperties {
+    AudioClientProperties a;
+    struct _SDL_AudioClientProperties {
+        UINT32 cbSize;
+        BOOL bIsOffload;
+        AUDIO_STREAM_CATEGORY eCategory;
+        int Options; // AUDCLNT_STREAMOPTIONS
+    } s;
+} SDL_AudioClientProperties;
+#endif //
+
 // WASAPI is _really_ particular about various things happening on the same thread, for COM and such,
 //  so we proxy various stuff to a single background thread to manage.
 
@@ -741,10 +757,10 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
     IAudioClient2 *client2 = NULL;
     ret = IAudioClient_QueryInterface(client, &SDL_IID_IAudioClient2, (void **)&client2);
     if (SUCCEEDED(ret)) {
-        AudioClientProperties audioProps;
+        SDL_AudioClientProperties audioProps;
 
         SDL_zero(audioProps);
-        audioProps.cbSize = sizeof(audioProps);
+        audioProps.a.cbSize = sizeof(audioProps);
 
 // Setting AudioCategory_GameChat breaks audio on several devices, including Behringer U-PHORIA UM2 and RODE NT-USB Mini.
 // We'll disable this for now until we understand more about what's happening.
@@ -752,28 +768,31 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
         if (hint && *hint) {
             if (SDL_strcasecmp(hint, "Communications") == 0) {
-                audioProps.eCategory = AudioCategory_Communications;
+                audioProps.a.eCategory = AudioCategory_Communications;
             } else if (SDL_strcasecmp(hint, "Game") == 0) {
                 // We'll add support for GameEffects as distinct from GameMedia later when we add stream roles
-                audioProps.eCategory = AudioCategory_GameEffects;
+                audioProps.a.eCategory = AudioCategory_GameEffects;
             } else if (SDL_strcasecmp(hint, "GameChat") == 0) {
-                audioProps.eCategory = AudioCategory_GameChat;
+                audioProps.a.eCategory = AudioCategory_GameChat;
             } else if (SDL_strcasecmp(hint, "Movie") == 0) {
-                audioProps.eCategory = AudioCategory_Movie;
+                audioProps.a.eCategory = AudioCategory_Movie;
             } else if (SDL_strcasecmp(hint, "Media") == 0) {
-                audioProps.eCategory = AudioCategory_Media;
+                audioProps.a.eCategory = AudioCategory_Media;
             }
         }
 #endif
 
-        if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
-            audioProps.Options = AUDCLNT_STREAMOPTIONS_RAW;
+        if (WIN_IsWindows81OrGreater() &&
+            SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
+            audioProps.s.Options = SDL_AUDCLNT_STREAMOPTIONS_RAW;
+        } else {
+            audioProps.a.cbSize = sizeof (AudioClientProperties);
         }
 
-        ret = IAudioClient2_SetClientProperties(client2, &audioProps);
+        ret = IAudioClient2_SetClientProperties(client2, (AudioClientProperties *)&audioProps);
         if (FAILED(ret)) {
             // This isn't fatal, let's log it instead of failing
-            SDL_LogWarn(SDL_LOG_CATEGORY_AUDIO, "IAudioClient2_SetClientProperties failed: 0x%lx", ret);
+            SDL_LogWarn(SDL_LOG_CATEGORY_AUDIO, "IAudioClient2_SetClientProperties failed: 0x%" SDL_PRIxSLONG, ret);
         }
         IAudioClient2_Release(client2);
     }

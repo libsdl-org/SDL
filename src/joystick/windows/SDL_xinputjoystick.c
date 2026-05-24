@@ -27,6 +27,7 @@
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 // Set up for C function definitions, even when using C++
@@ -34,9 +35,8 @@
 extern "C" {
 #endif
 
-/*
- * Internal stuff.
- */
+// Internal stuff
+
 static bool s_bXInputEnabled = false;
 
 bool SDL_XINPUT_Enabled(void)
@@ -46,7 +46,12 @@ bool SDL_XINPUT_Enabled(void)
 
 bool SDL_XINPUT_JoystickInit(void)
 {
-    bool enabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true);
+    bool enabled = true;
+
+    if (!SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, true) ||
+        SDL_UsingGameInputForXInputControllers()) {
+        enabled = false;
+    }
 
     if (enabled && !WIN_LoadXInputDLL()) {
         enabled = false; // oh well.
@@ -300,20 +305,24 @@ static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPU
         state = SDL_POWERSTATE_ON_BATTERY;
         break;
     }
-    switch (pBatteryInformation->BatteryLevel) {
-    case BATTERY_LEVEL_EMPTY:
-        percent = 10;
-        break;
-    case BATTERY_LEVEL_LOW:
-        percent = 40;
-        break;
-    case BATTERY_LEVEL_MEDIUM:
-        percent = 70;
-        break;
-    default:
-    case BATTERY_LEVEL_FULL:
-        percent = 100;
-        break;
+    if (state == SDL_POWERSTATE_ON_BATTERY || state == SDL_POWERSTATE_CHARGING) {
+        switch (pBatteryInformation->BatteryLevel) {
+        case BATTERY_LEVEL_EMPTY:
+            percent = 10;
+            break;
+        case BATTERY_LEVEL_LOW:
+            percent = 40;
+            break;
+        case BATTERY_LEVEL_MEDIUM:
+            percent = 70;
+            break;
+        default:
+        case BATTERY_LEVEL_FULL:
+            percent = 100;
+            break;
+        }
+    } else {
+        percent = -1;
     }
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
@@ -391,6 +400,7 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
         return;
     }
 
+    // FIXME: This does end up making a device ioctl() to query data, we shouldn't do this every update.
     SDL_zero(XBatteryInformation);
     if (XINPUTGETBATTERYINFORMATION) {
         result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);

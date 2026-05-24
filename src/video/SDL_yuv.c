@@ -1499,8 +1499,17 @@ static bool SDL_TARGETING("sse2") SDL_ConvertPixels_SwapNV_SSE2(int width, int h
             dstUV += 8;
             x -= 8;
         }
-        while (x--) {
-            *dstUV++ = SDL_Swap16(*srcUV++);
+        if (x > 0) {
+            const Uint8 *srcUV8 = (const Uint8 *)srcUV;
+            Uint8 *dstUV8 = (Uint8 *)dstUV;
+            srcUV += x;
+            dstUV += x;
+            while (x--) {
+                Uint8 u = *srcUV8++;
+                Uint8 v = *srcUV8++;
+                *dstUV8++ = v;
+                *dstUV8++ = u;
+            }
         }
         srcUV += srcUVPitchLeft;
         dstUV += dstUVPitchLeft;

@@ -282,6 +282,22 @@
 #define SDL_HAS_BUILTIN(x) __has_builtin(x)
 
 /**
+ * Check if the compiler supports a given extension.
+ *
+ * This allows preprocessor checks for things that otherwise might fail to
+ * compile.
+ *
+ * Supported by virtually all clang versions and more-recent GCCs. Use this
+ * instead of checking the clang version if possible.
+ *
+ * On compilers without has_extension support, this is defined to 0 (always
+ * false).
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_HAS_EXTENSION(x) __has_extension(x)
+
+/**
  * A macro to specify data alignment.
  *
  * This informs the compiler that a given datatype or variable must be aligned
@@ -341,6 +357,14 @@
 #define SDL_HAS_BUILTIN(x) __has_builtin(x)
 #else
 #define SDL_HAS_BUILTIN(x) 0
+#endif
+#endif
+
+#ifndef SDL_HAS_EXTENSION
+#ifdef __has_extension
+#define SDL_HAS_EXTENSION(x) __has_extension(x)
+#else
+#define SDL_HAS_EXTENSION(x) 0
 #endif
 #endif
 

@@ -258,8 +258,7 @@ static void PS2_InitializePad(int port, int slot)
 */
 static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    int index = joystick->instance_id;
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = &joyInfo[device_index];
 
     if (!info->opened) {
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
@@ -284,7 +283,7 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     char actAlign[6];
     int res;
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
 
     if (!rumble_status(index)) {
@@ -339,7 +338,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     uint16_t mask, previous, current;
     struct padButtonStatus buttons;
     uint8_t all_axis[PS2_TOTAL_AXIS];
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
     Uint64 timestamp = SDL_GetTicksNS();
@@ -384,7 +383,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void PS2_JoystickClose(SDL_Joystick *joystick)
 {
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     padPortClose(info->port, info->slot);
     info->opened = 0;

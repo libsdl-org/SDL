@@ -32,6 +32,11 @@ extern void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event);
 extern void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y);
 extern void Cocoa_QuitMouse(SDL_VideoDevice *_this);
 
+extern void Cocoa_InitGCMouse(void);
+extern bool Cocoa_GCMouseRelativeMode(void);
+extern bool Cocoa_HasGCMouse(void);
+extern void Cocoa_QuitGCMouse(void);
+
 struct SDL_CursorData
 {
     NSTimer *frameTimer;

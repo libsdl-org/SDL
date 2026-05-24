@@ -20,10 +20,10 @@
 */
 #include "SDL_internal.h"
 
-#ifdef HAVE_GAMEINPUT_H
-
 #include "SDL_windows.h"
 #include "SDL_gameinput.h"
+
+#ifdef HAVE_GAMEINPUT_H
 
 static SDL_SharedObject *g_hGameInputDLL;
 static IGameInput *g_pGameInput;
@@ -77,6 +77,11 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
     return true;
 }
 
+bool SDL_GameInputReady(void)
+{
+    return (g_pGameInput != NULL);
+}
+
 void SDL_QuitGameInput(void)
 {
     SDL_assert(g_nGameInputRefCount > 0);
@@ -92,6 +97,22 @@ void SDL_QuitGameInput(void)
             g_hGameInputDLL = NULL;
         }
     }
+}
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT) &&
+        SDL_GameInputReady()) {
+        return true;
+    }
+    return false;
+}
+
+#else
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    return false;
 }
 
 #endif // HAVE_GAMEINPUT_H

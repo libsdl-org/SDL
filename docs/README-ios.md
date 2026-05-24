@@ -103,6 +103,19 @@ matrix using the size in points (SDL_GetWindowSize()) can be used in order to
 display content at the same scale no matter whether a Retina device is used or not.
 
 
+Notes -- Getting full screen resolution
+==============================================================================
+
+Make sure that you have a Launch Screen key in your Info.plist, e.g.
+```
+    <key>UILaunchScreen</key>
+    <dict/>
+```
+If you don't specify a launch screen, then the OS will assume that your
+application needs an older compatibility mode and will get a limited
+resolution screen.
+
+
 Notes -- Application events
 ==============================================================================
 

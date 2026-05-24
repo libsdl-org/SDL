@@ -35,7 +35,10 @@
 
 #define GAMESIR_PACKET_HEADER_0 0xA1
 #define GAMESIR_PACKET_HEADER_1_GAMEPAD 0xC8
-#define GAMESIR_IMU_RATE_HZ 250
+#define GAMESIR_IMU_RATE_HZ_WIRED 1000
+#define GAMESIR_IMU_RATE_HZ_WIRELESS 250
+// We can't tell whether it's connected via dongle or not...
+#define GAMESIR_IMU_RATE_HZ	GAMESIR_IMU_RATE_HZ_WIRED
 
 #define BTN_A        0x01
 #define BTN_B        0x02
@@ -91,7 +94,7 @@ enum
     //SDL_GAMEPAD_BUTTON_GAMESIR_R7,    // This button doesn't exist?
     //SDL_GAMEPAD_BUTTON_GAMESIR_L8,    // This button doesn't exist?
     //SDL_GAMEPAD_BUTTON_GAMESIR_R8,    // This button doesn't exist?
-    SDL_GAMEPAD_BUTTON_GAMESIR_MUTE,    // This button controls the audio mute LED
+    //SDL_GAMEPAD_BUTTON_GAMESIR_MUTE,  // This button controls the audio mute LED and doesn't seem to be reported
     //SDL_GAMEPAD_BUTTON_GAMESIR_M      // This button is for internal use by the firmware
     SDL_GAMEPAD_NUM_GAMESIR_BUTTONS
 };
@@ -622,7 +625,7 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_M, buttons & BTN_M);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_L4, buttons & BTN_L4);
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_R4, buttons & BTN_R4);
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_MUTE, buttons & BTN_MUTE);
+        //SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMESIR_MUTE, buttons & BTN_MUTE);
     }
 
     if (last[3] != data[3]) {

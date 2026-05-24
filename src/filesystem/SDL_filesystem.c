@@ -203,7 +203,7 @@ static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to
         pch = *(++pattern);
     }
 
-    *matched_to_dir = ((pch == '/') || (pch == '\0'));  // end of string and the pattern is complete or failed at a '/'? We should descend into this directory.
+    *matched_to_dir = (pch == '/');  // end of string and the pattern failed at a '/'? We should descend into this directory.
 
     return (pch == '\0');  // survived the whole pattern? That's a match!
 }
@@ -371,20 +371,28 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
         return NULL;
     }
 
-    // if path ends with any slash, chop them off, so we don't confuse the pattern matcher later.
     char *pathcpy = NULL;
     size_t pathlen = SDL_strlen(path);
-    if ((pathlen > 1) && ((path[pathlen-1] == '/') || (path[pathlen-1] == '\\'))) {
-        pathcpy = SDL_strdup(path);
-        if (!pathcpy) {
-            return NULL;
+
+    // if path ends with any slash, chop them off, so we don't confuse the pattern matcher later.
+    #ifdef SDL_PLATFORM_ANDROID
+    if (SDL_strcmp(path, "assets://") == 0) {  // don't chop '//' off this if we're looking for the root of the asset tree.
+        pathlen--;  // we'll add a 1 again later.
+    } else
+    #endif
+    {
+        if ((pathlen > 1) && ((path[pathlen-1] == '/') || (path[pathlen-1] == '\\'))) {
+            pathcpy = SDL_strdup(path);
+            if (!pathcpy) {
+                return NULL;
+            }
+            char *ptr = &pathcpy[pathlen-1];
+            while ((ptr > pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
+                *(ptr--) = '\0';
+                --pathlen;
+            }
+            path = pathcpy;
         }
-        char *ptr = &pathcpy[pathlen-1];
-        while ((ptr > pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
-            *(ptr--) = '\0';
-            --pathlen;
-        }
-        path = pathcpy;
     }
 
     if (!pattern) {

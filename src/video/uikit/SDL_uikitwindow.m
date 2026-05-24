@@ -33,6 +33,7 @@
 #include "SDL_uikitappdelegate.h"
 #include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
+#include "SDL_UIKitBridge-objc.h"
 
 #include <Foundation/Foundation.h>
 
@@ -53,7 +54,7 @@
 
 @end
 
-static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, bool created)
+static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_PropertiesID create_props, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
@@ -107,6 +108,20 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
     window->w = width;
     window->h = height;
 
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
+
+#ifdef SDL_PLATFORM_VISIONOS
+    const char *settings = SDL_GetStringProperty(create_props, SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING, NULL);
+    if (settings) {
+        data.settings = [NSString stringWithUTF8String:settings];
+    } else {
+        data.settings = nil;
+    }
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING, settings);
+#endif
+
     /* The View Controller will handle rotating the view when the device
      * orientation changes. This will trigger resize events, if appropriate. */
     data.viewcontroller = [[SDL_uikitviewcontroller alloc] initWithSDLWindow:window];
@@ -118,10 +133,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
     /* Sets this view as the controller's view, and adds the view to the window
      * hierarchy. */
     [view setSDLWindow:window];
-
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, (__bridge void *)data.uiwindow);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER, SDL_METALVIEW_TAG);
 
     return true;
 }
@@ -228,7 +239,7 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         }
 #endif
 
-        if (!SetupWindowData(_this, window, uiwindow, true)) {
+        if (!SetupWindowData(_this, window, uiwindow, create_props, true)) {
             return false;
         }
     }
@@ -376,6 +387,9 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             [data.viewcontroller stopAnimation];
 
+#ifdef SDL_PLATFORM_VISIONOS
+            SDL_UIKit_HideCurvedWindow(window);
+#endif
             /* Detach all views from this window. We use a copy of the array
              * because setSDLWindow will remove the object from the original
              * array, which would be undesirable if we were iterating over it. */

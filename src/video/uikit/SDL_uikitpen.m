@@ -124,6 +124,11 @@ static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, 
         // rotation is in radians, and only available on a later iOS.
         const float rotation = rollAngle * radians_to_degrees;  // !!! FIXME: this might need adjustment, I don't have a pencil that supports it.
 
+        if (force == 0.0f && (SDL_GetPenStatus(penId, NULL, 0) & SDL_PEN_INPUT_DOWN)) {
+            // The first hover as the pen is being released has a stale position, so ignore it
+            return;
+        }
+
         SDL_SendPenMotion(timestamp, penId, window, point->x, point->y);
         SDL_SendPenAxis(timestamp, penId, window, SDL_PEN_AXIS_PRESSURE, pressure);
         SDL_SendPenAxis(timestamp, penId, window, SDL_PEN_AXIS_XTILT, xtilt);

@@ -48,6 +48,9 @@ extern bool SDL_endswith(const char *string, const char *suffix);
  */
 extern int SDL_URIToLocal(const char *src, char *dst);
 
+/// Determine if a URI is valid by validating the scheme.
+extern bool SDL_IsURI(const char *uri);
+
 typedef enum
 {
     SDL_OBJECT_TYPE_UNKNOWN,

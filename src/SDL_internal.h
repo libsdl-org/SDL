@@ -276,11 +276,16 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
     } while (0)
 #endif
 
-#define PUSH_SDL_ERROR() \
-    { char *_error = SDL_strdup(SDL_GetError());
+// Macros to save and restore error values
+#define SDL_PushError() do { \
+    char *saved_error = SDL_strdup(SDL_GetError())
 
-#define POP_SDL_ERROR() \
-    SDL_SetError("%s", _error); SDL_free(_error); }
+#define SDL_PopError()                          \
+    if (saved_error) {                      \
+        SDL_SetError("%s", saved_error);    \
+        SDL_free(saved_error);              \
+    }                                       \
+} while (0)
 
 #if defined(SDL_DISABLE_INVALID_PARAMS)
 #ifdef DEBUG

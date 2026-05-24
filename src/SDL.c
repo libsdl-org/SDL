@@ -30,10 +30,6 @@
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
-#include "core/unix/SDL_gtk.h"
-#endif
-
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -714,10 +710,6 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(SDL_PLATFORM_OHOS) && !defined(SDL_PLATFORM_PRIVATE)
-    SDL_Gtk_Quit();
-#endif
-
     SDL_QuitTimers();
     SDL_QuitAsyncIO();
 
@@ -779,6 +771,8 @@ const char *SDL_GetPlatform(void)
     return "Linux";
 #elif defined(__MINT__)
     return "Atari MiNT";
+#elif defined(SDL_PLATFORM_MSDOS)
+    return "MS-DOS";
 #elif defined(SDL_PLATFORM_MACOS)
     return "macOS";
 #elif defined(SDL_PLATFORM_NETBSD)
@@ -799,6 +793,8 @@ const char *SDL_GetPlatform(void)
     return "Solaris";
 #elif defined(SDL_PLATFORM_WIN32)
     return "Windows";
+#elif defined(SDL_PLATFORM_CYGWIN)
+    return "Cygwin";
 #elif defined(SDL_PLATFORM_WINGDK)
     return "WinGDK";
 #elif defined(SDL_PLATFORM_XBOXONE)
@@ -823,9 +819,22 @@ const char *SDL_GetPlatform(void)
     return "GNU/Hurd";
 #elif defined(__managarm__)
     return "Managarm";
+#elif defined(SDL_PLATFORM_OHOS)
+    return "OpenHarmony/HarmonyOS"
 #else
     return "Unknown (see SDL_platform.h)";
 #endif
+}
+
+bool SDL_IsPhone(void)
+{
+#if defined(SDL_PLATFORM_ANDROID) || \
+    (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_VISIONOS))
+    if (!SDL_IsTablet() && !SDL_IsTV()) {
+        return true;
+    }
+#endif
+    return false;
 }
 
 bool SDL_IsTablet(void)

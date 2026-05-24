@@ -266,7 +266,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
      */
     const char *envr = SDL_getenv("XDG_DATA_HOME");
-    const char *append;
+    const char *prepend;
     char *result = NULL;
     char *ptr = NULL;
 
@@ -278,26 +278,26 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
-        append = "/.local/share/";
+        prepend = "/.local/share/";
     } else {
-        append = "/";
+        prepend = "/";
     }
 
     size_t len = SDL_strlen(envr);
     if (envr[len - 1] == '/') {
-        append += 1;
+        prepend += 1;
     }
 
-    len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
+    len += SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 3;
     result = (char *)SDL_malloc(len);
     if (!result) {
         return NULL;
     }
 
     if (*org) {
-        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, append, org, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, prepend, org, app);
     } else {
-        (void)SDL_snprintf(result, len, "%s%s%s/", envr, append, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/", envr, prepend, app);
     }
 
     for (ptr = result + 1; *ptr; ptr++) {

@@ -61,6 +61,14 @@
 
 // #define HIGHDPI_DEBUG
 
+// Undocumented window messages
+#ifndef WM_NCUAHDRAWCAPTION
+#define WM_NCUAHDRAWCAPTION 0xAE
+#endif
+#ifndef WM_NCUAHDRAWFRAME
+#define WM_NCUAHDRAWFRAME 0xAF
+#endif
+
 // Make sure XBUTTON stuff is defined that isn't in older Platform SDKs...
 #ifndef WM_XBUTTONDOWN
 #define WM_XBUTTONDOWN 0x020B
@@ -893,6 +901,7 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
 
     if (hid_loaded) {
         char devName[MAX_PATH + 1];
+        devName[0] = '\0';
         UINT cap = sizeof(devName) - 1;
         UINT len = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, devName, &cap);
         if (len != (UINT)-1) {
@@ -1214,6 +1223,24 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
            actually being the foreground window, but this appears to get called in all cases where
            the global foreground window changes to and from this window. */
         WIN_UpdateFocus(data->window, !!wParam, GetMessagePos());
+
+        /* Handle borderless windows; this event is intended for drawing the titlebar, so we need
+           to stop that from happening. */
+        if (data->window->flags & SDL_WINDOW_BORDERLESS) {
+            lParam = -1; // According to MSDN, DefWindowProc will draw a title bar if lParam != -1
+        }
+    } break;
+
+    case WM_NCUAHDRAWCAPTION:
+    case WM_NCUAHDRAWFRAME:
+    {
+        /* These messages are undocumented. They are responsible for redrawing the window frame and
+           caption. Notably, WM_NCUAHDRAWCAPTION is sent when calling SetWindowText on a window.
+           For borderless windows, we don't want to draw a frame or caption, so we should stop
+           that from happening. */
+        if (data->window->flags & SDL_WINDOW_BORDERLESS) {
+            returnCode = 0;
+        }
     } break;
 
     case WM_ACTIVATE:

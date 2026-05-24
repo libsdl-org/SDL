@@ -31,6 +31,10 @@
 
 #include <SDL3/SDL_platform.h>
 
+#if defined(SDL_PLATFORM_CYGWIN) && !defined(USE_OPENGL32)
+#define USE_OPENGL32 1     /* use native windows opengl32 */
+#endif
+
 #ifndef SDL_PLATFORM_IOS  /* No OpenGL on iOS. */
 
 /*

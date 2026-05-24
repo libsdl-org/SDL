@@ -28,14 +28,20 @@
 #define SDL_USE_LIBDBUS 1
 #include <dbus/dbus.h>
 
+#include "../../SDL_list.h"
+#include "../../SDL_menu.h"
+
 #ifndef DBUS_TIMEOUT_USE_DEFAULT
 #define DBUS_TIMEOUT_USE_DEFAULT -1
 #endif
 #ifndef DBUS_TIMEOUT_INFINITE
-#define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
+#define DBUS_TIMEOUT_INFINITE ((int)0x7fffffff)
 #endif
 #ifndef DBUS_TYPE_UNIX_FD
-#define DBUS_TYPE_UNIX_FD ((int) 'h')
+#define DBUS_TYPE_UNIX_FD ((int)'h')
+#endif
+#ifndef DBUS_ERROR_UNKNOWN_PROPERTY
+#define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
 #endif
 
 typedef struct SDL_DBusContext
@@ -95,6 +101,15 @@ typedef struct SDL_DBusContext
     void (*free_string_array)(char **);
     void (*shutdown)(void);
 
+    /* New symbols for SNI and menu export */
+    int (*bus_request_name)(DBusConnection *, const char *, unsigned int, DBusError *);
+    dbus_bool_t (*message_is_method_call)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_error)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_method_return)(DBusMessage *);
+    dbus_bool_t (*message_iter_append_fixed_array)(DBusMessageIter *, int, const void *, int);
+    void (*message_iter_get_fixed_array)(DBusMessageIter *, void *, int *);
+    dbus_bool_t (*connection_unregister_object_path)(DBusConnection *, const char *);
+    dbus_bool_t (*connection_get_object_path_data)(DBusConnection *, const char *, void **);
 } SDL_DBusContext;
 
 extern void SDL_DBus_Init(void);
@@ -119,12 +134,23 @@ extern void SDL_DBus_FreeReply(DBusMessage **saved_reply);
 extern void SDL_DBus_ScreensaverTickle(void);
 extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
 
+extern bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activation_token);
+
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
 extern int SDL_DBus_CameraPortalRequestAccess(void);
+
+// Menu export functions
+#define SDL_DBUS_UPDATE_MENU_FLAGS_NONE 0
+extern SDL_MenuItem *SDL_DBus_CreateMenuItem(void);
+extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
+extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu, const char *path, void (*cb)(SDL_ListNode *, const char *, void *), void *cbdata, unsigned char flags);
+extern void SDL_DBus_RegisterMenuOpenCallback(SDL_ListNode *menu, bool (*cb)(SDL_ListNode *, void *), void *cbdata);
+extern void SDL_DBus_TransferMenuItemProperties(SDL_MenuItem *src, SDL_MenuItem *dst);
+extern void SDL_DBus_RetractMenu(SDL_DBusContext *ctx, DBusConnection *conn, const char **path);
 
 #endif // HAVE_DBUS_DBUS_H
 

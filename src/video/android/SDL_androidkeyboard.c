@@ -361,7 +361,11 @@ static SDL_Scancode TranslateKeycode(int keycode)
         scancode = Android_Keycodes[keycode];
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
-        __android_log_print(ANDROID_LOG_INFO, "SDL", "Unknown keycode %d", keycode);
+        if (keycode >= 96 /* AKEYCODE_BUTTON_A */ && keycode < 111 /* AKEYCODE_ESCAPE */) {
+            // Ignore game controller buttons
+        } else {
+            __android_log_print(ANDROID_LOG_INFO, "SDL", "Unknown keycode %d", keycode);
+        }
     }
     return scancode;
 }

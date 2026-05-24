@@ -29,6 +29,7 @@
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
+#include "SDL_UIKitBridge-objc.h"
 
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
@@ -47,9 +48,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
     bool wants_observation = (UIKit_EventPumpEnabled || SDL_HasMainCallbacks());
     if (!wants_observation) {
         // Make sure no windows have active animation callbacks
-        int num_windows = 0;
-        SDL_free(SDL_GetWindows(&num_windows));
-        if (num_windows > 0) {
+        if (SDL_HasWindows()) {
             wants_observation = true;
         }
     }
@@ -310,6 +309,12 @@ static bool SetGCMouseRelativeMode(bool enabled)
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
     Uint64 timestamp = SDL_GetTicksNS();
+
+#ifdef SDL_PLATFORM_VISIONOS
+    if (!SDL_VisionOS_PointerModeEnabled() && SDL_UIKit_HasCurvedWindow()) {
+        return;
+    }
+#endif
     SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button, pressed);
 }
 
@@ -320,19 +325,19 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     SDL_AddMouse(mouseID, NULL);
 
     mouse.mouseInput.leftButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
     };
     mouse.mouseInput.middleButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
     };
     mouse.mouseInput.rightButton.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-      OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
+        OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
     };
 
     int auxiliary_button = SDL_BUTTON_X1;
     for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
         btn.pressedChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-          OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
+            OnGCMouseButtonChanged(mouseID, auxiliary_button, pressed);
         };
         ++auxiliary_button;
     }
@@ -340,14 +345,27 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
         Uint64 timestamp = SDL_GetTicksNS();
 
-        if (SDL_GCMouseRelativeMode()) {
+        bool send_motion = SDL_GCMouseRelativeMode();
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!send_motion && SDL_VisionOS_PointerModeEnabled()) {
+            send_motion = true;
+        }
+#endif
+        if (send_motion) {
             SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID, true, deltaX, -deltaY);
         }
     };
 
     mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
         Uint64 timestamp = SDL_GetTicksNS();
-
+        
+#ifdef SDL_PLATFORM_VISIONOS
+        /* Mouse scroll values on visionOS have swapped axes compared to other platforms.
+         * There is also an acceleration ramp applied, so clamp to a single tick per event.
+         */
+        float vertical = yValue < 0 ? -1 : yValue > 0 ? 1 : 0;
+        float horizontal = xValue < 0 ? -1 : xValue > 0 ? 1 : 0;
+#else
         /* Raw scroll values come in here, vertical values in the first axis, horizontal values in the second axis.
          * The vertical values are negative moving the mouse wheel up and positive moving it down.
          * The horizontal values are negative moving the mouse wheel left and positive moving it right.
@@ -355,6 +373,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
          */
         float vertical = -xValue;
         float horizontal = yValue;
+#endif
 
         if (mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
             // Since these are raw values, we need to flip them ourselves

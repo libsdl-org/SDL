@@ -7,10 +7,12 @@ import json
 import logging
 import os
 import re
+import shlex
 from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+WINDOWS_GAMEINPUT_VERSION = "v3.3.195.0 "
 
 class AppleArch(Enum):
     Aarch64 = "aarch64"
@@ -41,6 +43,7 @@ class SdlPlatform(Enum):
     Haiku = "haiku"
     LoongArch64 = "loongarch64"
     Msys2 = "msys2"
+    Cygwin = "cygwin"
     Linux = "linux"
     MacOS = "macos"
     Ios = "ios"
@@ -57,6 +60,7 @@ class SdlPlatform(Enum):
     NetBSD = "netbsd"
     OpenBSD = "openbsd"
     NGage = "ngage"
+    DJGPP = "djgpp"
     Harmony = "harmony"
 
 
@@ -101,7 +105,6 @@ class JobSpec:
     clang_cl: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
-    harmony_arch: Optional[str] = None
     more_hard_deps: bool = False
 
 
@@ -110,6 +113,7 @@ JOB_SPECS = {
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
     "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
     "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
+    "cygwin": JobSpec(name="Cygwin",                                        os=JobOs.WindowsLatest,     platform=SdlPlatform.Cygwin,      artifact="SDL-cygwin", ),
     "msvc-x64": JobSpec(name="Windows (MSVC, x64)",                         os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x64",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC/SDL.sln", ),
     "msvc-x86": JobSpec(name="Windows (MSVC, x86)",                         os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x86",             msvc_arch=MsvcArch.X86,   msvc_project="VisualC/SDL.sln", ),
     "msvc-clang-x64": JobSpec(name="Windows (MSVC, clang-cl x64)",          os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-clang-cl-x64",       msvc_arch=MsvcArch.X64,   clang_cl=True, ),
@@ -150,6 +154,7 @@ JOB_SPECS = {
     "openbsd": JobSpec(name="OpenBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.OpenBSD,     artifact="SDL-openbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
+    "djgpp": JobSpec(name="DOS (DJGPP)",                                    os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
     "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
     "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
     "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
@@ -163,6 +168,7 @@ class StaticLibType(Enum):
 
 class SharedLibType(Enum):
     WIN32 = "SDL3.dll"
+    CYGDLL = "cygSDL3.dll"
     SO_0 = "libSDL3.so.0"
     SO = "libSDL3.so"
     DYLIB = "libSDL3.0.dylib"
@@ -217,9 +223,10 @@ class JobDetails:
     minidump: bool = False
     intel: bool = False
     msys2_msystem: str = ""
-    msys2_env: str = ""
-    msys2_no_perl: bool = False
+    msys2_packages: list[str] = dataclasses.field(default_factory=list)
+    cygwin_packages: list[str] = dataclasses.field(default_factory=list)
     werror: bool = True
+    microsoft_gameinput_version: str = ""
     msvc_vcvars_arch: str = ""
     msvc_vcvars_sdk: str = ""
     msvc_project: str = ""
@@ -240,6 +247,7 @@ class JobDetails:
     pypi_packages: list[str] = dataclasses.field(default_factory=list)
     setup_gage_sdk_path: str = ""
     binutils_strings: str = "strings"
+    ctest_args: str = ""
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
@@ -253,8 +261,8 @@ class JobDetails:
             "enable-artifacts": enable_artifacts,
             "shell": self.shell,
             "msys2-msystem": self.msys2_msystem,
-            "msys2-env": self.msys2_env,
-            "msys2-no-perl": self.msys2_no_perl,
+            "msys2-packages": my_shlex_join(self.msys2_packages),
+            "cygwin-packages": my_shlex_join(self.cygwin_packages),
             "android-ndk": self.android_ndk,
             "java": self.java,
             "intel": self.intel,
@@ -289,6 +297,7 @@ class JobDetails:
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
+            "microsoft-gameinput-version": self.microsoft_gameinput_version,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
             "msvc-vcvars-sdk": self.msvc_vcvars_sdk,
             "msvc-project": self.msvc_project,
@@ -310,6 +319,7 @@ class JobDetails:
             "pypi-packages": my_shlex_join(self.pypi_packages),
             "setup-ngage-sdk-path": self.setup_gage_sdk_path,
             "binutils-strings": self.binutils_strings,
+            "ctest-args": self.ctest_args,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -325,7 +335,7 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
-def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDetails:
+def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args: list[str]) -> JobDetails:
     job = JobDetails(
         name=spec.name,
         key=key,
@@ -439,6 +449,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                         job.setup_libusb_arch = "x86"
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
+            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
+            job.cflags.append("-I$GAMEINPUT_INCLUDE")
+            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Linux:
             if spec.name.startswith("Ubuntu"):
                 assert spec.os.value.startswith("ubuntu-")
@@ -494,6 +507,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
             fpic = True
+            job.cmake_arguments.append("-DSDLTEST_GDB=ON")
+            job.apt_packages.append("gdb")
             if spec.more_hard_deps:
                 # Some distros prefer to make important dependencies
                 # mandatory, so that SDL won't start up but lack expected
@@ -744,15 +759,47 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.shell = "msys2 {0}"
             assert spec.msys2_platform
             job.msys2_msystem = spec.msys2_platform.value
-            job.msys2_env = {
+            job.shared_lib = SharedLibType.WIN32
+            job.static_lib = StaticLibType.A
+            msys2_env = {
                 "mingw32": "mingw-w64-i686",
                 "mingw64": "mingw-w64-x86_64",
                 "clang64": "mingw-w64-clang-x86_64",
                 "ucrt64": "mingw-w64-ucrt-x86_64",
             }[spec.msys2_platform.value]
-            job.msys2_no_perl = spec.msys2_platform in (Msys2Platform.Mingw32, )
-            job.shared_lib = SharedLibType.WIN32
+            job.msys2_packages.extend([
+                f"{msys2_env}-cc",
+                f"{msys2_env}-cmake",
+                f"{msys2_env}-ffmpeg",
+                f"{msys2_env}-ninja",
+                f"{msys2_env}-pkg-config",
+            ])
+            if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
+                job.msys2_packages.append(f"{msys2_env}-perl")
+                job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
+            if job.ccache:
+                job.msys2_packages.append(f"{msys2_env}-ccache")
+            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
+            job.cflags.append("-I$GAMEINPUT_INCLUDE")
+            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
+        case SdlPlatform.Cygwin:
+            job.ccache = False # Missing evict-older-than option
+            job.clang_tidy = False # error finding files [clang-diagnostic-error] cause might be space in command path
+            job.test_pkg_config = False # Linefeed issue in test_pkgconfig.sh
+            job.shell = "bash --noprofile --norc -eo pipefail -o igncr {0}"
+            job.shared_lib = SharedLibType.CYGDLL
             job.static_lib = StaticLibType.A
+            job.cmake_arguments.append("-DSDLTEST_GDB=ON")
+            job.cygwin_packages.extend([
+                "cmake",
+                "gcc-core",
+                "gcc-g++",
+                "gdb",
+                "ninja",
+                "pkg-config",
+                "perl",
+                "python",
+            ])
         case SdlPlatform.Riscos:
             job.ccache = False  # FIXME: enable when container gets upgrade
             # FIXME: Enable SDL_WERROR
@@ -812,17 +859,20 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.setup_gage_sdk_path = "C:/ngagesdk"
             job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
             job.test_pkg_config = False
-        case SdlPlatform.Harmony:
-            job.cmake_arguments.extend((
-                f"-DOHOS_ARCH={spec.harmony_arch}",
-                "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
-                "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=1"
-            ))
-            job.shared_lib = SharedLibType.SO
+        case SdlPlatform.DJGPP:
+            build_parallel = False
+            job.ccache = True
+            job.apt_packages = ["ccache", "libfl-dev"]  # djgpp needs libfl.so.2
+            job.cmake_build_type = "Release"
+            job.setup_ninja = True
             job.static_lib = StaticLibType.A
+            job.shared_lib = None
+            job.clang_tidy = False
+            job.werror = False  # FIXME: enable SDL_WERROR
+            job.shared = False
             job.run_tests = False
             job.test_pkg_config = False
-            job.werror = False
+            job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
@@ -835,6 +885,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
         ))
+    job.ctest_args = shlex.join(ctest_args)
     if not build_parallel:
         job.cmake_build_arguments.append("-j1")
     if job.cflags or job.cppflags:
@@ -857,9 +908,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
     return job
 
 
-def spec_to_platform(spec: JobSpec, key: str, enable_artifacts: bool, trackmem_symbol_names: bool) -> dict[str, str|bool]:
+def spec_to_platform(spec: JobSpec, key: str, enable_artifacts: bool, trackmem_symbol_names: bool, ctest_args:list[str]) -> dict[str, str|bool]:
     logger.info("spec=%r", spec)
-    job = spec_to_job(spec, key=key, trackmem_symbol_names=trackmem_symbol_names)
+    job = spec_to_job(
+        spec,
+        key=key,
+        trackmem_symbol_names=trackmem_symbol_names,
+        ctest_args=ctest_args,
+    )
     logger.info("job=%r", job)
     platform = job.to_workflow(enable_artifacts=enable_artifacts)
     logger.info("platform=%r", platform)
@@ -888,6 +944,7 @@ def main():
     )
 
     filters = []
+    ctest_args = []
     if args.commit_message_file:
         with open(args.commit_message_file, "r") as f:
             commit_message = f.read()
@@ -900,6 +957,9 @@ def main():
             if re.search(r"\[sdl-ci-(full-)?trackmem(-symbol-names)?]", commit_message, flags=re.M):
                 args.trackmem_symbol_names = True
 
+            for m in re.finditer(r"\[sdl-ci-ctest-args? (.*)]", commit_message, flags=re.M):
+                ctest_args.extend(shlex.split(m.group(1)))
+
     if not filters:
         filters.append("*")
 
@@ -907,7 +967,7 @@ def main():
 
     all_level_platforms = {}
 
-    all_platforms = {key: spec_to_platform(spec, key=key, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names) for key, spec in JOB_SPECS.items()}
+    all_platforms = {key: spec_to_platform(spec, key=key, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names, ctest_args=ctest_args) for key, spec in JOB_SPECS.items()}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"

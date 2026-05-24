@@ -42,6 +42,16 @@ TBool AudioIsReady();
 void InitAudio(TInt *aLatency);
 void DeinitAudio();
 
+enum TAudioState
+{
+    EStateNone = 0,
+    EStateOpening,
+    EStatePlaying,
+    EStateWriting,
+    EStateDone
+};
+
+
 class CAudio : public CActive, public MMdaAudioOutputStreamCallback
 {
   public:
@@ -50,49 +60,42 @@ class CAudio : public CActive, public MMdaAudioOutputStreamCallback
 
     void ConstructL(TInt aLatency);
     void Start();
-    void Feed();
+
 
     void RunL();
     void DoCancel();
 
     static TInt ProcessThreadCB(TAny * /*aPtr*/);
 
-    // From MMdaAudioOutputStreamCallback
     void MaoscOpenComplete(TInt aError);
     void MaoscBufferCopied(TInt aError, const TDesC8 &aBuffer);
     void MaoscPlayComplete(TInt aError);
 
-    enum
-    {
-        EStateNone = 0,
-        EStateOpening,
-        EStatePlaying,
-        EStateWriting,
-        EStateDone
-    } iState;
 
+    TAudioState iState;
+    CMdaAudioOutputStream *iStream; /*CMdaAudioOutputStream handler*/
+    TPtr8 iBufDes;                  /* Descriptor for the buffer.*/
+    TBool iStreamStarted;           /* have we initialized the audio stream?*/
+    RThread iProcess;               /* thread handler */
+    TBool iBufferReady;             /*  Signal AudioThreadCB the buffer is ready*/
   private:
     CAudio();
     void StartThread();
     void StopThread();
 
-    CMdaAudioOutputStream *iStream;
+  
     TMdaAudioDataSettings iStreamSettings;
-    TBool iStreamStarted;
-
-    TPtr8 iBufDes;           // Descriptor for the buffer.
+   
     TInt iLatency;           // Latency target in ms
     TInt iLatencySamples;    // Latency target in samples.
     TInt iMinWrite;          // Min number of samples to write per turn.
     TInt iMaxWrite;          // Max number of samples to write per turn.
-    TInt iBaseSamplesPlayed; // amples played before last restart.
-    TInt iSamplesWritten;    // Number of samples written so far.
+   
 
     RTimer iTimer;
     TBool iTimerCreated;
     TBool iTimerActive;
 
-    RThread iProcess;
 };
 
 #endif // SDL_ngageaudio_hpp

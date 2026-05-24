@@ -228,8 +228,8 @@ typedef enum
     ID_OUT_REPORT_HAPTIC_PULSE		= 0x81,
     ID_OUT_REPORT_HAPTIC_COMMAND	= 0x82,
     ID_OUT_REPORT_HAPTIC_LFO_TONE	= 0x83,
-    ID_OUT_REPORT_HAPTIC_LOG_SWEEP	= 0x85,
-    ID_OUT_REPORT_HAPTIC_SCRIPT		= 0x86,
+    ID_OUT_REPORT_HAPTIC_LOG_SWEEP	= 0x84,
+    ID_OUT_REPORT_HAPTIC_SCRIPT		= 0x85,
 } ValveTritonOutReportMessageIDs;
 
 typedef struct
@@ -607,11 +607,11 @@ typedef struct
 
     short sLeftPadX;
     short sLeftPadY;
-    unsigned short ucPressureLeft;
+    unsigned short sPressureLeft;
 
     short sRightPadX;
     short sRightPadY;
-    unsigned short ucPressureRight;
+    unsigned short sPressureRight;
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
 
@@ -628,11 +628,11 @@ typedef struct {
 
 	short sLeftPadX;
 	short sLeftPadY;
-	unsigned short ucPressureLeft;
+	unsigned short sPressureLeft;
 
 	short sRightPadX;
 	short sRightPadY;
-	unsigned short ucPressureRight;
+	unsigned short sPressureRight;
 	TritonMTUIMUNoQuat_t imu;
 } TritonMTUNoQuat_t;
 

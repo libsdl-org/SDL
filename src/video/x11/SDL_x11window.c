@@ -585,7 +585,8 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     const bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, false);
-    const bool use_resize_sync = !!(window->flags & SDL_WINDOW_OPENGL); // Doesn't work well with Vulkan
+    const bool use_resize_sync = SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_ENABLE_XSYNC_EXT, false) &&
+                                 (window->flags & SDL_WINDOW_OPENGL) != 0; // Doesn't work well with Vulkan
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -1199,6 +1200,7 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         }
         X11_UpdateWindowPosition(window, false);
     } else {
+        window->internal->fs_repositioned = true;
         SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, true);
     }
     return true;
@@ -1920,6 +1922,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
             }
         } else {
             SDL_zero(data->requested_fullscreen_mode);
+            data->pending_position = data->fs_repositioned;
+            data->fs_repositioned = false;
 
             /* Fullscreen windows sometimes end up being marked maximized by
              * window managers. Force it back to how we expect it to be.

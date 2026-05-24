@@ -101,7 +101,7 @@ static void RunBasicTest(void)
 #define VALBITS  (sizeof(atomicValue) * 8)
 
 #define atomicValue int
-#define CountTo     ((atomicValue)((unsigned int)(1 << (VALBITS - 1)) - 1))
+#define CountTo     ((atomicValue)((1u << (VALBITS - 1)) - 1))
 #define NInter      (CountTo / CountInc / NThreads)
 #define Expect      (CountTo - NInter * CountInc * NThreads)
 

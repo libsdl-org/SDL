@@ -208,6 +208,9 @@ static int TST_uallrem(void *a, void *b, int arg, void *result, void *expected)
     return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
 }
 
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(__ICC)
+static int TST_allshl(void *a, void *b, int arg, void *result, void *expected) __attribute__ ((no_sanitize("undefined")));
+#endif
 static int TST_allshl(void *a, void *b, int arg, void *result, void *expected)
 {
     (*(long long *)result) = (*(long long *)a) << arg;
@@ -411,6 +414,7 @@ static int TestCPUInfo(bool verbose)
         SDL_Log("NEON %s", SDL_HasNEON() ? "detected" : "not detected");
         SDL_Log("LSX %s", SDL_HasLSX() ? "detected" : "not detected");
         SDL_Log("LASX %s", SDL_HasLASX() ? "detected" : "not detected");
+        SDL_Log("SVE2 %s", SDL_HasSVE2() ? "detected" : "not detected");
         SDL_Log("System RAM %d MB", SDL_GetSystemRAM());
         SDL_Log("System memory page size %d bytes", SDL_GetSystemPageSize());
     }

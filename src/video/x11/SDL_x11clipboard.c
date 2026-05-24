@@ -29,7 +29,7 @@
 #include "../SDL_clipboard_c.h"
 #include "../../events/SDL_events_c.h"
 
-static const char *text_mime_types[] = {
+static const char *const text_mime_types[] = {
     "UTF8_STRING",
     "text/plain;charset=utf-8",
     "text/plain",
@@ -62,7 +62,7 @@ Window GetWindow(SDL_VideoDevice *_this)
 }
 
 static bool SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
-                            void *userdata, const char **mime_types, size_t mime_count, Uint32 sequence)
+                            void *userdata, const char *const *mime_types, size_t mime_count, Uint32 sequence)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
@@ -258,7 +258,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
     return data;
 }
 
-const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
+const char *const *X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
 {
     *num_mime_types = SDL_arraysize(text_mime_types);
     return text_mime_types;

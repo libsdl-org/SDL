@@ -1582,6 +1582,23 @@ static const char *GamepadButtonName(const SDL_GamepadButton button)
     }
 }
 
+static const char *CapSenseName(const SDL_GamepadCapSenseType type)
+{
+    switch (type) {
+#define CAPSENSE_CASE(cap)           \
+    case SDL_GAMEPAD_CAPSENSE_##cap: \
+        return #cap
+        CAPSENSE_CASE(INVALID);
+        CAPSENSE_CASE(LEFT_STICK);
+        CAPSENSE_CASE(RIGHT_STICK);
+        CAPSENSE_CASE(LEFT_GRIP);
+        CAPSENSE_CASE(RIGHT_GRIP);
+#undef CAPSENSE_CASE
+    default:
+        return "???";
+    }
+}
+
 void SDLTest_PrintEvent(const SDL_Event *event)
 {
     switch (event->type) {
@@ -1877,6 +1894,16 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " button %d ('%s') up",
                 event->gbutton.which, event->gbutton.button,
                 GamepadButtonName((SDL_GamepadButton)event->gbutton.button));
+        break;
+    case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 "capsense %u ('%s') touch",
+                event->gcapsense.which, event->gcapsense.capsense,
+                CapSenseName((SDL_GamepadCapSenseType)event->gcapsense.capsense));
+        break;
+    case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " capsense %u ('%s') release",
+                event->gcapsense.which, event->gcapsense.capsense,
+                CapSenseName((SDL_GamepadCapSenseType)event->gcapsense.capsense));
         break;
     case SDL_EVENT_CLIPBOARD_UPDATE:
         SDL_Log("SDL EVENT: Clipboard updated");

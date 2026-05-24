@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 
     if (print_arguments) {
         int print_i;
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
         /* reopen stdout as binary to prevent newline conversion */
         _setmode(_fileno(stdout), _O_BINARY);
 #endif
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
                         continue;
                     }
 
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
                     if (strerror_s(error, sizeof(error), errno) != 0) {
                         SDL_strlcpy(error, "Unknown error", sizeof(error));
                     }

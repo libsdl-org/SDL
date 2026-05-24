@@ -1125,6 +1125,7 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *conn, dr
        to sane values. */
     dispdata->cursor_bo = NULL;
     dispdata->cursor_bo_drm_fd = -1;
+    dispdata->kms_in_fence_fd = -1;
     dispdata->kms_out_fence_fd = -1;
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse(),
@@ -1692,6 +1693,22 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     /***************************/
+    // Destroy the GBM buffers
+    /***************************/
+
+    if (windata->bo) {
+        if (windata->bo != windata->next_bo) {
+            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        }
+        windata->bo = NULL;
+    }
+
+    if (windata->next_bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+        windata->next_bo = NULL;
+    }
+
+    /***************************/
     // Destroy the EGL surface
     /***************************/
 
@@ -1700,20 +1717,6 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     if (windata->egl_surface != EGL_NO_SURFACE) {
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
         windata->egl_surface = EGL_NO_SURFACE;
-    }
-
-    /***************************/
-    // Destroy the GBM buffers
-    /***************************/
-
-    if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
-
-    if (windata->next_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-        windata->next_bo = NULL;
     }
 
     /***************************/

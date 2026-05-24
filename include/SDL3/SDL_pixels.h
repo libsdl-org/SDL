@@ -1407,7 +1407,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixelvalue, const SDL_PixelFo
  * (e.g., a completely white pixel in 16-bit RGB565 format would return [0xff,
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
- * If the surface has no alpha component, the alpha will be returned as 0xff
+ * If the format has no alpha component, the alpha will be returned as 0xff
  * (100% opaque).
  *
  * \param pixelvalue a pixel value.
