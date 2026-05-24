@@ -242,12 +242,13 @@ class SDLJoystickHandler {
                     joystick.desc = getJoystickDescriptor(joystickDevice);
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
                     joystick.hats = new ArrayList<InputDevice.MotionRange>();
+                    java.util.Set<Integer> axisStrsSet = new java.util.HashSet<Integer>();
                     joystick.lights = new ArrayList<Light>();
 
                     List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
                     Collections.sort(ranges, new RangeComparator());
                     for (InputDevice.MotionRange range : ranges) {
-                        if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+                        if (((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) && axisStrsSet.add(range.getAxis())) {
                             if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
                                 joystick.hats.add(range);
                             } else {
