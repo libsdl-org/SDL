@@ -106,6 +106,7 @@ class JobSpec:
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
     more_hard_deps: bool = False
+    harmony_arch: Optional[str] = None
 
 
 JOB_SPECS = {
@@ -873,6 +874,17 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.run_tests = False
             job.test_pkg_config = False
             job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
+        case SdlPlatform.Harmony:
+            job.cmake_arguments.extend((
+                f"-DOHOS_ARCH={spec.harmony_arch}",
+                "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
+                "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=1"
+            ))
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
+            job.run_tests = False
+            job.test_pkg_config = False
+            job.werror = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
