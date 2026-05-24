@@ -98,7 +98,8 @@ typedef struct
 
     GLES_DrawStateCache drawstate;
 
-    GLenum textype; // ??
+    GLenum textype;  // Probably GL_TEXTURE_2D, but might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
+
     bool pixelart_supported;
 
     bool debug_enabled;
@@ -121,6 +122,9 @@ typedef struct
     GLfloat texh;
     GLenum format;
     GLenum formattype;
+    SDL_ScaleMode texture_scale_mode;
+    GLenum texture_address_mode_u;
+    GLenum texture_address_mode_v;
     void *pixels;
     int pitch;
     GLES_FBOList *fbo;
@@ -417,25 +421,13 @@ static bool SetTextureScaleMode(GLES_RenderData *data, GLenum textype, SDL_Pixel
 {
     switch (scaleMode) {
     case SDL_SCALEMODE_NEAREST:
+    case SDL_SCALEMODE_PIXELART:
         data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         break;
-    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling if supported
-        if (!data->pixelart_supported) {
-            data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            break;
-        }
-        SDL_FALLTHROUGH;
     case SDL_SCALEMODE_LINEAR:
-        if (format == SDL_PIXELFORMAT_INDEX8) {
-            // We'll do linear sampling in the shader
-            data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        } else {
-            data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        }
+        data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         break;
     default:
         return SDL_SetError("Unknown texture scale mode: %d", scaleMode);
@@ -582,6 +574,9 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
     data->format = format;
     data->formattype = textype;
+    data->texture_scale_mode = texture->scaleMode;
+    data->texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+    data->texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
 
     renderdata->glBindTexture(data->textype, data->texture);
     renderdata->glTexImage2D(data->textype, 0, internalFormat, texture_w,
@@ -922,12 +917,27 @@ static void SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 static void SetCopyState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
+    GLES_TextureData *texturedata = (GLES_TextureData *)texture->internal;
+    const GLenum textype = data->textype;
+
     SetDrawState(data, cmd);
 
     if (texture != data->drawstate.texture) {
-        GLES_TextureData *texturedata = (GLES_TextureData *)texture->internal;
         data->glBindTexture(GL_TEXTURE_2D, texturedata->texture);
         data->drawstate.texture = texture;
+    }
+
+
+    if (cmd->data.draw.texture_scale_mode != texturedata->texture_scale_mode) {
+        SetTextureScaleMode(data, textype, texture->format, cmd->data.draw.texture_scale_mode);
+        texturedata->texture_scale_mode = cmd->data.draw.texture_scale_mode;
+    }
+
+    if (cmd->data.draw.texture_address_mode_u != texturedata->texture_address_mode_u ||
+        cmd->data.draw.texture_address_mode_v != texturedata->texture_address_mode_v) {
+        SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+        texturedata->texture_address_mode_u = cmd->data.draw.texture_address_mode_u;
+        texturedata->texture_address_mode_v = cmd->data.draw.texture_address_mode_v;
     }
 }
 
@@ -1381,9 +1391,7 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         goto error;
     }
 
-
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
-
 
 
     // Check for debug output support
@@ -1433,6 +1441,8 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     if (SDL_GL_ExtensionSupported("GL_EXT_blend_minmax")) {
         data->GL_EXT_blend_minmax_supported = true;
     }
+
+    data->textype = GL_TEXTURE_2D;  // this might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
 
     /* Set up parameters for rendering */
     data->glDisable(GL_DEPTH_TEST);
