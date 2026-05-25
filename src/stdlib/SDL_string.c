@@ -1158,6 +1158,10 @@ char *SDL_uitoa(unsigned int value, char *string, int radix)
     return SDL_ultoa((unsigned long)value, string, radix);
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4996) // Ignore warning about deprecated itoa, _ltoa, _ultoa, _i64toa, _ui64toa
+#endif
 char *SDL_itoa(int value, char *string, int radix)
 {
 #ifdef HAVE_ITOA
@@ -1250,6 +1254,9 @@ char *SDL_ulltoa(unsigned long long value, char *string, int radix)
     return string;
 #endif // HAVE__UI64TOA
 }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 int SDL_atoi(const char *string)
 {

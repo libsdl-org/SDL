@@ -696,13 +696,6 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
 endif()
 
 if(MSVC)
-  sdl_compile_definitions(
-    PRIVATE
-      "_CRT_SECURE_NO_DEPRECATE"
-      "_CRT_NONSTDC_NO_DEPRECATE"
-      "_CRT_SECURE_NO_WARNINGS"
-  )
-
   # CET support was added in VS 2019 16.7
   if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
     # Mark SDL3.dll as compatible with Control-flow Enforcement Technology (CET)
