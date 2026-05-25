@@ -88,31 +88,12 @@
 /**
  * Defined if (and only if) the compiler supports ARM SVE2 intrinsics.
  *
- * If this macro is defined, SDL will only included `<arm_sve.h>` when
- * the compiler defines __ARM_FEATURE_SVE.
- * 
- * If you want to use SVE intrinsics, please check the guidance below:
- * 
- * a. Check whether existing SVE dedicated C source files are the right
- *    place for your code. If so, please go to step f.
- * b. Create dedicated C source files for your code.
- * c. Add your C source files to the SVE2 section in CMakeLists.txt.
- * d. Create a compilation protection scope using SDL_SVE2_INTRINSICS
- *    in your C source files after including SDL_internal.h. 
- * e. Include arm_sve.h inside the scope mentioned above as shown below:
- * 
- *     #if defined(SDL_PLATFORM_ANDROID) && SDL_PLATFORM_ANDROID
- *     #  ifndef __ARM_FEATURE_SVE
- *     #    define __ARM_FEATURE_SVE 1
- *     #  endif
- *     #endif
- *     #include <arm_sve.h>
- * 
- * NOTE: SDL encourages placing code in existing C source file. Please
- *       check with maintainers before creating new C source files.
- * 
- * f. Apply SDL_TARGET("arch=armv8-a+sve2") or equivalent to individual
- *    functions you added inside the SDL_SVE2_INTRINSICS protected scope.
+ * If this macro is defined, `<arm_sve.h>` (providing SVE intrinsics) will 
+ * only be included if the target architecture supports SVE 
+ * (`__ARM_FEATURE_SVE` feature macro).
+ * Some toolchains do not support `SDL_TARGETING("arch=armv8-a+sve2")`, so 
+ * for best portability you need to write all SVE code in a separate 
+ * translation unit and add appropriate compile flags.
  *
  * \since This macro is available since SDL 3.6.0.
  */
