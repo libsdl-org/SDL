@@ -151,98 +151,6 @@ static bool GLES_SetError(const char *prefix, GLenum result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
-static const char *GL_TranslateError(GLenum error)
-{
-#define GL_ERROR_TRANSLATE(e) \
-    case e:                   \
-        return #e;
-    switch (error) {
-        GL_ERROR_TRANSLATE(GL_INVALID_ENUM)
-        GL_ERROR_TRANSLATE(GL_INVALID_VALUE)
-        GL_ERROR_TRANSLATE(GL_INVALID_OPERATION)
-        GL_ERROR_TRANSLATE(GL_OUT_OF_MEMORY)
-        GL_ERROR_TRANSLATE(GL_NO_ERROR)
-        GL_ERROR_TRANSLATE(GL_STACK_OVERFLOW)
-        GL_ERROR_TRANSLATE(GL_STACK_UNDERFLOW)
-//        GL_ERROR_TRANSLATE(GL_TABLE_TOO_LARGE)
-    default:
-        return "UNKNOWN";
-    }
-#undef GL_ERROR_TRANSLATE
-}
-
-static void GL_ClearErrors(SDL_Renderer *renderer)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-
-    if (!data->debug_enabled) {
-        return;
-    }
-    if (data->GL_ARB_debug_output_supported) {
-        if (data->errors) {
-            int i;
-            for (i = 0; i < data->errors; ++i) {
-                SDL_free(data->error_messages[i]);
-            }
-            SDL_free(data->error_messages);
-
-            data->errors = 0;
-            data->error_messages = NULL;
-        }
-    } else if (data->glGetError) {
-        while (data->glGetError() != GL_NO_ERROR) {
-            // continue;
-        }
-    }
-}
-
-
-
-static bool GL_CheckAllErrors(const char *prefix, SDL_Renderer *renderer, const char *file, int line, const char *function)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    bool result = true;
-
-    if (!data->debug_enabled) {
-        return true;
-    }
-    if (data->GL_ARB_debug_output_supported) {
-        if (data->errors) {
-            int i;
-            for (i = 0; i < data->errors; ++i) {
-                SDL_SetError("%s: %s (%d): %s %s", prefix, file, line, function, data->error_messages[i]);
-                result = false;
-            }
-            GL_ClearErrors(renderer);
-        }
-    } else {
-        // check gl errors (can return multiple errors)
-        for (;;) {
-            GLenum error = data->glGetError();
-            if (error != GL_NO_ERROR) {
-                if (prefix == NULL || prefix[0] == '\0') {
-                    prefix = "generic";
-                }
-                SDL_SetError("%s: %s (%d): %s %s (0x%X)", prefix, file, line, function, GL_TranslateError(error), error);
-                result = false;
-            } else {
-                break;
-            }
-        }
-    }
-    return result;
-}
-
-
-#if 0
-#define GL_CheckError(prefix, renderer)
-#else
-#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, "SDL_render_gl.c", SDL_LINE, SDL_FUNCTION)
-#endif
-
-
-
-
 static bool GLES_LoadFunctions(GLES_RenderData *data)
 {
 #ifdef SDL_VIDEO_DRIVER_UIKIT
@@ -439,60 +347,6 @@ static void SetTextureAddressMode(GLES_RenderData *data, GLenum textype, SDL_Tex
     data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, TranslateAddressMode(addressModeU));
     data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, TranslateAddressMode(addressModeV));
 }
-
-static bool GL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GL_PaletteData *palettedata = (GL_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
-    if (!palettedata) {
-        return false;
-    }
-    palette->internal = palettedata;
-
-    data->drawstate.texture = NULL; // we trash this state.
-
-    const GLenum textype = data->textype;
-    data->glGenTextures(1, &palettedata->texture);
-    data->glBindTexture(textype, palettedata->texture);
-    data->glTexImage2D(textype, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    if (!GL_CheckError("glTexImage2D()", renderer)) {
-        return false;
-    }
-    SetTextureScaleMode(data, textype, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST);
-    SetTextureAddressMode(data, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
-    return true;
-}
-
-static bool GL_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
-
-    GLES_ActivateRenderer(renderer);
-
-    data->drawstate.texture = NULL; // we trash this state.
-
-    const GLenum textype = data->textype;
-    data->glBindTexture(textype, palettedata->texture);
-    data->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//    data->glPixelStorei(GL_UNPACK_ROW_LENGTH, ncolors);
-    data->glTexSubImage2D(textype, 0, 0, 0, ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, colors);
-
-    return GL_CheckError("glTexSubImage2D()", renderer);
-}
-
-static void GL_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
-
-    if (palettedata) {
-        data->glDeleteTextures(1, &palettedata->texture);
-        SDL_free(palettedata);
-    }
-}
-
-
 
 static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
@@ -1339,9 +1193,6 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     renderer->GetOutputSize = GLES_GetOutputSize;
     renderer->SupportsBlendMode = GLES_SupportsBlendMode;
 
-    renderer->CreatePalette = GL_CreatePalette;
-    renderer->UpdatePalette = GL_UpdatePalette;
-    renderer->DestroyPalette = GL_DestroyPalette;
     renderer->CreateTexture = GLES_CreateTexture;
     renderer->UpdateTexture = GLES_UpdateTexture;
     renderer->LockTexture = GLES_LockTexture;
