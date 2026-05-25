@@ -27,11 +27,6 @@
 #include "../SDL_sysrender.h"
 #include "../../SDL_utils_c.h"
 
-
-/* To prevent unnecessary window recreation,
- * these should match the defaults selected in SDL_GL_ResetAttributes
- */
-
 #define RENDERER_CONTEXT_MAJOR 1
 #define RENDERER_CONTEXT_MINOR 1
 
@@ -93,8 +88,6 @@ typedef struct
     bool debug_enabled;
     int errors;
     char **error_messages;
-    bool GL_ARB_debug_output_supported;
-
 } GLES_RenderData;
 
 typedef struct
@@ -959,60 +952,6 @@ static bool GLES_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     return true;
 }
 
-
-/*
-static bool GLES_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect,
-                                 Uint32 pixel_format, void *pixels, int pitch)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
-    void *temp_pixels;
-    int temp_pitch;
-    Uint8 *src, *dst, *tmp;
-    int w, h, length, rows;
-    int status;
-
-    GLES_ActivateRenderer(renderer);
-
-    temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    temp_pixels = SDL_malloc(rect->h * temp_pitch);
-    if (!temp_pixels) {
-        return SDL_OutOfMemory();
-    }
-
-    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
-
-    data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-    data->glReadPixels(rect->x, renderer->target ? rect->y : (h - rect->y) - rect->h,
-                       rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
-
-    // Flip the rows to be top-down if necessary
-    if (!renderer->target) {
-        bool isstack;
-        length = rect->w * SDL_BYTESPERPIXEL(temp_format);
-        src = (Uint8 *)temp_pixels + (rect->h - 1) * temp_pitch;
-        dst = (Uint8 *)temp_pixels;
-        tmp = SDL_small_alloc(Uint8, length, &isstack);
-        rows = rect->h / 2;
-        while (rows--) {
-            SDL_memcpy(tmp, dst, length);
-            SDL_memcpy(dst, src, length);
-            SDL_memcpy(src, tmp, length);
-            dst += temp_pitch;
-            src -= temp_pitch;
-        }
-        SDL_small_free(tmp, isstack);
-    }
-
-    status = SDL_ConvertPixels(rect->w, rect->h,
-                               temp_format, temp_pixels, temp_pitch,
-                               pixel_format, pixels, pitch);
-    SDL_free(temp_pixels);
-
-    return status;
-}
-*/
 static SDL_Surface *GLES_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
@@ -1033,20 +972,13 @@ static SDL_Surface *GLES_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect
 
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     data->glReadPixels(rect->x, y, rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-/*    if (!GL_CheckError("glReadPixels()", renderer)) {
-        SDL_DestroySurface(surface);
-        return NULL;
-    }
-*/
+
     // Flip the rows to be top-down if necessary
     if (!renderer->target) {
         SDL_FlipSurface(surface, SDL_FLIP_VERTICAL);
     }
     return surface;
 }
-
-
-
 
 static bool GLES_RenderPresent(SDL_Renderer *renderer)
 {
@@ -1098,43 +1030,6 @@ static void GLES_DestroyRenderer(SDL_Renderer *renderer)
         SDL_free(data);
     }
 }
-
-/* TODO TBR
-static bool GLES_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GLES_TextureData *texturedata = (GLES_TextureData *)texture->internal;
-    GLES_ActivateRenderer(renderer);
-
-    data->glEnable(GL_TEXTURE_2D);
-    data->glBindTexture(texturedata->textype, texturedata->texture);
-
-    data->drawstate.texture = texture;
-    data->drawstate.texturing = true;
-
-    if (texw) {
-        *texw = (float)texturedata->texw;
-    }
-    if (texh) {
-        *texh = (float)texturedata->texh;
-    }
-
-    return true;
-}
-
-static bool GLES_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GLES_TextureData *texturedata = (GLES_TextureData *)texture->internal;
-    GLES_ActivateRenderer(renderer);
-    data->glDisable(texturedata->textype);
-
-    data->drawstate.texture = NULL;
-    data->drawstate.texturing = false;
-
-    return true;
-}
-*/
 
 static bool GLES_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
@@ -1230,27 +1125,11 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
 
-
     // Check for debug output support
     if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) &&
         (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
         data->debug_enabled = true;
     }
-
-    if (data->debug_enabled && SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
-        // PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC)SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
-
-        data->GL_ARB_debug_output_supported = true;
-//        data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)(char *)&data->next_error_callback);
-//        data->glGetPointerv(GL_DEBUG_CALLBACK_USER_PARAM_ARB, &data->next_error_userparam);
-//        glDebugMessageCallbackARBFunc(GL_HandleDebugMessage, renderer);
-
-        // Make sure our callback is called when errors actually happen
-//        data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-    }
-
-
-
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
@@ -1313,4 +1192,3 @@ SDL_RenderDriver GLES_RenderDriver = {
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES */
 
-/* vi: set ts=4 sw=4 expandtab: */
