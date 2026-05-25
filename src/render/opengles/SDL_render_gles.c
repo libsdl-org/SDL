@@ -35,18 +35,6 @@
 #define RENDERER_CONTEXT_MAJOR 1
 #define RENDERER_CONTEXT_MINOR 1
 
-#if defined(SDL_VIDEO_DRIVER_PANDORA)
-
-/* Empty function stub to get OpenGL ES 1.x support without  */
-/* OpenGL ES extension GL_OES_draw_texture supported         */
-GL_API void GL_APIENTRY
-glDrawTexiOES(GLint x, GLint y, GLint z, GLint width, GLint height)
-{
-    return;
-}
-
-#endif /* SDL_VIDEO_DRIVER_PANDORA */
-
 /* OpenGL ES 1.1 renderer implementation, based on the OpenGL renderer */
 
 typedef struct GLES_FBOList GLES_FBOList;
@@ -260,8 +248,6 @@ static bool GLES_LoadFunctions(GLES_RenderData *data)
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #define __SDL_NOGETPROCADDR__
 #elif defined(SDL_VIDEO_DRIVER_ANDROID)
-#define __SDL_NOGETPROCADDR__
-#elif defined(SDL_VIDEO_DRIVER_PANDORA)
 #define __SDL_NOGETPROCADDR__
 #endif
 
