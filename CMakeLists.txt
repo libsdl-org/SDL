@@ -1154,7 +1154,7 @@ if(SDL_LIBC)
   )
   if(WINDOWS OR CYGWIN)
     list(APPEND symbols_to_check
-      _copysign _fseeki64 _strrev _ui64toa _uitoa _ultoa _wcsdup
+      _copysign _fseeki64 _strrev _ui64toa _ultoa _wcsdup
     )
   else()
     list(APPEND symbols_to_check
