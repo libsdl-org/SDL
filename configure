@@ -19611,12 +19611,6 @@ then :
   printf "%s\n" "#define HAVE__LTOA 1" >>confdefs.h
 
 fi
-ac_fn_c_check_func "$LINENO" "_uitoa" "ac_cv_func__uitoa"
-if test "x$ac_cv_func__uitoa" = xyes
-then :
-  printf "%s\n" "#define HAVE__UITOA 1" >>confdefs.h
-
-fi
 ac_fn_c_check_func "$LINENO" "_ultoa" "ac_cv_func__ultoa"
 if test "x$ac_cv_func__ultoa" = xyes
 then :
