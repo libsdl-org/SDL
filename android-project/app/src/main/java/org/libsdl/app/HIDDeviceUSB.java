@@ -314,8 +314,7 @@ class HIDDeviceUSB implements HIDDevice {
                 if (mClaimed) {
                     Log.e(TAG, "Tried to release claim on USB device, but failed!");
                 }
-            }
-            else {
+            } else {
                 mClaimed = mConnection.claimInterface(iface, true);
                 if (!mClaimed) {
                     Log.e(TAG, "Tried to regain claim on USB device, but failed!");
