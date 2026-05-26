@@ -434,8 +434,8 @@ typedef struct SDL_AudioSpec
  * - It can handle incoming data in any variable size.
  * - It can handle input/output format changes on the fly.
  * - It can remap audio channels between inputs and outputs.
- * - You push data as you have it, and pull it when you need it; the
- *   stream will buffer data as needed.
+ * - You push data as you have it, and pull it when you need it; the stream
+ *   will buffer data as needed.
  * - It can also function as a basic audio data queue even if you just have
  *   sound that needs to pass from one place to another.
  * - You can hook callbacks up to them when more data is added or requested,
@@ -1055,12 +1055,12 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetAudioStreamDevice(SDL_Audio
 /**
  * Create a new audio stream.
  *
- * Note that `src_spec` or `dst_spec` may be NULL, but any attempts to
- * put or get data from an audio stream will fail until it has valid
- * specs assigned to both ends of the stream. Specs can be assigned later
- * through SDL_SetAudioStreamFormat(), or binding the stream to an audio
- * device (which will set the format of only the input or output,
- * depending on what kind of device the stream was bound to).
+ * Note that `src_spec` or `dst_spec` may be NULL, but any attempts to put or
+ * get data from an audio stream will fail until it has valid specs assigned
+ * to both ends of the stream. Specs can be assigned later through
+ * SDL_SetAudioStreamFormat(), or binding the stream to an audio device (which
+ * will set the format of only the input or output, depending on what kind of
+ * device the stream was bound to).
  *
  * \param src_spec the format details of the input audio. May be NULL.
  * \param dst_spec the format details of the output audio. May be NULL.
