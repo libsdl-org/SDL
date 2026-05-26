@@ -88,12 +88,12 @@
 /**
  * Defined if (and only if) the compiler supports ARM SVE2 intrinsics.
  *
- * If this macro is defined, `<arm_sve.h>` (providing SVE intrinsics) will 
- * only be included if the target architecture supports SVE 
- * (`__ARM_FEATURE_SVE` feature macro).
- * Some toolchains do not support `SDL_TARGETING("arch=armv8-a+sve2")`, so 
- * for best portability you need to write all SVE code in a separate 
- * translation unit and add appropriate compile flags.
+ * If this macro is defined, `<arm_sve.h>` (providing SVE intrinsics) will
+ * only be included if the target architecture supports SVE
+ * (`__ARM_FEATURE_SVE` feature macro). Some toolchains do not support
+ * `SDL_TARGETING("arch=armv8-a+sve2")`, so for best portability you need to
+ * write all SVE code in a separate translation unit and add appropriate
+ * compile flags.
  *
  * \since This macro is available since SDL 3.6.0.
  */
