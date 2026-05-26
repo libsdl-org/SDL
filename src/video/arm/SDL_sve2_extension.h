@@ -41,7 +41,7 @@
  *       workaround, we have to define the __ARM_FEATURE_SVE here as 
  *       an ugly hack. 
  */
-#if defined(SDL_PLATFORM_ANDROID) && SDL_PLATFORM_ANDROID
+#ifdef SDL_PLATFORM_ANDROID
 #ifndef __ARM_FEATURE_SVE
 #define __ARM_FEATURE_SVE 1
 #endif
