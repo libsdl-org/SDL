@@ -157,8 +157,11 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     xrInstanceCreateInfo.next = &instanceCreateInfoAndroid;
 #endif
 
-    const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, "SDL Application");
-    Uint32 applicationVersion = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 0);
+    const Uint32 applicationVersion = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 0);
+    const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, NULL);
+    if (!applicationName) {
+        applicationName = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+    }
 
     SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.applicationName, applicationName, XR_MAX_APPLICATION_NAME_SIZE);
     xrInstanceCreateInfo.applicationInfo.applicationVersion = applicationVersion;
