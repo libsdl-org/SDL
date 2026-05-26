@@ -46,6 +46,11 @@ char *SDL_SYS_GetBasePath(void)
     return result;
 }
 
+char *SDL_SYS_GetExeName(void)
+{
+    return NULL;  // no EXE name on this system.
+}
+
 // Do a recursive mkdir of parents folders
 static void recursive_mkdir(const char *dir)
 {

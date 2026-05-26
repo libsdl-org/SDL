@@ -34,6 +34,11 @@ char *SDL_SYS_GetBasePath(void)
     return SDL_strdup("assets://");
 }
 
+char *SDL_SYS_GetExeName(void)
+{
+    return NULL;  // !!! FIXME: probably just use the Linux path?
+}
+
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     const char *path = SDL_GetAndroidInternalStoragePath();
