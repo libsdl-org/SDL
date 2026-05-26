@@ -934,6 +934,10 @@ if(SDL_ASSEMBLY)
           return 0;
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
+        # IMPORTANT: As not all AArch64 processors support SVE2, we only
+        #            attach the following compilation option to SVE 
+        #            dedicated source files.
+        set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
         set(HAVE_ARMSVE2 TRUE)
       endif()
     cmake_pop_check_state()
@@ -947,6 +951,7 @@ if(SDL_ASSEMBLY)
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
         PROPERTIES
+          COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
           SKIP_PRECOMPILE_HEADERS ON
       )
     endif()

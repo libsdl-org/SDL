@@ -19,10 +19,33 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+ * IMPORTANT: Please do NOT include this header file directly or indirectly
+ *            outside the src/video/arm folder.
+ * 
+ */
+
 #if !defined(SDL_SVE2_EXTENSION_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SDL_SVE2_EXTENSION_H
 
 #include "SDL_sve2_util.h"
+
+/*
+ * NOTE: Some Android builds didn't attach '-march=armv8-a+sve2' to 
+ *       SDL_sve2_*.c and hence the macro __ARM_FEATURE_SVE is not
+ *       defined by the compiler. This might not be a problem as the 
+ *       SDL_TARGETING("arch=armv8-a+sve2") enables the feature for
+ *       individual functions, until some version of compilers
+ *       provides arm_sve.h raising errors then __ARM_FEATURE_SVE 
+ *       is not defined. Although it should be avoided, as a 
+ *       workaround, we have to define the __ARM_FEATURE_SVE here as 
+ *       an ugly hack. 
+ */
+#ifdef SDL_PLATFORM_ANDROID
+#ifndef __ARM_FEATURE_SVE
+#define __ARM_FEATURE_SVE 1
+#endif
+#endif
 #include <arm_sve.h>
 #include <stdint.h>
 
@@ -907,7 +930,8 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource,
                                                      svuint16_t vMask)
 {
     // vTarget = vSource * vMask + vTarget * (255 - vMask);
-    svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
+    svuint16_t vTemp0 = svdup_u16(1);
+    vTemp0 = svmla_u16_m(svptrue_b16(), vTemp0, vSource, vMask);
     vTemp0 = svmla_u16_m(svptrue_b16(),
                          vTemp0,
                          vTarget,
@@ -915,17 +939,13 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource,
                                      svdup_u16(255),
                                      vMask));
 
-    vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
-
-    svuint16_t vTemp1 = svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
     /* x += x >> 8 */
-    vTemp0 = svadd_u16_m(svptrue_b16(),
-                         vTemp0,
-                         vTemp1);
-
-    return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8); // vTarget >> 8;
+    return svreinterpret_u16_u8(
+        svaddhnb_u16(vTemp0,
+                     svlsr_n_u16_m(svptrue_b16(),
+                                   vTemp0,
+                                   8)));
 }
-
 /*! \note the Element range of vMask is [0, 0xFF]
  */
 SDL_TARGETING("arch=armv8-a+sve2")
@@ -968,15 +988,15 @@ static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
  */
 SDL_TARGETING("arch=armv8-a+sve2")
 static inline svuint16_t sdl_sve_chn_blend_with_opacity_fast(svuint16_t vSource,
-                                                        svuint16_t vTarget,
-                                                        uint16_t hwOpacity)
+                                                             svuint16_t vTarget,
+                                                             uint16_t hwOpacity)
 {
     // vTarget = vSource * vMask + vTarget * (255 - vMask);
     svuint16_t vTemp0 = svmul_n_u16_m(svptrue_b16(), vSource, hwOpacity);
     vTemp0 = svmla_n_u16_m(svptrue_b16(),
-                         vTemp0,
-                         vTarget,
-                         256 - hwOpacity);
+                           vTemp0,
+                           vTarget,
+                           256 - hwOpacity);
 
     return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8); // vTarget >> 8;
 }
