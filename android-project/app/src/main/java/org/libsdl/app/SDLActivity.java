@@ -543,9 +543,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onPause()");
         super.onPause();
 
-        if (mHIDDeviceManager != null) {
-            mHIDDeviceManager.setFrozen(true);
-        }
         if (!mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -556,9 +553,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onResume()");
         super.onResume();
 
-        if (mHIDDeviceManager != null) {
-            mHIDDeviceManager.setFrozen(false);
-        }
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
@@ -630,6 +624,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
+
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.setFrozen(hasFocus);
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            return;

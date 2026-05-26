@@ -21,6 +21,7 @@ class HIDDeviceUSB implements HIDDevice {
     protected InputThread mInputThread;
     protected boolean mRunning;
     protected boolean mFrozen;
+    protected boolean mClaimed;
 
     public HIDDeviceUSB(HIDDeviceManager manager, UsbDevice usbDevice, int interface_index) {
         mManager = manager;
@@ -29,6 +30,7 @@ class HIDDeviceUSB implements HIDDevice {
         mInterface = mDevice.getInterface(mInterfaceIndex).getId();
         mDeviceId = manager.getDeviceIDForIdentifier(getIdentifier());
         mRunning = false;
+        mClaimed = false;
     }
 
     String getIdentifier() {
@@ -114,6 +116,7 @@ class HIDDeviceUSB implements HIDDevice {
             close();
             return false;
         }
+        mClaimed = true;
 
         // Find the endpoints
         for (int j = 0; j < iface.getEndpointCount(); j++) {
@@ -154,6 +157,11 @@ class HIDDeviceUSB implements HIDDevice {
     public int writeReport(byte[] report, boolean feature) {
         if (mConnection == null) {
             Log.w(TAG, "writeReport() called with no device connection");
+            return -1;
+        }
+
+        if (!mClaimed) {
+            Log.w(TAG, "writeReport() called but some other process currently owns the USB device");
             return -1;
         }
 
@@ -213,6 +221,18 @@ class HIDDeviceUSB implements HIDDevice {
             Log.w(TAG, "readReport() called with no device connection");
             return false;
         }
+        if (!mClaimed) {
+            Log.w(TAG, "readReport() called but some other process currently owns the USB device");
+            if (feature) {
+                return false;
+            }
+
+            // For non-feature reports, fake that there's no data available if we aren't claimed.
+            // byte[] data;
+            // data = Arrays.copyOfRange(report, 0, res);
+            // mManager.HIDDeviceReportResponse(mDeviceId, data);
+            return true;            
+        }
 
         if (report_number == 0x0) {
             /* Offset the return buffer by 1, so that the report ID
@@ -265,11 +285,12 @@ class HIDDeviceUSB implements HIDDevice {
             }
             mInputThread = null;
         }
-        if (mConnection != null) {
+        if (mConnection != null && mClaimed) {
             UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
             mConnection.releaseInterface(iface);
             mConnection.close();
             mConnection = null;
+            mClaimed = false;
         }
     }
 
@@ -281,15 +302,24 @@ class HIDDeviceUSB implements HIDDevice {
 
     @Override
     public void setFrozen(boolean frozen) {
-        if (frozen != mFrozen && mConnection != null) {
+        mFrozen = frozen;
+
+        /* If we have a valid device connection and the claim state doesn't match what we want, try to correct that. */
+        if (mConnection != null && mClaimed == mFrozen) {
             UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
             if (frozen) {
-                mConnection.releaseInterface(iface);
-            } else {
-                mConnection.claimInterface(iface, true);
+                mClaimed = !mConnection.releaseInterface(iface);
+                if (mClaimed) {
+                    Log.e(TAG, "Tried to release claim on USB device, but failed!");
+                }
+            }
+            else {
+                mClaimed = mConnection.claimInterface(iface, true);
+                if (!mClaimed) {
+                    Log.e(TAG, "Tried to regain claim on USB device, but failed!");
+                }
             }
         }
-        mFrozen = frozen;
     }
 
     protected class InputThread extends Thread {
