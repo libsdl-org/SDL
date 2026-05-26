@@ -79,6 +79,7 @@
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
+#define USB_PRODUCT_BACKBONE_ONE_PS5_V2                   0x0304
 #define USB_PRODUCT_BDA_XB1_CLASSIC                       0x581a
 #define USB_PRODUCT_BDA_XB1_FIGHTPAD                      0x791a
 #define USB_PRODUCT_BDA_XB1_SPECTRA_PRO                   0x592a
