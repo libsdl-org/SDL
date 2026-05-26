@@ -137,6 +137,7 @@ class HIDDeviceUSB implements HIDDevice {
         // back to the Android system gamepad functionality (and lose our paddles et al).
         if (mInputEndpoint == null) {
             Log.w(TAG, "Missing required endpoint on USB device " + getDeviceName());
+            mConnection.releaseInterface(iface);
             close();
             return false;
         }
@@ -280,6 +281,15 @@ class HIDDeviceUSB implements HIDDevice {
 
     @Override
     public void setFrozen(boolean frozen) {
+        if (frozen != mFrozen && mConnection != null) {
+            UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
+            if (frozen) {
+                mConnection.releaseInterface(iface);
+            }
+            else {
+                mConnection.claimInterface(iface, true);
+            }
+        }
         mFrozen = frozen;
     }
 
