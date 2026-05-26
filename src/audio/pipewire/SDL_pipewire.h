@@ -38,6 +38,8 @@ struct SDL_PrivateAudioData
 
     // Set in GetDeviceBuf, filled in AudioThreadIterate, queued in PlayDevice
     struct pw_buffer *pw_buf;
+
+    float current_gain;
 };
 
 #endif // SDL_pipewire_h_

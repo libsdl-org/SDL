@@ -242,6 +242,7 @@ typedef enum SDL_EventType
     SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100,  /**< A new audio device is available */
     SDL_EVENT_AUDIO_DEVICE_REMOVED,         /**< An audio device has been removed. */
     SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED,  /**< An audio device's format has been changed by the system. */
+    SDL_EVENT_AUDIO_DEVICE_GAIN_CHANGED,  /**< An audio device's gain has been changed by the system. */
 
     /* Sensor events */
     SDL_EVENT_SENSOR_UPDATE = 0x1200,     /**< A sensor was updated */
@@ -741,7 +742,7 @@ typedef struct SDL_GamepadCapSenseEvent
  */
 typedef struct SDL_AudioDeviceEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_AUDIO_DEVICE_ADDED, or SDL_EVENT_AUDIO_DEVICE_REMOVED, or SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED */
+    SDL_EventType type; /**< SDL_EVENT_AUDIO_DEVICE_ADDED, or SDL_EVENT_AUDIO_DEVICE_REMOVED, or SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED, or SDL_EVENT_AUDIO_DEVICE_GAIN_CHANGED */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_AudioDeviceID which;       /**< SDL_AudioDeviceID for the device being added or removed or changing */

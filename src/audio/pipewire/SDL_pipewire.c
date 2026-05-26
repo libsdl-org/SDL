@@ -1098,6 +1098,21 @@ static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
     PIPEWIRE_pw_thread_loop_signal(device->hidden->loop, false);
 }
 
+static void stream_control_info_callback(void *data, uint32_t id, const struct pw_stream_control *control)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *) data;
+    if (id == SPA_PROP_channelVolumes && control && control->n_values > 0 && control->values) {
+        const float gain = control->values[0];
+        const float old_gain = device->hidden->current_gain;
+        if (old_gain != gain) {
+            device->hidden->current_gain = gain;
+            if (old_gain >= 0) {
+                SDL_AudioDeviceGainChanged(device);
+            }
+        }
+    }
+}
+
 static void stream_state_changed_callback(void *data, enum pw_stream_state old, enum pw_stream_state state, const char *error)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *) data;
@@ -1113,10 +1128,12 @@ static void stream_state_changed_callback(void *data, enum pw_stream_state old, 
 
 static const struct pw_stream_events stream_output_events = { PW_VERSION_STREAM_EVENTS,
                                                               .state_changed = stream_state_changed_callback,
+                                                              .control_info = stream_control_info_callback,
                                                               .add_buffer = stream_add_buffer_callback,
                                                               .process = output_callback };
 static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_EVENTS,
                                                              .state_changed = stream_state_changed_callback,
+                                                             .control_info = stream_control_info_callback,
                                                              .add_buffer = stream_add_buffer_callback,
                                                              .process = input_callback };
 
@@ -1203,6 +1220,7 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     }
 
     priv = SDL_calloc(1, sizeof(struct SDL_PrivateAudioData));
+    priv->current_gain = -1.0f;
     device->hidden = priv;
     if (!priv) {
         return false;

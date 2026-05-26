@@ -73,6 +73,9 @@ extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, con
    This can happen due to i/o errors, or a device being unplugged, etc. */
 extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
 
+// Backends can notify applications of physical device gain changes
+extern void SDL_AudioDeviceGainChanged(SDL_AudioDevice *device);
+
 // Backends should call this if the system default device changes.
 extern void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device);
 
