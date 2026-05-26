@@ -267,6 +267,9 @@ extern "C" {
    anything calling it without an extremely good reason. */
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
+// Get just the process's binary name, no path. Calculates and caches the string on first call. String lives until SDL_Quit(). This is not a public API right now!
+extern const char *SDL_GetExeName(void);
+
 #ifdef HAVE_LIBC
 #define SDL_abort() abort()
 #else
