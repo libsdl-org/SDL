@@ -311,7 +311,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     x = (output_width - text_width) / 2;
     y = (output_height - text_height) / 2;
     SDL_SetGPURenderState(renderer, render_state);
-    RenderText("Hello World!", text_height, x, y);
+    RenderText(text, text_height, x, y);
     SDL_SetGPURenderState(renderer, NULL);
 
     SDL_RenderPresent(renderer);
