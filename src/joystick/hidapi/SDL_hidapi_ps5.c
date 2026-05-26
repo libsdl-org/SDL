@@ -298,6 +298,12 @@ static bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const 
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
+    if (vendor_id == USB_VENDOR_BACKBONE &&
+        product_id == USB_PRODUCT_BACKBONE_ONE_PS5_V2) {
+        // This product doesn't appear to use the DualSense protocol
+        return false;
+    }
+
     if (type == SDL_GAMEPAD_TYPE_PS5) {
         return true;
     }
