@@ -63,6 +63,12 @@ char *SDL_SYS_GetBasePath(void)
     }
 }
 
+char *SDL_SYS_GetExeName(void)
+{
+    SDL_Unsupported();  // !!! FIXME
+    return NULL;
+}
+
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     @autoreleasepool {

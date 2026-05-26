@@ -64,6 +64,11 @@ char *SDL_SYS_GetBasePath(void)
     return result;
 }
 
+char *SDL_SYS_GetExeName(void)
+{
+    SDL_Unsupported();  // !!! FIXME: Move most of SDL_SYS_GetBasePath to a separate function and reuse it here.
+    return NULL;
+}
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {

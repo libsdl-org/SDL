@@ -30,6 +30,12 @@ char *SDL_SYS_GetBasePath(void)
     return base_path;
 }
 
+char *SDL_SYS_GetExeName(void)
+{
+    SDL_Unsupported();  // !!! FIXME: see code in NGAGE_GetAppPath
+    return NULL;
+}
+
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;

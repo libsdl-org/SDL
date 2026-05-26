@@ -38,6 +38,8 @@ SDL_SYS_GetBasePath(void)
 {
     /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
      * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o
+     *
+     * !!! FIXME: But can we use WIN_GetModulePath anyhow? (or change WIN_GetModulePath to use GetModuleFileNameA when built for GDK?)
      */
     DWORD buflen = 128;
     CHAR *path = NULL;
@@ -80,6 +82,12 @@ SDL_SYS_GetBasePath(void)
     path[i + 1] = '\0'; // chop off filename.
 
     return path;
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    SDL_Unsupported();  // !!! FIXME: use WIN_GetModulePath
+    return NULL;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

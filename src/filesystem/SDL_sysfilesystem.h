@@ -24,6 +24,7 @@
 
 // return a string that we can SDL_free(). It will be cached at the higher level.
 extern char *SDL_SYS_GetBasePath(void);
+extern char *SDL_SYS_GetExeName(void);
 extern char *SDL_SYS_GetPrefPath(const char *org, const char *app);
 extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
 extern char *SDL_SYS_GetCurrentDirectory(void);

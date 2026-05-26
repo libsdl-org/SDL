@@ -622,4 +622,3 @@ void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
 }
-
