@@ -285,9 +285,11 @@ class HIDDeviceUSB implements HIDDevice {
             }
             mInputThread = null;
         }
-        if (mConnection != null && mClaimed) {
-            UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
-            mConnection.releaseInterface(iface);
+        if (mConnection != null) {
+            if (mClaimed) {
+                UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
+                mConnection.releaseInterface(iface);                
+            }
             mConnection.close();
             mConnection = null;
             mClaimed = false;
