@@ -160,7 +160,6 @@ end:
     return root;
 }
 
-// TODO: remove all EM_ASYNC_JS for non-blocking operations
 EM_ASYNC_JS(int, hid_js_get_device_count, (), {
     window._hidDeviceList = await navigator.hid.getDevices();
     return window._hidDeviceList.length;
@@ -259,18 +258,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
     return handle;
 }
 
-typedef void(*SetByteCallback)(unsigned char *data, size_t length, int byte, size_t offset);
 typedef void(*SetReportCallback)(hid_device *dev, unsigned char *data, size_t length);
-
-static void set_byte(unsigned char *data, size_t length, int byte, size_t offset)
-{
-    if (offset >= length)
-        return;
-    data[offset] = (unsigned char)byte;
-#ifdef HIDAPI_WEBHID_DEBUG
-    // printf("set_byte: offset=%d byte=%d\n", (int)offset, byte);
-#endif
-}
 
 static void set_report(hid_device *dev, unsigned char *data, size_t length)
 {
@@ -282,7 +270,7 @@ static void set_report(hid_device *dev, unsigned char *data, size_t length)
     dev->last_report_read = 0;
 }
 
-EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetByteCallback callback, SetReportCallback set_report_callback), {
+EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetReportCallback set_report_callback), {
     let device = window._hidDeviceList[device_id];
     if (device) {
         try {
@@ -292,9 +280,9 @@ EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetByteCallback 
                 
                 let dataLength = data['byteLength']+1;
                 let pointer = _malloc(dataLength);
-                dynCall("viiii", callback, [pointer, dataLength, reportId, 0]);
+                HEAPU8[pointer] = reportId;
                 for (let i = 0; i < data['byteLength']; i++) {
-                    dynCall("viiii", callback, [pointer, dataLength, data['getUint8'](i), i+1]);
+                    HEAPU8[pointer + i + 1] = data['getUint8'](i);
                 }
                 dynCall("viii", set_report_callback, [dev, pointer, dataLength]);
             });
@@ -332,7 +320,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
     }
 
     dev->device_id = device_id;
-    hid_js_open(device_id, dev, set_byte, set_report);
+    hid_js_open(device_id, dev, set_report);
 
     return dev;
 }
@@ -356,7 +344,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
     return length;
 }
 
-EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_t length, SetByteCallback callback), {
+EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_t length), {
     let device = window._hidDeviceList[device_id];
     if (device) {
         let [report_id, dataView] = await new Promise(function(resolve, reject) {
@@ -365,9 +353,9 @@ EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_
                 resolve([report_id, data]); // done
             }, {once: true});
         });
-        dynCall("viiii", callback, [data, length, report_id, 0]);
+        HEAPU8[data] = report_id;
         for (let i = 0; i < dataView['byteLength']; i++) {
-            dynCall("viiii", callback, [data, length, dataView['getUint8'](i), i+1]);
+            HEAPU8[data + i + 1] = dataView['getUint8'](i);
         }
         return dataView['byteLength']+1;
     }
@@ -392,7 +380,7 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
             return 0;
         }
     }
-    return hid_js_read_timeout(dev->device_id, data, length, &set_byte);
+    return hid_js_read_timeout(dev->device_id, data, length);
 }
 
 int HID_API_EXPORT hid_read(hid_device *dev, unsigned char *data, size_t length)
@@ -412,12 +400,12 @@ int HID_API_EXPORT hid_send_feature_report(hid_device *dev, const unsigned char 
     return 0;
 }
 
-EM_ASYNC_JS(void, hid_js_get_feature_report, (int device_id, int report_id, unsigned char *data, size_t length, SetByteCallback callback), {
+EM_ASYNC_JS(void, hid_js_get_feature_report, (int device_id, int report_id, unsigned char *data, size_t length), {
     let device = window._hidDeviceList[device_id];
     if (device) {
         let dataView = await device['receiveFeatureReport'](report_id);
         for (let i = 0; i < dataView['byteLength']; i++) {
-            dynCall("viiii", callback, [data, length, dataView['getUint8'](i), i]);
+            HEAPU8[data + i] = dataView['getUint8'](i);
         }
     }
 });
@@ -427,7 +415,7 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
     if (length < 1)
         return -1;
     int report_id = (int)data[0];
-    hid_js_get_feature_report(dev->device_id, report_id, data, length, &set_byte);
+    hid_js_get_feature_report(dev->device_id, report_id, data, length);
     return 0;
 }
 
