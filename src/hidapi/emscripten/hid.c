@@ -25,7 +25,7 @@
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
 
-EM_JS_DEPS(hidapi, "$dynCall");
+// EM_JS_DEPS(hidapi, "$dynCall");
 
 #if 0
 #define HIDAPI_WEBHID_DEBUG
@@ -35,7 +35,6 @@ struct hid_device_ {
     int device_id;
     unsigned char *last_report;
     size_t last_report_length;
-    int last_report_read;
     struct hid_device_info* device_info;
 };
 
@@ -55,7 +54,6 @@ static hid_device *new_hid_device(void)
     dev->device_id = -1;
     dev->last_report = NULL;
     dev->last_report_length = 0;
-    dev->last_report_read = 0;
 
     return dev;
 }
@@ -258,19 +256,7 @@ hid_device * hid_open(unsigned short vendor_id, unsigned short product_id, const
     return handle;
 }
 
-typedef void(*SetReportCallback)(hid_device *dev, unsigned char *data, size_t length);
-
-static void set_report(hid_device *dev, unsigned char *data, size_t length)
-{
-    if (dev->last_report) {
-        free(dev->last_report);
-    }
-    dev->last_report = data;
-    dev->last_report_length = length;
-    dev->last_report_read = 0;
-}
-
-EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetReportCallback set_report_callback), {
+EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, unsigned char **last_report_out, size_t *last_report_length_out), {
     let device = window._hidDeviceList[device_id];
     if (device) {
         try {
@@ -284,7 +270,12 @@ EM_ASYNC_JS(void, hid_js_open, (int device_id, hid_device *dev, SetReportCallbac
                 for (let i = 0; i < data['byteLength']; i++) {
                     HEAPU8[pointer + i + 1] = data['getUint8'](i);
                 }
-                dynCall("viii", set_report_callback, [dev, pointer, dataLength]);
+
+                if (HEAP32[last_report_out >> 2] != 0) {
+                    _free(HEAP32[last_report_out >> 2]);
+                }
+                HEAP32[last_report_out >> 2] = pointer;
+                HEAP32[last_report_length_out >> 2] = dataLength;
             });
         } catch (e) {
             // Pass?
@@ -320,7 +311,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
     }
 
     dev->device_id = device_id;
-    hid_js_open(device_id, dev, set_report);
+    hid_js_open(device_id, dev, &dev->last_report, &dev->last_report_length);
 
     return dev;
 }
@@ -368,13 +359,14 @@ int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t
     if (length < 1)
         return -1;
     if (milliseconds == 0) {
-        if (dev->last_report && !dev->last_report_read) {
+        if (dev->last_report) {
             size_t return_size = length;
             if (dev->last_report_length < length) {
                 return_size = dev->last_report_length;
             }
             memcpy(data, dev->last_report, return_size);
-            dev->last_report_read = 1;
+            free(dev->last_report);
+            dev->last_report = NULL;
             return return_size;
         } else {
             return 0;
