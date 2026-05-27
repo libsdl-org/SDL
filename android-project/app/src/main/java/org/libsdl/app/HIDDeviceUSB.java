@@ -225,7 +225,6 @@ class HIDDeviceUSB implements HIDDevice {
             if (feature) {
                 return false;
             }
-
             return true;            
         }
 
