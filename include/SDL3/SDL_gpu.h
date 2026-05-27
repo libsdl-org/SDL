@@ -4283,8 +4283,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
 
 /**
  * Blocks the thread until all presenting command buffers are finished executing.
- * If possible, this function will also block until a swapchain texture is available to be acquired,
- * but that functionality is not guaranteed to exist on all platforms.
  *
  * \param device a GPU context.
  * \param window a window that has been claimed.
