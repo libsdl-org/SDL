@@ -222,15 +222,10 @@ class HIDDeviceUSB implements HIDDevice {
             return false;
         }
         if (!mClaimed) {
-            Log.w(TAG, "readReport() called but some other process currently owns the USB device");
             if (feature) {
                 return false;
             }
 
-            // For non-feature reports, fake that there's no data available if we aren't claimed.
-            // byte[] data;
-            // data = Arrays.copyOfRange(report, 0, res);
-            // mManager.HIDDeviceReportResponse(mDeviceId, data);
             return true;            
         }
 
