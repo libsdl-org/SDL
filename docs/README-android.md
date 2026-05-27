@@ -13,7 +13,7 @@ Requirements
 Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r15c or later
+Android NDK r28c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 21 (Android 5.0)
