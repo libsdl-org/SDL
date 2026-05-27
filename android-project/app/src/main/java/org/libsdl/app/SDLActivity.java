@@ -530,7 +530,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(true);
-        }
+        }        
+
         if (!mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -543,7 +544,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(false);
-        }
+        }        
+
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
@@ -615,6 +617,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
+
+        // If we are gaining focus, we can always try to restore our USB devices. If we are losing focus,
+        // only try to relinquish them if we don't have background events allowed (for multi-window Android setups).
+        if (hasFocus || !SDLActivity.nativeGetHintBoolean("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", false)) {
+            if (mHIDDeviceManager != null) {
+                mHIDDeviceManager.setFrozen(!hasFocus);
+            }            
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            return;
