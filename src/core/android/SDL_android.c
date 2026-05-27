@@ -2540,15 +2540,19 @@ static char *GetURIWithNormalizedPath(const char *uri, bool should_append_slash)
     char *path_cursor = path;
 
     while (*uri_cursor) {
+        // Skip empty path segments (double slashes)
         if (*uri_cursor == '/' || *uri_cursor == '\\') {
             uri_cursor++;
             continue;
         }
+        // Single dot path segment, skip
         if (uri_cursor[0] == '.' &&
             (uri_cursor[1] == '\0' || uri_cursor[1] == '/' || uri_cursor[1] == '\\')) {
             uri_cursor++;
             continue;
         }
+        // Double dot path segment, remove the previous segment from the normalized path or
+        // fail if there is no previous segment to remove (attempting to traverse over the root path)
         if (uri_cursor[0] == '.' && uri_cursor[1] == '.' &&
             (uri_cursor[2] == '\0' || uri_cursor[2] == '/' || uri_cursor[2] == '\\')) {
             if (path_cursor == path) {
@@ -2558,6 +2562,8 @@ static char *GetURIWithNormalizedPath(const char *uri, bool should_append_slash)
                 return NULL;
             }
             path_cursor--;
+            // Move the path cursor back to the previous path segment,
+            // effectively removing the last segment from the normalized path
             while (path_cursor != path && *(path_cursor - 1) != '/') {
                 *path_cursor = 0;
                 path_cursor--;
@@ -2565,13 +2571,16 @@ static char *GetURIWithNormalizedPath(const char *uri, bool should_append_slash)
             uri_cursor += 2;
             continue;
         }
+        // Copy the current path segment from the URI to the normalized path until the next slash or end of string
         while (*uri_cursor && *uri_cursor != '/' && *uri_cursor != '\\') {
             *path_cursor++ = *uri_cursor++;
         }
+        // Append a slash to the normalized path if we already have a path segment
         if (path_cursor != path) {
             *path_cursor++ = '/';
         }
     }
+    // Remove the trailing slash if it was not requested
     if (!should_append_slash && *(path_cursor -1) == '/') {
         path_cursor--;
     }
@@ -3664,9 +3673,15 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
         contentResolverMode = modeupdate ? "rw" : "wa";
     }
 
-    JNIEnv *env = Android_JNI_GetEnv();
     char *normalizedUri = GetURIWithNormalizedPath(uri, false);
     if (!normalizedUri) {
+        return -1;
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
         return -1;
     }
 
@@ -3675,17 +3690,14 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
     jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode);
 
     SDL_free(normalizedUri);
-    (*env)->DeleteLocalRef(env, jstringUri);
-    (*env)->DeleteLocalRef(env, jstringMode);
 
     if (Android_JNI_ExceptionOccurred(false)) {
-        return -1;
-    }
-
-    if (fd == -1) {
+        fd = -1;
+    } else if (fd == -1) {
         SDL_SetError("Unspecified error in JNI");
     }
 
+    LocalReferenceHolder_Cleanup(&refs);
     return fd;
 }
 
