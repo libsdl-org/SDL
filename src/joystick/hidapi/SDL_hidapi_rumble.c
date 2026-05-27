@@ -49,7 +49,7 @@ typedef struct SDL_HIDAPI_RumbleContext
     SDL_HIDAPI_RumbleRequest *requests_tail;
 } SDL_HIDAPI_RumbleContext;
 
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
@@ -57,7 +57,7 @@ SDL_Mutex *SDL_HIDAPI_rumble_lock;
 #endif
 static SDL_HIDAPI_RumbleContext rumble_context SDL_GUARDED_BY(SDL_HIDAPI_rumble_lock);
 
-#ifndef SDL_PLATFORM_EMSCRIPTEN // Threads are not used for the web
+#ifndef SDL_THREADS_DISABLED
 static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 {
     SDL_HIDAPI_RumbleContext *ctx = (SDL_HIDAPI_RumbleContext *)data;
@@ -168,7 +168,7 @@ static bool SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
 
 bool SDL_HIDAPI_LockRumble(void)
 {
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
     if (SDL_CompareAndSwapAtomicInt(&ctx->initialized, false, true)) {
@@ -184,7 +184,7 @@ bool SDL_HIDAPI_LockRumble(void)
 
 bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
 {
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request, *found;
 
@@ -220,7 +220,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
         return -1;
     }
 
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
     request = (SDL_HIDAPI_RumbleRequest *)SDL_calloc(1, sizeof(*request));
     if (!request) {
         SDL_HIDAPI_UnlockRumble();
@@ -254,7 +254,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
 
 void SDL_HIDAPI_UnlockRumble(void)
 {
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
 #endif
 }
@@ -287,7 +287,7 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
 
 void SDL_HIDAPI_QuitRumble(void)
 {
-#ifndef SDL_PLATFORM_EMSCRIPTEN
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
     if (SDL_GetAtomicInt(&ctx->running)) {
