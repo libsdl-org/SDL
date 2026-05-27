@@ -31,7 +31,7 @@
 
 #include "../SDL_sysfilesystem.h"
 
-char *SDL_SYS_GetBasePath(void)
+static char *GetExePath(void)
 {
     /* As of MS-DOS 3.0, you can get the full path to the EXE from the very end of the
         environment table, which is discovered through the PSP:
@@ -80,34 +80,45 @@ char *SDL_SYS_GetBasePath(void)
 
     slen++;  /* count the null terminator. */
 
-    char *lastbackslash = NULL;
     char *retval = (char *) SDL_malloc(slen);
     if (retval) {
         for (int i = 0; i < slen; i++) {
             const char ch = (char) _farpeekb(envsel, offset + i);
-            if (ch == '\\') {
-                retval[i] = '/';     // I don't know if this is a good idea. Drop DOS path separators, use Unix style instead.
-                lastbackslash = &retval[i];
-            } else {
-                retval[i] = ch;
-            }
+            retval[i] = (ch == '\\') ? '/' : ch;     // I don't know if this is a good idea. Drop DOS path separators, use Unix style instead.
         }
-    }
-
-    if (lastbackslash) {
-        lastbackslash[1] = '\0';  /* chop off exe name, just leave path */
-    } else {  // uh...should have been a full path...?!
-        SDL_free(retval);
-        retval = NULL;
     }
 
     return retval;
 }
 
+char *SDL_SYS_GetBasePath(void)
+{
+    char *path = GetExePath();  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
+    }
+
+    char *ptr = SDL_strrchr(path, '/');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+
+    ptr[1] = '\0'; // chop off filename, leave '/'.
+
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
 char *SDL_SYS_GetExeName(void)
 {
-    SDL_Unsupported();  // !!! FIXME: Move most of SDL_SYS_GetBasePath to a separate function and reuse it here.
-    return NULL;
+    char *path = GetExePath();  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
+    }
+
+    char *ptr = SDL_strrchr(path, '/');
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

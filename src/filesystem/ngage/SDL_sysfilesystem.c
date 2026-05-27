@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 extern void NGAGE_GetAppPath(char *path);
+extern void NGAGE_GetExeName(char *path);
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -32,8 +33,9 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    SDL_Unsupported();  // !!! FIXME: see code in NGAGE_GetAppPath
-    return NULL;
+    char exe_name[512];
+    NGAGE_GetExeName(exe_name);
+    return SDL_strdup(exe_name);
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
