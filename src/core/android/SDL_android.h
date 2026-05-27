@@ -107,7 +107,7 @@ void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue);
 void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled);
 
 // Haptic support
-void Android_JNI_PollHapticDevices(void);
+void Android_JNI_DetectHapticDevices(void);
 void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length);
 void Android_JNI_HapticStop(int device_id);

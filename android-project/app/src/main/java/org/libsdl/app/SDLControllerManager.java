@@ -106,8 +106,8 @@ public class SDLControllerManager
     /**
      * This method is called by SDL using JNI.
      */
-    static void pollHapticDevices() {
-        mHapticHandler.pollHapticDevices();
+    static void detectHapticDevices() {
+        mHapticHandler.detectHapticDevices();
     }
 
     /**
@@ -718,7 +718,7 @@ class SDLHapticHandler {
         }
     }
 
-    synchronized void pollHapticDevices() {
+    synchronized void detectHapticDevices() {
 
         final int deviceId_VIBRATOR_SERVICE = 999999;
         boolean hasVibratorService = false;

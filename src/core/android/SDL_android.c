@@ -410,7 +410,7 @@ static jclass mControllerManagerClass;
 static jmethodID midDetectDevices;
 static jmethodID midJoystickSetLED;
 static jmethodID midJoystickSetSensorsEnabled;
-static jmethodID midPollHapticDevices;
+static jmethodID midDetectHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticRumble;
 static jmethodID midHapticStop;
@@ -758,8 +758,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
                                               "joystickSetLED", "(IIII)V");
     midJoystickSetSensorsEnabled = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "joystickSetSensorsEnabled", "(IZ)V");
-    midPollHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                     "pollHapticDevices", "()V");
+    midDetectHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                     "detectHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                              "hapticRun", "(IFI)V");
     midHapticRumble = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -767,7 +767,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midDetectHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -2657,10 +2657,10 @@ void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetSensorsEnabled, device_id, (enabled == 1));
 }
 
-void Android_JNI_PollHapticDevices(void)
+void Android_JNI_DetectHapticDevices(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollHapticDevices);
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midDetectHapticDevices);
 }
 
 void Android_JNI_HapticRun(int device_id, float intensity, int length)
