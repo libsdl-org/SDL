@@ -350,7 +350,7 @@ EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_
             }, {once: true});
         });
         HEAPU8[data] = report_id;
-        for (let i = 0; i < dataView['byteLength']; i++) {
+        for (let i = 0; i < dataView['byteLength'] && i < (length-1); i++) {
             HEAPU8[data + i + 1] = dataView['getUint8'](i);
         }
         return dataView['byteLength']+1;
