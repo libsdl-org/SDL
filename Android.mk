@@ -1,5 +1,45 @@
 LOCAL_PATH := $(call my-dir)
 
+SDL_PRIVATE_CFLAGS := \
+	-DGL_GLEXT_PROTOTYPES \
+	-Wall -Wextra \
+	-Wmissing-prototypes \
+	-Wunreachable-code-break \
+	-Wunneeded-internal-declaration \
+	-Wmissing-variable-declarations \
+	-Wfloat-conversion \
+	-Wshorten-64-to-32 \
+	-Wunreachable-code-return \
+	-Wshift-sign-overflow \
+	-Wstrict-prototypes \
+	-Wkeyword-macro \
+
+
+ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+
+###########################
+#
+# SVE2 simd code (arm64-v8a only)
+#
+###########################
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := SDL3_sve2
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include $(LOCAL_PATH)/include/build_config $(LOCAL_PATH)/src
+
+LOCAL_SRC_FILES := \
+	$(wildcard $(LOCAL_PATH)/src/video/arm/*.c)
+
+LOCAL_CFLAGS += \
+	$(SDL_PRIVATE_CFLAGS) \
+	-march=armv8-a+sve2 \
+
+include $(BUILD_STATIC_LIBRARY)
+
+endif
+
 ###########################
 #
 # SDL shared library
@@ -84,22 +124,10 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/tray/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/android/*.c) \
-	$(wildcard $(LOCAL_PATH)/src/video/arm/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/yuv2rgb/*.c))
 
-LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 LOCAL_CFLAGS += \
-	-Wall -Wextra \
-	-Wmissing-prototypes \
-	-Wunreachable-code-break \
-	-Wunneeded-internal-declaration \
-	-Wmissing-variable-declarations \
-	-Wfloat-conversion \
-	-Wshorten-64-to-32 \
-	-Wunreachable-code-return \
-	-Wshift-sign-overflow \
-	-Wstrict-prototypes \
-	-Wkeyword-macro \
+	$(SDL_PRIVATE_CFLAGS) \
 
 # Warnings we haven't fixed (yet)
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
@@ -112,6 +140,10 @@ LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--no-undefined-version -Wl,--version-scr
 
 ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
+endif
+
+ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+LOCAL_STATIC_LIBRARIES += SDL3_sve2
 endif
 
 include $(BUILD_SHARED_LIBRARY)
