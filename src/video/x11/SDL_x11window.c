@@ -1882,7 +1882,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                        SubstructureNotifyMask | SubstructureRedirectMask, &e);
 
-        if (!!(window->flags & SDL_WINDOW_FULLSCREEN) != fullscreen) {
+        // Only set the pending flag if the fullscreen state actually changed.
+        if (((window->flags & SDL_WINDOW_FULLSCREEN) != 0) != (fullscreen != 0)) {
             data->pending_operation |= X11_PENDING_OP_FULLSCREEN;
         }
 
