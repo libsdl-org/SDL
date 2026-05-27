@@ -374,9 +374,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
     SDL_VideoData *videodata = _this->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     SDL_WindowData *data;
-    int numwindows = videodata->numwindows;
-    int windowlistlength = videodata->windowlistlength;
-    SDL_WindowData **windowlist = videodata->windowlist;
 
     // Allocate the window data
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
@@ -392,19 +389,13 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
     // Associate the data with the window
 
-    if (numwindows < windowlistlength) {
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
-    } else {
-        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
+    if (videodata->numwindows >= videodata->windowlistlength) {
+        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(videodata->windowlist, (videodata->numwindows + 1) * sizeof(*videodata->windowlist));
         if (!new_windowlist) {
             goto error_cleanup;
         }
-        windowlist = new_windowlist;
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
         videodata->windowlistlength++;
-        videodata->windowlist = windowlist;
+        videodata->windowlist = new_windowlist;
     }
 
     // Fill in the SDL window with the window data
@@ -487,6 +478,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
     // All done!
     window->internal = data;
+    videodata->windowlist[videodata->numwindows++] = data;
     return true;
 
 error_cleanup:
