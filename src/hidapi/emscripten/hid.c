@@ -25,7 +25,7 @@
 #include <emscripten/html5.h>
 #include <emscripten/emscripten.h>
 
-// EM_JS_DEPS(hidapi, "$dynCall");
+EM_JS_DEPS(hidapi, "$stringToUTF32");
 
 #if 0
 #define HIDAPI_WEBHID_DEBUG
@@ -91,7 +91,7 @@ static struct hid_device_info * create_device_info_for_device(int device_id)
     struct hid_device_info *root = NULL;
     struct hid_device_info *cur_dev = NULL;
     char path[16];
-    /*wchar_t product_string[128];*/
+    wchar_t product_string[128];
     int ignore = 0;
     int input_report_count;
 
@@ -127,14 +127,11 @@ static struct hid_device_info * create_device_info_for_device(int device_id)
     cur_dev->release_number = 0;
     cur_dev->manufacturer_string = NULL;
 
-    /* I'm too tired to make stringToUTF32 work correctly here, cmake doesn't want to include it in the build */
-    /*MAIN_THREAD_EM_ASM({
+    MAIN_THREAD_EM_ASM({
         stringToUTF32(window._hidDeviceList[$0].productName, $1, Number($2));
     }, device_id, product_string, sizeof(product_string));
 
-    cur_dev->product_string = wcsdup(product_string);*/
-
-    cur_dev->product_string = NULL;
+    cur_dev->product_string = wcsdup(product_string);
 
     cur_dev->usage_page = MAIN_THREAD_EM_ASM_INT({
         return window._hidDeviceList[$0].collections[0].usagePage;
@@ -216,9 +213,7 @@ void HID_API_EXPORT hid_free_enumeration(struct hid_device_info *devs)
     while (d) {
         struct hid_device_info *next = d->next;
         free(d->path);
-        /*free(d->serial_number);
-        free(d->manufacturer_string);
-        free(d->product_string);*/
+        free(d->product_string);
         free(d);
         d = next;
     }
