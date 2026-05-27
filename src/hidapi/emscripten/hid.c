@@ -44,6 +44,9 @@ static struct hid_api_version api_version = {
     .patch = HID_API_VERSION_PATCH
 };
 
+static int initialized = 0;
+static int webhid_supported = 0;
+
 static hid_device *new_hid_device(void)
 {
     hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
@@ -70,9 +73,12 @@ HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
 
 int HID_API_EXPORT hid_init(void)
 {
-    return MAIN_THREAD_EM_ASM_INT({
-        return "hid" in navigator ? 0 : -1;
-    });
+    if (!initialized) {
+        webhid_supported = MAIN_THREAD_EM_ASM_INT({
+            return "hid" in navigator;
+        });
+    }
+    return webhid_supported ? 0 : -1;
 }
 
 int HID_API_EXPORT hid_exit(void)
@@ -169,7 +175,9 @@ struct hid_device_info HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, u
     struct hid_device_info *root = NULL; /* return object */
     struct hid_device_info *cur_dev = NULL;
 
-    hid_init();
+    if (hid_init() < 0) {
+        return NULL;
+    }
 
     device_count = hid_js_get_device_count();
 
@@ -288,7 +296,9 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path)
     hid_device *dev = NULL;
     int device_id = 0;
 
-    hid_init();
+    if (hid_init() < 0) {
+        return NULL;
+    }
     /* register_global_error: global error is reset by hid_init */
 
 #ifdef HIDAPI_WEBHID_DEBUG
@@ -329,7 +339,7 @@ EM_ASYNC_JS(int, hid_js_write, (int device_id, int report_id, const unsigned cha
 
 int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t length)
 {
-    if (length < 1)
+    if (!webhid_supported || length < 1)
         return 0;
     hid_js_write(dev->device_id, data[0], data+1, length-1);
     return length;
@@ -356,7 +366,7 @@ EM_ASYNC_JS(int, hid_js_read_timeout, (int device_id, unsigned char *data, size_
 int HID_API_EXPORT hid_read_timeout(hid_device *dev, unsigned char *data, size_t length, int milliseconds)
 {
     /* TODO: timeout */
-    if (length < 1)
+    if (!webhid_supported || length < 1)
         return -1;
     if (milliseconds == 0) {
         if (dev->last_report) {
@@ -404,7 +414,7 @@ EM_ASYNC_JS(void, hid_js_get_feature_report, (int device_id, int report_id, unsi
 
 int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, size_t length)
 {
-    if (length < 1)
+    if (!webhid_supported || length < 1)
         return -1;
     int report_id = (int)data[0];
     hid_js_get_feature_report(dev->device_id, report_id, data, length);
@@ -468,7 +478,7 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
     return 0;
 }
 
-HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
+HID_API_EXPORT const wchar_t * HID_API_CALL hid_error(hid_device *dev)
 {
     return L"";
 }
