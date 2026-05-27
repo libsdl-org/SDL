@@ -154,8 +154,25 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    SDL_Unsupported();  // !!! FIXME: see code in SDL_SYS_GetBasePath.
-    return NULL;
+    _kernel_swi_regs regs;
+    _kernel_oserror *error;
+    char *canon, *ptr, *retval;
+
+    error = _kernel_swi(OS_GetEnv, &regs, &regs);
+    if (error) {
+        return NULL;
+    }
+
+    canon = canonicalisePath((const char *)regs.r[0], "Run$Path");
+    if (!canon) {
+        return NULL;
+    }
+
+    // find filename.
+    ptr = SDL_strrchr(canon, '.');
+    retval = SDL_strdup(ptr ? ptr + 1 : canon);
+    SDL_free(canon);
+    return retval;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

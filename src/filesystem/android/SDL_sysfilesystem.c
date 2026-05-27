@@ -26,8 +26,7 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
-
-#include <unistd.h>
+#include "../../core/android/SDL_android.h"
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -36,7 +35,7 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    return NULL;  // !!! FIXME: probably just use the Linux path?
+    return SDL_GetAndroidPackageName();
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

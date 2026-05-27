@@ -44,6 +44,7 @@ char *SDL_SYS_GetBasePath(void)
         return NULL;
     }
 
+    // !!! FIXME: if find_path promises an absolute path, can we dump this and just do SDL_strrchr(name, '/')?
     BEntry entry(name, true);
     BPath path;
     status_t rc = entry.GetPath(&path);  // (path) now has binary's path.
@@ -66,8 +67,12 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    SDL_Unsupported();  // !!! FIXME: Move most of SDL_SYS_GetBasePath to a separate function and reuse it here.
-    return NULL;
+    char name[MAXPATHLEN];
+    if (find_path(B_APP_IMAGE_SYMBOL, B_FIND_PATH_IMAGE_PATH, NULL, name, sizeof(name)) != B_OK) {
+        return NULL;
+    }
+    char *ptr = SDL_strrchr(name, '/');
+    return SDL_strdup(ptr ? ptr + 1 : name);
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
