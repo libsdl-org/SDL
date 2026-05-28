@@ -2044,6 +2044,9 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
             break;
+        case MTLPixelFormatRGBA32Float:
+            format = SDL_PIXELFORMAT_RGBA128_FLOAT;
+            break;
         case MTLPixelFormatB5G6R5Unorm:
             format = SDL_PIXELFORMAT_RGB565;
             break;
