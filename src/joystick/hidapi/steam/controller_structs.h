@@ -179,9 +179,8 @@ typedef struct
     uint16_t on_us;
     uint16_t off_us;
     uint16_t repeat_count;
-    uint16_t gain_db; 
 } MsgHapticPulse;
-#define HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES 10
+#define HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES 8
 
 typedef struct
 {
