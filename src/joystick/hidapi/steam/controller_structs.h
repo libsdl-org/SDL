@@ -556,6 +556,8 @@ enum ETritonReportIDTypes
     ID_TRITON_BATTERY_STATUS	= 0x43,
     ID_TRITON_CONTROLLER_STATE_BLE = 0x45,
     ID_TRITON_WIRELESS_STATUS_X = 0x46,
+    ID_TRITON_CONTROLLER_STATE_TIMESTAMP = 0x47,
+
     ID_TRITON_WIRELESS_STATUS   = 0x79,
 };
 
@@ -595,6 +597,18 @@ typedef struct {
 
 typedef struct
 {
+    uint16_t timestamp;
+    short sAccelX;
+    short sAccelY;
+    short sAccelZ;
+
+    short sGyroX;
+    short sGyroY;
+    short sGyroZ;
+} TritonMTUIMUNoQuat32usTS_t;
+
+typedef struct
+{
     uint8_t seq_num;
     uint32_t buttons;
     short sTriggerLeft;
@@ -607,11 +621,11 @@ typedef struct
 
     short sLeftPadX;
     short sLeftPadY;
-    unsigned short sPressureLeft;
+    unsigned short ucPressureLeft;
 
     short sRightPadX;
     short sRightPadY;
-    unsigned short sPressureRight;
+    unsigned short ucPressureRight;
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
 
@@ -628,13 +642,39 @@ typedef struct {
 
 	short sLeftPadX;
 	short sLeftPadY;
-	unsigned short sPressureLeft;
+	unsigned short ucPressureLeft;
 
 	short sRightPadX;
 	short sRightPadY;
-	unsigned short sPressureRight;
+	unsigned short ucPressureRight;
 	TritonMTUIMUNoQuat_t imu;
 } TritonMTUNoQuat_t;
+
+// New Ibex packet that adds a timestamp to the trackpad sampling
+// and reduces the size of the IMU timestamp.  Timestamps are now 16 bits
+typedef struct
+{
+    uint8_t seq_num;
+    uint32_t buttons;
+    short sTriggerLeft;
+    short sTriggerRight;
+
+    short sLeftStickX;
+    short sLeftStickY;
+    short sRightStickX;
+    short sRightStickY;
+
+    unsigned short unTrackpadTimestamp;
+    short sLeftPadX;
+    short sLeftPadY;
+    unsigned short unPressureLeft;
+
+    short sRightPadX;
+    short sRightPadY;
+    unsigned short unPressureRight;
+
+    TritonMTUIMUNoQuat32usTS_t imu;
+} TritonMTUNoQuat32TS_t;
 
 enum EChargeState
 {
