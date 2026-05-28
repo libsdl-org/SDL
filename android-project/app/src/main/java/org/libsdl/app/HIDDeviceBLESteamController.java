@@ -765,7 +765,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
 
             // If we're a Triton, we need to find the correct report characteristic.
             if (report.length > 0) {
-                int reportId = report[0];
+                int reportId = report[0] & 0xFF;
                 BluetoothGattCharacteristic targetedReportCharacteristic = mOutputReportChars.get(reportId);
                 if (targetedReportCharacteristic != null) {
                     byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
