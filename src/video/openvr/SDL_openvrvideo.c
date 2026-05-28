@@ -1487,7 +1487,7 @@ static void OPENVR_PumpEvents(SDL_VideoDevice *_this)
                 break;
             case EVREventType_VREvent_OverlayClosed:
             case EVREventType_VREvent_Quit:
-                SDL_Quit();
+                SDL_SendQuit();
                 break;
             }
         }
