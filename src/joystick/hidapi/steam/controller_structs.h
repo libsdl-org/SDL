@@ -620,11 +620,11 @@ typedef struct
 
     short sLeftPadX;
     short sLeftPadY;
-    unsigned short ucPressureLeft;
+    unsigned short unPressureLeft;
 
     short sRightPadX;
     short sRightPadY;
-    unsigned short ucPressureRight;
+    unsigned short unPressureRight;
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
 
@@ -641,11 +641,11 @@ typedef struct {
 
 	short sLeftPadX;
 	short sLeftPadY;
-	unsigned short ucPressureLeft;
+	unsigned short unPressureLeft;
 
 	short sRightPadX;
 	short sRightPadY;
-	unsigned short ucPressureRight;
+	unsigned short unPressureRight;
 	TritonMTUIMUNoQuat_t imu;
 } TritonMTUNoQuat_t;
 
