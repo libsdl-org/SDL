@@ -438,9 +438,9 @@ static jobject javaAssetManagerRef = 0;
 
 // Android content file handling
 static jclass mSAFDocumentClass = NULL;
-static jmethodID midIsDirectory = NULL;
-static jmethodID midGetLastModified = NULL;
-static jmethodID midGetSize = NULL;
+static jfieldID fidIsDirectory = NULL;
+static jfieldID fidLastModified = NULL;
+static jfieldID fidSize = NULL;
 static jmethodID midGetUri = NULL;
 
 static SDL_Mutex *Android_ActivityMutex = NULL;
@@ -2591,7 +2591,7 @@ static char *GetURIWithNormalizedPath(const char *uri, bool should_append_slash)
 
 static bool CreateSAFDocumentClass(JNIEnv *env, jobject jSAFDocument)
 {
-    if (mSAFDocumentClass && midIsDirectory && midGetLastModified && midGetSize && midGetUri) {
+    if (mSAFDocumentClass && fidIsDirectory && fidLastModified && fidSize && midGetUri) {
         return true;
     }
 
@@ -2613,22 +2613,22 @@ static bool CreateSAFDocumentClass(JNIEnv *env, jobject jSAFDocument)
         }
     }
 
-    if (!midIsDirectory) {
-        midIsDirectory = (*env)->GetMethodID(env, mSAFDocumentClass, "isDirectory", "()Z");
+    if (!fidIsDirectory) {
+        fidIsDirectory = (*env)->GetFieldID(env, mSAFDocumentClass, "isDirectory", "Z");
         if (Android_JNI_ExceptionOccurred(false)) {
             return false;
         }
     }
 
-    if (!midGetLastModified) {
-        midGetLastModified = (*env)->GetMethodID(env, mSAFDocumentClass, "getLastModified", "()J");
+    if (!fidLastModified) {
+        fidLastModified = (*env)->GetFieldID(env, mSAFDocumentClass, "lastModified", "J");
         if (Android_JNI_ExceptionOccurred(false)) {
             return false;
         }
     }
 
-    if (!midGetSize) {
-        midGetSize = (*env)->GetMethodID(env, mSAFDocumentClass, "getSize", "()J");
+    if (!fidSize) {
+        fidSize = (*env)->GetFieldID(env, mSAFDocumentClass, "size", "J");
         if (Android_JNI_ExceptionOccurred(false)) {
             return false;
         }
@@ -2817,19 +2817,19 @@ bool Android_JNI_GetContentInfo(const char *uri, SDL_PathInfo *info)
     }
 
     // Get the fields from the SAFDocument object
-    bool is_directory = (*env)->CallBooleanMethod(env, jSAFDocument, midIsDirectory);
+    bool is_directory = (*env)->GetBooleanField(env, jSAFDocument, fidIsDirectory);
     if (Android_JNI_ExceptionOccurred(false)) {
         LocalReferenceHolder_Cleanup(&refs);
         return false;
     }
 
-    long last_modified = (*env)->CallLongMethod(env, jSAFDocument, midGetLastModified);
+    jlong last_modified = (*env)->GetLongField(env, jSAFDocument, fidLastModified);
     if (Android_JNI_ExceptionOccurred(false)) {
         LocalReferenceHolder_Cleanup(&refs);
         return false;
     }
 
-    long size = (*env)->CallLongMethod(env, jSAFDocument, midGetSize);
+    jlong size = (*env)->GetLongField(env, jSAFDocument, fidSize);
     if (Android_JNI_ExceptionOccurred(false)) {
         LocalReferenceHolder_Cleanup(&refs);
         return false;

@@ -2118,8 +2118,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         private boolean dirty;
         private final String id;
         private final String mimeType;
-        private long lastModified;
-        private long size;
+        public final boolean isDirectory;
+        public long lastModified;
+        public long size;
         private final Uri uri;
         private final Uri tree;
         private HashMap <String, SAFDocument> children;
@@ -2129,6 +2130,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             this.mimeType = cursor.getString(2);
             this.lastModified = cursor.getLong(3);
             this.size = cursor.getLong(4);
+            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
             this.tree = uri;
             this.uri = uri;
             this.dirty = false;
@@ -2141,12 +2143,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             this.size = cursor.getLong(4);
             this.tree = parent.tree;
             this.uri = DocumentsContract.buildDocumentUriUsingTree(this.tree, this.id);
+            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
             this.dirty = false;
         }
 
         private SAFDocument(Uri tree) {
             this.id = DocumentsContract.getTreeDocumentId(tree);
             this.mimeType = DocumentsContract.Document.MIME_TYPE_DIR;
+            this.isDirectory = true;
             this.tree = tree;
             this.uri = DocumentsContract.buildDocumentUriUsingTree(this.tree, this.id);
             this.dirty = true;
@@ -2156,6 +2160,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         {
             this.id = DocumentsContract.getDocumentId(uri);
             this.mimeType = mimeType;
+            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
             this.lastModified = System.currentTimeMillis();
             this.tree = tree;
             this.uri = uri;
@@ -2221,6 +2226,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             }
 
+            if (document.dirty) {
+                document.update();
+            }
+
             return document;
         }
 
@@ -2264,8 +2273,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return newFileInfo;
         }
 
-        public HashMap <String, SAFDocument> getChildren() throws FileNotFoundException {
-            if (!this.isDirectory()) {
+        private HashMap <String, SAFDocument> getChildren() throws FileNotFoundException {
+            if (!this.isDirectory) {
                 throw new FileNotFoundException(this.id + " is not a directory for uri: " + this.uri);
             }
             if (this.children != null) {
@@ -2311,24 +2320,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             cursor.close();
 
             this.dirty = false;
-        }
-
-        public boolean isDirectory() {
-            return this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
-        }
-
-        public long getLastModified() {
-            if (this.dirty) {
-                this.update();
-            }
-            return this.lastModified;
-        }
-
-        public long getSize() {
-            if (this.dirty) {
-                this.update();
-            }
-            return this.size;
         }
 
         public String getUri() {
