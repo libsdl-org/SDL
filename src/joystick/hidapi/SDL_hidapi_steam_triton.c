@@ -27,6 +27,11 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM_TRITON
 
+// Define this if you want to log all packets from the controller
+#if 0
+#define DEBUG_STEAM_PROTOCOL
+#endif
+
 /*****************************************************************************************************/
 
 #include "steam/controller_constants.h"
@@ -516,6 +521,10 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
             HIDAPI_DriverSteamTriton_SetControllerConnected(device, false);
             return false;
         }
+
+#ifdef DEBUG_STEAM_PROTOCOL
+        HIDAPI_DumpPacket("Steam Controller packet: size = %d", data, r);
+#endif
 
         switch (data[0]) {
         case ID_TRITON_CONTROLLER_STATE:
