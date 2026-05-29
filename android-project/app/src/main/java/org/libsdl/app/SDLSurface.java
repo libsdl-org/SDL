@@ -379,12 +379,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 SDLActivity.mCurrentRotation = newRotation;
                 SDLActivity.onNativeRotationChanged(newRotation);
             }
-
-            SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,
-                                      y / SensorManager.GRAVITY_EARTH,
-                                      event.values[2] / SensorManager.GRAVITY_EARTH);
-
-
         }
     }
 
