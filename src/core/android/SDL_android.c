@@ -140,10 +140,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     JNIEnv *env, jclass jcls,
     jint pen_id_in, jint device_type, jint button, jint action, jfloat x, jfloat y, jfloat p);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
-    JNIEnv *env, jclass jcls,
-    jfloat x, jfloat y, jfloat z);
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     JNIEnv *env, jclass jcls);
 
@@ -237,7 +233,6 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativePinchEnd", "()V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
     { "onNativePen", "(IIIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
-    { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
     { "onNativeLocaleChanged", "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
@@ -420,11 +415,9 @@ static jmethodID midHapticRun;
 static jmethodID midHapticRumble;
 static jmethodID midHapticStop;
 
-// Accelerometer data storage
+// display orientation
 static SDL_DisplayOrientation displayNaturalOrientation;
 static SDL_DisplayOrientation displayCurrentOrientation;
-static float fLastAccelerometer[3];
-static bool bHasNewData;
 
 static bool bHasEnvironmentVariables;
 
@@ -1476,17 +1469,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-// Accelerometer
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
-    JNIEnv *env, jclass jcls,
-    jfloat x, jfloat y, jfloat z)
-{
-    fLastAccelerometer[0] = x;
-    fLastAccelerometer[1] = y;
-    fLastAccelerometer[2] = z;
-    bHasNewData = true;
-}
-
 // Clipboard
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     JNIEnv *env, jclass jcls)
@@ -1760,22 +1742,6 @@ bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
-}
-
-bool Android_JNI_GetAccelerometerValues(float values[3])
-{
-    bool result = false;
-
-    if (bHasNewData) {
-        int i;
-        for (i = 0; i < 3; ++i) {
-            values[i] = fLastAccelerometer[i];
-        }
-        bHasNewData = false;
-        result = true;
-    }
-
-    return result;
 }
 
 /*

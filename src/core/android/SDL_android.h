@@ -64,7 +64,6 @@ extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *
 extern void Android_JNI_MinimizeWindow(void);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
-extern bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);

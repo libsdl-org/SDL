@@ -1103,7 +1103,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                             int action, float x,
                                             float y, float p);
     public static native void onNativePen(int penId, int device_type, int button, int action, float x, float y, float p);
-    public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceCreated();
     public static native void onNativeSurfaceChanged();
