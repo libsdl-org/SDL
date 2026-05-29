@@ -1773,6 +1773,11 @@ bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
         return false;
     }
 
+    if (IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVirtualHIDevice)) == kCFBooleanTrue) {
+        // Steam virtual gamepads always have kIOHIDVirtualHIDevice property unlike real devices, and are also not exposed as GCController
+        return false;
+    }
+
     if (@available(macOS 11.0, *)) {
         const int MAX_ATTEMPTS = 3;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
