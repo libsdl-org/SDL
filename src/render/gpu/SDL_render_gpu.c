@@ -22,6 +22,7 @@
 
 #ifdef SDL_VIDEO_RENDER_GPU
 
+#include "../../events/SDL_windowevents_c.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
@@ -1517,6 +1518,9 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
             if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
                 CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+
+                // Notify the application that it needs to redraw this frame
+                SDL_SendWindowEvent(renderer->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
             }
         } else {
             SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
