@@ -41,6 +41,7 @@
 #include "SDL_x11shape.h"
 #include "SDL_x11xsync.h"
 #include "SDL_x11xtest.h"
+#include "SDL_x11wgpu.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -266,6 +267,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->Vulkan_CreateSurface = X11_Vulkan_CreateSurface;
     device->Vulkan_DestroySurface = X11_Vulkan_DestroySurface;
     device->Vulkan_GetPresentationSupport = X11_Vulkan_GetPresentationSupport;
+#endif
+
+#ifdef SDL_VIDEO_WGPU
+    device->WGPU_CreateSurface = X11_WGPU_CreateSurface;
 #endif
 
 #ifdef SDL_USE_LIBDBUS
