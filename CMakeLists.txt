@@ -287,6 +287,8 @@ endif()
 
 set(SDL_VULKAN_DEFAULT ON)
 
+set(SDL_WGPU_DEFAULT ON)
+
 set(SDL_X11_XRANDR_DEFAULT ON)
 if(SOLARIS)
   set(SDL_VULKAN_DEFAULT OFF)
@@ -380,6 +382,7 @@ dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_REND
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
+dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" ON)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -936,7 +939,7 @@ if(SDL_ASSEMBLY)
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
         # IMPORTANT: As not all AArch64 processors support SVE2, we only
-        #            attach the following compilation option to SVE 
+        #            attach the following compilation option to SVE
         #            dedicated source files.
         set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
         set(HAVE_ARMSVE2 TRUE)
@@ -1896,6 +1899,7 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
+    CheckWGPU()
   endif()
 
   if(SDL_TRAY)

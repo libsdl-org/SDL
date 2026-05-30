@@ -942,6 +942,12 @@ macro(CheckVulkan)
   endif()
 endmacro()
 
+macro(CheckWGPU)
+  if(SDL_WGPU)
+    set(SDL_VIDEO_WGPU 1)
+  endif()
+endmacro()
+
 # Requires:
 # - EGL
 macro(CheckQNXScreen)

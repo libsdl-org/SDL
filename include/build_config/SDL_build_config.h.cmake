@@ -487,6 +487,9 @@
 /* Enable Metal support */
 #cmakedefine SDL_VIDEO_METAL 1
 
+/* Enable experimental WGPU support */
+#cmakedefine SDL_VIDEO_WGPU 1
+
 /* Enable GPU support */
 #cmakedefine SDL_GPU_D3D11 1
 #cmakedefine SDL_GPU_D3D12 1
