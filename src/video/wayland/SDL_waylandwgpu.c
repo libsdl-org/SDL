@@ -3,7 +3,10 @@
 #if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND)
 #include "SDL_waylandvideo.h"
 
+#include "../SDL_wgpu_defs.h"
 #include "SDL_waylandwgpu.h"
+
+#include <SDL3/SDL_wgpu.h>
 
 SDL_ELF_NOTE_DLOPEN(
     "wayland-wgpu",
@@ -11,7 +14,8 @@ SDL_ELF_NOTE_DLOPEN(
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     "libwgpu_native.so")
 
-WGPUSurface Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance)
+WGPUSurface
+Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance)
 {
     SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
 
