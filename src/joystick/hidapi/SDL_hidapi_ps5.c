@@ -1364,7 +1364,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             Uint32 delta;
             Uint16 tick = LOAD16(packet->rgucSensorTimestamp[0],
                                  packet->rgucSensorTimestamp[1]);
-            if (ctx->last_tick < tick) {
+            if (ctx->last_tick <= tick) {
                 delta = (tick - ctx->last_tick);
             } else {
                 delta = (SDL_MAX_UINT16 - ctx->last_tick + tick + 1);
