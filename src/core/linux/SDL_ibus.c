@@ -20,11 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifdef HAVE_IBUS_IBUS_H
 #include "SDL_ibus.h"
 #include "SDL_dbus.h"
-
-#ifdef SDL_USE_LIBDBUS
 
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -36,6 +33,7 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 
 static const char IBUS_PATH[] = "/org/freedesktop/IBus";
 
@@ -737,7 +735,3 @@ void SDL_IBus_PumpEvents(void)
         }
     }
 }
-
-#endif // SDL_USE_LIBDBUS
-
-#endif

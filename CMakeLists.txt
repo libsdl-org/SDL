@@ -2012,16 +2012,13 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
       endif()
 
       if(SDL_IBUS)
-        pkg_search_module(IBUS ibus-1.0 ibus)
         find_path(HAVE_SYS_INOTIFY_H NAMES sys/inotify.h)
-        if(IBUS_FOUND AND HAVE_SYS_INOTIFY_H)
-          set(HAVE_IBUS_IBUS_H TRUE)
-          sdl_include_directories(PRIVATE SYSTEM ${IBUS_INCLUDE_DIRS})
+        if(HAVE_DBUS AND HAVE_SYS_INOTIFY_H)
           set(HAVE_IBUS TRUE)
         endif()
       endif()
 
-      if (HAVE_IBUS_IBUS_H OR HAVE_FCITX)
+      if (HAVE_IBUS OR HAVE_FCITX)
         set(SDL_USE_IME 1)
       endif()
 
@@ -2064,7 +2061,7 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
       )
     endif()
 
-    if(HAVE_IBUS_IBUS_H)
+    if(HAVE_IBUS)
       sdl_sources(
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ibus.c"
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ibus.h"

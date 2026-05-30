@@ -24,9 +24,52 @@
 #ifndef SDL_ibus_h_
 #define SDL_ibus_h_
 
-#ifdef HAVE_IBUS_IBUS_H
+#ifdef HAVE_IBUS
 #define SDL_USE_IBUS 1
-#include <ibus.h>
+
+/* IBusModifierType and IBusCapabilite have been copied from ibustypes.h */
+
+typedef enum
+{
+    IBUS_SHIFT_MASK    = 1 << 0,
+    IBUS_LOCK_MASK     = 1 << 1,
+    IBUS_CONTROL_MASK  = 1 << 2,
+    IBUS_MOD1_MASK     = 1 << 3,
+    IBUS_MOD2_MASK     = 1 << 4,
+    IBUS_MOD3_MASK     = 1 << 5,
+    IBUS_MOD4_MASK     = 1 << 6,
+    IBUS_MOD5_MASK     = 1 << 7,
+    IBUS_BUTTON1_MASK  = 1 << 8,
+    IBUS_BUTTON2_MASK  = 1 << 9,
+    IBUS_BUTTON3_MASK  = 1 << 10,
+    IBUS_BUTTON4_MASK  = 1 << 11,
+    IBUS_BUTTON5_MASK  = 1 << 12,
+
+    /* ibus mask */
+    IBUS_HANDLED_MASK  = 1 << 24,
+    IBUS_FORWARD_MASK  = 1 << 25,
+    IBUS_IGNORED_MASK  = IBUS_FORWARD_MASK,
+
+    IBUS_SUPER_MASK    = 1 << 26,
+    IBUS_HYPER_MASK    = 1 << 27,
+    IBUS_META_MASK     = 1 << 28,
+
+    IBUS_RELEASE_MASK  = 1 << 30,
+
+    IBUS_MODIFIER_MASK = 0x5f001fff
+} IBusModifierType;
+
+typedef enum {
+    IBUS_CAP_PREEDIT_TEXT       = 1 << 0,
+    IBUS_CAP_AUXILIARY_TEXT     = 1 << 1,
+    IBUS_CAP_LOOKUP_TABLE       = 1 << 2,
+    IBUS_CAP_FOCUS              = 1 << 3,
+    IBUS_CAP_PROPERTY           = 1 << 4,
+    IBUS_CAP_SURROUNDING_TEXT   = 1 << 5,
+    IBUS_CAP_OSK                = 1 << 6,
+    IBUS_CAP_SYNC_PROCESS_KEY   = 1 << 7,
+    IBUS_CAP_SYNC_PROCESS_KEY_V2 = IBUS_CAP_SYNC_PROCESS_KEY,
+} IBusCapabilite;
 
 extern bool SDL_IBus_Init(void);
 extern void SDL_IBus_Quit(void);
@@ -50,6 +93,6 @@ extern void SDL_IBus_UpdateTextInputArea(SDL_Window *window);
    SDL_SendEditingText for each event it finds */
 extern void SDL_IBus_PumpEvents(void);
 
-#endif // HAVE_IBUS_IBUS_H
+#endif // HAVE_IBUS
 
 #endif // SDL_ibus_h_

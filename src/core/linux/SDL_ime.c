@@ -70,7 +70,7 @@ static void InitIME(void)
 #endif // HAVE_FCITX
 
     // default to IBus
-#ifdef HAVE_IBUS_IBUS_H
+#ifdef HAVE_IBUS
     if (!SDL_IME_Init_Real) {
         SDL_IME_Init_Real = SDL_IBus_Init;
         SDL_IME_Quit_Real = SDL_IBus_Quit;
@@ -80,7 +80,7 @@ static void InitIME(void)
         SDL_IME_UpdateTextInputArea_Real = SDL_IBus_UpdateTextInputArea;
         SDL_IME_PumpEvents_Real = SDL_IBus_PumpEvents;
     }
-#endif // HAVE_IBUS_IBUS_H
+#endif // HAVE_IBUS
 }
 
 bool SDL_IME_Init(void)
