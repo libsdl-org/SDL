@@ -382,7 +382,8 @@ dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_REND
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
-dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" ON)
+dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" OFF)
+dep_option(SDL_WGPU_STATIC         "Statically link wgpu_native" OFF "SDL_WGPU" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -405,6 +406,23 @@ dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" ON "SDL_G
 
 if(EMSCRIPTEN)
   option_string(SDL_EMSCRIPTEN_PERSISTENT_PATH  "Path to mount Emscripten IDBFS at startup or '' to disable" "")
+endif()
+
+# TODO: I'm firing blind here, I have no idea what the SDL convensions on static linking or finding libraries is.
+if(APPLE OR LINUX OR FREEBSD OR OPENBSD)
+# unix-style, default search path should be /usr/lib/
+  set(DEFAULT_WGPU_LIB_SEARCH_PATH "/usr/lib/")
+elseif(WINDOWS)
+# Windows has no real analogue to Unix's /usr/lib, so we're just gonna search the source dir.
+  set(DEFAULT_WGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
+else()
+# Same as Windows, we're searching the source path.
+  set(DEFAULT_WGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
+endif()
+
+# FIXME: I'm horrible at CMake so I'm not entirely sure what the best way of doing this is
+if(SDL_WGPU_STATIC)
+  option_string(WGPU_STATIC_LIB_DIR "Path to the directory containing the compiled wgpu_native library" ${DEFAULT_WGPU_LIB_SEARCH_PATH})
 endif()
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
@@ -3518,6 +3536,24 @@ elseif(NGAGE)
       scdv
       gdi
   )
+endif()
+
+# wgpu_native static linking shenanigans
+if (SDL_WGPU_STATIC)
+  find_library(
+    WGPU_STATIC_LIB NAMES wgpu_native wgpu_native.lib libwgpu_native
+    HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+    REQUIRED
+  )
+
+  # FIXME: i don't know how to make it look nice like everything else :(
+  message("-- wgpu_native -> ${WGPU_STATIC_LIB}")
+
+  if (SDL_STATIC)
+    target_link_libraries(SDL3-static PRIVATE ${WGPU_STATIC_LIB})
+  elseif (SDL_SHARED)
+    target_link_libraries(SDL3-shared PRIVATE ${WGPU_STATIC_LIB})
+  endif()
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)

@@ -29,6 +29,9 @@ WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
     desc.label = (WGPUStringView){ NULL, WGPU_STRLEN };
     desc.nextInChain = &source.chain;
 
+#if defined(WGPU_STATIC)
+    return wgpuInstanceCreateSurface(instance, &desc);
+#else
     SDL_SharedObject *wgpuLib = SDL_LoadObject("libwgpu_native.so");
 
     if (wgpuLib == NULL) {
@@ -44,10 +47,10 @@ WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
     }
 
     return proc(instance, &desc);
-
 fail:
     SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create WGPU surface: %s", SDL_GetError());
     return NULL;
+#endif
 }
 
 #endif

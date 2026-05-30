@@ -945,6 +945,10 @@ endmacro()
 macro(CheckWGPU)
   if(SDL_WGPU)
     set(SDL_VIDEO_WGPU 1)
+
+    if(SDL_WGPU_STATIC)
+      set(WGPU_STATIC 1)
+    endif()
   endif()
 endmacro()
 

@@ -1,6 +1,6 @@
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND)
+// #if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND)
 #include "SDL_waylandvideo.h"
 
 #include "../SDL_wgpu_defs.h"
@@ -40,6 +40,9 @@ Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInsta
     // WGPUProcGetProcAddress getProcAddr = (WGPUProcGetProcAddress)SDL_LoadFunction(SDL_LoadObject("libwgpu_native.so"), "wgpuGetProcAddress");
     // WGPUProcInstanceCreateSurface proc = (WGPUProcInstanceCreateSurface)getProcAddr((WGPUStringView){"wgpuInstanceCreateSurface", 25});
 
+#if defined(WGPU_STATIC)
+    return wgpuInstanceCreateSurface(instance, &desc);
+#else
     SDL_SharedObject *wgpuLib = SDL_LoadObject("libwgpu_native.so");
 
     if (wgpuLib == NULL) {
@@ -55,10 +58,10 @@ Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInsta
     }
 
     return proc(instance, &desc);
-
 fail:
     SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create WGPU surface: %s", SDL_GetError());
     return NULL;
+#endif
 }
 
-#endif
+// #endif

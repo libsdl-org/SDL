@@ -40,6 +40,10 @@
 #define WGPU_FUNCTION_ATTRIBUTE
 #endif
 
+#if !defined(WGPU_STRLEN)
+#define WGPU_STRLEN (SIZE_MAX)
+#endif
+
 typedef enum WGPUSType
 {
     WGPUSType_ShaderSourceSPIRV = 0x00000001,
@@ -92,8 +96,10 @@ typedef struct WGPUSurfaceSourceXlibWindow {
     uint64_t window;
 } WGPUSurfaceSourceXlibWindow;
 
-#define WGPU_STRLEN (SIZE_MAX)
-
 typedef WGPUSurface (*WGPUProcInstanceCreateSurface)(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
+
+#if defined(WGPU_STATIC)
+extern WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const * descriptor) WGPU_FUNCTION_ATTRIBUTE;
+#endif
 
 #endif
