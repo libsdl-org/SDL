@@ -162,12 +162,15 @@ typedef struct SDL_AudioDriverImpl
     void (*FreeDeviceHandle)(SDL_AudioDevice *device); // SDL is done with this device; free the handle from SDL_AddAudioDevice()
     void (*DeinitializeStart)(void); // SDL calls this, then starts destroying objects, then calls Deinitialize. This is a good place to stop hotplug detection.
     void (*Deinitialize)(void);
+    bool (*SetDeviceGain)(SDL_AudioDevice *device, float gain); // Tell the backend that a device's gain has changed
+    float (*GetDeviceGain)(SDL_AudioDevice *device); // Retrieve the current hardware/server gain
 
     // Some flags to push duplicate code into the core and reduce #ifdefs.
     bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
     bool HasRecordingSupport;
     bool OnlyHasDefaultPlaybackDevice;
     bool OnlyHasDefaultRecordingDevice;   // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
+    bool HasBackendVolumeControl;
 } SDL_AudioDriverImpl;
 
 

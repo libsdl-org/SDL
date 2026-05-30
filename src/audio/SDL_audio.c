@@ -844,6 +844,8 @@ static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */
 static void SDL_AudioDeinitializeStart_Default(void) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
 static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static bool SDL_AudioSetDeviceGain_Default(SDL_AudioDevice *device, float gain) { return false; /* no-op. */ }
+static float SDL_AudioGetDeviceGain_Default(SDL_AudioDevice *device) { return -1.0f; /* no-op. */ }
 
 static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device)
 {
@@ -897,6 +899,8 @@ static void CompleteAudioEntryPoints(void)
     FILL_STUB(FreeDeviceHandle);
     FILL_STUB(DeinitializeStart);
     FILL_STUB(Deinitialize);
+    FILL_STUB(SetDeviceGain);
+    FILL_STUB(GetDeviceGain);
     #undef FILL_STUB
 }
 
@@ -1960,9 +1964,27 @@ bool SDL_AudioDevicePaused(SDL_AudioDeviceID devid)
 
 float SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid)
 {
+    float result = -1.0f;
     SDL_AudioDevice *device = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
-    const float result = logdev ? logdev->gain : -1.0f;
+
+    if (!SDL_IsAudioDeviceLogical(devid)) {
+        if (!current_audio.impl.HasBackendVolumeControl) {
+            return result;
+        }
+        device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+        if (!device) {
+            return result;
+        }
+        float backend_gain = current_audio.impl.GetDeviceGain(device);
+        if (backend_gain >= 0.0f) {
+            result = backend_gain;
+        }
+    } else {
+        SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
+        if (logdev) {
+            result = logdev->gain;
+        }
+    }
     ReleaseAudioDevice(device);
     return result;
 }
@@ -1972,14 +1994,25 @@ bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
     CHECK_PARAM(gain < 0.0f) {
         return SDL_InvalidParamError("gain");
     }
-
-    SDL_AudioDevice *device = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
     bool result = false;
-    if (logdev) {
-        logdev->gain = gain;
-        UpdateAudioStreamFormatsPhysical(device);
-        result = true;
+    SDL_AudioDevice *device = NULL;
+
+    if (!SDL_IsAudioDeviceLogical(devid)) {
+        if (!current_audio.impl.HasBackendVolumeControl) {
+            return result;
+        }
+        device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+        if (!device) {
+            return result;
+        }
+        result = current_audio.impl.SetDeviceGain(device, gain);
+    } else {
+        SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
+        if (logdev) {
+            logdev->gain = gain;
+            result = true;
+            UpdateAudioStreamFormatsPhysical(device);
+        }
     }
     ReleaseAudioDevice(device);
     return result;

@@ -27,6 +27,7 @@
 
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
+#include <spa/param/props.h>
 #include <spa/utils/json.h>
 
 /*
@@ -91,6 +92,8 @@ static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
 static int (*PIPEWIRE_pw_stream_update_properties)(struct pw_stream *, const struct spa_dict *);
+static int (*PIPEWIRE_pw_stream_set_control)(struct pw_stream *, uint32_t, uint32_t, float *, ...);
+static const struct pw_stream_control *(*PIPEWIRE_pw_stream_get_control)(struct pw_stream *, uint32_t);
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
@@ -185,6 +188,8 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
     SDL_PIPEWIRE_SYM(pw_stream_update_properties);
+    SDL_PIPEWIRE_SYM(pw_stream_set_control);
+    SDL_PIPEWIRE_SYM(pw_stream_get_control);
 
     return true;
 }
@@ -991,6 +996,13 @@ static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
         return NULL;
     }
 
+    const int maxsize = (int) spa_buf->datas[0].maxsize;
+    if (maxsize < *buffer_size) {
+        *buffer_size = maxsize;
+        device->buffer_size = maxsize;
+        device->sample_frames = maxsize / device->hidden->stride;
+    }
+
     device->hidden->pw_buf = pw_buf;
     return (Uint8 *) spa_buf->datas[0].data;
 }
@@ -1082,18 +1094,6 @@ static void input_callback(void *data)
 static void stream_add_buffer_callback(void *data, struct pw_buffer *buffer)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *) data;
-
-    if (device->recording == false) {
-        /* Clamp the output spec samples and size to the max size of the Pipewire buffer.
-           If they exceed the maximum size of the Pipewire buffer, double buffering will be used. */
-        if (device->buffer_size > buffer->buffer->datas[0].maxsize) {
-            SDL_LockMutex(device->lock);
-            device->sample_frames = buffer->buffer->datas[0].maxsize / device->hidden->stride;
-            device->buffer_size = buffer->buffer->datas[0].maxsize;
-            SDL_UnlockMutex(device->lock);
-        }
-    }
-
     device->hidden->stream_init_status |= PW_READY_FLAG_BUFFER_ADDED;
     PIPEWIRE_pw_thread_loop_signal(device->hidden->loop, false);
 }
@@ -1355,6 +1355,46 @@ static void PIPEWIRE_Deinitialize(void)
     }
 }
 
+static bool PIPEWIRE_SetDeviceGain(SDL_AudioDevice *device, float gain)
+{
+    if (!device || !device->hidden || !device->hidden->stream || !device->hidden->loop) {
+        return false;
+    }
+
+    float values[SPA_AUDIO_MAX_CHANNELS];
+    int channels = device->spec.channels;
+    if (channels > SPA_AUDIO_MAX_CHANNELS) {
+        channels = SPA_AUDIO_MAX_CHANNELS;
+    }
+    for (int i = 0; i < channels; i++) {
+        values[i] = gain;
+    }
+    PIPEWIRE_pw_thread_loop_lock(device->hidden->loop);
+    PIPEWIRE_pw_stream_set_control(device->hidden->stream, SPA_PROP_channelVolumes, channels, values, 0);
+    PIPEWIRE_pw_thread_loop_unlock(device->hidden->loop);
+
+    return true;
+}
+
+static float PIPEWIRE_GetDeviceGain(SDL_AudioDevice *device)
+{
+    float gain = -1.0f;
+
+    if (!device || !device->hidden || !device->hidden->stream || !device->hidden->loop) {
+        return gain;
+    }
+
+    PIPEWIRE_pw_thread_loop_lock(device->hidden->loop);
+    const struct pw_stream_control *control = PIPEWIRE_pw_stream_get_control(device->hidden->stream, SPA_PROP_channelVolumes);
+    if (control && control->n_values > 0 && control->values) {
+        gain = control->values[0];
+    }
+    PIPEWIRE_pw_thread_loop_unlock(device->hidden->loop);
+
+    return gain;
+}
+
+
 static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
 {
     if (!pipewire_initialized) {
@@ -1379,9 +1419,12 @@ static bool PipewireInitialize(SDL_AudioDriverImpl *impl)
     impl->RecordDevice = PIPEWIRE_RecordDevice;
     impl->FlushRecording = PIPEWIRE_FlushRecording;
     impl->CloseDevice = PIPEWIRE_CloseDevice;
+    impl->GetDeviceGain = PIPEWIRE_GetDeviceGain;
 
     impl->HasRecordingSupport = true;
     impl->ProvidesOwnCallbackThread = true;
+    impl->HasBackendVolumeControl = true;
+    impl->SetDeviceGain = PIPEWIRE_SetDeviceGain;
 
     return true;
 }
