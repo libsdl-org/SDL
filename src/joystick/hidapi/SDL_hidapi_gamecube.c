@@ -205,12 +205,26 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->pc_mode) {
+        // Check to see if this firmware supports rumble
+        bool rumbleAllowed = false;
+        if ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+#ifdef DEBUG_GAMECUBE_PROTOCOL
+            HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
+#endif
+            if (size == 9) {
+                // This is firmware version 0x7 or newer
+                // Rumble is supported if the second USB cable is plugged in
+                rumbleAllowed = true;
+            }
+        }
 #ifdef SDL_PLATFORM_WIN32
         // We get a separate device for each slot
+        ctx->rumbleAllowed[0] = rumbleAllowed;
         ResetAxisRange(ctx, 0);
         HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
 #else
         for (i = 0; i < MAX_CONTROLLERS; ++i) {
+            ctx->rumbleAllowed[i] = rumbleAllowed;
             ResetAxisRange(ctx, i);
             HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
         }
@@ -454,15 +468,10 @@ static bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                 // This is the older firmware
                 // The first byte is the index of the connected controller
                 // The C stick has an inverted value range compared to the left stick
-                // I don't have an adapter with an old firmware to check if the rumble works with it so it is set to false
-                ctx->rumbleAllowed[0] = ctx->rumbleAllowed[1] = ctx->rumbleAllowed[2] = ctx->rumbleAllowed[3] = false;
                 HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet[0] - 1, &packet[1], true);
             } else if (size == 9) {
                 // This is the newer firmware (version 0x7)
                 // The C stick has the same value range compared to the left stick
-                // AFAIK In PC_Mode there is no way to check if the second USB is connected or if the connected controller is a wavebird
-                // So if it passes the firmware size check I set it to true
-                ctx->rumbleAllowed[0] = ctx->rumbleAllowed[1] = ctx->rumbleAllowed[2] = ctx->rumbleAllowed[3] = true; 
                 HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, 0, packet, false);
             } else {
                 // How do we handle this packet?
@@ -581,7 +590,7 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
 
     SDL_AssertJoysticksLocked();
     Uint8 i;
-    if (ctx->pc_mode) {        
+    if (ctx->pc_mode) {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
             if (joystick->instance_id == ctx->joysticks[i]) {
                 if (ctx->rumbleAllowed[i]) {
