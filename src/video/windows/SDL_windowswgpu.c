@@ -28,10 +28,10 @@ WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
 #if defined(WGPU_STATIC)
     return wgpuInstanceCreateSurface(instance, &desc);
 #else
-    SDL_SharedObject *wgpuLib = SDL_LoadObject("libwgpu_native.so");
+    SDL_SharedObject *wgpuLib = SDL_LoadObject("wgpu_native.dll");
 
     if (wgpuLib == NULL) {
-        SDL_SetError("Failed to load wgpu-native shared library 'libwgpu_native.so'");
+        SDL_SetError("Failed to load wgpu-native shared library 'wgpu_native.dll'");
         goto fail;
     }
 
