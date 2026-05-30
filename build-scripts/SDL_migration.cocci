@@ -111,6 +111,42 @@ expression e1;
 - SDL_GetEventState(e1)
 + SDL_EventEnabled(e1)
 
+
+// SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled()
+@@
+@@
+(
+- SDL_JoystickEventState(SDL_IGNORE)
++ SDL_SetJoystickEventsEnabled(false)
+|
+- SDL_JoystickEventState(SDL_DISABLE)
++ SDL_SetJoystickEventsEnabled(false)
+|
+- SDL_JoystickEventState(SDL_ENABLE)
++ SDL_SetJoystickEventsEnabled(true)
+|
+- SDL_JoystickEventState(SDL_QUERY)
++ SDL_JoystickEventsEnabled()
+)
+
+
+// SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled()
+@@
+@@
+(
+- SDL_GameControllerEventState(SDL_IGNORE)
++ SDL_SetGamepadEventsEnabled(false)
+|
+- SDL_GameControllerEventState(SDL_DISABLE)
++ SDL_SetGamepadEventsEnabled(false)
+|
+- SDL_GameControllerEventState(SDL_ENABLE)
++ SDL_SetGamepadEventsEnabled(true)
+|
+- SDL_GameControllerEventState(SDL_QUERY)
++ SDL_GamepadEventsEnabled()
+)
+
 @@
 expression e;
 @@
