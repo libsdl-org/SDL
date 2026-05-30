@@ -96,6 +96,12 @@ typedef struct WGPUSurfaceSourceXlibWindow {
     uint64_t window;
 } WGPUSurfaceSourceXlibWindow;
 
+typedef struct WGPUSurfaceSourceWindowsHWND {
+    WGPUChainedStruct chain;
+    void * hinstance;
+    void * hwnd;
+} WGPUSurfaceSourceWindowsHWND;
+
 typedef WGPUSurface (*WGPUProcInstanceCreateSurface)(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
 
 #if defined(WGPU_STATIC)
