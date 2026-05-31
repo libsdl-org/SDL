@@ -1302,9 +1302,9 @@ extern "C" {
 /**
  * Free memory previously allocated with SDL_stack_alloc.
  *
- * If SDL used alloca() to allocate this memory, this macro does nothing (other
- * than insert `((void)(data)` so the compiler sees an expression) and the
- * allocated memory will be automatically released when the function that
+ * If SDL used alloca() to allocate this memory, this macro does nothing
+ * (other than insert `((void)(data)` so the compiler sees an expression) and
+ * the allocated memory will be automatically released when the function that
  * called SDL_stack_alloc() returns. If SDL used SDL_malloc(), it will
  * SDL_free the memory immediately.
  *
