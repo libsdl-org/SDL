@@ -1306,7 +1306,7 @@ extern "C" {
 #define SDL_stack_free(data)
 #elif !defined(SDL_DISABLE_ALLOCA)
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
-#define SDL_stack_free(data)
+#define SDL_stack_free(data)            ((void)(data))
 #else
 #define SDL_stack_alloc(type, count)    (type*)SDL_malloc(sizeof(type)*(count))
 #define SDL_stack_free(data)            SDL_free(data)
