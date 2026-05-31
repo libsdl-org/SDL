@@ -53,8 +53,7 @@
 #define WGPU_STRLEN (SIZE_MAX)
 #endif
 
-typedef enum WGPUSType
-{
+typedef enum WGPUSType {
     WGPUSType_ShaderSourceSPIRV = 0x00000001,
     WGPUSType_ShaderSourceWGSL = 0x00000002,
     WGPUSType_RenderPassMaxDrawCount = 0x00000003,
@@ -71,6 +70,8 @@ typedef enum WGPUSType
     WGPUSType_ExternalTextureBindingEntry = 0x0000000E,
     WGPUSType_CompatibilityModeLimits = 0x0000000F,
     WGPUSType_TextureBindingViewDimension = 0x00000010,
+    WGPUSType_EmscriptenSurfaceSourceCanvasHTMLSelector = 0x00040000,
+    WGPUSType_DawnCompilationMessageUtf16 = 0x0005003F,
     WGPUSType_Force32 = 0x7FFFFFFF
 } WGPUSType;
 
@@ -110,6 +111,11 @@ typedef struct WGPUSurfaceSourceWindowsHWND {
     void * hinstance;
     void * hwnd;
 } WGPUSurfaceSourceWindowsHWND;
+
+typedef struct WGPUEmscriptenSurfaceSourceCanvasHTMLSelector {
+    WGPUChainedStruct chain;
+    WGPUStringView selector;
+} WGPUEmscriptenSurfaceSourceCanvasHTMLSelector;
 
 typedef WGPUSurface (*WGPUProcInstanceCreateSurface)(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
 

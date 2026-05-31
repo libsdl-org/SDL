@@ -166,8 +166,8 @@ macro(CheckPipewire)
         sdl_link_dependency(pipewire LIBS PkgConfig::PC_PIPEWIRE PKG_CONFIG_PREFIX PC_PIPEWIRE PKG_CONFIG_SPECS ${PipeWire_PKG_CONFIG_SPEC})
       endif()
       set(HAVE_SDL_AUDIO TRUE)
-      endif()
     endif()
+  endif()
 endmacro()
 
 # Requires:
@@ -620,24 +620,24 @@ macro(CheckLibThai)
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
-    set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
-    set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
+  set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
+  set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
 
-    add_custom_command(
+  add_custom_command(
         OUTPUT "${_WAYLAND_PROT_H_CODE}"
         DEPENDS "${_XML}"
         COMMAND "${_SCANNER}"
         ARGS client-header "${_XML}" "${_WAYLAND_PROT_H_CODE}"
     )
 
-    add_custom_command(
+  add_custom_command(
         OUTPUT "${_WAYLAND_PROT_C_CODE}"
         DEPENDS "${_WAYLAND_PROT_H_CODE}"
         COMMAND "${_SCANNER}"
         ARGS "${_CODE_MODE}" "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
-    sdl_sources("${_WAYLAND_PROT_C_CODE}")
+  sdl_sources("${_WAYLAND_PROT_C_CODE}")
 endmacro()
 
 # Requires:
@@ -758,7 +758,7 @@ macro(CheckWayland)
             sdl_link_dependency(libdecor INCLUDES $<TARGET_PROPERTY:PkgConfig::PC_LIBDECOR,INTERFACE_INCLUDE_DIRECTORIES>)
           else()
             sdl_link_dependency(libdecor LIBS PkgConfig::PC_LIBDECOR PKG_CONFIG_PREFIX PC_LIBDECOR PKG_CONFIG_SPECS ${LibDecor_PKG_CONFIG_SPEC})
-            endif()
+          endif()
         endif()
       endif()
 
@@ -966,7 +966,15 @@ macro(CheckWGPU)
         sdl_sources("${SDL3_SOURCE_DIR}/src/video/windows/SDL_windowswgpu_dawn.cpp")
       endif()
 
+      if(EMSCRIPTEN)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/SDL_emscriptenwgpu_dawn.cpp")
+      endif()
+
     elseif(SDL_WGPU_LIB STREQUAL "wgpu-native")
+      if(EMSCRIPTEN)
+        # wgpu-native doesn't support Emscripten. That's the entire reason we have Dawn.
+        message(FATAL_ERROR "wgpu-native doesn't support Emscripten! Use Dawn instead.")
+      endif()
       set(WGPU_NATIVE 1)
       set(HAVE_WGPU_NATIVE TRUE)
     else()
