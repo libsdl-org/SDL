@@ -152,6 +152,7 @@ add_sdl_example_executable(input-joystick-polling SOURCES input/01-joystick-poll
 add_sdl_example_executable(input-joystick-events SOURCES input/02-joystick-events/joystick-events.c)
 add_sdl_example_executable(input-gamepad-polling SOURCES input/03-gamepad-polling/gamepad-polling.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.png)
 add_sdl_example_executable(input-gamepad-events SOURCES input/04-gamepad-events/gamepad-events.c)
+add_sdl_example_executable(input-gamepad-rumble SOURCES input/05-gamepad-rumble/gamepad-rumble.c)
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.png)
