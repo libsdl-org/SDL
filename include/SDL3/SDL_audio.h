@@ -760,6 +760,21 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDevic
 extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);
 
 /**
+ * Get the physical audio device associated with a logical audio device.
+ *
+ * If `devid` is already a physical device, this function returns `devid`.
+ * If `devid` is an invalid device, it returns 0.
+ *
+ * \param devid the device ID to query.
+ * \returns the physical device ID, or 0 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.5.0.
+ */
+extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetPhysicalAudioDevice(SDL_AudioDeviceID devid);
+
+/**
  * Determine if an audio device is a playback device (instead of recording).
  *
  * This function may return either true or false for invalid device IDs.

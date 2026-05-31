@@ -538,6 +538,20 @@ static SDL_AudioDevice *ObtainPhysicalAudioDeviceDefaultAllowed(SDL_AudioDeviceI
     return NULL;
 }
 
+SDL_AudioDeviceID SDL_GetPhysicalAudioDevice(SDL_AudioDeviceID devid)
+{
+    if (SDL_IsAudioDevicePhysical(devid)) {
+        return devid;
+    }
+
+    SDL_AudioDeviceID result = 0;
+    SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+    if (device) {
+        result = device->instance_id;
+        ReleaseAudioDevice(device);
+    }
+    return result;
+}
 // this assumes you hold the _physical_ device lock for this logical device! This will not unlock the lock or close the physical device!
 //  It also will not unref the physical device, since we might be shutting down; SDL_CloseAudioDevice handles the unref.
 static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
