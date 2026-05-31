@@ -1,6 +1,7 @@
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_X11)
+#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_X11) && defined(WGPU_NATIVE)
+
 #include "SDL_x11video.h"
 
 #include "../SDL_wgpu_defs.h"

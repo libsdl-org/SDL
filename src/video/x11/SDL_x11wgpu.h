@@ -1,10 +1,22 @@
-#ifndef SDL_x11wgpu_h_
-#define SDL_x11wgpu_h_
+#ifndef SDL_waylandwgpu_h_
+#define SDL_waylandwgpu_h_
 
 #include <SDL3/SDL_wgpu.h>
 
 #if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_X11)
-extern WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+
+#ifdef __cplusplus
+extern "C" {
+#else
+extern
 #endif
 
-#endif // SDL_x11wgpu_h_
+WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+
+#endif // SDL_waylandwgpu_h_

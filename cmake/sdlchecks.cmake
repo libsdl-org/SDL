@@ -946,8 +946,39 @@ macro(CheckWGPU)
   if(SDL_WGPU)
     set(SDL_VIDEO_WGPU 1)
 
+    if(SDL_WGPU_LIB STREQUAL "dawn")
+      set(WGPU_DAWN 1)
+      set(HAVE_DAWN TRUE)
+
+      # Dawn's a C++ library, so we'll have to enable C++
+      enable_language(CXX)
+
+      # Dawn includes
+      if(HAVE_WAYLAND)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/wayland/SDL_waylandwgpu_dawn.cpp")
+      endif()
+
+      if(HAVE_X11)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/x11/SDL_x11wgpu_dawn.cpp")
+      endif()
+
+      if(WINDOWS)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/windows/SDL_windowswgpu_dawn.cpp")
+      endif()
+
+    elseif(SDL_WGPU_LIB STREQUAL "wgpu-native")
+      set(WGPU_NATIVE 1)
+      set(HAVE_WGPU_NATIVE TRUE)
+    else()
+      message(FATAL_ERROR "SDL_WGPU_LIB is neither 'wgpu-native' nor 'dawn'!")
+    endif()
+
     if(SDL_WGPU_STATIC)
       set(WGPU_STATIC 1)
+    elseif(SDL_WGPU_LIB STREQUAL "dawn")
+      # SDL's been configured to use Dawn & dynamic linking, however; Dawn does not support dynamic linking.
+      # FIXME: I don't know if this should error out? Maybe just toggle on static link and warn the user?
+      message(FATAL_ERROR "SDL has been configured to use Dawn as its WebGPU implementation, however, it has also been configured to dynamically link the WebGPU library.\nDawn does not support dynamic linking.")
     endif()
   endif()
 endmacro()

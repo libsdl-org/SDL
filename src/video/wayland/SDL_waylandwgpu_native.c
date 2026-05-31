@@ -1,6 +1,6 @@
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND)
+#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(WGPU_NATIVE)
 #include "SDL_waylandvideo.h"
 
 #include "../SDL_wgpu_defs.h"

@@ -383,7 +383,8 @@ dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RE
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
 dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" OFF)
-dep_option(SDL_WGPU_STATIC         "Statically link wgpu_native" OFF "SDL_WGPU" OFF)
+dep_option(SDL_WGPU_STATIC         "Statically link the WebGPU library" OFF "SDL_WGPU" OFF)
+option_string(SDL_WGPU_LIB         "The library which SDL will use for WebGPU. Either 'wgpu-native' or 'dawn'" "wgpu-native")
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -3538,22 +3539,33 @@ elseif(NGAGE)
   )
 endif()
 
-# wgpu_native static linking shenanigans
+# webgpu static linking shenanigans
 if (SDL_WGPU_STATIC)
-  find_library(
-    WGPU_STATIC_LIB NAMES wgpu_native wgpu_native.lib libwgpu_native
-    HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
-    REQUIRED
-  )
-
-  # FIXME: i don't know how to make it look nice like everything else :(
-  message("-- wgpu_native -> ${WGPU_STATIC_LIB}")
+  if (HAVE_DAWN)
+    find_library(
+      WGPU_STATIC_LIB NAMES libwebgpu_dawn webgpu_dawn
+      HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+      REQUIRED
+    )
+    message("-- Using Dawn as WebGPU implementation")
+  elseif(HAVE_WGPU_NATIVE)
+    find_library(
+      WGPU_STATIC_LIB NAMES libwgpu_native wgpu_native
+      HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+      REQUIRED
+    )
+    message("-- Using wgpu-native (statically linked) as WebGPU implementation")
+  endif()
 
   if (SDL_STATIC)
     target_link_libraries(SDL3-static PRIVATE ${WGPU_STATIC_LIB})
   elseif (SDL_SHARED)
     target_link_libraries(SDL3-shared PRIVATE ${WGPU_STATIC_LIB})
   endif()
+elseif (HAVE_WGPU_NATIVE)
+# We don't have to do anything here,
+# but we'll still message that we're using wgpu-native (dyn) as our WebGPU lib.
+message("-- Using wgpu-native (dynamically linked) as WebGPU implementation")
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)

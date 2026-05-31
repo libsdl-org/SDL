@@ -30,6 +30,15 @@
 
 #include "SDL_internal.h"
 
+// define to prevent C++ name mangling on extern functions
+#ifdef WGPU_DAWN
+#define WGPU_EXTERN extern "C"
+#endif
+
+#ifdef WGPU_NATIVE
+#define WGPU_EXTERN extern
+#endif
+
 #ifndef WEBGPU_H_
 #define NO_WEBGPU_HEADER
 #endif
@@ -104,8 +113,6 @@ typedef struct WGPUSurfaceSourceWindowsHWND {
 
 typedef WGPUSurface (*WGPUProcInstanceCreateSurface)(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
 
-#if defined(WGPU_STATIC)
-extern WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const * descriptor) WGPU_FUNCTION_ATTRIBUTE;
-#endif
+WGPU_EXTERN WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const * descriptor) WGPU_FUNCTION_ATTRIBUTE;
 
 #endif

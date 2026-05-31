@@ -490,6 +490,8 @@
 /* Enable experimental WGPU support */
 #cmakedefine SDL_VIDEO_WGPU 1
 #cmakedefine WGPU_STATIC 1
+#cmakedefine WGPU_NATIVE 1
+#cmakedefine WGPU_DAWN 1
 
 /* Enable GPU support */
 #cmakedefine SDL_GPU_D3D11 1
