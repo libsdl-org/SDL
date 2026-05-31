@@ -17,12 +17,12 @@ extern "C" {
 
 #ifndef WEBGPU_H_
 #define WGPU_OBJECT_ATTRIBUTE(object) typedef struct object##Impl *object;
-#endif
 
 WGPU_OBJECT_ATTRIBUTE(WGPUSurface)
 WGPU_OBJECT_ATTRIBUTE(WGPUInstance)
 
 #undef WGPU_OBJECT_ATTRIBUTE
+#endif
 
 /**
  * Create a new WGPU surface.
