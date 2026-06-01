@@ -1,5 +1,7 @@
 // NOTE:
 // This was developed using the Vulkan backend as a guide.
+// Also, to slouken, cosmonaut, or anybody else who's gonna have to read through this code: I'm sorry.
+// I've seen ancient Egyptian hieroglyphics that were easier to read than this code.
 
 #include "SDL_internal.h"
 
@@ -322,6 +324,282 @@ static WGPUAddressMode SDLToWebGPU_AddressMode[] = {
     WGPUAddressMode_Repeat,
     WGPUAddressMode_MirrorRepeat,
     WGPUAddressMode_ClampToEdge,
+};
+
+typedef struct WebGPURenderer
+{
+    WGPUInstance instance;
+    WGPUAdapter adapter;
+    WGPUDevice device;
+    WGPUQueue queue;
+
+    bool debugMode;
+    bool preferLowPower;
+    bool shouldRecreateLostDevice;
+
+} WebGPURenderer;
+
+static void WEBGPU_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType type, WGPUStringView message, void *debugMode, void *unused)
+{
+    if (debugMode) {
+        // FIXME: Again, not sure if this is how I should report errors.
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n'%s'\n(Type %X)", message.data, type);
+    }
+}
+
+// forward decl
+static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success);
+
+static void WEBGPU_DeviceLostCallback(WGPUDevice const *device, WGPUDeviceLostReason reason, WGPUStringView message, void *renderer, void *unused)
+{
+    bool debugMode = ((WebGPURenderer *)renderer)->debugMode;
+
+    if (debugMode) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Device has been lost.");
+    }
+
+    if (((WebGPURenderer *)renderer)->shouldRecreateLostDevice) {
+        // Since the device has been lost, there might be some larger issues within WebGPU.
+        // We'll double check that everything's in order.
+
+        if (((WebGPURenderer *)renderer)->instance == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU instance has been lost. It's so joever.");
+            return;
+        }
+        if (((WebGPURenderer *)renderer)->adapter == NULL) {
+            // TODO: We should just recreate the adapter if it's lost.
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Adapter is lost. It's so joever");
+        }
+
+        if (debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Attempting to recreate WebGPU device.");
+        }
+
+        WEBGPU_RequestDevice(renderer, NULL);
+    } else {
+        return;
+    }
+}
+
+static void WEBGPU_RequestAdapterCallback(WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, void *renderer, void *success)
+{
+    if (status == WGPURequestAdapterStatus_Success) {
+        ((WebGPURenderer *)renderer)->adapter = adapter;
+        if (((WebGPURenderer *)renderer)->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU adapter!");
+
+            if (success != NULL) {
+                *((bool *)success) = true;
+            }
+        }
+    } else {
+        // FIXME: I'm not entirely sure what the SDL conventions about error handling are so I'm just gonna return false and log an error.
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Requesting WebGPU adapter failed!\n'%s'", message.data);
+        if (success != NULL) {
+            *((bool *)success) = false;
+        }
+    }
+}
+
+static void WEBGPU_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDevice device, WGPUStringView message, void *renderer, void *success)
+{
+    if (status == WGPURequestDeviceStatus_Success) {
+        ((WebGPURenderer *)renderer)->device = device;
+        if (((WebGPURenderer *)renderer)->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU device!");
+            if (success != NULL) {
+                *((bool *)success) = true;
+            }
+        }
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Requesting WebGPU device failed!\n'%s'", message.data);
+        if (success != NULL) {
+            *((bool *)success) = false;
+        }
+    }
+}
+
+static void WEBGPU_RequestAdapter(WebGPURenderer *renderer, bool *success)
+{
+    WGPURequestAdapterOptions adapterReqOptions;
+    adapterReqOptions.powerPreference = renderer->preferLowPower ? WGPUPowerPreference_LowPower : WGPUPowerPreference_HighPerformance;
+
+    wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = &renderer, .userdata2 = success });
+#ifdef __EMSCRIPTEN_
+    // HACK: When using Emscripten, wgpuInstanceRequestAdapter/Device only triggers its callback after waiting a bit.
+    // So, we'll just.... sleep for a millisecond-
+    // OW OW OW STOP THROWING TOMATOES AT ME (loud booing in background)
+    emscripten_sleep(1);
+#endif
+}
+
+static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
+{
+    WGPUDeviceDescriptor deviceDesc;
+    deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){ .callback = WEBGPU_DeviceLostCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = NULL };
+    deviceDesc.uncapturedErrorCallbackInfo = (WGPUUncapturedErrorCallbackInfo){ .callback = WEBGPU_UncapturedErrorCallback, .nextInChain = NULL, .userdata1 = &renderer->debugMode, .userdata2 = NULL };
+
+    wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
+
+#ifdef __EMSCRIPTEN_
+    // HACK: See WEBGPU_RequestAdapter.
+    emscripten_sleep(1);
+#endif
+}
+
+static bool WEBGPU_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
+{
+    bool result = false;
+    // FIXME: We're gonna cheat and statically link the library for now.
+    // We'll make it dynamically loaded eventually™,
+
+    // The renderer's heap allocated since I don't wanna risk a stack overflow (OMG HE SAID THE THING!!!!!!)
+    WebGPURenderer *renderer;
+
+    if (_this->WGPU_CreateSurface == NULL) {
+        return false;
+    }
+
+    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
+
+    renderer->debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+    renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
+    renderer->shouldRecreateLostDevice = true;
+
+    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+
+    if (!renderer->instance) {
+        result = false;
+        goto finished;
+    }
+
+    bool getAdapterSucceeded = false;
+    bool getDeviceSucceeded = false;
+    int loops = 0;
+
+    WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
+
+    while (!getAdapterSucceeded) {
+        // Simple timeout functionality.
+        if (loops < 2500) {
+            loops++;
+        } else {
+            result = false;
+            goto finished;
+        }
+#ifdef __EMSCRIPTEN_
+        // HACK: If we don't sleep we'll just eat up 100% CPU time and the program'll freeze.
+        emscripten_sleep(1);
+#endif
+    }
+
+    WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
+
+    while (!getDeviceSucceeded) {
+#ifdef __EMSCRIPTEN_
+        emscripten_sleep(1);
+#endif
+    }
+
+    renderer->queue = wgpuDeviceGetQueue(renderer->device);
+
+    if (!renderer->queue) {
+        result = false;
+        goto finished;
+    }
+
+    // Alright, if we've reached this logic everything went well!
+    // Let's free all resources and return a success!
+    result = true;
+    goto finished;
+
+finished:
+    // NOTE: Not entirely sure if this is safe or if it'll crash the program.
+    // This is the first time I've ever used C's memory allocation stuff. -- TheStickmahn
+    renderer->shouldRecreateLostDevice = false;
+    renderer->debugMode = false; // shut up
+
+    if (renderer->queue) {
+        wgpuQueueRelease(renderer->queue);
+    }
+    if (renderer->device) {
+        wgpuDeviceRelease(renderer->device);
+    }
+    if (renderer->adapter) {
+        wgpuAdapterRelease(renderer->adapter);
+    }
+    if (renderer->instance) {
+        wgpuInstanceRelease(renderer->instance);
+    }
+
+    SDL_free(renderer);
+    return result;
+}
+
+static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
+{
+    WebGPURenderer *renderer;
+    SDL_GPUDevice *result;
+
+    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
+
+    if (renderer == NULL) {
+        return NULL;
+    }
+
+    renderer->debugMode = debugMode;
+    renderer->preferLowPower = preferLowPower;
+    renderer->shouldRecreateLostDevice = true;
+
+    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+
+    if (!renderer->instance) {
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    bool getAdapterSucceeded = false;
+    bool getDeviceSucceeded = false;
+
+    WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
+    while (!getAdapterSucceeded) {
+#ifdef __EMSCRIPTEN_
+        emscripten_sleep(1);
+#endif
+    }
+
+    if (!renderer->adapter) {
+        wgpuInstanceRelease(renderer->instance);
+
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
+    while (!getDeviceSucceeded) {
+#ifdef __EMSCRIPTEN_
+        emscripten_sleep(1);
+#endif
+    }
+
+    if (!renderer->device) {
+        wgpuAdapterRelease(renderer->adapter);
+        wgpuInstanceRelease(renderer->instance);
+
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
+    // FIXME: Uncomment this when everything been implemented
+    //
+    // ASSIGN_DRIVER(WEBGPU)
+}
+
+SDL_GPUBootstrap WebGPUDriver = {
+    "webgpu",
+    WEBGPU_PrepareDriver,
+    WEBGPU_CreateDevice
 };
 
 #endif
