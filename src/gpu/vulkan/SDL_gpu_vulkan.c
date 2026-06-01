@@ -182,7 +182,7 @@ static VkFormat SDLToVK_TextureFormat[] = {
     VK_FORMAT_R8G8B8A8_SRGB,               // R8G8B8A8_UNORM_SRGB
     VK_FORMAT_B8G8R8A8_SRGB,               // B8G8R8A8_UNORM_SRGB
     VK_FORMAT_BC1_RGBA_SRGB_BLOCK,         // BC1_UNORM_SRGB
-    VK_FORMAT_BC2_SRGB_BLOCK,              // BC3_UNORM_SRGB
+    VK_FORMAT_BC2_SRGB_BLOCK,              // BC2_UNORM_SRGB
     VK_FORMAT_BC3_SRGB_BLOCK,              // BC3_UNORM_SRGB
     VK_FORMAT_BC7_SRGB_BLOCK,              // BC7_UNORM_SRGB
     VK_FORMAT_D16_UNORM,                   // D16_UNORM
