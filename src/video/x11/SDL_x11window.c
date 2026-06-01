@@ -250,9 +250,6 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     SDL_WindowData *data;
-    int numwindows = videodata->numwindows;
-    int windowlistlength = videodata->windowlistlength;
-    SDL_WindowData **windowlist = videodata->windowlist;
 
     /* Allocate the window data */
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
@@ -275,23 +272,14 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
 
     /* Associate the data with the window */
 
-    if (numwindows < windowlistlength) {
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
-    } else {
-        windowlist =
-            (SDL_WindowData **)SDL_realloc(windowlist,
-                                           (numwindows +
-                                            1) *
-                                               sizeof(*windowlist));
-        if (!windowlist) {
+    if (videodata->numwindows >= videodata->windowlistlength) {
+        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(videodata->windowlist, (videodata->numwindows + 1) * sizeof(*videodata->windowlist));
+        if (!new_windowlist) {
             SDL_OutOfMemory();
             goto error_cleanup;
         }
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
         videodata->windowlistlength++;
-        videodata->windowlist = windowlist;
+        videodata->windowlist = new_windowlist;
     }
 
     /* Fill in the SDL window with the window data */
@@ -360,6 +348,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, Window w, BOOL created)
 
     /* All done! */
     window->driverdata = data;
+    videodata->windowlist[videodata->numwindows++] = data;
     return 0;
 
 error_cleanup:

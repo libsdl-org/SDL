@@ -126,7 +126,6 @@
 #undef HAVE_STRTOK_R
 #undef HAVE_ITOA
 #undef HAVE__LTOA
-#undef HAVE__UITOA
 #undef HAVE__ULTOA
 #undef HAVE_STRTOL
 #undef HAVE_STRTOUL
