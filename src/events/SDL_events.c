@@ -161,6 +161,23 @@ static struct
 } SDL_EventQ = { NULL, false, { 0 }, 0, NULL, NULL, NULL };
 
 
+SDL_Mutex *SDL_event_lock = NULL; // This needs to support recursive locks
+
+void SDL_CreateEventLock(void)
+{
+    if (!SDL_event_lock) {
+        SDL_event_lock = SDL_CreateMutex();
+    }
+}
+
+void SDL_DestroyEventLock(void)
+{
+    if (SDL_event_lock) {
+        SDL_DestroyMutex(SDL_event_lock);
+        SDL_event_lock = NULL;
+    }
+}
+
 static void SDL_CleanupTemporaryMemory(void *data)
 {
     SDL_TemporaryMemoryState *state = (SDL_TemporaryMemoryState *)data;
@@ -965,8 +982,9 @@ void SDL_StopEventLoop(void)
     const char *report = SDL_GetHint("SDL_EVENT_QUEUE_STATISTICS");
     int i;
     SDL_EventEntry *entry;
+    SDL_Mutex *lock = SDL_EventQ.lock;
 
-    SDL_LockMutex(SDL_EventQ.lock);
+    SDL_LockMutex(lock);
 
     SDL_EventQ.active = false;
 
@@ -1004,17 +1022,10 @@ void SDL_StopEventLoop(void)
     SDL_QuitEventWatchList(&SDL_event_watchers);
     SDL_QuitWindowEventWatch();
 
-    SDL_Mutex *lock = NULL;
-    if (SDL_EventQ.lock) {
-        lock = SDL_EventQ.lock;
-        SDL_EventQ.lock = NULL;
-    }
+    SDL_EventQ.lock = NULL;
 
     SDL_UnlockMutex(lock);
-
-    if (lock) {
-        SDL_DestroyMutex(lock);
-    }
+    SDL_DestroyMutex(lock);
 }
 
 // This function (and associated calls) may be called more than once
@@ -1833,7 +1844,7 @@ bool SDL_PushEvent(SDL_Event *event)
 void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
     SDL_EventEntry *event, *next;
-    SDL_LockMutex(SDL_event_watchers.lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         // Set filter and discard pending events
         SDL_event_watchers.filter.callback = filter;
@@ -1852,18 +1863,18 @@ void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
             SDL_UnlockMutex(SDL_EventQ.lock);
         }
     }
-    SDL_UnlockMutex(SDL_event_watchers.lock);
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
 {
     SDL_EventWatcher event_ok;
 
-    SDL_LockMutex(SDL_event_watchers.lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         event_ok = SDL_event_watchers.filter;
     }
-    SDL_UnlockMutex(SDL_event_watchers.lock);
+    SDL_UnlockMutex(SDL_event_lock);
 
     if (filter) {
         *filter = event_ok.callback;

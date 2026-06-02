@@ -117,7 +117,7 @@ static int SDL_HIDAPI_numdrivers = 0;
 static SDL_AtomicInt SDL_HIDAPI_updating_devices;
 static bool SDL_HIDAPI_hints_changed = false;
 static Uint32 SDL_HIDAPI_change_count = 0;
-static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_event_lock);
 static int SDL_HIDAPI_numjoysticks = 0;
 static bool SDL_HIDAPI_combine_joycons = true;
 static bool initialized = false;
