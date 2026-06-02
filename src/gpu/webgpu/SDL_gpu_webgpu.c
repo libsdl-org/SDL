@@ -3,13 +3,16 @@
 // Also, to slouken, cosmonaut, or anybody else who's gonna have to read through this code: I'm sorry.
 // I've seen ancient Egyptian hieroglyphics that were easier to read than this code.
 
+// TODO:
+// Buffer cycling!
+
 // Current implementation checklist
 //
 // FUNCTIONS:
 // SDL_AcquireGPUCommandBuffer [x]
-// SDL_AcquireGPUSwapchainTexture []
+// SDL_AcquireGPUSwapchainTexture [x]
 // SDL_BeginGPUComputePass []
-// SDL_BeginGPUCopyPass []
+// SDL_BeginGPUCopyPass [x]
 // SDL_BeginGPURenderPass []
 // SDL_BindGPUComputePipeline []
 // SDL_BindGPUComputeSamplers []
@@ -25,10 +28,9 @@
 // SDL_BindGPUVertexStorageBuffers []
 // SDL_BindGPUVertexStorageTextures []
 // SDL_BlitGPUTexture []
-// SDL_CalculateGPUTextureFormatSize []
 // SDL_CancelGPUCommandBuffer [] (See the comment in WEBGPU_AcquireGPUCommandBuffer.)
 // SDL_ClaimWindowForGPUDevice [x]
-// SDL_CopyGPUBufferToBuffer []
+// SDL_CopyGPUBufferToBuffer [x]
 // SDL_CopyGPUTextureToTexture []
 // SDL_CreateGPUBuffer [x]
 // SDL_CreateGPUComputePipeline []
@@ -38,7 +40,7 @@
 // SDL_CreateGPUSampler []
 // SDL_CreateGPUShader []
 // SDL_CreateGPUTexture [x] (Maybe. I'm so confused)
-// SDL_CreateGPUTransferBuffer []
+// SDL_CreateGPUTransferBuffer [x]
 // SDL_DestroyGPUDevice []
 // SDL_DispatchGPUCompute []
 // SDL_DispatchGPUComputeIndirect []
@@ -49,13 +51,12 @@
 // SDL_DrawGPUPrimitives []
 // SDL_DrawGPUPrimitivesIndirect []
 // SDL_EndGPUComputePass []
-// SDL_EndGPUCopyPass []
+// SDL_EndGPUCopyPass [x]
 // SDL_EndGPURenderPass []
 // SDL_GDKResumeGPU [] (Don't even think GDK'll work with WebGPU)
 // SDL_GDKSuspendGPU []
 // SDL_GenerateMipmapsForGPUTexture []
-// SDL_GetGPUDeviceDriver []
-// SDL_GetGPUDeviceProperties []
+// SDL_GetGPUDeviceProperties [x] (Sorta, kinda; The only property that's set is the device name)
 // SDL_GetGPUDriver [x]
 // SDL_GetGPUShaderFormats []
 // SDL_GetGPUSwapchainTextureFormat []
@@ -68,21 +69,21 @@
 // SDL_GPUTextureSupportsFormat []
 // SDL_GPUTextureSupportsSampleCount []
 // SDL_InsertGPUDebugLabel []
-// SDL_MapGPUTransferBuffer []
+// SDL_MapGPUTransferBuffer [x]
 // SDL_PopGPUDebugGroup []
 // SDL_PushGPUComputeUniformData []
 // SDL_PushGPUDebugGroup []
 // SDL_PushGPUFragmentUniformData []
 // SDL_PushGPUVertexUniformData []
 // SDL_QueryGPUFence [x]
-// SDL_ReleaseGPUBuffer []
+// SDL_ReleaseGPUBuffer [x]
 // SDL_ReleaseGPUComputePipeline []
 // SDL_ReleaseGPUFence [x]
 // SDL_ReleaseGPUGraphicsPipeline []
 // SDL_ReleaseGPUSampler []
 // SDL_ReleaseGPUShader []
-// SDL_ReleaseGPUTexture []
-// SDL_ReleaseGPUTransferBuffer []
+// SDL_ReleaseGPUTexture [x]
+// SDL_ReleaseGPUTransferBuffer [x]
 // SDL_ReleaseWindowFromGPUDevice []
 // SDL_SetGPUAllowedFramesInFlight []
 // SDL_SetGPUBlendConstants []
@@ -94,7 +95,7 @@
 // SDL_SetGPUViewport []
 // SDL_SubmitGPUCommandBuffer [x]
 // SDL_SubmitGPUCommandBufferAndAcquireFence [x]
-// SDL_UnmapGPUTransferBuffer []
+// SDL_UnmapGPUTransferBuffer [x]
 // SDL_UploadToGPUBuffer []
 // SDL_UploadToGPUTexture []
 // SDL_WaitAndAcquireGPUSwapchainTexture []
@@ -445,6 +446,9 @@ typedef struct WebGPURenderer
 
     WebGPUWindowData **capturedWindows;
 
+    // TODO: Properties
+    SDL_PropertiesID props;
+
     bool debugMode;
     bool preferLowPower;
     bool shouldRecreateLostDevice;
@@ -653,6 +657,13 @@ WEBGPU_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType type, WGP
     }
 }
 
+static SDL_PropertiesID WEBGPU_GetDeviceProperties(
+    SDL_GPUDevice *device)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
+    return renderer->props;
+}
+
 // forward decl
 static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success);
 
@@ -852,7 +863,7 @@ finished:
     return result;
 }
 
-static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
+static SDL_GPUDevice *WEBGPU_CreateGPUDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     WebGPURenderer *renderer;
     SDL_GPUDevice *result;
@@ -866,6 +877,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
     renderer->shouldRecreateLostDevice = true;
+    renderer->props = SDL_CreateProperties();
 
     renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
 
@@ -906,6 +918,20 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
         return NULL;
     }
 
+    WGPUAdapterInfo adapterInfo;
+    wgpuAdapterGetInfo(renderer->adapter, &adapterInfo);
+
+    SDL_SetStringProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_NAME_STRING,
+        adapterInfo.device.data);
+
+    // FIXME: Not sure this is how it's supposed to work
+    SDL_SetStringProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING,
+        "WebGPU");
+
     result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
 
     result->driverData = (SDL_GPURenderer *)renderer;
@@ -914,6 +940,8 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     // FIXME: Uncomment this when everything's been implemented
     //
     // ASSIGN_DRIVER(WEBGPU)
+
+    return result;
 }
 
 static SDL_GPUCopyPass *WEBGPU_BeginCopyPass(
@@ -1159,7 +1187,7 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     }
 }
 
-static SDL_GPUTexture *WEBGPU_CreateTexture(
+static SDL_GPUTexture *WEBGPU_CreateGPUTexture(
     SDL_GPURenderer *driverData,
     const SDL_GPUTextureCreateInfo *createInfo)
 {
@@ -1244,6 +1272,24 @@ static bool WEBGPU_ClaimWindowForGPUDevice(SDL_GPUDevice *device, SDL_Window *wi
     return true;
 }
 
+static bool WEBGPU_AcquireGPUSwapchainTexture(SDL_GPUCommandBuffer *command_buffer, SDL_Window *window, SDL_GPUTexture **swapchain_texture, Uint32 *width, Uint32 *height)
+{
+    WGPUSurfaceTexture surfaceTexture;
+    wgpuSurfaceGetCurrentTexture(((WebGPUCommandBufferWrapper *)command_buffer)->windowDataGrossHack->surface, &surfaceTexture);
+
+    if (surfaceTexture.status == WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal) {
+        // FIXME: This is GROSS AND HORRIBLE
+        ((WebGPUTextureContainer *)swapchain_texture)->activeTexture->texture = surfaceTexture.texture;
+    } else if (surfaceTexture.status == WGPUSurfaceGetCurrentTextureStatus_SuccessSuboptimal) {
+        // TODO: Should reconfigure the surface if it's suboptimal
+        ((WebGPUTextureContainer *)swapchain_texture)->activeTexture->texture = surfaceTexture.texture;
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
 // NOTE: Small issue here, if we were to release a gpu "fence" which hasn't yet been called,
 // the callback would still attempt to write into that pointer (which is now free memory).
 // So, we're just not gonna do that.
@@ -1272,25 +1318,26 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, uint
 {
     WGPUBufferUsage usages = 0;
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
-        usages |= WGPUBufferUsage_Vertex;
-    }
+    if (bufferType == WEBGPU_BUFFER_TYPE_GPU) {
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
+            usages |= WGPUBufferUsage_Vertex;
+        }
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
-        usages |= WGPUBufferUsage_Index;
-    }
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
+            usages |= WGPUBufferUsage_Index;
+        }
 
-    if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
-                      SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
-        usages |= WGPUBufferUsage_Storage;
-    }
+        if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                          SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                          SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
+            usages |= WGPUBufferUsage_Storage;
+        }
 
-    if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
-        usages |= WGPUBufferUsage_Indirect;
-    }
-
-    if (bufferType == WEBGPU_BUFFER_TYPE_UNIFORM) {
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+            usages |= WGPUBufferUsage_Indirect;
+        }
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER) {
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_UNIFORM) {
         usages |= WGPUBufferUsage_Uniform;
     }
 
@@ -1356,25 +1403,115 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
     return bufferContainer;
 }
 
-static SDL_GPUBuffer *WEBGPU_CreateBuffer(
-    SDL_GPURenderer *driverData,
-    SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 size,
-    const char *debugName)
+static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPUBuffer *buffer)
 {
+    // FIXME: This is almost certainly unsafe
+    wgpuBufferRelease(buffer->buffer);
+}
+
+static void WEBGPU_INTERNAL_ReleaseTexture(WebGPUTexture *texture)
+{
+    wgpuTextureRelease(texture->texture);
+}
+
+static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPUBufferContainer *container)
+{
+    for (int i = 0; i < container->bufferCount; i++) {
+        WEBGPU_INTERNAL_ReleaseBuffer(container->buffers[i]);
+    }
+
+    if (container->debugName != NULL) {
+        SDL_free(container->debugName);
+        container->debugName = NULL;
+    }
+    SDL_free(container->buffers);
+    SDL_free(container);
+}
+
+static SDL_GPUBuffer *WEBGPU_CreateGPUBuffer(SDL_GPUDevice *device, const SDL_GPUBufferCreateInfo *createInfo)
+{
+    char *debugName = NULL;
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING)) {
+        SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, debugName);
+    }
+
     return (SDL_GPUBuffer *)WEBGPU_INTERNAL_CreateBufferContainer(
-        (WebGPURenderer *)driverData,
-        size,
-        usageFlags,
+        (WebGPURenderer *)device->driverData,
+        createInfo->size,
+        createInfo->usage,
         WEBGPU_BUFFER_TYPE_GPU,
         false,
         debugName);
 }
 
+static SDL_GPUTransferBuffer *WEBGPU_CreateGPUTransferBuffer(SDL_GPUDevice *device, const SDL_GPUBufferCreateInfo *createInfo)
+{
+    char *debugName = NULL;
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING)) {
+        SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, debugName);
+    }
+
+    return (SDL_GPUTransferBuffer *)WEBGPU_INTERNAL_CreateBufferContainer(
+        (WebGPURenderer *)device->driverData,
+        createInfo->size,
+        createInfo->usage,
+        WEBGPU_BUFFER_TYPE_TRANSFER,
+        false,
+        debugName);
+}
+
+static void WEBGPU_ReleaseGPUBuffer(SDL_GPUDevice *device, SDL_GPUBuffer *buffer)
+{
+    if (device != NULL && buffer != NULL) {
+        WEBGPU_INTERNAL_ReleaseBufferContainer((WebGPUBufferContainer *)buffer);
+    }
+}
+
+static void WEBGPU_ReleaseGPUTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *buffer)
+{
+    if (device != NULL && buffer != NULL) {
+        WEBGPU_INTERNAL_ReleaseBufferContainer((WebGPUBufferContainer *)buffer);
+    }
+}
+
+static void *WEBGPU_MapGPUTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *transferBuffer, bool cycle)
+{
+    if (cycle) {
+        // TODO: Buffer cycling!
+    }
+
+    // NOTE: WebGPU allows you to map a "slice" of a buffer. Maybe we should implement the same into SDL_GPU?
+    // I think Vulkan also supports it.
+    return wgpuBufferGetMappedRange(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer, 0, ((WebGPUBufferContainer *)transferBuffer)->activeBuffer->size);
+}
+
+static void WEBGPU_UnmapGPUTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *transferBuffer)
+{
+    wgpuBufferUnmap(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer);
+}
+
+static void WEBGPU_INTERNAL_CopyBufferToBuffer(WGPUCommandEncoder *encoder, WebGPUBufferContainer *sourceBuf,
+                                               uint32_t sourceBufOffset, WebGPUBufferContainer *destBuf,
+                                               uint32_t destBufOffset, uint32_t size)
+{
+    wgpuCommandEncoderCopyBufferToBuffer(*encoder, sourceBuf->activeBuffer->buffer, sourceBufOffset, destBuf->activeBuffer->buffer, destBufOffset, size);
+}
+
+static void WEBGPU_CopyGPUBufferToBuffer(SDL_GPUCopyPass *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUBufferLocation *dest, uint32_t size, bool cycle)
+{
+    if (cycle) {
+        // TODO: Buffer cycling!
+    }
+
+    WEBGPU_INTERNAL_CopyBufferToBuffer((WGPUCommandEncoder *)copyPass, (WebGPUBufferContainer *)source, source->offset, (WebGPUBufferContainer *)dest, dest->offset, size);
+}
+
 SDL_GPUBootstrap WebGPUDriver = {
     "webgpu",
     WEBGPU_PrepareDriver,
-    WEBGPU_CreateDevice
+    WEBGPU_CreateGPUDevice
 };
 
 #endif
