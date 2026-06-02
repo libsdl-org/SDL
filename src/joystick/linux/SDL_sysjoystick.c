@@ -186,10 +186,10 @@ typedef struct SDL_sensorlist_item
 } SDL_sensorlist_item;
 
 static bool SDL_classic_joysticks = false;
-static SDL_joylist_item *SDL_joylist SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_joylist_item *SDL_joylist_tail SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static int numjoysticks SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static SDL_sensorlist_item *SDL_sensorlist SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_joylist_item *SDL_joylist SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_joylist_item *SDL_joylist_tail SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static int numjoysticks SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_sensorlist_item *SDL_sensorlist SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static int inotify_fd = -1;
 
 static Uint64 last_joy_detect_time;

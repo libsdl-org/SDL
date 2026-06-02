@@ -298,6 +298,7 @@ void SDL_InitMainThread(void)
     SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
+    SDL_CreateEventLock();
 
     if (!done_info) {
         const char *value;
@@ -316,6 +317,7 @@ void SDL_InitMainThread(void)
 
 static void SDL_QuitMainThread(void)
 {
+    SDL_DestroyEventLock();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitEnvironment();

@@ -81,7 +81,7 @@ extern "C" {
  * help Clang's thread safety analysis tools to function. Do not attempt
  * to access this symbol from your app, it will not work!
  */
-extern SDL_Mutex *SDL_joystick_lock;
+extern SDL_Mutex *SDL_event_lock;
 #endif
 
 /**
@@ -186,7 +186,7 @@ typedef enum SDL_JoystickConnectionState
  *
  * \since This function is available since SDL 3.2.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_event_lock);
 
 /**
  * Locking for atomic access to the joystick API.
@@ -201,7 +201,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystic
  *
  * \since This function is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
+extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_TRY_ACQUIRE(true, SDL_event_lock);
 
 /**
  * Unlocking for atomic access to the joystick API.
@@ -211,7 +211,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_ACQUIRE(SDL_joys
  *
  * \since This function is available since SDL 3.2.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_event_lock);
 
 /**
  * Return whether a joystick is currently connected.

@@ -114,19 +114,14 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 };
 
-#ifndef SDL_THREAD_SAFETY_ANALYSIS
-static
-#endif
-SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
-static SDL_AtomicInt SDL_joystick_lock_pending;
 static int SDL_joysticks_locked;
 static bool SDL_joysticks_initialized;
 static bool SDL_joysticks_quitting;
 static bool SDL_joystick_being_added;
-static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static bool SDL_joystick_allows_background_events = false;
 
 static Uint32 initial_old_xboxone_controllers[] = {
@@ -706,16 +701,13 @@ bool SDL_JoysticksQuitting(void)
 
 void SDL_LockJoysticks(void)
 {
-    (void)SDL_AtomicIncRef(&SDL_joystick_lock_pending);
-    SDL_LockMutex(SDL_joystick_lock);
-    (void)SDL_AtomicDecRef(&SDL_joystick_lock_pending);
-
+    SDL_LockMutex(SDL_event_lock);
     ++SDL_joysticks_locked;
 }
 
 bool SDL_TryLockJoysticks(void)
 {
-    if (SDL_TryLockMutex(SDL_joystick_lock)) {
+    if (SDL_TryLockMutex(SDL_event_lock)) {
         ++SDL_joysticks_locked;
         return true;
     }
@@ -724,34 +716,8 @@ bool SDL_TryLockJoysticks(void)
 
 void SDL_UnlockJoysticks(void)
 {
-    bool last_unlock = false;
-
     --SDL_joysticks_locked;
-
-    if (!SDL_joysticks_initialized) {
-        // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_joysticks_locked && SDL_GetAtomicInt(&SDL_joystick_lock_pending) == 0) {
-            last_unlock = true;
-        }
-    }
-
-    /* The last unlock after joysticks are uninitialized will cleanup the mutex,
-     * allowing applications to lock joysticks while reinitializing the system.
-     */
-    if (last_unlock) {
-        SDL_Mutex *joystick_lock = SDL_joystick_lock;
-
-        SDL_LockMutex(joystick_lock);
-        {
-            SDL_UnlockMutex(SDL_joystick_lock);
-
-            SDL_joystick_lock = NULL;
-        }
-        SDL_UnlockMutex(joystick_lock);
-        SDL_DestroyMutex(joystick_lock);
-    } else {
-        SDL_UnlockMutex(SDL_joystick_lock);
-    }
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_JoysticksLocked(void)
@@ -891,11 +857,6 @@ bool SDL_InitJoysticks(void)
 {
     int i;
     bool result = false;
-
-    // Create the joystick list lock
-    if (SDL_joystick_lock == NULL) {
-        SDL_joystick_lock = SDL_CreateMutex();
-    }
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;
