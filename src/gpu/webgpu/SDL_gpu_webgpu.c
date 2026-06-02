@@ -37,7 +37,7 @@
 // SDL_CreateGPUGraphicsPipeline []
 // SDL_CreateGPUSampler []
 // SDL_CreateGPUShader []
-// SDL_CreateGPUTexture []
+// SDL_CreateGPUTexture [x] (Maybe. I'm so confused)
 // SDL_CreateGPUTransferBuffer []
 // SDL_DestroyGPUDevice []
 // SDL_DispatchGPUCompute []
@@ -104,7 +104,6 @@
 // SDL_WindowSupportsGPUPresentMode []
 // SDL_WindowSupportsGPUSwapchainComposition []
 
-#include "SDL3/SDL_wgpu.h"
 #include "SDL_internal.h"
 
 // FIXME: Temporarily here so that I'm not coding blind
@@ -568,6 +567,8 @@ typedef struct WebGPUTextureSubresource
     Uint32 layer;
     Uint32 level;
 
+    // FIXME: I am so confused.
+    // Why can a subresource have multiple render target views but only one depth and compute view?
     WGPUTextureView *renderTargetViews; // One render target view per depth slice
     WGPUTextureView computeWriteView;
     WGPUTextureView depthStencilView;
@@ -578,14 +579,21 @@ struct WebGPUTexture
     WebGPUTextureContainer *container;
     Uint32 containerIndex;
 
-    WebGPUMemoryUsedRegion *usedRegion;
+    // NOTE:
+    // WebGPU really doesn't like persistently mapped memory.
+    // We'll instead just map the memory OTF during R/W operations.
+    //
+    // WebGPUMemoryUsedRegion *usedRegion;
 
-    WGPUTexture image;
+    WGPUTexture texture;
     WGPUTextureView fullView; // used for samplers and storage reads
-    WGPUTextureAspect aspectFlags;
-    Uint32 depth; // used for cleanup only
+    Uint32 depth;             // used for cleanup only
+
+    WGPUTextureAspect aspect;
 
     // used to avoid indirection on barriers
+    //
+    // NOTE: Pretty sure these are redundant?
     Uint32 levelCount;
     Uint32 layerCount;
     SDL_GPUTextureType type;
@@ -985,6 +993,213 @@ static bool WEBGPU_QueryGPUFence(SDL_GPUDevice *device, SDL_GPUFence *fence)
     if (fence != NULL) {
         return ((WebGPUFence *)fence)->status;
     }
+}
+
+static WGPUTextureView WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *texture, uint32_t depth)
+{
+    // FIXME: This should probably be heap-allocated.
+    WGPUTextureView view;
+
+    uint32_t mipLevelCount = wgpuTextureGetMipLevelCount(texture->texture);
+    uint32_t arrayLayerCount = wgpuTextureGetDepthOrArrayLayers(texture->texture);
+    WGPUTextureFormat format = wgpuTextureGetFormat(texture->texture);
+    WGPUTextureUsage usages = wgpuTextureGetUsage(texture->texture);
+    WGPUTextureViewDimension dimension;
+
+    switch (texture->type) {
+    case SDL_GPU_TEXTURETYPE_2D:
+        dimension = WGPUTextureViewDimension_2D;
+        break;
+    case SDL_GPU_TEXTURETYPE_2D_ARRAY:
+        dimension = WGPUTextureViewDimension_2DArray;
+        break;
+    case SDL_GPU_TEXTURETYPE_3D:
+        dimension = WGPUTextureViewDimension_3D;
+        break;
+    case SDL_GPU_TEXTURETYPE_CUBE:
+        dimension = WGPUTextureViewDimension_Cube;
+        break;
+    case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
+        dimension = WGPUTextureViewDimension_CubeArray;
+        break;
+    }
+
+    view = wgpuTextureCreateView(texture->texture, &((WGPUTextureViewDescriptor){
+                                                       .arrayLayerCount = arrayLayerCount,
+                                                       .baseArrayLayer = depth,
+                                                       .baseMipLevel = 0,
+                                                       .mipLevelCount = mipLevelCount,
+                                                       .aspect = texture->aspect,
+                                                       .dimension = dimension,
+                                                       .format = format,
+                                                       .label = NULL,
+                                                       .usage = usages,
+                                                   }));
+
+    return view;
+}
+
+static Uint32 WEBGPU_INTERNAL_GetTextureSubresourceIndex(
+    Uint32 mipLevel,
+    Uint32 layer,
+    Uint32 numLevels)
+{
+    return mipLevel + (layer * numLevels);
+}
+
+static WebGPUTextureSubresource *VULKAN_INTERNAL_FetchTextureSubresource(
+    WebGPUTextureContainer *textureContainer,
+    Uint32 layer,
+    Uint32 level)
+{
+    Uint32 index = WEBGPU_INTERNAL_GetTextureSubresourceIndex(
+        level,
+        layer,
+        textureContainer->header.info.num_levels);
+
+    return &textureContainer->activeTexture->subresources[index];
+}
+
+static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, const SDL_GPUTextureCreateInfo *createInfo)
+{
+    WebGPUTexture *texture;
+
+    texture = (WebGPUTexture *)SDL_calloc(1, sizeof(*texture));
+    WGPUTextureDescriptor desc;
+
+    if (createInfo->type == SDL_GPU_TEXTURETYPE_2D) {
+        desc.dimension = WGPUTextureDimension_2D;
+    } else if (createInfo->type == SDL_GPU_TEXTURETYPE_3D) {
+        desc.dimension = WGPUTextureDimension_3D;
+    } else {
+        SDL_free(texture);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture format unsupported!");
+    }
+    desc.usage = 0;
+
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
+        desc.usage |= WGPUTextureUsage_TextureBinding;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+        desc.usage |= WGPUTextureUsage_RenderAttachment;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+        desc.usage |= WGPUTextureUsage_RenderAttachment;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ || createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ || createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+        desc.usage |= WGPUTextureUsage_StorageBinding;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Texture usage unsupported!");
+        SDL_free(texture);
+        return NULL;
+    }
+
+    desc.format = SDLToWebGPU_TextureFormat[createInfo->format];
+    desc.mipLevelCount = 1;
+
+    desc.size = (WGPUExtent3D){ .width = createInfo->width, .height = createInfo->height, .depthOrArrayLayers = 1 };
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        char *debugName = SDL_strdup(SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
+        desc.label = (WGPUStringView){ .data = debugName, .length = SDL_strlen(debugName) };
+    }
+
+    texture->usage = createInfo->usage;
+    texture->levelCount = createInfo->num_levels;
+    texture->layerCount = (createInfo->type == SDL_GPU_TEXTURETYPE_3D) ? 1 : createInfo->layer_count_or_depth;
+    texture->depth = (createInfo->type == SDL_GPU_TEXTURETYPE_3D) ? createInfo->layer_count_or_depth : 1;
+    texture->type = createInfo->type;
+    SDL_SetAtomicInt(&texture->referenceCount, 0);
+
+    // excellent naming by yours truly
+    texture->texture = wgpuDeviceCreateTexture(renderer->device, &desc);
+
+    texture->fullView = WEBGPU_INTERNAL_CreateTextureView(texture, 0);
+    texture->subresourceCount = texture->layerCount * createInfo->num_levels;
+    texture->subresources = SDL_calloc(
+        texture->subresourceCount,
+        sizeof(WebGPUTextureSubresource));
+
+    for (Uint32 i = 0; i < texture->layerCount; i += 1) {
+        // NOTE: WebGPU allows us to retrieve a texture's usages after it's been created, so we just have one "CreateTextureView" function,
+        // which works for all kinds of texture views.
+        // This does however rely on CreateTexture working.
+        for (Uint32 j = 0; j < createInfo->num_levels; j += 1) {
+            Uint32 subresourceIndex = WEBGPU_INTERNAL_GetTextureSubresourceIndex(
+                j,
+                i,
+                createInfo->num_levels);
+
+            if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+                texture->subresources[subresourceIndex].renderTargetViews = SDL_malloc(
+                    texture->depth * sizeof(WGPUTextureView));
+
+                if (texture->depth > 1) {
+                    for (Uint32 k = 0; k < texture->depth; k += 1) {
+                        texture->subresources[subresourceIndex].renderTargetViews[k] = WEBGPU_INTERNAL_CreateTextureView(texture, k);
+                    }
+                } else {
+                    texture->subresources[subresourceIndex].renderTargetViews[0] = WEBGPU_INTERNAL_CreateTextureView(texture, i);
+                }
+            }
+
+            if ((createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
+                texture->subresources[subresourceIndex].computeWriteView = WEBGPU_INTERNAL_CreateTextureView(texture, i);
+            }
+
+            if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+                texture->subresources[subresourceIndex].depthStencilView = WEBGPU_INTERNAL_CreateTextureView(texture, i);
+            }
+
+            texture->subresources[subresourceIndex].parent = texture;
+            texture->subresources[subresourceIndex].layer = i;
+            texture->subresources[subresourceIndex].level = j;
+        }
+    }
+}
+
+static SDL_GPUTexture *WEBGPU_CreateTexture(
+    SDL_GPURenderer *driverData,
+    const SDL_GPUTextureCreateInfo *createInfo)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+    WebGPUTexture *texture;
+    WebGPUTextureContainer *container;
+
+    texture = WEBGPU_INTERNAL_CreateTexture(
+        renderer,
+        createInfo);
+
+    if (texture == NULL) {
+        return NULL;
+    }
+
+    container = SDL_malloc(sizeof(WebGPUTextureContainer));
+
+    container->header.info = *createInfo;
+    container->header.info.props = SDL_CreateProperties();
+    if (createInfo->props) {
+        SDL_CopyProperties(createInfo->props, container->header.info.props);
+    }
+
+    container->canBeCycled = true;
+    container->activeTexture = texture;
+    container->textureCapacity = 1;
+    container->textureCount = 1;
+    container->textures = SDL_malloc(
+        container->textureCapacity * sizeof(WebGPUTexture *));
+    container->textures[0] = container->activeTexture;
+    container->debugName = NULL;
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        container->debugName = SDL_strdup(SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
+    }
+
+    texture->container = container;
+    texture->containerIndex = 0;
+
+    return (SDL_GPUTexture *)container;
 }
 
 static bool WEBGPU_ClaimWindowForGPUDevice(SDL_GPUDevice *device, SDL_Window *window)
