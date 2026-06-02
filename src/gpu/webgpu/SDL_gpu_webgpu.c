@@ -38,7 +38,7 @@
 // SDL_CreateGPUDeviceWithProperties []
 // SDL_CreateGPUGraphicsPipeline []
 // SDL_CreateGPUSampler []
-// SDL_CreateGPUShader []
+// SDL_CreateGPUShader [x]
 // SDL_CreateGPUTexture [x] (Maybe. I'm so confused)
 // SDL_CreateGPUTransferBuffer [x]
 // SDL_DestroyGPUDevice []
@@ -81,7 +81,7 @@
 // SDL_ReleaseGPUFence [x]
 // SDL_ReleaseGPUGraphicsPipeline []
 // SDL_ReleaseGPUSampler []
-// SDL_ReleaseGPUShader []
+// SDL_ReleaseGPUShader [x]
 // SDL_ReleaseGPUTexture [x]
 // SDL_ReleaseGPUTransferBuffer [x]
 // SDL_ReleaseWindowFromGPUDevice []
@@ -447,8 +447,8 @@ typedef struct WebGPURenderer
 
     WebGPUWindowData **capturedWindows;
 
-    // TODO: Properties
     SDL_PropertiesID props;
+    SDL_HashTable *shaders;
 
     bool debugMode;
     bool preferLowPower;
@@ -471,59 +471,6 @@ struct WebGPUWindowData
     WGPUSurface surface;
 };
 
-// typedef struct WebGPUMemoryFreeRegion
-// {
-//     WebGPUMemoryAllocation *allocation;
-//     uint64_t offset;
-//     uint64_t size;
-//     Uint32 allocationIndex;
-//     Uint32 sortedIndex;
-// } WebGPUMemoryFreeRegion;
-//
-// typedef struct WebGPUMemoryUsedRegion
-// {
-//     WebGPUMemoryAllocation *allocation;
-//     uint64_t offset;
-//     uint64_t size;
-//     uint64_t resourceOffset; // differs from offset based on alignment
-//     uint64_t resourceSize;   // differs from size based on alignment
-//     uint64_t alignment;
-//     Uint8 isBuffer;
-//     union
-//     {
-//         WebGPUBuffer *webGPUBuffer;
-//         WebGPUTexture *webGPUTexture;
-//     };
-// } WebGPUMemoryUsedRegion;
-//
-// typedef struct WebGPUMemorySubAllocator
-// {
-//     Uint32 memoryTypeIndex;
-//     WebGPUMemoryAllocation **allocations;
-//     Uint32 allocationCount;
-//     WebGPUMemoryFreeRegion **sortedFreeRegions;
-//     Uint32 sortedFreeRegionCount;
-//     Uint32 sortedFreeRegionCapacity;
-// } WebGPUMemorySubAllocator;
-//
-// struct WebGPUMemoryAllocation
-// {
-//     WebGPUMemorySubAllocator *allocator;
-//     uint64_t size;
-//     WebGPUMemoryUsedRegion **usedRegions;
-//     Uint32 usedRegionCount;
-//     Uint32 usedRegionCapacity;
-//     WebGPUMemoryFreeRegion **freeRegions;
-//     Uint32 freeRegionCount;
-//     Uint32 freeRegionCapacity;
-//     Uint8 availableForAllocation;
-//     uint64_t freeSpace;
-//     uint64_t usedSpace;
-//     Uint8 *mapPointer;
-//     SDL_Mutex *memoryLock;
-//     SDL_AtomicInt referenceCount; // Used to avoid defrag races
-// };
-
 typedef enum WebGPUBufferType
 {
     WEBGPU_BUFFER_TYPE_GPU,
@@ -537,7 +484,6 @@ struct WebGPUBuffer
     Uint32 containerIndex;
 
     WGPUBuffer buffer;
-    // WebGPUMemoryUsedRegion *usedRegion;
 
     // Needed for uniforms and defrag
     WebGPUBufferType type;
@@ -580,12 +526,6 @@ struct WebGPUTexture
     WebGPUTextureContainer *container;
     Uint32 containerIndex;
 
-    // NOTE:
-    // WebGPU really doesn't like persistently mapped memory.
-    // We'll instead just map the memory OTF during R/W operations.
-    //
-    // WebGPUMemoryUsedRegion *usedRegion;
-
     WGPUTexture texture;
     WGPUTextureView fullView; // used for samplers and storage reads
     Uint32 depth;             // used for cleanup only
@@ -625,6 +565,39 @@ struct WebGPUTextureContainer
     char *debugName;
     bool canBeCycled;
 };
+
+// NOTE: ZEUS! YOUR SON HAS RETURNED! STRIKE DOWN THE DESIGNERS OF WEBGPU, AND MY LIFE IS YOURS!
+//
+// Alright, on a serious note: Most normal graphics API's on this planet only allow you to define one type of shader in a shader module.
+// This is what SDL_GPU was designed around, and uses. However: WebGPU decided to be unique and have it so that a single shader module can represent
+// a vertex shader, a fragment shader, AND a compute shader all at once. So, now we've reached an annoying issue: How do we fit a square into the circle hole?
+// My solution is this:
+//
+// Every "SDL_GPUShader" is made up. It stores the shader source code's hash, what stage it is, and the entrypoint.
+// When a shader is created, the renderer hashes the shader's source code, and compiles a WGPUShaderModule.
+// It then adds that module to a hash table where the source hash is the key.
+// If a new shader gets created that has the same source hash, we know that there's already a compiled module for it and we'll just return a new reference.
+typedef struct WebGPUShaderReference
+{
+    uint32_t shaderSourceHash;
+    SDL_GPUShaderStage stage;
+    char *entrypoint;
+} WebGPUShaderReference;
+
+typedef struct WebGPUShader
+{
+    WGPUShaderModule shaderModule;
+    WGPUShaderSourceWGSL *source;
+    uint32_t sourceHash;
+
+    bool hasVertexEntrypoint;
+    bool hasFragmentEntrypoint;
+    bool hasComputeEntrypoint;
+
+    char *vertexEntrypoint;
+    char *fragmentEntrypoint;
+    char *computeEntrypoint;
+} WebGPUShader;
 
 /// SDL_GPU's command buffers have no real counterpart in WebGPU, so I had to do this.
 typedef struct WebGPUCommandBufferWrapper
@@ -877,6 +850,8 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->preferLowPower = preferLowPower;
     renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
+    // TODO: Shader hash table value destruction.
+    renderer->shaders = SDL_CreateHashTable(64, false, SDL_HashString, SDL_KeyMatchString, NULL, renderer);
 
     renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
 
@@ -1231,6 +1206,93 @@ static SDL_GPUTexture *WEBGPU_CreateTexture(
     return (SDL_GPUTexture *)container;
 }
 
+static SDL_GPUShader *WEBGPU_CreateShader(SDL_GPUDevice *device, const SDL_GPUShaderCreateInfo *createInfo)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
+    WebGPUShader *shader;
+    WebGPUShaderReference *shaderRef;
+
+    uint32_t shaderSourceHash = 0;
+
+    if (createInfo->format != SDL_GPU_SHADERFORMAT_WGSL) {
+        SDL_SetError("Shader format is not SDL_GPU_SHADERFORMAT_WGSL!");
+        return NULL;
+    }
+
+    shaderSourceHash = SDL_HashString(NULL, createInfo->code);
+
+    if (SDL_FindInHashTable(renderer->shaders, &shaderSourceHash, (void *)shader)) {
+        // This shader source has already been compiled.
+        // We don't need to do anything.
+    } else {
+        // First creation of this shader,
+        WGPUShaderSourceWGSL *source = SDL_malloc(sizeof(WGPUShaderSourceWGSL));
+        shader = SDL_calloc(1, sizeof(*shader));
+
+        source->code = (WGPUStringView){ .data = (char *)createInfo->code, .length = SDL_strlen((char *)createInfo->code) };
+
+        shader->shaderModule = wgpuDeviceCreateShaderModule(renderer->device, &(WGPUShaderModuleDescriptor){ .label = NULL, .nextInChain = (WGPUChainedStruct *)&source });
+        shader->source = source;
+        shader->sourceHash = shaderSourceHash;
+
+        SDL_InsertIntoHashTable(renderer->shaders, (void *)&shaderSourceHash, shader, false);
+    }
+
+    if (createInfo->stage == SDL_GPU_SHADERSTAGE_VERTEX) {
+        // We're just assuming that the entrypoint given is correct.
+        // Who doesn't love a good footgun?
+        shader->hasVertexEntrypoint = true;
+        shader->vertexEntrypoint = SDL_strdup(createInfo->entrypoint);
+    } else if (createInfo->stage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
+        shader->hasFragmentEntrypoint = true;
+        shader->fragmentEntrypoint = SDL_strdup(createInfo->entrypoint);
+    }
+
+    shaderRef = (WebGPUShaderReference *)SDL_calloc(1, sizeof(*shaderRef));
+
+    shaderRef->shaderSourceHash = shaderSourceHash;
+    shaderRef->entrypoint = SDL_strdup(createInfo->entrypoint);
+    shaderRef->stage = createInfo->stage;
+
+    return (SDL_GPUShader *)shaderRef;
+}
+
+static void WEBGPU_ReleaseShader(SDL_GPUDevice *device, SDL_GPUShader *shader)
+{
+    WebGPUShader *actualShader;
+
+    if (SDL_FindInHashTable(((WebGPURenderer *)device->driverData)->shaders, &((WebGPUShaderReference *)shader)->shaderSourceHash, (void *)actualShader)) {
+        if (((WebGPUShaderReference *)shader)->stage == SDL_GPU_SHADERSTAGE_VERTEX) {
+            // This isn't needed anymore.
+            SDL_free(actualShader->vertexEntrypoint);
+
+            actualShader->vertexEntrypoint = NULL;
+            actualShader->hasVertexEntrypoint = false;
+        } else if (((WebGPUShaderReference *)shader)->stage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
+            SDL_free(actualShader->fragmentEntrypoint);
+
+            actualShader->fragmentEntrypoint = NULL;
+            actualShader->hasFragmentEntrypoint = false;
+        }
+
+        if (actualShader->hasVertexEntrypoint == false && actualShader->hasFragmentEntrypoint == false && actualShader->hasComputeEntrypoint == false) {
+            // We'll only *actually* release the shader if there are no entrypoints in it.
+            // This, by design should make it impossible to free a shader that has references to it (barring that you cloned a reference for some reason)
+            SDL_RemoveFromHashTable(((WebGPURenderer *)device->driverData)->shaders, &((WebGPUShaderReference *)shader)->shaderSourceHash);
+            wgpuShaderModuleRelease(actualShader->shaderModule);
+
+            SDL_free(actualShader->source);
+            SDL_free(actualShader);
+        }
+    } else {
+        // Huh? How the hell did this happen?
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPUShaderReference held reference to shader hash which doesn't exist?");
+    }
+
+    SDL_free(((WebGPUShaderReference *)shader)->entrypoint);
+    SDL_free(shader);
+}
+
 static bool WEBGPU_ClaimWindowForDevice(SDL_GPUDevice *device, SDL_Window *window)
 {
     WebGPUWindowData *windowData;
@@ -1357,7 +1419,6 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, uint
     WGPUBufferDescriptor desc = { .label = { debugName, SDL_strlen(debugName) }, .size = size, .usage = usages, .mappedAtCreation = false, .nextInChain = NULL };
 
     buf->buffer = wgpuDeviceCreateBuffer(renderer->device, &desc);
-    // buf->usedRegion->webGPUBuffer = buf;
 
     return buf;
 }
@@ -1636,7 +1697,7 @@ static bool WEBGPU_SetAllowedFramesInFlight(
     Uint32 allowedFramesInFlight)
 {
     // No-op.
-    return true;
+    return false;
 }
 
 SDL_GPUBootstrap WebGPUDriver = {
