@@ -167,10 +167,33 @@ typedef struct SDL_Surface SDL_Surface;
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CreateSurfaceNoInit
  * \sa SDL_CreateSurfaceFrom
  * \sa SDL_DestroySurface
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int height, SDL_PixelFormat format);
+
+/**
+ * Allocate a new uninitialized surface with a specific pixel format.
+ *
+ * The pixels of the new surface are not initialized at all; the caller should
+ * plan to set the contents of the whole surface.
+ *
+ * \param width the width of the surface.
+ * \param height the height of the surface.
+ * \param format the SDL_PixelFormat for the new surface's pixel format.
+ * \returns the new SDL_Surface structure that is created or NULL on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSurface
+ * \sa SDL_CreateSurfaceFrom
+ * \sa SDL_DestroySurface
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurfaceNoInit(int width, int height, SDL_PixelFormat format);
 
 /**
  * Allocate a new surface with a specific pixel format and existing pixel

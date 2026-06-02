@@ -192,11 +192,8 @@ static bool SDL_InitializeSurface(SDL_Surface *surface, int width, int height, S
 /*
  * Create an empty surface of the appropriate depth using the given format
  */
-SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
+static SDL_Surface *CreateSurfaceNoInit(int width, int height, SDL_PixelFormat format, size_t *size)
 {
-    size_t pitch, size;
-    SDL_Surface *surface;
-
     CHECK_PARAM(width < 0) {
         SDL_InvalidParamError("width");
         return NULL;
@@ -212,13 +209,14 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
         return NULL;
     }
 
-    if (!SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, false /* not minimal pitch */)) {
+    size_t pitch;
+    if (!SDL_CalculateSurfaceSize(format, width, height, size, &pitch, false /* not minimal pitch */)) {
         // Overflow...
         return NULL;
     }
 
     // Allocate and initialize the surface
-    surface = (SDL_Surface *)SDL_malloc(sizeof(*surface));
+    SDL_Surface *surface = (SDL_Surface *)SDL_malloc(sizeof(*surface));
     if (!surface) {
         return NULL;
     }
@@ -230,17 +228,30 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
     if (surface->w && surface->h && format != SDL_PIXELFORMAT_MJPG) {
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
         if (SDL_GetHintBoolean("SDL_SURFACE_MALLOC", false)) {
-            surface->pixels = SDL_malloc(size);
+            surface->pixels = SDL_malloc(*size);
         } else {
             surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
-            surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
+            surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), *size);
         }
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
             return NULL;
         }
+    }
+    return surface;
+}
 
-        // This is important for bitmaps
+SDL_Surface *SDL_CreateSurfaceNoInit(int width, int height, SDL_PixelFormat format)
+{
+    size_t size;
+    return CreateSurfaceNoInit(width, height, format, &size);
+}
+
+SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
+{
+    size_t size = 0;
+    SDL_Surface *surface = CreateSurfaceNoInit(width, height, format, &size);
+    if (surface && surface->pixels) {
         SDL_memset(surface->pixels, 0, size);
     }
     return surface;
