@@ -696,7 +696,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss", "()Z");
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
-    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
+    midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;Z)I");
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
     midGetDocumentChildrenNames = (*env)->GetStaticMethodID(env, mActivityClass, "getSAFDocumentChildrenNames", "(Ljava/lang/String;)[Ljava/lang/String;");
     midGetSAFDocument = (*env)->GetStaticMethodID(env, mActivityClass, "getSAFDocument", "(Ljava/lang/String;)Lorg/libsdl/app/SDLActivity$SAFDocument;");
@@ -2705,7 +2705,17 @@ bool Android_JNI_EnumerateContentDirectory(const char *uri, SDL_EnumerateDirecto
         return false;
     }
 
-    char *dirname = GetURIWithNormalizedPath(uri, true);
+    char *dirname = NULL;
+
+    // If we are traversing a genuine tree URI and not an SDL generated one, the "dirname"
+    // parameter on the enumeration callback must provide the document URI, not the tree URI.
+    // Because of that, if we're using a tree URI, we need to fetch the document URI from Java.
+    if (!SDL_strchr(uri, '#')) {
+        dirname = GetDocumentURIFromTreeURI(env, uri);
+    } else {
+        dirname = GetURIWithNormalizedPath(uri, true);
+    }
+
     if (!dirname) {
         LocalReferenceHolder_Cleanup(&refs);
         return false;
@@ -2720,28 +2730,16 @@ bool Android_JNI_EnumerateContentDirectory(const char *uri, SDL_EnumerateDirecto
     }
 
     // Invoke JNI
-    jobjectArray jFileNamesArray = (*env)->CallStaticObjectMethod(env, mActivityClass,
-                                                                  midGetDocumentChildrenNames, juri);
+    jobjectArray jFileNamesArray = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDocumentChildrenNames, juri);
 
     if (Android_JNI_ExceptionOccurred(false)) {
+        SDL_free(dirname);
         LocalReferenceHolder_Cleanup(&refs);
         return false;
     }
 
     jsize length = (*env)->GetArrayLength(env, jFileNamesArray);
     bool success = true;
-
-    // If we are traversing a genuine tree URI and not an SDL generated one, the "dirname"
-    // parameter on the enumeration callback must provide the document URI, not the tree URI.
-    // Because of that, if we're using a tree URI, we need to fetch the document URI from Java.
-    if (!SDL_strchr(dirname, '#')) {
-        SDL_free(dirname);
-        dirname = GetDocumentURIFromTreeURI(env, uri);
-        if (!dirname) {
-            LocalReferenceHolder_Cleanup(&refs);
-            return false;
-        }
-    }
 
     for (int i = 0; i < length; ++i) {
         jstring jFileName = (*env)->GetObjectArrayElement(env, jFileNamesArray, i);
@@ -3637,6 +3635,7 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
 {
     // Get fopen-style modes
     int moderead = 0, modewrite = 0, modeappend = 0, modeupdate = 0;
+    jboolean no_overwrite = JNI_FALSE;
 
     for (const char *cmode = mode; *cmode; cmode++) {
         switch (*cmode) {
@@ -3651,6 +3650,9 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
                 break;
             case '+':
                 modeupdate = 1;
+                break;
+            case 'x':
+                no_overwrite = JNI_TRUE;
                 break;
             default:
                 break;
@@ -3681,13 +3683,14 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
     JNIEnv *env = Android_JNI_GetEnv();
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     if (!LocalReferenceHolder_Init(&refs, env)) {
+        SDL_free(normalizedUri);
         LocalReferenceHolder_Cleanup(&refs);
         return -1;
     }
 
     jstring jstringUri = (*env)->NewStringUTF(env, normalizedUri);
     jstring jstringMode = (*env)->NewStringUTF(env, contentResolverMode);
-    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode);
+    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode, no_overwrite);
 
     SDL_free(normalizedUri);
 

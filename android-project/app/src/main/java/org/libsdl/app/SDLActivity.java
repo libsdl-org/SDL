@@ -2109,7 +2109,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     public static class SAFDocument {
-        static private final HashMap<Uri, SAFDocument> cache = new HashMap<>();
+        static private final HashMap<String, SAFDocument> cache = new HashMap<>();
         static private boolean cacheInvalidationRequested = false;
         static public void requestCacheInvalidation() {
             cacheInvalidationRequested = true;
@@ -2117,53 +2117,34 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         private boolean dirty;
         private final String id;
-        private final String mimeType;
         public final boolean isDirectory;
         public long lastModified;
         public long size;
-        private final Uri uri;
-        private final Uri tree;
-        private HashMap <String, SAFDocument> children;
+        public final Uri uri;
+        private ArrayList<String> children;
 
-        private SAFDocument(Cursor cursor, Uri uri) {
+        private SAFDocument(Cursor cursor, Uri uri, boolean uri_is_tree) {
             this.id = cursor.getString(0);
-            this.mimeType = cursor.getString(2);
             this.lastModified = cursor.getLong(3);
             this.size = cursor.getLong(4);
-            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
-            this.tree = uri;
-            this.uri = uri;
-            this.dirty = false;
-        }
-
-        private SAFDocument(Cursor cursor, SAFDocument parent) {
-            this.id = cursor.getString(0);
-            this.mimeType = cursor.getString(2);
-            this.lastModified = cursor.getLong(3);
-            this.size = cursor.getLong(4);
-            this.tree = parent.tree;
-            this.uri = DocumentsContract.buildDocumentUriUsingTree(this.tree, this.id);
-            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
+            this.isDirectory = cursor.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+            this.uri = uri_is_tree ? DocumentsContract.buildDocumentUriUsingTree(uri, this.id) : uri;
             this.dirty = false;
         }
 
         private SAFDocument(Uri tree) {
             this.id = DocumentsContract.getTreeDocumentId(tree);
-            this.mimeType = DocumentsContract.Document.MIME_TYPE_DIR;
             this.isDirectory = true;
-            this.tree = tree;
-            this.uri = DocumentsContract.buildDocumentUriUsingTree(this.tree, this.id);
+            this.uri = DocumentsContract.buildDocumentUriUsingTree(tree, this.id);
             this.dirty = true;
         }
 
         private SAFDocument(Uri uri, Uri tree, String mimeType)
         {
             this.id = DocumentsContract.getDocumentId(uri);
-            this.mimeType = mimeType;
-            this.isDirectory = this.mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
+            this.isDirectory = mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
             this.lastModified = System.currentTimeMillis();
-            this.tree = tree;
-            this.uri = uri;
+            this.uri = DocumentsContract.buildDocumentUriUsingTree(tree, this.id);
             this.dirty = true;
         }
 
@@ -2180,23 +2161,43 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         private static SAFDocument getTree(Uri uri) {
             Uri tree = uri.buildUpon().fragment(null).build();
 
-            if (cacheInvalidationRequested) {
-                cache.clear();
-                cacheInvalidationRequested = false;
+            SAFDocument document = SAFDocument.cache.get(tree.toString());
+            if (document == null) {
+                document = new SAFDocument(tree);
+                cache.put(tree.toString(), document);
             }
-
-            SAFDocument treeInfo = cache.get(tree);
-            if (treeInfo == null) {
-                treeInfo = new SAFDocument(tree);
-                cache.put(tree, treeInfo);
-            }
-            return treeInfo;
+            return document;
         }
 
         private static SAFDocument fromUri(Uri uri) throws FileNotFoundException {
-            /* Tree URIs get special handling */
-            if (!DocumentsContract.isDocumentUri(mSingleton.getApplicationContext(), uri)) {
-                return new SAFDocument(uri);
+            String document_id;
+
+            try {
+                document_id = DocumentsContract.getDocumentId(uri);
+            } catch (IllegalArgumentException e) {
+                /* Tree URIs get special handling */
+                return SAFDocument.getTree(uri);
+            }
+
+            String tree_id;
+
+            try {
+                tree_id = DocumentsContract.getTreeDocumentId(uri);
+            } catch (IllegalArgumentException e) {
+                tree_id = null;
+            }
+
+            String cache_key;
+
+            if (tree_id != null) {
+                cache_key = uri.getAuthority() + "#" + tree_id + "/" + document_id;
+            } else {
+                cache_key = uri.getAuthority() + "#" + document_id;
+            }
+
+            SAFDocument document = SAFDocument.cache.get(cache_key);
+            if (document != null) {
+                return document;
             }
 
             Cursor cursor = mSingleton.getContentResolver().query(uri, SAFDocument.queryColumns,
@@ -2207,20 +2208,41 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
 
             cursor.moveToFirst();
-            SAFDocument document = new SAFDocument(cursor, uri);
+            document = new SAFDocument(cursor, uri, false);
             cursor.close();
+
+            SAFDocument.cache.put(cache_key, document);
 
             return document;
         }
 
         private static SAFDocument fromPath(Uri uri, String[] pathSegments) throws FileNotFoundException {
-            SAFDocument document = SAFDocument.getTree(uri);
+            SAFDocument document = SAFDocument.cache.get(uri.toString());
+
+            if (document != null) {
+                return document;
+            }
+
+            document = SAFDocument.getTree(uri);
+
+            String createdPath = document.getTree() + "#";
+            int prefix = createdPath.length();
 
             for (String segment : pathSegments) {
                 if (segment.isEmpty()) {
                     continue;
                 }
-                document = document.getChildren().get(segment);
+
+                document.getChildren(createdPath.substring(prefix));
+
+                if (createdPath.endsWith("#")) {
+                    createdPath += segment;
+                } else {
+                    createdPath += "/" + segment;
+                }
+
+                document = SAFDocument.cache.get(createdPath);
+
                 if (document == null) {
                     throw new FileNotFoundException("Failed to resolve path segment \"" + segment + "\" in path \"" + String.join("/", pathSegments) + "\"");
                 }
@@ -2234,13 +2256,20 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         public static SAFDocument get(Uri uri) throws FileNotFoundException {
-            /* Original "content://" URI, parse directly */
-            if (uri.getFragment() == null) {
-                return SAFDocument.fromUri(uri);
-            } else {
-                /* SDL "content://" URI, with "#path" at the end, parse by directory */
-                return SAFDocument.fromPath(uri, uri.getFragment().split("/"));
+            if (cacheInvalidationRequested) {
+                cache.clear();
+                cacheInvalidationRequested = false;
             }
+
+            String fragment = uri.getFragment();
+
+            /* Original "content://" URI, parse directly */
+            if (fragment == null) {
+                return SAFDocument.fromUri(uri);
+            }
+
+            /* SDL "content://" URI, with "#path" at the end, parse by directory */
+            return SAFDocument.fromPath(uri, fragment.split("/"));
         }
 
         public static SAFDocument create(Uri uri) throws IllegalArgumentException, FileNotFoundException {
@@ -2261,45 +2290,77 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             path.remove(path.size() - 1);
             SAFDocument parent = SAFDocument.fromPath(uri, path.toArray(new String[0]));
 
+            Uri tree = parent.getTree();
+
             Uri newFileUri = DocumentsContract.createDocument(mSingleton.getContentResolver(),
                 parent.uri, SAFDocument.newDocumentMimeType, newFileName);
             if (newFileUri == null) {
                 throw new IllegalArgumentException("Unable to create a new file for writing");
             }
 
-            SAFDocument newFileInfo = new SAFDocument(newFileUri, parent.tree, SAFDocument.newDocumentMimeType);
-            parent.children.put(newFileName, newFileInfo);
+            SAFDocument document = new SAFDocument(newFileUri, tree, SAFDocument.newDocumentMimeType);
+            parent.children.add(newFileName);
+            SAFDocument.cache.put(tree + "#" + uri.getFragment(), document);
 
-            return newFileInfo;
+            return document;
         }
 
-        private HashMap <String, SAFDocument> getChildren() throws FileNotFoundException {
-            if (!this.isDirectory) {
+        private ArrayList<String> getChildren(String path) throws FileNotFoundException {
+            Uri tree = this.getTree();
+
+            if (!this.isDirectory || tree == null) {
                 throw new FileNotFoundException(this.id + " is not a directory for uri: " + this.uri);
             }
             if (this.children != null) {
                 return this.children;
             }
 
-            Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(this.tree, this.id);
+            Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, this.id);
 
             Cursor cursor = mSingleton.getContentResolver().query(children, queryColumns,
                 null, null, null);
 
             if (cursor == null) {
-                throw new FileNotFoundException("The URI " + uri + " is not a valid");
+                throw new FileNotFoundException("The URI " + uri + " is not valid");
             }
 
-            this.children = new HashMap<>();
+            String cache_key_prefix;
+
+            if (path == null) {
+                cache_key_prefix = this.uri.getAuthority() + "#" +
+                    DocumentsContract.getTreeDocumentId(tree) + "/";
+            } else {
+                if (path.isEmpty()) {
+                    cache_key_prefix = tree + "#";
+                } else {
+                    cache_key_prefix = tree + "#" + path + "/";
+                }
+            }
+
+            this.children = new ArrayList<>();
 
             /* Get the directory contents */
             while (cursor.moveToNext()) {
-                SAFDocument document = new SAFDocument(cursor, this);
-                this.children.put(cursor.getString(1), document);
+                SAFDocument document = new SAFDocument(cursor, tree, true);
+                String name = cursor.getString(1);
+                this.children.add(name);
+
+                /* Cache the result */
+                SAFDocument.cache.put(cache_key_prefix +
+                    (path == null ? document.id : name), document);
             }
             cursor.close();
 
             return this.children;
+        }
+
+        private Uri getTree() {
+            try {
+                return DocumentsContract.buildTreeDocumentUri(this.uri.getAuthority(),
+                    DocumentsContract.getTreeDocumentId(this.uri));
+            } catch(Exception e) {
+                return null;
+            }
         }
 
         public void requestUpdate() {
@@ -2335,7 +2396,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             throw new IllegalStateException("SDLActivity is not initialized");
         }
 
-        return SAFDocument.get(Uri.parse(uri)).getChildren().keySet().toArray(new String[0]);
+        if (uri.endsWith("/")) {
+            uri = uri.substring(0, uri.length() - 1);
+        } else if (uri.endsWith("%2F")) {
+            uri = uri.substring(0, uri.length() - 3);
+        }
+
+        Uri parsedUri = Uri.parse(uri);
+        return SAFDocument.get(parsedUri).getChildren(parsedUri.getFragment()).toArray(new String[0]);
     }
 
      /**
@@ -2352,26 +2420,27 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static int openFileDescriptor(String uri, String mode) throws FileNotFoundException {
+    public static int openFileDescriptor(String uri, String mode, boolean no_overwrite) throws FileNotFoundException, IllegalAccessException {
         if (mSingleton == null) {
             throw new IllegalStateException("SDLActivity is not initialized");
         }
 
         Uri contentUri = Uri.parse(uri);
-        if (contentUri.getFragment() != null) {
-            try {
-                SAFDocument document = SAFDocument.get(contentUri);
-                contentUri = document.uri;
-                if (mode.contains("w")) {
-                    document.requestUpdate();
+        try {
+            SAFDocument document = SAFDocument.get(contentUri);
+            contentUri = document.uri;
+            if (mode.contains("w")) {
+                if (no_overwrite) {
+                    throw new IllegalAccessException("The requested file \"" + uri + "\" already exists.");
                 }
-            } catch (FileNotFoundException e) {
-                if (!mode.contains("w")) {
-                    throw e;
-                }
-                /* Maybe we want to create a new file and write to it? */
-                contentUri = SAFDocument.create(contentUri).uri;
+                document.requestUpdate();
             }
+        } catch (FileNotFoundException e) {
+            if (!mode.contains("w")) {
+                throw e;
+            }
+            /* Maybe we want to create a new file and write to it? */
+            contentUri = SAFDocument.create(contentUri).uri;
         }
 
         ParcelFileDescriptor pfd = mSingleton.getContentResolver().openFileDescriptor(contentUri, mode);
