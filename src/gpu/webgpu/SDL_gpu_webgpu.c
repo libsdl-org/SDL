@@ -36,8 +36,8 @@
 // SDL_CreateGPUComputePipeline []
 // SDL_CreateGPUDevice [x]
 // SDL_CreateGPUDeviceWithProperties []
-// SDL_CreateGPUGraphicsPipeline []
-// SDL_CreateGPUSampler []
+// SDL_CreateGPUGraphicsPipeline [x]
+// SDL_CreateGPUSampler [x]
 // SDL_CreateGPUShader [x]
 // SDL_CreateGPUTexture [x] (Maybe. I'm so confused)
 // SDL_CreateGPUTransferBuffer [x]
@@ -79,8 +79,8 @@
 // SDL_ReleaseGPUBuffer [x]
 // SDL_ReleaseGPUComputePipeline []
 // SDL_ReleaseGPUFence [x]
-// SDL_ReleaseGPUGraphicsPipeline []
-// SDL_ReleaseGPUSampler []
+// SDL_ReleaseGPUGraphicsPipeline [x]
+// SDL_ReleaseGPUSampler [x]
 // SDL_ReleaseGPUShader [x]
 // SDL_ReleaseGPUTexture [x]
 // SDL_ReleaseGPUTransferBuffer [x]
@@ -565,6 +565,11 @@ struct WebGPUTextureContainer
     char *debugName;
     bool canBeCycled;
 };
+
+typedef struct WebGPUSampler
+{
+    WGPUSampler sampler;
+} WebGPUSampler;
 
 // NOTE: ZEUS! YOUR SON HAS RETURNED! STRIKE DOWN THE DESIGNERS OF WEBGPU, AND MY LIFE IS YOURS!
 //
@@ -1471,7 +1476,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPUDevice *dev
     primitiveState.cullMode = SDLToWebGPU_CullMode[createInfo->rasterizer_state.cull_mode];
     primitiveState.frontFace = SDLToWebGPU_FrontFace[createInfo->rasterizer_state.front_face];
 
-    // FIXME: Not sure if SDLGPU allows you to decide between 16/32 indices?
+    // FIXME: Not sure if SDLGPU allows you to decide between 16/32 bit indices?
     primitiveState.stripIndexFormat = WGPUIndexFormat_Uint32;
     primitiveState.topology = SDLToWebGPU_PrimitiveType[createInfo->primitive_type];
 
@@ -1500,6 +1505,48 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPUDevice *dev
     }
 
     return (SDL_GPUGraphicsPipeline *)pipeline;
+}
+
+static void WEBGPU_ReleaseGraphicsPipeline(SDL_GPUDevice *device, SDL_GPUGraphicsPipeline *pipeline)
+{
+    wgpuRenderPipelineRelease(((WebGPURenderPipeline *)pipeline)->pipeline);
+    SDL_free(pipeline);
+}
+
+static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPUDevice *device, SDL_GPUSamplerCreateInfo *createInfo)
+{
+    WebGPUSampler *sampler;
+    sampler = (WebGPUSampler *)SDL_malloc(sizeof(*sampler));
+
+    WGPUSamplerDescriptor desc;
+
+    desc.addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u];
+    desc.addressModeV = SDLToWebGPU_AddressMode[createInfo->address_mode_v];
+    desc.addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w];
+    desc.compare = SDLToWebGPU_CompareFunc[createInfo->compare_op];
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING)) {
+        const char *label = SDL_strdup(SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL));
+        desc.label = (WGPUStringView){ label, SDL_strlen(label) };
+    }
+
+    desc.lodMaxClamp = createInfo->max_lod;
+    desc.lodMinClamp = createInfo->min_lod;
+    desc.magFilter = SDLToWebGPU_FilterMode[createInfo->mag_filter];
+    desc.minFilter = SDLToWebGPU_FilterMode[createInfo->min_filter];
+    desc.mipmapFilter = SDLToWebGPU_MipmapFilterMode[createInfo->mipmap_mode];
+    // Again; gross float -> int cast, blame WebGPU.
+    desc.maxAnisotropy = (uint16_t)createInfo->max_anisotropy;
+
+    sampler->sampler = wgpuDeviceCreateSampler(((WebGPURenderer *)device->driverData)->device, &desc);
+
+    return (SDL_GPUSampler *)sampler;
+}
+
+static void WEBGPU_ReleaseSampler(SDL_GPUDevice *device, SDL_GPUSampler *sampler)
+{
+    wgpuSamplerRelease(((WebGPUSampler *)sampler)->sampler);
+    SDL_free(sampler);
 }
 
 static bool WEBGPU_ClaimWindowForDevice(SDL_GPUDevice *device, SDL_Window *window)
