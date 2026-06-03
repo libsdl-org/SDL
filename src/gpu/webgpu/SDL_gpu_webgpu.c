@@ -28,7 +28,7 @@
 // SDL_BindGPUVertexStorageBuffers []
 // SDL_BindGPUVertexStorageTextures []
 // SDL_BlitGPUTexture []
-// SDL_CancelGPUCommandBuffer [] (See the comment in WEBGPU_AcquireGPUCommandBuffer.)
+// SDL_CancelGPUCommandBuffer [] (See the comment in WEBGPU_AcquireCommandBuffer.)
 // SDL_ClaimWindowForGPUDevice [x]
 // SDL_CopyGPUBufferToBuffer [x]
 // SDL_CopyGPUTextureToTexture [x]
@@ -598,6 +598,11 @@ typedef struct WebGPUShader
     char *fragmentEntrypoint;
     char *computeEntrypoint;
 } WebGPUShader;
+
+typedef struct WebGPURenderPipeline
+{
+    WGPURenderPipeline pipeline;
+} WebGPURenderPipeline;
 
 /// SDL_GPU's command buffers have no real counterpart in WebGPU, so I had to do this.
 typedef struct WebGPUCommandBufferWrapper
@@ -1206,6 +1211,15 @@ static SDL_GPUTexture *WEBGPU_CreateTexture(
     return (SDL_GPUTexture *)container;
 }
 
+static bool WEBGPU_INTERNAL_GetShaderFromRef(WebGPURenderer *renderer, WebGPUShaderReference *ref, WebGPUShader *shaderResult)
+{
+    if (SDL_FindInHashTable(renderer->shaders, &ref->shaderSourceHash, (void *)shaderResult)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 static SDL_GPUShader *WEBGPU_CreateShader(SDL_GPUDevice *device, const SDL_GPUShaderCreateInfo *createInfo)
 {
     WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
@@ -1291,6 +1305,201 @@ static void WEBGPU_ReleaseShader(SDL_GPUDevice *device, SDL_GPUShader *shader)
 
     SDL_free(((WebGPUShaderReference *)shader)->entrypoint);
     SDL_free(shader);
+}
+
+// Wow. This function sucks.
+static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPUDevice *device, const SDL_GPUGraphicsPipelineCreateInfo *createInfo)
+{
+    WebGPURenderPipeline *pipeline;
+    WebGPUShader *shader;
+
+    WGPURenderPipelineDescriptor desc;
+
+    WGPUVertexState vertexState;
+    WGPUVertexBufferLayout *vertexBufferLayouts;
+
+    WGPUFragmentState fragmentState;
+    WGPUColorTargetState *colorTargets;
+
+    WGPUDepthStencilState depthStencilState;
+    WGPUStencilFaceState back, front;
+
+    WGPUPrimitiveState primitiveState;
+    WGPUMultisampleState multisampleState;
+
+    if (!WEBGPU_INTERNAL_GetShaderFromRef((WebGPURenderer *)device->driverData, (WebGPUShaderReference *)createInfo->vertex_shader, shader)) {
+        SDL_SetError("Could not get shader from WebGPUShaderReference!");
+        return NULL;
+    }
+
+    pipeline = (WebGPURenderPipeline *)SDL_malloc(sizeof(*pipeline));
+    vertexState.bufferCount = createInfo->vertex_input_state.num_vertex_buffers;
+
+    if (vertexState.bufferCount != createInfo->vertex_input_state.num_vertex_attributes) {
+        SDL_SetError("num_vertex_attributes does not match num_vertex_buffers!");
+        return NULL;
+    }
+
+    vertexBufferLayouts = (WGPUVertexBufferLayout *)SDL_calloc(vertexState.bufferCount, sizeof(*vertexBufferLayouts));
+
+    for (int i = 0; i < vertexState.bufferCount; i++) {
+        WGPUVertexBufferLayout layout;
+        WGPUVertexAttribute *bufferAttributes;
+
+        layout.arrayStride = sizeof(WGPUVertexAttribute);
+        layout.stepMode = WGPUVertexStepMode_Vertex;
+
+        // We'll allocate enough memory to store all of the attributes if necessary, and then we'll just realloc if we used too much
+        bufferAttributes = (WGPUVertexAttribute *)SDL_calloc(createInfo->vertex_input_state.num_vertex_attributes, sizeof(*bufferAttributes));
+
+        for (int j = 0; i < createInfo->vertex_input_state.num_vertex_attributes; j++) {
+            // ↓ here to make the code easier to read
+            const SDL_GPUVertexAttribute *attr = &createInfo->vertex_input_state.vertex_attributes[j];
+
+            if (attr->buffer_slot == j) {
+                // This attribute belongs to this buffer
+                bufferAttributes[j] = (WGPUVertexAttribute){ .format = SDLToWebGPU_VertexFormat[attr->format], .offset = attr->offset, .shaderLocation = attr->location, .nextInChain = NULL };
+                layout.attributeCount++;
+            }
+
+            if (j == createInfo->vertex_input_state.num_vertex_attributes && j != layout.attributeCount) {
+                // Last iteration, bufferAttributes was allocated too much memory, gonna attempt to realloc.
+                // NOTE: I am an idiot, and cannot code memory safe stuff in C to save my life! This'll almost certainly blow up! - TheStickmahn
+                bufferAttributes = (WGPUVertexAttribute *)SDL_realloc(bufferAttributes, sizeof(WGPUVertexAttribute) * layout.attributeCount);
+            }
+        }
+
+        layout.attributes = bufferAttributes;
+        vertexBufferLayouts[i] = layout;
+    }
+
+    if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
+        const char *label = SDL_strdup(SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL));
+        desc.label = (WGPUStringView){ label, SDL_strlen(label) };
+    }
+
+    vertexState.buffers = vertexBufferLayouts;
+    vertexState.entryPoint = (WGPUStringView){ .data = ((WebGPUShaderReference *)createInfo->vertex_shader)->entrypoint, .length = SDL_strlen(((WebGPUShaderReference *)createInfo->vertex_shader)->entrypoint) };
+    vertexState.module = shader->shaderModule;
+
+    fragmentState.targetCount = createInfo->target_info.num_color_targets;
+    colorTargets = (WGPUColorTargetState *)SDL_calloc(fragmentState.targetCount, sizeof(*colorTargets));
+
+    for (int i = 0; i < fragmentState.targetCount; i++) {
+        WGPUColorTargetState state;
+        WGPUColorWriteMask colorWriteMask;
+        WGPUBlendComponent alphaBlendComp;
+        WGPUBlendComponent colorBlendComp;
+        WGPUBlendState *blendState;
+        const SDL_GPUColorTargetDescription *colorDesc = &createInfo->target_info.color_target_descriptions[i];
+
+        alphaBlendComp.srcFactor = SDLToWebGPU_BlendFactor[colorDesc->blend_state.src_alpha_blendfactor];
+        alphaBlendComp.dstFactor = SDLToWebGPU_BlendFactor[colorDesc->blend_state.dst_alpha_blendfactor];
+        alphaBlendComp.operation = SDLToWebGPU_BlendOp[colorDesc->blend_state.alpha_blend_op];
+
+        colorBlendComp.srcFactor = SDLToWebGPU_BlendFactor[colorDesc->blend_state.src_color_blendfactor];
+        colorBlendComp.dstFactor = SDLToWebGPU_BlendFactor[colorDesc->blend_state.dst_color_blendfactor];
+        colorBlendComp.operation = SDLToWebGPU_BlendOp[colorDesc->blend_state.color_blend_op];
+
+        blendState = (WGPUBlendState *)SDL_calloc(1, sizeof(WGPUBlendState));
+        blendState->alpha = alphaBlendComp;
+        blendState->color = colorBlendComp;
+
+        if (colorDesc->blend_state.enable_color_write_mask) {
+            if (colorDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_A) {
+                colorWriteMask |= WGPUColorWriteMask_Alpha;
+            }
+            if (colorDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_R) {
+                colorWriteMask |= WGPUColorWriteMask_Red;
+            }
+            if (colorDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_G) {
+                colorWriteMask |= WGPUColorWriteMask_Green;
+            }
+            if (colorDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_B) {
+                colorWriteMask |= WGPUColorWriteMask_Blue;
+            }
+        } else {
+            colorWriteMask = WGPUColorWriteMask_None;
+        }
+
+        state.blend = blendState;
+        state.format = SDLToWebGPU_TextureFormat[colorDesc->format];
+        state.writeMask = colorWriteMask;
+
+        colorTargets[i] = state;
+    }
+
+    fragmentState.targets = colorTargets;
+
+    // TODO: (?)
+    // There's something in my head telling me that SDLGPU supports fragment constants but it doesn't look like it does?
+    fragmentState.constantCount = 0;
+    fragmentState.constants = NULL;
+
+    fragmentState.nextInChain = NULL;
+
+    fragmentState.module = shader->shaderModule;
+    fragmentState.entryPoint = (WGPUStringView){ .data = ((WebGPUShaderReference *)createInfo->fragment_shader)->entrypoint, .length = SDL_strlen(((WebGPUShaderReference *)createInfo->fragment_shader)->entrypoint) };
+
+    if (createInfo->target_info.has_depth_stencil_target) {
+        // Gross float -> int cast but blame WebGPU
+        depthStencilState.depthBias = (int)createInfo->rasterizer_state.depth_bias_constant_factor;
+        depthStencilState.depthBiasClamp = createInfo->rasterizer_state.depth_bias_clamp;
+        depthStencilState.depthBiasSlopeScale = createInfo->rasterizer_state.depth_bias_slope_factor;
+        depthStencilState.depthCompare = SDLToWebGPU_CompareFunc[createInfo->depth_stencil_state.compare_op];
+        depthStencilState.depthWriteEnabled = createInfo->depth_stencil_state.enable_depth_write;
+
+        depthStencilState.stencilWriteMask = createInfo->depth_stencil_state.write_mask;
+        depthStencilState.stencilReadMask = createInfo->depth_stencil_state.compare_mask;
+
+        back.compare = SDLToWebGPU_CompareFunc[createInfo->depth_stencil_state.back_stencil_state.compare_op];
+        back.depthFailOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.depth_fail_op];
+        back.failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.fail_op];
+        back.passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.pass_op];
+
+        front.compare = SDLToWebGPU_CompareFunc[createInfo->depth_stencil_state.front_stencil_state.compare_op];
+        front.depthFailOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.depth_fail_op];
+        front.failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.fail_op];
+        front.passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.pass_op];
+
+        depthStencilState.stencilBack = back;
+        depthStencilState.stencilFront = front;
+
+        desc.depthStencil = &depthStencilState;
+    }
+
+    primitiveState.cullMode = SDLToWebGPU_CullMode[createInfo->rasterizer_state.cull_mode];
+    primitiveState.frontFace = SDLToWebGPU_FrontFace[createInfo->rasterizer_state.front_face];
+
+    // FIXME: Not sure if SDLGPU allows you to decide between 16/32 indices?
+    primitiveState.stripIndexFormat = WGPUIndexFormat_Uint32;
+    primitiveState.topology = SDLToWebGPU_PrimitiveType[createInfo->primitive_type];
+
+    multisampleState.alphaToCoverageEnabled = createInfo->multisample_state.enable_alpha_to_coverage;
+    multisampleState.count = createInfo->multisample_state.sample_count;
+    multisampleState.mask = 0; // Unimplemented in SDLGPU
+
+    desc = (WGPURenderPipelineDescriptor){
+        .vertex = vertexState,
+        .fragment = &fragmentState,
+        .depthStencil = createInfo->target_info.has_depth_stencil_target ? &depthStencilState : NULL,
+        .primitive = primitiveState,
+        .multisample = multisampleState,
+        .nextInChain = NULL,
+    };
+
+    pipeline->pipeline = wgpuDeviceCreateRenderPipeline(((WebGPURenderer *)device->driverData)->device, &desc);
+
+    for (int i = 0; i < vertexState.bufferCount; i++) {
+        SDL_free((WGPUVertexAttribute *)vertexBufferLayouts[i].attributes);
+    }
+    SDL_free(vertexBufferLayouts);
+
+    for (int i = 0; i < fragmentState.targetCount; i++) {
+        SDL_free((WGPUBlendState *)colorTargets[i].blend);
+    }
+
+    return (SDL_GPUGraphicsPipeline *)pipeline;
 }
 
 static bool WEBGPU_ClaimWindowForDevice(SDL_GPUDevice *device, SDL_Window *window)
@@ -1644,6 +1853,19 @@ static void WEBGPU_PopDebugGroup(SDL_GPUCommandBuffer *commandBuffer)
 static void WEBGPU_InsertDebugLabel(SDL_GPUCommandBuffer *commandBuffer, const char *text)
 {
     wgpuCommandEncoderInsertDebugMarker(*((WebGPUCommandBufferWrapper *)commandBuffer)->encoder, (WGPUStringView){ .data = text, .length = SDL_strlen(text) });
+}
+
+// -- UNIMPLEMENTED FUNCTIONS --
+//
+static SDL_GPUTextureFormat WEBGPU_GetSwapchainTextureFormat(SDL_GPUDevice *device, SDL_Window *window)
+{
+    if (((WebGPURenderer *)device->driverData)->hasCapturedWindow) {
+        // TODO: This'll require a WebGPU -> SDLGPU texture format conversion and I can't bother making that right now
+        // We'll return BGRA8 and hope for the best?
+        return SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
+    } else {
+        return SDL_GPU_TEXTUREFORMAT_INVALID;
+    }
 }
 
 // -- UNSUPPORTED FUNCTIONS --
