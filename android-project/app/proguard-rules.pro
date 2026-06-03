@@ -45,6 +45,7 @@
     boolean setSystemCursor(int);
     void setWindowStyle(boolean);
     boolean shouldMinimizeOnFocusLoss();
+    boolean showFileDialog(java.lang.String[], boolean, boolean, int);
     boolean showTextInput(int, int, int, int, int);
     boolean supportsRelativeMouse();
     int openFileDescriptor(java.lang.String, java.lang.String);
