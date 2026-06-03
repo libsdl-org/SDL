@@ -13,7 +13,7 @@
 // SDL_AcquireGPUSwapchainTexture [x]
 // SDL_BeginGPUComputePass []
 // SDL_BeginGPUCopyPass [x]
-// SDL_BeginGPURenderPass []
+// SDL_BeginGPURenderPass [x]
 // SDL_BindGPUComputePipeline []
 // SDL_BindGPUComputeSamplers []
 // SDL_BindGPUComputeStorageBuffers []
@@ -623,7 +623,20 @@ typedef struct WebGPUFence
     bool status;
 } WebGPUFence;
 
-static void WEBGPU_FenceCallback(WGPUQueueWorkDoneStatus status, WGPUStringView message, void *fence, void *unused)
+typedef struct WebGPURenderPass
+{
+    WGPUCommandEncoder *commandEncoder;
+    WGPUQueue *queue;
+
+    WGPURenderPassEncoder renderPassEncoder;
+
+    uint32_t colorTargetCount;
+    WGPURenderPassColorAttachment *colorAttachments;
+    WGPURenderPassDepthStencilAttachment *depthStencilAttachment;
+} WebGPURenderPass;
+
+static void
+WEBGPU_FenceCallback(WGPUQueueWorkDoneStatus status, WGPUStringView message, void *fence, void *unused)
 {
     if (fence != NULL) {
         ((WebGPUFence *)fence)->status = true;
@@ -1205,6 +1218,7 @@ static SDL_GPUTexture *WEBGPU_CreateTexture(
         container->textureCapacity * sizeof(WebGPUTexture *));
     container->textures[0] = container->activeTexture;
     container->debugName = NULL;
+    container->header.info = *createInfo;
 
     if (SDL_HasProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
         container->debugName = SDL_strdup(SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
@@ -1900,6 +1914,64 @@ static void WEBGPU_PopDebugGroup(SDL_GPUCommandBuffer *commandBuffer)
 static void WEBGPU_InsertDebugLabel(SDL_GPUCommandBuffer *commandBuffer, const char *text)
 {
     wgpuCommandEncoderInsertDebugMarker(*((WebGPUCommandBufferWrapper *)commandBuffer)->encoder, (WGPUStringView){ .data = text, .length = SDL_strlen(text) });
+}
+
+static SDL_GPURenderPass *WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUColorTargetInfo *colorTargetInfos,
+                                                 uint32_t numColorTargets, const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+{
+    const WebGPUCommandBufferWrapper *wrapper = (WebGPUCommandBufferWrapper *)commandBuffer;
+
+    WebGPURenderPass *renderPass;
+    WGPURenderPassDescriptor desc;
+
+    WGPURenderPassColorAttachment *colorAttachments;
+    WGPURenderPassDepthStencilAttachment *depthStencilAttachment;
+
+    colorAttachments = (WGPURenderPassColorAttachment *)SDL_calloc(numColorTargets, sizeof(*colorAttachments));
+
+    for (int i = 0; i < numColorTargets; i++) {
+        WGPURenderPassColorAttachment *attachment = &colorAttachments[i];
+        const SDL_GPUColorTargetInfo *colorTargetInfo = &colorTargetInfos[i];
+
+        attachment->clearValue.a = colorTargetInfo->clear_color.a;
+        attachment->clearValue.r = colorTargetInfo->clear_color.r;
+        attachment->clearValue.g = colorTargetInfo->clear_color.g;
+        attachment->clearValue.b = colorTargetInfo->clear_color.b;
+        // Random pointer derefs, accessing array members without checking they exist.... it's.. beautiful
+        attachment->resolveTarget = WEBGPU_INTERNAL_FetchTextureSubresource((WebGPUTextureContainer *)colorTargetInfo->resolve_texture, colorTargetInfo->resolve_layer, colorTargetInfo->resolve_mip_level)->renderTargetViews[0];
+        attachment->loadOp = SDLToWebGPU_LoadOp[colorTargetInfo->load_op];
+        attachment->storeOp = SDLToWebGPU_StoreOp[colorTargetInfo->store_op];
+        // FIXME: There has to be *some* reason you can have multiple render target views in one subresource? Maybe we shouldn't just default to index 0?
+        attachment->view = WEBGPU_INTERNAL_FetchTextureSubresource((WebGPUTextureContainer *)colorTargetInfo->texture, colorTargetInfo->layer_or_depth_plane, colorTargetInfo->mip_level)->renderTargetViews[0];
+    }
+
+    depthStencilAttachment->depthClearValue = depthStencilTargetInfo->clear_depth;
+    depthStencilAttachment->depthLoadOp = SDLToWebGPU_LoadOp[depthStencilTargetInfo->load_op];
+    depthStencilAttachment->depthStoreOp = SDLToWebGPU_StoreOp[depthStencilTargetInfo->store_op];
+    depthStencilAttachment->stencilClearValue = depthStencilTargetInfo->clear_stencil;
+    depthStencilAttachment->stencilLoadOp = SDLToWebGPU_LoadOp[depthStencilTargetInfo->stencil_load_op];
+    depthStencilAttachment->stencilStoreOp = SDLToWebGPU_StoreOp[depthStencilTargetInfo->stencil_store_op];
+    depthStencilAttachment->view = WEBGPU_INTERNAL_FetchTextureSubresource((WebGPUTextureContainer *)depthStencilTargetInfo->texture, depthStencilTargetInfo->layer, depthStencilTargetInfo->mip_level)->depthStencilView;
+
+    desc.colorAttachments = colorAttachments;
+    desc.colorAttachmentCount = numColorTargets;
+    desc.depthStencilAttachment = depthStencilAttachment;
+    desc.occlusionQuerySet = NULL; // Unimplemented in SDLGPU
+    desc.timestampWrites = NULL;   // Unimplemented in SDLGPU as of 2026-06-03, although, there is a proof of concept Query API in development right now.
+
+    renderPass->renderPassEncoder = wgpuCommandEncoderBeginRenderPass(*wrapper->encoder, &desc);
+    renderPass->queue = wrapper->queue;
+    renderPass->commandEncoder = wrapper->encoder;
+    renderPass->colorTargetCount = numColorTargets;
+    renderPass->colorAttachments = colorAttachments;
+    renderPass->depthStencilAttachment = depthStencilAttachment;
+
+    return (SDL_GPURenderPass *)renderPass;
+}
+
+static void WEBGPU_SetViewport(SDL_GPURenderPass *renderPass, const SDL_GPUViewport *viewport)
+{
+    wgpuRenderPassEncoderSetViewport(((WebGPURenderPass *)renderPass)->renderPassEncoder, viewport->x, viewport->y, viewport->w, viewport->h, viewport->min_depth, viewport->max_depth);
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
