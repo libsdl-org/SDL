@@ -71,7 +71,6 @@ public class SDLControllerManager
     }
 
     static void initializeDeviceListener() {
-        // TODO need SDL context here
         InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
         im.registerInputDeviceListener(new SDLDeviceListener(), null);
     }
