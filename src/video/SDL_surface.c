@@ -228,9 +228,15 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
     }
 
     if (surface->w && surface->h && format != SDL_PIXELFORMAT_MJPG) {
+        bool must_clear = SDL_GetHintBoolean(SDL_HINT_CREATE_SURFACE_CLEAR, true);
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
         if (SDL_GetHintBoolean("SDL_SURFACE_MALLOC", false)) {
-            surface->pixels = SDL_malloc(size);
+            if (must_clear) {
+                surface->pixels = SDL_calloc(1, size);
+                must_clear = false;  // SDL_calloc already did it, don't memset again, below.
+            } else {
+                surface->pixels = SDL_malloc(size);
+            }
         } else {
             surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
             surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
@@ -239,9 +245,9 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
             SDL_DestroySurface(surface);
             return NULL;
         }
-
-        // This is important for bitmaps
-        SDL_memset(surface->pixels, 0, size);
+        if (must_clear) {
+            SDL_memset(surface->pixels, 0, size);
+        }
     }
     return surface;
 }
