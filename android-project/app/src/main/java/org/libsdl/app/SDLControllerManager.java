@@ -173,6 +173,10 @@ class SDLDeviceListener implements InputDeviceListener
 
     @Override
     public void onInputDeviceChanged(int deviceId) {
+        // The controller might not have had joystick sources previously
+        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
+            SDLControllerManager.mJoystickHandler.deviceAdded(deviceId);
+        }
     }
 
     @Override
