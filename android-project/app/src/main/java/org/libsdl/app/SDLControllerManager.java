@@ -51,6 +51,7 @@ public class SDLControllerManager
 
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
+    protected static SDLDeviceListener mDeviceListener;
 
     private static final String TAG = "SDLControllerManager";
 
@@ -71,10 +72,21 @@ public class SDLControllerManager
     }
 
     static void initializeDeviceListener() {
-        InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
-        im.registerInputDeviceListener(new SDLDeviceListener(), null);
+        if (mDeviceListener == null) {
+            mDeviceListener = new SDLDeviceListener();
+
+            InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
+            im.registerInputDeviceListener(mDeviceListener, null);
+        }
     }
 
+    static void shutdownDeviceListener() {
+        if (mDeviceListener != null) {
+            InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
+            im.unregisterInputDeviceListener(mDeviceListener);
+            mDeviceListener = null;
+        }
+    }
 
     // Joystick glue code, just a series of stubs that redirect to the SDLJoystickHandler instance
     static public boolean handleJoystickMotionEvent(MotionEvent event) {
