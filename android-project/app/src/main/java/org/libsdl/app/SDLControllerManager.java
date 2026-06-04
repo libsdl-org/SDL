@@ -71,7 +71,7 @@ public class SDLControllerManager
         }
     }
 
-    static void initializeDeviceListener() {
+    static public void initializeDeviceListener() {
         if (mDeviceListener == null) {
             mDeviceListener = new SDLDeviceListener();
 
@@ -80,7 +80,7 @@ public class SDLControllerManager
         }
     }
 
-    static void shutdownDeviceListener() {
+    static public void shutdownDeviceListener() {
         if (mDeviceListener != null) {
             InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
             im.unregisterInputDeviceListener(mDeviceListener);
