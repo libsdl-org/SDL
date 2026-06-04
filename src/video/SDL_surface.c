@@ -1281,9 +1281,7 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
     } else {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
-            !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
-            SDL_BYTESPERPIXEL(src->format) == 4 &&
-            src->format != SDL_PIXELFORMAT_ARGB2101010) {
+            src->format == SDL_PromotePixelFormatTo8888(src->format)) {
             // fast path
             return SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
@@ -1316,13 +1314,10 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
             srcrect2.h = srcrect->h;
 
             // Change source format if not appropriate for scaling
-            if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
-                SDL_PixelFormat fmt;
-                if (SDL_BYTESPERPIXEL(dst->format) == 4 && dst->format != SDL_PIXELFORMAT_ARGB2101010 &&
-                    (SDL_ISPIXELFORMAT_ALPHA(dst->format) || !is_complex_copy_flags)) {
-                    fmt = dst->format;
-                } else {
-                    fmt = SDL_PIXELFORMAT_ARGB8888;
+            if (src->format != SDL_PromotePixelFormatTo8888(src->format)) {
+                SDL_PixelFormat fmt = SDL_PromotePixelFormatTo8888(dst->format);
+                if (!SDL_ISPIXELFORMAT_ALPHA(fmt) || is_complex_copy_flags) {
+                    fmt = SDL_PromotePixelFormatToAlpha(fmt);
                 }
                 tmp1 = SDL_ConvertSurfaceRect(src, srcrect, fmt);
                 if (!tmp1) {
@@ -2193,11 +2188,11 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
     SDLgfx_rotozoomSurfaceSizeTrig(surface->w, surface->h, angle, &center, &rect_dest, &cangle, &sangle);
 
     // This function requires a 32-bit surface or 8-bit surface with a colorkey
-    if ((SDL_BITSPERPIXEL(surface->format) == 32 && SDL_PIXELLAYOUT(surface->format) == SDL_PACKEDLAYOUT_8888) ||
+    if ((surface->format == SDL_PromotePixelFormatTo8888(surface->format)) ||
         (surface->format == SDL_PIXELFORMAT_INDEX8 && SDL_SurfaceHasColorKey(surface))) {
         rotated = SDLgfx_rotateSurface(surface, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
     } else {
-        SDL_Surface *convert = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        SDL_Surface *convert = SDL_ConvertSurface(surface, SDL_PromotePixelFormatTo8888(surface->format));
         if (convert) {
             SDL_Surface *tmp = SDLgfx_rotateSurface(convert, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
             if (tmp) {
@@ -2597,7 +2592,7 @@ static bool SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_P
             src_format == SDL_PIXELFORMAT_BGRA8888) {
             format = src_format;
         } else {
-            format = SDL_PIXELFORMAT_ARGB8888;
+            format = SDL_PromotePixelFormatTo8888(dst_format);
         }
     }
     if (linear) {

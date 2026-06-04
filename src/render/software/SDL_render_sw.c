@@ -370,6 +370,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
     int applyModulation = false;
     int blitRequired = false;
     int isOpaque = false;
+    SDL_PixelFormat tmp_format;
 
     if (!SDL_SurfaceValid(surface)) {
         return false;
@@ -408,7 +409,8 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
     SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
     // SDLgfx_rotateSurface only accepts 32-bit surfaces with a 8888 layout. Everything else has to be converted.
-    if (!(SDL_BITSPERPIXEL(src->format) == 32 && SDL_PIXELLAYOUT(src->format) == SDL_PACKEDLAYOUT_8888)) {
+    tmp_format = SDL_PromotePixelFormatTo8888(src->format);
+    if (src->format != tmp_format) {
         blitRequired = true;
     }
 
@@ -424,6 +426,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
 
     // The color and alpha modulation has to be applied before the rotation when using the NONE, MOD or MUL blend modes.
     if ((blendmode == SDL_BLENDMODE_NONE || blendmode == SDL_BLENDMODE_MOD || blendmode == SDL_BLENDMODE_MUL) && (alphaMod & rMod & gMod & bMod) != 255) {
+        tmp_format = SDL_PromotePixelFormatToAlpha(tmp_format);
         applyModulation = true;
         SDL_SetSurfaceAlphaMod(src_clone, alphaMod);
         SDL_SetSurfaceColorMod(src_clone, rMod, gMod, bMod);
@@ -438,7 +441,8 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      * to clear the pixels in the destination surface. The other steps are explained below.
      */
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
-        mask = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        SDL_PixelFormat mask_format = SDL_PromotePixelFormatToAlpha(tmp_format);
+        mask = SDL_CreateSurface(final_rect->w, final_rect->h, mask_format);
         if (!mask) {
             result = false;
         } else {
@@ -451,7 +455,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      */
     if (result && (blitRequired || applyModulation)) {
         SDL_Rect scale_rect = tmp_rect;
-        src_scaled = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        src_scaled = SDL_CreateSurface(final_rect->w, final_rect->h, tmp_format);
         if (!src_scaled) {
             result = false;
         } else {
@@ -870,7 +874,13 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             } else {
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
-                    SDL_PixelFormat tmp_format = SDL_ISPIXELFORMAT_ALPHA(src->format) ? SDL_PIXELFORMAT_ARGB8888 : surface->format;
+                    SDL_PixelFormat tmp_format = src->format;
+
+                    // Linear scaling expects an 8888 format - convert here to avoid extra steps later
+                    if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_LINEAR) {
+                        tmp_format = SDL_PromotePixelFormatTo8888(src->format);
+                    }
+
                     SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, tmp_format);
                     // Scale to an intermediate surface, then blit
                     if (tmp) {
@@ -1055,97 +1065,20 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
 
 static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormat format)
 {
+    SDL_PixelFormat fmtA, fmt8A;
+
     // Prefer the format used by the framebuffer by default.
     SDL_AddSupportedTextureFormat(renderer, format);
 
-    switch (format) {
-    case SDL_PIXELFORMAT_XRGB4444:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB4444);
-        break;
-    case SDL_PIXELFORMAT_XBGR4444:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR4444);
-        break;
-    case SDL_PIXELFORMAT_ARGB4444:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB4444);
-        break;
-    case SDL_PIXELFORMAT_ABGR4444:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR4444);
-        break;
+    // Try and find an alpha format with the same layout.
+    fmtA = SDL_PromotePixelFormatToAlpha(format);
+    if (fmtA != SDL_PIXELFORMAT_UNKNOWN && fmtA != format)
+        SDL_AddSupportedTextureFormat(renderer, fmtA);
 
-    case SDL_PIXELFORMAT_XRGB1555:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB1555);
-        break;
-    case SDL_PIXELFORMAT_XBGR1555:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
-        break;
-    case SDL_PIXELFORMAT_ARGB1555:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB1555);
-        break;
-    case SDL_PIXELFORMAT_ABGR1555:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR1555);
-        break;
-
-    case SDL_PIXELFORMAT_XRGB8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-        break;
-    case SDL_PIXELFORMAT_RGBX8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA8888);
-        break;
-    case SDL_PIXELFORMAT_XBGR8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-        break;
-    case SDL_PIXELFORMAT_BGRX8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA8888);
-        break;
-    case SDL_PIXELFORMAT_ARGB8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-        break;
-    case SDL_PIXELFORMAT_RGBA8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX8888);
-        break;
-    case SDL_PIXELFORMAT_ABGR8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
-        break;
-    case SDL_PIXELFORMAT_BGRA8888:
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX8888);
-        break;
-    default:
-        break;
-    }
-
-    /* Ensure that we always have a SDL_PACKEDLAYOUT_8888 format. Having a matching component order increases the
-     * chances of getting a fast path for blitting.
-     */
-    if (SDL_ISPIXELFORMAT_PACKED(format)) {
-        if (SDL_PIXELLAYOUT(format) != SDL_PACKEDLAYOUT_8888) {
-            switch (SDL_PIXELORDER(format)) {
-            case SDL_PACKEDORDER_BGRX:
-            case SDL_PACKEDORDER_BGRA:
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX8888);
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA8888);
-                break;
-            case SDL_PACKEDORDER_RGBX:
-            case SDL_PACKEDORDER_RGBA:
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX8888);
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA8888);
-                break;
-            case SDL_PACKEDORDER_XBGR:
-            case SDL_PACKEDORDER_ABGR:
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-                break;
-            case SDL_PACKEDORDER_XRGB:
-            case SDL_PACKEDORDER_ARGB:
-            default:
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-                SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-                break;
-            }
-        }
-    } else {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-    }
+    // Ensure that we always have a format with an 8-bit alpha channel.
+    fmt8A = SDL_PromotePixelFormatToAlpha(SDL_PromotePixelFormatTo8888(format));
+    if (fmt8A != SDL_PIXELFORMAT_UNKNOWN && fmt8A != format && fmt8A != fmtA)
+        SDL_AddSupportedTextureFormat(renderer, fmt8A);
 
     // Add 8-bit palettized format
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);

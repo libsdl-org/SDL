@@ -1793,24 +1793,11 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     // Try to have the best pixel format for the texture
     // No alpha, but a colorkey => promote to alpha
     if (!SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
-        if (surface->format == SDL_PIXELFORMAT_XRGB8888) {
+        SDL_PixelFormat alphafmt = SDL_PromotePixelFormatToAlpha(surface->format);
+        if (alphafmt != SDL_PIXELFORMAT_UNKNOWN) {
             for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ARGB8888) {
-                    format = SDL_PIXELFORMAT_ARGB8888;
-                    break;
-                }
-            }
-        } else if (surface->format == SDL_PIXELFORMAT_XBGR8888) {
-            for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ABGR8888) {
-                    format = SDL_PIXELFORMAT_ABGR8888;
-                    break;
-                }
-            }
-        } else if (surface->format == SDL_PIXELFORMAT_XRGB4444) {
-            for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ARGB4444) {
-                    format = SDL_PIXELFORMAT_ARGB4444;
+                if (renderer->texture_formats[i] == alphafmt) {
+                    format = alphafmt;
                     break;
                 }
             }
@@ -5464,10 +5451,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format
-            if ((surface->format == SDL_PIXELFORMAT_ARGB8888 && expected_format == SDL_PIXELFORMAT_XRGB8888) ||
-                (surface->format == SDL_PIXELFORMAT_RGBA8888 && expected_format == SDL_PIXELFORMAT_RGBX8888) ||
-                (surface->format == SDL_PIXELFORMAT_ABGR8888 && expected_format == SDL_PIXELFORMAT_XBGR8888) ||
-                (surface->format == SDL_PIXELFORMAT_BGRA8888 && expected_format == SDL_PIXELFORMAT_BGRX8888)) {
+            if (surface->format != expected_format && surface->format == SDL_PromotePixelFormatToAlpha(expected_format)) {
                 surface->format = expected_format;
                 surface->fmt = SDL_GetPixelFormatDetails(expected_format);
             }
