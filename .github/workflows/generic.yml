@@ -431,6 +431,7 @@ jobs:
           find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
         with:
           if-no-files-found: error
@@ -440,6 +441,7 @@ jobs:
             build/include*
       - name: 'Upload minidumps'
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: ${{ always() && steps.tests.outcome == 'failure' && (matrix.platform.platform == 'msvc' || matrix.platform.platform == 'msys2') }}
         with:
           if-no-files-found: ignore
@@ -447,6 +449,7 @@ jobs:
           path: build/**/*.dmp
       - name: "Upload Android test apk's"
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         if: ${{ matrix.platform.enable-artifacts && always() && matrix.platform.artifact != '' && steps.apks.outcome == 'success' }}
         with:
           if-no-files-found: error
