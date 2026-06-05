@@ -28,6 +28,7 @@
 #include "SDL_stb_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
+#include "../SDL_hints_c.h"
 
 #include "SDL_surface_c.h"
 
@@ -41,7 +42,33 @@ SDL_COMPILE_TIME_ASSERT(can_indicate_overflow, SDL_SIZE_MAX > SDL_MAX_SINT32);
 // Magic!
 static char SDL_surface_magic;
 
+
+// Some hint callbacks.
+
+static SDL_InitState create_surface_hints_init;
+static bool create_surface_clear_hint = true;  // tracks SDL_HINT_CREATE_SURFACE_CLEAR state.
+static bool create_surface_malloc_hint = false;  // tracks "SDL_SURFACE_MALLOC" state.
+
+static void SDLCALL SDL_SurfaceClearHintWatcher(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    create_surface_clear_hint = SDL_GetStringBoolean(newValue, true);
+}
+
+static void SDLCALL SDL_SurfaceMallocHintWatcher(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    create_surface_malloc_hint = SDL_GetStringBoolean(newValue, false);
+}
+
 // Public routines
+
+void SDL_QuitSurfaceHints(void)
+{
+    if (SDL_ShouldQuit(&create_surface_hints_init)) {
+        SDL_RemoveHintCallback(SDL_HINT_CREATE_SURFACE_CLEAR, SDL_SurfaceClearHintWatcher, NULL);
+        SDL_RemoveHintCallback("SDL_SURFACE_MALLOC", SDL_SurfaceMallocHintWatcher, NULL);
+        SDL_SetInitialized(&create_surface_hints_init, false);
+    }
+}
 
 bool SDL_SurfaceValid(SDL_Surface *surface)
 {
@@ -228,9 +255,15 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
     }
 
     if (surface->w && surface->h && format != SDL_PIXELFORMAT_MJPG) {
-        bool must_clear = SDL_GetHintBoolean(SDL_HINT_CREATE_SURFACE_CLEAR, true);
+        if (SDL_ShouldInit(&create_surface_hints_init)) {
+            SDL_AddHintCallback(SDL_HINT_CREATE_SURFACE_CLEAR, SDL_SurfaceClearHintWatcher, NULL);
+            SDL_AddHintCallback("SDL_SURFACE_MALLOC", SDL_SurfaceMallocHintWatcher, NULL);
+            SDL_SetInitialized(&create_surface_hints_init, true);
+        }
+
+        bool must_clear = create_surface_clear_hint;  // SDL_HINT_CREATE_SURFACE_CLEAR, tracked by callback.
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
-        if (SDL_GetHintBoolean("SDL_SURFACE_MALLOC", false)) {
+        if (create_surface_malloc_hint) {  // "SDL_SURFACE_MALLOC" hint, tracked by callback.
             if (must_clear) {
                 surface->pixels = SDL_calloc(1, size);
                 must_clear = false;  // SDL_calloc already did it, don't memset again, below.

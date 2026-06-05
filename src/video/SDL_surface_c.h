@@ -96,5 +96,6 @@ extern SDL_Surface *SDL_ConvertSurfaceRect(SDL_Surface *surface, const SDL_Rect 
 extern bool SDL_IsBMP(SDL_IOStream *src);
 extern bool SDL_IsJPG(SDL_IOStream *src);
 extern bool SDL_IsPNG(SDL_IOStream *src);
+extern void SDL_QuitSurfaceHints(void);
 
 #endif // SDL_surface_c_h_

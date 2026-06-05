@@ -4674,6 +4674,7 @@ void SDL_VideoQuit(void)
     SDL_QuitMouse();
     SDL_QuitKeyboard();
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
+    SDL_QuitSurfaceHints();
 
     SDL_EnableScreenSaver();
 
