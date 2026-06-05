@@ -45,16 +45,16 @@ static char SDL_surface_magic;
 
 // Some hint callbacks.
 
-static SDL_InitState create_surface_hints_init;
-static bool create_surface_zeroed_hint = true;  // tracks SDL_HINT_CREATE_SURFACE_ZEROED state.
-static bool create_surface_malloc_hint = false;  // tracks "SDL_SURFACE_MALLOC" state.
+static SDL_InitState SDL_create_surface_hints_init;
+static bool SDL_create_surface_zeroed_hint = true;  // tracks SDL_HINT_CREATE_SURFACE_ZEROED state.
+static bool SDL_create_surface_malloc_hint = false;  // tracks "SDL_SURFACE_MALLOC" state.
 
-static void SDLCALL SDL_SurfaceClearHintWatcher(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL SDL_CreateSurfaceZeroedChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     create_surface_zeroed_hint = SDL_GetStringBoolean(newValue, true);
 }
 
-static void SDLCALL SDL_SurfaceMallocHintWatcher(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL SDL_SurfaceMallocChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     create_surface_malloc_hint = SDL_GetStringBoolean(newValue, false);
 }
