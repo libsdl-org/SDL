@@ -92,7 +92,7 @@ static SDL_Surface *GetConvertedCursorSurface(SDL_CursorData *curdata, SDL_Surfa
 
     int w = src->w;
     int h = src->h;
-    SDL_Surface *conv = SDL_CreateSurface(w, h, dst->format);
+    SDL_Surface *conv = SDL_CreateSurfaceUninitialized(w, h, dst->format);
     if (!conv) {
         return NULL;
     }
@@ -168,7 +168,7 @@ void DOSVESA_InvalidateCachedFramebuffer(void)
 // Create a system-RAM surface (with a blank palette if INDEX8 and update the VGA DAC).
 static SDL_Surface *CreateSystemSurface(SDL_VideoData *data, int w, int h, SDL_PixelFormat surface_format)
 {
-    SDL_Surface *surface = SDL_CreateSurface(w, h, surface_format);
+    SDL_Surface *surface = SDL_CreateSurfaceZeroed(w, h, surface_format);
     if (!surface) {
         return NULL;
     }
@@ -758,7 +758,7 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
                     have_cursor_rect = true;
 
                     // Save the pixels under the cursor so we can restore them after the copy.
-                    cursor_save = SDL_CreateSurface(cursor_clipped.w, cursor_clipped.h, src->format);
+                    cursor_save = SDL_CreateSurfaceUninitialized(cursor_clipped.w, cursor_clipped.h, src->format);
                     if (cursor_save) {
                         if (src->format == SDL_PIXELFORMAT_INDEX8) {
                             SDL_Palette *sp = SDL_GetSurfacePalette(src);

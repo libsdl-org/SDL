@@ -1397,7 +1397,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         return NULL;
     }
 
-    SDL_Surface *surface = SDL_CreateSurface(rect->w, rect->h, pixfmt);
+    SDL_Surface *surface = SDL_CreateSurfaceUninitialized(rect->w, rect->h, pixfmt);
 
     if (!surface) {
         return NULL;

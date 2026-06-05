@@ -37,7 +37,7 @@ bool SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *w
 
     // Create a new framebuffer
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    surface = SDL_CreateSurface(w, h, surface_format);
+    surface = SDL_CreateSurfaceZeroed(w, h, surface_format);
     if (!surface) {
         return false;
     }

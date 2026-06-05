@@ -67,7 +67,7 @@ bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         Pixmap pixmap;
 
         if (shape->w != window->w || shape->h != window->h) {
-            stretched = SDL_CreateSurface(window->w, window->h, SDL_PIXELFORMAT_ARGB32);
+            stretched = SDL_CreateSurfaceUninitialized(window->w, window->h, SDL_PIXELFORMAT_ARGB32);
             if (!stretched) {
                 return false;
             }

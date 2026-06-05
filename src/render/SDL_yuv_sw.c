@@ -372,7 +372,7 @@ bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL
             swdata->target_format = target_format;
         }
         if (!swdata->stretch) {
-            swdata->stretch = SDL_CreateSurface(swdata->w, swdata->h, target_format);
+            swdata->stretch = SDL_CreateSurfaceUninitialized(swdata->w, swdata->h, target_format);
             if (!swdata->stretch) {
                 return false;
             }
