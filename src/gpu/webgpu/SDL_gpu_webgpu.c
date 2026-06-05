@@ -71,10 +71,10 @@
 // SDL_InsertGPUDebugLabel [x]
 // SDL_MapGPUTransferBuffer [x]
 // SDL_PopGPUDebugGroup [x]
-// SDL_PushGPUComputeUniformData []
+// SDL_PushGPUComputeUniformData [x]
 // SDL_PushGPUDebugGroup [x]
-// SDL_PushGPUFragmentUniformData []
-// SDL_PushGPUVertexUniformData []
+// SDL_PushGPUFragmentUniformData [x]
+// SDL_PushGPUVertexUniformData [x]
 // SDL_QueryGPUFence [x]
 // SDL_ReleaseGPUBuffer [x]
 // SDL_ReleaseGPUComputePipeline []
@@ -433,9 +433,13 @@ typedef struct WebGPUTexture WebGPUTexture;
 typedef struct WebGPUTextureContainer WebGPUTextureContainer;
 typedef struct WebGPUMemoryAllocation WebGPUMemoryAllocation;
 typedef struct WebGPUBuffer WebGPUBuffer;
-typedef struct WebGPUUniformBuffer WebGPUUniformBuffer;
 typedef struct WebGPUBufferContainer WebGPUBufferContainer;
 typedef struct WebGPUWindowData WebGPUWindowData;
+
+typedef struct WebGPUUniformBuffer
+{
+    WGPUBuffer buffer;
+} WebGPUUniformBuffer;
 
 typedef struct WebGPURenderer
 {
@@ -446,6 +450,17 @@ typedef struct WebGPURenderer
     WGPUCommandEncoder commandEncoder;
 
     WebGPUWindowData **capturedWindows;
+
+    // WebGPU directly expects to recieve WGPUBuffers for its uniforms.
+    // Since SDL_GPU only supports having up to 4 buffers per stage, totalling 12 for 3 stages,
+    // and each buffer has a max size of 64KiB, we can just allocate them directly.
+    //
+    // Presuming we have 2GiB of VRAM, these buffers will take up ~0.04% of the available VRAM,
+    // and we won't have to bother with recreating them every render.
+    //
+    // TODO: Maybe we should hash the data currently in each uniform to see if any new uploads
+    // are uploading the same data?
+    WebGPUUniformBuffer preAllocatedUniformBuffers[12];
 
     SDL_PropertiesID props;
     SDL_HashTable *shaders;
@@ -639,6 +654,8 @@ typedef struct WebGPUCommandBufferWrapper
     WGPUCommandEncoder *encoder;
     WGPUQueue *queue;
     WebGPUWindowData *windowDataGrossHack;
+    // The renderer's uniform buffers.
+    WebGPUUniformBuffer (*uniformBuffers)[12];
 } WebGPUCommandBufferWrapper;
 
 /// There are no fences in WebGPU, so this is a solution around it.
@@ -693,7 +710,7 @@ typedef struct WebGPURenderPass
         WebGPUQueuedResourceBindSampler *samplers;               // 16 slots.
         WebGPUQueuedResourceBindStorageTexture *storageTextures; // 8 slots.
         WebGPUQueuedResourceBindStorageBuffer *storageBuffers;   // 8 slots, maximum WebGPU supports.
-        WebGPUQueuedResourceBindUniformBuffer *uniformBuffers;   // 16 slots.
+        WebGPUQueuedResourceBindUniformBuffer *uniformBuffers;   // 4 slots, maximum SDL_GPU supports.
 
         uint16_t samplerArraySize;
         uint16_t storageTextureArraySize;
@@ -1022,6 +1039,11 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
         SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING,
         "WebGPU");
 
+    for (int i = 0; i < 12; i++) {
+        // Preallocate renderer uniform buffers
+        renderer->preAllocatedUniformBuffers[i].buffer = wgpuDeviceCreateBuffer(renderer->device, &(WGPUBufferDescriptor){ .size = 65536, .mappedAtCreation = false, .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst | WGPUBufferUsage_MapWrite });
+    }
+
     result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
 
     result->driverData = (SDL_GPURenderer *)renderer;
@@ -1068,7 +1090,7 @@ static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPUDevice *device)
     // So, I added a WindowData pointer to the WebGPUCommandBufferWrapper.
     // It'll point to the first captured window. (if there is one)
     wrapper->windowDataGrossHack = ((WebGPURenderer *)device->driverData)->capturedWindows[0];
-
+    wrapper->uniformBuffers = &((WebGPURenderer *)device->driverData)->preAllocatedUniformBuffers;
     return (SDL_GPUCommandBuffer *)wrapper;
 }
 
@@ -2176,18 +2198,18 @@ static SDL_GPURenderPass *WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBu
     renderPass->vertexShaderBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
     renderPass->vertexShaderBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
     renderPass->vertexShaderBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
-    renderPass->vertexShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindUniformBuffer));
+    renderPass->vertexShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
     renderPass->vertexShaderBinds.samplerArraySize = 16;
     renderPass->vertexShaderBinds.storageTextureArraySize = 8;
-    renderPass->vertexShaderBinds.uniformBufferArraySize = 16;
+    renderPass->vertexShaderBinds.uniformBufferArraySize = 4;
 
     renderPass->fragmentShaderBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
     renderPass->fragmentShaderBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
     renderPass->fragmentShaderBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
-    renderPass->fragmentShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindUniformBuffer));
+    renderPass->fragmentShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
     renderPass->fragmentShaderBinds.samplerArraySize = 16;
     renderPass->fragmentShaderBinds.storageTextureArraySize = 8;
-    renderPass->fragmentShaderBinds.uniformBufferArraySize = 16;
+    renderPass->fragmentShaderBinds.uniformBufferArraySize = 4;
 
     return (SDL_GPURenderPass *)renderPass;
 }
@@ -2301,6 +2323,30 @@ static void WEBGPU_BindFragmentStorageTextures(SDL_GPURenderPass *renderPass, ui
             .visibleTo = WGPUShaderStage_Fragment,
         };
     }
+}
+
+static void WEBGPU_INTERNAL_MapBufferAndUploadData(WGPUBuffer *buffer, const void *data, uint32_t offset, uint32_t length)
+{
+    void *mappedRange = wgpuBufferGetMappedRange(*buffer, offset, length);
+    SDL_memcpy(mappedRange, data, length);
+
+    wgpuBufferUnmap(*buffer);
+}
+
+static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
+{
+    // slotIndex % 4 to prevent cheeky bastards from writing into other stages command buffers
+    WEBGPU_INTERNAL_MapBufferAndUploadData(&((WebGPUCommandBufferWrapper *)commandBuffer)->uniformBuffers[slotIndex % 4]->buffer, data, 0, length);
+}
+
+static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
+{
+    WEBGPU_INTERNAL_MapBufferAndUploadData(&((WebGPUCommandBufferWrapper *)commandBuffer)->uniformBuffers[4 + (slotIndex % 4)]->buffer, data, 0, length);
+}
+
+static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
+{
+    WEBGPU_INTERNAL_MapBufferAndUploadData(&((WebGPUCommandBufferWrapper *)commandBuffer)->uniformBuffers[8 + (slotIndex % 4)]->buffer, data, 0, length);
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
