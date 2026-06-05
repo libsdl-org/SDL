@@ -696,6 +696,22 @@ typedef struct WebGPUQueuedResourceBindUniformBuffer
     uint16_t slot;
 } WebGPUQueuedResourceBindUniformBuffer;
 
+typedef struct WebGPUQueuedResourceBindVertexBuffer
+{
+    WebGPUBufferContainer *buffer;
+    uint32_t offset;
+
+    uint16_t slot;
+} WebGPUQueuedResourceBindVertexBuffer;
+
+typedef struct WebGPUQueuedResourceBindIndexBuffer
+{
+    WebGPUBufferContainer *buffer;
+    uint32_t offset;
+
+    uint16_t slot;
+} WebGPUQueuedResourceBindIndexBuffer;
+
 typedef struct WebGPURenderPass
 {
     WGPUCommandEncoder *commandEncoder;
@@ -703,7 +719,7 @@ typedef struct WebGPURenderPass
 
     WGPURenderPassEncoder renderPassEncoder;
 
-    struct vertexShaderBinds
+    struct vertexStageBinds
     {
         // We'll allocate a decent amount of slots for every array here since every entry takes up about 20 bytes
         // (quite frankly; i just hate manual memory management)
@@ -711,6 +727,9 @@ typedef struct WebGPURenderPass
         WebGPUQueuedResourceBindStorageTexture *storageTextures; // 8 slots.
         WebGPUQueuedResourceBindStorageBuffer *storageBuffers;   // 8 slots, maximum WebGPU supports.
         WebGPUQueuedResourceBindUniformBuffer *uniformBuffers;   // 4 slots, maximum SDL_GPU supports.
+
+        WebGPUQueuedResourceBindVertexBuffer *vertexBuffers; // 16 slots, maximum WebGPU supports.
+        WebGPUQueuedResourceBindIndexBuffer *indexBuffers;   // 16 slots, just because vertexBuffers is also 16 slots.
 
         uint16_t samplerArraySize;
         uint16_t storageTextureArraySize;
@@ -721,9 +740,9 @@ typedef struct WebGPURenderPass
         uint32_t numStorageTextures;
         uint32_t numStorageBuffers;
         uint32_t numUniformBuffers;
-    } vertexShaderBinds;
+    } vertexStageBinds;
 
-    struct fragmentShaderBinds
+    struct fragmentStageBinds
     {
         WebGPUQueuedResourceBindSampler *samplers;
         WebGPUQueuedResourceBindStorageTexture *storageTextures;
@@ -738,7 +757,7 @@ typedef struct WebGPURenderPass
         uint32_t numStorageTextures;
         uint32_t numStorageBuffers;
         uint32_t numUniformBuffers;
-    } fragmentShaderBinds;
+    } fragmentStageBinds;
 
     uint32_t colorTargetCount;
     WGPURenderPassColorAttachment *colorAttachments;
@@ -2195,21 +2214,23 @@ static SDL_GPURenderPass *WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBu
     renderPass->colorAttachments = colorAttachments;
     renderPass->depthStencilAttachment = depthStencilAttachment;
 
-    renderPass->vertexShaderBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
-    renderPass->vertexShaderBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
-    renderPass->vertexShaderBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
-    renderPass->vertexShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
-    renderPass->vertexShaderBinds.samplerArraySize = 16;
-    renderPass->vertexShaderBinds.storageTextureArraySize = 8;
-    renderPass->vertexShaderBinds.uniformBufferArraySize = 4;
+    renderPass->vertexStageBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
+    renderPass->vertexStageBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
+    renderPass->vertexStageBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
+    renderPass->vertexStageBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
+    renderPass->vertexStageBinds.vertexBuffers = (WebGPUQueuedResourceBindVertexBuffer *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindVertexBuffer));
+    renderPass->vertexStageBinds.indexBuffers = (WebGPUQueuedResourceBindIndexBuffer *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindIndexBuffer));
+    renderPass->vertexStageBinds.samplerArraySize = 16;
+    renderPass->vertexStageBinds.storageTextureArraySize = 8;
+    renderPass->vertexStageBinds.uniformBufferArraySize = 4;
 
-    renderPass->fragmentShaderBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
-    renderPass->fragmentShaderBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
-    renderPass->fragmentShaderBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
-    renderPass->fragmentShaderBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
-    renderPass->fragmentShaderBinds.samplerArraySize = 16;
-    renderPass->fragmentShaderBinds.storageTextureArraySize = 8;
-    renderPass->fragmentShaderBinds.uniformBufferArraySize = 4;
+    renderPass->fragmentStageBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
+    renderPass->fragmentStageBinds.storageTextures = (WebGPUQueuedResourceBindStorageTexture *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageTexture));
+    renderPass->fragmentStageBinds.storageBuffers = (WebGPUQueuedResourceBindStorageBuffer *)SDL_calloc(8, sizeof(WebGPUQueuedResourceBindStorageBuffer));
+    renderPass->fragmentStageBinds.uniformBuffers = (WebGPUQueuedResourceBindUniformBuffer *)SDL_calloc(4, sizeof(WebGPUQueuedResourceBindUniformBuffer));
+    renderPass->fragmentStageBinds.samplerArraySize = 16;
+    renderPass->fragmentStageBinds.storageTextureArraySize = 8;
+    renderPass->fragmentStageBinds.uniformBufferArraySize = 4;
 
     return (SDL_GPURenderPass *)renderPass;
 }
@@ -2223,16 +2244,16 @@ static void WEBGPU_SetViewport(SDL_GPURenderPass *renderPass, const SDL_GPUViewp
 
 static void WEBGPU_BindVertexSamplers(SDL_GPURenderPass *renderPass, uint32_t firstSlot, const SDL_GPUTextureSamplerBinding *const *textureSamplerBindings, uint32_t numBindings)
 {
-    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->vertexShaderBinds.samplerArraySize) {
+    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->vertexStageBinds.samplerArraySize) {
         // Sampler binding array's too small.
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.samplers = SDL_realloc(((WebGPURenderPass *)renderPass)->vertexShaderBinds.samplers,
-                                                                                   (size_t)numBindings + firstSlot);
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.samplerArraySize = numBindings + firstSlot;
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.samplers = SDL_realloc(((WebGPURenderPass *)renderPass)->vertexStageBinds.samplers,
+                                                                                  (size_t)numBindings + firstSlot);
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.samplerArraySize = numBindings + firstSlot;
     }
 
     // We're just naively writing to the samplers array, since checking if that index is clear is a pain, plus; who knows? Maybe they want to overwrite it for some reason?
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.samplers[i + firstSlot] = (WebGPUQueuedResourceBindSampler){
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.samplers[i + firstSlot] = (WebGPUQueuedResourceBindSampler){
             .sampler = (WebGPUSampler *)textureSamplerBindings[i]->sampler,
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Vertex,
@@ -2248,7 +2269,7 @@ static void WEBGPU_BindVertexStorageBuffers(SDL_GPURenderPass *renderPass, uint3
     }
 
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageBuffers[i + firstSlot] = (WebGPUQueuedResourceBindStorageBuffer){
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.storageBuffers[i + firstSlot] = (WebGPUQueuedResourceBindStorageBuffer){
             .storageBuffer = (WebGPUBufferContainer *)storageBuffers[i],
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Vertex,
@@ -2258,14 +2279,14 @@ static void WEBGPU_BindVertexStorageBuffers(SDL_GPURenderPass *renderPass, uint3
 
 static void WEBGPU_BindVertexStorageTextures(SDL_GPURenderPass *renderPass, uint32_t firstSlot, SDL_GPUTexture *const *storageTextures, uint32_t numBindings)
 {
-    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageTextureArraySize) {
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageTextures = SDL_realloc(((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageTextures,
-                                                                                          (size_t)numBindings + firstSlot);
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageTextureArraySize = numBindings + firstSlot;
+    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->vertexStageBinds.storageTextureArraySize) {
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.storageTextures = SDL_realloc(((WebGPURenderPass *)renderPass)->vertexStageBinds.storageTextures,
+                                                                                         (size_t)numBindings + firstSlot);
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.storageTextureArraySize = numBindings + firstSlot;
     }
 
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->vertexShaderBinds.storageTextures[i + firstSlot] = (WebGPUQueuedResourceBindStorageTexture){
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.storageTextures[i + firstSlot] = (WebGPUQueuedResourceBindStorageTexture){
             .storageTexture = (WebGPUTextureSubresource *)storageTextures[i],
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Vertex,
@@ -2275,16 +2296,16 @@ static void WEBGPU_BindVertexStorageTextures(SDL_GPURenderPass *renderPass, uint
 
 static void WEBGPU_BindFragmentSamplers(SDL_GPURenderPass *renderPass, uint32_t firstSlot, const SDL_GPUTextureSamplerBinding *const *textureSamplerBindings, uint32_t numBindings)
 {
-    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.samplerArraySize) {
+    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->fragmentStageBinds.samplerArraySize) {
         // Sampler binding array's too small.
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.samplers = SDL_realloc(((WebGPURenderPass *)renderPass)->fragmentShaderBinds.samplers,
-                                                                                     (size_t)numBindings + firstSlot);
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.samplerArraySize = numBindings + firstSlot;
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.samplers = SDL_realloc(((WebGPURenderPass *)renderPass)->fragmentStageBinds.samplers,
+                                                                                    (size_t)numBindings + firstSlot);
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.samplerArraySize = numBindings + firstSlot;
     }
 
     // We're just naively writing to the samplers array, since checking if that index is clear is a pain, plus; who knows? Maybe they want to overwrite it for some reason?
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.samplers[i + firstSlot] = (WebGPUQueuedResourceBindSampler){
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.samplers[i + firstSlot] = (WebGPUQueuedResourceBindSampler){
             .sampler = (WebGPUSampler *)textureSamplerBindings[i]->sampler,
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Fragment,
@@ -2295,12 +2316,12 @@ static void WEBGPU_BindFragmentSamplers(SDL_GPURenderPass *renderPass, uint32_t 
 static void WEBGPU_BindFragmentStorageBuffers(SDL_GPURenderPass *renderPass, uint32_t firstSlot, SDL_GPUBuffer *const *storageBuffers, uint32_t numBindings)
 {
     if (numBindings + firstSlot > 8) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Cannot bind more than 8 storage buffers at once!");
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot bind more than 8 storage buffers at once!");
         return;
     }
 
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageBuffers[i + firstSlot] = (WebGPUQueuedResourceBindStorageBuffer){
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageBuffers[i + firstSlot] = (WebGPUQueuedResourceBindStorageBuffer){
             .storageBuffer = (WebGPUBufferContainer *)storageBuffers[i],
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Fragment,
@@ -2310,17 +2331,52 @@ static void WEBGPU_BindFragmentStorageBuffers(SDL_GPURenderPass *renderPass, uin
 
 static void WEBGPU_BindFragmentStorageTextures(SDL_GPURenderPass *renderPass, uint32_t firstSlot, SDL_GPUTexture *const *storageTextures, uint32_t numBindings)
 {
-    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageTextureArraySize) {
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageTextures = SDL_realloc(((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageTextures,
-                                                                                            (size_t)numBindings + firstSlot);
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageTextureArraySize = numBindings + firstSlot;
+    if (numBindings + firstSlot > ((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageTextureArraySize) {
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageTextures = SDL_realloc(((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageTextures,
+                                                                                           (size_t)numBindings + firstSlot);
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageTextureArraySize = numBindings + firstSlot;
     }
 
     for (int i = 0; i < numBindings; i++) {
-        ((WebGPURenderPass *)renderPass)->fragmentShaderBinds.storageTextures[i + firstSlot] = (WebGPUQueuedResourceBindStorageTexture){
+        ((WebGPURenderPass *)renderPass)->fragmentStageBinds.storageTextures[i + firstSlot] = (WebGPUQueuedResourceBindStorageTexture){
             .storageTexture = (WebGPUTextureSubresource *)storageTextures[i],
             .slot = i + firstSlot,
             .visibleTo = WGPUShaderStage_Fragment,
+        };
+    }
+}
+
+static void WEBGPU_BindVertexBuffers(SDL_GPURenderPass *renderPass, uint32_t firstSlot, const SDL_GPUBufferBinding *binding, uint32_t numBindings)
+{
+    if (numBindings + firstSlot > 16) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot bind more than 16 vertex buffers at once!");
+        return;
+    }
+
+    for (int i = 0; i < numBindings; i++) {
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.vertexBuffers[i + firstSlot] = (WebGPUQueuedResourceBindVertexBuffer){
+            .buffer = (WebGPUBufferContainer *)binding[i].buffer,
+            .offset = binding[i].offset,
+            .slot = i + firstSlot,
+        };
+    }
+}
+
+static void WEBGPU_BindIndexBuffers(SDL_GPURenderPass *renderPass, uint32_t firstSlot, const SDL_GPUBufferBinding *binding, uint32_t numBindings)
+{
+    if (numBindings + firstSlot > 16) {
+        // FIXME:
+        // We don't actually *have* to error here, but eeeeeeeeh.
+        // Who's actually gonna use more than 16 index buffers at once?!
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot bind more than 16 index buffers at once!");
+        return;
+    }
+
+    for (int i = 0; i < numBindings; i++) {
+        ((WebGPURenderPass *)renderPass)->vertexStageBinds.indexBuffers[i + firstSlot] = (WebGPUQueuedResourceBindIndexBuffer){
+            .buffer = (WebGPUBufferContainer *)binding[i].buffer,
+            .offset = binding[i].offset,
+            .slot = i + firstSlot,
         };
     }
 }
