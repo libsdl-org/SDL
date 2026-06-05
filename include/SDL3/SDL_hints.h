@@ -703,10 +703,10 @@ extern "C" {
 #define SDL_HINT_CPU_FEATURE_MASK "SDL_CPU_FEATURE_MASK"
 
 /**
- * A variable that decides whether SDL_CreateSurface() clears pixels.
+ * A variable that decides whether SDL_CreateSurface() zeroes pixels.
  *
  * By default, SDL_CreateSurface() will clear the newly-created surface by
- * setting all bytes of its `pixels` buffer to zero; for many formats this
+ * setting all bytes in its `pixels` buffer to zero; for many formats this
  * clears the surface black, as a reasonable default.
  *
  * However, clearing the surface is wasted effort if the app plans to
@@ -723,7 +723,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.6.0.
  */
-#define SDL_HINT_CREATE_SURFACE_CLEAR "SDL_CREATE_SURFACE_CLEAR"
+#define SDL_HINT_CREATE_SURFACE_ZEROED "SDL_CREATE_SURFACE_ZEROED"
 
 /**
  * A variable controlling whether DirectInput should be used for controllers.
