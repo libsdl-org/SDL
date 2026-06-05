@@ -1317,3 +1317,9 @@
 #define SDL_HasSVE2 SDL_HasSVE2_REAL
 #define SDL_GamepadHasCapSense SDL_GamepadHasCapSense_REAL
 #define SDL_GetGamepadCapSense SDL_GetGamepadCapSense_REAL
+#define SDL_DownloadGPUQueryResults SDL_DownloadGPUQueryResults_REAL
+#define SDL_GetGPUTimestampFrequency SDL_GetGPUTimestampFrequency_REAL
+#define SDL_CreateGPUQueryPool SDL_CreateGPUQueryPool_REAL
+#define SDL_BeginGPUQuery SDL_BeginGPUQuery_REAL
+#define SDL_EndGPUQuery SDL_EndGPUQuery_REAL
+#define SDL_ReleaseGPUQueryPool SDL_ReleaseGPUQueryPool_REAL

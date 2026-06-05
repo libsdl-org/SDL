@@ -1291,6 +1291,12 @@ SDL3_0.0.0 {
     SDL_HasSVE2;
     SDL_GamepadHasCapSense;
     SDL_GetGamepadCapSense;
+    SDL_DownloadGPUQueryResults;
+    SDL_GetGPUTimestampFrequency;
+    SDL_CreateGPUQueryPool;
+    SDL_BeginGPUQuery;
+    SDL_EndGPUQuery;
+    SDL_ReleaseGPUQueryPool;
     # extra symbols go here (don't modify this line)
   local: *;
 };

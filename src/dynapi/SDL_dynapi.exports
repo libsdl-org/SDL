@@ -1290,3 +1290,9 @@ _SDL_LoadJPG
 _SDL_HasSVE2
 _SDL_GamepadHasCapSense
 _SDL_GetGamepadCapSense
+_SDL_DownloadGPUQueryResults
+_SDL_GetGPUTimestampFrequency
+_SDL_CreateGPUQueryPool
+_SDL_BeginGPUQuery
+_SDL_EndGPUQuery
+_SDL_ReleaseGPUQueryPool

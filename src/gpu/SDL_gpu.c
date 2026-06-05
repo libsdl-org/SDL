@@ -3020,6 +3020,36 @@ void SDL_DownloadFromGPUBuffer(
         destination);
 }
 
+void SDL_DownloadGPUQueryResults(
+    SDL_GPUCopyPass *copy_pass,
+    SDL_GPUQueryPool *pool,
+    Uint32 first_query,
+    Uint32 count,
+    SDL_GPUTransferBufferLocation *destination)
+{
+    CHECK_PARAM(copy_pass == NULL) {
+        SDL_InvalidParamError("copy_pass");
+        return;
+    }
+
+    CHECK_PARAM(pool == NULL) {
+        SDL_InvalidParamError("pool");
+        return;
+    }
+
+    CHECK_PARAM(destination == NULL) {
+        SDL_InvalidParamError("destination");
+        return;
+    }
+
+    COPYPASS_DEVICE->DownloadQueryResults(
+        COPYPASS_COMMAND_BUFFER,
+        pool,
+        first_query,
+        count,
+        destination);
+}
+
 void SDL_EndGPUCopyPass(
     SDL_GPUCopyPass *copy_pass)
 {
@@ -3513,6 +3543,86 @@ void SDL_ReleaseGPUFence(
     device->ReleaseFence(
         device->driverData,
         fence);
+}
+
+float SDL_GetGPUTimestampFrequency(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    return device->GetTimestampFrequency(device->driverData);
+}
+
+SDL_GPUQueryPool *SDL_CreateGPUQueryPool(
+    SDL_GPUDevice *device,
+    SDL_GPUQueryPoolCreateInfo *createinfo)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
+
+    CHECK_PARAM(createinfo == NULL) {
+        SDL_InvalidParamError("createinfo");
+        return NULL;
+    }
+
+    return device->CreateQueryPool(
+        device->driverData,
+        createinfo);
+}
+
+void SDL_BeginGPUQuery(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_GPUQueryPool *pool,
+    Uint32 index)
+{
+    CHECK_PARAM(command_buffer == NULL) {
+        SDL_InvalidParamError("command_buffer");
+        return;
+    }
+
+    CHECK_PARAM(pool == NULL) {
+        SDL_InvalidParamError("pool");
+        return;
+    }
+
+    COMMAND_BUFFER_DEVICE->BeginQuery(
+        command_buffer,
+        pool,
+        index);
+}
+
+void SDL_EndGPUQuery(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_GPUQueryPool *pool,
+    Uint32 index)
+{
+    CHECK_PARAM(command_buffer == NULL) {
+        SDL_InvalidParamError("command_buffer");
+        return;
+    }
+
+    CHECK_PARAM(pool == NULL) {
+        SDL_InvalidParamError("pool");
+        return;
+    }
+
+    COMMAND_BUFFER_DEVICE->EndQuery(
+        command_buffer,
+        pool,
+        index);
+}
+
+void SDL_ReleaseGPUQueryPool(
+    SDL_GPUDevice *device,
+    SDL_GPUQueryPool *pool)
+{
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(pool == NULL) {
+        return;
+    }
+
+    return device->ReleaseQueryPool(
+        device->driverData,
+        pool);
 }
 
 Uint32 SDL_CalculateGPUTextureFormatSize(
