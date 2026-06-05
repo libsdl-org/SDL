@@ -1362,7 +1362,9 @@ extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_malloc(size_t size);
  *
  * If the allocation is successful, the returned pointer is guaranteed to be
  * aligned to either the *fundamental alignment* (`alignof(max_align_t)` in
- * C11 and later) or `2 * sizeof(void *)`, whichever is smaller.
+ * C11 and later) or `2 * sizeof(void *)`, whichever is smaller. Use
+ * SDL_aligned_alloc_zero() if you need to allocate memory aligned to an
+ * alignment greater than this guarantee.
  *
  * \param nmemb the number of elements in the array.
  * \param size the size of each element of the array.
@@ -1615,6 +1617,30 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_f
  * \sa SDL_aligned_free
  */
 extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Allocate zero-initialized memory aligned to a specific alignment.
+ *
+ * The memory returned by this function must be freed with SDL_aligned_free(),
+ * _not_ SDL_free().
+ *
+ * If `alignment` is less than the size of `void *`, it will be increased to
+ * match that.
+ *
+ * The returned memory address will be a multiple of the alignment value, and
+ * the size of the memory allocated will be a multiple of the alignment value.
+ *
+ * \param alignment the alignment of the memory.
+ * \param size the size to allocate.
+ * \returns a pointer to the aligned memory, or NULL if allocation failed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_aligned_free
+ */
+extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc_zero(size_t alignment, size_t size);
 
 /**
  * Free memory allocated by SDL_aligned_alloc().
