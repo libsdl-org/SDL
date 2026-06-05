@@ -261,12 +261,12 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
             SDL_SetInitialized(&create_surface_hints_init, true);
         }
 
-        bool must_clear = create_surface_zeroed_hint;  // SDL_HINT_CREATE_SURFACE_ZEROED, tracked by callback.
+        bool clear_surface = create_surface_zeroed_hint;  // SDL_HINT_CREATE_SURFACE_ZEROED, tracked by callback.
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
         if (create_surface_malloc_hint) {  // "SDL_SURFACE_MALLOC" hint, tracked by callback.
-            if (must_clear) {
+            if (clear_surface) {
                 surface->pixels = SDL_calloc(1, size);
-                must_clear = false;  // SDL_calloc already did it, don't memset again, below.
+                clear_surface = false;  // SDL_calloc already did it, don't memset again, below.
             } else {
                 surface->pixels = SDL_malloc(size);
             }
@@ -278,7 +278,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
             SDL_DestroySurface(surface);
             return NULL;
         }
-        if (must_clear) {
+        if (clear_surface) {
             SDL_memset(surface->pixels, 0, size);
         }
     }
