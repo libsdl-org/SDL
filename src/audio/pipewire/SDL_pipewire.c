@@ -71,6 +71,7 @@ static void (*PIPEWIRE_pw_thread_loop_lock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_unlock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_signal)(struct pw_thread_loop *, bool);
 static void (*PIPEWIRE_pw_thread_loop_wait)(struct pw_thread_loop *);
+static int (*PIPEWIRE_pw_thread_loop_timed_wait)(struct pw_thread_loop *, int);
 static int (*PIPEWIRE_pw_thread_loop_start)(struct pw_thread_loop *);
 static struct pw_context *(*PIPEWIRE_pw_context_new)(struct pw_loop *, struct pw_properties *, size_t);
 static void (*PIPEWIRE_pw_context_destroy)(struct pw_context *);
@@ -167,6 +168,7 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_thread_loop_unlock);
     SDL_PIPEWIRE_SYM(pw_thread_loop_signal);
     SDL_PIPEWIRE_SYM(pw_thread_loop_wait);
+    SDL_PIPEWIRE_SYM(pw_thread_loop_timed_wait);
     SDL_PIPEWIRE_SYM(pw_thread_loop_start);
     SDL_PIPEWIRE_SYM(pw_context_new);
     SDL_PIPEWIRE_SYM(pw_context_destroy);
@@ -1158,6 +1160,7 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     const char *app_name, *icon_name, *app_id, *stream_name, *stream_role, *error;
     Uint32 node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
     const bool recording = device->recording;
+    bool wait_for_ready_timeouted = false;
     int res;
 
     // Clamp the period size to sane values
@@ -1291,14 +1294,19 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Pipewire: Failed to start stream loop");
     }
 
-    // Wait until all pre-open init flags are set or the stream has failed.
+    // Wait until timeout (no device), or all pre-open init flags are set, or the stream has failed
     PIPEWIRE_pw_thread_loop_lock(priv->loop);
-    while (priv->stream_init_status != PW_READY_FLAG_ALL_PREOPEN_BITS &&
+    while (!wait_for_ready_timeouted &&
+           priv->stream_init_status != PW_READY_FLAG_ALL_PREOPEN_BITS &&
            PIPEWIRE_pw_stream_get_state(priv->stream, NULL) != PW_STREAM_STATE_ERROR) {
-        PIPEWIRE_pw_thread_loop_wait(priv->loop);
+        wait_for_ready_timeouted = PIPEWIRE_pw_thread_loop_timed_wait(priv->loop, 2) == ETIMEDOUT;
     }
     priv->stream_init_status |= PW_READY_FLAG_OPEN_COMPLETE;
     PIPEWIRE_pw_thread_loop_unlock(priv->loop);
+
+    if(wait_for_ready_timeouted) {
+        return SDL_SetError("Pipewire: timeout waiting for audio device to be ready");
+    }
 
     if (PIPEWIRE_pw_stream_get_state(priv->stream, &error) == PW_STREAM_STATE_ERROR) {
         return SDL_SetError("Pipewire: Stream error: %s", error);
