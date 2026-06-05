@@ -230,18 +230,22 @@ static SDL_Surface *SDL_CreateSurfaceInternal(int width, int height, SDL_PixelFo
     if (surface->w && surface->h && format != SDL_PIXELFORMAT_MJPG) {
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
         if (SDL_GetHintBoolean("SDL_SURFACE_MALLOC", false)) {
-            surface->pixels = SDL_malloc(size);
+            if (clear_surface) {
+                surface->pixels = SDL_calloc(1, size);
+            } else {
+                surface->pixels = SDL_malloc(size);
+            }
         } else {
             surface->flags |= SDL_SURFACE_SIMD_ALIGNED;
-            surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
+            if (clear_surface) {
+                surface->pixels = SDL_aligned_alloc_zero(SDL_GetSIMDAlignment(), size);
+            } else {
+                surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
+            }
         }
         if (!surface->pixels) {
             SDL_DestroySurface(surface);
             return NULL;
-        }
-
-        if (clear_surface) {
-            SDL_memset(surface->pixels, 0, size);
         }
     }
     return surface;
