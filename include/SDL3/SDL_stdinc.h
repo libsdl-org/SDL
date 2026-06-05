@@ -2601,6 +2601,26 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, S
 extern SDL_DECLSPEC void * SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
 
 /**
+ * Initialize all 16-bit words of buffer of memory to a specific value.
+ *
+ * This function will set a buffer of `words` Uint16 values, pointed to by
+ * `dst`, to the value specified in `val`.
+ *
+ * Unlike SDL_memset, this sets 16-bit values, not bytes, so it's not limited
+ * to a range of 0-255.
+ *
+ * \param dst the destination memory region. Must not be NULL.
+ * \param val the Uint16 value to set.
+ * \param words the number of Uint16 values to set in `dst`.
+ * \returns `dst`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_memset2(void *dst, Uint16 val, size_t words);
+
+/**
  * Initialize all 32-bit words of buffer of memory to a specific value.
  *
  * This function will set a buffer of `dwords` Uint32 values, pointed to by

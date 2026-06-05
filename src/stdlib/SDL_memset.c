@@ -59,9 +59,7 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     dstp4 = (Uint32 *)dstp1;
     left = (len % 4);
     len /= 4;
-    while (len--) {
-        *dstp4++ = value4;
-    }
+    SDL_memset4(dstp4, value4, len);
 
     dstp1 = (Uint8 *)dstp4;
     switch (left) {
@@ -77,6 +75,28 @@ void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
 
     return dst;
 #endif // HAVE_MEMSET
+}
+
+// Note that memset() is a byte assignment and this is a 16-bit assignment, so they're not directly equivalent.
+void *SDL_memset2(void *dst, Uint16 val, size_t words)
+{
+    size_t _n = words;
+    Uint16 *_p = SDL_static_cast(Uint16 *, dst);
+    Uint16 _val = (val);
+
+    if (_n > 1) {
+        if ((uintptr_t)_p & 2) {
+            *_p++ = _val;
+            --_n;
+        }
+        SDL_memset4(_p, (_val << 16) | _val, (_n >> 1));
+    }
+
+    if (_n & 1) {
+        _p[_n - 1] = _val;
+    }
+
+    return dst;
 }
 
 // Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent.

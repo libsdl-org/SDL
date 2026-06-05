@@ -198,65 +198,16 @@ DEFINE_LSX_FILLRECT(4, Uint32)
 
 static void SDL_FillSurfaceRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
-    int n;
-    Uint8 *p = NULL;
-
     while (h--) {
-        n = w;
-        p = pixels;
-
-        if (n > 3) {
-            switch ((uintptr_t)p & 3) {
-            case 1:
-                *p++ = (Uint8)color;
-                --n;
-                SDL_FALLTHROUGH;
-            case 2:
-                *p++ = (Uint8)color;
-                --n;
-                SDL_FALLTHROUGH;
-            case 3:
-                *p++ = (Uint8)color;
-                --n;
-            }
-            SDL_memset4(p, color, (n >> 2));
-        }
-        if (n & 3) {
-            p += (n & ~3);
-            switch (n & 3) {
-            case 3:
-                *p++ = (Uint8)color;
-                SDL_FALLTHROUGH;
-            case 2:
-                *p++ = (Uint8)color;
-                SDL_FALLTHROUGH;
-            case 1:
-                *p++ = (Uint8)color;
-            }
-        }
+        SDL_memset(pixels, color, w);
         pixels += pitch;
     }
 }
 
 static void SDL_FillSurfaceRect2(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
-    int n;
-    Uint16 *p = NULL;
-
     while (h--) {
-        n = w;
-        p = (Uint16 *)pixels;
-
-        if (n > 1) {
-            if ((uintptr_t)p & 2) {
-                *p++ = (Uint16)color;
-                --n;
-            }
-            SDL_memset4(p, color, (n >> 1));
-        }
-        if (n & 1) {
-            p[n - 1] = (Uint16)color;
-        }
+        SDL_memset2(pixels, color, w);
         pixels += pitch;
     }
 }

@@ -31,15 +31,14 @@ static void SDL_DrawLine1(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
 {
     if (y1 == y2) {
         int length;
-        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);
         Uint8 *pixels;
         if (x1 <= x2) {
-            pixels = (Uint8 *)dst->pixels + y1 * pitch + x1;
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x1 * sizeof(Uint8);
             length = draw_end ? (x2 - x1 + 1) : (x2 - x1);
         } else {
-            pixels = (Uint8 *)dst->pixels + y1 * pitch + x2;
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x2 * sizeof(Uint8);
             if (!draw_end) {
-                ++pixels;
+                pixels += sizeof(Uint8);
             }
             length = draw_end ? (x1 - x2 + 1) : (x1 - x2);
         }
@@ -57,7 +56,19 @@ static void SDL_DrawLine2(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
                           bool draw_end)
 {
     if (y1 == y2) {
-        HLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
+        int length;
+        Uint8 *pixels;
+        if (x1 <= x2) {
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x1 * sizeof(Uint16);
+            length = draw_end ? (x2 - x1 + 1) : (x2 - x1);
+        } else {
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x2 * sizeof(Uint16);
+            if (!draw_end) {
+                pixels += sizeof(Uint16);
+            }
+            length = draw_end ? (x1 - x2 + 1) : (x1 - x2);
+        }
+        SDL_memset2(pixels, color, length);
     } else if (x1 == x2) {
         VLINE(Uint16, DRAW_FASTSETPIXEL2, draw_end);
     } else if (ABS(x1 - x2) == ABS(y1 - y2)) {
@@ -86,7 +97,19 @@ static void SDL_DrawLine4(SDL_Surface *dst, int x1, int y1, int x2, int y2, Uint
                           bool draw_end)
 {
     if (y1 == y2) {
-        HLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
+        int length;
+        Uint8 *pixels;
+        if (x1 <= x2) {
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x1 * sizeof(Uint32);
+            length = draw_end ? (x2 - x1 + 1) : (x2 - x1);
+        } else {
+            pixels = (Uint8 *)dst->pixels + y1 * dst->pitch + x2 * sizeof(Uint32);
+            if (!draw_end) {
+                pixels += sizeof(Uint32);
+            }
+            length = draw_end ? (x1 - x2 + 1) : (x1 - x2);
+        }
+        SDL_memset4(pixels, color, length);
     } else if (x1 == x2) {
         VLINE(Uint32, DRAW_FASTSETPIXEL4, draw_end);
     } else if (ABS(x1 - x2) == ABS(y1 - y2)) {

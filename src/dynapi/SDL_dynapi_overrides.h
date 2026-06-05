@@ -1317,3 +1317,4 @@
 #define SDL_HasSVE2 SDL_HasSVE2_REAL
 #define SDL_GamepadHasCapSense SDL_GamepadHasCapSense_REAL
 #define SDL_GetGamepadCapSense SDL_GetGamepadCapSense_REAL
+#define SDL_memset2 SDL_memset2_REAL
