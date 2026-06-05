@@ -299,9 +299,8 @@ void SDL_PostInitMouse(void)
      * so that mouse grab and focus functionality will work.
      */
     if (!mouse->def_cursor) {
-        SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_Surface *surface = SDL_CreateSurfaceZeroed(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (surface) {
-            SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
             SDL_SetDefaultCursor(SDL_CreateColorCursor(surface, 0, 0));
             SDL_DestroySurface(surface);
         }
@@ -1527,7 +1526,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     w = ((w + 7) & ~7);
 
     // Create the surface from a bitmap
-    surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB8888);
+    surface = SDL_CreateSurfaceUninitialized(w, h, SDL_PIXELFORMAT_ARGB8888);
     if (!surface) {
         return NULL;
     }

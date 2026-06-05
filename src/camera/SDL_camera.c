@@ -1028,7 +1028,7 @@ bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
         const bool downscaling_first = (device->needs_scaling < 0);
         const SDL_CameraSpec *s = downscaling_first ? appspec : devspec;
         const SDL_PixelFormat fmt = downscaling_first ? devspec->format : appspec->format;
-        device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
+        device->conversion_surface = SDL_CreateSurfaceUninitialized(s->width, s->height, fmt);
         if (!device->conversion_surface) {
             goto failed;
         }
@@ -1047,7 +1047,7 @@ bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
     for (int i = 0; i < SDL_arraysize(device->output_surfaces); i++) {
         SDL_Surface *surf;
         if (device->needs_scaling || device->needs_conversion) {
-            surf = SDL_CreateSurface(appspec->width, appspec->height, appspec->format);
+            surf = SDL_CreateSurfaceUninitialized(appspec->width, appspec->height, appspec->format);
         } else {
             surf = SDL_CreateSurfaceFrom(appspec->width, appspec->height, appspec->format, NULL, 0);
         }

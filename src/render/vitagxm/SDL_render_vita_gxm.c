@@ -1172,7 +1172,7 @@ static SDL_Surface *VITA_GXM_RenderReadPixels(SDL_Renderer *renderer, const SDL_
         return NULL;
     }
 
-    surface = SDL_CreateSurface(rect->w, rect->h, format);
+    surface = SDL_CreateSurfaceUninitialized(rect->w, rect->h, format);
     if (!surface) {
         return NULL;
     }
