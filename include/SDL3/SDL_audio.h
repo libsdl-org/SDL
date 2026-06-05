@@ -760,6 +760,21 @@ extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDevic
 extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);
 
 /**
+ * Get the physical audio device associated with a logical audio device.
+ *
+ * If `devid` is already a physical device, this function returns `devid`.
+ * If `devid` is an invalid device, it returns 0.
+ *
+ * \param devid the device ID to query.
+ * \returns the physical device ID, or 0 on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.5.0.
+ */
+extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_GetPhysicalAudioDevice(SDL_AudioDeviceID devid);
+
+/**
  * Determine if an audio device is a playback device (instead of recording).
  *
  * This function may return either true or false for invalid device IDs.
@@ -862,8 +877,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID devid);
  *
  * Audio devices default to a gain of 1.0f (no change in output).
  *
- * Physical devices may not have their gain changed, only logical devices, and
- * this function will always return -1.0f when used on physical devices.
+ * Physical device gain support depends on the backend. -1.0f will be returned
+ * if it is not supported.
  *
  * \param devid the audio device to query.
  * \returns the gain of the device or -1.0f on failure; call SDL_GetError()
@@ -885,18 +900,16 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid
  *
  * Audio devices default to a gain of 1.0f (no change in output).
  *
- * Physical devices may not have their gain changed, only logical devices, and
- * this function will always return false when used on physical devices. While
- * it might seem attractive to adjust several logical devices at once in this
- * way, it would allow an app or library to interfere with another portion of
- * the program's otherwise-isolated devices.
+ * Support for gain changes of physical devices depends on the backend. It will
+ * return false if it is not supported; likely you should fall back to changing
+ * the logical device gain in that case.
  *
- * This is applied, along with any per-audiostream gain, during playback to
- * the hardware, and can be continuously changed to create various effects. On
- * recording devices, this will adjust the gain before passing the data into
- * an audiostream; that recording audiostream can then adjust its gain further
- * when outputting the data elsewhere, if it likes, but that second gain is
- * not applied until the data leaves the audiostream again.
+ * For logical devices this is applied, along with any per-audiostream gain,
+ * during playback to the hardware, and can be continuously changed to create
+ * various effects. On recording devices, this will adjust the gain before
+ * passing the data into an audiostream; that recording audiostream can then
+ * adjust its gain further when outputting the data elsewhere, if it likes, but
+ * that second gain is not applied until the data leaves the audiostream again.
  *
  * \param devid the audio device on which to change gain.
  * \param gain the gain. 1.0f is no change, 0.0f is silence.

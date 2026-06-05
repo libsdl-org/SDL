@@ -73,6 +73,9 @@ extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, con
    This can happen due to i/o errors, or a device being unplugged, etc. */
 extern void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device);
 
+// Backends can notify applications of physical device gain changes
+extern void SDL_AudioDeviceGainChanged(SDL_AudioDevice *device);
+
 // Backends should call this if the system default device changes.
 extern void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device);
 
@@ -162,12 +165,15 @@ typedef struct SDL_AudioDriverImpl
     void (*FreeDeviceHandle)(SDL_AudioDevice *device); // SDL is done with this device; free the handle from SDL_AddAudioDevice()
     void (*DeinitializeStart)(void); // SDL calls this, then starts destroying objects, then calls Deinitialize. This is a good place to stop hotplug detection.
     void (*Deinitialize)(void);
+    bool (*SetDeviceGain)(SDL_AudioDevice *device, float gain); // Tell the backend that a device's gain has changed
+    float (*GetDeviceGain)(SDL_AudioDevice *device); // Retrieve the current hardware/server gain
 
     // Some flags to push duplicate code into the core and reduce #ifdefs.
     bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
     bool HasRecordingSupport;
     bool OnlyHasDefaultPlaybackDevice;
     bool OnlyHasDefaultRecordingDevice;   // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
+    bool HasBackendVolumeControl;
 } SDL_AudioDriverImpl;
 
 

@@ -538,6 +538,20 @@ static SDL_AudioDevice *ObtainPhysicalAudioDeviceDefaultAllowed(SDL_AudioDeviceI
     return NULL;
 }
 
+SDL_AudioDeviceID SDL_GetPhysicalAudioDevice(SDL_AudioDeviceID devid)
+{
+    if (SDL_IsAudioDevicePhysical(devid)) {
+        return devid;
+    }
+
+    SDL_AudioDeviceID result = 0;
+    SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+    if (device) {
+        result = device->instance_id;
+        ReleaseAudioDevice(device);
+    }
+    return result;
+}
 // this assumes you hold the _physical_ device lock for this logical device! This will not unlock the lock or close the physical device!
 //  It also will not unref the physical device, since we might be shutting down; SDL_CloseAudioDevice handles the unref.
 static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
@@ -820,6 +834,56 @@ static void SDLCALL SDL_AudioDeviceDisconnected_OnMainThread(void *userdata)
     UnrefPhysicalAudioDevice(device);
 }
 
+
+static void SDLCALL SDL_AudioDeviceGainChanged_OnMainThread(void *userdata)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
+    SDL_assert(device != NULL);
+
+    SDL_PendingAudioDeviceEvent pending;
+    pending.next = NULL;
+    SDL_PendingAudioDeviceEvent *pending_tail = &pending;
+
+    ObtainPhysicalAudioDeviceObj(device);
+
+    const SDL_AudioDeviceID devid = device->instance_id;
+
+    if (!devid) {
+        ReleaseAudioDevice(device);
+        UnrefPhysicalAudioDevice(device);
+        return;
+    }
+
+    SDL_PendingAudioDeviceEvent *p = (SDL_PendingAudioDeviceEvent *)SDL_malloc(sizeof(SDL_PendingAudioDeviceEvent));
+    if (p) {
+        p->type = SDL_EVENT_AUDIO_DEVICE_GAIN_CHANGED;
+        p->devid = devid;
+        p->next = NULL;
+        pending_tail->next = p;
+        pending_tail = p;
+    }
+
+    ReleaseAudioDevice(device);
+
+    if (pending.next) {
+        SDL_LockRWLockForWriting(current_audio.subsystem_rwlock);
+        SDL_PendingAudioDeviceEvent *tail = current_audio.pending_events_tail;
+        SDL_assert(tail->next == NULL);
+        tail->next = pending.next;
+        current_audio.pending_events_tail = pending_tail;
+        SDL_UnlockRWLock(current_audio.subsystem_rwlock);
+    }
+    UnrefPhysicalAudioDevice(device);
+}
+
+void SDL_AudioDeviceGainChanged(SDL_AudioDevice *device)
+{
+    if (device) {
+        RefPhysicalAudioDevice(device);
+        SDL_RunOnMainThread(SDL_AudioDeviceGainChanged_OnMainThread, device, false);
+    }
+}
+
 void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 {
     // lots of risk of various audio backends deadlocking because they're calling
@@ -844,6 +908,8 @@ static void SDL_AudioCloseDevice_Default(SDL_AudioDevice *device) { /* no-op. */
 static void SDL_AudioDeinitializeStart_Default(void) { /* no-op. */ }
 static void SDL_AudioDeinitialize_Default(void) { /* no-op. */ }
 static void SDL_AudioFreeDeviceHandle_Default(SDL_AudioDevice *device) { /* no-op. */ }
+static bool SDL_AudioSetDeviceGain_Default(SDL_AudioDevice *device, float gain) { return false; /* no-op. */ }
+static float SDL_AudioGetDeviceGain_Default(SDL_AudioDevice *device) { return -1.0f; /* no-op. */ }
 
 static void SDL_AudioThreadInit_Default(SDL_AudioDevice *device)
 {
@@ -897,6 +963,8 @@ static void CompleteAudioEntryPoints(void)
     FILL_STUB(FreeDeviceHandle);
     FILL_STUB(DeinitializeStart);
     FILL_STUB(Deinitialize);
+    FILL_STUB(SetDeviceGain);
+    FILL_STUB(GetDeviceGain);
     #undef FILL_STUB
 }
 
@@ -1960,9 +2028,27 @@ bool SDL_AudioDevicePaused(SDL_AudioDeviceID devid)
 
 float SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid)
 {
+    float result = -1.0f;
     SDL_AudioDevice *device = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
-    const float result = logdev ? logdev->gain : -1.0f;
+
+    if (!SDL_IsAudioDeviceLogical(devid)) {
+        if (!current_audio.impl.HasBackendVolumeControl) {
+            return result;
+        }
+        device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+        if (!device) {
+            return result;
+        }
+        float backend_gain = current_audio.impl.GetDeviceGain(device);
+        if (backend_gain >= 0.0f) {
+            result = backend_gain;
+        }
+    } else {
+        SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
+        if (logdev) {
+            result = logdev->gain;
+        }
+    }
     ReleaseAudioDevice(device);
     return result;
 }
@@ -1972,14 +2058,25 @@ bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
     CHECK_PARAM(gain < 0.0f) {
         return SDL_InvalidParamError("gain");
     }
-
-    SDL_AudioDevice *device = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
     bool result = false;
-    if (logdev) {
-        logdev->gain = gain;
-        UpdateAudioStreamFormatsPhysical(device);
-        result = true;
+    SDL_AudioDevice *device = NULL;
+
+    if (!SDL_IsAudioDeviceLogical(devid)) {
+        if (!current_audio.impl.HasBackendVolumeControl) {
+            return result;
+        }
+        device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
+        if (!device) {
+            return result;
+        }
+        result = current_audio.impl.SetDeviceGain(device, gain);
+    } else {
+        SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
+        if (logdev) {
+            logdev->gain = gain;
+            result = true;
+            UpdateAudioStreamFormatsPhysical(device);
+        }
     }
     ReleaseAudioDevice(device);
     return result;
