@@ -144,11 +144,9 @@ public class SDLControllerManager
     }
 
     // Check if a given device is considered a possible SDL joystick
-    static public boolean isDeviceSDLJoystick(int deviceId) {
-        InputDevice device = InputDevice.getDevice(deviceId);
-        // We cannot use InputDevice.isVirtual before API 16, so let's accept
-        // only nonnegative device ids (VIRTUAL_KEYBOARD equals -1)
-        if ((device == null) || (deviceId < 0)) {
+    static public boolean isDeviceSDLJoystick(InputDevice device) {
+        // No virtual device (eg nonnegative deviceId. VIRTUAL_KEYBOARD equals -1)
+        if (device == null || device.isVirtual()) {
             return false;
         }
         int sources = device.getSources();
@@ -170,6 +168,10 @@ public class SDLControllerManager
                 ((sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) ||
                 ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
         );
+    }
+
+    static public boolean isDeviceSDLJoystick(int deviceId) {
+        return isDeviceSDLJoystick(InputDevice.getDevice(deviceId));
     }
 }
 
