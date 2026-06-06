@@ -46,10 +46,10 @@
 // SDL_DispatchGPUComputeIndirect []
 // SDL_DownloadFromGPUBuffer []
 // SDL_DownloadFromGPUTexture []
-// SDL_DrawGPUIndexedPrimitives []
-// SDL_DrawGPUIndexedPrimitivesIndirect []
-// SDL_DrawGPUPrimitives []
-// SDL_DrawGPUPrimitivesIndirect []
+// SDL_DrawGPUIndexedPrimitives [x]
+// SDL_DrawGPUIndexedPrimitivesIndirect [x]
+// SDL_DrawGPUPrimitives [x]
+// SDL_DrawGPUPrimitivesIndirect [x]
 // SDL_EndGPUComputePass []
 // SDL_EndGPUCopyPass [x]
 // SDL_EndGPURenderPass []
@@ -2613,6 +2613,54 @@ static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, 
 static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
 {
     WEBGPU_INTERNAL_MapBufferAndUploadData(&((WebGPUCommandBufferWrapper *)commandBuffer)->uniformBuffers[8 + (slotIndex % 4)]->buffer, data, 0, length);
+}
+
+static void WEBGPU_DrawPrimitives(SDL_GPURenderPass *renderPass, uint32_t numVertices, uint32_t numInstances, uint32_t firstVertex, uint32_t firstInstance)
+{
+    if (!((WebGPURenderPass *)renderPass)->hasBoundPipeline) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "No bound graphics pipeline!");
+    }
+
+    WEBGPU_INTERNAL_BindQueuedResources((WebGPURenderPass *)renderPass);
+    wgpuRenderPassEncoderDraw(((WebGPURenderPass *)renderPass)->renderPassEncoder, numVertices, numInstances, firstVertex, firstInstance);
+}
+
+static void WEBGPU_DrawPrimitivesIndirect(SDL_GPURenderPass *renderPass, SDL_GPUBuffer *buffer, uint32_t offset, uint32_t drawCount)
+{
+    if (!((WebGPURenderPass *)renderPass)->hasBoundPipeline) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "No bound graphics pipeline!");
+    }
+    WEBGPU_INTERNAL_BindQueuedResources((WebGPURenderPass *)renderPass);
+
+    for (int i = 0; i < drawCount; i++) {
+        // ZEUS!
+        // WebGPU, unlike other (cough cough good) API's, doesn't support multi-draw indirect rendering.
+        // So, we have to do this.
+        // NOTE: Dawn actually supports multi-draw indirect. Maybe we should add conditional support for it?
+        wgpuRenderPassEncoderDrawIndirect(((WebGPURenderPass *)renderPass)->renderPassEncoder, ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer, (size_t)offset + (i * 16));
+    }
+}
+
+static void WEBGPU_DrawIndexedPrimitives(SDL_GPURenderPass *renderPass, uint32_t numIndices, uint32_t numInstances, uint32_t firstIndex, Sint32 vertexOffset, uint32_t firstInstance)
+{
+    if (!((WebGPURenderPass *)renderPass)->hasBoundPipeline) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "No bound graphics pipeline!");
+    }
+
+    WEBGPU_INTERNAL_BindQueuedResources((WebGPURenderPass *)renderPass);
+    wgpuRenderPassEncoderDrawIndexed(((WebGPURenderPass *)renderPass)->renderPassEncoder, numIndices, numInstances, firstIndex, vertexOffset, firstInstance);
+}
+
+static void WEBGPU_DrawIndexedPrimitivesIndirect(SDL_GPURenderPass *renderPass, SDL_GPUBuffer *buffer, uint32_t offset, uint32_t drawCount)
+{
+    if (!((WebGPURenderPass *)renderPass)->hasBoundPipeline) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "No bound graphics pipeline!");
+    }
+    WEBGPU_INTERNAL_BindQueuedResources((WebGPURenderPass *)renderPass);
+
+    for (int i = 0; i < drawCount; i++) {
+        wgpuRenderPassEncoderDrawIndexedIndirect(((WebGPURenderPass *)renderPass)->renderPassEncoder, ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer, (size_t)offset + (i * 20));
+    }
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
