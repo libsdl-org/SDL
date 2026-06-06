@@ -1046,7 +1046,7 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
         float integer_x, integer_y;
 
-        if (!mouse->relative_mode || mouse->warp_emulation_active) {
+        if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID) {
             // We're not in relative mode, so all mouse events are global mouse events
             mouseID = SDL_GLOBAL_MOUSE_ID;
         }

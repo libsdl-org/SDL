@@ -39,6 +39,14 @@ enum SDL_WaylandAxisEvent
     SDL_WAYLAND_AXIS_EVENT_VALUE120
 };
 
+enum SDL_WaylandAxisSource
+{
+    SDL_WAYLAND_AXIS_SOURCE_WHEEL = 0,
+    SDL_WAYLAND_AXIS_SOURCE_FINGER = 1,
+    SDL_WAYLAND_AXIS_SOURCE_CONTINUOUS = 2,
+    SDL_WAYLAND_AXIS_SOURCE_WHEEL_TILT = 3,
+};
+
 typedef struct
 {
     Sint32 repeat_rate;     // Repeat rate in range of [1, 1000] character(s) per second
@@ -235,6 +243,8 @@ typedef struct SDL_WaylandSeat
                 float y;
 
                 SDL_MouseWheelDirection direction;
+                enum SDL_WaylandAxisSource source;
+                bool released;
             } axis;
 
             struct wl_surface *enter_surface;

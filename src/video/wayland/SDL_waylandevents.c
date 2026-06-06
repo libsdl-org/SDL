@@ -1288,8 +1288,13 @@ static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
         break;
     }
 
+    SDL_MouseID pointer_id = seat->pointer.sdl_id;
+    if (seat->pointer.pending_frame.axis.source == SDL_WAYLAND_AXIS_SOURCE_FINGER) {
+        pointer_id = SDL_TOUCH_MOUSEID;
+    }
+
     SDL_SendMouseWheel(seat->pointer.pending_frame.timestamp_ns,
-                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+                       seat->pointer.focus->sdlwindow, pointer_id, x, y, direction);
 }
 
 static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
@@ -1352,13 +1357,17 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
                                        uint32_t axis_source)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.have_axis = true;
+    seat->pointer.pending_frame.axis.source = axis_source;
 }
 
 static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
                                      uint32_t time, uint32_t axis)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.have_axis = true;
+    seat->pointer.pending_frame.axis.released = true;
 }
 
 static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
