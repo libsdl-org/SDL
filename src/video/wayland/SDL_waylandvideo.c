@@ -562,6 +562,11 @@ static void display_handle_done(void *data,
     SDL_VideoData *video = driverdata->videodata;
     SDL_DisplayMode native_mode, desktop_mode;
     SDL_VideoDisplay *dpy;
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
+    const SDL_bool has_qt_touch = video->touch != NULL;
+#else
+    const SDL_bool has_qt_touch = SDL_FALSE;
+#endif
     const SDL_bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, SDL_TRUE);
 
     /*
@@ -602,8 +607,10 @@ static void display_handle_done(void *data,
         driverdata->height /= driverdata->scale_factor;
     }
 
-    /* xdg-output dimensions are already transformed, so no need to rotate. */
-    if (driverdata->has_logical_size || !(driverdata->transform & WL_OUTPUT_TRANSFORM_90)) {
+    /* xdg-output dimensions are already transformed, so no need to rotate, and Qt touch indicates Sailfish,
+     * and shouldn't be rotated.
+     */
+    if (driverdata->has_logical_size || !(driverdata->transform & WL_OUTPUT_TRANSFORM_90) || has_qt_touch) {
         desktop_mode.w = driverdata->width;
         desktop_mode.h = driverdata->height;
     } else {
@@ -625,7 +632,7 @@ static void display_handle_done(void *data,
     }
 
     /* Calculate the display DPI */
-    if (driverdata->transform & WL_OUTPUT_TRANSFORM_90) {
+    if ((driverdata->transform & WL_OUTPUT_TRANSFORM_90) && !has_qt_touch) {
         driverdata->hdpi = driverdata->physical_height ? (((float)driverdata->native_height) * 25.4f / driverdata->physical_height) : 0.0f;
         driverdata->vdpi = driverdata->physical_width ? (((float)driverdata->native_width) * 25.4f / driverdata->physical_width) : 0.0f;
         driverdata->ddpi = SDL_ComputeDiagonalDPI(driverdata->native_height,
