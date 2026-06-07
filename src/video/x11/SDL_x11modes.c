@@ -66,7 +66,9 @@ static int get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
          X11_XMatchVisualInfo(display, screen, depth, DirectColor, vinfo)) ||
         X11_XMatchVisualInfo(display, screen, depth, TrueColor, vinfo) ||
         X11_XMatchVisualInfo(display, screen, depth, PseudoColor, vinfo) ||
-        X11_XMatchVisualInfo(display, screen, depth, StaticColor, vinfo)) {
+        X11_XMatchVisualInfo(display, screen, depth, StaticColor, vinfo) ||
+        X11_XMatchVisualInfo(display, screen, depth, GrayScale, vinfo) ||
+        X11_XMatchVisualInfo(display, screen, depth, StaticGray, vinfo)) {
         return 0;
     }
     return -1;

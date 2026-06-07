@@ -52,6 +52,8 @@ typedef struct
     XShmSegmentInfo shminfo;
 #endif
     XImage *ximage;
+    unsigned char *grayscale_buf; /* 8bpp Y8 XImage data for StaticGray displays (freed by XDestroyImage) */
+    void *argb_buf;               /* ARGB8888 app surface pixels for StaticGray displays */
     GC gc;
     XIC ic;
     SDL_bool created;

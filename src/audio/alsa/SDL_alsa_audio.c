@@ -117,8 +117,12 @@ static int load_alsa_sym(const char *fn, void **addr)
 #define SDL_ALSA_SYM(x)                                 \
     if (!load_alsa_sym(#x, (void **)(char *)&ALSA_##x)) \
     return -1
+/* Optional: symbol may be absent on old ALSA (e.g. 1.0.x); NULL if missing. */
+#define SDL_ALSA_SYM_OPT(x)                                      \
+    load_alsa_sym(#x, (void **)(char *)&ALSA_##x); SDL_ClearError()
 #else
 #define SDL_ALSA_SYM(x) ALSA_##x = x
+#define SDL_ALSA_SYM_OPT(x) ALSA_##x = x  /* static link: always available */
 #endif
 
 static int load_alsa_syms(void)
@@ -167,8 +171,8 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_info_malloc);
     SDL_ALSA_SYM(snd_pcm_info_free);
 #ifdef SND_CHMAP_API_VERSION
-    SDL_ALSA_SYM(snd_pcm_get_chmap);
-    SDL_ALSA_SYM(snd_pcm_chmap_print);
+    SDL_ALSA_SYM_OPT(snd_pcm_get_chmap);   /* absent on ALSA < 1.1.0 (Kindle: 1.0.22) */
+    SDL_ALSA_SYM_OPT(snd_pcm_chmap_print);  /* absent on ALSA < 1.1.0 */
 #endif
 
     return 0;
@@ -690,15 +694,17 @@ static int ALSA_OpenDevice(_THIS, const char *devname)
      */
     this->hidden->swizzle_func = swizzle_alsa_channels;
 #ifdef SND_CHMAP_API_VERSION
-    chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
-    if (chmap) {
-        if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
-            if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
-                SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
-                this->hidden->swizzle_func = no_swizzle;
+    if (ALSA_snd_pcm_get_chmap) {  /* NULL on ALSA < 1.1.0 */
+        chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
+        if (chmap) {
+            if (ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str) > 0) {
+                if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
+                    SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
+                    this->hidden->swizzle_func = no_swizzle;
+                }
             }
+            free(chmap);
         }
-        free(chmap);
     }
 #endif /* SND_CHMAP_API_VERSION */
 

@@ -99,8 +99,11 @@
 /* Desktop Linux/Unix-like */
 #define DEFAULT_OGL        "libGL.so.1"
 #define DEFAULT_EGL        "libEGL.so.1"
+#define ALT_EGL            "libEGL.so"
 #define ALT_OGL            "libOpenGL.so.0"
 #define DEFAULT_OGL_ES2    "libGLESv2.so.2"
+#define ALT_OGL_ES2        "libGLESv2.so"   /* fallback for embedded (no versioned symlink) */
+#define ALT_OGL_ES2_MESA   "libGL.so.1"     /* Kindle/embedded Mesa: GLES2 via libGL */
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
@@ -346,8 +349,18 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
                 path = DEFAULT_OGL_ES2;
                 opengl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL_ES2
-                if (!opengl_dll_handle && !vc4) {
+                if (!opengl_dll_handle
+#ifdef SDL_VIDEO_DRIVER_RPI
+                    && !vc4
+#endif
+                ) {
                     path = ALT_OGL_ES2;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
+#ifdef ALT_OGL_ES2_MESA
+                if (!opengl_dll_handle) {
+                    path = ALT_OGL_ES2_MESA;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
@@ -360,7 +373,11 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #ifdef ALT_OGL_ES2
-                if (!opengl_dll_handle && !vc4) {
+                if (!opengl_dll_handle
+#ifdef SDL_VIDEO_DRIVER_RPI
+                    && !vc4
+#endif
+                ) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
@@ -402,7 +419,11 @@ static int SDL_EGL_LoadLibraryInternal(_THIS, const char *egl_path)
         egl_dll_handle = SDL_LoadObject(path);
 
 #ifdef ALT_EGL
-        if (!egl_dll_handle && !vc4) {
+        if (!egl_dll_handle
+#ifdef SDL_VIDEO_DRIVER_RPI
+            && !vc4
+#endif
+        ) {
             path = ALT_EGL;
             egl_dll_handle = SDL_LoadObject(path);
         }

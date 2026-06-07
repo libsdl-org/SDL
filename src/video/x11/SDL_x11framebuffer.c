@@ -81,6 +81,39 @@ int X11_CreateWindowFramebuffer(_THIS, SDL_Window *window, Uint32 *format,
         return SDL_SetError("Unknown window pixel format");
     }
 
+    /* StaticGray/GrayScale 8bpp (Kindle e-ink): the app renders in ARGB8888;
+       we keep a private 8bpp Y8 buffer for the XImage and convert on every present. */
+    if (*format == SDL_PIXELFORMAT_INDEX8 &&
+        (vinfo.class == StaticGray || vinfo.class == GrayScale)) {
+        data->grayscale_buf = (unsigned char *)SDL_malloc((size_t)w * h);
+        if (!data->grayscale_buf) {
+            return SDL_OutOfMemory();
+        }
+        SDL_memset(data->grayscale_buf, 0, (size_t)w * h);
+        data->ximage = X11_XCreateImage(display, data->visual,
+                                        vinfo.depth, ZPixmap, 0,
+                                        (char *)data->grayscale_buf,
+                                        w, h, 8, w);
+        if (!data->ximage) {
+            SDL_free(data->grayscale_buf);
+            data->grayscale_buf = NULL;
+            return SDL_SetError("Couldn't create grayscale XImage");
+        }
+        data->ximage->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN) ? MSBFirst : LSBFirst;
+        *format = SDL_PIXELFORMAT_ARGB8888;
+        *pitch  = w * 4;
+        *pixels = SDL_malloc((size_t)h * (*pitch));
+        if (!*pixels) {
+            XDestroyImage(data->ximage); /* frees grayscale_buf via ximage->data */
+            data->ximage = NULL;
+            data->grayscale_buf = NULL;
+            return SDL_OutOfMemory();
+        }
+        SDL_memset(*pixels, 0, (size_t)h * (*pitch));
+        data->argb_buf = *pixels;
+        return 0;
+    }
+
     /* Calculate pitch */
     *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
@@ -155,6 +188,25 @@ int X11_UpdateWindowFramebuffer(_THIS, SDL_Window *window, const SDL_Rect *rects
     int window_w, window_h;
 
     SDL_GetWindowSizeInPixels(window, &window_w, &window_h);
+
+    /* StaticGray path: convert dirty rects from ARGB8888 app surface to Y8 grayscale */
+    if (data->grayscale_buf) {
+        const Uint32 *src = (const Uint32 *)data->argb_buf;
+        unsigned char *dst = data->grayscale_buf;
+        int r, c;
+        for (r = 0; r < window_h; ++r) {
+            const Uint32 *row = src + r * window_w;
+            unsigned char *grow = dst + r * window_w;
+            for (c = 0; c < window_w; ++c) {
+                Uint32 p = row[c];
+                unsigned int R = (p >> 16) & 0xFF;
+                unsigned int G = (p >>  8) & 0xFF;
+                unsigned int B = (p      ) & 0xFF;
+                /* BT.601 luma: Y = 0.299R + 0.587G + 0.114B (integer approx) */
+                grow[c] = (unsigned char)((77 * R + 150 * G + 29 * B) >> 8);
+            }
+        }
+    }
 
 #ifndef NO_SHARED_MEMORY
     if (data->use_mitshm) {
@@ -237,7 +289,7 @@ void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
     display = data->videodata->display;
 
     if (data->ximage) {
-        XDestroyImage(data->ximage);
+        XDestroyImage(data->ximage); /* frees ximage->data (grayscale_buf or SHM addr) */
 
 #ifndef NO_SHARED_MEMORY
         if (data->use_mitshm) {
@@ -249,6 +301,11 @@ void X11_DestroyWindowFramebuffer(_THIS, SDL_Window *window)
 #endif /* !NO_SHARED_MEMORY */
 
         data->ximage = NULL;
+        data->grayscale_buf = NULL; /* freed by XDestroyImage above */
+    }
+    if (data->argb_buf) {
+        SDL_free(data->argb_buf);
+        data->argb_buf = NULL;
     }
     if (data->gc) {
         X11_XFreeGC(display, data->gc);
