@@ -487,8 +487,8 @@
 /* Enable Metal support */
 #cmakedefine SDL_VIDEO_METAL 1
 
-/* Enable experimental WGPU support */
-#cmakedefine SDL_VIDEO_WGPU 1
+/* Enable experimental WEBGPU support */
+#cmakedefine SDL_VIDEO_WEBGPU 1
 #cmakedefine WGPU_STATIC 1
 #cmakedefine WGPU_NATIVE 1
 #cmakedefine WGPU_DAWN 1
@@ -498,6 +498,7 @@
 #cmakedefine SDL_GPU_D3D12 1
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
+#cmakedefine SDL_GPU_WEBGPU 1
 #cmakedefine HAVE_GPU_OPENXR 1
 
 #cmakedefine SDL_GPU_PRIVATE 1

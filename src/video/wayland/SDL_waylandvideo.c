@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../core/linux/SDL_system_theme.h"
 #include "../../core/linux/SDL_progressbar.h"
+#include "../../core/linux/SDL_system_theme.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -36,18 +36,19 @@
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandvulkan.h"
-#include "SDL_waylandwindow.h"
 #include "SDL_waylandwgpu.h"
+#include "SDL_waylandwindow.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include <wayland-util.h>
 
 #include "alpha-modifier-v1-client-protocol.h"
+#include "color-management-v1-client-protocol.h"
 #include "cursor-shape-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
 #include "frog-color-management-v1-client-protocol.h"
@@ -55,8 +56,11 @@
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
+#include "single-pixel-buffer-v1-client-protocol.h"
 #include "tablet-v2-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 #include "viewporter-client-protocol.h"
@@ -67,10 +71,6 @@
 #include "xdg-output-unstable-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
-#include "color-management-v1-client-protocol.h"
-#include "pointer-warp-v1-client-protocol.h"
-#include "pointer-gestures-unstable-v1-client-protocol.h"
-#include "single-pixel-buffer-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -392,7 +392,7 @@ static void Wayland_DeriveOutputPixelCoordinates(SDL_VideoData *vid)
      *
      * Patches for a more sophisticated algorithm are welcome.
      */
-    for ( int i = 0; i < vid->output_count; ++i) {
+    for (int i = 0; i < vid->output_count; ++i) {
         SDL_DisplayData *d = vid->output_list[i];
         d->pixel.x = d->logical.x;
         d->pixel.y = d->logical.y;
@@ -599,7 +599,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     SDL_VideoDevice *device;
     SDL_VideoData *data;
     struct wl_display *display = SDL_GetPointerProperty(SDL_GetGlobalProperties(),
-                                                 SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
+                                                        SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
     bool display_is_external = !!display;
 
     // Are we trying to connect to, or are currently in, a Wayland session?
@@ -757,7 +757,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->Vulkan_GetPresentationSupport = Wayland_Vulkan_GetPresentationSupport;
 #endif
 
-#ifdef SDL_VIDEO_WGPU
+#ifdef SDL_VIDEO_WEBGPU
     device->WGPU_CreateSurface = Wayland_WGPU_CreateSurface;
 #endif
     device->free = Wayland_DeleteDevice;
@@ -960,8 +960,8 @@ static void handle_wl_output_geometry(void *data, struct wl_output *output, int 
     }
 
     internal->transform = transform;
-#define TF_CASE(in, out)                                 \
-    case WL_OUTPUT_TRANSFORM_##in:                       \
+#define TF_CASE(in, out)                               \
+    case WL_OUTPUT_TRANSFORM_##in:                     \
         internal->orientation = SDL_ORIENTATION_##out; \
         break;
     if (internal->physical.width_mm >= internal->physical.height_mm) {
@@ -1303,7 +1303,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 {
     Wayland_SortOutputs(vid);
 
-    for(int i = 0; i < vid->output_count; ++i) {
+    for (int i = 0; i < vid->output_count; ++i) {
         SDL_DisplayData *d = vid->output_list[i];
         d->display = SDL_AddVideoDisplay(&d->placeholder, false);
         SDL_free(d->placeholder.name);
@@ -1457,8 +1457,7 @@ static void handle_registry_remove_global(void *data, struct wl_registry *regist
     }
 
     SDL_WaylandSeat *seat, *temp;
-    wl_list_for_each_safe (seat, temp, &d->seat_list, link)
-    {
+    wl_list_for_each_safe (seat, temp, &d->seat_list, link) {
         if (seat->registry_id == id) {
             Wayland_SeatDestroy(seat, false);
             return;
@@ -1511,7 +1510,8 @@ static int SDLCALL LibdecorNewInThread(void *data)
 // Non-POSIX, but Linux and some BSDs have it.
 // To reduce the number of code paths, if getresuid() isn't available at
 // compile-time, we behave as though it existed but failed at runtime.
-static inline int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid)
+{
     errno = ENOSYS;
     return -1;
 }
@@ -1519,7 +1519,8 @@ static inline int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
 
 #ifndef HAVE_GETRESGID
 // Same as getresuid() but for the primary group
-static inline int getresgid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int getresgid(uid_t *ruid, uid_t *euid, uid_t *suid)
+{
     errno = ENOSYS;
     return -1;
 }

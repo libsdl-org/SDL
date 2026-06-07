@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_wgpu.h>
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_X11)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_X11)
 
 #ifdef __cplusplus
 extern "C" {

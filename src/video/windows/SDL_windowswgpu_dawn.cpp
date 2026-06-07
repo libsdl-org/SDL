@@ -2,7 +2,7 @@
 
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(WGPU_NATIVE)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(WGPU_NATIVE)
 #include "SDL_windowsvideo.h"
 
 #include "../SDL_wgpu_defs.h"

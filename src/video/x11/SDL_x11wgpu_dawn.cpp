@@ -5,10 +5,10 @@
 
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_X11) && defined(WGPU_DAWN)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_X11) && defined(WGPU_DAWN)
 
-#include "../SDL_wgpu_defs.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_wgpu_defs.h"
 
 #include "SDL_x11wgpu.h"
 
@@ -18,7 +18,7 @@ WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
 {
     SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
 
-    struct Display *x11_display = (Display*)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, 0);
+    struct Display *x11_display = (Display *)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, 0);
     int x11_window = SDL_GetNumberProperty(windowProperties, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
     WGPUSurfaceDescriptor desc;
     WGPUSurfaceSourceXlibWindow source;

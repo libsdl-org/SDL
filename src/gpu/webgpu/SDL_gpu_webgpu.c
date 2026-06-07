@@ -108,9 +108,6 @@
 
 #include "SDL_internal.h"
 
-// FIXME: Temporarily here so that I'm not coding blind
-#define SDL_GPU_WEBGPU 1
-
 #ifdef SDL_GPU_WEBGPU
 
 #include "../SDL_sysgpu.h"
@@ -830,10 +827,9 @@ static void WEBGPU_RequestAdapterCallback(WGPURequestAdapterStatus status, WGPUA
         ((WebGPURenderer *)renderer)->adapter = adapter;
         if (((WebGPURenderer *)renderer)->debugMode) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU adapter!");
-
-            if (success != NULL) {
-                *((bool *)success) = true;
-            }
+        }
+        if (success != NULL) {
+            *((bool *)success) = true;
         }
     } else {
         // FIXME: I'm not entirely sure what the SDL conventions about error handling are so I'm just gonna return false and log an error.
@@ -850,9 +846,9 @@ static void WEBGPU_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDev
         ((WebGPURenderer *)renderer)->device = device;
         if (((WebGPURenderer *)renderer)->debugMode) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU device!");
-            if (success != NULL) {
-                *((bool *)success) = true;
-            }
+        }
+        if (success != NULL) {
+            *((bool *)success) = true;
         }
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Requesting WebGPU device failed!\n'%s'", message.data);
@@ -864,16 +860,15 @@ static void WEBGPU_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDev
 
 static void WEBGPU_RequestAdapter(WebGPURenderer *renderer, bool *success)
 {
-    WGPURequestAdapterOptions adapterReqOptions;
-    adapterReqOptions.powerPreference = renderer->preferLowPower ? WGPUPowerPreference_LowPower : WGPUPowerPreference_HighPerformance;
+    WGPURequestAdapterOptions *adapterReqOptions;
 
-    wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = &renderer, .userdata2 = success });
-#ifdef __EMSCRIPTEN_
-    // HACK: When using Emscripten, wgpuInstanceRequestAdapter/Device only triggers its callback after waiting a bit.
-    // So, we'll just.... sleep for a millisecond-
-    // OW OW OW STOP THROWING TOMATOES AT ME (loud booing in background)
-    emscripten_sleep(1);
-#endif
+    adapterReqOptions = SDL_calloc(1, sizeof(*adapterReqOptions));
+    adapterReqOptions->powerPreference = renderer->preferLowPower ? WGPUPowerPreference_LowPower : WGPUPowerPreference_HighPerformance;
+
+    WGPUFuture future = wgpuInstanceRequestAdapter(renderer->instance, adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = &renderer, .userdata2 = success });
+    WGPUFutureWaitInfo waitInfo = { future, false };
+
+    wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
 }
 
 static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
@@ -882,116 +877,16 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
     deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){ .callback = WEBGPU_DeviceLostCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = NULL };
     deviceDesc.uncapturedErrorCallbackInfo = (WGPUUncapturedErrorCallbackInfo){ .callback = WEBGPU_UncapturedErrorCallback, .nextInChain = NULL, .userdata1 = &renderer->debugMode, .userdata2 = NULL };
 
-    wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowSpontaneous, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
+    WGPUFuture future = wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
+    WGPUFutureWaitInfo waitInfo = { future, false };
 
-#ifdef __EMSCRIPTEN_
-    // HACK: See WEBGPU_RequestAdapter.
-    emscripten_sleep(1);
-#endif
-}
-
-static bool WEBGPU_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
-{
-    bool result = false;
-    // FIXME: We're gonna cheat and statically link the library for now.
-    // We'll make it dynamically loaded eventually™,
-
-    // The renderer's heap allocated since I don't wanna risk a stack overflow (OMG HE SAID THE THING!!!!!!)
-    WebGPURenderer *renderer;
-
-    if (_this->WGPU_CreateSurface == NULL) {
-        return false;
-    }
-
-    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
-
-    renderer->debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
-    renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
-    renderer->shouldRecreateLostDevice = true;
-
-    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
-
-    if (!renderer->instance) {
-        result = false;
-        goto finished;
-    }
-
-    bool getAdapterSucceeded = false;
-    bool getDeviceSucceeded = false;
-    int loops = 0;
-
-    WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
-
-    while (!getAdapterSucceeded) {
-        // Simple timeout functionality.
-        if (loops < 2500) {
-            loops++;
-        } else {
-            result = false;
-            goto finished;
-        }
-#ifdef __EMSCRIPTEN_
-        // HACK: If we don't sleep we'll just eat up 100% CPU time and the program'll freeze.
-        emscripten_sleep(1);
-#endif
-    }
-
-    WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
-
-    while (!getDeviceSucceeded) {
-#ifdef __EMSCRIPTEN_
-        emscripten_sleep(1);
-#endif
-    }
-
-    renderer->queue = wgpuDeviceGetQueue(renderer->device);
-
-    if (!renderer->queue) {
-        result = false;
-        goto finished;
-    }
-
-    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
-
-    if (!renderer->commandEncoder) {
-        result = false;
-        goto finished;
-    }
-
-    // Alright, if we've reached this logic everything went well!
-    // Let's free all resources and return a success!
-    result = true;
-    goto finished;
-
-finished:
-    // NOTE: Not entirely sure if this is safe or if it'll crash the program.
-    // This is the first time I've ever used C's memory allocation stuff. -- TheStickmahn
-    renderer->shouldRecreateLostDevice = false;
-    renderer->debugMode = false; // shut up
-
-    if (renderer->commandEncoder) {
-        wgpuCommandEncoderRelease(renderer->commandEncoder);
-    }
-    if (renderer->queue) {
-        wgpuQueueRelease(renderer->queue);
-    }
-    if (renderer->device) {
-        wgpuDeviceRelease(renderer->device);
-    }
-    if (renderer->adapter) {
-        wgpuAdapterRelease(renderer->adapter);
-    }
-    if (renderer->instance) {
-        wgpuInstanceRelease(renderer->instance);
-    }
-
-    SDL_free(renderer);
-    return result;
+    wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
 }
 
 static void WEBGPU_BeginCopyPass(
     SDL_GPUCommandBuffer *commandBuffer)
 {
+    // No-op.
 }
 
 static void WEBGPU_EndCopyPass(SDL_GPUCommandBuffer *copyPass)
@@ -1058,13 +953,15 @@ static SDL_GPUFence *WEBGPU_SubmitCommandBufferAndAcquireFence(SDL_GPUCommandBuf
     wgpuQueueSubmit(*((WebGPUCommandBuffer *)commandBuffer)->queue, 1, &cmdBuf);
 
     SDL_free(commandBuffer);
-    return true;
+    return (SDL_GPUFence *)fence;
 }
 
 static bool WEBGPU_QueryFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
 {
     if (fence != NULL) {
         return ((WebGPUFence *)fence)->status;
+    } else {
+        return false;
     }
 }
 
@@ -1232,6 +1129,8 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
             texture->subresources[subresourceIndex].level = j;
         }
     }
+
+    return texture;
 }
 
 static SDL_GPUTexture *WEBGPU_CreateTexture(
@@ -1301,7 +1200,7 @@ static WebGPUShaderBinding *WEBGPU_INTERNAL_CreateShaderBinding(WGPUDevice *devi
     if (totalBoundNonUniformResources != 0) {
         samplerStorageEntries = (WGPUBindGroupLayoutEntry *)SDL_calloc(totalBoundNonUniformResources, sizeof(*samplerStorageEntries));
 
-        int currentOffset;
+        int currentOffset = 0;
 
         for (int i = 0; i < numSamplers; i++) {
             samplerStorageEntries[currentOffset].binding = currentOffset;
@@ -1357,6 +1256,8 @@ static WebGPUShaderBinding *WEBGPU_INTERNAL_CreateShaderBinding(WGPUDevice *devi
 
     SDL_free(samplerStorageEntries);
     SDL_free(uniformEntries);
+
+    return binding;
 }
 
 static bool WEBGPU_INTERNAL_GetShaderFromRef(WebGPURenderer *renderer, WebGPUShaderReference *ref, WebGPUShader *shaderResult)
@@ -1371,7 +1272,7 @@ static bool WEBGPU_INTERNAL_GetShaderFromRef(WebGPURenderer *renderer, WebGPUSha
 static SDL_GPUShader *WEBGPU_CreateShader(SDL_GPURenderer *device, const SDL_GPUShaderCreateInfo *createInfo)
 {
     WebGPURenderer *renderer = (WebGPURenderer *)device;
-    WebGPUShader *shader;
+    WebGPUShader *shader = NULL;
     WebGPUShaderReference *shaderRef;
 
     uint32_t shaderSourceHash = 0;
@@ -1380,7 +1281,6 @@ static SDL_GPUShader *WEBGPU_CreateShader(SDL_GPURenderer *device, const SDL_GPU
         SDL_SetError("Shader format is not SDL_GPU_SHADERFORMAT_WGSL!");
         return NULL;
     }
-
     shaderSourceHash = SDL_HashString(NULL, createInfo->code);
 
     if (SDL_FindInHashTable(renderer->shaders, &shaderSourceHash, (void *)shader)) {
@@ -1424,7 +1324,7 @@ static SDL_GPUShader *WEBGPU_CreateShader(SDL_GPURenderer *device, const SDL_GPU
 
 static void WEBGPU_ReleaseShader(SDL_GPURenderer *device, SDL_GPUShader *shader)
 {
-    WebGPUShader *actualShader;
+    WebGPUShader *actualShader = NULL;
 
     if (SDL_FindInHashTable(((WebGPURenderer *)device)->shaders, &((WebGPUShaderReference *)shader)->shaderSourceHash, (void *)actualShader)) {
         if (((WebGPUShaderReference *)shader)->stage == SDL_GPU_SHADERSTAGE_VERTEX) {
@@ -1465,7 +1365,7 @@ static void WEBGPU_ReleaseShader(SDL_GPURenderer *device, SDL_GPUShader *shader)
 static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *device, const SDL_GPUGraphicsPipelineCreateInfo *createInfo)
 {
     WebGPURenderPipeline *pipeline;
-    WebGPUShader *shader;
+    WebGPUShader *shader = NULL;
 
     WGPURenderPipelineDescriptor desc;
 
@@ -1545,7 +1445,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
 
     for (int i = 0; i < fragmentState.targetCount; i++) {
         WGPUColorTargetState state;
-        WGPUColorWriteMask colorWriteMask;
+        WGPUColorWriteMask colorWriteMask = 0;
         WGPUBlendComponent alphaBlendComp;
         WGPUBlendComponent colorBlendComp;
         WGPUBlendState *blendState;
@@ -2094,6 +1994,8 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
         attachment->view = WEBGPU_INTERNAL_FetchTextureSubresource((WebGPUTextureContainer *)colorTargetInfo->texture, colorTargetInfo->layer_or_depth_plane, colorTargetInfo->mip_level)->renderTargetViews[0];
     }
 
+    depthStencilAttachment = (WGPURenderPassDepthStencilAttachment *)SDL_calloc(1, sizeof(*depthStencilAttachment));
+
     depthStencilAttachment->depthClearValue = depthStencilTargetInfo->clear_depth;
     depthStencilAttachment->depthLoadOp = SDLToWebGPU_LoadOp[depthStencilTargetInfo->load_op];
     depthStencilAttachment->depthStoreOp = SDLToWebGPU_StoreOp[depthStencilTargetInfo->store_op];
@@ -2337,6 +2239,9 @@ static void WEBGPU_INTERNAL_BindVertexGroupZero(WebGPUCommandBuffer *renderPass)
         bindGroupEntries[currentOffset].buffer = storageBuffer->storageBuffer->activeBuffer->buffer;
     }
 
+    bindGroupDesc.entryCount = currentOffset;
+    bindGroupDesc.entries = bindGroupEntries;
+
     bindGroupZero = wgpuDeviceCreateBindGroup(*renderPass->device, &bindGroupDesc);
 
     // NOTE: I'm not entirely sure that the lifetime of bindGroupZero here extends long enough?
@@ -2368,6 +2273,9 @@ static void WEBGPU_INTERNAL_BindVertexGroupOne(WebGPUCommandBuffer *renderPass)
         bindGroupEntries[i].binding = i;
         bindGroupEntries[i].buffer = renderPass->uniformBuffers[i % 4]->buffer;
     }
+
+    bindGroupDesc.entryCount = renderPass->boundPipeline->vertexShaderBinding->numUniformBuffers;
+    bindGroupDesc.entries = bindGroupEntries;
 
     bindGroupOne = wgpuDeviceCreateBindGroup(*renderPass->device, &bindGroupDesc);
 
@@ -2413,6 +2321,9 @@ static void WEBGPU_INTERNAL_BindFragmentGroupTwo(WebGPUCommandBuffer *renderPass
         bindGroupEntries[currentOffset].buffer = storageBuffer->storageBuffer->activeBuffer->buffer;
     }
 
+    bindGroupDesc.entryCount = currentOffset;
+    bindGroupDesc.entries = bindGroupEntries;
+
     bindGroupTwo = wgpuDeviceCreateBindGroup(*renderPass->device, &bindGroupDesc);
 
     wgpuRenderPassEncoderSetBindGroup(renderPass->renderPassEncoder, 2, bindGroupTwo, 0, NULL);
@@ -2440,6 +2351,9 @@ static void WEBGPU_INTERNAL_BindFragmentGroupThree(WebGPUCommandBuffer *renderPa
         bindGroupEntries[i].binding = i;
         bindGroupEntries[i].buffer = renderPass->uniformBuffers[i % 4]->buffer;
     }
+
+    bindGroupDesc.entryCount = renderPass->boundPipeline->vertexShaderBinding->numUniformBuffers;
+    bindGroupDesc.entries = bindGroupEntries;
 
     bindGroupThree = wgpuDeviceCreateBindGroup(*renderPass->device, &bindGroupDesc);
 
@@ -2546,14 +2460,22 @@ static void WEBGPU_DrawIndexedPrimitivesIndirect(SDL_GPUCommandBuffer *renderPas
     }
 }
 
+static void WEBGPU_SetBlendConstants(SDL_GPUCommandBuffer *commandBuffer, SDL_FColor blendConstants)
+{
+    wgpuRenderPassEncoderSetBlendConstant(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, &(WGPUColor){ blendConstants.a, blendConstants.r, blendConstants.g, blendConstants.b });
+}
+
+static void WEBGPU_SetScissor(SDL_GPUCommandBuffer *commandBuffer, const SDL_Rect *scissor)
+{
+    wgpuRenderPassEncoderSetScissorRect(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, scissor->x, scissor->y, scissor->w, scissor->h);
+}
+
 // -- UNIMPLEMENTED FUNCTIONS --
 static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *device, const SDL_GPUComputePipelineCreateInfo *createInfo) {}
 static void WEBGPU_DestroyDevice(SDL_GPUDevice *device) {}
 static void WEBGPU_EndComputePass(SDL_GPUCommandBuffer *computePass) {}
 static void WEBGPU_ReleaseComputePipeline(SDL_GPURenderer *driverData, SDL_GPUComputePipeline *computePipeline) {}
 static void WEBGPU_ReleaseTexture(SDL_GPURenderer *renderer, SDL_GPUTexture *texture) {}
-static void WEBGPU_SetScissor(SDL_GPUCommandBuffer *commandBuffer, const SDL_Rect *scissor) {}
-static void WEBGPU_SetBlendConstants(SDL_GPUCommandBuffer *commandBuffer, SDL_FColor blendConstants) {}
 static void WEBGPU_SetStencilReference(SDL_GPUCommandBuffer *commandBuffer, Uint8 reference) {}
 static void WEBGPU_EndRenderPass(SDL_GPUCommandBuffer *commandBuffer) {}
 static void WEBGPU_BeginComputePass(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUStorageTextureReadWriteBinding *storageTextureBindings, Uint32 numStorageTextureBindings,
@@ -2578,7 +2500,7 @@ static bool WEBGPU_WaitAndAcquireSwapchainTexture(SDL_GPUCommandBuffer *command_
 static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
 static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandBuffer) {}
-static bool WEBGPU_Wait(SDL_GPURenderer *driverData);
+static bool WEBGPU_Wait(SDL_GPURenderer *driverData) {}
 static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage) {}
 static bool WEBGPU_SupportsSampleCount(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUSampleCount sampleCount) {}
 
@@ -2644,6 +2566,105 @@ static bool WEBGPU_SetAllowedFramesInFlight(
     Uint32 allowedFramesInFlight)
 {
     // No-op.
+    return false;
+}
+
+static bool WEBGPU_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
+{
+    bool result = false;
+    // FIXME: We're gonna cheat and statically link the library for now.
+    // We'll make it dynamically loaded eventually™,
+
+    // The renderer's heap allocated since I don't wanna risk a stack overflow (OMG HE SAID THE THING!!!!!!)
+    WebGPURenderer *renderer;
+
+    if (_this->WGPU_CreateSurface == NULL) {
+        return false;
+    }
+
+    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
+
+    renderer->debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+    renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
+    renderer->shouldRecreateLostDevice = true;
+
+    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+
+    if (!renderer->instance) {
+        result = false;
+        goto finished;
+    }
+
+    bool getAdapterSucceeded = false;
+    bool getDeviceSucceeded = false;
+    int loops = 0;
+
+    WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
+
+    while (!getAdapterSucceeded) {
+        // Simple timeout functionality.
+        if (loops < 2500) {
+            loops++;
+        } else {
+            result = false;
+            goto finished;
+        }
+#ifdef __EMSCRIPTEN_
+        // HACK: If we don't sleep we'll just eat up 100% CPU time and the program'll freeze.
+        emscripten_sleep(1);
+#endif
+    }
+
+    WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
+
+    while (!getDeviceSucceeded) {
+#ifdef __EMSCRIPTEN_
+        emscripten_sleep(1);
+#endif
+    }
+
+    renderer->queue = wgpuDeviceGetQueue(renderer->device);
+
+    if (!renderer->queue) {
+        result = false;
+        goto finished;
+    }
+
+    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
+
+    if (!renderer->commandEncoder) {
+        result = false;
+        goto finished;
+    }
+
+    // Alright, if we've reached this logic everything went well!
+    // Let's free all resources and return a success!
+    result = true;
+    goto finished;
+
+finished:
+    // NOTE: Not entirely sure if this is safe or if it'll crash the program.
+    // This is the first time I've ever used C's memory allocation stuff. -- TheStickmahn
+    renderer->shouldRecreateLostDevice = false;
+    renderer->debugMode = false; // shut up
+
+    if (renderer->commandEncoder) {
+        wgpuCommandEncoderRelease(renderer->commandEncoder);
+    }
+    if (renderer->queue) {
+        wgpuQueueRelease(renderer->queue);
+    }
+    if (renderer->device) {
+        wgpuDeviceRelease(renderer->device);
+    }
+    if (renderer->adapter) {
+        wgpuAdapterRelease(renderer->adapter);
+    }
+    if (renderer->instance) {
+        wgpuInstanceRelease(renderer->instance);
+    }
+
+    SDL_free(renderer);
     return false;
 }
 

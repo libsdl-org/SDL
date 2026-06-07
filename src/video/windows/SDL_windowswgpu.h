@@ -5,7 +5,7 @@
 
 #include <SDL3/SDL_wgpu.h>
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 // Dawn's a C++ lib so we'll have to do this to prevent any name mangling.
 #ifdef __cplusplus

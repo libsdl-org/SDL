@@ -9,10 +9,10 @@
 
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(WGPU_DAWN)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(WGPU_DAWN)
 
-#include "../SDL_wgpu_defs.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_wgpu_defs.h"
 
 #include "SDL_waylandwgpu.h"
 
@@ -23,8 +23,8 @@ Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInsta
 {
     SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
 
-    struct wl_display *display = (wl_display*)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, 0);
-    struct wl_surface *surface = (wl_surface*)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, 0);
+    struct wl_display *display = (wl_display *)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, 0);
+    struct wl_surface *surface = (wl_surface *)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, 0);
 
     WGPUSurfaceDescriptor desc;
     WGPUSurfaceSourceWaylandSurface source;

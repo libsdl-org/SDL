@@ -944,7 +944,7 @@ endmacro()
 
 macro(CheckWGPU)
   if(SDL_WGPU)
-    set(SDL_VIDEO_WGPU 1)
+    set(SDL_VIDEO_WEBGPU 1)
 
     if(SDL_WGPU_LIB STREQUAL "dawn")
       set(WGPU_DAWN 1)

@@ -1,9 +1,9 @@
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WGPU) && defined(SDL_VIDEO_DRIVER_EMSCRIPTEN) && defined(WGPU_DAWN)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_EMSCRIPTEN) && defined(WGPU_DAWN)
 
-#include "../SDL_wgpu_defs.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_wgpu_defs.h"
 
 #include "SDL_emscriptenwgpu.h"
 

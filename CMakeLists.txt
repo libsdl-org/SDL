@@ -3544,24 +3544,24 @@ endif()
 if (SDL_WGPU_STATIC)
   if (HAVE_DAWN)
     if (EMSCRIPTEN)
-    # You see, I pulled what's called a "big stupid"
-    # I assumed that Dawn and Emdawnwebgpu were the same thing, so I added dawn support to SDL_WGPU.
-    # Turns out, no it isn't. (sorta)
-    # It's its own library and everything.
-    # I'm still gonna keep the native Dawn support since I strictly adhere to the sunk cost fallacy.
-    find_library(
+      # You see, I pulled what's called a "big stupid"
+      # I assumed that Dawn and Emdawnwebgpu were the same thing, so I added dawn support to SDL_WGPU.
+      # Turns out, no it isn't. (sorta)
+      # It's its own library and everything.
+      # I'm still gonna keep the native Dawn support since I strictly adhere to the sunk cost fallacy.
+      find_library(
       WGPU_STATIC_LIB NAMES libemdawnwebgpu_c.a emdawnwebgpu_c
       HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
       REQUIRED
     )
-    message("-- Using Emdawnwebgpu as WebGPU implementation")
+      message("-- Using Emdawnwebgpu as WebGPU implementation")
     else()
-    find_library(
+      find_library(
       WGPU_STATIC_LIB NAMES libwebgpu_dawn webgpu_dawn
       HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
       REQUIRED
     )
-    message("-- Using Dawn as WebGPU implementation")
+      message("-- Using Dawn as WebGPU implementation")
     endif()
 
   elseif(HAVE_WGPU_NATIVE)
@@ -3703,6 +3703,18 @@ if(SDL_GPU)
     )
     set(SDL_GPU_VULKAN 1)
     set(HAVE_SDL_GPU TRUE)
+  endif()
+  if(SDL_VIDEO_WEBGPU)
+    if (SDL_WGPU_STATIC)
+      sdl_glob_sources(
+        "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c"
+        "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.h"
+      )
+      set(SDL_GPU_WEBGPU 1)
+      set(HAVE_SDL_GPU TRUE)
+    else()
+      message(WARNING "The SDL_GPU WebGPU backend currently only supports statically linked WebGPU. Sorry!")
+    endif()
   endif()
   if(SDL_VIDEO_METAL)
     sdl_glob_sources(
