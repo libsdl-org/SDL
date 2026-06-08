@@ -3060,8 +3060,8 @@ extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, 
  * If `str` starts with whitespace, then those whitespace characters are
  * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside an `unsigned long`, the result is clamped to
- * the minimum and maximum representable `unsigned long` values.
+ * If the parsed number does not fit inside an `unsigned long`, the result is
+ * clamped to the minimum and maximum representable `unsigned long` values.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
@@ -3087,8 +3087,8 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_wcstoul(const wchar_t *str, wchar_
  * If `str` starts with whitespace, then those whitespace characters are
  * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside a `long long`, the result is clamped to
- * the minimum and maximum representable `long long` values.
+ * If the parsed number does not fit inside a `long long`, the result is
+ * clamped to the minimum and maximum representable `long long` values.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
@@ -3114,8 +3114,9 @@ extern SDL_DECLSPEC long long SDLCALL SDL_wcstoll(const wchar_t *str, wchar_t **
  * If `str` starts with whitespace, then those whitespace characters are
  * skipped before attempting to parse the number.
  *
- * If the parsed number does not fit inside an `unsigned long long`, the result is clamped to
- * the minimum and maximum representable `unsigned long long` values.
+ * If the parsed number does not fit inside an `unsigned long long`, the
+ * result is clamped to the minimum and maximum representable `unsigned long
+ * long` values.
  *
  * \param str The null-terminated wide string to read. Must not be NULL.
  * \param endp If not NULL, the address of the first invalid wide character
@@ -3125,7 +3126,8 @@ extern SDL_DECLSPEC long long SDLCALL SDL_wcstoll(const wchar_t *str, wchar_t **
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns the parsed `unsigned long long`, or 0 if no number could be parsed.
+ * \returns the parsed `unsigned long long`, or 0 if no number could be
+ *          parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
