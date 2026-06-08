@@ -203,6 +203,9 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
     // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
     {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
 
+    // The IR receiver on the NVIDIA Shield TV
+    {"gpio_ir_recv",    GAMEPAD_BLACKLIST_BEGIN},
+
     {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
     {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
     {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
