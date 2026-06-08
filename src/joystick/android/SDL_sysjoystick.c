@@ -389,6 +389,13 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_GUID guid;
     int i;
 
+    // Java might notify us about joysticks being added before joysticks have
+    // been initialized. That's fine, we'll get called again with the full set
+    // in Android_JNI_DetectDevices()
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
@@ -726,10 +733,6 @@ static void ANDROID_JoystickClose(SDL_Joystick *joystick)
 
 static void ANDROID_JoystickQuit(void)
 {
-/* We don't have any way to scan for joysticks at init, so don't wipe the list
- * of joysticks here in case this is a reinit.
- */
-#if 0
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
@@ -742,7 +745,6 @@ static void ANDROID_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-#endif // 0
 }
 
 static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
