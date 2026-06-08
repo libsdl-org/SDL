@@ -537,6 +537,7 @@ done:
 
 static bool ANDROID_JoystickInit(void)
 {
+    Android_JNI_InitializeDeviceListener();
     Android_JNI_DetectDevices();
     return true;
 }
@@ -726,6 +727,8 @@ static void ANDROID_JoystickClose(SDL_Joystick *joystick)
 
 static void ANDROID_JoystickQuit(void)
 {
+    Android_JNI_ShutdownDeviceListener();
+
 /* We don't have any way to scan for joysticks at init, so don't wipe the list
  * of joysticks here in case this is a reinit.
  */

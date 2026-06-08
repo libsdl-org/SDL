@@ -18,6 +18,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
@@ -49,6 +51,7 @@ public class SDLControllerManager
                                           int x, int y);
     static native void onNativeJoySensor(int device_id, int sensor_type, long sensor_timestamp, float x, float y, float z);
 
+    protected static Handler mHandler;
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
     protected static SDLDeviceListener mDeviceListener;
@@ -56,6 +59,10 @@ public class SDLControllerManager
     private static final String TAG = "SDLControllerManager";
 
     static void initialize() {
+        if (mHandler == null) {
+            mHandler = new Handler(Looper.getMainLooper());
+        }
+
         if (mJoystickHandler == null) {
             mJoystickHandler = new SDLJoystickHandler();
         }
@@ -71,26 +78,44 @@ public class SDLControllerManager
         }
     }
 
-    static public void initializeDeviceListener() {
-        if (mDeviceListener == null) {
-            mDeviceListener = new SDLDeviceListener();
-
-            InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
-            im.registerInputDeviceListener(mDeviceListener, null);
-        }
-    }
-
-    static public void shutdownDeviceListener() {
-        if (mDeviceListener != null) {
-            InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
-            im.unregisterInputDeviceListener(mDeviceListener);
-            mDeviceListener = null;
-        }
-    }
-
     // Joystick glue code, just a series of stubs that redirect to the SDLJoystickHandler instance
     static public boolean handleJoystickMotionEvent(MotionEvent event) {
         return mJoystickHandler.handleMotionEvent(event);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static void initializeDeviceListener() {
+        if (mDeviceListener == null) {
+            mDeviceListener = new SDLDeviceListener();
+
+            final SDLDeviceListener deviceListener = mDeviceListener;
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
+                    im.registerInputDeviceListener(deviceListener, null);
+                }
+            }, 0);
+        }
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static void shutdownDeviceListener() {
+        if (mDeviceListener != null) {
+            final SDLDeviceListener deviceListener = mDeviceListener;
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    InputManager im = (InputManager) SDL.getContext().getSystemService(Context.INPUT_SERVICE);
+                    im.unregisterInputDeviceListener(deviceListener);
+                }
+            }, 0);
+            mDeviceListener = null;
+        }
     }
 
     /**
@@ -267,7 +292,6 @@ class SDLJoystickHandler {
     private final ArrayList<SDLJoystick> mJoysticks;
 
     SDLJoystickHandler() {
-
         mJoysticks = new ArrayList<SDLJoystick>();
     }
 

@@ -407,6 +407,8 @@ static jmethodID midAudioSetThreadPriority;
 static jclass mControllerManagerClass;
 
 // method signatures
+static jmethodID midInitializeDeviceListener;
+static jmethodID midShutdownDeviceListener;
 static jmethodID midDetectDevices;
 static jmethodID midJoystickSetLED;
 static jmethodID midJoystickSetSensorsEnabled;
@@ -752,6 +754,10 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 
     mControllerManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
+    midInitializeDeviceListener = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                    "initializeDeviceListener", "()V");
+    midShutdownDeviceListener = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                    "shutdownDeviceListener", "()V");
     midDetectDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                     "detectDevices", "()V");
     midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -767,7 +773,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midDetectHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midInitializeDeviceListener || !midShutdownDeviceListener || !midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midDetectHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -2637,6 +2643,18 @@ void Android_JNI_InitTouch(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
+}
+
+void Android_JNI_InitializeDeviceListener(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midInitializeDeviceListener);
+}
+
+void Android_JNI_ShutdownDeviceListener(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midShutdownDeviceListener);
 }
 
 void Android_JNI_DetectDevices(void)

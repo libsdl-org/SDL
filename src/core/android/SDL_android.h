@@ -102,6 +102,8 @@ bool Android_JNI_HasClipboardText(void);
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent);
 
 // Joystick support
+void Android_JNI_InitializeDeviceListener(void);
+void Android_JNI_ShutdownDeviceListener(void);
 void Android_JNI_DetectDevices(void);
 void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue);
 void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled);
