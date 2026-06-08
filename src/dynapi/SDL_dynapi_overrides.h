@@ -1318,3 +1318,6 @@
 #define SDL_GamepadHasCapSense SDL_GamepadHasCapSense_REAL
 #define SDL_GetGamepadCapSense SDL_GetGamepadCapSense_REAL
 #define SDL_aligned_alloc_zero SDL_aligned_alloc_zero_REAL
+#define SDL_wcstoul SDL_wcstoul_REAL
+#define SDL_wcstoll SDL_wcstoll_REAL
+#define SDL_wcstoull SDL_wcstoull_REAL
