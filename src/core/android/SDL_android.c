@@ -3186,12 +3186,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     JNIEnv *env, jclass cls,
     jint requestCode, jboolean result)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    SDL_LockMutex(SDL_event_lock);
     NativePermissionRequestInfo *prev = &pending_permissions;
     for (NativePermissionRequestInfo *info = prev->next; info != NULL; info = info->next) {
         if (info->request_code == (int) requestCode) {
             prev->next = info->next;
-            SDL_UnlockMutex(Android_ActivityMutex);
+            SDL_UnlockMutex(SDL_event_lock);
             info->callback(info->userdata, info->permission, result ? true : false);
             SDL_free(info->permission);
             SDL_free(info);
@@ -3200,7 +3200,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         prev = info;
     }
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
@@ -3228,10 +3228,10 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
     info->callback = cb;
     info->userdata = userdata;
 
-    SDL_LockMutex(Android_ActivityMutex);
+    SDL_LockMutex(SDL_event_lock);
     info->next = pending_permissions.next;
     pending_permissions.next = info;
-    SDL_UnlockMutex(Android_ActivityMutex);
+    SDL_UnlockMutex(SDL_event_lock);
 
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jpermission = (*env)->NewStringUTF(env, permission);
