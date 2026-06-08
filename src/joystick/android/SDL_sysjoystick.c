@@ -389,6 +389,11 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_GUID guid;
     int i;
 
+    // Ignore Java call before SDL is really initialized
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
@@ -489,6 +494,11 @@ void Android_RemoveJoystick(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+
+    // Ignore Java call before SDL is really initialized
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
 
     SDL_LockJoysticks();
 
