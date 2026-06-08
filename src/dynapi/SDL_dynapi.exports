@@ -1291,3 +1291,6 @@ _SDL_HasSVE2
 _SDL_GamepadHasCapSense
 _SDL_GetGamepadCapSense
 _SDL_aligned_alloc_zero
+_SDL_wcstoul
+_SDL_wcstoll
+_SDL_wcstoull
