@@ -404,6 +404,8 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
+// The Xbox controller doesn't have real HID report descriptors, but Linux synthesizes them for us
+#ifdef SDL_PLATFORM_LINUX
     Uint8 descriptor[1024];
     int descriptor_len = SDL_hid_get_report_descriptor(device->dev, descriptor, sizeof(descriptor));
     if (descriptor_len > 0) {
@@ -453,6 +455,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     } else {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Xbox report descriptor not available");
     }
+#endif // SDL_PLATFORM_LINUX
 
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;
