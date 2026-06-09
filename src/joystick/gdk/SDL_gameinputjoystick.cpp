@@ -130,6 +130,16 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                         break;
                 }
                 break;
+            case USB_VENDOR_RED_OCTANE_GAMES:
+                switch (info->productId) {
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_DRUM_KIT;
+                    default:
+                        break;
+                }
+                break;
         }
     }
 #endif // GAMEINPUT_API_VERSION >= 3
