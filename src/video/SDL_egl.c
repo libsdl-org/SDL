@@ -82,6 +82,10 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
 
+#elif defined(SDL_VIDEO_DRIVER_OPENHARMONY)
+#define DEFAULT_EGL        "libEGL.so"
+#define DEFAULT_OGL_ES2    "libGLESv3.so"
+
 #elif defined(SDL_VIDEO_DRIVER_WINDOWS)
 // EGL AND OpenGL ES support via ANGLE
 #define DEFAULT_EGL        "libEGL.dll"

@@ -49,6 +49,8 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_ANDROID) // probably not useful on Android.
 #define SDL_DYNAMIC_API 0
+#elif defined(SDL_PLATFORM_OPENHARMONY) // probably not useful on OpenHarmony.
+#define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_EMSCRIPTEN) // probably not useful on Emscripten.
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PS2) && SDL_PLATFORM_PS2

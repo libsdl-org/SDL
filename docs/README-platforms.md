@@ -9,6 +9,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [Emscripten](README-emscripten.md) (Web browsers)
 - [FreeBSD](README-bsd.md)
 - [Haiku OS](README-haiku.md)
+- [HarmonyOS/OpenHarmony](README-harmonyos.md)
 - [iOS](README-ios.md)
 - [Linux](README-linux.md)
 - [macOS](README-macos.md) (10.14 and later)

@@ -375,7 +375,7 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     size_t pathlen = SDL_strlen(path);
 
     // if path ends with any slash, chop them off, so we don't confuse the pattern matcher later.
-    #ifdef SDL_PLATFORM_ANDROID
+    #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     if (SDL_strcmp(path, "assets://") == 0) {  // don't chop '//' off this if we're looking for the root of the asset tree.
         pathlen--;  // we'll add a 1 again later.
     } else

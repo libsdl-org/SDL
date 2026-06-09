@@ -95,6 +95,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_DOS_SOUNDBLASTER
     &DOSSOUNDBLASTER_bootstrap,
 #endif
+#ifdef SDL_AUDIO_DRIVER_OHAUDIO
+    &OHAUDIO_bootstrap,
+#endif
 #ifdef SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,
 #endif
