@@ -398,8 +398,8 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 #ifdef SDL_PLATFORM_MACOS
     // For backwards compatibility reasons, the 360Controller driver and the Steam Virtual
     // Gamepad require opposite Y axis inversion on macOS
-    const bool invert_y_axes = (!ctx->controlled_by_360controller &&
-                                !ctx->is_joystick_steam_virtual_gamepad);
+    const bool invert_y_axes = (ctx->controlled_by_360controller ||
+                                ctx->is_joystick_steam_virtual_gamepad) ? false : true;
 #else
     const bool invert_y_axes = true;
 #endif
