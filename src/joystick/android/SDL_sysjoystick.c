@@ -497,6 +497,12 @@ void Android_RemoveJoystick(int device_id)
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
 
+    // Java might notify us about joysticks being removed before joysticks have
+    // been initialized.
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     // Don't call JoystickByDeviceId here or there'll be an infinite loop!
