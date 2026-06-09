@@ -273,7 +273,7 @@ static bool HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
 #ifdef SDL_PLATFORM_MACOS
     ctx->controlled_by_360controller = IsControlledBy360ControllerDriverMacOS(device);
-    ctx->is_joystick_steam_virtual_gamepad = SDL_IsJoystickSteamVirtualGamepad(device->vendor_id, device->product_id, device->version);
+    ctx->is_steam_virtual_gamepad = SDL_IsJoystickSteamVirtualGamepad(device->vendor_id, device->product_id, device->version);
 #endif
 
     device->context = ctx;
