@@ -368,10 +368,11 @@ static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     static const int XBONE_IFACE_PROTOCOL = 208;
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
-    if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true) &&
+        !SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
         // On macOS we get a shortened version of the real report and
         // you can't write output reports for wired controllers, so
-        // we'll just use the GCController support instead.
+        // we'll just use the GCController support instead, if available.
         return false;
     }
 #endif
