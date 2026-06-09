@@ -212,18 +212,19 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     }
 #endif
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
-    if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
-        // GCController support doesn't work with the Steam Virtual Gamepad
-        return true;
-    } else {
-        // On macOS when it isn't controlled by the 360Controller driver and
-        // it doesn't look like a Steam virtual gamepad we should rely on
-        // GCController support instead.
-        return false;
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
+        if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
+            // GCController support doesn't work with the Steam Virtual Gamepad
+            return true;
+        } else {
+            // On macOS when it isn't controlled by the 360Controller driver and
+            // it doesn't look like a Steam virtual gamepad we should rely on
+            // GCController support instead.
+            return false;
+        }
     }
-#else
-    return (type == SDL_GAMEPAD_TYPE_XBOX360);
 #endif
+    return (type == SDL_GAMEPAD_TYPE_XBOX360);
 }
 
 static bool SetSlotLED(SDL_hid_device *dev, Uint8 slot, bool on)
