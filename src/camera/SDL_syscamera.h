@@ -222,6 +222,7 @@ extern CameraBootStrap PIPEWIRECAMERA_bootstrap;
 extern CameraBootStrap V4L2_bootstrap;
 extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
+extern CameraBootStrap OPENHARMONYCAMERA_bootstrap;
 extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
 extern CameraBootStrap MEDIAFOUNDATION_bootstrap;
 extern CameraBootStrap VITACAMERA_bootstrap;

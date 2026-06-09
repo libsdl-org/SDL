@@ -1311,3 +1311,6 @@ _SDL_SetRenderViewportFloat
 _SDL_GetRenderViewportFloat
 _SDL_SetRenderClipRectFloat
 _SDL_GetRenderClipRectFloat
+_SDL_GetOpenHarmonySDKVersion
+_SDL_GetOpenHarmonyInternalStoragePath
+_SDL_RequestOpenHarmonyPermission

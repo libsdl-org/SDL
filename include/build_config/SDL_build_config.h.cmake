@@ -297,6 +297,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_NGAGE 1
 #cmakedefine SDL_AUDIO_DRIVER_QNX 1
 #cmakedefine SDL_AUDIO_DRIVER_DOS_SOUNDBLASTER 1
+#cmakedefine SDL_AUDIO_DRIVER_OHAUDIO 1
 #cmakedefine SDL_AUDIO_DRIVER_PRIVATE 1
 
 /* Enable various input drivers */
@@ -404,6 +405,7 @@
 
 /* Enable various video drivers */
 #cmakedefine SDL_VIDEO_DRIVER_ANDROID 1
+#cmakedefine SDL_VIDEO_DRIVER_OPENHARMONY 1
 #cmakedefine SDL_VIDEO_DRIVER_COCOA 1
 #cmakedefine SDL_VIDEO_DRIVER_DUMMY 1
 #cmakedefine SDL_VIDEO_DRIVER_EMSCRIPTEN 1
@@ -513,6 +515,7 @@
 #cmakedefine SDL_POWER_VITA 1
 #cmakedefine SDL_POWER_PSP 1
 #cmakedefine SDL_POWER_N3DS 1
+#cmakedefine SDL_POWER_OPENHARMONY 1
 
 #cmakedefine SDL_POWER_PRIVATE 1
 
@@ -530,6 +533,7 @@
 #cmakedefine SDL_FILESYSTEM_PS2 1
 #cmakedefine SDL_FILESYSTEM_N3DS 1
 #cmakedefine SDL_FILESYSTEM_DOS 1
+#cmakedefine SDL_FILESYSTEM_OPENHARMONY 1
 
 #cmakedefine SDL_FILESYSTEM_PRIVATE 1
 
@@ -551,6 +555,7 @@
 #cmakedefine SDL_CAMERA_DRIVER_V4L2 1
 #cmakedefine SDL_CAMERA_DRIVER_COREMEDIA 1
 #cmakedefine SDL_CAMERA_DRIVER_ANDROID 1
+#cmakedefine SDL_CAMERA_DRIVER_OPENHARMONY 1
 #cmakedefine SDL_CAMERA_DRIVER_EMSCRIPTEN 1
 #cmakedefine SDL_CAMERA_DRIVER_MEDIAFOUNDATION 1
 #cmakedefine SDL_CAMERA_DRIVER_PIPEWIRE 1

@@ -464,6 +464,12 @@ typedef enum SDL_Capitalization
  *   use, overriding other properties. This is documented at
  *   https://developer.android.com/reference/android/text/InputType
  *
+ * On HarmonyOS/OpenHarmony you can directly specify the input type:
+ *
+ * - `SDL_PROP_TEXTINPUT_OPENHARMONY_INPUTTYPE_NUMBER` - the text input type to
+ *   use, overriding other properties. This is documented at
+ *   https://developer.android.com/reference/android/text/InputType
+ *
  * \param window the window to enable text input.
  * \param props the properties to use.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -489,6 +495,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInputWithProperties(SDL_Window *wi
 #define SDL_PROP_TEXTINPUT_DEFAULT_TEXT_STRING          "SDL.textinput.default_text"
 #define SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER            "SDL.textinput.max_length"
 #define SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER     "SDL.textinput.android.inputtype"
+#define SDL_PROP_TEXTINPUT_OPENHARMONY_INPUTTYPE_NUMBER "SDL.textinput.openharmony.inputtype"
 
 /**
  * Check whether or not Unicode text input events are enabled for a window.

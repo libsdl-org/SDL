@@ -493,7 +493,7 @@ static int CPU_haveNEON(void)
         return 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID)
+#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();

@@ -44,6 +44,9 @@ static const CameraBootStrap *const bootstrap[] = {
 #ifdef SDL_CAMERA_DRIVER_ANDROID
     &ANDROIDCAMERA_bootstrap,
 #endif
+#ifdef SDL_CAMERA_DRIVER_OPENHARMONY
+    &OPENHARMONYCAMERA_bootstrap,
+#endif
 #ifdef SDL_CAMERA_DRIVER_EMSCRIPTEN
     &EMSCRIPTENCAMERA_bootstrap,
 #endif

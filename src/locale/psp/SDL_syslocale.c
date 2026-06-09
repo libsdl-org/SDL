@@ -75,4 +75,3 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     return true;
 }
 
-/* vi: set ts=4 sw=4 expandtab: */

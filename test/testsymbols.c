@@ -34,6 +34,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidMessage(void);
 extern SDL_DECLSPEC void SDLCALL SDL_ShowAndroidToast(void);
 #endif
 
+#if !defined(SDL_PLATFORM_OPENHARMONY)
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(void);
+#endif
+
 #if !defined(SDL_PLATFORM_GDK)
 extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(void);

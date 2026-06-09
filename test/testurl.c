@@ -68,7 +68,9 @@ int main(int argc, char **argv)
 
         while (!quit) {
             while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_EVENT_KEY_DOWN) {
+                if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                    tryOpenURL(url);
+                } else if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.key == SDLK_SPACE) {
                         tryOpenURL(url);
                     } else if (event.key.key == SDLK_ESCAPE) {

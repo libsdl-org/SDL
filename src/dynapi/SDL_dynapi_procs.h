@@ -1346,3 +1346,6 @@ SDL_DYNAPI_PROC(bool,SDL_SetRenderViewportFloat,(SDL_Renderer *a,const SDL_FRect
 SDL_DYNAPI_PROC(bool,SDL_GetRenderViewportFloat,(SDL_Renderer *a,SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderClipRectFloat,(SDL_Renderer *a,const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetRenderClipRectFloat,(SDL_Renderer *a,SDL_FRect *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetOpenHarmonySDKVersion,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetOpenHarmonyInternalStoragePath,(void),(),return)
+SDL_DYNAPI_PROC(bool,SDL_RequestOpenHarmonyPermission,(const char *a,SDL_RequestOpenHarmonyPermissionCallback b,void *c),(a,b,c),return)

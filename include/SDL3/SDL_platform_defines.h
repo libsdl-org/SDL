@@ -112,6 +112,17 @@
 #undef SDL_PLATFORM_LINUX
 #endif
 
+#if defined(__OHOS__)
+
+/**
+ * A preprocessor macro that is only defined if compiling for OpenHarmony/HarmonyOS.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PLATFORM_OPENHARMONY 1
+#undef SDL_PLATFORM_LINUX
+#endif
+
 #if defined(__unix__) || defined(__unix) || defined(unix)
 
 /**
