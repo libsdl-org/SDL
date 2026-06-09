@@ -116,7 +116,7 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 break;
             case USB_VENDOR_CRKD:
                 switch (info->productId) {
-                    case USB_PRODUCT_PDP_XB1_JAGUAR_GUITAR:
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
                     default:
                         break;
@@ -126,6 +126,16 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 switch (info->productId) {
                     case USB_PRODUCT_RED_OCTANE_XB1_GUITAR_HERO_LIVE_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_GUITAR_HERO_LIVE_GUITAR;
+                    default:
+                        break;
+                }
+                break;
+            case USB_VENDOR_RED_OCTANE_GAMES:
+                switch (info->productId) {
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_DRUM_KIT;
                     default:
                         break;
                 }
