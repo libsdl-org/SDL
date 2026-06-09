@@ -369,7 +369,8 @@ static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
     if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true) &&
-        !SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
+        !SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id) &&
+        (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0)) {
         // On macOS we get a shortened version of the real report and
         // you can't write output reports for wired controllers, so
         // we'll just use the GCController support instead, if available.

@@ -112,8 +112,8 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         const struct libusb_interface *intf = &conf_desc->interface[device->interface_number];
         intf_desc = &intf->altsetting[0];
         if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
-			ctx->capabilities.type = intf_desc->extra[3];
-			ctx->capabilities.subType = intf_desc->extra[4];
+            ctx->capabilities.type = intf_desc->extra[3];
+            ctx->capabilities.subType = intf_desc->extra[4];
             switch (ctx->capabilities.subType) {
                 case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
                     device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
@@ -177,7 +177,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
             SDL_Log("   wLeftMotorSpeed: %02x", ctx->capabilities.vibration.wLeftMotorSpeed);
             SDL_Log("   wRightMotorSpeed: %02x", ctx->capabilities.vibration.wRightMotorSpeed);
 #endif
-		}
+        }
         SDL_QuitLibUSB();
     }
 }
@@ -217,10 +217,11 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
             // GCController support doesn't work with the Steam Virtual Gamepad
             return true;
-        } else {
+        }
+        if (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0) {
             // On macOS when it isn't controlled by the 360Controller driver and
-            // it doesn't look like a Steam virtual gamepad we should rely on
-            // GCController support instead.
+            // it doesn't look like a Steam virtual gamepad and it's not
+            // available via libusb we should rely on GCController support.
             return false;
         }
     }

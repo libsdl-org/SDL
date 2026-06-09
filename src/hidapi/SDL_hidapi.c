@@ -543,8 +543,8 @@ static void HIDAPI_ShutdownDiscovery(void)
 // Platform HIDAPI Implementation
 
 #define HIDAPI_USING_SDL_RUNTIME
-#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB) \
-        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB)
+#define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB, LIBUSB_XBOX) \
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB, LIBUSB_XBOX)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
@@ -859,7 +859,7 @@ static const struct {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_PRO },
 };
 
-static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
+static bool RequiresLibUSB(Uint16 vendor, Uint16 product, bool libusb_xbox)
 {
     for (int i = 0; i < SDL_arraysize(SDL_libusb_required); ++i) {
         if (vendor == SDL_libusb_required[i].vendor &&
@@ -867,6 +867,17 @@ static bool RequiresLibUSB(Uint16 vendor, Uint16 product)
             return true;
         }
     }
+
+#ifdef SDL_PLATFORM_MACOS
+    // On macOS we want to use libusb if possible for Xbox controllers
+    // that are not supported by the OS. Opening the device via libusb
+    // will fail if the device is supported (and opened) by the OS, so
+    // any devices we return here and can open are fair game.
+    if (libusb_xbox) {
+        return true;
+    }
+#endif // SDL_PLATFORM_MACOS
+
     return false;
 }
 
@@ -1054,10 +1065,10 @@ static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, cons
     }
 }
 
-bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb)
+bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb, bool libusb_xbox)
 {
     if (libusb) {
-        if (use_libusb_whitelist && !RequiresLibUSB(vendor_id, product_id)) {
+        if (use_libusb_whitelist && !RequiresLibUSB(vendor_id, product_id, libusb_xbox)) {
             return true;
         }
         if (!use_libusb_gamecube &&
@@ -1065,7 +1076,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             return true;
         }
     } else {
-        if (RequiresLibUSB(vendor_id, product_id)) {
+        if (RequiresLibUSB(vendor_id, product_id, libusb_xbox)) {
             return true;
         }
     }
