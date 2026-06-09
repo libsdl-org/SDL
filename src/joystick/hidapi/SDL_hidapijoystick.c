@@ -216,6 +216,8 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
          *            https://github.com/libsdl-org/SDL/issues/6799
          */
         return false;
+    case USB_VENDOR_RED_OCTANE_GAMES:
+        return true;
     case USB_VENDOR_SHANWAN:
         return true;
     case USB_VENDOR_SHANWAN_ALT:
