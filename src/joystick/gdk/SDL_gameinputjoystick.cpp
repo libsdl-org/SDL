@@ -173,6 +173,18 @@ static int GetSteamVirtualGamepadSlot(const char *device_path)
 }
 #endif // GAMEINPUT_API_VERSION >= 1
 
+static bool IsXbox360WirelessAdapter(Uint16 vendor, Uint16 product)
+{
+    if (vendor == USB_VENDOR_MICROSOFT) {
+        if (product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
@@ -220,7 +232,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     }
 #endif
 
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
+    if (IsXbox360WirelessAdapter(vendor, product) ||
+        SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
         SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
         return true;
     }
