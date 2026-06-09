@@ -223,7 +223,7 @@ static bool CreateNormalFramebuffer(SDL_VideoDevice *device, SDL_Window *window,
     SDL_Surface *lfb_surface = NULL;
 
     if (!data->banked_mode) {
-        // LFB path: Make a surface that uses video memory directly, ot let SDL do the blitting for us.
+        // LFB path: Make a surface that uses video memory directly, to let SDL do the blitting for us.
         // Point the LFB surface at the back page for tear-free double-buffering.
         int back_page = data->page_flip_available ? (1 - data->current_page) : 0;
         void *lfb_pixels = (Uint8 *)DOS_PhysicalToLinear(data->mapping.address) + data->page_offset[back_page];
