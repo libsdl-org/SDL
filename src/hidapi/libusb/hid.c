@@ -911,21 +911,27 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	return 0;
 }
 
-static int should_enumerate_interface(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
+static int should_enumerate_interface(unsigned short vendor_id, unsigned short product_id, const struct libusb_interface_descriptor *intf_desc)
 {
+	int is_xbox = (is_xbox360(vendor_id, intf_desc) ||
+	               is_xboxone(vendor_id, intf_desc));
+
 #if 0
 	printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 #endif
 
+#ifdef HIDAPI_IGNORE_DEVICE
+	/* See if there are any devices we should skip in enumeration */
+	if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, vendor_id, product_id, 0, 0, true, is_xbox)) {
+		return 0;
+	}
+#endif
+
+	/* Enumerate Xbox 360 and Xbox One controllers */
+	if (is_xbox)
+		return 1;
+
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID)
-		return 1;
-
-	/* Also enumerate Xbox 360 controllers */
-	if (is_xbox360(vendor_id, intf_desc))
-		return 1;
-
-	/* Also enumerate Xbox One controllers */
-	if (is_xboxone(vendor_id, intf_desc))
 		return 1;
 
 	return 0;
@@ -982,13 +988,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
-#ifdef HIDAPI_IGNORE_DEVICE
-		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true)) {
-			continue;
-		}
-#endif
-
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);
@@ -998,7 +997,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 				for (k = 0; k < intf->num_altsetting; k++) {
 					const struct libusb_interface_descriptor *intf_desc;
 					intf_desc = &intf->altsetting[k];
-					if (should_enumerate_interface(dev_vid, intf_desc)) {
+					if (should_enumerate_interface(dev_vid, dev_pid, intf_desc)) {
 						struct hid_device_info *tmp;
 
 						res = libusb_open(dev, &handle);
@@ -1485,7 +1484,7 @@ HID_API_EXPORT hid_device *hid_open_path(const char *path)
 			const struct libusb_interface *intf = &conf_desc->interface[j];
 			for (k = 0; k < intf->num_altsetting && !good_open; k++) {
 				const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
-				if (should_enumerate_interface(desc.idVendor, intf_desc)) {
+				if (should_enumerate_interface(desc.idVendor, desc.idProduct, intf_desc)) {
 					char dev_path[64];
 					get_path(&dev_path, usb_dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
 					if (!strcmp(dev_path, path)) {
