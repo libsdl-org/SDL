@@ -872,6 +872,14 @@ struct SDL_GPUDevice
         Uint32 offset,
         Uint32 drawCount);
 
+    void (*DrawIndexedPrimitivesIndirectCount)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUBuffer *indirectBuffer,
+        SDL_GPUBuffer *countBuffer,
+        Uint32 offset,
+        Uint32 maxDrawCount,
+        Uint32 drawOffset);
+
     void (*EndRenderPass)(
         SDL_GPUCommandBuffer *commandBuffer);
 
@@ -1145,6 +1153,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DrawPrimitives, name)                \
     ASSIGN_DRIVER_FUNC(DrawPrimitivesIndirect, name)        \
     ASSIGN_DRIVER_FUNC(DrawIndexedPrimitivesIndirect, name) \
+    ASSIGN_DRIVER_FUNC(DrawIndexedPrimitivesIndirectCount, name) \
     ASSIGN_DRIVER_FUNC(EndRenderPass, name)                 \
     ASSIGN_DRIVER_FUNC(BeginComputePass, name)              \
     ASSIGN_DRIVER_FUNC(BindComputePipeline, name)           \

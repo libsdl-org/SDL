@@ -5307,6 +5307,33 @@ static void D3D12_DrawIndexedPrimitivesIndirect(
     D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12Buffer);
 }
 
+static void D3D12_DrawIndexedPrimitivesIndirectCount(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUBuffer *buffer,
+    SDL_GPUBuffer *countBuffer,
+    Uint32 offset,
+    Uint32 maxDrawCount,
+    Uint32 drawOffset)
+{
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Buffer *d3d12Buffer = ((D3D12BufferContainer *)buffer)->activeBuffer;
+    D3D12Buffer *d3d12CountBuffer = ((D3D12BufferContainer *)countBuffer)->activeBuffer;
+
+    D3D12_INTERNAL_BindGraphicsResources(d3d12CommandBuffer);
+
+    ID3D12GraphicsCommandList_ExecuteIndirect(
+        d3d12CommandBuffer->graphicsCommandList,
+        d3d12CommandBuffer->renderer->indirectIndexedDrawCommandSignature,
+        maxDrawCount,
+        d3d12Buffer->handle,
+        offset,
+        d3d12CountBuffer->handle,
+        drawOffset);
+
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12Buffer);
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, d3d12CountBuffer);
+}
+
 static void D3D12_EndRenderPass(
     SDL_GPUCommandBuffer *commandBuffer)
 {

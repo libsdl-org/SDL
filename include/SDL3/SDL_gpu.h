@@ -3595,6 +3595,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitivesIndirect(
     Uint32 offset,
     Uint32 draw_count);
 
+extern SDL_DECLSPEC void SDLCALL SDL_DrawGPUIndexedPrimitivesIndirectCount(
+    SDL_GPURenderPass *render_pass,
+    SDL_GPUBuffer *indirect_buffer,
+    SDL_GPUBuffer *count_buffer,
+    Uint32 offset,
+    Uint32 maxDrawCount,
+    Uint32 drawOffset);
+
 /**
  * Ends the given render pass.
  *

@@ -5457,6 +5457,35 @@ static void VULKAN_DrawIndexedPrimitivesIndirect(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
 }
 
+static void VULKAN_DrawIndexedPrimitivesIndirectCount(
+    SDL_GPUCommandBuffer* commandBuffer,
+    SDL_GPUBuffer* indirectBuffer,
+    SDL_GPUBuffer* countBuffer,
+    Uint32 offset,
+    Uint32 maxDrawCount,
+    Uint32 drawOffset)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
+    VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)indirectBuffer)->activeBuffer;
+    VulkanBuffer *vulkanCountBuffer = ((VulkanBufferContainer *)countBuffer)->activeBuffer;
+    Uint32 pitch = sizeof(SDL_GPUIndexedIndirectDrawCommand);
+
+    VULKAN_INTERNAL_BindGraphicsDescriptorSets(renderer, vulkanCommandBuffer);
+
+    renderer->vkCmdDrawIndexedIndirectCount(
+        vulkanCommandBuffer->commandBuffer,
+        vulkanBuffer->buffer,
+        offset,
+        vulkanCountBuffer->buffer,
+        drawOffset,
+        maxDrawCount,
+        pitch);
+
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanCountBuffer);
+}
+
 // Debug Naming
 
 static void VULKAN_INTERNAL_SetBufferName(

@@ -2375,6 +2375,42 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
         draw_count);
 }
 
+void SDL_DrawGPUIndexedPrimitivesIndirectCount(
+    SDL_GPURenderPass *render_pass,
+    SDL_GPUBuffer *indirect_buffer,
+    SDL_GPUBuffer *count_buffer,
+    Uint32 offset,
+    Uint32 maxDrawCount,
+    Uint32 drawOffset)
+{
+    CHECK_PARAM(render_pass == NULL) {
+        SDL_InvalidParamError("render_pass");
+        return;
+    }
+    CHECK_PARAM(indirect_buffer == NULL) {
+        SDL_InvalidParamError("indirect_buffer");
+        return;
+    }
+    CHECK_PARAM(count_buffer == NULL) {
+        SDL_InvalidParamError("count_buffer");
+        return;
+    }
+
+    if (RENDERPASS_DEVICE->debug_mode) {
+        CHECK_RENDERPASS
+        CHECK_GRAPHICS_PIPELINE_BOUND
+        SDL_GPU_CheckGraphicsBindings(render_pass);
+    }
+
+    RENDERPASS_DEVICE->DrawIndexedPrimitivesIndirectCount(
+        RENDERPASS_COMMAND_BUFFER,
+        indirect_buffer,
+        count_buffer,
+        offset,
+        maxDrawCount,
+        drawOffset);
+}
+
 void SDL_EndGPURenderPass(
     SDL_GPURenderPass *render_pass)
 {

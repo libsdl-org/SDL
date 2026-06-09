@@ -192,6 +192,7 @@ SDL_DYNAPI_PROC(void,SDL_DownloadFromGPUBuffer,(SDL_GPUCopyPass *a, const SDL_GP
 SDL_DYNAPI_PROC(void,SDL_DownloadFromGPUTexture,(SDL_GPUCopyPass *a, const SDL_GPUTextureRegion *b, const SDL_GPUTextureTransferInfo *c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_DrawGPUIndexedPrimitives,(SDL_GPURenderPass *a, Uint32 b, Uint32 c, Uint32 d, Sint32 e, Uint32 f),(a,b,c,d,e,f),)
 SDL_DYNAPI_PROC(void,SDL_DrawGPUIndexedPrimitivesIndirect,(SDL_GPURenderPass *a, SDL_GPUBuffer *b, Uint32 c, Uint32 d),(a,b,c,d),)
+SDL_DYNAPI_PROC(void,SDL_DrawGPUIndexedPrimitivesIndirectCount,(SDL_GPURenderPass *a, SDL_GPUBuffer *b, SDL_GPUBuffer *c, Uint32 d, Uint32 e, Uint32 f),(a,b,c,d,e,f),)
 SDL_DYNAPI_PROC(void,SDL_DrawGPUPrimitives,(SDL_GPURenderPass *a, Uint32 b, Uint32 c, Uint32 d, Uint32 e),(a,b,c,d,e),)
 SDL_DYNAPI_PROC(void,SDL_DrawGPUPrimitivesIndirect,(SDL_GPURenderPass *a, SDL_GPUBuffer *b, Uint32 c, Uint32 d),(a,b,c,d),)
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_DuplicateSurface,(SDL_Surface *a),(a),return)
