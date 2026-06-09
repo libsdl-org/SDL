@@ -117,10 +117,11 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
             // GCController support doesn't work with the Steam Virtual Gamepad
             return true;
-        } else {
+        }
+        if (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0) {
             // On macOS when it isn't controlled by the 360Controller driver and
-            // it doesn't look like a Steam virtual gamepad we should rely on
-            // GCController support instead.
+            // it doesn't look like a Steam virtual gamepad and it's not
+            // available via libusb we should rely on GCController support.
             return false;
         }
     }
