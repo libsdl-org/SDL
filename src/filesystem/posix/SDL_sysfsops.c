@@ -39,24 +39,28 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
+#ifdef SDL_PLATFORM_OPENHARMONY
+#include "../../core/openharmony/SDL_openharmony.h"
+#endif
+
 
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     char *apath = NULL;  // absolute path (for Android, iOS, etc). Overrides `path`.
 
-#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_OPENHARMONY)
     if (*path == '\0') {
         return SDL_SetError("No such file or directory");
     } else if (*path != '/') {
-        #ifdef SDL_PLATFORM_ANDROID
+        #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
         if (SDL_strncmp(path, "assets://", 9) == 0) {
             char *pathwithsep = NULL;
             SDL_asprintf(&pathwithsep, "%s%s", path, (path[SDL_strlen(path) - 1] != '/') ? "/" : "");
-            const bool retval = pathwithsep ? Android_JNI_EnumerateAssetDirectory(pathwithsep, cb, userdata) : false;
+            const bool retval = pathwithsep ? SDL_PlatformEnumerateAssetDirectory(pathwithsep, cb, userdata) : false;
             SDL_free(pathwithsep);
             return retval;
         }
-        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        SDL_asprintf(&apath, "%s/%s", SDL_GetPlatformInternalStoragePath(), path);
         #elif defined(SDL_PLATFORM_IOS)
         char *base = SDL_GetPrefPath("", "");
         if (!base) {
@@ -71,7 +75,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
             return false;
         }
     }
-#elif 0  // this is just for testing that `apath` works when you aren't on iOS or Android.
+#elif 0  // this is just for testing that `apath` works when you aren't on iOS or Android or HarmonyOS.
     if (*path != '/') {
         char *c = SDL_SYS_GetCurrentDirectory();
         SDL_asprintf(&apath, "%s%s", c, path);
@@ -98,9 +102,9 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     DIR *dir = opendir(pathwithsep);
     if (!dir) {
-#ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset... that didn't use an "assets://" URL?
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY) // Maybe it's an asset... that didn't use an "assets://" URL?
         if (*pathwithsep != '/') {  // don't fall back to asset tree for absolute paths, in case opendir() failed for other reasons, like opendir("/") returning EACCES.
-            const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
+            const bool retval = SDL_PlatformEnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
             SDL_free(pathwithsep);
             return retval;
         }
@@ -130,12 +134,12 @@ bool SDL_SYS_RemovePath(const char *path)
 {
     int rc;
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     if (*path == '/') {
         rc = remove(path);
     } else {
         char *apath = NULL;
-        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        SDL_asprintf(&apath, "%s/%s", SDL_GetPlatformInternalStoragePath(), path);
         if (!apath) {
             return false;
         }
@@ -177,18 +181,18 @@ bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
     int rc;
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     char *aoldpath = NULL;
     char *anewpath = NULL;
     if (*oldpath != '/') {
-        SDL_asprintf(&aoldpath, "%s/%s", SDL_GetAndroidInternalStoragePath(), oldpath);
+        SDL_asprintf(&aoldpath, "%s/%s", SDL_GetPlatformInternalStoragePath(), oldpath);
         if (!aoldpath) {
             return false;
         }
         oldpath = aoldpath;
     }
     if (*newpath != '/') {
-        SDL_asprintf(&anewpath, "%s/%s", SDL_GetAndroidInternalStoragePath(), newpath);
+        SDL_asprintf(&anewpath, "%s/%s", SDL_GetPlatformInternalStoragePath(), newpath);
         if (!anewpath) {
             SDL_free(aoldpath);
             return false;
@@ -349,16 +353,16 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     struct stat statbuf;
     int rc;
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     if (*path == '\0') {
         return SDL_SetError("No such file or directory");
     } else if (*path == '/') {
         rc = stat(path, &statbuf);
     } else if (SDL_strncmp(path, "assets://", 9) == 0) {
-        return Android_JNI_GetAssetPathInfo(path, info);
+        return SDL_PlatformGetAssetPathInfo(path, info);
     } else {
         char *apath = NULL;
-        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        SDL_asprintf(&apath, "%s/%s", SDL_GetPlatformInternalStoragePath(), path);
         if (!apath) {
             return false;
         }
@@ -366,7 +370,7 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         SDL_free(apath);
     }
     if (rc < 0) {  // Maybe it's an asset... that didn't use an "assets://" URL?
-        return Android_JNI_GetAssetPathInfo(path, info);
+        return SDL_PlatformGetAssetPathInfo(path, info);
     }
 #elif defined(SDL_PLATFORM_IOS)
     if (*path == '/') {

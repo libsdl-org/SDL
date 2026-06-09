@@ -69,6 +69,11 @@ struct SDL_IOStream
 #include "../core/android/SDL_android.h"
 #endif
 
+#ifdef SDL_PLATFORM_OPENHARMONY
+#include <unistd.h>
+#include "../core/openharmony/SDL_openharmony.h"
+#endif
+
 #if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 
 typedef struct IOStreamWindowsData
@@ -1024,7 +1029,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         return NULL;
     }
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
 #ifdef HAVE_STDIO_H
     // Try to open the file on the filesystem first
     if (*file == '/') {
@@ -1037,6 +1042,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
             }
             return SDL_IOFromFP(fp, true);
         }
+    #ifdef SDL_PLATFORM_ANDROID
     } else if (SDL_strncmp(file, "content://", 10) == 0) {
         // Try opening content:// URI
         int fd = Android_JNI_OpenFileDescriptor(file, mode);
@@ -1053,10 +1059,11 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
 
         return SDL_IOFromFP(fp, true);
+    #endif
     } else if (SDL_strncmp(file, "assets://", 9) != 0) {
         // Try opening it from internal storage if it's a relative path
         char *path = NULL;
-        SDL_asprintf(&path, "%s/%s", SDL_GetAndroidInternalStoragePath(), file);
+        SDL_asprintf(&path, "%s/%s", SDL_GetPlatformInternalStoragePath(), file);
         if (path) {
             FILE *fp = fopen(path, mode);
             SDL_free(path);
@@ -1072,6 +1079,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     }
 #endif // HAVE_STDIO_H
 
+    #ifdef SDL_PLATFORM_ANDROID
     // Try to open the file from the asset system?
     void *iodata = NULL;
     if (!Android_JNI_FileOpen(&iodata, file, mode)) {
@@ -1092,6 +1100,32 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
     } else {
         iostr->setioprops = android_setioprops;
     }
+
+    #elif defined(SDL_PLATFORM_OPENHARMONY)
+    // Try to open the file from the asset system?
+    void *iodata = NULL;
+    if (!SDL_OpenHarmonyRawFileOpen(&iodata, file, mode)) {
+        return NULL;
+    }
+
+    SDL_IOStreamInterface iface;
+    SDL_INIT_INTERFACE(&iface);
+    iface.size = SDL_OpenHarmonyRawFileSize;
+    iface.seek = SDL_OpenHarmonyRawFileSeek;
+    iface.read = SDL_OpenHarmonyRawFileRead;
+    iface.write = NULL;  // no write access via RawFile.
+    iface.close = SDL_OpenHarmonyRawFileClose;
+
+    iostr = SDL_OpenIO(&iface, iodata);
+    if (!iostr) {
+        iface.close(iodata);
+    } else {
+        const SDL_PropertiesID props = SDL_GetIOProperties(iostr);
+        if (props) {
+            SDL_SetPointerProperty(props, SDL_PROP_IOSTREAM_OPENHARMONY_RAWFILE64_POINTER, iodata);
+        }
+    }
+    #endif
 
 #elif defined(SDL_PLATFORM_IOS)
 

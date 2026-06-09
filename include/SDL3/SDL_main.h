@@ -193,6 +193,19 @@
          */
         #define SDL_MAIN_EXPORTED
 
+    #elif defined(SDL_PLATFORM_OPENHARMONY)
+        /* On HarmonyOS/OpenHarmony SDL does a lot of work to gain control of the app. */
+        #define SDL_MAIN_NEEDED
+
+        /* As this is launched from ArkTS, the real entry point (main() function)
+           is outside of the the binary built from this code.
+           This define makes sure that, unlike on other platforms, SDL_main.h
+           and SDL_main_impl.h export an `SDL_main()` function (to be called
+           from ArkTS, sort of), but don't implement a native
+           `int main(int argc, char* argv[])` or similar.
+         */
+        #define SDL_MAIN_EXPORTED
+
     #elif defined(SDL_PLATFORM_EMSCRIPTEN)
         /* On Emscripten, SDL provides a main function that converts URL
            parameters that start with "SDL_" to environment variables, so
