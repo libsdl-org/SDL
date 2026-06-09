@@ -49,6 +49,7 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 #if defined(__MACOSX__)
     SDL_bool controlled_by_360controller;
+    SDL_bool is_steam_virtual_gamepad;
 #endif
 } SDL_DriverXbox360_Context;
 
@@ -177,6 +178,7 @@ static SDL_bool HIDAPI_DriverXbox360_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
 #if defined(__MACOSX__)
     ctx->controlled_by_360controller = IsControlledBy360ControllerDriverMacOS(device);
+    ctx->is_steam_virtual_gamepad = SDL_IsJoystickSteamVirtualGamepad(device->vendor_id, device->product_id, device->version);
 #endif
 
     device->context = ctx;
@@ -294,7 +296,10 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 {
     Sint16 axis;
 #ifdef __MACOSX__
-    const SDL_bool invert_y_axes = SDL_FALSE;
+    // For backwards compatibility reasons, the 360Controller driver and the Steam Virtual
+    // Gamepad require opposite Y axis inversion on macOS
+    const SDL_bool invert_y_axes = (ctx->controlled_by_360controller ||
+                                    ctx->is_steam_virtual_gamepad) ? SDL_FALSE : SDL_TRUE;
 #else
     const SDL_bool invert_y_axes = SDL_TRUE;
 #endif
