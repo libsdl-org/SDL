@@ -1935,6 +1935,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         --data->in_modal_loop;
         if (data->in_modal_loop == 0) {
             KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
+            SDL_OnWindowLiveResizeUpdate(data->window);
         }
     } break;
 
