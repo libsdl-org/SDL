@@ -938,7 +938,7 @@ if(SDL_ASSEMBLY)
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
         # IMPORTANT: As not all AArch64 processors support SVE2, we only
-        #            attach the following compilation option to SVE 
+        #            attach the following compilation option to SVE
         #            dedicated source files.
         set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
         set(HAVE_ARMSVE2 TRUE)
@@ -2313,12 +2313,18 @@ elseif(WINDOWS OR CYGWIN)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
-  check_cxx_source_compiles("
-    #include <stdbool.h>
-    #define COBJMACROS
-    #include <gameinput.h>
-    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
-  )
+  find_library(HAVE_GAMEINPUT_LIB NAMES "gameinput.lib")
+  if(HAVE_GAMEINPUT_LIB)
+    check_cxx_source_compiles("
+      #include <stdbool.h>
+      #define COBJMACROS
+      #include <gameinput.h>
+      int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
+    )
+    if(HAVE_GAMEINPUT_H)
+      target_link_libraries(SDL3-shared PRIVATE gameinput.lib)
+    endif()
+  endif()
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
