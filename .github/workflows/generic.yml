@@ -173,13 +173,12 @@ jobs:
             done
           done
       - name: 'Set up Microsoft.GameInput headers'
-        if: ${{ matrix.platform.microsoft-gameinput-version != '' }}
+        if: ${{ matrix.platform.microsoft-gameinput-arch != '' }}
         run: |
-          python build-scripts/download-gameinput-headers.py \
-            --version ${{ matrix.platform.microsoft-gameinput-version }} \
-            -o $HOME/gameinput
-          echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
-          echo "INCLUDE=$INCLUDE;$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
+          python build-scripts/download-gameinput-sdk.py -o $HOME/gameinput
+          echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput/include")" >>$GITHUB_ENV
+          echo "INCLUDE=$INCLUDE;$(cygpath -w "$HOME/gameinput/include")" >>$GITHUB_ENV
+          echo "LIB=$LIB;$(cygpath -w "$HOME/gameinput/lib/${{ matrix.platform.microsoft-gameinput-arch }}")" >>$GITHUB_ENV
 
       - name: 'Calculate ccache key'
         if: ${{ matrix.platform.ccache }}
