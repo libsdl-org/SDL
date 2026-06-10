@@ -450,7 +450,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             match spec.msvc_arch:
                 case MsvcArch.X64:
                     job.microsoft_gameinput_arch = "x64"
-                case MsvcArch.X64:
+                case MsvcArch.Arm64:
                     job.microsoft_gameinput_arch = "arm64"
             job.cflags.append("-I$GAMEINPUT_INCLUDE")
             job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
