@@ -446,8 +446,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                         job.setup_libusb_arch = "x86"
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
+            job.microsoft_gameinput = True
             match spec.msvc_arch:
-                job.microsoft_gameinput = True
                 case MsvcArch.X64:
                     job.microsoft_gameinput_arch = "x64"
                 case MsvcArch.X64:
