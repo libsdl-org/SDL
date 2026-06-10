@@ -2327,7 +2327,7 @@ elseif(WINDOWS OR CYGWIN)
       check_cxx_source_compiles("
         #include <windows.h>
         #include <gameinput.h>
-        if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
+        #if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
         #define STR_JOIN2(A, B) A##B
         #define STR_JOIN(A, B) STR_JOIN2(A, B)
         using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
