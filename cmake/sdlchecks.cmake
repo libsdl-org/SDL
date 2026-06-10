@@ -1272,7 +1272,7 @@ macro(CheckHIDAPI)
           #include <stddef.h>
           #include <libusb.h>
           int main(int argc, char **argv) {
-            libusb_close(NULL);
+            libusb_interrupt_event_handler(NULL);
             return 0;
           }" HAVE_LIBUSB_H)
         cmake_pop_check_state()
