@@ -784,7 +784,7 @@ static bool AppendXmlText(SDL_IOStream *dst, const char *text)
     return true;
 }
 
-static WCHAR *BuildNotificationXml(SDL_PropertiesID props, const WCHAR *icon_path, SDL_NotificationID id, Uint32 *wchar_count)
+static WCHAR *BuildNotificationXml(SDL_PropertiesID props, const WCHAR *icon_path, Uint32 *wchar_count)
 {
     WCHAR *xml = NULL;
     SDL_IOStream *dst = SDL_IOFromDynamicMem();
@@ -951,7 +951,7 @@ SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props)
 
     // Build the XML description for the notification.
     Uint32 xml_len = 0;
-    WCHAR *xml = BuildNotificationXml(props, image_path, new_id, &xml_len);
+    WCHAR *xml = BuildNotificationXml(props, image_path, &xml_len);
     SDL_free(image_path);
     if (!xml) {
         return 0;
@@ -1017,7 +1017,7 @@ SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props)
         }
     }
 
-    // Tag with the ID for future replacement.
+    // Tag with the ID for future removal or replacement.
     {
         __x_ABI_CWindows_CUI_CNotifications_CIToastNotification2 *pToastNotification2;
         HSTRING_HEADER hshTag;
