@@ -24,7 +24,6 @@
 #include "SDL_gameinput.h"
 
 #ifdef HAVE_GAMEINPUT_H
-#error boo
 
 #ifndef SDL_GAMEINPUT_DYNAMIC
 #define USE_GAMEINPUT_LIB
