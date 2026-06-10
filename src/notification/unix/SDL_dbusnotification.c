@@ -1520,7 +1520,7 @@ bool SDL_RemoveNotification(SDL_NotificationID notification)
     return false;
 }
 
-void SDL_CleanupNotifications()
+void SDL_CleanupNotifications(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
 
@@ -1571,7 +1571,7 @@ bool SDL_RequestNotificationPermission(void)
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
-const char *SDL_GetNotificationActivationToken()
+const char *SDL_GetNotificationActivationToken(void)
 {
     // Track the lifetime to avoid returning a stale token.
     if (activation_token && SDL_GetTicksNS() - activation_token_time_ns < ACTIVATION_TOKEN_LIFETIME) {

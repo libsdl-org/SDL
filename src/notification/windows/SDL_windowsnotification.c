@@ -1109,7 +1109,7 @@ bool SDL_RemoveNotification(SDL_NotificationID notification)
     return true;
 }
 
-void SDL_CleanupNotifications()
+void SDL_CleanupNotifications(void)
 {
     if (pNotificationFactory) {
         pNotificationFactory->lpVtbl->Release(pNotificationFactory);

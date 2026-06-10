@@ -25,14 +25,14 @@
 #include <SDL3/SDL_notification.h>
 
 extern SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props);
-extern void SDL_CleanupNotifications();
+extern void SDL_CleanupNotifications(void);
 
 #ifdef SDL_PLATFORM_APPLE
-extern void Cocoa_RegisterNotificationDelegate();
+extern void Cocoa_RegisterNotificationDelegate(void);
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
-extern const char *SDL_GetNotificationActivationToken();
+extern const char *SDL_GetNotificationActivationToken(void);
 #endif
 
 #endif // SDL_NOTIFICATION_C_H

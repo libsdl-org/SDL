@@ -127,7 +127,7 @@ static NSURL *SaveTempImage(SDL_Surface *image)
     }
 }
 
-void Cocoa_RegisterNotificationDelegate()
+void Cocoa_RegisterNotificationDelegate(void)
 {
     if (!ShouldEnableNotifications()) {
         return;

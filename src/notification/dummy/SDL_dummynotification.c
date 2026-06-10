@@ -38,20 +38,20 @@ bool SDL_RemoveNotification(SDL_NotificationID notification)
     return SDL_Unsupported();
 }
 
-void SDL_CleanupNotifications()
+void SDL_CleanupNotifications(void)
 {
     // Nothing to do.
 }
 
 #ifdef SDL_PLATFORM_APPLE
-void Cocoa_RegisterNotificationDelegate()
+void Cocoa_RegisterNotificationDelegate(void)
 {
     // Nothing to do.
 }
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
-const char *SDL_GetNotificationActivationToken()
+const char *SDL_GetNotificationActivationToken(void)
 {
     return NULL;
 }
