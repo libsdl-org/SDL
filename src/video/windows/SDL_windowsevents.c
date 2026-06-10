@@ -1935,7 +1935,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         --data->in_modal_loop;
         if (data->in_modal_loop == 0) {
             KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
-            SDL_OnWindowLiveResizeUpdate(data->window);
         }
     } break;
 
@@ -2097,9 +2096,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             ValidateRect(hwnd, NULL);
-            if (!data->in_modal_loop) {
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
-            }
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
         }
     }
         returnCode = 0;
