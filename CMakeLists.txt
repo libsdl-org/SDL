@@ -2316,11 +2316,7 @@ elseif(WINDOWS OR CYGWIN)
 
   check_cxx_source_compiles("
     #include <gameinput.h>
-    #ifndef GAMEINPUT_API_VERSION
-    #define GAMEINPUT_API_VERSION 0
-    #endif
-    int supported_versions[(GAMEINPUT_API_VERSION <= 3) ? 1 : -1];
-    int main(int argc, char **argv) { return supported_versions[argc]; }" HAVE_GAMEINPUT_H
+    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
   if(HAVE_GAMEINPUT_H)
     set(SDL_GAMEINPUT_DYNAMIC 1)
