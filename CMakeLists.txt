@@ -2315,8 +2315,6 @@ elseif(WINDOWS OR CYGWIN)
   )
 
   check_cxx_source_compiles("
-    #include <stdbool.h>
-    #define COBJMACROS
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
