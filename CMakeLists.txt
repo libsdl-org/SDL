@@ -2316,7 +2316,8 @@ elseif(WINDOWS OR CYGWIN)
 
   check_cxx_source_compiles("
     #include <gameinput.h>
-    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
+    int supported_versions[(GAMEINPUT_VERSION == 1 || GAMEINPUT_VERSION == 2 || GAMEINPUT_VERSION == 3) ? 1 : -1];
+    int main(int argc, char **argv) { return supported_versions[argc]; }" HAVE_GAMEINPUT_H
   )
   if(HAVE_GAMEINPUT_H)
     set(SDL_GAMEINPUT_DYNAMIC 1)
@@ -2325,24 +2326,18 @@ elseif(WINDOWS OR CYGWIN)
       cmake_push_check_state()
       list(APPEND CMAKE_REQUIRED_LIBRARIES "${GAMEINPUT_LIB}")
       check_cxx_source_compiles("
+        #include <windows.h>
         #include <gameinput.h>
-        #ifndef GAMEINPUT_API_VERSION
-        #define GAMEINPUT_API_VERSION 0
-        #endif
-        #if GAMEINPUT_API_VERSION > 3
-        #error Unknown GameInput version
-        #elif GAMEINPUT_API_VERSION == 3
-        using namespace GameInput::v3;
-        #elif GAMEINPUT_API_VERSION == 2
-        using namespace GameInput::v2;
-        #elif GAMEINPUT_API_VERSION == 1
-        using namespace GameInput::v1;
-        #endif
+        #define STR_JOIN2(A, B) A##B
+        #define STR_JOIN(A, B) STR_JOIN2(A, B)
+        using namespace GameInput::STR_JOIN(v, GAMEINPUT_VERSION);
         int main(int argc, char **argv) {
          IGameInput *gameInput;
          HRESULT hr = GameInputCreate(&gameInput);
+         if (SUCCEEDED(hr)) {
+          gameInput->Release();
+         }
          (void) argc; (void) argv;
-         gameInput->Release();
          return 0;
         }" HAVE_GAMEINPUT_LIB
       )
