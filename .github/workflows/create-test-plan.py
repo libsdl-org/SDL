@@ -446,14 +446,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                         job.setup_libusb_arch = "x86"
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
-            job.microsoft_gameinput = True
-            match spec.msvc_arch:
-                case MsvcArch.X64:
-                    job.microsoft_gameinput_arch = "x64"
-                case MsvcArch.Arm64:
-                    job.microsoft_gameinput_arch = "arm64"
-            job.cflags.append("-I$GAMEINPUT_INCLUDE")
-            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
+                job.microsoft_gameinput = True
+                match spec.msvc_arch:
+                    case MsvcArch.X64:
+                        job.microsoft_gameinput_arch = "x64"
+                    case MsvcArch.Arm64:
+                        job.microsoft_gameinput_arch = "arm64"
+                job.cflags.append("-I$GAMEINPUT_INCLUDE")
+                job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Linux:
             if spec.name.startswith("Ubuntu"):
                 assert spec.os.value.startswith("ubuntu-")
