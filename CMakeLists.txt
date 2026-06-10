@@ -2316,7 +2316,10 @@ elseif(WINDOWS OR CYGWIN)
 
   check_cxx_source_compiles("
     #include <gameinput.h>
-    int supported_versions[(GAMEINPUT_VERSION == 1 || GAMEINPUT_VERSION == 2 || GAMEINPUT_VERSION == 3) ? 1 : -1];
+    #ifndef GAMEINPUT_API_VERSION
+    #define GAMEINPUT_API_VERSION 0
+    #endif
+    int supported_versions[(GAMEINPUT_API_VERSION <= 3) ? 1 : -1];
     int main(int argc, char **argv) { return supported_versions[argc]; }" HAVE_GAMEINPUT_H
   )
   if(HAVE_GAMEINPUT_H)
@@ -2328,9 +2331,11 @@ elseif(WINDOWS OR CYGWIN)
       check_cxx_source_compiles("
         #include <windows.h>
         #include <gameinput.h>
+        if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
         #define STR_JOIN2(A, B) A##B
         #define STR_JOIN(A, B) STR_JOIN2(A, B)
-        using namespace GameInput::STR_JOIN(v, GAMEINPUT_VERSION);
+        using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
+        #endif
         int main(int argc, char **argv) {
          IGameInput *gameInput;
          HRESULT hr = GameInputCreate(&gameInput);
