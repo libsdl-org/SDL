@@ -3,7 +3,7 @@
   "remote": "libsdl-org/SDL",
   "dependencies": {
     "gameinput": {
-      "command": "build-scripts/download-gameinput-headers.py -o @<@DEPS_PATH@>@/include --version v3.3.195.0",
+      "command": "build-scripts/download-gameinput-sdk.py -o @<@DEPS_PATH@>@",
       "artifact": "gameinput/include/gameinput.h"
     }
   },

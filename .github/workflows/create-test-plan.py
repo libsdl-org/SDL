@@ -12,7 +12,6 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-WINDOWS_GAMEINPUT_VERSION = "v3.3.195.0 "
 
 class AppleArch(Enum):
     Aarch64 = "aarch64"
@@ -222,7 +221,8 @@ class JobDetails:
     msys2_packages: list[str] = dataclasses.field(default_factory=list)
     cygwin_packages: list[str] = dataclasses.field(default_factory=list)
     werror: bool = True
-    microsoft_gameinput_version: str = ""
+    microsoft_gameinput: bool = False
+    microsoft_gameinput_arch: str = ""
     msvc_vcvars_arch: str = ""
     msvc_vcvars_sdk: str = ""
     msvc_project: str = ""
@@ -293,7 +293,8 @@ class JobDetails:
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
-            "microsoft-gameinput-version": self.microsoft_gameinput_version,
+            "microsoft-gameinput": self.microsoft_gameinput,
+            "microsoft-gameinput-arch": self.microsoft_gameinput_arch,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
             "msvc-vcvars-sdk": self.msvc_vcvars_sdk,
             "msvc-project": self.msvc_project,
@@ -445,9 +446,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                         job.setup_libusb_arch = "x86"
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
-            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
-            job.cflags.append("-I$GAMEINPUT_INCLUDE")
-            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
+                job.microsoft_gameinput = True
+                match spec.msvc_arch:
+                    case MsvcArch.X64:
+                        job.microsoft_gameinput_arch = "x64"
+                    case MsvcArch.Arm64:
+                        job.microsoft_gameinput_arch = "arm64"
+                job.cflags.append("-I$GAMEINPUT_INCLUDE")
+                job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Linux:
             if spec.name.startswith("Ubuntu"):
                 assert spec.os.value.startswith("ubuntu-")
@@ -775,7 +781,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
-            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
+            job.microsoft_gameinput = True
             job.cflags.append("-I$GAMEINPUT_INCLUDE")
             job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Cygwin:

@@ -173,14 +173,12 @@ jobs:
             done
           done
       - name: 'Set up Microsoft.GameInput headers'
-        if: ${{ matrix.platform.microsoft-gameinput-version != '' }}
+        if: ${{ !!matrix.platform.microsoft-gameinput }}
         run: |
-          python build-scripts/download-gameinput-headers.py \
-            --version ${{ matrix.platform.microsoft-gameinput-version }} \
-            -o $HOME/gameinput
-          echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
-          echo "INCLUDE=$INCLUDE;$(cygpath -w "$HOME/gameinput")" >>$GITHUB_ENV
-
+          python build-scripts/download-gameinput-sdk.py -o $HOME/gameinput
+          echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput/include")" >>$GITHUB_ENV
+          echo "INCLUDE=$(cygpath -w "$HOME/gameinput/include");$INCLUDE" >>$GITHUB_ENV
+          ${{ (!!matrix.platform.microsoft-gameinput-arch && format('echo "LIB=$(cygpath -w "$HOME/gameinput/lib/{0}");$LIB" >>$GITHUB_ENV', matrix.platform.microsoft-gameinput-arch)) || '' }}
       - name: 'Calculate ccache key'
         if: ${{ matrix.platform.ccache }}
         id: prepare-restore-ccache
@@ -439,6 +437,7 @@ jobs:
           path: |
             build/dist/SDL3*
             build/include*
+            build/CMakeFiles/CMakeConfigureLog.yaml
       - name: 'Upload minidumps'
         uses: actions/upload-artifact@v7
         continue-on-error: true

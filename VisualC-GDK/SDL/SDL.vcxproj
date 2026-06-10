@@ -132,7 +132,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -161,7 +161,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -199,7 +199,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -238,7 +238,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -268,7 +268,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -307,7 +307,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

@@ -938,7 +938,7 @@ if(SDL_ASSEMBLY)
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
         # IMPORTANT: As not all AArch64 processors support SVE2, we only
-        #            attach the following compilation option to SVE 
+        #            attach the following compilation option to SVE
         #            dedicated source files.
         set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
         set(HAVE_ARMSVE2 TRUE)
@@ -2313,12 +2313,42 @@ elseif(WINDOWS OR CYGWIN)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
+
   check_cxx_source_compiles("
-    #include <stdbool.h>
-    #define COBJMACROS
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
+  if(HAVE_GAMEINPUT_H)
+    set(SDL_GAMEINPUT_DYNAMIC 1)
+    find_library(GAMEINPUT_LIB NAMES "gameinput.lib")
+    if(GAMEINPUT_LIB)
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_LIBRARIES "${GAMEINPUT_LIB}")
+      check_cxx_source_compiles("
+        #include <windows.h>
+        #include <gameinput.h>
+        #if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
+        #define STR_JOIN2(A, B) A##B
+        #define STR_JOIN(A, B) STR_JOIN2(A, B)
+        using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
+        #endif
+        int main(int argc, char **argv) {
+         IGameInput *gameInput;
+         HRESULT hr = GameInputCreate(&gameInput);
+         if (SUCCEEDED(hr)) {
+          gameInput->Release();
+         }
+         (void) argc; (void) argv;
+         return 0;
+        }" HAVE_GAMEINPUT_LIB
+      )
+      if(HAVE_GAMEINPUT_LIB)
+        sdl_link_dependency(gameinput LIBS gameinput.lib PKG_CONFIG_LINK_OPTIONS -lgameinput)
+        set(SDL_GAMEINPUT_DYNAMIC 0)
+      endif()
+    endif()
+  endif()
+
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
