@@ -221,6 +221,7 @@ class JobDetails:
     msys2_packages: list[str] = dataclasses.field(default_factory=list)
     cygwin_packages: list[str] = dataclasses.field(default_factory=list)
     werror: bool = True
+    microsoft_gameinput: bool = False
     microsoft_gameinput_arch: str = ""
     msvc_vcvars_arch: str = ""
     msvc_vcvars_sdk: str = ""
@@ -292,6 +293,7 @@ class JobDetails:
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
+            "microsoft-gameinput": self.microsoft_gameinput,
             "microsoft-gameinput-arch": self.microsoft_gameinput_arch,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
             "msvc-vcvars-sdk": self.msvc_vcvars_sdk,
@@ -445,6 +447,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
             match spec.msvc_arch:
+                job.microsoft_gameinput = True
                 case MsvcArch.X64:
                     job.microsoft_gameinput_arch = "x64"
                 case MsvcArch.X64:
@@ -778,6 +781,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
+            job.microsoft_gameinput = True
+            job.cflags.append("-I$GAMEINPUT_INCLUDE")
+            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Cygwin:
             job.ccache = False # Missing evict-older-than option
             job.clang_tidy = False # error finding files [clang-diagnostic-error] cause might be space in command path
