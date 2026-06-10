@@ -2326,6 +2326,18 @@ elseif(WINDOWS OR CYGWIN)
       list(APPEND CMAKE_REQUIRED_LIBRARIES "${GAMEINPUT_LIB}")
       check_cxx_source_compiles("
         #include <gameinput.h>
+        #ifndef GAMEINPUT_API_VERSION
+        #define GAMEINPUT_API_VERSION 0
+        #endif
+        #if GAMEINPUT_API_VERSION > 3
+        #error Unknown GameInput version
+        #elif GAMEINPUT_API_VERSION == 3
+        using namespace GameInput::v3;
+        #elif GAMEINPUT_API_VERSION == 2
+        using namespace GameInput::v2;
+        #elif GAMEINPUT_API_VERSION == 1
+        using namespace GameInput::v1;
+        #endif
         int main(int argc, char **argv) {
          IGameInput *gameInput;
          HRESULT hr = GameInputCreate(&gameInput);
