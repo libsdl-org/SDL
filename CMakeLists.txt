@@ -2330,7 +2330,7 @@ elseif(WINDOWS OR CYGWIN)
         #include <gameinput.h>
         int main(int argc, char **argv) {
          IGameInput *gameInput;
-         HRESULT hr = GameInputCreate(&g_pGameInput);
+         HRESULT hr = GameInputCreate(&gameInput);
          (void) argc; (void) argv;
          gameInput->Release();
          return 0;

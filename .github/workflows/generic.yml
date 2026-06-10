@@ -437,6 +437,7 @@ jobs:
           path: |
             build/dist/SDL3*
             build/include*
+            build/CMakeFiles/CMakeConfigureLog.yaml
       - name: 'Upload minidumps'
         uses: actions/upload-artifact@v7
         continue-on-error: true
