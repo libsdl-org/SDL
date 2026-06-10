@@ -734,6 +734,10 @@ static SDL_LibUSBContext *libusb_ctx;
 #define libusb_bulk_transfer                libusb_ctx->bulk_transfer
 #define libusb_handle_events                libusb_ctx->handle_events
 #define libusb_handle_events_completed      libusb_ctx->handle_events_completed
+#define libusb_interrupt_event_handler      libusb_ctx->interrupt_event_handler
+#define libusb_has_capability               libusb_ctx->has_capability
+#define libusb_hotplug_register_callback    libusb_ctx->hotplug_register_callback
+#define libusb_hotplug_deregister_callback  libusb_ctx->hotplug_deregister_callback
 #define libusb_error_name                   libusb_ctx->error_name
 
 struct LIBUSB_hid_device_;
