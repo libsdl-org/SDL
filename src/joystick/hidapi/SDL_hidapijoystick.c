@@ -178,6 +178,8 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
         return true;
     case USB_VENDOR_DRAGONRISE:
         return true;
+    case USB_VENDOR_CORSAIR:
+        return true;
     case USB_VENDOR_HORI:
         return true;
     case USB_VENDOR_LOGITECH:
