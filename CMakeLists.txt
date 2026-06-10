@@ -2320,8 +2320,8 @@ elseif(WINDOWS OR CYGWIN)
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
-  set(SDL_GAMEINPUT_DYNAMIC 1)
   if(HAVE_GAMEINPUT_H)
+    set(SDL_GAMEINPUT_DYNAMIC 1)
     find_library(GAMEINPUT_LIB NAMES "gameinput.lib")
     if(GAMEINPUT_LIB)
       cmake_push_check_state()
