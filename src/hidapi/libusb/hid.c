@@ -600,6 +600,66 @@ HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
 	return HID_API_VERSION_STR;
 }
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+static libusb_hotplug_callback_handle hotplug_callback_handle;
+static int shutdown_event_thread;
+static hidapi_thread_state event_thread_state;
+
+static int hotplug_callback(struct libusb_context *ctx, struct libusb_device *dev, libusb_hotplug_event event, void *user_data)
+{
+	switch (event) {
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
+		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		break;
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
+		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+
+static void *event_thread(void *param)
+{
+	while (!shutdown_event_thread) {
+		int res = libusb_handle_events(usb_context);
+		if (res < 0) {
+			/* There was an error. */
+			LOG("event_thread(): (%d) %s\n", res, libusb_error_name(res));
+		}
+	}
+	return NULL;
+}
+
+static void start_event_thread()
+{
+	if (libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG)) {
+		int res = libusb_hotplug_register_callback(usb_context, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED | LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, 0, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, hotplug_callback, NULL, &hotplug_callback_handle);
+		if (res < 0) {
+			LOG("Couldn't register hotplug: (%d) %s\n", res, libusb_error_name(res));
+		}
+	}
+
+	hidapi_thread_create(&event_thread_state, event_thread, NULL);
+}
+
+static void stop_event_thread()
+{
+	shutdown_event_thread = 1;
+	libusb_interrupt_event_handler(usb_context);
+	hidapi_thread_join(&event_thread_state);
+	shutdown_event_thread = 0;
+
+	if (hotplug_callback_handle) {
+		libusb_hotplug_deregister_callback(usb_context, hotplug_callback_handle);
+		hotplug_callback_handle = 0;
+	}
+}
+#endif /* HIDAPI_USING_SDL_RUNTIME */
+
+
 int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
@@ -613,6 +673,10 @@ int HID_API_EXPORT hid_init(void)
 		locale = setlocale(LC_CTYPE, NULL);
 		if (!locale)
 			(void) setlocale(LC_CTYPE, "");
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+		start_event_thread();
+#endif
 	}
 
 	return 0;
@@ -621,6 +685,10 @@ int HID_API_EXPORT hid_init(void)
 int HID_API_EXPORT hid_exit(void)
 {
 	usb_string_cache_destroy();
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	stop_event_thread();
+#endif
 
 	if (usb_context) {
 		libusb_exit(usb_context);
@@ -1186,10 +1254,9 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 }
 
 
-static void *read_thread(void *param)
+static void start_read_operations(hid_device *dev)
 {
 	int res;
-	hid_device *dev = param;
 	uint8_t *buf;
 	const size_t length = dev->input_ep_max_packet_size;
 
@@ -1209,10 +1276,37 @@ static void *read_thread(void *param)
 	   from inside read_callback() */
 	res = libusb_submit_transfer(dev->transfer);
 	if(res < 0) {
-                LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
-                dev->shutdown_thread = 1;
-                dev->transfer_loop_finished = 1;
+		LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
+		dev->shutdown_thread = 1;
+		dev->transfer_loop_finished = 1;
 	}
+}
+
+
+static void stop_read_operations(hid_device *dev)
+{
+	while (!dev->transfer_loop_finished)
+		libusb_handle_events_completed(usb_context, &dev->transfer_loop_finished);
+
+	/* Now that the read operations are stopping, Wake any threads which are
+	   waiting on data (in hid_read_timeout()). Do this under a mutex to
+	   make sure that a thread which is about to go to sleep waiting on
+	   the condition actually will go to sleep before the condition is
+	   signaled. */
+	hidapi_thread_mutex_lock(&dev->thread_state);
+	hidapi_thread_cond_broadcast(&dev->thread_state);
+	hidapi_thread_mutex_unlock(&dev->thread_state);
+}
+
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+/* We have a separate thread handling all the events */
+#else
+static void *read_thread(void *param)
+{
+	hid_device *dev = param;
+
+	start_read_operations(dev);
 
 	/* Notify the main thread that the read thread is up and running. */
 	hidapi_thread_barrier_wait(&dev->thread_state);
@@ -1239,17 +1333,7 @@ static void *read_thread(void *param)
 	   if no transfers are pending, but that's OK. */
 	libusb_cancel_transfer(dev->transfer);
 
-	while (!dev->transfer_loop_finished)
-		libusb_handle_events_completed(usb_context, &dev->transfer_loop_finished);
-
-	/* Now that the read thread is stopping, Wake any threads which are
-	   waiting on data (in hid_read_timeout()). Do this under a mutex to
-	   make sure that a thread which is about to go to sleep waiting on
-	   the condition actually will go to sleep before the condition is
-	   signaled. */
-	hidapi_thread_mutex_lock(&dev->thread_state);
-	hidapi_thread_cond_broadcast(&dev->thread_state);
-	hidapi_thread_mutex_unlock(&dev->thread_state);
+	stop_read_operations(dev);
 
 	/* The dev->transfer->buffer and dev->transfer objects are cleaned up
 	   in hid_close(). They are not cleaned up here because this thread
@@ -1261,6 +1345,7 @@ static void *read_thread(void *param)
 
 	return NULL;
 }
+#endif /* HIDAPI_USING_SDL_RUNTIME */
 
 static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, const struct libusb_config_descriptor *conf_desc)
 {
@@ -1441,10 +1526,14 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 
 	calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	start_read_operations(dev);
+#else
 	hidapi_thread_create(&dev->thread_state, read_thread, dev);
 
 	/* Wait here for the read thread to be initialized. */
 	hidapi_thread_barrier_wait(&dev->thread_state);
+#endif
 	return 1;
 }
 
@@ -1868,8 +1957,12 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	dev->shutdown_thread = 1;
 	libusb_cancel_transfer(dev->transfer);
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	stop_read_operations(dev);
+#else
 	/* Wait for read_thread() to end. */
 	hidapi_thread_join(&dev->thread_state);
+#endif
 
 	/* Clean up the Transfer objects allocated in read_thread(). */
 	free(dev->transfer->buffer);
