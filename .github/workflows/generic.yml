@@ -229,8 +229,6 @@ jobs:
             -DSDL_INSTALL_CPACK=ON \
             -DSDL_INSTALL_DOCS=ON \
             ${{ matrix.platform.cmake-arguments }} \
-            -DSDL_SHARED=${{ matrix.platform.shared }} \
-            -DSDL_STATIC=${{ matrix.platform.static  }} \
             -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -DCMAKE_INSTALL_LIBDIR=lib \
