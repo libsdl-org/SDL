@@ -2313,17 +2313,17 @@ elseif(WINDOWS OR CYGWIN)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
+  check_cxx_source_compiles("
+    #include <stdbool.h>
+    #define COBJMACROS
+    #include <gameinput.h>
+    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
+  )
   find_library(HAVE_GAMEINPUT_LIB NAMES "gameinput.lib")
-  if(HAVE_GAMEINPUT_LIB)
-    check_cxx_source_compiles("
-      #include <stdbool.h>
-      #define COBJMACROS
-      #include <gameinput.h>
-      int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
-    )
-    if(HAVE_GAMEINPUT_H)
-      target_link_libraries(SDL3-shared PRIVATE gameinput.lib)
-    endif()
+  if(NOT HAVE_GAMEINPUT_LIB)
+    set(SDL_GAMEINPUT_DYNAMIC, 1)
+  else()
+    target_link_libraries(SDL3-shared PRIVATE gameinput.lib)
   endif()
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
