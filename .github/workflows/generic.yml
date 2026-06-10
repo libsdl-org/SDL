@@ -178,7 +178,7 @@ jobs:
           python build-scripts/download-gameinput-sdk.py -o $HOME/gameinput
           echo "GAMEINPUT_INCLUDE=$(cygpath -w "$HOME/gameinput/include")" >>$GITHUB_ENV
           echo "INCLUDE=$(cygpath -w "$HOME/gameinput/include");$INCLUDE" >>$GITHUB_ENV
-          ${{ (matrix.platform.microsoft-gameinput-arch != '' && format('echo "LIB=$(cygpath -w "$HOME/gameinput/lib/{0}");$LIB" >>$GITHUB_ENV', matrix.platform.microsoft-gameinput-arch)) || '' }}
+          ${{ (!!matrix.platform.microsoft-gameinput-arch && format('echo "LIB=$(cygpath -w "$HOME/gameinput/lib/{0}");$LIB" >>$GITHUB_ENV', matrix.platform.microsoft-gameinput-arch)) || '' }}
       - name: 'Calculate ccache key'
         if: ${{ matrix.platform.ccache }}
         id: prepare-restore-ccache
