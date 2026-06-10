@@ -605,7 +605,7 @@ static libusb_hotplug_callback_handle hotplug_callback_handle;
 static int shutdown_event_thread;
 static hidapi_thread_state event_thread_state;
 
-static int hotplug_callback(struct libusb_context *ctx, struct libusb_device *dev, libusb_hotplug_event event, void *user_data)
+static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libusb_device *dev, libusb_hotplug_event event, void *user_data)
 {
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
