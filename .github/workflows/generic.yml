@@ -33,6 +33,13 @@ jobs:
         uses: cygwin/cygwin-install-action@master
         with:
           packages: ${{ matrix.platform.cygwin-packages }}
+      - name: 'Set up BSD (cross-platform-actions)'
+        if: ${{ matrix.platform.cpactions != '' }}
+        uses: cross-platform-actions/action@v1
+        with:
+          operating_system: '${{ matrix.platform.cpactions-os }}'
+          architecture: '${{ matrix.platform.cpactions-arch }}'
+          version: '${{ matrix.platform.cpactions-version }}'
       - name: 'About this job'
         run: |
           echo "key=${{ matrix.platform.key }}"
@@ -141,6 +148,11 @@ jobs:
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew update
           brew install ${{ matrix.platform.brew-packages }}
+      - name: 'Install BSD packages'
+        if: ${{ matrix.platform.cpactions != '' }}
+        run: |
+          ${{ matrix.platform.cpactions-setup-cmd }}
+          ${{ matrix.platform.cpactions-install-cmd }}
       - name: 'Setup Python'
         uses: 'actions/setup-python@main'
         if: ${{ matrix.platform.setup-python }}
@@ -333,36 +345,6 @@ jobs:
           ${{ matrix.platform.ldflags && format('export LDFLAGS="{0}"', matrix.platform.ldflags) || '' }}
           export PKG_CONFIG_PATH=${{ steps.install.outputs.prefix }}/lib/pkgconfig
           cmake/test/test_pkgconfig.sh
-      - name: 'Build (cross-platform-actions, BSD)'
-        id: cpactions
-        if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v1
-        with:
-          operating_system: '${{ matrix.platform.cpactions-os }}'
-          architecture: '${{ matrix.platform.cpactions-arch }}'
-          version: '${{ matrix.platform.cpactions-version }}'
-          run: |
-            ${{ matrix.platform.cpactions-setup-cmd }}
-            ${{ matrix.platform.cpactions-install-cmd }}
-            cmake -S . -B build -GNinja  \
-              ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
-              -Wdeprecated -Wdev -Werror \
-              -DSDL_WERROR=${{ matrix.platform.werror }} \
-              -DSDL_INSTALL_DOCS=ON \
-              ${{ matrix.platform.cmake-arguments }} \
-              -DSDL_SHARED=${{ matrix.platform.shared }} \
-              -DSDL_STATIC=${{ matrix.platform.static  }} \
-              -DSDL_VENDOR_INFO="Github Workflow" \
-              -DCMAKE_INSTALL_PREFIX=prefix \
-              -DCMAKE_INSTALL_LIBDIR=lib \
-              -DCMAKE_BUILD_TYPE=${{ matrix.platform.cmake-build-type }}
-            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --verbose
-            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --target package
-
-            cmake --build build/ --config ${{ matrix.platform.cmake-build-type }} --target clean
-            rm -rf build/dist/_CPack_Packages
-            rm -rf build/CMakeFiles
-            rm -rf build/docs
       - name: Add msbuild to PATH
         id: setup-msbuild
         if: ${{ matrix.platform.msvc-project != '' }}
@@ -432,7 +414,7 @@ jobs:
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v7
         continue-on-error: true
-        if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
+        if: ${{ always() && matrix.platform.artifact != '' && steps.package.outcome == 'success' && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
         with:
           if-no-files-found: error
           name: '${{ matrix.platform.artifact }}'
