@@ -631,7 +631,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 "-ffile-prefix-map=${PWD}=/SDL",
             ))
             job.ldflags.extend((
-                "--source-map-base", "/",
+                "--source-map-base", "/", "-s", "ASYNCIFY",
             ))
             pretest_cmd.extend((
                 "# Start local HTTP server",

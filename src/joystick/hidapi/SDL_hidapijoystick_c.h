@@ -63,8 +63,12 @@
 #if defined(SDL_PLATFORM_ANDROID) || \
     defined(SDL_PLATFORM_IOS) || \
     defined(SDL_PLATFORM_TVOS) || \
-    defined(SDL_PLATFORM_VISIONOS)
-// On Android, HIDAPI prompts for permissions and acquires exclusive access to the device, and on Apple mobile platforms it doesn't do anything except for handling Bluetooth Steam Controllers, so we'll leave it off by default.
+    defined(SDL_PLATFORM_VISIONOS) || \
+    defined(SDL_PLATFORM_EMSCRIPTEN)
+// On Android, HIDAPI prompts for permissions and acquires exclusive access to the device,
+// on Emscripten, it also prompts for permissions and it's not available in some browsers,
+// and on Apple mobile platforms it doesn't do anything except for handling Bluetooth Steam Controllers,
+// so we'll leave it off by default.
 #define SDL_HIDAPI_DEFAULT false
 #else
 #define SDL_HIDAPI_DEFAULT true
@@ -179,6 +183,8 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
                             (((Uint32)(B)) << 8) |  \
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
+
+extern bool HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 // Return true if a HID device is present and supported as a joystick of the given type
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);

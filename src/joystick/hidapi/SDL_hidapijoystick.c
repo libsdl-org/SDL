@@ -347,7 +347,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
     return type;
 }
 
-static bool HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+bool HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
     int i;
     SDL_GamepadType type = SDL_GetJoystickGameControllerProtocol(name, vendor_id, product_id, -1, 0, 0, 0);
@@ -680,6 +680,10 @@ static bool HIDAPI_SerialIsEmpty(SDL_HIDAPI_Device *device)
 
 void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't include the serial number for the web to decrease the fingerprinting surface
+    serial = NULL;
+#endif
     if (serial && *serial && (!device->serial || SDL_strcmp(serial, device->serial) != 0)) {
         SDL_free(device->serial);
         device->serial = SDL_strdup(serial);
@@ -704,6 +708,10 @@ static int wcstrcmp(const wchar_t *str1, const char *str2)
 
 static void HIDAPI_SetDeviceSerialW(SDL_HIDAPI_Device *device, const wchar_t *serial)
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't include the serial number for the web to decrease the fingerprinting surface
+    serial = NULL;
+#endif
     if (serial && *serial && (!device->serial || wcstrcmp(serial, device->serial) != 0)) {
         SDL_free(device->serial);
         device->serial = HIDAPI_ConvertString(serial);

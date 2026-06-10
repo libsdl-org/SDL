@@ -28,6 +28,7 @@
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 static SDL_joylist_item *JoystickByIndex(int index);
 
@@ -120,6 +121,61 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData);
+
+#ifdef SDL_JOYSTICK_HIDAPI
+
+static void SDL_WebHID_DisconnectEmscriptenGamepad(int device_index)
+{
+    int rc;
+    EmscriptenGamepadEvent gamepadState;
+    rc = emscripten_get_gamepad_status(device_index, &gamepadState);
+    if (rc == EMSCRIPTEN_RESULT_SUCCESS) {
+        Emscripten_JoyStickDisconnected(EMSCRIPTEN_EVENT_GAMEPADDISCONNECTED,
+                                        &gamepadState,
+                                        NULL);
+    }
+}
+
+static void SDL_RequestWebHIDDevice(Uint16 vendor, Uint16 product, int device_index)
+{
+    Uint16 product2 = 0;
+    if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
+        product2 = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
+    }
+    MAIN_THREAD_EM_ASM({
+        function timeout(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        if ("hid" in navigator) {
+            async function handler() {
+                while (true) {
+                    try {
+                        let devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $1, } ]});
+                        let device_length = devices["length"];
+                        if ($4) { // product2
+                            devices = await navigator["hid"]["requestDevice"]({ "filters": [ { "vendorId": $0, "productId": $4, } ]});
+                            device_length += devices["length"];
+                        }
+                        if (devices["length"]) {
+                            dynCall("vi", $2, [$3]);
+                        }
+                        return;
+                    } catch(e) {
+                        // Exception, most likely because the user hasn't interacted with the page yet.
+                        // Let's wait until they do, hopefully.
+                        await timeout(500);
+                    }
+                }
+            }
+            handler();
+        }
+    }, vendor, product, SDL_WebHID_DisconnectEmscriptenGamepad, device_index, product2);
+}
+#endif
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
@@ -147,6 +203,12 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (HIDAPI_IsDeviceSupported(vendor, product, 0, "")) {
+        SDL_RequestWebHIDDevice(vendor, product, gamepadEvent->index);
+    }
+#endif
 
     // Use a generic VID/PID representing an XInput controller
     if (!vendor && !product && is_xinput) {
@@ -287,7 +349,7 @@ done:
     return 1;
 }
 
-static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
+EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;

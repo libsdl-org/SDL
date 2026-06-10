@@ -49,12 +49,15 @@ typedef struct SDL_HIDAPI_RumbleContext
     SDL_HIDAPI_RumbleRequest *requests_tail;
 } SDL_HIDAPI_RumbleContext;
 
+#ifndef SDL_THREADS_DISABLED
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
 SDL_Mutex *SDL_HIDAPI_rumble_lock;
+#endif
 static SDL_HIDAPI_RumbleContext rumble_context SDL_GUARDED_BY(SDL_HIDAPI_rumble_lock);
 
+#ifndef SDL_THREADS_DISABLED
 static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)
 {
     SDL_HIDAPI_RumbleContext *ctx = (SDL_HIDAPI_RumbleContext *)data;
@@ -161,9 +164,11 @@ static bool SDL_HIDAPI_StartRumbleThread(SDL_HIDAPI_RumbleContext *ctx)
     }
     return true;
 }
+#endif
 
 bool SDL_HIDAPI_LockRumble(void)
 {
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
     if (SDL_CompareAndSwapAtomicInt(&ctx->initialized, false, true)) {
@@ -173,11 +178,13 @@ bool SDL_HIDAPI_LockRumble(void)
     }
 
     SDL_LockMutex(SDL_HIDAPI_rumble_lock);
+#endif
     return true;
 }
 
 bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size)
 {
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
     SDL_HIDAPI_RumbleRequest *request, *found;
 
@@ -193,6 +200,7 @@ bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, 
         *maximum_size = sizeof(found->data);
         return true;
     }
+#endif
     return false;
 }
 
@@ -212,6 +220,7 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
         return -1;
     }
 
+#ifndef SDL_THREADS_DISABLED
     request = (SDL_HIDAPI_RumbleRequest *)SDL_calloc(1, sizeof(*request));
     if (!request) {
         SDL_HIDAPI_UnlockRumble();
@@ -234,6 +243,9 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
 
     // Make sure we unlock before posting the semaphore so the rumble thread can run immediately
     SDL_HIDAPI_UnlockRumble();
+#else
+    SDL_hid_write(device->dev, data, size);
+#endif
 
     SDL_SignalSemaphore(ctx->request_sem);
 
@@ -242,7 +254,9 @@ int SDL_HIDAPI_SendRumbleWithCallbackAndUnlock(SDL_HIDAPI_Device *device, const 
 
 void SDL_HIDAPI_UnlockRumble(void)
 {
+#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_HIDAPI_rumble_lock);
+#endif
 }
 
 int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size)
@@ -273,11 +287,13 @@ int SDL_HIDAPI_SendRumble(SDL_HIDAPI_Device *device, const Uint8 *data, int size
 
 void SDL_HIDAPI_QuitRumble(void)
 {
+#ifndef SDL_THREADS_DISABLED
     SDL_HIDAPI_RumbleContext *ctx = &rumble_context;
 
     if (SDL_GetAtomicInt(&ctx->running)) {
         SDL_HIDAPI_StopRumbleThread(ctx);
     }
+#endif
 }
 
 #endif // SDL_JOYSTICK_HIDAPI
