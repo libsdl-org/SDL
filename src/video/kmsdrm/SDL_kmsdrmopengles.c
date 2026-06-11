@@ -30,8 +30,8 @@
 
 #define VOID2U64(x) ((uint64_t)(size_t)(x))
 
-#ifndef EGL_PLATFORM_GBM_MESA
-#define EGL_PLATFORM_GBM_MESA 0x31D7
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
 #endif
 
 #ifndef EGL_SYNC_NATIVE_FENCE_ANDROID
@@ -60,7 +60,7 @@ void KMSDRM_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
     _this->gl_config.minor_version = 0;
 #endif
 
-    _this->gl_config.egl_platform = EGL_PLATFORM_GBM_MESA;
+    _this->gl_config.egl_platform = EGL_PLATFORM_GBM_KHR;
 }
 
 bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
