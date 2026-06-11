@@ -372,12 +372,12 @@ static WCHAR *SaveToastImage(SDL_Surface *icon)
             KillTimer(NULL, cleanup_timer_id);
         }
 
-        path_len = GetTempPath2W(0, NULL);
+        path_len = GetTempPathW(0, NULL);
         if (!path_len) {
             return NULL;
         }
         temp_path = SDL_realloc(temp_path, (path_len + 1) * sizeof(WCHAR));
-        path_len = GetTempPath2W((DWORD)path_len + 1, temp_path);
+        path_len = GetTempPathW((DWORD)path_len + 1, temp_path);
         if (!path_len) {
             SDL_free(temp_path);
             return NULL;
