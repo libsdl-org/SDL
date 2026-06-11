@@ -3081,6 +3081,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, 
  */
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_wcstoul(const wchar_t *str, wchar_t **endp, int base);
 
+#ifndef SDL_NOLONGLONG
 /**
  * Parse a `long long` from a wide string.
  *
@@ -3136,6 +3137,8 @@ extern SDL_DECLSPEC long long SDLCALL SDL_wcstoll(const wchar_t *str, wchar_t **
  * \sa SDL_strtoull
  */
 extern SDL_DECLSPEC unsigned long long SDLCALL SDL_wcstoull(const wchar_t *str, wchar_t **endp, int base);
+
+#endif /* !SDL_NOLONGLONG */
 
 /**
  * This works exactly like strlen() but doesn't require access to a C runtime.
