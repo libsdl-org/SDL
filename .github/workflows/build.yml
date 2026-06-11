@@ -6,6 +6,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
+permissions: read-all
+
 jobs:
   controller:
     name: 'Create test plan'
@@ -14,10 +16,10 @@ jobs:
       platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
       platforms-others: ${{ steps.plan.outputs.platforms-others }}
     steps:
-      - uses: actions/setup-python@main
+      - uses: actions/setup-python@c8813ba1bc76ebf779b911ad8ffccbf2e449cb48  # main
         with:
           python-version: 3.x
-      - uses: actions/checkout@main
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # main
         with:
           sparse-checkout: '.github/workflows/create-test-plan.py'
       - name: 'Create plan'
