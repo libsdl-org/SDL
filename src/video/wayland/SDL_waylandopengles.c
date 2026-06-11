@@ -32,6 +32,10 @@
 
 #include "xdg-shell-client-protocol.h"
 
+#ifndef EGL_PLATFORM_WAYLAND_KHR
+#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
+#endif
+
 // EGL implementation of SDL OpenGL ES support
 
 bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -39,6 +43,9 @@ bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     bool result;
     SDL_VideoData *data = _this->internal;
 
+    if (!_this->gl_config.egl_platform) {
+        _this->gl_config.egl_platform = EGL_PLATFORM_WAYLAND_KHR;
+    }
     result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 
     Wayland_PumpEvents(_this);

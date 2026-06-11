@@ -74,8 +74,8 @@ static char kmsdrm_dri_cardpath[32];
 #define DRM_FORMAT_MOD_LINEAR fourcc_mod_code(NONE, 0)
 #endif
 
-#ifndef EGL_PLATFORM_GBM_MESA
-#define EGL_PLATFORM_GBM_MESA 0x31D7
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
 #endif
 
 static int get_driindex(void)
@@ -2135,12 +2135,12 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
            before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
         if (!_this->egl_data) {
             egl_display = (NativeDisplayType)_this->internal->gbm_dev;
-            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_KHR)) {
                 // Try again with OpenGL ES 2.0
                 _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
                 _this->gl_config.major_version = 2;
                 _this->gl_config.minor_version = 0;
-                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_KHR)) {
                     return SDL_SetError("Can't load EGL/GL library on window creation.");
                 }
             }

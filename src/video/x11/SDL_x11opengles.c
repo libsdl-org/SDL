@@ -27,6 +27,10 @@
 #include "SDL_x11opengl.h"
 #include "SDL_x11xsync.h"
 
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
+#endif
+
 // EGL implementation of SDL OpenGL support
 
 bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -53,6 +57,9 @@ bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 #endif
     }
 
+    if (!_this->gl_config.egl_platform) {
+        _this->gl_config.egl_platform = EGL_PLATFORM_X11_KHR;
+    }
     return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
 }
 
