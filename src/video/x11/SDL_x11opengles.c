@@ -53,7 +53,8 @@ int X11_GLES_LoadLibrary(_THIS, const char *path)
 #endif
     }
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display,
+                               EGL_PLATFORM_X11_KHR);
 }
 
 XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen)
