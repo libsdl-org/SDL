@@ -3082,6 +3082,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, 
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_wcstoul(const wchar_t *str, wchar_t **endp, int base);
 
 #ifndef SDL_NOLONGLONG
+
 /**
  * Parse a `long long` from a wide string.
  *
