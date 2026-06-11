@@ -238,6 +238,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->GL_SwapWindow = X11_GLES_SwapWindow;
         device->GL_DestroyContext = X11_GLES_DestroyContext;
         device->GL_GetEGLSurface = X11_GLES_GetEGLSurface;
+        device->GL_SetDefaultProfileConfig = X11_GLES_SetDefaultProfileConfig;
 #ifdef SDL_VIDEO_OPENGL_GLX
     }
 #endif
