@@ -354,6 +354,7 @@ endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c NAME83 chkkeys)
 add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
+add_sdl_test_executable(testdynaudioreopen NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES testdynaudioreopen.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c NAME83 surround)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c NAME83 resample)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c NAME83 audioinf)
