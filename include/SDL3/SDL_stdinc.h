@@ -3137,7 +3137,8 @@ extern SDL_DECLSPEC long long SDLCALL SDL_wcstoll(const wchar_t *str, wchar_t **
  * \sa SDL_strtoull
  */
 extern SDL_DECLSPEC unsigned long long SDLCALL SDL_wcstoull(const wchar_t *str, wchar_t **endp, int base);
-#endif
+
+#endif /* !SDL_NOLONGLONG */
 
 /**
  * This works exactly like strlen() but doesn't require access to a C runtime.
