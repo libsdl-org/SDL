@@ -1388,6 +1388,6 @@
  * when `SDL_GetCurrentThreadID()` was intended hopefully outweight the annoyances
  * caused by this in some rare cases.
  */
-#define SDL_ThreadID()  SDL_ThreadID_is_a_type_now_function_is_SDL_GetCurrentThreadID
+#define SDL_ThreadID()  SDL_ThreadID_renamed_SDL_GetCurrentThreadID
 
 #endif /* SDL_oldnames_h_ */
