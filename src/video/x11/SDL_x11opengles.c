@@ -32,6 +32,11 @@
 int X11_GLES_LoadLibrary(_THIS, const char *path)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+#ifdef EGL_EXT_platform_x11
+    const EGLenum platform = EGL_PLATFORM_X11_EXT;
+#else
+    const EGLenum platform = 0;
+#endif
 
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */
     if ((_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) &&
@@ -53,7 +58,7 @@ int X11_GLES_LoadLibrary(_THIS, const char *path)
 #endif
     }
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, platform);
 }
 
 XVisualInfo *X11_GLES_GetVisual(_THIS, Display *display, int screen)
