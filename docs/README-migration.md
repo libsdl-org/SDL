@@ -41,8 +41,6 @@ Many functions and symbols have been renamed. We have provided a handy Python sc
 rename_symbols.py --all-symbols source_code_path
 ```
 
-**Note** that `rename_symbols.py` can't completely handle `SDL_ThreadID`, see the [SDL_Thread.h section](#sdl_threadh) below.
-
 It's also possible to apply a semantic patch to migrate more easily to SDL3: [SDL_migration.cocci](https://github.com/libsdl-org/SDL/blob/main/build-scripts/SDL_migration.cocci)
 
 SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only SDL header you'll need in your application unless you are using OpenGL or Vulkan functionality. SDL_image, SDL_mixer, SDL_net, SDL_ttf and SDL_rtf have also their preferred include path changed: for SDL_image, it becomes `#include <SDL3_image/SDL_image.h>`. We have provided a handy Python script [rename_headers.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_headers.py) to rename SDL2 headers to their SDL3 counterparts:
@@ -2047,15 +2045,6 @@ The following functions have been removed:
 
 The following symbols have been renamed:
 * SDL_threadID => SDL_ThreadID
-
-### Attention: Potential problems with `SDL_ThreadID`
-
-**_`SDL_ThreadID`_** is a case that needs **special attention**, because if you forget to rename a call to `SDL_ThreadID()` to `SDL_GetCurrentThreadID()` in **C++** code, it will *still compile fine*, calling the default constructor of the `SDL_ThreadID` type, initializing it to `0` - but if `SDL_GetCurrentThreadID()` was intended, that of course leads to **wrong behavior** that can be hard to catch.
-
-Furthermore **`rename_symbols.py` does not handle it** (because it would be hard to do in a way that doesn't break anything when running that script twice), which makes it even more error-prone.
-
-SDL_oldnames.h now has a `#define` that should catch these cases, but it's not available in SDL 3.4.10 and older. So if you're using 3.4.10 or older, check your code carefully for occurences of `SDL_ThreadID()` and make sure it wasn't supposed to be `SDL_GetCurrentThreadID()`.
-In some edge cases this `#define` can cause false positives (compile errors even though `SDL_ThreadID` was used correctly); right above that definition in the header is a long comment explaining possible problems and solutions.
 
 ## SDL_timer.h
 
