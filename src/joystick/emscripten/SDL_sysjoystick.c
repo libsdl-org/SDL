@@ -182,10 +182,6 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         item->guid.data[15] = os_id;
     }
 
-    if (is_xinput) {
-        item->guid.data[14] = 'x'; // See SDL_IsJoystickXInput
-    }
-
     item->mapping = SDL_strdup(gamepadEvent->mapping);
     if (!item->mapping) {
         SDL_free(item->name);
