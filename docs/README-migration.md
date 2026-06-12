@@ -2054,7 +2054,7 @@ The following symbols have been renamed:
 
 Furthermore **`rename_symbols.py` does not handle it** (because it would be hard to do in a way that doesn't break anything when running that script twice), which makes it even more error-prone.
 
-SDL_oldnames.h now has a `#define` that should catch these cases, but it's not available in SDL 3.4.10 and older. So if you're using 3.4.10 or older, check your code carefully for occurences of `SDL_ThreadID()` and make sure it wasn't supposed to be `SDL_GetCurrentThreadID()`.  
+SDL_oldnames.h now has a `#define` that should catch these cases, but it's not available in SDL 3.4.10 and older. So if you're using 3.4.10 or older, check your code carefully for occurences of `SDL_ThreadID()` and make sure it wasn't supposed to be `SDL_GetCurrentThreadID()`.
 In some edge cases this `#define` can cause false positives (compile errors even though `SDL_ThreadID` was used correctly); right above that definition in the header is a long comment explaining possible problems and solutions.
 
 ## SDL_timer.h
