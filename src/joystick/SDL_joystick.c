@@ -3039,6 +3039,8 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         if (name && SDL_strstr(name, "(L)") != NULL) {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+        } else if (name && SDL_strstr(name, "L+R") != NULL) {
+            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
