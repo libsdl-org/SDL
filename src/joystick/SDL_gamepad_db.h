@@ -883,6 +883,7 @@ static const char *s_GamepadMappings[] = {
 #endif
 #ifdef SDL_JOYSTICK_EMSCRIPTEN
     "default,*,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b10,leftshoulder:b4,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b7,x:b2,y:b3,",
+    "030000004c050000cc09000000000085,PS4 Controller,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b10,leftshoulder:b4,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b7,touchpad:b11,x:b2,y:b3,",
 #endif
 #ifdef SDL_JOYSTICK_PS2
     "0000000050533220436f6e74726f6c00,PS2 Controller,crc:ed87,a:b10,b:b9,back:b0,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b6,leftstick:b1,lefttrigger:b4,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b2,righttrigger:b5,rightx:a2,righty:a3,start:b3,x:b11,y:b8,",
