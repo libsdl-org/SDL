@@ -3297,6 +3297,11 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
             return true;
         }
     }
+    if (vendor_id == USB_VENDOR_ANDGAMER) {
+        if (product_id == USB_PRODUCT_VOIDGAMING_GENESIS_SINPUT) {
+            return true;
+        }
+    }
     return false;
 }
 
