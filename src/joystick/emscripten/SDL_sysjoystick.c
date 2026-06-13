@@ -120,6 +120,41 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+EM_JS_DEPS(sdljoystick, "$stringToUTF8");
+
+static void SDL_GetEmscriptenNormalizedName(int device_index, char *out, int length)
+{
+    MAIN_THREAD_EM_ASM({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            stringToUTF8('\0', $1, $2); // Silence the compiler here, because '' is not valid
+            return;
+        }
+
+        let id = gamepad['id'];
+        let output = id;
+        // Chrome
+        if (id['indexOf'](' (STANDARD GAMEPAD') > 0) { // Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+            output = id['substr'](0, id['indexOf'](' (STANDARD GAMEPAD'));
+        } else if (id['indexOf'](' (Vendor:') > 0) { // usb gamepad            (Vendor: 0810 Product: e501)
+            output = id['substr'](0, id['indexOf'](' (Vendor:'));
+        } else if (id['indexOf'](' (XInput') > 0) { // Xbox 360 Controller (XInput STANDARD GAMEPAD)
+            output = id['substr'](0, id['indexOf'](' (XInput'));
+        }
+
+        // Firefox, Safari: "046d-c216-Logitech Dual Action", "46d-c216-Logicool Dual Action", or "xinput"
+        let id_split = id['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            // Let's not assume the length of the vendor/product IDs in the string
+            // and just find the second '-' using indexOf
+            let start = id['indexOf']('-', id['indexOf']('-')+1)+1;
+            output = id['substr'](start);
+        }
+
+        stringToUTF8(output.trim(), $1, $2);
+    }, device_index, out, length);
+}
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
@@ -128,6 +163,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     Uint16 vendor, product;
     Uint8 os_id;
     bool is_xinput;
+    char name[128];
 
     SDL_LockJoysticks();
 
@@ -187,14 +223,15 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         os_id += 0x80;
     }
 
-    item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
+    SDL_GetEmscriptenNormalizedName(gamepadEvent->index, name, sizeof(name));
+    item->name = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!item->name) {
         SDL_free(item);
         goto done;
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, gamepadEvent->id, 0, os_id);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, os_id);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
         item->guid.data[15] = os_id;
