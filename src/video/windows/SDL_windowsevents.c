@@ -1884,7 +1884,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } break;
 
     case WM_ENTERSIZEMOVE:
-        data->in_sizemove_loop = true;
     case WM_ENTERMENULOOP:
     {
         if (g_WindowsMessageHook) {
@@ -1931,7 +1930,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } break;
 
     case WM_EXITSIZEMOVE:
-        data->in_sizemove_loop = false;
     case WM_EXITMENULOOP:
     {
         --data->in_modal_loop;

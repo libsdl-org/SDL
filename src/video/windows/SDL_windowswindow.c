@@ -714,6 +714,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 
         style |= GetWindowStyle(window);
         styleEx |= GetWindowStyleEx(window);
+        if (SDL_GetHintBoolean("SDL_VIDEO_WIN_NOREDIRECTIONBITMAP", false)) {
+            style |= WS_EX_NOREDIRECTIONBITMAP;
+        }
 
         // Figure out what the window area will be
         WIN_ConstrainPopup(window, false);
@@ -934,7 +937,7 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 
 void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) && !window->internal->in_sizemove_loop) {
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED))) {
         WIN_SetWindowPositionInternal(window, window->internal->copybits_flag | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE, SDL_WINDOWRECT_PENDING);
     } else {
         // Can't resize the window

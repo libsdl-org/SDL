@@ -86,7 +86,6 @@ struct SDL_WindowData
     bool force_ws_maximizebox;
     bool disable_move_size_events;
     bool showing_window;
-    bool in_sizemove_loop;
     int in_modal_loop;
     int last_modal_width;
     int last_modal_height;
