@@ -1372,6 +1372,10 @@
  * easily avoided by using slightly different syntax, you can `#undef SDL_ThreadID`
  * before your code using it to get rid of this define causing the compiler error.
  *
+ * If you have your own `#define SDL_ThreadID what_ever` to hack around conflicts
+ * and make sure it's defined before including this header, SDL_ThreadID will
+ * *not* get defined here so it doesn't get in your way.
+ *
  * If you're using `SDL_ENABLE_OLD_NAMES` to support both SDL2 and SDL3 with
  * the same code, consider adding:
  *
@@ -1388,6 +1392,8 @@
  * when `SDL_GetCurrentThreadID()` was intended hopefully outweight the annoyances
  * caused by this in some rare cases.
  */
+#ifndef SDL_ThreadID
 #define SDL_ThreadID()  SDL_ThreadID_is_a_type_now_function_is_SDL_GetCurrentThreadID
+#endif
 
 #endif /* SDL_oldnames_h_ */
