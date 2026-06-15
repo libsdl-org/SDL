@@ -13,6 +13,10 @@
 
 #ifdef SDL_GPU_WEBGPU
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "../SDL_sysgpu.h"
 #include "webgpu.h"
 
@@ -869,8 +873,13 @@ static void WEBGPU_RequestAdapter(WebGPURenderer *renderer, bool *success)
 #ifdef WGPU_DAWN
     WGPUFutureWaitInfo waitInfo = { future, false };
 
-    while (waitInfo.completed == false) {
+    while (*success == false) {
+#ifdef __EMSCRIPTEN__
+        emscripten_sleep(1);
+        wgpuInstanceProcessEvents(renderer->instance);
+#else
         wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
+#endif
     }
 #endif
 }
@@ -884,8 +893,14 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
 #ifdef WGPU_DAWN
     WGPUFutureWaitInfo waitInfo = { future, false };
 
-    while (waitInfo.completed == false) {
+    while (*success == false) {
+
+#ifdef __EMSCRIPTEN__
+        emscripten_sleep(1);
+        wgpuInstanceProcessEvents(renderer->instance);
+#else
         wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
+#endif
     }
 #endif
 }
@@ -962,7 +977,7 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
     wgpuQueueSubmit(*((WebGPUCommandBuffer *)commandBuffer)->queue, 1, &cmdBuf);
 
-#ifndef __EMSCRIPTEN_
+#ifndef __EMSCRIPTEN__
     for (int i = 0; i < ((WebGPUCommandBuffer *)commandBuffer)->surfaceCount; i++) {
         wgpuSurfacePresent(((WebGPUCommandBuffer *)commandBuffer)->surfaces[i]);
     }
@@ -1389,7 +1404,6 @@ static SDL_GPUShader *WEBGPU_CreateShader(
         uniforms.entries = NULL;
     }
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Uniform entrycount: %zu", uniforms.entryCount);
     WGPUShaderStage stage = createinfo->stage == SDL_GPU_SHADERSTAGE_VERTEX ? WGPUShaderStage_Vertex : WGPUShaderStage_Fragment;
 
     uint32_t currentOffset = 0;
@@ -1397,7 +1411,7 @@ static SDL_GPUShader *WEBGPU_CreateShader(
         samplerStorageEntries[currentOffset].texture = (WGPUTextureBindingLayout){
             .nextInChain = NULL,
             .multisampled = false,
-            .sampleType = WGPUTextureSampleType_Undefined,
+            .sampleType = WGPUTextureSampleType_Float,
             .viewDimension = WGPUTextureViewDimension_2D,
         };
         samplerStorageEntries[currentOffset].visibility = stage;
@@ -1449,6 +1463,9 @@ static SDL_GPUShader *WEBGPU_CreateShader(
         uniformEntries[i].visibility = stage;
         uniformEntries[i].binding = i;
     }
+
+    samplerStorage.nextInChain = NULL;
+    uniforms.nextInChain = NULL;
 
     shader->samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(((WebGPURenderer *)driverData)->device, &samplerStorage);
     shader->uniformBuffersBindGroupLayout = wgpuDeviceCreateBindGroupLayout(((WebGPURenderer *)driverData)->device, &uniforms);
@@ -1926,7 +1943,7 @@ static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferCont
 
     while (!callbackRan) {
         // I love WebGPU
-#ifdef __EMSCRIPTEN_
+#ifdef __EMSCRIPTEN__
         emscripten_sleep(1);
 #elif WGPU_NATIVE
         wgpuInstanceProcessEvents(renderer->instance);
@@ -1992,7 +2009,7 @@ static void WEBGPU_CopyBufferToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_
 
     WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->buffer, source->offset, (WebGPUBufferContainer *)dest->buffer, dest->offset, size);
 
-#ifdef __EMSCRIPTEN_
+#ifdef __EMSCRIPTEN__
     emscripten_sleep(1);
 #elif WGPU_NATIVE
     wgpuInstanceProcessEvents(*((WebGPUCommandBuffer *)copyPass)->instance);
@@ -2020,7 +2037,7 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
     destInfo.mipLevel = destination->mip_level;
 
     wgpuCommandEncoderCopyTextureToTexture(*((WebGPUCommandBuffer *)copyPass)->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ .width = w, h, d });
-#ifdef __EMSCRIPTEN_
+#ifdef __EMSCRIPTEN__
     emscripten_sleep(1);
 #elif WGPU_NATIVE
     wgpuInstanceProcessEvents(*((WebGPUCommandBuffer *)copyPass)->instance);
@@ -2036,7 +2053,7 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
     }
 
     WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->transfer_buffer, source->offset, (WebGPUBufferContainer *)destination->buffer, destination->offset, destination->size);
-#ifdef __EMSCRIPTEN_
+#ifdef __EMSCRIPTEN__
     emscripten_sleep(1);
 #elif WGPU_NATIVE
     wgpuInstanceProcessEvents(*((WebGPUCommandBuffer *)copyPass)->instance);
@@ -2809,11 +2826,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     bool getDeviceSucceeded = false;
 
     WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
-    while (!getAdapterSucceeded) {
-#ifdef __EMSCRIPTEN_
-        emscripten_sleep(1);
-#endif
-    }
 
     if (!renderer->adapter) {
         wgpuInstanceRelease(renderer->instance);
@@ -2823,11 +2835,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     }
 
     WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
-    while (!getDeviceSucceeded) {
-#ifdef __EMSCRIPTEN_
-        emscripten_sleep(1);
-#endif
-    }
 
     if (!renderer->device) {
         wgpuAdapterRelease(renderer->adapter);
