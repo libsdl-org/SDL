@@ -1,5 +1,5 @@
 
-# Simple DirectMedia Layer Version 2 E-Ink Patch (SDL-EP)
+# Simple DirectMedia Layer Version 2 E-Ink Port (SDL-EP)
 
 SDL-EP is a port version of SDL2 to work with Kindles (tested on PW6 running 5.17.1.0.4, KT/K5 Running 5.3.7.3, CS Running 5.18.0.x)
 
