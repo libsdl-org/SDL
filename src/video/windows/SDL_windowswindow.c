@@ -715,7 +715,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         style |= GetWindowStyle(window);
         styleEx |= GetWindowStyleEx(window);
         if (SDL_GetHintBoolean("SDL_VIDEO_WIN_NOREDIRECTIONBITMAP", false)) {
-            style |= WS_EX_NOREDIRECTIONBITMAP;
+            styleEx |= WS_EX_NOREDIRECTIONBITMAP;
         }
 
         // Figure out what the window area will be
