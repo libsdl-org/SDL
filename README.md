@@ -1,10 +1,7 @@
 
 # Simple DirectMedia Layer Version 2 E-Ink Patch (SDL-EP)
 
-SDL-EP is a patched version of SDL2 to work with Kindles (tested on PW6 running 5.17.1.0.4 and KT/K5 Running 5.3.7.3)
-
-## Color E-ink Displays:
-Color e-ink displays have not been tested. So if colors are wrong open an issue and it will be looked into
+SDL-EP is a port version of SDL2 to work with Kindles (tested on PW6 running 5.17.1.0.4, KT/K5 Running 5.3.7.3, CS Running 5.18.0.x)
 
 [example-repo](https://github.com/SkylarPlayz348/sdl2-kindle)
 
