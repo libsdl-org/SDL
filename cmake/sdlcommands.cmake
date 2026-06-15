@@ -126,7 +126,7 @@ macro(_get_ARGS_visibility)
   unset(_conflict)
 endmacro()
 
-# Use sdl_link_dependency to add compile definitions to the SDL3 libraries.
+# Use sdl_compile_definitions to add compile definitions to the SDL3 libraries.
 function(sdl_compile_definitions)
   cmake_parse_arguments(ARGS "PRIVATE;PUBLIC;INTERFACE;NO_EXPORT" "" "" ${ARGN})
   _get_ARGS_visibility()
@@ -141,7 +141,7 @@ function(sdl_compile_definitions)
   endif()
 endfunction()
 
-# Use sdl_link_dependency to add compile options to the SDL3 libraries.
+# Use sdl_compile_options to add compile options to the SDL3 libraries.
 function(sdl_compile_options)
   cmake_parse_arguments(ARGS "PRIVATE;PUBLIC;INTERFACE;NO_EXPORT" "" "" ${ARGN})
   _get_ARGS_visibility()
@@ -160,7 +160,7 @@ function(sdl_compile_options)
   endif()
 endfunction()
 
-# Use sdl_link_dependency to add include directories to the SDL3 libraries.
+# Use sdl_include_directories to add include directories to the SDL3 libraries.
 function(sdl_include_directories)
   cmake_parse_arguments(ARGS "SYSTEM;BEFORE;AFTER;PRIVATE;PUBLIC;INTERFACE;NO_EXPORT" "" "" ${ARGN})
   set(system "")
@@ -189,7 +189,7 @@ function(sdl_include_directories)
   endif()
 endfunction()
 
-# Use sdl_link_dependency to add link directories to the SDL3 libraries.
+# Use sdl_link_directories to add link directories to the SDL3 libraries.
 function(sdl_link_directories)
   if(TARGET SDL3-shared)
     target_link_directories(SDL3-shared PRIVATE ${ARGN})
