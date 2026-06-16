@@ -167,6 +167,7 @@ class SharedLibType(Enum):
     SO_0 = "libSDL3.so.0"
     SO = "libSDL3.so"
     DYLIB = "libSDL3.0.dylib"
+    DXE = "SDL3.dxe"
     FRAMEWORK = "SDL3.framework/Versions/A/SDL3"
 
 
@@ -867,11 +868,10 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.apt_packages = ["ccache", "libfl-dev"]  # djgpp needs libfl.so.2
             job.cmake_build_type = "Release"
             job.setup_ninja = True
+            job.shared_lib = SharedLibType.DXE
             job.static_lib = StaticLibType.A
-            job.shared_lib = None
             job.clang_tidy = False
             job.werror = False  # FIXME: enable SDL_WERROR
-            job.shared = False
             job.run_tests = False
             job.test_pkg_config = False
             job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"

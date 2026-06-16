@@ -256,6 +256,7 @@ function(add_sdl_test_executable TARGET)
         if(AST_NAME83)
             set_property(TARGET ${TARGET} PROPERTY OUTPUT_NAME "${AST_NAME83}")
         endif()
+        target_compile_definitions(${TARGET} PRIVATE SDL_INCLUDE_INTTYPES_H)
     endif()
 
     if(OPENGL_FOUND)

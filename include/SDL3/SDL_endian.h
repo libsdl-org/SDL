@@ -286,7 +286,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x)
 /* Byte swap 32-bit integer. */
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
 #if HAS_BUILTIN_BSWAP32
-#define SDL_Swap32(x) __builtin_bswap32(x)
+#define SDL_Swap32(x) (Uint32)__builtin_bswap32(x)
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1400)) && !defined(__ICL)
 #pragma intrinsic(_byteswap_ulong)
 #define SDL_Swap32(x) _byteswap_ulong(x)

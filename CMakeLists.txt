@@ -210,7 +210,19 @@ if(EMSCRIPTEN)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
-if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE OR DOS)
+if(DOS)
+  if(NOT DJGPP)
+    message(FATAL_ERROR "SDL3 DOS support requires a DJGPP toolchain")
+  endif()
+
+  find_program(DJGPP_DXE3GEN_BIN NAMES dxe3gen)
+  if(NOT EXISTS "${DJGPP_DXE3GEN_BIN}")
+    message(STATUS "Disabling shared library support: dxe3gen not found")
+    set(SDL_SHARED_AVAILABLE OFF)
+  endif()
+endif()
+
+if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
@@ -535,6 +547,9 @@ if(SDL_TEST_LIBRARY)
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
   SDL_AddCommonCompilerFlags(SDL3_test)
   target_compile_definitions(SDL3_test PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+  if("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
+    target_compile_features(SDL3_test PRIVATE c_std_99)
+  endif()
 endif()
 
 # Make sure SDL3::SDL3 always exists
@@ -557,7 +572,7 @@ if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 check_linker_supports_version_file(HAVE_WL_VERSION_SCRIPT)
-if(HAVE_WL_VERSION_SCRIPT)
+if(HAVE_WL_VERSION_SCRIPT AND (NOT DOS))
   sdl_shared_link_options("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
 else()
    # When building with tcc on Linux+glibc or Android, avoid emitting an error
@@ -688,7 +703,7 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     endif()
   endif()
 
-  if(NOT OPENBSD)
+  if(NOT (DOS OR OPENBSD))
     cmake_push_check_state()
     check_linker_flag(C "-Wl,--no-undefined" LINKER_SUPPORTS_WL_NO_UNDEFINED)
     #FIXME: originally this if had an additional "AND NOT (USE_CLANG AND WINDOWS)"
@@ -4172,6 +4187,16 @@ if(SDL_SHARED)
         PREFIX ""
       )
     endif()
+  endif()
+  if(DJGPP)
+    # <LANG>_LINKER_LAUNCHER was introduced in CMake 3.21. genex support was added in 3.27.
+    cmake_minimum_required(VERSION 3.27)
+
+    set_property(TARGET SDL3-shared SDL_uclibc PROPERTY POSITION_INDEPENDENT_CODE FALSE)
+    set_property(TARGET SDL3-shared PROPERTY IMPORT_SUFFIX ".dxe.a")
+    set_property(TARGET SDL3-shared PROPERTY SUFFIX ".dxe")
+    set_property(TARGET SDL3-shared PROPERTY C_LINKER_LAUNCHER "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/djgpp-dxe-linker-wrapper.py;--dxe3gen=${DJGPP_DXE3GEN_BIN};--import-library;$<TARGET_IMPORT_FILE:SDL3-shared>;--library-paths;${DJGPP_LIBRARY_PATHS};--")
+    set_property(TARGET SDL3-shared APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/djgpp-dxe-linker-wrapper.py")
   endif()
 
   target_link_libraries(SDL3-shared PRIVATE ${SDL_CMAKE_DEPENDS})
