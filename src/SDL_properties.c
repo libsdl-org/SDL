@@ -144,6 +144,9 @@ SDL_PropertiesID SDL_GetGlobalProperties(void)
     SDL_PropertiesID props = SDL_GetAtomicU32(&SDL_global_properties);
     if (!props) {
         props = SDL_CreateProperties();
+
+        // Set global platform properties
+
         if (!SDL_CompareAndSwapAtomicU32(&SDL_global_properties, 0, props)) {
             // Somebody else created global properties before us, just use those
             SDL_DestroyProperties(props);
