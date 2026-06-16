@@ -1287,11 +1287,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             failed = true;
         }
         if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1 &&
-            (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER |
-                                  SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ |
-                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
-                                  SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE))) {
-            SDL_assert_release(!"For multisample textures: usage cannot contain SAMPLER or STORAGE flags");
+            (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)) {
+            SDL_assert_release(!"For multisample textures: usage cannot contain COMPUTE_STORAGE_WRITE flag");
             failed = true;
         }
         if (IsDepthFormat(createinfo->format) && (createinfo->usage & ~(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER))) {
