@@ -5265,7 +5265,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
     }
     case SDL_GL_ACCELERATED_VISUAL:
     {
-        // FIXME: How do we get this information?
+        // Note that we can _not_ reasonably detect this once we have a context.
         *value = (_this->gl_config.accelerated != 0);
         return true;
     }
