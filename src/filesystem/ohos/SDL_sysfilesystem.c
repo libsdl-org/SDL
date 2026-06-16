@@ -28,6 +28,12 @@
 #include "../SDL_sysfilesystem.h"
 #include "../../core/ohos/SDL_ohos.h"
 
+char *SDL_SYS_GetExeName(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
 char *SDL_SYS_GetBasePath(void)
 {
     SDL_Unsupported();
