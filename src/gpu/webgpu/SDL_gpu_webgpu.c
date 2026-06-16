@@ -2664,8 +2664,13 @@ static void WEBGPU_SetStencilReference(SDL_GPUCommandBuffer *commandBuffer, Uint
 
 static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *device, const SDL_GPUComputePipelineCreateInfo *createInfo)
 {
-    WebGPUComputePipeline *pipeline;
+    WebGPUComputePipeline *pipeline = NULL;
+
     WGPUComputePipelineDescriptor pipelineDesc;
+
+    WGPUPipelineLayout pipelineLayout;
+    WGPUPipelineLayoutDescriptor pipelineLayoutDesc;
+    WGPUBindGroupLayout *pipelineLayoutEntries = NULL;
 
     WGPUShaderModuleDescriptor shaderDesc;
     WGPUShaderSourceWGSL shaderSource;
@@ -2677,6 +2682,8 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
     WGPUBindGroupLayoutEntry *samplerRStorageBindGroupLayoutEntries = NULL;
     WGPUBindGroupLayoutEntry *RWStorageBindGroupLayoutEntries = NULL;
     WGPUBindGroupLayoutEntry *uniformBufferBindGroupLayoutEntries = NULL;
+
+    const char *pipelineDebugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING, NULL);
 
     shaderSource.chain.next = NULL;
     shaderSource.chain.sType = WGPUSType_ShaderSourceWGSL;
@@ -2849,6 +2856,58 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
         SDL_free(samplerRStorageBindGroupLayoutEntries);
         SDL_free(RWStorageBindGroupLayoutEntries);
         SDL_free(uniformBufferBindGroupLayoutEntries);
+        SDL_free(pipeline);
+        return NULL;
+    }
+
+    pipelineLayoutEntries = SDL_calloc(3, sizeof(*pipelineLayoutEntries));
+    pipelineLayoutDesc.bindGroupLayoutCount = 3;
+    pipelineLayoutDesc.bindGroupLayouts = pipelineLayoutEntries;
+    pipelineDesc.label = WGPU_STRING_VIEW_INIT;
+    pipelineDesc.nextInChain = NULL;
+
+    pipelineLayoutEntries[0] = pipeline->samplerRStorageBindGroupLayout;
+    pipelineLayoutEntries[1] = pipeline->RWStorageBindGroupLayout;
+    pipelineLayoutEntries[2] = pipeline->uniformBufferBindGroupLayout;
+
+    pipelineLayout = wgpuDeviceCreatePipelineLayout(((WebGPURenderer *)device)->device, &pipelineLayoutDesc);
+    if (pipelineLayout == NULL) {
+        SDL_SetError("Failed to create pipeline layout for compute pipeline!");
+        wgpuShaderModuleRelease(pipeline->computeShader);
+        wgpuBindGroupLayoutRelease(pipeline->samplerRStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->RWStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->uniformBufferBindGroupLayout);
+
+        SDL_free(samplerRStorageBindGroupLayoutEntries);
+        SDL_free(RWStorageBindGroupLayoutEntries);
+        SDL_free(uniformBufferBindGroupLayoutEntries);
+        SDL_free(pipelineLayoutEntries);
+        SDL_free(pipeline);
+
+        return NULL;
+    }
+
+    pipelineDesc.compute = (WGPUComputeState){
+        .constantCount = 0,
+        .constants = NULL,
+        .entryPoint = (WGPUStringView){ createInfo->entrypoint, SDL_strlen(createInfo->entrypoint) },
+    };
+    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : WGPU_STRING_VIEW_INIT;
+    pipelineDesc.layout = pipelineLayout;
+    pipelineDesc.nextInChain = NULL;
+
+    pipeline->pipeline = wgpuDeviceCreateComputePipeline(((WebGPURenderer *)device)->device, &pipelineDesc);
+    if (pipeline->pipeline == NULL) {
+        SDL_SetError("Failed to create compute pipeline!");
+        wgpuShaderModuleRelease(pipeline->computeShader);
+        wgpuBindGroupLayoutRelease(pipeline->samplerRStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->RWStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->uniformBufferBindGroupLayout);
+
+        SDL_free(samplerRStorageBindGroupLayoutEntries);
+        SDL_free(RWStorageBindGroupLayoutEntries);
+        SDL_free(uniformBufferBindGroupLayoutEntries);
+        SDL_free(pipelineLayoutEntries);
         SDL_free(pipeline);
         return NULL;
     }
