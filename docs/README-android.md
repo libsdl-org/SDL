@@ -49,10 +49,10 @@ There's two ways of using it:
 
 sources.list should be a text file with a source file name in each line
 Filenames should be specified relative to the current directory, for example if
-you are in the build-scripts directory and want to create the testgles.c test, you'll
+you are in the build-scripts directory and want to create the testspriteminimal.c test, you'll
 run:
 
-    ./create-android-project.py org.libsdl.testgles ../test/testgles.c
+    ./create-android-project.py org.libsdl.testspriteminimal ../test/testspriteminimal.c ../test/icon.h
 
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
@@ -60,6 +60,9 @@ a single directory, thus all your source files should have a unique name.
 Once the project is complete the script will tell you how to build the project.
 If you want to create a signed release APK, you can use the project created by this
 utility to generate it.
+
+If you see link errors about missing `SDLTest_*` symbols,
+you need to add `../src/test/*.c` as an extra argument to `create-android-project.py`.
 
 Running the script with `--help` will list all available options, and their purposes.
 
