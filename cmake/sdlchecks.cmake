@@ -921,6 +921,7 @@ macro(CheckOpenGLES)
     if(HAVE_OPENGLES_V1)
       set(HAVE_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES 1)
+      set(SDL_VIDEO_RENDER_OGL_ES 1)
     endif()
     if(HAVE_OPENGLES_V2)
       set(HAVE_OPENGLES TRUE)
@@ -1271,7 +1272,7 @@ macro(CheckHIDAPI)
           #include <stddef.h>
           #include <libusb.h>
           int main(int argc, char **argv) {
-            libusb_close(NULL);
+            libusb_interrupt_event_handler(NULL);
             return 0;
           }" HAVE_LIBUSB_H)
         cmake_pop_check_state()

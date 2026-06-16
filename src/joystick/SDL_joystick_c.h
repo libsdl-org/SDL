@@ -48,7 +48,7 @@ extern bool SDL_JoysticksQuitting(void);
 extern bool SDL_JoysticksLocked(void);
 
 // Make sure we currently have the joysticks locked
-extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);

@@ -3060,7 +3060,7 @@ __EOF__
         if (defined $returns) {
             # Check for md link in return type: ([SDL_Renderer](SDL_Renderer) *)
             # This would've prevented the next regex from working properly (it'd leave " *)")
-            $returns =~ s/\A\(\[.*?\]\((.*?)\)/\($1/ms;
+            $returns =~ s/\A\((const|)\s*\[.*?\]\((.*?)\)/\($2/ms;
             # Chop datatype in parentheses off the front.
             $returns =~ s/\A\(.*?\) //;
 

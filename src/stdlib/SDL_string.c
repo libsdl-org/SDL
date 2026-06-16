@@ -432,7 +432,7 @@ static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int 
 }
 #endif
 
-#ifndef HAVE_WCSTOL
+#if !defined(HAVE_WCSTOL) || !defined (HAVE_WCSTOLL) || !defined(HAVE_WCSTOUL) || !defined(HAVE_WCSTOULL)
 // SDL_ScanUnsignedLongLongInternalW assumes that wchar_t can be converted to int without truncating bits
 SDL_COMPILE_TIME_ASSERT(wchar_t_int, sizeof(wchar_t) <= sizeof(int));
 
@@ -591,6 +591,29 @@ static size_t SDL_ScanUnsignedLong(const char *text, int count, int radix, unsig
 }
 #endif
 
+#ifndef HAVE_WCSTOUL
+static size_t SDL_ScanUnsignedLongW(const wchar_t *text, int count, int radix, unsigned long *valuep)
+{
+    const unsigned long ulong_max = ~0UL;
+    unsigned long long value;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternalW(text, count, radix, &value, &negative);
+    if (negative) {
+        if (value == 0 || value > ulong_max) {
+            value = ulong_max;
+        } else if (value == ulong_max) {
+            value = 1;
+        } else {
+            value = 0ULL - value;
+        }
+    } else if (value > ulong_max) {
+        value = ulong_max;
+    }
+    *valuep = (unsigned long)value;
+    return len;
+}
+#endif
+
 #ifndef HAVE_VSSCANF
 static size_t SDL_ScanUintPtrT(const char *text, uintptr_t *valuep)
 {
@@ -636,12 +659,51 @@ static size_t SDL_ScanLongLong(const char *text, int count, int radix, long long
 }
 #endif
 
+#ifndef HAVE_WCSTOLL
+static size_t SDL_ScanLongLongW(const wchar_t *text, int count, int radix, long long *valuep)
+{
+    const unsigned long long llong_max = (~0ULL) >> 1;
+    unsigned long long value;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternalW(text, count, radix, &value, &negative);
+    if (negative) {
+        const unsigned long long abs_llong_min = llong_max + 1;
+        if (value == 0 || value > abs_llong_min) {
+            value = 0ULL - abs_llong_min;
+        } else {
+            value = 0ULL - value;
+        }
+    } else if (value > llong_max) {
+        value = llong_max;
+    }
+    *valuep = value;
+    return len;
+}
+#endif
+
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOULL) || !defined(HAVE_STRTOD)
 static size_t SDL_ScanUnsignedLongLong(const char *text, int count, int radix, unsigned long long *valuep)
 {
     const unsigned long long ullong_max = ~0ULL;
     bool negative;
     size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, valuep, &negative);
+    if (negative) {
+        if (*valuep == 0) {
+            *valuep = ullong_max;
+        } else {
+            *valuep = 0ULL - *valuep;
+        }
+    }
+    return len;
+}
+#endif
+
+#ifndef HAVE_WCSTOULL
+static size_t SDL_ScanUnsignedLongLongW(const wchar_t *text, int count, int radix, unsigned long long *valuep)
+{
+    const unsigned long long ullong_max = ~0ULL;
+    bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternalW(text, count, radix, valuep, &negative);
     if (negative) {
         if (*valuep == 0) {
             *valuep = ullong_max;
@@ -923,6 +985,48 @@ long SDL_wcstol(const wchar_t *string, wchar_t **endp, int base)
 #endif // HAVE_WCSTOL
 }
 
+unsigned long SDL_wcstoul(const wchar_t *string, wchar_t **endp, int base)
+{
+#ifdef HAVE_WCSTOUL
+    return wcstoul(string, endp, base);
+#else
+    unsigned long value = 0;
+    size_t len = SDL_ScanUnsignedLongW(string, 0, base, &value);
+    if (endp) {
+        *endp = (wchar_t *)string + len;
+    }
+    return value;
+#endif // HAVE_WCSTOUL
+}
+
+long long SDL_wcstoll(const wchar_t *string, wchar_t **endp, int base)
+{
+#ifdef HAVE_WCSTOLL
+    return wcstoll(string, endp, base);
+#else
+    long long value = 0;
+    size_t len = SDL_ScanLongLongW(string, 0, base, &value);
+    if (endp) {
+        *endp = (wchar_t *)string + len;
+    }
+    return value;
+#endif // HAVE_WCSTOLL
+}
+
+unsigned long long SDL_wcstoull(const wchar_t *string, wchar_t **endp, int base)
+{
+#ifdef HAVE_WCSTOULL
+    return wcstoull(string, endp, base);
+#else
+    unsigned long long value = 0;
+    size_t len = SDL_ScanUnsignedLongLongW(string, 0, base, &value);
+    if (endp) {
+        *endp = (wchar_t *)string + len;
+    }
+    return value;
+#endif // HAVE_WCSTOULL
+}
+
 size_t SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
 #ifdef HAVE_STRLCPY
@@ -1153,33 +1257,27 @@ static const char ntoa_table[] = {
 };
 #endif // ntoa() conversion table
 
+char *SDL_uitoa(unsigned int value, char *string, int radix)
+{
+    return SDL_ultoa((unsigned long)value, string, radix);
+}
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4996) // Ignore warning about deprecated itoa, _ltoa, _ultoa, _i64toa, _ui64toa
+#endif
 char *SDL_itoa(int value, char *string, int radix)
 {
-#ifdef HAVE__ITOA_S
-    (void)_itoa_s(value, string, 12, radix);
-    return string;
-#elif defined(HAVE_ITOA)
+#ifdef HAVE_ITOA
     return itoa(value, string, radix);
 #else
     return SDL_ltoa((long)value, string, radix);
 #endif // HAVE_ITOA
 }
 
-char *SDL_uitoa(unsigned int value, char *string, int radix)
-{
-#ifdef HAVE__UITOA
-    return _uitoa(value, string, radix);
-#else
-    return SDL_ultoa((unsigned long)value, string, radix);
-#endif // HAVE__UITOA
-}
-
 char *SDL_ltoa(long value, char *string, int radix)
 {
-#ifdef HAVE__LTOA_S
-    (void)_ltoa_s(value, string, 64, radix);
-    return string;
-#elif defined(HAVE__LTOA)
+#ifdef HAVE__LTOA
     return _ltoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1197,10 +1295,7 @@ char *SDL_ltoa(long value, char *string, int radix)
 
 char *SDL_ultoa(unsigned long value, char *string, int radix)
 {
-#ifdef HAVE__ULTOA_S
-    (void)_ultoa_s(value, string, 64, radix);
-    return string;
-#elif defined(HAVE__ULTOA)
+#ifdef HAVE__ULTOA
     return _ultoa(value, string, radix);
 #else
     char *bufp = string;
@@ -1224,10 +1319,7 @@ char *SDL_ultoa(unsigned long value, char *string, int radix)
 
 char *SDL_lltoa(long long value, char *string, int radix)
 {
-#ifdef HAVE__I64TOA_S
-    (void)_i64toa_s(value, string, 64, radix);
-    return string;
-#elif defined(HAVE__I64TOA)
+#ifdef HAVE__I64TOA
     return _i64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -1245,10 +1337,7 @@ char *SDL_lltoa(long long value, char *string, int radix)
 
 char *SDL_ulltoa(unsigned long long value, char *string, int radix)
 {
-#ifdef HAVE__UI64TOA_S
-    (void)_ui64toa_s(value, string, 64, radix);
-    return string;
-#elif defined(HAVE__UI64TOA)
+#ifdef HAVE__UI64TOA
     return _ui64toa(value, string, radix);
 #else
     char *bufp = string;
@@ -1269,6 +1358,9 @@ char *SDL_ulltoa(unsigned long long value, char *string, int radix)
     return string;
 #endif // HAVE__UI64TOA
 }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 int SDL_atoi(const char *string)
 {

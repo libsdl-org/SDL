@@ -831,6 +831,9 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT, 1000763002) \
     _(XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT, 1000763003) \
     _(XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT, 1000763004) \
+    _(XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT, 1000775000) \
+    _(XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT, 1000775001) \
+    _(XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT, 1000775002) \
     _(XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT, 1000781000) \
     _(XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT, 1000781001) \
     _(XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT, 1000781002) \
@@ -2702,6 +2705,13 @@ XR_ENUM_STR(XrResult);
     _(XR_SPATIAL_PERSISTENCE_STATE_LOADED_EXT, 1) \
     _(XR_SPATIAL_PERSISTENCE_STATE_NOT_FOUND_EXT, 2) \
     _(XR_SPATIAL_PERSISTENCE_STATE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrHapticParametricStreamFrameTypeEXT(_) \
+    _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_NONE_EXT, 0) \
+    _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_FIRST_FRAME_EXT, 1) \
+    _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_INTERMEDIATE_FRAME_EXT, 2) \
+    _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_LAST_FRAME_EXT, 3) \
+    _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSpatialObjectSemanticLabelANDROID(_) \
     _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_UNCATEGORIZED_ANDROID, 0) \
@@ -8203,6 +8213,46 @@ XR_ENUM_STR(XrResult);
     _(persistDataCount) \
     _(persistData) \
 
+/// Calls your macro with the name of each member of XrHapticParametricPropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrHapticParametricPropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(idealFrameSubmissionRate) \
+    _(minimumFirstFrameDuration) \
+    _(minFrequencyHz) \
+    _(maxFrequencyHz) \
+
+/// Calls your macro with the name of each member of XrHapticParametricPointEXT, in order.
+#define XR_LIST_STRUCT_XrHapticParametricPointEXT(_) \
+    _(time) \
+    _(value) \
+
+/// Calls your macro with the name of each member of XrHapticParametricTransientEXT, in order.
+#define XR_LIST_STRUCT_XrHapticParametricTransientEXT(_) \
+    _(time) \
+    _(amplitude) \
+    _(frequency) \
+
+/// Calls your macro with the name of each member of XrHapticParametricVibrationEXT, in order.
+#define XR_LIST_STRUCT_XrHapticParametricVibrationEXT(_) \
+    _(type) \
+    _(next) \
+    _(amplitudePointCount) \
+    _(amplitudePoints) \
+    _(frequencyPointCount) \
+    _(frequencyPoints) \
+    _(transientCount) \
+    _(transients) \
+    _(minFrequencyHz) \
+    _(maxFrequencyHz) \
+    _(streamFrameType) \
+
+/// Calls your macro with the name of each member of XrSystemHapticParametricPropertiesEXT, in order.
+#define XR_LIST_STRUCT_XrSystemHapticParametricPropertiesEXT(_) \
+    _(type) \
+    _(next) \
+    _(supportsParametricHaptics) \
+
 /// Calls your macro with the name of each member of XrSpatialEntityPersistInfoEXT, in order.
 #define XR_LIST_STRUCT_XrSpatialEntityPersistInfoEXT(_) \
     _(type) \
@@ -8947,6 +8997,9 @@ XR_ENUM_STR(XrResult);
     _(XrSpatialContextPersistenceConfigEXT, XR_TYPE_SPATIAL_CONTEXT_PERSISTENCE_CONFIG_EXT) \
     _(XrSpatialDiscoveryPersistenceUuidFilterEXT, XR_TYPE_SPATIAL_DISCOVERY_PERSISTENCE_UUID_FILTER_EXT) \
     _(XrSpatialComponentPersistenceListEXT, XR_TYPE_SPATIAL_COMPONENT_PERSISTENCE_LIST_EXT) \
+    _(XrHapticParametricPropertiesEXT, XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
+    _(XrHapticParametricVibrationEXT, XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT) \
+    _(XrSystemHapticParametricPropertiesEXT, XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
     _(XrSpatialEntityPersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT) \
     _(XrPersistSpatialEntityCompletionEXT, XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
     _(XrSpatialEntityUnpersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT) \
@@ -9369,6 +9422,7 @@ XR_ENUM_STR(XrResult);
     _(XR_LOGITECH_mx_ink_stylus_interaction, 746) \
     _(XR_EXT_spatial_anchor, 763) \
     _(XR_EXT_spatial_persistence, 764) \
+    _(XR_EXT_haptic_parametric, 776) \
     _(XR_EXT_spatial_persistence_operations, 782) \
     _(XR_ANDROID_spatial_object_tracking, 786) \
     _(XR_ANDROID_spatial_discovery_raycast, 787) \
@@ -10780,6 +10834,14 @@ XR_ENUM_STR(XrResult);
     _(CreateSpatialPersistenceContextAsyncEXT, EXT_spatial_persistence) \
     _(CreateSpatialPersistenceContextCompleteEXT, EXT_spatial_persistence) \
     _(DestroySpatialPersistenceContextEXT, EXT_spatial_persistence) \
+
+
+/// For every function defined by XR_EXT_haptic_parametric in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_EXT_haptic_parametric(_) \
+    _(HapticParametricGetPropertiesEXT, EXT_haptic_parametric) \
 
 
 /// For every function defined by XR_EXT_spatial_persistence_operations in this version of the spec,

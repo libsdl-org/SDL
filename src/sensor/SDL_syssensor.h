@@ -26,8 +26,9 @@
 // This is the system specific header for the SDL sensor API
 
 #include "SDL_sensor_c.h"
+#include "../events/SDL_events_c.h"
 
-#define _guarded SDL_GUARDED_BY(SDL_sensor_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 // The SDL sensor structure
 struct SDL_Sensor

@@ -256,7 +256,8 @@ void *alloca(size_t);
 #define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))  /* or `_Countof(array)` on recent gcc and clang */
 
 #else
-#if !defined(__cplusplus) && ((defined(__GNUC__) && __GNUC__ >= 16) || SDL_HAS_EXTENSION(c_countof))
+#if !defined(__cplusplus) && ((defined(__GNUC__) && __GNUC__ >= 16) || SDL_HAS_EXTENSION(c_countof)) \
+    && (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202500L)
 #define SDL_arraysize(array) _Countof(array)
 #else
 #define SDL_arraysize(array) (sizeof(array)/sizeof(array[0]))
@@ -1301,7 +1302,8 @@ extern "C" {
 /**
  * Free memory previously allocated with SDL_stack_alloc.
  *
- * If SDL used alloca() to allocate this memory, this macro does nothing and
+ * If SDL used alloca() to allocate this memory, this macro does nothing
+ * (other than insert `((void)(data)` so the compiler sees an expression) and
  * the allocated memory will be automatically released when the function that
  * called SDL_stack_alloc() returns. If SDL used SDL_malloc(), it will
  * SDL_free the memory immediately.
@@ -1314,10 +1316,10 @@ extern "C" {
  *
  * \sa SDL_stack_alloc
  */
-#define SDL_stack_free(data)
+#define SDL_stack_free(data) ((void)(data))
 #elif !defined(SDL_DISABLE_ALLOCA)
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
-#define SDL_stack_free(data)
+#define SDL_stack_free(data)            ((void)(data))
 #else
 #define SDL_stack_alloc(type, count)    (type*)SDL_malloc(sizeof(type)*(count))
 #define SDL_stack_free(data)            SDL_free(data)
@@ -1360,7 +1362,9 @@ extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_malloc(size_t size);
  *
  * If the allocation is successful, the returned pointer is guaranteed to be
  * aligned to either the *fundamental alignment* (`alignof(max_align_t)` in
- * C11 and later) or `2 * sizeof(void *)`, whichever is smaller.
+ * C11 and later) or `2 * sizeof(void *)`, whichever is smaller. Use
+ * SDL_aligned_alloc_zero() if you need to allocate memory aligned to an
+ * alignment greater than this guarantee.
  *
  * \param nmemb the number of elements in the array.
  * \param size the size of each element of the array.
@@ -1613,6 +1617,30 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_f
  * \sa SDL_aligned_free
  */
 extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc(size_t alignment, size_t size);
+
+/**
+ * Allocate zero-initialized memory aligned to a specific alignment.
+ *
+ * The memory returned by this function must be freed with SDL_aligned_free(),
+ * _not_ SDL_free().
+ *
+ * If `alignment` is less than the size of `void *`, it will be increased to
+ * match that.
+ *
+ * The returned memory address will be a multiple of the alignment value, and
+ * the size of the memory allocated will be a multiple of the alignment value.
+ *
+ * \param alignment the alignment of the memory.
+ * \param size the size to allocate.
+ * \returns a pointer to the aligned memory, or NULL if allocation failed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_aligned_free
+ */
+extern SDL_DECLSPEC SDL_MALLOC void * SDLCALL SDL_aligned_alloc_zero(size_t alignment, size_t size);
 
 /**
  * Free memory allocated by SDL_aligned_alloc().
@@ -3025,6 +3053,93 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
  * \sa SDL_strtol
  */
 extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, int base);
+
+/**
+ * Parse an `unsigned long` from a wide string.
+ *
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
+ *
+ * If the parsed number does not fit inside an `unsigned long`, the result is
+ * clamped to the minimum and maximum representable `unsigned long` values.
+ *
+ * \param str The null-terminated wide string to read. Must not be NULL.
+ * \param endp If not NULL, the address of the first invalid wide character
+ *             (i.e. the next character after the parsed number) will be
+ *             written to this pointer.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns the parsed `unsigned long`, or 0 if no number could be parsed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_strtoul
+ */
+extern SDL_DECLSPEC unsigned long SDLCALL SDL_wcstoul(const wchar_t *str, wchar_t **endp, int base);
+
+#ifndef SDL_NOLONGLONG
+
+/**
+ * Parse a `long long` from a wide string.
+ *
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
+ *
+ * If the parsed number does not fit inside a `long long`, the result is
+ * clamped to the minimum and maximum representable `long long` values.
+ *
+ * \param str The null-terminated wide string to read. Must not be NULL.
+ * \param endp If not NULL, the address of the first invalid wide character
+ *             (i.e. the next character after the parsed number) will be
+ *             written to this pointer.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns the parsed `long long`, or 0 if no number could be parsed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_strtoll
+ */
+extern SDL_DECLSPEC long long SDLCALL SDL_wcstoll(const wchar_t *str, wchar_t **endp, int base);
+
+/**
+ * Parse an `unsigned long long` from a wide string.
+ *
+ * If `str` starts with whitespace, then those whitespace characters are
+ * skipped before attempting to parse the number.
+ *
+ * If the parsed number does not fit inside an `unsigned long long`, the
+ * result is clamped to the minimum and maximum representable `unsigned long
+ * long` values.
+ *
+ * \param str The null-terminated wide string to read. Must not be NULL.
+ * \param endp If not NULL, the address of the first invalid wide character
+ *             (i.e. the next character after the parsed number) will be
+ *             written to this pointer.
+ * \param base The base of the integer to read. Supported values are 0 and 2
+ *             to 36 inclusive. If 0, the base will be inferred from the
+ *             number's prefix (0x for hexadecimal, 0 for octal, decimal
+ *             otherwise).
+ * \returns the parsed `unsigned long long`, or 0 if no number could be
+ *          parsed.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_strtoull
+ */
+extern SDL_DECLSPEC unsigned long long SDLCALL SDL_wcstoull(const wchar_t *str, wchar_t **endp, int base);
+
+#endif /* !SDL_NOLONGLONG */
 
 /**
  * This works exactly like strlen() but doesn't require access to a C runtime.

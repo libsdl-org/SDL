@@ -1553,14 +1553,14 @@ static bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
             METAL_GetOutputSize(renderer, &output.w, &output.h);
         }
 
-        if (SDL_GetRectIntersection(&output, &clip, &clip)) {
-            MTLScissorRect mtlrect;
-            mtlrect.x = clip.x;
-            mtlrect.y = clip.y;
-            mtlrect.width = clip.w;
-            mtlrect.height = clip.h;
-            [data.mtlcmdencoder setScissorRect:mtlrect];
-        }
+        SDL_GetRectIntersection(&output, &clip, &clip);
+
+        MTLScissorRect mtlrect;
+        mtlrect.x = clip.x;
+        mtlrect.y = clip.y;
+        mtlrect.width = clip.w;
+        mtlrect.height = clip.h;
+        [data.mtlcmdencoder setScissorRect:mtlrect];
 
         statecache->cliprect_dirty = false;
     }
@@ -2044,6 +2044,9 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
             break;
+        case MTLPixelFormatRGBA32Float:
+            format = SDL_PIXELFORMAT_RGBA128_FLOAT;
+            break;
         case MTLPixelFormatB5G6R5Unorm:
             format = SDL_PIXELFORMAT_RGB565;
             break;
@@ -2060,7 +2063,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
             SDL_SetError("Unknown framebuffer pixel format");
             return NULL;
         }
-        surface = SDL_CreateSurface(read_rect.w, read_rect.h, format);
+        surface = SDL_CreateSurfaceUninitialized(read_rect.w, read_rect.h, format);
         if (surface) {
             [mtltexture getBytes:surface->pixels bytesPerRow:surface->pitch fromRegion:mtlregion mipmapLevel:0];
             if (SDL_RenderingLinearSpace(renderer) &&

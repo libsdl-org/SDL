@@ -46,6 +46,7 @@ All of these still work with [SDL2](/SDL2), which is an incompatible API, but an
 - OS/2
 - WinPhone
 - WinRT/UWP
+- Pandora
 
 ## General notes for Unix platforms
 

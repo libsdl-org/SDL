@@ -75,8 +75,8 @@
     } while (0)
 
 static bool SDL_gamepads_initialized;
-static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 // The face button style of a gamepad
 typedef enum
@@ -96,7 +96,7 @@ typedef enum
     SDL_GAMEPAD_MAPPING_PRIORITY_USER,
 } SDL_GamepadMappingPriority;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 typedef struct GamepadMapping_t
 {
@@ -121,13 +121,13 @@ typedef struct
 #undef _guarded
 
 static SDL_GUID s_zeroGUID;
-static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 // The SDL gamepad structure
 struct SDL_Gamepad
@@ -202,6 +202,9 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
 
     // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
     {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
+
+    // The IR receiver on the NVIDIA Shield TV
+    {"gpio_ir_recv",    GAMEPAD_BLACKLIST_BEGIN},
 
     {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
     {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
@@ -3292,11 +3295,6 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         }
     }
 
-#ifdef SDL_PLATFORM_MACOS
-    // On macOS do nothing here since we detect Steam virtual gamepads
-    // in IOKit HID backends to ensure accuracy.
-    // See joystick/darwin/SDL_iokitjoystick.c and hidapi/mac/hid.c.
-#else
     const char *hint = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
     bool allow_steam_virtual_gamepad = SDL_GetStringBoolean(hint, false);
 #ifdef SDL_PLATFORM_WIN32
@@ -3312,7 +3310,6 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !allow_steam_virtual_gamepad;
     }
-#endif
 
     if (SDL_allowed_gamepads.num_included_entries > 0) {
         if (SDL_VIDPIDInList(vendor_id, product_id, &SDL_allowed_gamepads)) {

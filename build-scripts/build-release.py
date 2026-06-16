@@ -175,7 +175,7 @@ class VisualStudio:
         assert msbuild_path.is_file(), "MSBuild.exe does not exist"
         return msbuild_path
 
-    def build(self, arch_platform: VsArchPlatformConfig, projects: list[Path], include_paths: list[str]):
+    def build(self, arch_platform: VsArchPlatformConfig, projects: list[Path], include_paths: list[str], lib_paths: list[str]):
         assert projects, "Need at least one project to build"
 
         vsdev_cmd_str = f"\"{self.vsdevcmd}\" -arch={arch_platform.arch}"
@@ -183,7 +183,10 @@ class VisualStudio:
         include_contents = "%INCLUDE%"
         if include_paths:
             include_contents = f"{';'.join(str(p) for p in include_paths)};" + include_contents
-        bat_contents = textwrap.dedent(f"{vsdev_cmd_str} && set INCLUDE={include_contents} && {msbuild_cmd_str}")
+        lib_contents = "%LIB%"
+        if lib_paths:
+            lib_contents = f"{';'.join(str(p) for p in lib_paths)};" + lib_contents
+        bat_contents = textwrap.dedent(f"{vsdev_cmd_str} && set INCLUDE={include_contents} && set LIB={lib_paths} && {msbuild_cmd_str}")
         bat_path = Path(tempfile.gettempdir()) / "cmd.bat"
         with bat_path.open("w") as f:
             f.write(bat_contents)
@@ -1218,9 +1221,12 @@ class Releaser:
     def _build_msvc_msbuild(self, arch_platform: VsArchPlatformConfig, vs: VisualStudio):
         platform_context = self.get_context(arch_platform.extra_context())
         include_paths = []
+        lib_paths = []
         for dep in self.release_info.get("dependencies", {}):#release_info["msvc"].get("dependencies", {}).items():
             if "command" in self.release_info["dependencies"][dep]:
                 include_paths.append(self.deps_path / dep / "include")
+                lib_paths.append(self.deps_path / dep / "lib")
+                lib_paths.append(self.deps_path / dep / "lib" / arch_platform.arch)
                 continue
             depinfo = self.release_info["msvc"]["dependencies"][dep]
             msvc_zip = self.deps_path / glob.glob(depinfo["artifact"], root_dir=self.deps_path)[0]
@@ -1270,7 +1276,7 @@ class Releaser:
                 shutil.copy(src=src, dst=dir_b_props)
 
         with self.section_printer.group(f"Build {arch_platform.arch} VS binary"):
-            vs.build(arch_platform=arch_platform, projects=projects, include_paths=include_paths)
+            vs.build(arch_platform=arch_platform, projects=projects, include_paths=include_paths, lib_paths=lib_paths)
 
         if self.dry:
             for b in built_paths:

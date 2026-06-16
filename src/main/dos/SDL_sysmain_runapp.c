@@ -31,8 +31,6 @@
 #include <crt0.h>
 int _crt0_startup_flags = _CRT0_FLAG_LOCK_MEMORY | _CRT0_FLAG_NONMOVE_SBRK;
 
-const char *SDL_argv0 = NULL;
-
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     (void)reserved;
@@ -42,8 +40,6 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
         fprintf(stderr, "__djgpp_nearptr_enable() failed!\n");
         return 1;
     }
-
-    SDL_argv0 = argv ? argv[0] : NULL;
 
     return SDL_CallMainFunction(argc, argv, mainFunction);
 }

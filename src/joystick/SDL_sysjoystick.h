@@ -25,6 +25,7 @@
 
 // This is the system specific header for the SDL joystick API
 #include "SDL_joystick_c.h"
+#include "../events/SDL_events_c.h"
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
@@ -78,7 +79,7 @@ typedef struct SDL_JoystickCapSenseInfo
     bool down;
 } SDL_JoystickCapSenseInfo;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 struct SDL_Joystick
 {

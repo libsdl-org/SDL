@@ -116,7 +116,7 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 break;
             case USB_VENDOR_CRKD:
                 switch (info->productId) {
-                    case USB_PRODUCT_PDP_XB1_JAGUAR_GUITAR:
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
                     default:
                         break;
@@ -126,6 +126,16 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 switch (info->productId) {
                     case USB_PRODUCT_RED_OCTANE_XB1_GUITAR_HERO_LIVE_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_GUITAR_HERO_LIVE_GUITAR;
+                    default:
+                        break;
+                }
+                break;
+            case USB_VENDOR_RED_OCTANE_GAMES:
+                switch (info->productId) {
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_DRUM_KIT;
                     default:
                         break;
                 }
@@ -172,6 +182,18 @@ static int GetSteamVirtualGamepadSlot(const char *device_path)
     return slot;
 }
 #endif // GAMEINPUT_API_VERSION >= 1
+
+static bool IsXbox360WirelessAdapter(Uint16 vendor, Uint16 product)
+{
+    if (vendor == USB_VENDOR_MICROSOFT) {
+        if (product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2) {
+            return true;
+        }
+    }
+    return false;
+}
 
 static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
@@ -220,7 +242,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     }
 #endif
 
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
+    if (IsXbox360WirelessAdapter(vendor, product) ||
+        SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
         SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
         return true;
     }

@@ -54,6 +54,7 @@ typedef struct FcitxClient
 
 static FcitxClient fcitx_client;
 
+// !!! FIXME: should this just be dumped for src/core/unix's SDL_GetAppID()?
 static const char *GetAppName(void)
 {
     const char *exe_name = SDL_GetExeName();

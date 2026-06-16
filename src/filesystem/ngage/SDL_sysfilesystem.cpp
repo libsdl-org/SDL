@@ -63,6 +63,23 @@ void NGAGE_GetAppPath(char *path)
     }
 }
 
+void NGAGE_GetExeName(char *path)
+{
+    TBuf<512> aPath;
+
+    TFileName fullExePath = RProcess().FileName();
+
+    TParsePtrC parser(fullExePath);
+    aPath.Copy(parser.NameAndExt());
+
+    TBuf8<512> utf8Path; // Temporary buffer for UTF-8 data.
+    CnvUtfConverter::ConvertFromUnicodeToUtf8(utf8Path, aPath);
+
+    // Copy UTF-8 data to the provided char* buffer.
+    strncpy(path, (const char *)utf8Path.Ptr(), utf8Path.Length());
+    path[utf8Path.Length()] = '\0';
+}
+
 #ifdef __cplusplus
 }
 #endif

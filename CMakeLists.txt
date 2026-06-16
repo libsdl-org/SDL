@@ -78,6 +78,7 @@ include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
+include("${SDL3_SOURCE_DIR}/cmake/PreseedHaikuCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedDOSCache.cmake")
 
@@ -267,6 +268,7 @@ define_sdl_subsystem(Power)
 define_sdl_subsystem(Sensor)
 define_sdl_subsystem(Dialog)
 define_sdl_subsystem(Tray)
+define_sdl_subsystem(Notification)
 
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "APPLE" OFF)
 if(SDL_FRAMEWORK)
@@ -459,6 +461,7 @@ if (NGAGE)
   set(SDL_DUMMYAUDIO       OFF)
   set(SDL_DUMMYCAMERA      OFF)
   set(SDL_DUMMYVIDEO       OFF)
+  set(SDL_NOTIFICATION     OFF)
   set(SDL_OFFSCREEN        OFF)
   set(SDL_RENDER_GPU       OFF)
   set(SDL_TRAY             OFF)
@@ -696,13 +699,6 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
 endif()
 
 if(MSVC)
-  sdl_compile_definitions(
-    PRIVATE
-      "_CRT_SECURE_NO_DEPRECATE"
-      "_CRT_NONSTDC_NO_DEPRECATE"
-      "_CRT_SECURE_NO_WARNINGS"
-  )
-
   # CET support was added in VS 2019 16.7
   if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
     # Mark SDL3.dll as compatible with Control-flow Enforcement Technology (CET)
@@ -941,6 +937,10 @@ if(SDL_ASSEMBLY)
           return 0;
         }]==] COMPILER_SUPPORTS_ARMSVE2)
       if(COMPILER_SUPPORTS_ARMSVE2)
+        # IMPORTANT: As not all AArch64 processors support SVE2, we only
+        #            attach the following compilation option to SVE
+        #            dedicated source files.
+        set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
         set(HAVE_ARMSVE2 TRUE)
       endif()
     cmake_pop_check_state()
@@ -954,6 +954,7 @@ if(SDL_ASSEMBLY)
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_A.c"
         "${SDL3_SOURCE_DIR}/src/video/arm/SDL_sve2_blit_N.c"
         PROPERTIES
+          COMPILE_FLAGS "${SVE2_MARCH_FLAG}"
           SKIP_PRECOMPILE_HEADERS ON
       )
     endif()
@@ -1139,8 +1140,8 @@ if(SDL_LIBC)
     _Exit exp expf
     fabs fabsf floor floorf fmod fmodf fopen64 fseeko fseeko64
     getenv
-    _i64toa _i64toa_s index itoa _itoa_s
-    log log10 log10f logf lround lroundf _ltoa _ltoa_s
+    _i64toa index itoa
+    log log10 log10f logf lround lroundf _ltoa
     malloc memcmp memcpy memmove memset modf modff
     pow powf putenv
     rindex round roundf
@@ -1150,11 +1151,11 @@ if(SDL_LIBC)
     tan tanf trunc truncf
     unsetenv
     vsnprintf vsscanf
-    wcsnlen wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr wcstol
+    wcsnlen wcscmp wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr wcstol wcstoll wcstoul wcstoull
   )
   if(WINDOWS OR CYGWIN)
     list(APPEND symbols_to_check
-      _copysign _fseeki64 _strrev _ui64toa _ui64toa_s _uitoa _ultoa _ultoa_s _wcsdup
+      _copysign _fseeki64 _strrev _ui64toa _ultoa _wcsdup
     )
   else()
     list(APPEND symbols_to_check
@@ -1328,6 +1329,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/main/*.h"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
   "${SDL3_SOURCE_DIR}/src/misc/*.h"
+  "${SDL3_SOURCE_DIR}/src/notification/*.c"
+  "${SDL3_SOURCE_DIR}/src/notification/*.h"
   "${SDL3_SOURCE_DIR}/src/power/*.c"
   "${SDL3_SOURCE_DIR}/src/power/*.h"
   "${SDL3_SOURCE_DIR}/src/render/*.c"
@@ -1622,6 +1625,7 @@ if(ANDROID)
       set(SDL_VIDEO_OPENGL_EGL 1)
       set(HAVE_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES 1)
+      set(SDL_VIDEO_RENDER_OGL_ES 1)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
 
@@ -2133,6 +2137,13 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_progressbar.c"
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_progressbar.h"
       )
+
+      if(SDL_NOTIFICATION)
+        sdl_sources(
+          "${SDL3_SOURCE_DIR}/src/notification/unix/SDL_dbusnotification.c"
+        )
+        set(HAVE_SDL_NOTIFICATION TRUE)
+      endif()
     endif()
 
     if(SDL_USE_IME)
@@ -2380,12 +2391,42 @@ elseif(WINDOWS OR CYGWIN)
     static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
+
   check_cxx_source_compiles("
-    #include <stdbool.h>
-    #define COBJMACROS
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
+  if(HAVE_GAMEINPUT_H)
+    set(SDL_GAMEINPUT_DYNAMIC 1)
+    find_library(GAMEINPUT_LIB NAMES "gameinput.lib")
+    if(GAMEINPUT_LIB)
+      cmake_push_check_state()
+      list(APPEND CMAKE_REQUIRED_LIBRARIES "${GAMEINPUT_LIB}")
+      check_cxx_source_compiles("
+        #include <windows.h>
+        #include <gameinput.h>
+        #if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
+        #define STR_JOIN2(A, B) A##B
+        #define STR_JOIN(A, B) STR_JOIN2(A, B)
+        using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
+        #endif
+        int main(int argc, char **argv) {
+         IGameInput *gameInput;
+         HRESULT hr = GameInputCreate(&gameInput);
+         if (SUCCEEDED(hr)) {
+          gameInput->Release();
+         }
+         (void) argc; (void) argv;
+         return 0;
+        }" HAVE_GAMEINPUT_LIB
+      )
+      if(HAVE_GAMEINPUT_LIB)
+        sdl_link_dependency(gameinput LIBS gameinput.lib PKG_CONFIG_LINK_OPTIONS -lgameinput)
+        set(SDL_GAMEINPUT_DYNAMIC 0)
+      endif()
+    endif()
+  endif()
+
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
@@ -2394,6 +2435,7 @@ elseif(WINDOWS OR CYGWIN)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
   check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
+  check_include_file(Windows.ui.notifications.h HAVE_WINDOWS_UI_NOTIFICATIONS_H)
   check_c_source_compiles("
     #include <windows.h>
     #include <mfapi.h>
@@ -2503,7 +2545,7 @@ elseif(WINDOWS OR CYGWIN)
   set(HAVE_SDL_STORAGE 1)
 
   # Libraries for Win32 native and MinGW
-  sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid)
+  sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid mincore)
 
   set(SDL_TIME_WINDOWS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/windows/*.c")
@@ -2550,6 +2592,11 @@ elseif(WINDOWS OR CYGWIN)
   if(SDL_TRAY)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
     set(HAVE_SDL_TRAY TRUE)
+  endif()
+
+  if(SDL_NOTIFICATION AND HAVE_WINDOWS_UI_NOTIFICATIONS_H)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/notification/windows/*.c")
+    set(HAVE_SDL_NOTIFICATION TRUE)
   endif()
 
   if(SDL_HIDAPI)
@@ -2728,6 +2775,11 @@ elseif(APPLE)
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
 
+  if(SDL_NOTIFICATION)
+    set(SDL_FRAMEWORK_SECURITY 1)
+    set(SDL_FRAMEWORK_USERNOTIFICATIONS 1)
+  endif()
+
   if(SDL_POWER)
     if (IOS OR TVOS OR VISIONOS OR WATCHOS)
       sdl_glob_sources(
@@ -2757,6 +2809,10 @@ elseif(APPLE)
   set(SDL_FILESYSTEM_COCOA 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/cocoa/*.m")
   set(HAVE_SDL_FILESYSTEM TRUE)
+
+  set(SDL_NOTIFICATION_COCOA 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/notification/cocoa/*.m")
+  set(HAVE_SDL_NOTIFICATION TRUE)
 
   # TODO: SDL_STORAGE_ICLOUD
   set(SDL_STORAGE_GENERIC 1)
@@ -2814,6 +2870,7 @@ elseif(APPLE)
       if(IOS OR TVOS OR VISIONOS OR WATCHOS)
         set(SDL_FRAMEWORK_OPENGLES 1)
         set(SDL_VIDEO_OPENGL_ES 1)
+        set(SDL_VIDEO_RENDER_OGL_ES 1)
       else()
         set(SDL_VIDEO_OPENGL_EGL 1)
       endif()
@@ -2919,11 +2976,18 @@ elseif(APPLE)
   if(SDL_FRAMEWORK_METAL)
     sdl_link_dependency(metal LIBS "$<LINK_LIBRARY:FRAMEWORK,Metal>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,Metal")
   endif()
+  if(SDL_FRAMEWORK_USERNOTIFICATIONS)
+    find_library(USERNOTIFICATIONS UserNotifications)
+    sdl_link_dependency(usernotifications LIBS "$<LINK_LIBRARY:FRAMEWORK,UserNotifications>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,UserNotifications")
+  endif()
   if(SDL_FRAMEWORK_OPENGLES)
     sdl_link_dependency(opengles LIBS "$<LINK_LIBRARY:FRAMEWORK,OpenGLES>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,OpenGLES")
   endif()
   if(SDL_FRAMEWORK_QUARTZCORE)
     sdl_link_dependency(quartz_core LIBS "$<LINK_LIBRARY:FRAMEWORK,QuartzCore>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,QuartzCore")
+  endif()
+  if(SDL_FRAMEWORK_SECURITY)
+    sdl_link_dependency(quartz_core LIBS "$<LINK_LIBRARY:FRAMEWORK,Security>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,Security")
   endif()
   if(SDL_FRAMEWORK_UIKIT)
     sdl_link_dependency(ui_kit LIBS "$<LINK_LIBRARY:FRAMEWORK,UIKit>" PKG_CONFIG_LINK_OPTIONS "-Wl,-framework,UIKit")
@@ -3832,6 +3896,12 @@ if(NOT HAVE_CAMERA)
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/camera/dummy/*.c"
     "${SDL3_SOURCE_DIR}/src/camera/dummy/*.h"
+  )
+endif()
+if(NOT HAVE_SDL_NOTIFICATION)
+  sdl_glob_sources(
+     "${SDL3_SOURCE_DIR}/src/notification/dummy/*.c"
+     "${SDL3_SOURCE_DIR}/src/notification/dummy/*.h"
   )
 endif()
 

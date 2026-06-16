@@ -13,7 +13,7 @@ Requirements
 Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r15c or later
+Android NDK r28c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 21 (Android 5.0)
@@ -299,7 +299,7 @@ e.g.
 
                You have access to the OpenGL context or rendering API at this point.
                However, there's a chance (on older hardware, or on systems under heavy load),
-               where the graphics context can not be restored. You should listen for the
+               where the graphics context cannot be restored. You should listen for the
                event SDL_EVENT_RENDER_DEVICE_RESET and recreate your OpenGL context and
                restore your textures when you get it, or quit the app.
             */
@@ -358,7 +358,7 @@ To enable/disable this behavior, see SDL_hints.h:
 Misc
 ================================================================================
 
-For some device, it appears to works better setting explicitly GL attributes
+For some devices, it appears to work better setting explicitly GL attributes
 before creating a window:
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);

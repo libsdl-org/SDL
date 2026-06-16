@@ -123,6 +123,7 @@ STDLIB_SYMBOLS = (
     'strtol',
     'strtoll',
     'strtoul',
+    'strtoull',
     'strupr',
     'tan',
     'tanf',
@@ -147,6 +148,10 @@ STDLIB_SYMBOLS = (
     'wcsncasecmp',
     'wcsncmp',
     'wcsstr',
+    'wcstol',
+    'wcstoll',
+    'wcstoul',
+    'wcstoull',
 )
 RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 

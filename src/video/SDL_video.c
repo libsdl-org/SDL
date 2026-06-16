@@ -1433,7 +1433,7 @@ bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, 
                      * refresh rate target */
                     continue;
                 }
-                if (SDL_BYTESPERPIXEL(closest->format) >= SDL_BYTESPERPIXEL(mode->format)) {
+                if (SDL_BYTESPERPIXEL(closest->format) > SDL_BYTESPERPIXEL(mode->format)) {
                     // Prefer the highest color depth
                     continue;
                 }

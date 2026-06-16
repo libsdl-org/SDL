@@ -465,6 +465,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSingleton = this;
         SDL.setContext(this);
 
+        SDLControllerManager.initializeDeviceListener();
+
         mClipboardHandler = new SDLClipboardHandler();
 
         mHIDDeviceManager = HIDDeviceManager.acquire(this);
@@ -546,6 +548,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(true);
         }
+
         if (!mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -559,6 +562,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(false);
         }
+
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
@@ -630,6 +634,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
+
+        // If we are gaining focus, we can always try to restore our USB devices. If we are losing focus,
+        // only try to relinquish them if we don't have background events allowed (for multi-window Android setups).
+        if (hasFocus || !SDLActivity.nativeGetHintBoolean("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", false)) {
+            if (mHIDDeviceManager != null) {
+                mHIDDeviceManager.setFrozen(!hasFocus);
+            }
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            return;
@@ -1093,7 +1105,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                             int action, float x,
                                             float y, float p);
     public static native void onNativePen(int penId, int device_type, int button, int action, float x, float y, float p);
-    public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceCreated();
     public static native void onNativeSurfaceChanged();
@@ -1484,9 +1495,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean handleKeyEvent(View v, int keyCode, KeyEvent event, InputConnection ic) {
         int deviceId = event.getDeviceId();
         int source = event.getSource();
+        InputDevice device = InputDevice.getDevice(deviceId);
 
         if (source == InputDevice.SOURCE_UNKNOWN) {
-            InputDevice device = InputDevice.getDevice(deviceId);
             if (device != null) {
                 source = device.getSources();
             }
@@ -1505,7 +1516,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
         // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
         // So, retrieve the device itself and check all of its sources
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
+        if (SDLControllerManager.isDeviceSDLJoystick(device)) {
             // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (SDLControllerManager.onNativePadDown(deviceId, keyCode, event.getScanCode())) {

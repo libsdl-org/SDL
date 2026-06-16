@@ -518,6 +518,14 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
     return CachedUserFolders[idx];
 }
 
+static char *CachedExeName = NULL;
+const char *SDL_GetExeName(void)
+{
+    if (!CachedExeName) {
+        CachedExeName = SDL_SYS_GetExeName();
+    }
+    return CachedExeName;
+}
 
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
@@ -545,10 +553,12 @@ void SDL_InitFilesystem(void)
 
 void SDL_QuitFilesystem(void)
 {
-    if (CachedBasePath) {
-        SDL_free(CachedBasePath);
-        CachedBasePath = NULL;
-    }
+    SDL_free(CachedBasePath);
+    CachedBasePath = NULL;
+
+    SDL_free(CachedExeName);
+    CachedExeName = NULL;
+
     for (int i = 0; i < SDL_arraysize(CachedUserFolders); i++) {
         if (CachedUserFolders[i]) {
             SDL_free(CachedUserFolders[i]);

@@ -113,6 +113,7 @@ This file contains expansion macros (X Macros) for OpenXR structures that have a
     _avail(XrHapticVibration, XR_TYPE_HAPTIC_VIBRATION) \
     _avail(XrHapticAmplitudeEnvelopeVibrationFB, XR_TYPE_HAPTIC_AMPLITUDE_ENVELOPE_VIBRATION_FB) \
     _avail(XrHapticPcmVibrationFB, XR_TYPE_HAPTIC_PCM_VIBRATION_FB) \
+    _avail(XrHapticParametricVibrationEXT, XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT) \
 
 
 

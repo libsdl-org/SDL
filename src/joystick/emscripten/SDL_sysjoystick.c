@@ -120,6 +120,41 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+EM_JS_DEPS(sdljoystick, "$stringToUTF8");
+
+static void SDL_GetEmscriptenNormalizedName(int device_index, char *out, int length)
+{
+    MAIN_THREAD_EM_ASM({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            stringToUTF8('\0', $1, $2); // Silence the compiler here, because '' is not valid
+            return;
+        }
+
+        let id = gamepad['id'];
+        let output = id;
+        // Chrome
+        if (id['indexOf'](' (STANDARD GAMEPAD') > 0) { // Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+            output = id['substr'](0, id['indexOf'](' (STANDARD GAMEPAD'));
+        } else if (id['indexOf'](' (Vendor:') > 0) { // usb gamepad            (Vendor: 0810 Product: e501)
+            output = id['substr'](0, id['indexOf'](' (Vendor:'));
+        } else if (id['indexOf'](' (XInput') > 0) { // Xbox 360 Controller (XInput STANDARD GAMEPAD)
+            output = id['substr'](0, id['indexOf'](' (XInput'));
+        }
+
+        // Firefox, Safari: "046d-c216-Logitech Dual Action", "46d-c216-Logicool Dual Action", or "xinput"
+        let id_split = id['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            // Let's not assume the length of the vendor/product IDs in the string
+            // and just find the second '-' using indexOf
+            let start = id['indexOf']('-', id['indexOf']('-')+1)+1;
+            output = id['substr'](start);
+        }
+
+        stringToUTF8(output.trim(), $1, $2);
+    }, device_index, out, length);
+}
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
@@ -128,6 +163,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     Uint16 vendor, product;
     Uint8 os_id;
     bool is_xinput;
+    char name[128];
 
     SDL_LockJoysticks();
 
@@ -147,14 +183,17 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
-
-    // Use a generic VID/PID representing an XInput controller
-    if (!vendor && !product && is_xinput) {
-        vendor = USB_VENDOR_MICROSOFT;
-        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
-    }
     
     os_id = SDL_GetEmscriptenOSID();
+
+    item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        // This effect is not supported in Safari, so it's okay for us to check the vibrationActuator.effects array here for the browsers that do support it
+        if (!gamepad || !gamepad['vibrationActuator'] || !gamepad['vibrationActuator']['effects'] || !gamepad['vibrationActuator']['effects']['includes']('trigger-rumble')) {
+            return false;
+        }
+        return true;
+        }, item->index);
 
     if (os_id != 0) {
         if (os_id == 1 || os_id == 3) { // Android or iOS (mobile)
@@ -164,26 +203,38 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         }
     }
 
+    if (!vendor && !product && is_xinput) {
+        // Use a generic VID/PID representing an XInput controller
+        vendor = USB_VENDOR_MICROSOFT;
+        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+
+        if (item->trigger_rumble_available) {
+            // Assume Xbox One S Controller
+            if (bus == SDL_HARDWARE_BUS_BLUETOOTH) {
+                product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+            } else {
+                product = USB_PRODUCT_XBOX_ONE_S;
+            }            
+        }
+    }
+
     if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
         // We should differentiate between devices that are mapped or unmapped by the browser.
         os_id += 0x80;
     }
 
-    item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
+    SDL_GetEmscriptenNormalizedName(gamepadEvent->index, name, sizeof(name));
+    item->name = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!item->name) {
         SDL_free(item);
         goto done;
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, gamepadEvent->id, 0, os_id);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, os_id);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
         item->guid.data[15] = os_id;
-    }
-
-    if (is_xinput) {
-        item->guid.data[14] = 'x'; // See SDL_IsJoystickXInput
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
@@ -506,18 +557,18 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble');
+        // Don't check the vibrationActuator.effects array here, because it's not defined in Safari
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return false;
+        }
+        return true;
         }, item->index);
 
     if (item->rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
-    item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
-        let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble');
-        }, item->index);
-
+    // item->trigger_rumble_available is set in Emscripten_JoyStickConnected
     if (item->trigger_rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }

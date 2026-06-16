@@ -12,7 +12,6 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-WINDOWS_GAMEINPUT_VERSION = "v3.3.195.0 "
 
 class AppleArch(Enum):
     Aarch64 = "aarch64"
@@ -27,6 +26,7 @@ class MsvcArch(Enum):
 
 class JobOs(Enum):
     WindowsLatest = "windows-latest"
+    Windows2022 = "windows-2022"
     UbuntuLatest = "ubuntu-latest"
     MacosLatest = "macos-latest"
     Ubuntu22_04 = "ubuntu-22.04"
@@ -120,12 +120,11 @@ JOB_SPECS = {
     "msvc-clang-x64": JobSpec(name="Windows (MSVC, clang-cl x64)",          os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-clang-cl-x64",       msvc_arch=MsvcArch.X64,   clang_cl=True, ),
     "msvc-clang-x86": JobSpec(name="Windows (MSVC, clang-cl x86)",          os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-clang-cl-x86",       msvc_arch=MsvcArch.X86,   clang_cl=True, ),
     "msvc-arm64": JobSpec(name="Windows (MSVC, ARM64)",                     os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm64",           msvc_arch=MsvcArch.Arm64, msvc_project="VisualC/SDL.sln", ),
-    "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
+    "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.Windows2022,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
     "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest", ),
     "ubuntu-24.04-arm64": JobSpec(name="Ubuntu 24.04 (ARM64)",              os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-arm64", ),
     "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest" ),
-    "steamrt3-arm64": JobSpec(name="Steam Linux Runtime 3.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt3-arm64",     container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest" ),
     "steamrt4": JobSpec(name="Steam Linux Runtime 4.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt4",           container="registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk:latest", more_hard_deps = True, ),
     "steamrt4-arm64": JobSpec(name="Steam Linux Runtime 4.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt4-arm64",     container="registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk/arm64:latest", more_hard_deps = True, ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 22.04 (Intel oneAPI)",         os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-oneapi", intel=IntelCompiler.Icx, ),
@@ -227,7 +226,8 @@ class JobDetails:
     msys2_packages: list[str] = dataclasses.field(default_factory=list)
     cygwin_packages: list[str] = dataclasses.field(default_factory=list)
     werror: bool = True
-    microsoft_gameinput_version: str = ""
+    microsoft_gameinput: bool = False
+    microsoft_gameinput_arch: str = ""
     msvc_vcvars_arch: str = ""
     msvc_vcvars_sdk: str = ""
     msvc_project: str = ""
@@ -298,7 +298,8 @@ class JobDetails:
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
-            "microsoft-gameinput-version": self.microsoft_gameinput_version,
+            "microsoft-gameinput": self.microsoft_gameinput,
+            "microsoft-gameinput-arch": self.microsoft_gameinput_arch,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
             "msvc-vcvars-sdk": self.msvc_vcvars_sdk,
             "msvc-project": self.msvc_project,
@@ -450,9 +451,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                         job.setup_libusb_arch = "x86"
                     case MsvcArch.X64:
                         job.setup_libusb_arch = "x64"
-            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
-            job.cflags.append("-I$GAMEINPUT_INCLUDE")
-            job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
+                job.microsoft_gameinput = True
+                match spec.msvc_arch:
+                    case MsvcArch.X64:
+                        job.microsoft_gameinput_arch = "x64"
+                    case MsvcArch.Arm64:
+                        job.microsoft_gameinput_arch = "arm64"
+                job.cflags.append("-I$GAMEINPUT_INCLUDE")
+                job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Linux:
             if spec.name.startswith("Ubuntu"):
                 assert spec.os.value.startswith("ubuntu-")
@@ -780,7 +786,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
-            job.microsoft_gameinput_version = WINDOWS_GAMEINPUT_VERSION
+            job.microsoft_gameinput = True
             job.cflags.append("-I$GAMEINPUT_INCLUDE")
             job.cxxflags.append("-I$GAMEINPUT_INCLUDE")
         case SdlPlatform.Cygwin:
