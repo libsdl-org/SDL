@@ -103,6 +103,13 @@ struct SDL_WindowData
         WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM = 0x08
     } toplevel_constraints;
 
+    enum
+    {
+        WAYLAND_RESIZE_EDGE_LR = 0x01,
+        WAYLAND_RESIZE_EDGE_TB = 0x02,
+        WAYLAND_RESIZE_EDGE_CORNER = WAYLAND_RESIZE_EDGE_LR | WAYLAND_RESIZE_EDGE_TB,
+    } resize_edge;
+
     struct wl_egl_window *egl_window;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -218,6 +225,7 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     int pending_state_deadline_count;
     Uint64 last_focus_event_time_ns;
+    Uint64 last_resize_event_time_ns;
     int icc_fd;
     Uint32 icc_size;
     bool floating;
