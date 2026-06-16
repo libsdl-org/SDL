@@ -2459,7 +2459,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * meant to be proper names.
  *
  * \param index the index of a GPU driver.
- * \returns the name of the GPU driver with the given **index**.
+ * \returns the name of the GPU driver with the given **index** or NULL when
+ *          the index is out of bounds; call SDL_GetError() for more
+ *          information.
  *
  * \since This function is available since SDL 3.2.0.
  *
