@@ -5785,8 +5785,10 @@ static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (!hint) {
-        // Steam will eventually have smarts about whether a keyboard is active, so always request the on-screen keyboard on Steam Deck
-        hint = SDL_GetHint("SteamDeck");
+        // This hint is currently only used by the X11 video driver
+        if (SDL_strcmp(_this->name, "x11") == 0) {
+            hint = SDL_GetHint(SDL_HINT_ENABLE_STEAM_SCREEN_KEYBOARD);
+        }
     }
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, false)) {

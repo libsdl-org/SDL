@@ -190,7 +190,7 @@ struct SDL_VideoData
 #endif
 
     // Used to interact with the on-screen keyboard
-    bool is_steam_deck;
+    bool use_steam_screen_keyboard;
 
     bool is_xwayland;
 };
