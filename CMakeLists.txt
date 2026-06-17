@@ -558,7 +558,7 @@ endif()
 
 check_linker_supports_version_file(HAVE_WL_VERSION_SCRIPT)
 if(HAVE_WL_VERSION_SCRIPT)
-  sdl_shared_link_options("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
+  sdl_shared_link_options("LINKER:SHELL:--version-script \"${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym\"")
 else()
    # When building with tcc on Linux+glibc or Android, avoid emitting an error
    # for lack of support of the version-script linker flag: the option will be
