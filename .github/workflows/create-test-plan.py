@@ -357,7 +357,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
     fpic = None
     build_parallel = True
     if spec.lean:
-        job.cppflags.append("-DSDL_LEAN_AND_MEAN=1")
+        job.cmake_arguments.append("-DSDL_LEAN_AND_MEAN=TRUE")
     if win32:
         job.cmake_arguments.append("-DSDLTEST_PROCDUMP=ON")
         job.minidump = True

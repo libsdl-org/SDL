@@ -182,6 +182,11 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC OR USE_TCC)
   set(SDL_GCC_ATOMICS_DEFAULT ON)
 endif()
 
+set(SDL_LEAN_AND_MEAN_DEFAULT FALSE)
+if(NGAGE)
+  set(SDL_LEAN_AND_MEAN_DEFAULT TRUE)
+endif()
+
 # Default option knobs
 set(SDL_LIBC_DEFAULT ON)
 set(SDL_SYSTEM_ICONV_DEFAULT ON)
@@ -400,6 +405,7 @@ set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 dep_option(SDL_GPU_OPENXR          "Build SDL_GPU with OpenXR support" ON "SDL_GPU;NOT RISCOS" OFF)
+set_option(SDL_LEAN_AND_MEAN       "Build a lean SDL library with reduced graphics functionality" ${SDL_LEAN_AND_MEAN_DEFAULT})
 
 if(EMSCRIPTEN)
   option_string(SDL_EMSCRIPTEN_PERSISTENT_PATH  "Path to mount Emscripten IDBFS at startup or '' to disable" "")
@@ -639,6 +645,13 @@ endif()
 
 if(NOT SDL_FOREGROUNDING_SIGNAL STREQUAL "OFF")
   sdl_compile_definitions(PRIVATE "SDL_FOREGROUNDING_SIGNAL=${SDL_FOREGROUNDING_SIGNAL}")
+endif()
+
+if(SDL_LEAN_AND_MEAN)
+  sdl_compile_definitions(
+    PRIVATE
+      SDL_LEAN_AND_MEAN
+  )
 endif()
 
 # Compiler option evaluation
@@ -3547,14 +3560,6 @@ elseif(NGAGE)
     "${SDL3_SOURCE_DIR}/src/video/ngage/*.h"
   )
   set(HAVE_SDL_TIMERS TRUE)
-
-  set_option(SDL_LEAN_AND_MEAN "Enable lean and mean" ON)
-  if(SDL_LEAN_AND_MEAN)
-    sdl_compile_definitions(
-      PRIVATE
-      SDL_LEAN_AND_MEAN
-    )
-  endif()
 
   sdl_link_dependency(ngage
     LINK_OPTIONS "SHELL:-s MAIN_COMPAT=0"
