@@ -2708,12 +2708,14 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  *
  * \param window the window to set mouse passthrough for.
  * \param passthrough true to make the window transparent to mouse input, false to capture mouse input.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetWindowMousePassthrough(SDL_Window *window, bool passthrough);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMousePassthrough(SDL_Window *window, bool passthrough);
 
 /**
  * Set the window as a child of a parent window.
