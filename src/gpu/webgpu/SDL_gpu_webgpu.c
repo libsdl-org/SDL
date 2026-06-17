@@ -514,7 +514,6 @@ typedef struct WebGPURenderer
     WebGPUUniformBuffer *preAllocatedUniformBuffers;
 
     SDL_PropertiesID props;
-    SDL_PropertiesID shaders;
 
     bool debugMode;
     bool preferLowPower;
@@ -3323,15 +3322,36 @@ static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandB
     return (SDL_GPUFence *)fence;
 }
 
+static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
+
+    for (int i = 0; i < 12; i++) {
+        wgpuBufferRelease(renderer->preAllocatedUniformBuffers[i].buffer);
+    }
+
+    SDL_DestroyProperties(renderer->props);
+    SDL_free(renderer);
+}
+
+static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(window->props, WINDOW_PROPERTY_DATA, NULL);
+    if (windowData == NULL) {
+        return;
+    }
+
+    wgpuSurfaceRelease(windowData->surface);
+    SDL_ClearProperty(window->props, WINDOW_PROPERTY_DATA);
+}
+
 // -- UNIMPLEMENTED FUNCTIONS --
-static void WEBGPU_DestroyDevice(SDL_GPUDevice *device) {}
 static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUTextureRegion *source, const SDL_GPUTextureTransferInfo *destination) {}
 static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBufferRegion *source, const SDL_GPUTransferBufferLocation *destination) {}
 static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture) {}
 static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info) {}
 static bool WEBGPU_SupportsSwapchainComposition(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUSwapchainComposition swapchainComposition) {}
 static bool WEBGPU_SupportsPresentMode(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUPresentMode presentMode) {}
-static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_SetSwapchainParameters(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUSwapchainComposition swapchainComposition, SDL_GPUPresentMode presentMode) {}
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
@@ -3504,7 +3524,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->preferLowPower = preferLowPower;
     renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
-    renderer->shaders = SDL_CreateProperties();
 
     renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
 
