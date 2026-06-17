@@ -866,10 +866,12 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
- * A variable that controls whether the Steam on-screen keyboard should be shown
- * when text input is active.
+ * A variable that controls whether the Steam on-screen keyboard should be
+ * shown when text input is active.
  *
- * Steam will set this hint via environment variable for games launched in Big Picture mode. To override this you should call SDL_SetHintWithPriority() with priority `SDL_HINT_OVERRIDE`.
+ * Steam will set this hint via environment variable for games launched in Big
+ * Picture mode. To override this you should call SDL_SetHintWithPriority()
+ * with priority `SDL_HINT_OVERRIDE`.
  *
  * The variable can be set to the following values:
  *
