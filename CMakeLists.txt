@@ -652,6 +652,7 @@ if(SDL_LEAN_AND_MEAN)
     PRIVATE
       SDL_LEAN_AND_MEAN
   )
+  set(HAVE_LEAN_AND_MEAN TRUE)
 endif()
 
 # Compiler option evaluation
