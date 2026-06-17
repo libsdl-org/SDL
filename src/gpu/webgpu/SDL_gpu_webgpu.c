@@ -1314,6 +1314,8 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *device, SDL_Window *window)
         firstGoodFormat = WGPUTextureFormat_RGBA8UnormSrgb;
     }
 
+    wgpuSurfaceCapabilitiesFreeMembers(caps);
+
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
     windowData->surfaceConfig = (WGPUSurfaceConfiguration){
@@ -1347,7 +1349,7 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
 
     WebGPUTexture *texture;
-    WebGPUTexture *textureArray;
+    WebGPUTexture **textureArray;
     WebGPUTextureContainer *container;
 
     WGPUSurfaceTexture surfaceTexture = { 0 };
@@ -1362,10 +1364,11 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
         return false;
     }
 
-    textureArray = SDL_calloc(1, sizeof(WebGPUTexture));
-    texture = &textureArray[0];
+    textureArray = SDL_calloc(1, sizeof(WebGPUTexture *));
+    texture = SDL_calloc(1, sizeof(WebGPUTexture));
     container = (WebGPUTextureContainer *)SDL_calloc(1, sizeof(*container));
 
+    textureArray[0] = texture;
     texture->container = container;
     texture->containerIndex = 0;
 
@@ -1377,7 +1380,7 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
 
     container->textureCapacity = 1;
     container->textureCount = 1;
-    container->textures = &textureArray;
+    container->textures = textureArray;
     container->activeTexture = texture;
     container->activeTextureIndex = 0;
 
@@ -3282,11 +3285,18 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
     for (int i = 0; i < ((WebGPUCommandBuffer *)commandBuffer)->swapchainTextureCount; i++) {
         WebGPUTextureContainer *container = ((WebGPUCommandBuffer *)commandBuffer)->acquiredSwapchainTextures[i];
 
-        // WebGPU really doesn't like it when we free the WebGPUTexture so we won't
+        for (int j = 0; j < container->textureCount; j++) {
+            wgpuTextureRelease(container->textures[j]->texture);
+            wgpuTextureViewRelease(container->textures[j]->textureView);
+
+            SDL_free(container->textures[j]);
+        }
+        SDL_free(container->textures);
         SDL_free(container);
     }
 
     wgpuCommandEncoderRelease(((WebGPUCommandBuffer *)commandBuffer)->encoder);
+    wgpuCommandBufferRelease(cmdBuf);
 
     // We'll be freeing the "command buffer", so any usage of it will be undefined behaviour.
     // Don't. The docs tell you not to.
@@ -3524,20 +3534,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
         SDL_free(renderer);
         return NULL;
     }
-
-    WGPUAdapterInfo adapterInfo;
-    wgpuAdapterGetInfo(renderer->adapter, &adapterInfo);
-
-    SDL_SetStringProperty(
-        renderer->props,
-        SDL_PROP_GPU_DEVICE_NAME_STRING,
-        adapterInfo.device.data);
-
-    // FIXME: Not sure this is how it's supposed to work
-    SDL_SetStringProperty(
-        renderer->props,
-        SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING,
-        "WebGPU");
 
     renderer->queue = wgpuDeviceGetQueue(renderer->device);
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
