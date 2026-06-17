@@ -746,10 +746,6 @@ typedef struct WebGPUCommandBuffer
 
     WebGPUUniformBuffer *uniformBuffers;
 
-    uint32_t colorTargetCount;
-    WGPURenderPassColorAttachment *colorAttachments;
-    WGPURenderPassDepthStencilAttachment *depthStencilAttachment;
-
     WebGPUGraphicsPipeline *boundGraphicsPipeline;
     WebGPUComputePipeline *boundComputePipeline;
 
@@ -827,6 +823,10 @@ typedef struct WebGPUCommandBuffer
     uint32_t surfaceCount;
     uint32_t surfaceCapacity;
     WGPUSurface *surfaces;
+
+    uint32_t swapchainTextureCount;
+    uint32_t swapchainTextureCapacity;
+    WebGPUTextureContainer **acquiredSwapchainTextures;
 } WebGPUCommandBuffer;
 
 static void
@@ -997,13 +997,19 @@ static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device
     wrapper->uniformBuffers = ((WebGPURenderer *)device)->preAllocatedUniformBuffers;
 
     WGPUSurface *surfaces;
+    WebGPUTextureContainer **acquiredSwapchainTextures;
     surfaces = SDL_calloc(2, sizeof(WGPUSurface));
+    acquiredSwapchainTextures = SDL_calloc(2, sizeof(*acquiredSwapchainTextures));
 
     // Allocating enough space for two since XR and stuff
     // It'll automatically resize if needed but that's slow so eeeh
     wrapper->surfaces = surfaces;
     wrapper->surfaceCount = 0;
     wrapper->surfaceCapacity = 2;
+
+    wrapper->acquiredSwapchainTextures = acquiredSwapchainTextures;
+    wrapper->swapchainTextureCount = 0;
+    wrapper->swapchainTextureCapacity = 2;
 
     // FIXME: These should only be allocated when needed.
     wrapper->vertexStageBinds.samplers = (WebGPUQueuedResourceBindSampler *)SDL_calloc(16, sizeof(WebGPUQueuedResourceBindSampler));
@@ -1057,50 +1063,8 @@ static void WEBGPU_INTERNAL_FreeCommandBuffer(WebGPUCommandBuffer *cmdBuf)
     SDL_free(cmdBuf->computeStageBinds.uniformBuffers);
 
     SDL_free(cmdBuf->surfaces);
+    SDL_free(cmdBuf->acquiredSwapchainTextures);
     SDL_free(cmdBuf);
-}
-
-static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
-{
-    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
-
-    if (!cmdBuf) {
-        SDL_free(commandBuffer);
-        return false;
-    }
-
-    wgpuQueueSubmit(((WebGPUCommandBuffer *)commandBuffer)->queue, 1, &cmdBuf);
-
-#ifndef __EMSCRIPTEN__
-    for (int i = 0; i < ((WebGPUCommandBuffer *)commandBuffer)->surfaceCount; i++) {
-        wgpuSurfacePresent(((WebGPUCommandBuffer *)commandBuffer)->surfaces[i]);
-    }
-#endif
-    wgpuCommandEncoderRelease(((WebGPUCommandBuffer *)commandBuffer)->encoder);
-
-    // We'll be freeing the "command buffer", so any usage of it will be undefined behaviour.
-    // Don't. The docs tell you not to.
-
-    WEBGPU_INTERNAL_FreeCommandBuffer((WebGPUCommandBuffer *)commandBuffer);
-    return true;
-}
-
-static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandBuffer)
-{
-    WebGPUFence *fence;
-    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
-    if (!cmdBuf) {
-        SDL_SetError("wgpuCommandEncoderFinish failed!");
-        SDL_free(commandBuffer);
-        return NULL;
-    }
-
-    fence = (WebGPUFence *)SDL_calloc(1, sizeof(*fence));
-
-    wgpuQueueOnSubmittedWorkDone((((WebGPUCommandBuffer *)commandBuffer)->queue), (WGPUQueueWorkDoneCallbackInfo){ .callback = WEBGPU_FenceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = fence, .userdata2 = NULL });
-    WEBGPU_Submit(commandBuffer);
-
-    return (SDL_GPUFence *)fence;
 }
 
 static bool WEBGPU_QueryFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
@@ -1424,11 +1388,14 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     container->header.info.num_levels = 1;
     container->header.info.props = 0;
 
-    *swapchainTexture = (SDL_GPUTexture *)container;
-
     EXPAND_ARRAY_IF_NEEDED(cmdBuf->surfaces, WGPUSurface, cmdBuf->surfaceCount + 1, cmdBuf->surfaceCapacity, cmdBuf->surfaceCapacity + 1);
     cmdBuf->surfaces[cmdBuf->surfaceCount++] = windowData->surface;
+
+    EXPAND_ARRAY_IF_NEEDED(cmdBuf->acquiredSwapchainTextures, WebGPUTextureContainer *, cmdBuf->swapchainTextureCount + 1, cmdBuf->swapchainTextureCapacity, cmdBuf->swapchainTextureCapacity + 1);
+    cmdBuf->acquiredSwapchainTextures[cmdBuf->swapchainTextureCount++] = container;
+
     windowData->refcount++;
+    *swapchainTexture = (SDL_GPUTexture *)container;
 
     return true;
 }
@@ -2247,12 +2214,12 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
 
     wrapper->renderPassEncoder = wgpuCommandEncoderBeginRenderPass(wrapper->encoder, &desc);
     wrapper->uniformBuffers = ((WebGPUCommandBuffer *)commandBuffer)->uniformBuffers;
-    wrapper->colorTargetCount = numColorTargets;
-    wrapper->colorAttachments = colorAttachments;
-    wrapper->depthStencilAttachment = depthStencilTargetInfo != NULL ? depthStencilAttachment : NULL;
     wrapper->boundGraphicsPipeline = NULL;
     wrapper->hasBoundGraphicsPipeline = false;
     wrapper->hasBoundGraphicsPipelineResources = false;
+
+    SDL_free(colorAttachments);
+    SDL_free(depthStencilAttachment);
 }
 
 static void WEBGPU_SetViewport(SDL_GPUCommandBuffer *renderPass, const SDL_GPUViewport *viewport)
@@ -3293,6 +3260,57 @@ static void WEBGPU_DispatchComputeIndirect(SDL_GPUCommandBuffer *commandBuffer, 
 
     WEBGPU_INTERNAL_BindQueuedComputeResources(cmdBuf);
     wgpuComputePassEncoderDispatchWorkgroupsIndirect(cmdBuf->computePassEncoder, ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer, offset);
+}
+
+static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
+
+    if (!cmdBuf) {
+        SDL_free(commandBuffer);
+        return false;
+    }
+
+    wgpuQueueSubmit(((WebGPUCommandBuffer *)commandBuffer)->queue, 1, &cmdBuf);
+
+#ifndef __EMSCRIPTEN__
+    for (int i = 0; i < ((WebGPUCommandBuffer *)commandBuffer)->surfaceCount; i++) {
+        wgpuSurfacePresent(((WebGPUCommandBuffer *)commandBuffer)->surfaces[i]);
+    }
+#endif
+
+    for (int i = 0; i < ((WebGPUCommandBuffer *)commandBuffer)->swapchainTextureCount; i++) {
+        WebGPUTextureContainer *container = ((WebGPUCommandBuffer *)commandBuffer)->acquiredSwapchainTextures[i];
+
+        // WebGPU really doesn't like it when we free the WebGPUTexture so we won't
+        SDL_free(container);
+    }
+
+    wgpuCommandEncoderRelease(((WebGPUCommandBuffer *)commandBuffer)->encoder);
+
+    // We'll be freeing the "command buffer", so any usage of it will be undefined behaviour.
+    // Don't. The docs tell you not to.
+
+    WEBGPU_INTERNAL_FreeCommandBuffer((WebGPUCommandBuffer *)commandBuffer);
+    return true;
+}
+
+static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WebGPUFence *fence;
+    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
+    if (!cmdBuf) {
+        SDL_SetError("wgpuCommandEncoderFinish failed!");
+        SDL_free(commandBuffer);
+        return NULL;
+    }
+
+    fence = (WebGPUFence *)SDL_calloc(1, sizeof(*fence));
+
+    wgpuQueueOnSubmittedWorkDone((((WebGPUCommandBuffer *)commandBuffer)->queue), (WGPUQueueWorkDoneCallbackInfo){ .callback = WEBGPU_FenceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = fence, .userdata2 = NULL });
+    WEBGPU_Submit(commandBuffer);
+
+    return (SDL_GPUFence *)fence;
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
