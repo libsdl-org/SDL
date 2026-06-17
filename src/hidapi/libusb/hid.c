@@ -1069,6 +1069,17 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						struct hid_device_info *tmp;
 
 						res = libusb_open(dev, &handle);
+#ifdef SDL_PLATFORM_MACOS
+						if (res == 0) {
+							/* Do not enumerate XInput devices already owned by a kernel driver */
+							int is_xbox = is_xbox360(dev_vid, intf_desc) || is_xboxone(dev_vid, intf_desc);
+							if (is_xbox && libusb_kernel_driver_active(handle, intf_desc->bInterfaceNumber) == 1) {
+								libusb_close(handle);
+								handle = NULL;
+								continue;
+							}
+						}
+#endif
 
 #ifdef __ANDROID__
 						if (handle) {
