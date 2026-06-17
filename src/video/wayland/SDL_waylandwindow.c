@@ -2839,7 +2839,9 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
 {
     SDL_WindowData *data = window->internal;
 
-    if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
+    // Don't try to reconfigure mapped windows, unless they are custom or external.
+    if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN &&
+        data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
         // Window is already mapped; abort.
         return false;
     }
