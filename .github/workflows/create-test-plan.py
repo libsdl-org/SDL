@@ -951,7 +951,7 @@ def main():
     all_level_keys = (
         # Level 1
         (
-            "android-mk" if args.priority_only else "haiku" ,
+            "android-mk",
         ),
     )
 
