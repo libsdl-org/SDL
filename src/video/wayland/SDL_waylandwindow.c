@@ -3044,6 +3044,11 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         // Roleless and external surfaces are always considered to be in the shown state by the backend.
         data->shell_surface_type = WAYLAND_SHELL_SURFACE_TYPE_CUSTOM;
         data->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_SHOWN;
+
+        // External windows are presumed to be shown.
+        if (window->flags & SDL_WINDOW_EXTERNAL) {
+            window->flags &= ~SDL_WINDOW_HIDDEN;
+        }
     }
 
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) {
