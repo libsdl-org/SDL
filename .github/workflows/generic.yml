@@ -55,11 +55,11 @@ jobs:
           version: 3.1.35
       - uses: browser-actions/setup-chrome@v2
         id: setup-chrome
-        if: ${{ matrix.platform.platform == 'emscripten' }}
+        if: ${{ matrix.platform.platform == 'emscripten' && matrix.platform.run-tests }}
         with:
           install-chromedriver: true
       - name: 'Add chrome to PATH'
-        if: ${{ matrix.platform.platform == 'emscripten' }}
+        if: ${{ matrix.platform.platform == 'emscripten' && matrix.platform.run-tests }}
         run: |
           chrome_dir="$(dirname "${{ steps.setup-chrome.outputs.chrome-path }}")"
           chromedriver_dir="$(dirname "${{ steps.setup-chrome.outputs.chromedriver-path }}")"
