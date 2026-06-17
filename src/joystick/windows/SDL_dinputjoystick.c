@@ -31,6 +31,8 @@
 #include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
+#include <process.h>
+
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL 0x80000000
 #endif
@@ -451,12 +453,14 @@ bool SDL_DINPUT_JoystickInit(void)
             "C:/Windows/USB Vibration"
         };
         for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64DLL; ++i) {
-            int count = 0;
-            char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
-            if (count > 0) {
-                has_broken_EZFRD64DLL = true;
+            char path[256];
+            DWORD fa = GetFileAttributesA(directories[i]);
+            if (fa != INVALID_FILE_ATTRIBUTES && (fa & FILE_ATTRIBUTE_DIRECTORY)) {
+                SDL_snprintf(path, sizeof(path), "where /q /r %s %s", directories[i], "EZFRD64.DLL");
+                if (system(path) == 0) {
+                    has_broken_EZFRD64DLL = true;
+                }
             }
-            SDL_free(files);
         }
         if (has_broken_EZFRD64DLL) {
             SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Broken EZFRD64.DLL detected, disabling DirectInput force feedback");
