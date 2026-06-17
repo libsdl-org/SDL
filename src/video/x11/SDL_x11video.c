@@ -153,7 +153,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     /* Steam Deck will have an on-screen keyboard, so check their environment
      * variable so we can make use of SDL_StartTextInput.
      */
-    data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", false);
+    data->use_steam_screen_keyboard = SDL_GetHintBoolean(SDL_HINT_ENABLE_STEAM_SCREEN_KEYBOARD, false);
 
     // Set the function pointers
     device->VideoInit = X11_VideoInit;
