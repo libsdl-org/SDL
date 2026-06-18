@@ -125,18 +125,9 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *result = NULL;
     size_t len;
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-
     const char *base = SDL_GetBasePath();
     if (!base) {
         return NULL;
-    }
-
-    if (!org) {
-        org = "";
     }
 
     len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
