@@ -116,7 +116,7 @@ jobs:
           # Download the key to system keyring
           wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
             | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-          
+
           # Add signed entry to apt sources and configure the APT client to use Intel repository:
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           
@@ -138,9 +138,13 @@ jobs:
       - name: 'Install brew packages'
         if: ${{ matrix.platform.brew-packages != '' }}
         run: |
-          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew update
-          brew install ${{ matrix.platform.brew-packages }}
+          # Unset these GitHub environment variable to keep brew from emitting a few noisy annotions
+          unset GITHUB_ACTIONS
+          unset GITHUB_OUTPUT
+          unset GITHUB_PATH
+
+          brew update --auto-update
+          brew install --quiet ${{ matrix.platform.brew-packages }}
       - name: 'Setup Python'
         uses: 'actions/setup-python@main'
         if: ${{ matrix.platform.setup-python }}
