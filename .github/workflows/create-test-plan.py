@@ -496,11 +496,13 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     "libswscale-dev",
                 ))
                 match = re.match(r"ubuntu-(?P<year>[0-9]+)\.(?P<month>[0-9]+|latest).*", spec.os.value)
-                ubuntu_ge_22 = True
+                ubuntu_ge_24 = True
                 if match and match["month"] != "latest":
                     ubuntu_year, ubuntu_month = [int(match["year"]), int(match["month"])]
-                    ubuntu_ge_22 = ubuntu_year >= 22
+                    ubuntu_ge_24 = ubuntu_year >= 24
                     job.apt_packages.extend(("libpipewire-0.3-dev", "libdecor-0-dev"))
+                if not ubuntu_ge_24:
+                    job.clang_tidy = False
                 job.apt_packages.extend((
                     "libunwind-dev",  # For SDL_test memory tracking
                 ))
