@@ -156,6 +156,7 @@ add_sdl_example_executable(input-gamepad-rumble SOURCES input/05-gamepad-rumble/
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.png ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.png)
+add_sdl_example_executable(storage-user SOURCES storage/01-user/user.c)
 add_sdl_example_executable(misc-power SOURCES misc/01-power/power.c)
 add_sdl_example_executable(misc-clipboard SOURCES misc/02-clipboard/clipboard.c)
 add_sdl_example_executable(misc-locale SOURCES misc/03-locale/locale.c)
