@@ -24,6 +24,7 @@
 
 #include "../../events/SDL_windowevents_c.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_sysvideo.h"
 #include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
 #include "SDL_gpu_util.h"
@@ -1744,6 +1745,13 @@ static bool GPU_SetVSync(SDL_Renderer *renderer, const int vsync)
 static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     GPU_RenderData *data = NULL;
+
+    // Clear any OpenGL properties on the window to avoid potential driver conflicts.
+    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+    if (flags & SDL_WINDOW_OPENGL) {
+        flags &= ~SDL_WINDOW_OPENGL;
+        SDL_ReconfigureWindow(window, flags);
+    }
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
