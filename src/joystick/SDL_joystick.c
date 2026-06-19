@@ -2259,6 +2259,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         }
         SDL_free(joystick->touchpads);
         SDL_free(joystick->sensors);
+        SDL_free(joystick->capsenses);
         SDL_free(joystick);
     }
     SDL_UnlockJoysticks();
