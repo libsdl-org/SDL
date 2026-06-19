@@ -2870,8 +2870,9 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
         return false;
     }
 
-    /* The caller guarantees that only one of the GL or Vulkan flags will be set,
-     * and the window will have no previous video flags.
+    /* The caller guarantees that only one of the GL or Vulkan flags will be set.
+     * Note that Vulkan doesn't require any specific configuration, so only EGL
+     * objects are added and removed as required.
      */
     if (flags & SDL_WINDOW_OPENGL) {
         if (!data->egl_window) {
@@ -2879,11 +2880,10 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
         }
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-        // Create the GLES window surface
         data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
-            return false; // SDL_EGL_CreateSurface should have set error
+            return false; // SDL_EGL_CreateSurface should have set the error.
         }
 #endif
 
@@ -2894,14 +2894,36 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
             data->gles_swap_frame_callback = wl_surface_frame(data->gles_swap_frame_surface_wrapper);
             wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
         }
+    } else {
+#ifdef SDL_VIDEO_OPENGL_EGL
+        if (data->egl_surface) {
+            SDL_EGL_DestroySurface(_this, data->egl_surface);
+            data->egl_surface = EGL_NO_SURFACE;
+        }
+#endif
 
-        return true;
-    } else if (flags & SDL_WINDOW_VULKAN) {
-        // Nothing to configure for Vulkan.
-        return true;
+        if (data->egl_window) {
+            WAYLAND_wl_egl_window_destroy(data->egl_window);
+            data->egl_window = NULL;
+        }
+
+        if (data->gles_swap_frame_callback) {
+            wl_callback_destroy(data->gles_swap_frame_callback);
+            data->gles_swap_frame_callback = NULL;
+        }
+
+        if (data->gles_swap_frame_surface_wrapper) {
+            WAYLAND_wl_proxy_wrapper_destroy(data->gles_swap_frame_surface_wrapper);
+            data->gles_swap_frame_surface_wrapper = NULL;
+        }
+
+        if (data->gles_swap_frame_event_queue) {
+            WAYLAND_wl_event_queue_destroy(data->gles_swap_frame_event_queue);
+            data->gles_swap_frame_event_queue = NULL;
+        }
     }
 
-    return false;
+    return true;
 }
 
 bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
