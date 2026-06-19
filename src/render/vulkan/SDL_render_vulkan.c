@@ -4518,6 +4518,13 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
 {
     VULKAN_RenderData *rendererData;
 
+    // Clear any OpenGL properties on the window to avoid potential driver conflicts.
+    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+    if (flags & SDL_WINDOW_OPENGL) {
+        flags &= ~SDL_WINDOW_OPENGL;
+        SDL_ReconfigureWindow(window, flags);
+    }
+
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
