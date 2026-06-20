@@ -2752,6 +2752,18 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *   [[stage_in]] attribute which will automatically use the vertex input
  *   information from the SDL_GPUGraphicsPipeline.
  *
+ * For WGSL, use the following order:
+ *
+ * Vertex stage:
+ *
+ * - @group(0) @binding(n): Sampled textures, followed by storage textures, followed by storage buffers
+ * - @group(1) @binding(n): Uniform buffers
+ *
+ * Fragment stage:
+ *
+ * - @group(2) @binding(n): Sampled textures, followed by storage textures, followed by storage buffers
+ * - @group(3) @binding(n): Uniform buffers
+ *
  * Shader semantics other than system-value semantics do not matter in D3D12
  * and for ease of use the SDL implementation assumes that non system-value
  * semantics will all be TEXCOORD. If you are using HLSL as the shader source
