@@ -22,7 +22,7 @@
 #define SNAKE_CELL_SET_BITS  (~(~0u << SNAKE_CELL_MAX_BITS))
 #define SHIFT(x, y) (((x) + ((y) * SNAKE_GAME_WIDTH)) * SNAKE_CELL_MAX_BITS)
 
-static SDL_Joystick *joystick = NULL;
+static SDL_Gamepad *gamepad = NULL;
 
 typedef enum
 {
@@ -241,18 +241,20 @@ static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
     return SDL_APP_CONTINUE;
 }
 
-static SDL_AppResult handle_hat_event_(SnakeContext *ctx, Uint8 hat) {
-    switch (hat) {
-    case SDL_HAT_RIGHT:
+static SDL_AppResult handle_gamepad_buttonevent_(SnakeContext *ctx, const SDL_GamepadButtonEvent *event)
+{
+    SDL_assert(event->down);   // don't care when they let go, so we only check for down events when calling this.
+    switch (event->button) {
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
         snake_redir(ctx, SNAKE_DIR_RIGHT);
         break;
-    case SDL_HAT_UP:
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
         snake_redir(ctx, SNAKE_DIR_UP);
         break;
-    case SDL_HAT_LEFT:
+    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
         snake_redir(ctx, SNAKE_DIR_LEFT);
         break;
-    case SDL_HAT_DOWN:
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
         snake_redir(ctx, SNAKE_DIR_DOWN);
         break;
     default:
@@ -328,7 +330,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         }
     }
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -358,22 +360,22 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
-    case SDL_EVENT_JOYSTICK_ADDED:
-        if (joystick == NULL) {
-            joystick = SDL_OpenJoystick(event->jdevice.which);
-            if (!joystick) {
-                SDL_Log("Failed to open joystick ID %u: %s", (unsigned int) event->jdevice.which, SDL_GetError());
+    case SDL_EVENT_GAMEPAD_ADDED:
+        if (gamepad == NULL) {
+            gamepad = SDL_OpenGamepad(event->gdevice.which);
+            if (!gamepad) {
+                SDL_Log("Failed to open gamepad ID %u: %s", (unsigned int) event->gdevice.which, SDL_GetError());
             }
         }
         break;
-    case SDL_EVENT_JOYSTICK_REMOVED:
-        if (joystick && (SDL_GetJoystickID(joystick) == event->jdevice.which)) {
-            SDL_CloseJoystick(joystick);
-            joystick = NULL;
+    case SDL_EVENT_GAMEPAD_REMOVED:
+        if (gamepad && (SDL_GetGamepadID(gamepad) == event->gdevice.which)) {
+            SDL_CloseGamepad(gamepad);
+            gamepad = NULL;
         }
         break;
-    case SDL_EVENT_JOYSTICK_HAT_MOTION:
-        return handle_hat_event_(ctx, event->jhat.value);
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        return handle_gamepad_buttonevent_(ctx, &event->gbutton);
     case SDL_EVENT_KEY_DOWN:
         return handle_key_event_(ctx, event->key.scancode);
     default:
@@ -384,8 +386,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    if (joystick) {
-        SDL_CloseJoystick(joystick);
+    if (gamepad) {
+        SDL_CloseGamepad(gamepad);
     }
     if (appstate != NULL) {
         AppState *as = (AppState *)appstate;
