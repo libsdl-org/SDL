@@ -351,6 +351,10 @@ typedef struct
         float fGyroScaleX;
         float fGyroScaleY;
         float fGyroScaleZ;
+
+        Sint16 sGyroOffsetX;
+        Sint16 sGyroOffsetY;
+        Sint16 sGyroOffsetZ;
     } m_IMUScaleData;
 } SDL_DriverSwitch_Context;
 
@@ -1129,6 +1133,11 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
             }
         }
 
+        // Gyro zero-rate offset
+        ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
+        ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
+        ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
+
         // Accelerometer scale
         ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
         ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
@@ -1151,6 +1160,10 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
+
+        ctx->m_IMUScaleData.sGyroOffsetX = 0;
+        ctx->m_IMUScaleData.sGyroOffsetY = 0;
+        ctx->m_IMUScaleData.sGyroOffsetZ = 0;
     }
     return true;
 }
@@ -2366,9 +2379,13 @@ static void SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_Drive
      * users will want consistent axis mappings across devices.
      */
     if (type == SDL_SENSOR_GYRO || type == SDL_SENSOR_GYRO_L || type == SDL_SENSOR_GYRO_R) {
-        data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * (float)values[1]);
-        data[1] = ctx->m_IMUScaleData.fGyroScaleZ * (float)values[2];
-        data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * (float)values[0]);
+        const float gyroX = (float)(values[0] - ctx->m_IMUScaleData.sGyroOffsetX);
+        const float gyroY = (float)(values[1] - ctx->m_IMUScaleData.sGyroOffsetY);
+        const float gyroZ = (float)(values[2] - ctx->m_IMUScaleData.sGyroOffsetZ);
+
+        data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * gyroY);
+        data[1] = ctx->m_IMUScaleData.fGyroScaleZ * gyroZ;
+        data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * gyroX);
     } else {
         data[0] = -(ctx->m_IMUScaleData.fAccelScaleY * (float)values[1]);
         data[1] = ctx->m_IMUScaleData.fAccelScaleZ * (float)values[2];
