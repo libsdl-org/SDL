@@ -296,7 +296,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         }
 
         const char *appid = SDL_GetStringProperty(props, SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APPID_STRING, NULL);
-
         if (!appid) {
             SDL_SetError("Ubuntu Touch App ID missing from global properties");
             return NULL;
