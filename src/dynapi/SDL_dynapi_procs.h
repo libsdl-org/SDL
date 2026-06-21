@@ -1335,3 +1335,4 @@ SDL_DYNAPI_PROC(SDL_NotificationID,SDL_ShowNotification,(const char *a,const cha
 SDL_DYNAPI_PROC(bool,SDL_RemoveNotification,(SDL_NotificationID a),(a),return)
 SDL_DYNAPI_PROC(SDL_FormFactor,SDL_GetDeviceFormFactor,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetDeviceFormFactorName,(SDL_FormFactor a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_IsUbuntuTouch,(void),(),return)

@@ -22,6 +22,7 @@
 
 #include "SDL_hints_c.h"
 #include "SDL_properties_c.h"
+#include "core/linux/SDL_ubuntu_touch.h"
 
 
 typedef struct
@@ -146,6 +147,14 @@ SDL_PropertiesID SDL_GetGlobalProperties(void)
         props = SDL_CreateProperties();
 
         // Set global platform properties
+#ifdef SDL_PLATFORM_LINUX
+        if (SDL_IsUbuntuTouch()) {
+            if (!SDL_SetupUbuntuTouchGlobalProperties(props)) {
+                SDL_DestroyProperties(props);
+                return 0;
+            }
+        }
+#endif
 
         if (!SDL_CompareAndSwapAtomicU32(&SDL_global_properties, 0, props)) {
             // Somebody else created global properties before us, just use those
