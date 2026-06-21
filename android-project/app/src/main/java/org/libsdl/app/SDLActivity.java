@@ -2254,6 +2254,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialPathUri);
         }
 
+        /* Handle a suggested filename when saving */
+        if (type == SDL_FILEDIALOG_SAVEFILE && initialPath != null && !initialPath.isEmpty() &&
+            !initialPath.endsWith("/") && !initialPath.endsWith("\\")) {
+            String title = initialPath;
+            int lastSeparator = Math.max(title.lastIndexOf('/'), title.lastIndexOf('\\'));
+            if (lastSeparator >= 0) {
+                title = title.substring(lastSeparator + 1);
+            }
+            if (!title.isEmpty()) {
+                intent.putExtra(Intent.EXTRA_TITLE, title);
+            }
+        }
+
         /* Display the file/folder dialog */
         try {
             mSingleton.startActivityForResult(intent, requestCode);
