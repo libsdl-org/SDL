@@ -3526,7 +3526,7 @@ SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void)
                 form_factor = SDL_FORMFACTOR_PHONE;
             } else if (SDL_strcmp(utf, "car") == 0) {
                 form_factor = SDL_FORMFACTOR_CAR;
-            } else if (SDL_strcmp(utf, "vr") == 0) {
+            } else if (SDL_strcmp(utf, "headset") == 0) {
                 form_factor = SDL_FORMFACTOR_HEADSET;
             } else if (SDL_strcmp(utf, "watch") == 0) {
                 form_factor = SDL_FORMFACTOR_WATCH;

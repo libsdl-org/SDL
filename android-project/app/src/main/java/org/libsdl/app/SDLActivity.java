@@ -1336,7 +1336,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (isAndroidTV()) {
             return "tv";
         } else if (isVRHeadset()) {
-            return "vr";
+            return "headset";
         } else if (isTablet()) {
             return "tablet";
         //} else if (isAndroidAutomotive()) {
