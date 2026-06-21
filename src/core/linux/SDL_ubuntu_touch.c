@@ -26,24 +26,16 @@
 
 bool SDL_IsUbuntuTouch(void)
 {
-    static bool set = false;
-    static bool is_ubuntu_touch;
+    static bool checked = false;
+    static bool is_ubuntu_touch = false;
 
-    if (set) {
-        return is_ubuntu_touch;
+    if (!checked) {
+        const char *xdg_session_desktop = SDL_getenv("XDG_SESSION_DESKTOP");
+        if (xdg_session_desktop && SDL_strcmp(xdg_session_desktop, "ubuntu-touch") == 0) {
+            is_ubuntu_touch = true;
+        }
+        checked = true;
     }
-
-    const char *xdg_session_desktop = SDL_getenv("XDG_SESSION_DESKTOP");
-
-    if (!xdg_session_desktop) {
-        set = true;
-        is_ubuntu_touch = false;
-        return false;
-    }
-
-    is_ubuntu_touch = SDL_strcmp(xdg_session_desktop, "ubuntu-touch") == 0;
-    set = true;
-
     return is_ubuntu_touch;
 }
 
