@@ -259,9 +259,12 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
-    /* File watch events */
-    SDL_EVENT_FILE_DATA_WRITTEN = 0x1500, /**< Data was written in a watched file. */
-    SDL_EVENT_FILE_WATCH_ERROR,           /**< Watched files may have been modified, but the events are lost. */
+    /* Path watch events */
+    SDL_EVENT_PATH_MODIFIED = 0x1500, /**< Data was written/over-written/deleted in a watched file or a file in a watched directory. */
+    SDL_EVENT_PATH_CREATED,           /**< A new file or directory was created in a watched directory. */
+    SDL_EVENT_PATH_REMOVED,           /**< A file or directory was removed in a watched directory. */
+    SDL_EVENT_PATH_REMOVED_SELF,      /**< Watched path (file or directory) was removed. */
+    SDL_EVENT_PATH_WATCH_ERROR,       /**< Watched path may have been modified/created/removed, but the events are lost. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -975,19 +978,19 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
- * File watch event structure (event.file_watch.*)
+ * Path watch event structure (event.path_watch.*)
  *
- * You can add file to the watch list with SDL_AddPathWatch().
+ * You can add path to the watch list with SDL_AddPathWatch().
  *
  * \sa SDL_AddPathWatch
  */
-typedef struct SDL_FileWatchEvent
+typedef struct SDL_PathWatchEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_FILE_DATA_WRITTEN or SDL_EVENT_FILE_WATCH_ERROR */
+    SDL_EventType type; /**< SDL_EVENT_PATH_MODIFIED or SDL_EVENT_PATH_CREATED or SDL_EVENT_PATH_REMOVED or SDL_EVENT_PATH_REMOVED_SELF or SDL_EVENT_PATH_WATCH_ERROR */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    const char *path;   /**< Path of the modified file for SDL_EVENT_FILE_DATA_WRITTEN, NULL for SDL_EVENT_FILE_WATCH_ERROR */
-} SDL_FileWatchEvent;
+    const char *path;   /**< NULL for SDL_EVENT_PATH_WATCH_ERROR, path of the modified/created/removed file or directory for all others path events */
+} SDL_PathWatchEvent;
 
 /**
  * The "quit requested" event
@@ -1073,7 +1076,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
-    SDL_FileWatchEvent file_watch;          /**< File watch event data */
+    SDL_PathWatchEvent path_watch;          /**< File watch event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

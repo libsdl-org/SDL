@@ -530,16 +530,30 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const ch
 extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 
 /**
+ * Type of event that happened on a watched path.
+ *
+ * \sa SDL_FileWatchCallback
+ */
+typedef enum SDL_PathWatchEventType
+{
+    SDL_PATHWATCH_MODIFIED,     /**< Data was written/over-written/deleted in a watched file or a file in a watched directory. */
+    SDL_PATHWATCH_CREATED,      /**< A new file or directory was created in a watched directory. */
+    SDL_PATHWATCH_REMOVED,      /**< A file or directory was removed in a watched directory. */
+    SDL_PATHWATCH_REMOVED_SELF, /**< Watched path (file or directory) was removed. */
+} SDL_PathWatchEventType;
+
+/**
  * A function pointer used for callbacks that watch for files change.
  *
  * \param userdata what was passed as `userdata` to SDL_AddPathWatch().
  * \param path path of file that was modified.
+ * \param event event that happened on `path`.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
  *               application is responsible for locking resources the callback
  *               touches that need to be protected.
  */
-typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path);
+typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path, SDL_PathWatchEventType event);
 
 /**
  * This function adds a file watcher that will fires an app-provided callback

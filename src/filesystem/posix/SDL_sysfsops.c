@@ -425,6 +425,7 @@ typedef struct WatchEntry
 {
     SDL_FileWatchCallback callback;
     void *user_data;
+    size_t path_len;
     char path[]; // directory or file path
 } WatchEntry;
 static SDL_HashTable *watch_descriptor_table = NULL; // stores WatchEntry for a watch descriptor
@@ -499,14 +500,11 @@ bool SDL_SYS_AddPathWatch(const char *path, SDL_FileWatchCallback cb, void *user
     }
     watch_entry->callback = cb;
     watch_entry->user_data = user_data;
+    watch_entry->path_len = slen;
     SDL_memcpy(watch_entry->path, path, slen + 1);
-    // remove separator at the end of the path, it is added back when
-    // concatenating directory path and file name
-    if (watch_entry->path[slen - 1] == '/') {
-        watch_entry->path[slen - 1] = '\0';
-    }
+
     SDL_LockMutex(file_watch_lock);
-    int wd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
+    int wd = inotify_add_watch(inotify_fd, path, IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF);
     if (wd == -1) {
         SDL_UnlockMutex(file_watch_lock);
         SDL_free(watch_entry);
@@ -533,8 +531,8 @@ static void SendFileWatchEvent(SDL_EventType event_type, const char *path) {
         event.type = event_type;
         event.common.timestamp = 0;
         if (path) {
-            event.file_watch.path = SDL_CreateTemporaryString(path);
-            if (!event.file_watch.path) {
+            event.path_watch.path = SDL_CreateTemporaryString(path);
+            if (!event.path_watch.path) {
                 return;
             }
         }
@@ -568,22 +566,58 @@ static int SDL_FileWatchThread(void *userdata)
             const WatchEntry *watch_entry;
             if (SDL_FindInHashTable(watch_descriptor_table, (void *) (intptr_t) buf.event.wd, (const void **) &watch_entry)) {
                 if (buf.event.mask & IN_Q_OVERFLOW) {
-                    SendFileWatchEvent(SDL_EVENT_FILE_WATCH_ERROR, NULL);
+                    SendFileWatchEvent(SDL_EVENT_PATH_WATCH_ERROR, NULL);
                 } else if (buf.event.mask & IN_IGNORED) {
-                    // removing a watch generate an IN_IGNORED event
+                    // removing a watch generates an IN_IGNORED event
                 } else if (buf.event.mask & IN_UNMOUNT) {
                     // file system containing watched path was unmounted
                 } else if (buf.event.len != 0) {
-                    (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watch_entry->path, buf.event.name);
-                    if (watch_entry->callback) {
-                        watch_entry->callback(watch_entry->user_data, path);
+                    // event happened in a watched directory
+                    if (buf.event.mask & IN_ISDIR) {
+                        // SDL functions that return a path always end it with a separator.
+                        if (watch_entry->path[watch_entry->path_len - 1] == '/') {
+                            (void)SDL_snprintf(path, SDL_arraysize(path), "%s%s/", watch_entry->path, buf.event.name);
+                        } else {
+                            (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s/", watch_entry->path, buf.event.name);
+                        }
+                    } else {
+                        if (watch_entry->path[watch_entry->path_len - 1] == '/') {
+                            (void)SDL_snprintf(path, SDL_arraysize(path), "%s%s", watch_entry->path, buf.event.name);
+                        } else {
+                            (void)SDL_snprintf(path, SDL_arraysize(path), "%s/%s", watch_entry->path, buf.event.name);
+                        }
                     }
-                    SendFileWatchEvent(SDL_EVENT_FILE_DATA_WRITTEN, path);
+
+                    SDL_PathWatchEventType event_type = -1;
+                    if (buf.event.mask & IN_CREATE) {
+                        event_type = SDL_PATHWATCH_CREATED;
+                    } else if (buf.event.mask & IN_DELETE) {
+                        event_type = SDL_PATHWATCH_REMOVED;
+                    } else if (buf.event.mask & IN_MODIFY) {
+                        event_type = SDL_PATHWATCH_MODIFIED;
+                    }
+
+                    if (event_type != -1) {
+                        if (watch_entry->callback) {
+                            watch_entry->callback(watch_entry->user_data, path, event_type);
+                        }
+                        SendFileWatchEvent(event_type + SDL_EVENT_PATH_MODIFIED, path);
+                    }
                 } else {
-                    if (watch_entry->callback) {
-                        watch_entry->callback(watch_entry->user_data, watch_entry->path);
+                    // event happened for the watched file or directory
+                    SDL_PathWatchEventType event_type = -1;
+                    if (buf.event.mask & IN_DELETE_SELF) {
+                        event_type = SDL_PATHWATCH_REMOVED_SELF;
+                    } else if (buf.event.mask & IN_MODIFY) {
+                        event_type = SDL_PATHWATCH_MODIFIED;
                     }
-                    SendFileWatchEvent(SDL_EVENT_FILE_DATA_WRITTEN, watch_entry->path);
+
+                    if (event_type != -1) {
+                        if (watch_entry->callback) {
+                            watch_entry->callback(watch_entry->user_data, watch_entry->path, event_type);
+                        }
+                        SendFileWatchEvent(event_type + SDL_EVENT_PATH_MODIFIED, watch_entry->path);
+                    }
                 }
             }
 
@@ -608,9 +642,10 @@ static bool SDLCALL FindWatchEntryByValue(void *userdata, const SDL_HashTable *t
 {
     FindWatchEntryByValueData *d = (FindWatchEntryByValueData *) userdata;
     const WatchEntry *iterator = (const WatchEntry *) value;
-    if (SDL_strcmp(iterator->path, d->entry_to_find->path) == 0
-        && iterator->callback == d->entry_to_find->user_data
-        && iterator->user_data == d->entry_to_find->user_data) {
+    if (iterator->path_len == d->entry_to_find->path_len
+        && iterator->callback == d->entry_to_find->callback
+        && iterator->user_data == d->entry_to_find->user_data
+        && SDL_strcmp(iterator->path, d->entry_to_find->path) == 0) {
         d->key_found = key;
         return false;
     }
@@ -635,12 +670,8 @@ void SDL_SYS_RemovePathWatch(const char *path, SDL_FileWatchCallback cb, void *u
     } watch_entry;
     watch_entry.entry.callback = cb;
     watch_entry.entry.user_data = user_data;
+    watch_entry.entry.path_len = slen;
     SDL_memcpy(watch_entry.entry.path, path, slen + 1);
-    // remove separator at the end of the path, it is added back when
-    // concatenating directory path and file name
-    if (watch_entry.entry.path[slen - 1] == '/') {
-        watch_entry.entry.path[slen - 1] = '\0';
-    }
 
     FindWatchEntryByValueData data = {&watch_entry.entry, (void *) (intptr_t) -1};
     SDL_LockMutex(file_watch_lock);
