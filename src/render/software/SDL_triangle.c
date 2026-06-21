@@ -299,7 +299,7 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
         }
 
         // Use an intermediate surface
-        tmp = SDL_CreateSurface(dstrect.w, dstrect.h, format);
+        tmp = SDL_CreateSurfaceZeroed(dstrect.w, dstrect.h, format);
         if (!tmp) {
             result = false;
             goto end;

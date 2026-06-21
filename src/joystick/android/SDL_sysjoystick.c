@@ -389,6 +389,13 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_GUID guid;
     int i;
 
+    // Java might notify us about joysticks being added before joysticks have
+    // been initialized. That's fine, we'll get called again with the full set
+    // in Android_JNI_DetectDevices()
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
@@ -490,6 +497,12 @@ void Android_RemoveJoystick(int device_id)
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
 
+    // Java might notify us about joysticks being removed before joysticks have
+    // been initialized.
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     // Don't call JoystickByDeviceId here or there'll be an infinite loop!
@@ -535,11 +548,9 @@ done:
     SDL_UnlockJoysticks();
 }
 
-static void ANDROID_JoystickDetect(void);
-
 static bool ANDROID_JoystickInit(void)
 {
-    ANDROID_JoystickDetect();
+    Android_JNI_DetectDevices();
     return true;
 }
 
@@ -550,16 +561,9 @@ static int ANDROID_JoystickGetCount(void)
 
 static void ANDROID_JoystickDetect(void)
 {
-    /* Support for device connect/disconnect is API >= 16 only,
-     * so we poll every three seconds
+    /* Support for device connect/disconnect is implemented using InputDeviceListener
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint64 timeout = 0;
-    Uint64 now = SDL_GetTicks();
-    if (!timeout || now >= timeout) {
-        timeout = now + 3000;
-        Android_JNI_PollInputDevices();
-    }
 }
 
 static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -588,16 +592,6 @@ static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 static SDL_joylist_item *JoystickByDeviceId(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
-
-    while (item) {
-        if (item->device_id == device_id) {
-            return item;
-        }
-        item = item->next;
-    }
-
-    // Joystick not found, try adding it
-    ANDROID_JoystickDetect();
 
     while (item) {
         if (item->device_id == device_id) {
@@ -745,10 +739,6 @@ static void ANDROID_JoystickClose(SDL_Joystick *joystick)
 
 static void ANDROID_JoystickQuit(void)
 {
-/* We don't have any way to scan for joysticks at init, so don't wipe the list
- * of joysticks here in case this is a reinit.
- */
-#if 0
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
@@ -761,7 +751,6 @@ static void ANDROID_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-#endif // 0
 }
 
 static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)

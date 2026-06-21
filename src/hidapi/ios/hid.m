@@ -78,7 +78,8 @@ typedef uint64_t uint64;
 
 // (READ/NOTIFICATIONS)
 #define VALVE_INPUT_CHAR_0x1106	@"100F6C33-1735-4313-B402-38567131E5F3"
-#define VALVE_INPUT_CHAR_0x1303	@"100F6C7A-1735-4313-B402-38567131E5F3"
+#define VALVE_INPUT_CHAR_0x1303_0x45 @"100F6C7A-1735-4313-B402-38567131E5F3"
+#define VALVE_INPUT_CHAR_0x1303_0x47 @"100F6C7C-1735-4313-B402-38567131E5F3"
 
 //  (READ/WRITE)
 #define VALVE_REPORT_CHAR	@"100F6C34-1735-4313-B402-38567131E5F3"
@@ -220,6 +221,8 @@ typedef enum
 }
 
 @property (nonatomic, readwrite) uint16_t pid;
+@property (nonatomic, readwrite) uint8_t report_id;
+@property (nonatomic, readwrite) int report_length;
 @property (nonatomic, readwrite) bool connected;
 @property (nonatomic, readwrite) bool ready;
 
@@ -523,7 +526,9 @@ static void process_pending_events(void)
 	if ( self = [super init] )
 	{
 		self.pid = 0;
-        _inputReports = NULL;
+		self.report_id = 0;
+		self.report_length = 0;
+		_inputReports = NULL;
 		_outputReports = [[NSMutableDictionary alloc] init];
 		_connected = NO;
 		_ready = NO;
@@ -539,7 +544,9 @@ static void process_pending_events(void)
 	if ( self = [super init] )
 	{
 		self.pid = 0;
-        _inputReports = NULL;
+		self.report_id = 0;
+		self.report_length = 0;
+		_inputReports = NULL;
 		_outputReports = [[NSMutableDictionary alloc] init];
 		_connected = NO;
 		_ready = NO;
@@ -583,17 +590,7 @@ static void process_pending_events(void)
 {
 	if ( RingBuffer_read( _inputReports, dst+1 ) )
 	{
-        switch ( self.pid )
-	{
-        case D0G_BLE2_PID:
-            *dst = 0x03;
-            break;
-        case TRITON_BLE_PID:
-            *dst = 0x45;
-            break;
-        default:
-            abort();
-        }
+		*dst = self.report_id;
 		return _inputReports->_cbElem + 1;
 	}
 	return 0;
@@ -603,9 +600,9 @@ static void process_pending_events(void)
 {
 	if ( self.pid == D0G_BLE2_PID )
 	{
-	[_bleSteamController writeValue:[NSData dataWithBytes:data length:length] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
-	return (int)length;
-}
+		[_bleSteamController writeValue:[NSData dataWithBytes:data length:length] forCharacteristic:_bleCharacteristicReport type:CBCharacteristicWriteWithResponse];
+		return (int)length;
+	}
 
 	// We need to look up the correct characteristic for this output report
 	if ( length > 0 )
@@ -748,11 +745,22 @@ static void process_pending_events(void)
 			if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1106]] )
 			{
 				self.pid = D0G_BLE2_PID;
+				self.report_id = 0x03;
+				self.report_length = 19;
 				self.bleCharacteristicInput = aChar;
 			}
-			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1303]] )
+			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1303_0x45]] )
 			{
 				self.pid = TRITON_BLE_PID;
+				self.report_id = 0x45;
+				self.report_length = 45;
+				self.bleCharacteristicInput = aChar;
+			}
+			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_INPUT_CHAR_0x1303_0x47]] )
+			{
+				self.pid = TRITON_BLE_PID;
+				self.report_id = 0x47;
+				self.report_length = 45;
 				self.bleCharacteristicInput = aChar;
 			}
 			else if ( [aChar.UUID isEqual:[CBUUID UUIDWithString:VALVE_REPORT_CHAR]] )
@@ -789,22 +797,10 @@ static void process_pending_events(void)
 	if ( self.ready == NO )
 	{
 		self.ready = YES;
-        if ( _inputReports == NULL )
-        {
-            int cbElem = 0;
-            switch ( self.pid )
-            {
-            case D0G_BLE2_PID:
-                cbElem = 19;
-                break;
-            case TRITON_BLE_PID:
-                cbElem = 45;
-                break;
-            default:
-                abort();
-            }
-            _inputReports = RingBuffer_alloc( cbElem );
-        }
+		if ( _inputReports == NULL )
+		{
+			_inputReports = RingBuffer_alloc( self.report_length );
+		}
 		HIDBLEManager.sharedInstance.nPendingPairs -= 1;
 	}
 
@@ -999,7 +995,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
         }
 
         /* See if there are any devices we should skip in enumeration */
-        if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, device.pid, 0, 0, false)) {
+        if (SDL_HIDAPI_ShouldIgnoreDevice(HID_API_BUS_BLUETOOTH, VALVE_USB_VID, device.pid, 0, 0, false, false)) {
             continue;
         }
 

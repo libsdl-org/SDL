@@ -685,12 +685,20 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
 
     if (window_data) {
-        const float sx = (float)(wl_fixed_to_double(seat->pointer.pending_frame.absolute.sx) * window_data->pointer_scale.x);
-        const float sy = (float)(wl_fixed_to_double(seat->pointer.pending_frame.absolute.sy) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
+        double sx = wl_fixed_to_double(seat->pointer.pending_frame.absolute.sx);
+        double sy = wl_fixed_to_double(seat->pointer.pending_frame.absolute.sy);
 
-        seat->pointer.last_motion.x = (int)SDL_floorf(sx);
-        seat->pointer.last_motion.y = (int)SDL_floorf(sy);
+        if (seat->pointer.focus_surface == window_data->mask.surface) {
+            sx += (double)window_data->mask.offset_x;
+            sy += (double)window_data->mask.offset_y;
+        }
+
+        sx *= window_data->pointer_scale.x;
+        sy *= window_data->pointer_scale.y;
+        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+
+        seat->pointer.last_motion.x = (int)SDL_floor(sx);
+        seat->pointer.last_motion.y = (int)SDL_floor(sy);
 
         // If the pointer should be confined, but wasn't for some reason, keep trying until it is.
         if (!SDL_RectEmpty(&window->mouse_rect) && !seat->pointer.is_confined) {
@@ -816,6 +824,7 @@ static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
     }
 
     seat->pointer.focus = window;
+    seat->pointer.focus_surface = seat->pointer.pending_frame.enter_surface;
     ++window->pointer_focus_count;
     SDL_SetMouseFocus(window->sdlwindow);
 
@@ -874,6 +883,7 @@ static void pointer_dispatch_leave(SDL_WaylandSeat *seat, bool update_pointer)
                 window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
 
                 seat->pointer.focus = NULL;
+                seat->pointer.focus_surface = NULL;
                 for (Uint8 i = 1; seat->pointer.buttons_pressed; ++i) {
                     if (seat->pointer.buttons_pressed & SDL_BUTTON_MASK(i)) {
                         SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, i, false);
@@ -1038,6 +1048,11 @@ static void pointer_dispatch_button(SDL_WaylandSeat *seat, Uint8 sdl_button, boo
                 window->sdlwindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
             } else {
                 window->sdlwindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+
+                // If ending the capture on a subsurface, dispatch a leave event to remove focus.
+                if (seat->pointer.focus_surface != window->surface) {
+                    seat->pointer.pending_frame.leave_surface = window->surface;
+                }
             }
         }
 
@@ -1283,12 +1298,24 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
 
     if (seat->pointer.pending_frame.enter_surface) {
         if (seat->pointer.pending_frame.leave_surface) {
-            // Leaving the previous surface before entering a new surface.
-            pointer_dispatch_leave(seat, false);
-            seat->pointer.pending_frame.leave_surface = NULL;
+            SDL_WindowData *window_data = seat->pointer.focus;
+            SDL_WindowData *new_focus = Wayland_GetWindowDataForOwnedSurface(seat->pointer.pending_frame.enter_surface);
+
+            if (window_data && (window_data->sdlwindow->flags & SDL_WINDOW_MOUSE_CAPTURE) && window_data == new_focus) {
+                // The mouse is captured and moving between owned window surfaces. Just change the focused surface.
+                seat->pointer.focus_surface = seat->pointer.pending_frame.enter_surface;
+                seat->pointer.pending_frame.enter_surface = NULL;
+                seat->pointer.pending_frame.leave_surface = NULL;
+            } else {
+                // Leaving the previous surface before entering a new surface.
+                pointer_dispatch_leave(seat, false);
+                seat->pointer.pending_frame.leave_surface = NULL;
+            }
         }
 
-        pointer_dispatch_enter(seat);
+        if (seat->pointer.pending_frame.enter_surface) {
+            pointer_dispatch_enter(seat);
+        }
     }
 
     if (seat->pointer.pending_frame.have_absolute) {

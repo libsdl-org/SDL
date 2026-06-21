@@ -129,6 +129,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_OGL_ES2
     &GLES2_RenderDriver,
 #endif
+#ifdef SDL_VIDEO_RENDER_OGL_ES
+    &GLES_RenderDriver,
+#endif
 #ifdef SDL_VIDEO_RENDER_PS2
     &PS2_RenderDriver,
 #endif
@@ -1648,7 +1651,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
                 return NULL;
             }
         } else if (SDL_ISPIXELFORMAT_INDEXED(texture->format)) {
-            texture->palette_surface = SDL_CreateSurface(w, h, texture->format);
+            texture->palette_surface = SDL_CreateSurfaceZeroed(w, h, texture->format);
             if (!texture->palette_surface) {
                 SDL_DestroyTexture(texture);
                 return NULL;
@@ -5941,6 +5944,11 @@ bool SDL_GetRenderVSync(SDL_Renderer *renderer, int *vsync)
 
 static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
 {
+    static const SDL_Color colors[] = {
+        { 255, 255, 255, SDL_ALPHA_TRANSPARENT },
+        { 255, 255, 255, SDL_ALPHA_OPAQUE }
+    };
+
     SDL_assert(renderer->debug_char_texture_atlas == NULL);  // don't double-create it!
 
     const int charWidth = SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
@@ -5948,8 +5956,14 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
 
     // actually make each glyph two pixels taller/wider, to prevent scaling artifacts.
     const int rows = (SDL_DEBUG_FONT_NUM_GLYPHS / SDL_DEBUG_FONT_GLYPHS_PER_ROW) + 1;
-    SDL_Surface *atlas = SDL_CreateSurface((charWidth + 2) * SDL_DEBUG_FONT_GLYPHS_PER_ROW, rows * (charHeight + 2), SDL_PIXELFORMAT_RGBA8888);
+    SDL_Surface *atlas = SDL_CreateSurfaceZeroed((charWidth + 2) * SDL_DEBUG_FONT_GLYPHS_PER_ROW, rows * (charHeight + 2), SDL_PIXELFORMAT_INDEX8);
     if (!atlas) {
+        return false;
+    }
+
+    SDL_Palette *palette = SDL_CreateSurfacePalette(atlas);
+    if (!palette || !SDL_SetPaletteColors(palette, colors, 0, 2)) {
+        SDL_DestroySurface(atlas);
         return false;
     }
 
@@ -5960,19 +5974,14 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
     int row = 0;
     for (int glyph = 0; glyph < SDL_DEBUG_FONT_NUM_GLYPHS; glyph++) {
         // find top-left of this glyph in destination surface. The +2's account for glyph padding.
-        Uint8 *linepos = (((Uint8 *)atlas->pixels) + ((row * (charHeight + 2) + 1) * pitch)) + ((column * (charWidth + 2) + 1) * sizeof (Uint32));
+        Uint8 *linepos = (((Uint8 *)atlas->pixels) + ((row * (charHeight + 2) + 1) * pitch)) + ((column * (charWidth + 2) + 1) * sizeof (Uint8));
         const Uint8 *charpos = SDL_RenderDebugTextFontData + (glyph * 8);
 
         // Draw the glyph to the surface...
         for (int iy = 0; iy < charHeight; iy++) {
-            Uint32 *curpos = (Uint32 *)linepos;
+            Uint8 *curpos = linepos;
             for (int ix = 0; ix < charWidth; ix++) {
-                if ((*charpos) & (1 << ix)) {
-                    *curpos = 0xffffffff;
-                } else {
-                    *curpos = 0;
-                }
-                ++curpos;
+                *curpos++ = (*charpos >> ix) & 1;
             }
             linepos += pitch;
             ++charpos;
@@ -5992,6 +6001,7 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, atlas);
     if (texture) {
         SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         renderer->debug_char_texture_atlas = texture;
     }
     SDL_DestroySurface(atlas);

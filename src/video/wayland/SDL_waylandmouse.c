@@ -565,18 +565,21 @@ void Wayland_CursorStateDestroyFrameCallback(SDL_WaylandCursorState *state)
     SDL_UnlockMutex(cursor_thread_context.lock);
 }
 
+static void Wayland_CursorStateResetAnimationState(SDL_WaylandCursorState *state)
+{
+    state->last_frame_callback_time_ms = SDL_GetTicks();
+    state->current_frame_time_ms = 0;
+    state->current_frame = 0;
+}
+
 static void Wayland_CursorStateResetAnimation(SDL_WaylandCursorState *state, bool lock)
 {
     if (lock) {
         SDL_LockMutex(cursor_thread_context.lock);
-    }
-
-    state->last_frame_callback_time_ms = SDL_GetTicks();
-    state->current_frame_time_ms = 0;
-    state->current_frame = 0;
-
-    if (lock) {
+        Wayland_CursorStateResetAnimationState(state);
         SDL_UnlockMutex(cursor_thread_context.lock);
+    } else {
+        Wayland_CursorStateResetAnimationState(state);
     }
 }
 

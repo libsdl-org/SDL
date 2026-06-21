@@ -29,7 +29,9 @@
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
 
 // Define this if you want to log all packets from the controller
-// #define DEBUG_STEAM_PROTOCOL
+#if 0
+#define DEBUG_STEAM_PROTOCOL
+#endif
 
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED    "SDL_JOYSTICK_HIDAPI_STEAM_PAIRING_ENABLED"
 
@@ -75,17 +77,9 @@ typedef struct SteamControllerStateInternal_t
     short sRightPadX;
     short sRightPadY;
 
-    // Center pad coordinates
-    short sCenterPadX;
-    short sCenterPadY;
-
     // Left analog stick coordinates
     short sLeftStickX;
     short sLeftStickY;
-
-    // Right analog stick coordinates
-    short sRightStickX;
-    short sRightStickY;
 
     unsigned short sTriggerL;
     unsigned short sTriggerR;

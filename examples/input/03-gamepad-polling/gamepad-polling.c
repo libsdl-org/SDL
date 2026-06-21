@@ -158,7 +158,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0xFF);  /* yellow */
+        /* draw axes in blue. */
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xFF, 0xFF);  /* blue */
 
         /* left thumb axis. */
         axis_x = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX);

@@ -195,8 +195,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderRects(renderer, panels, ROWS*COLS);
 
     /* Render UI text */
-    SDL_RenderDebugText(renderer, WINDOW_WIDTH - 176, WINDOW_HEIGHT - 20, "UP/DOWN: CHANGE ALPHA");
-    SDL_RenderDebugTextFormat(renderer, 0, WINDOW_HEIGHT - 20, "ALPHA: %d", alpha);
+    SDL_RenderDebugText(renderer, (WINDOW_WIDTH - 176) / 2, WINDOW_HEIGHT - 30, "UP/DOWN: CHANGE ALPHA");
+    SDL_RenderDebugTextFormat(renderer, (WINDOW_WIDTH - 80) / 2, WINDOW_HEIGHT - 20, "ALPHA: %d", alpha);
 
     /* Update textures alpha mod */
     SDL_SetTextureAlphaMod(red_rect_texture,   alpha);
@@ -211,14 +211,25 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         SDL_FRect blue_dst  = { panels[i].x + BLUE_OFFSET,  panels[i].y + BLUE_OFFSET,  RECT_SIZE, RECT_SIZE };
 
         /* Apply the current blend mode */
-        SDL_SetTextureBlendMode(red_rect_texture,   blend_modes[i]);
+        const bool supported = SDL_SetTextureBlendMode(red_rect_texture, blend_modes[i]);  /* just make sure the renderer supports this blend mode */
         SDL_SetTextureBlendMode(green_rect_texture, blend_modes[i]);
-        SDL_SetTextureBlendMode(blue_rect_texture,  blend_modes[i]);
+        SDL_SetTextureBlendMode(blue_rect_texture, blend_modes[i]);
 
         /* Render textures */
         SDL_RenderTexture(renderer, red_rect_texture,   NULL, &red_dst);
         SDL_RenderTexture(renderer, green_rect_texture, NULL, &green_dst);
         SDL_RenderTexture(renderer, blue_rect_texture,  NULL, &blue_dst);
+
+        /* Not all renderers support all blend modes. The renderer will try to pick something close in this case,
+           but it should be noted that the results might be unexpected, so we add "[UNSUPPORTED]" to this panel. */
+        if (!supported) {
+            const float textwidth = 104.0f;
+            const SDL_FRect dst = { panels[i].x + ((panels[i].w - textwidth) / 2.0f), panels[i].y + (panels[i].h - 8), textwidth, 8 };
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderFillRect(renderer, &dst);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+            SDL_RenderDebugText(renderer, dst.x, dst.y, "[UNSUPPORTED]");
+        }
     }
 
     SDL_RenderPresent(renderer);

@@ -63,6 +63,7 @@ struct SDL_WindowData
     bool xinput2_keyboard_enabled;
     bool mouse_grabbed;
     Uint64 last_focus_event_time;
+    unsigned long ignore_button_press_serial;
     PendingFocusEnum pending_focus;
     Uint64 pending_focus_time;
     bool pending_move;

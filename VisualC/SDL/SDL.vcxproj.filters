@@ -262,6 +262,12 @@
     <Filter Include="render\gpu\shaders">
       <UniqueIdentifier>{107d41e6-7c7e-4d9a-a3b3-b6f4abfde0c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="notification">
+      <UniqueIdentifier>{0000b1b2d12877646f6147a5a7510000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="notification\windows">
+      <UniqueIdentifier>{0000b6590eb19c11945581d0479b0000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL.h">
@@ -489,6 +495,9 @@
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h">
       <Filter>camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_notificationevents_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h">
       <Filter>filesystem</Filter>
     </ClInclude>
@@ -500,6 +509,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
       <Filter>main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\notification\SDL_notification_c.h">
+      <Filter>notification</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClInclude Include="..\..\src\SDL_hashtable.h" />
@@ -1351,6 +1363,9 @@
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c">
       <Filter>dialog</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_notificationevents.c">
+      <Filter>events</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c">
       <Filter>filesystem</Filter>
     </ClCompile>
@@ -1377,6 +1392,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c">
       <Filter>main\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\notification\SDL_notification.c">
+      <Filter>notification</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\notification\windows\SDL_windowsnotification.c">
+      <Filter>notification\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />

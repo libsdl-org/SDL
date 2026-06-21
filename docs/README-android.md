@@ -13,7 +13,7 @@ Requirements
 Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r15c or later
+Android NDK r28c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 21 (Android 5.0)
@@ -49,10 +49,10 @@ There's two ways of using it:
 
 sources.list should be a text file with a source file name in each line
 Filenames should be specified relative to the current directory, for example if
-you are in the build-scripts directory and want to create the testgles.c test, you'll
+you are in the build-scripts directory and want to create the testspriteminimal.c test, you'll
 run:
 
-    ./create-android-project.py org.libsdl.testgles ../test/testgles.c
+    ./create-android-project.py org.libsdl.testspriteminimal ../test/testspriteminimal.c ../test/icon.h
 
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
@@ -60,6 +60,9 @@ a single directory, thus all your source files should have a unique name.
 Once the project is complete the script will tell you how to build the project.
 If you want to create a signed release APK, you can use the project created by this
 utility to generate it.
+
+If you see link errors about missing `SDLTest_*` symbols,
+you need to add `../src/test/*.c` as an extra argument to `create-android-project.py`.
 
 Running the script with `--help` will list all available options, and their purposes.
 
@@ -299,7 +302,7 @@ e.g.
 
                You have access to the OpenGL context or rendering API at this point.
                However, there's a chance (on older hardware, or on systems under heavy load),
-               where the graphics context can not be restored. You should listen for the
+               where the graphics context cannot be restored. You should listen for the
                event SDL_EVENT_RENDER_DEVICE_RESET and recreate your OpenGL context and
                restore your textures when you get it, or quit the app.
             */
@@ -358,7 +361,7 @@ To enable/disable this behavior, see SDL_hints.h:
 Misc
 ================================================================================
 
-For some device, it appears to works better setting explicitly GL attributes
+For some devices, it appears to work better setting explicitly GL attributes
 before creating a window:
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);

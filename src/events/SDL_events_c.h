@@ -36,6 +36,15 @@
 #include "SDL_pen_c.h"
 #include "SDL_windowevents_c.h"
 
+// The event mutex
+//
+// This mutex prevents multiple threads from watching multiple events
+// simultaneously and also protects resources like joysticks that may
+// be accessed from multiple threads and also generate events.
+extern SDL_Mutex *SDL_event_lock;
+extern void SDL_CreateEventLock(void);
+extern void SDL_DestroyEventLock(void);
+
 // Start and stop the event processing loop
 extern bool SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);

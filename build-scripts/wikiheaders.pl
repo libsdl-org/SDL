@@ -396,6 +396,19 @@ sub wikify {
     return $retval;
 }
 
+sub gen_manpage_url {
+    my $url = shift;
+    my $desc = shift;
+
+    # We have to unmangle some mangling we just did.  :/
+    $url =~ s/\\\[char46\]/./g;
+
+    # can't have newlines in this.
+    $desc =~ s/\n/ /g;
+
+    return "\n.URL \"$url\" \"$desc\"\n";
+}
+
 
 my $dewikify_mode = 'md';
 my $dewikify_manpage_code_indent = 1;
@@ -459,7 +472,7 @@ sub dewikify_chunk {
             }
 
             # links
-            $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]/\n.URL "$1" "$2"\n/g;
+            $str =~ s/\[(https?\:\/\/.*?)\s+(.*?)\]\s*/gen_manpage_url($1, $2)/ge;
 
             # <code></code> is also popular.  :/
             $str =~ s/\s*\<code>(.*?)<\/code>\s*/\n.BR $1\n/gms;
@@ -496,7 +509,7 @@ sub dewikify_chunk {
             }
 
             # links
-            $str =~ s/\[(.*?)]\((https?\:\/\/.*?)\)/\n.URL "$2" "$1"\n/g;
+            $str =~ s/\[([^\]]*?)]\((https?\:\/\/.*?)\)\s*/gen_manpage_url($2, $1)/ge;
 
             # <code></code> is also popular.  :/
             $str =~ s/\s*(\S*?)\`([^\n]*?)\`(\S*)\s*/\n.BR "" "$1" "$2" "$3"\n/gms;
@@ -3060,7 +3073,7 @@ __EOF__
         if (defined $returns) {
             # Check for md link in return type: ([SDL_Renderer](SDL_Renderer) *)
             # This would've prevented the next regex from working properly (it'd leave " *)")
-            $returns =~ s/\A\(\[.*?\]\((.*?)\)/\($1/ms;
+            $returns =~ s/\A\((const|)\s*\[.*?\]\((.*?)\)/\($2/ms;
             # Chop datatype in parentheses off the front.
             $returns =~ s/\A\(.*?\) //;
 

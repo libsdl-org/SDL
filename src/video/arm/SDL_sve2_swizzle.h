@@ -19,6 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+ * IMPORTANT: Please do NOT include this header file directly or indirectly
+ *            outside the src/video/arm folder.
+ * 
+ */
+
 #if !defined(SD_SVE2_SWIZZLE_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SD_SVE2_SWIZZLE_H
 

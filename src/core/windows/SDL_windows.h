@@ -196,6 +196,9 @@ extern BOOL WIN_IsWindows8OrGreater(void);
 // Returns true if we're running on Windows 8.1 and newer
 extern BOOL WIN_IsWindows81OrGreater(void);
 
+// Returns true if we're running on Windows 10 and newer
+extern BOOL WIN_IsWindows10OrGreater(void);
+
 // Returns true if we're running on Windows 11 and newer
 extern BOOL WIN_IsWindows11OrGreater(void);
 
@@ -223,7 +226,10 @@ extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
 // parse out command lines from OS if argv is NULL, otherwise pass through unchanged. `*pallocated` must be HeapFree'd by caller if not NULL on successful return. Returns NULL on success, error string on problems.
-const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocated);
+extern const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocated);
+
+// Does all the win32 tapdancing to make GetModuleFileName work. Returns a SDL_malloc'd UTF-8 string, or NULL on failure.
+extern char *WIN_GetModulePath(HMODULE handle);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

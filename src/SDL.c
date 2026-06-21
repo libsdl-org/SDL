@@ -44,9 +44,12 @@
 #include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
 #include "events/SDL_events_c.h"
+#include "filesystem/SDL_filesystem_c.h"
 #include "haptic/SDL_haptic_c.h"
+#include "io/SDL_asyncio_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
+#include "notification/SDL_notification_c.h"
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
@@ -55,8 +58,6 @@
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
-#include "filesystem/SDL_filesystem_c.h"
-#include "io/SDL_asyncio_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
@@ -168,8 +169,21 @@ const char *SDL_GetAppMetadataProperty(const char *name)
         value = SDL_GetStringProperty(SDL_GetGlobalProperties(), name, NULL);
     }
     if (!value || !*value) {
+#ifdef SDL_PLATFORM_LINUX
+        if (SDL_IsUbuntuTouch()) {
+            if (SDL_strcmp(name, SDL_PROP_APP_METADATA_IDENTIFIER_STRING) == 0) {
+                value = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APPID_STRING, NULL);
+            } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_VERSION_STRING) == 0) {
+                value = SDL_GetStringProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APP_VERSION_STRING, NULL);
+            }
+        }
+#endif
+
         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
-            value = "SDL Application";
+            value = SDL_GetExeName();
+            if (!value) {
+                value = "SDL Application";
+            }
         } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
             value = "application";
         }
@@ -295,6 +309,7 @@ void SDL_InitMainThread(void)
     SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
+    SDL_CreateEventLock();
 
     if (!done_info) {
         const char *value;
@@ -313,6 +328,7 @@ void SDL_InitMainThread(void)
 
 static void SDL_QuitMainThread(void)
 {
+    SDL_DestroyEventLock();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitEnvironment();
@@ -351,6 +367,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
+#endif
+
+#ifdef SDL_PLATFORM_APPLE
+    // Apple platforms require the notification delegate to be registered early.
+    Cocoa_RegisterNotificationDelegate();
 #endif
 
 #ifdef SDL_PLATFORM_WINDOWS
@@ -705,6 +726,7 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_ALL_SUBSYSTEM_FLAGS);
     SDL_CleanupTrays();
+    SDL_CleanupNotifications();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
@@ -837,26 +859,57 @@ bool SDL_IsPhone(void)
 
 bool SDL_IsTablet(void)
 {
-#ifdef SDL_PLATFORM_ANDROID
-    return SDL_IsAndroidTablet();
-#elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsIPad(void);
-    return SDL_IsIPad();
-#else
-    return false;
-#endif
+    return SDL_GetDeviceFormFactor() == SDL_FORMFACTOR_TABLET;
 }
 
 bool SDL_IsTV(void)
 {
-#ifdef SDL_PLATFORM_ANDROID
-    return SDL_IsAndroidTV();
+    return SDL_GetDeviceFormFactor() == SDL_FORMFACTOR_TV;
+}
+
+SDL_FormFactor SDL_GetDeviceFormFactor(void)
+{
+#ifdef SDL_FORMFACTOR_PRIVATE
+    return SDL_FORMFACTOR_PRIVATE;
+#elif defined(SDL_PLATFORM_ANDROID)
+    return SDL_GetAndroidDeviceFormFactor();
 #elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsAppleTV(void);
-    return SDL_IsAppleTV();
+    extern bool SDL_GetUIKitDeviceFormFactor(void);
+    return SDL_GetUIKitDeviceFormFactor();
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES) || defined(SDL_PLATFORM_PS2)
+    return SDL_FORMFACTOR_CONSOLE;
+#elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_VITA) || defined(SDL_PLATFORM_3DS)
+    return SDL_FORMFACTOR_HANDHELD;
+#elif defined(SDL_PLATFORM_QNXNTO)
+    /* TODO: QNX is used in BlackBerry phones and tablets, and in many embedded devices */
+    return SDL_FORMFACTOR_UNKNOWN;
+#elif defined(SDL_PLATFORM_WINGDK)
+    /* TODO: GDK can be either desktop Windows or XBox */
+    return SDL_FORMFACTOR_UNKNOWN;
 #else
-    return false;
+    return SDL_FORMFACTOR_DESKTOP;
 #endif
+}
+
+const char* SDL_GetDeviceFormFactorName(SDL_FormFactor form_factor)
+{
+    switch (form_factor)
+    {
+#define CASE(x) case x: return #x;
+    default:
+    CASE(SDL_FORMFACTOR_UNKNOWN)
+    CASE(SDL_FORMFACTOR_DESKTOP)
+    CASE(SDL_FORMFACTOR_LAPTOP)
+    CASE(SDL_FORMFACTOR_PHONE)
+    CASE(SDL_FORMFACTOR_TABLET)
+    CASE(SDL_FORMFACTOR_CONSOLE)
+    CASE(SDL_FORMFACTOR_HANDHELD)
+    CASE(SDL_FORMFACTOR_WATCH)
+    CASE(SDL_FORMFACTOR_TV)
+    CASE(SDL_FORMFACTOR_HEADSET)
+    CASE(SDL_FORMFACTOR_CAR)
+#undef CASE
+    }
 }
 
 static SDL_Sandbox SDL_DetectSandbox(void)
@@ -870,6 +923,12 @@ static SDL_Sandbox SDL_DetectSandbox(void)
      * unrelated reasons. This is the same thing WebKitGTK does. */
     if (SDL_getenv("SNAP") && SDL_getenv("SNAP_NAME") && SDL_getenv("SNAP_REVISION")) {
         return SDL_SANDBOX_SNAP;
+    }
+
+    /* Ubuntu Touch also supports Snap; check for classic sandboxing only if
+     * Snap hasn't been detected. */
+    if (SDL_getenv("LOMIRI_APPLICATION_ISOLATION") || SDL_getenv("CLICKABLE_DESKTOP_MODE")) {
+        return SDL_SANDBOX_LOMIRI;
     }
 
     if (access("/run/host/container-manager", F_OK) == 0) {

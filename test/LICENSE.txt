@@ -28,7 +28,8 @@ You can get a copy of the full song (and album!) from iTunes...
 
 or Amazon...
 
-    http://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+    https://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+    https://music.amazon.com/albums/B0G39SYDX1
 
 Thanks to Will for permitting us to distribute this sample with SDL!
 

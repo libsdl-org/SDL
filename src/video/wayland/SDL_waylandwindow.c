@@ -28,6 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 #include "../../core/unix/SDL_appid.h"
+#include "../../notification/SDL_notification_c.h"
 #include "../SDL_egl_c.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandmouse.h"
@@ -2564,6 +2565,29 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_
 
 void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    SDL_VideoData *viddata = _this->internal;
+    SDL_WindowData *wind = window->internal;
+
+    if (viddata->activation_manager) {
+        /* Check for an activation token, in case the window is being
+         * raised in response to a system notification.
+         *
+         * Note that we don't check for empty strings, as that is still
+         * considered a valid activation token!
+         */
+        const char *activation_token = SDL_GetNotificationActivationToken();
+        if (activation_token) {
+            xdg_activation_v1_activate(viddata->activation_manager,
+                                       activation_token,
+                                       wind->surface);
+
+            // Clear this variable, per the protocol's request.
+            SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
+            return;
+        }
+    }
+
+    // No token? Try to activate the window via an event serial.
     Wayland_activate_window(_this->internal, window->internal, true);
 }
 
@@ -2839,13 +2863,16 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
 {
     SDL_WindowData *data = window->internal;
 
-    if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
+    // Don't try to reconfigure mapped windows, unless they are custom or external.
+    if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN &&
+        data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
         // Window is already mapped; abort.
         return false;
     }
 
-    /* The caller guarantees that only one of the GL or Vulkan flags will be set,
-     * and the window will have no previous video flags.
+    /* The caller guarantees that only one of the GL or Vulkan flags will be set.
+     * Note that Vulkan doesn't require any specific configuration, so only EGL
+     * objects are added and removed as required.
      */
     if (flags & SDL_WINDOW_OPENGL) {
         if (!data->egl_window) {
@@ -2853,11 +2880,10 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
         }
 
 #ifdef SDL_VIDEO_OPENGL_EGL
-        // Create the GLES window surface
         data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
 
         if (data->egl_surface == EGL_NO_SURFACE) {
-            return false; // SDL_EGL_CreateSurface should have set error
+            return false; // SDL_EGL_CreateSurface should have set the error.
         }
 #endif
 
@@ -2868,14 +2894,36 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
             data->gles_swap_frame_callback = wl_surface_frame(data->gles_swap_frame_surface_wrapper);
             wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
         }
+    } else {
+#ifdef SDL_VIDEO_OPENGL_EGL
+        if (data->egl_surface) {
+            SDL_EGL_DestroySurface(_this, data->egl_surface);
+            data->egl_surface = EGL_NO_SURFACE;
+        }
+#endif
 
-        return true;
-    } else if (flags & SDL_WINDOW_VULKAN) {
-        // Nothing to configure for Vulkan.
-        return true;
+        if (data->egl_window) {
+            WAYLAND_wl_egl_window_destroy(data->egl_window);
+            data->egl_window = NULL;
+        }
+
+        if (data->gles_swap_frame_callback) {
+            wl_callback_destroy(data->gles_swap_frame_callback);
+            data->gles_swap_frame_callback = NULL;
+        }
+
+        if (data->gles_swap_frame_surface_wrapper) {
+            WAYLAND_wl_proxy_wrapper_destroy(data->gles_swap_frame_surface_wrapper);
+            data->gles_swap_frame_surface_wrapper = NULL;
+        }
+
+        if (data->gles_swap_frame_event_queue) {
+            WAYLAND_wl_event_queue_destroy(data->gles_swap_frame_event_queue);
+            data->gles_swap_frame_event_queue = NULL;
+        }
     }
 
-    return false;
+    return true;
 }
 
 bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -3044,6 +3092,11 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         // Roleless and external surfaces are always considered to be in the shown state by the backend.
         data->shell_surface_type = WAYLAND_SHELL_SURFACE_TYPE_CUSTOM;
         data->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_SHOWN;
+
+        // External windows are presumed to be shown.
+        if (window->flags & SDL_WINDOW_EXTERNAL) {
+            window->flags &= ~SDL_WINDOW_HIDDEN;
+        }
     }
 
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) {

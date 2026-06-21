@@ -595,7 +595,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
             Uint32 tick = LOAD32(data[27], data[28], data[29], data[30]);
 
             if (ctx->last_tick) {
-                if (ctx->last_tick < tick) {
+                if (ctx->last_tick <= tick) {
                     delta = (tick - ctx->last_tick);
                 } else {
                     delta = (SDL_MAX_UINT32 - ctx->last_tick + tick + 1);
