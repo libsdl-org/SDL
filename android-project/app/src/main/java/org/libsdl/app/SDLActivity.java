@@ -1345,6 +1345,25 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return false;
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static String getDeviceFormFactor()
+    {
+        // TODO: WearOS
+        if (isAndroidTV()) {
+            return "tv";
+        } else if (isVRHeadset()) {
+            return "headset";
+        } else if (isTablet()) {
+            return "tablet";
+        //} else if (isAndroidAutomotive()) {
+        //    return "car";
+        } else {
+            return "phone";
+        }
+    }
+
     public static double getDiagonal()
     {
         DisplayMetrics metrics = new DisplayMetrics();
