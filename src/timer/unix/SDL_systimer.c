@@ -47,9 +47,6 @@
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_CLOCK_GETTIME)
 #include <time.h>
 #endif
-#ifdef SDL_PLATFORM_APPLE
-#include <mach/mach_time.h>
-#endif
 
 // Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP
 #ifdef HAVE_CLOCK_GETTIME
@@ -62,10 +59,6 @@
 #endif
 #endif
 
-// The first ticks value of the application
-#if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
-mach_timebase_info_data_t mach_base_info;
-#endif
 static bool checked_monotonic_time = false;
 static bool has_monotonic_time = false;
 
@@ -77,9 +70,8 @@ static void CheckMonotonicTime(void)
         has_monotonic_time = true;
     }
 #elif defined(SDL_PLATFORM_APPLE)
-    if (mach_timebase_info(&mach_base_info) == 0) {
-        has_monotonic_time = true;
-    }
+    // CLOCK_UPTIME_RAW (via clock_gettime_nsec_np) is always available on Apple platforms
+    has_monotonic_time = true;
 #endif
     checked_monotonic_time = true;
 }
