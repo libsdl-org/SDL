@@ -291,7 +291,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         //     ~/.local/share/<app id>/
 
         SDL_PropertiesID props = SDL_GetGlobalProperties();
-
         if (!props) {
             return NULL;
         }

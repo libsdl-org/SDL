@@ -48,20 +48,17 @@ bool SDL_SetupUbuntuTouchGlobalProperties(SDL_PropertiesID props)
     // Format is <appname>_<hookname>_<version>, like myapp.myname_myapp_1.0.0.
     // None of those are allowed to have underscores.
     const char *app_id = SDL_getenv("APP_ID");
-
     if (!app_id) {
         SDL_SetError("Missing APP_ID");
         return false;
     }
 
     char *buffer = SDL_strdup(app_id);
-
     if (!buffer) {
         return false;
     }
 
     char *it = SDL_strchr(buffer, '_');
-
     if (!*it) {
         SDL_SetError("Malformed APP_ID");
         SDL_free(buffer);
@@ -69,7 +66,6 @@ bool SDL_SetupUbuntuTouchGlobalProperties(SDL_PropertiesID props)
     }
 
     char *it2 = SDL_strchr(it + 1, '_');
-
     if (!*it2) {
         SDL_SetError("Malformed APP_ID");
         SDL_free(buffer);
