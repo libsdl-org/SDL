@@ -681,16 +681,17 @@ typedef enum SDL_FormFactor {
  * Get the form factor of the current device.
  *
  * This function guesses what the device may be, but may report inaccurate or
- * outright wrong results. For example, it may report a laptop as a desktop, or
- * a car device as a phone.
+ * outright wrong results. For example, it may report a laptop as a desktop,
+ * or a car device as a phone.
  *
  * Depending on the usage, there may be different functions better suited for
- * each purpose. For example, activating touch controls can be done by detecting
- * the presence of a touchscreen rather than restricting to phones and tablets.
+ * each purpose. For example, activating touch controls can be done by
+ * detecting the presence of a touchscreen rather than restricting to phones
+ * and tablets.
  *
  * \returns the best guess for the form factor of the current device.
  *
- * \since This function is available since SDL 3.4.0.
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_FormFactor
  * \sa SDL_GetDeviceFormFactorName
@@ -706,7 +707,7 @@ extern SDL_DECLSPEC SDL_FormFactor SDLCALL SDL_GetDeviceFormFactor(void);
  * \returns a human-readable name for the given form factor, or
  *          "SDL_FORMFACTOR_UNKNOWN" if the form factor isn't recognized.
  *
- * \since This function is available since SDL 3.4.0.
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_FormFactor
  * \sa SDL_GetDeviceFormFactor
