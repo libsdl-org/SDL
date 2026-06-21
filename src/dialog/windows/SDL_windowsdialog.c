@@ -1035,7 +1035,7 @@ void windows_ShowFileDialog(void *ptr)
             const char *opts[1] = { NULL };
             callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
         } else {
-            SDL_SetError("Windows error, CommDlgExtendedError: %ld", pCommDlgExtendedError());
+            SDL_SetError("Windows error, CommDlgExtendedError: %" SDL_PRIuULONG, pCommDlgExtendedError());
             callback(userdata, NULL, -1);
         }
     }
@@ -1143,7 +1143,7 @@ wchar_t *win_get_filters(const SDL_DialogFileFilter *filters, int nfilters)
         // suffix needs two null bytes in case the filter list is empty
         char *filterlist = convert_filters(filters, nfilters, clear_filt_names,
                                            "", "", "\x01\x01", "", "\x01",
-                                           "\x01", "*.", ";*.", "");
+                                           "\x01", "*.", ";*.", "", false);
 
         if (!filterlist) {
             return NULL;

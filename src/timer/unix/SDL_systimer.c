@@ -101,7 +101,8 @@ Uint64 SDL_GetPerformanceCounter(void)
         ticks *= SDL_NS_PER_SECOND;
         ticks += now.tv_nsec;
 #elif defined(SDL_PLATFORM_APPLE)
-        ticks = mach_absolute_time();
+        // With HAVE_NANOSLEEP defined, time.h is included
+        ticks = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 #else
         SDL_assert(false);
         ticks = 0;
@@ -127,10 +128,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
 #ifdef HAVE_CLOCK_GETTIME
         return SDL_NS_PER_SECOND;
 #elif defined(SDL_PLATFORM_APPLE)
-        Uint64 freq = mach_base_info.denom;
-        freq *= SDL_NS_PER_SECOND;
-        freq /= mach_base_info.numer;
-        return freq;
+        return SDL_NS_PER_SECOND;
 #endif
     }
 

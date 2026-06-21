@@ -34,6 +34,7 @@
 #include "SDL_triangle.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_rotate.h"
+#include "../../video/SDL_sysvideo.h"
 
 // SDL surface based renderer implementation
 
@@ -54,12 +55,13 @@ typedef struct
 static SDL_Surface *SW_ActivateRenderer(SDL_Renderer *renderer)
 {
     SW_RenderData *data = (SW_RenderData *)renderer->internal;
+    SDL_Window *window = renderer->window;
 
     if (!data->surface) {
         data->surface = data->window;
     }
-    if (!data->surface) {
-        SDL_Surface *surface = SDL_GetWindowSurface(renderer->window);
+    if (window && (!data->surface || !window->surface_valid)) {
+        SDL_Surface *surface = SDL_GetWindowSurface(window);
         if (surface) {
             data->surface = data->window = surface;
         }
@@ -133,7 +135,7 @@ static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture
 
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
-    SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
+    SDL_Surface *surface = SDL_CreateSurfaceUninitialized(texture->w, texture->h, texture->format);
     if (!surface) {
         return SDL_SetError("Can't create surface");
     }
@@ -436,7 +438,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      * to clear the pixels in the destination surface. The other steps are explained below.
      */
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
-        mask = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        mask = SDL_CreateSurfaceZeroed(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (!mask) {
             result = false;
         } else {
@@ -449,7 +451,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      */
     if (result && (blitRequired || applyModulation)) {
         SDL_Rect scale_rect = tmp_rect;
-        src_scaled = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        src_scaled = SDL_CreateSurfaceUninitialized(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (!src_scaled) {
             result = false;
         } else {
@@ -869,7 +871,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
                     SDL_PixelFormat tmp_format = SDL_ISPIXELFORMAT_ALPHA(src->format) ? SDL_PIXELFORMAT_ARGB8888 : surface->format;
-                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, tmp_format);
+                    SDL_Surface *tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, tmp_format);
                     // Scale to an intermediate surface, then blit
                     if (tmp) {
                         SDL_Rect r;

@@ -28,7 +28,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
-    bool is_save;
+    const char *base_folder = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
 
     if (SDL_GetHint(SDL_HINT_FILE_DIALOG_DRIVER) != NULL) {
         SDL_SetError("File dialog driver unsupported (don't set SDL_HINT_FILE_DIALOG_DRIVER)");
@@ -36,22 +36,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         return;
     }
 
-    switch (type) {
-    case SDL_FILEDIALOG_OPENFILE:
-        is_save = false;
-        break;
-
-    case SDL_FILEDIALOG_SAVEFILE:
-        is_save = true;
-        break;
-
-    case SDL_FILEDIALOG_OPENFOLDER:
-        SDL_Unsupported();
-        callback(userdata, NULL, -1);
-        return;
-    }
-
-    if (!Android_JNI_OpenFileDialog(callback, userdata, filters, nfilters, is_save, allow_many)) {
+    if (!Android_JNI_ShowFileDialog(callback, userdata, filters, nfilters, type, allow_many, base_folder)) {
         // SDL_SetError is already called when it fails
         callback(userdata, NULL, -1);
     }

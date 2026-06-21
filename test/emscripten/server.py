@@ -14,11 +14,14 @@ class MyHTTPRequestHandler(SimpleHTTPRequestHandler):
     extensions_map = {
         ".manifest": "text/cache-manifest",
         ".html": "text/html",
+        ".cmake": "text/cmake",
+        ".pc": "text/pkg-config",
         ".png": "image/png",
         ".jpg": "image/jpg",
-        ".svg":	"image/svg+xml",
-        ".css":	"text/css",
-        ".js":	"application/x-javascript",
+        ".svg": "image/svg+xml",
+        ".css": "text/css",
+        ".js": "application/x-javascript",
+        ".map": "application/json",
         ".wasm": "application/wasm",
         "": "application/octet-stream",
     }
@@ -65,7 +68,7 @@ def main():
     parser = ArgumentParser(allow_abbrev=False)
     parser.add_argument("port", nargs="?", type=int, default=8080)
     parser.add_argument("-d", dest="directory", type=str, default=None)
-    parser.add_argument("--map", dest="maps", nargs="+", type=str, help="Mappings, used as e.g. \"$HOME/projects/SDL:/sdl\"")
+    parser.add_argument("--map", dest="maps", nargs="+", default=[], type=str, help="Mappings, used as e.g. \"$HOME/projects/SDL:/sdl\"")
     args = parser.parse_args()
 
     maps = []

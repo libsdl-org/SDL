@@ -96,7 +96,7 @@ static size_t measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
-static bool read_mode_variable(int *block, int var)
+static int read_mode_variable(int *block, int var)
 {
     _kernel_swi_regs regs;
     regs.r[0] = (int)block;

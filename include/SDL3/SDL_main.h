@@ -219,6 +219,19 @@
            void reset_IOP(); \
            void reset_IOP() {}
 
+    #elif defined(SDL_PLATFORM_DOS)
+        /*
+          On DOS, SDL provides a main function that sets up memory
+          page locking (code, data, stack are locked, future
+          malloc calls are not locked), and sets up the "fat DS"
+          trick, so we can use C pointers from protected mode that
+          access conventional memory. SDL _requires_ the "fat DS"
+          trick!
+
+          If you provide this yourself, you may define SDL_MAIN_HANDLED
+        */
+        #define SDL_MAIN_AVAILABLE
+
     #elif defined(SDL_PLATFORM_3DS)
         /*
           On N3DS, SDL provides a main function that sets up the screens

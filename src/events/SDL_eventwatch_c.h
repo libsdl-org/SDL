@@ -29,7 +29,6 @@ typedef struct SDL_EventWatcher
 
 typedef struct SDL_EventWatchList
 {
-    SDL_Mutex *lock;
     SDL_EventWatcher filter;
     SDL_EventWatcher *watchers;
     int count;

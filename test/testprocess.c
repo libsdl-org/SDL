@@ -500,7 +500,8 @@ static int process_testStdinToStdout(void *arg)
             total_read += amount_read;
             SDL_WriteIO(stdout_stream, local_buffer, amount_read);
             stdout_stream_buf = SDL_GetPointerProperty(SDL_GetIOProperties(stdout_stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
-            if (SDL_strstr(stdout_stream_buf, "EOF")) {
+            Sint64 stdout_size = SDL_GetIOSize(stdout_stream);
+            if (SDL_strnstr(stdout_stream_buf, "EOF", (size_t)stdout_size)) {
                 SDLTest_Log("Found EOF in stdout");
                 break;
             }

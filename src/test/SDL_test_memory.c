@@ -77,12 +77,12 @@ static SDL_tracked_allocation *s_tracked_allocations[256];
 static bool s_randfill_allocations = false;
 static SDL_AtomicInt s_lock;
 
-#define LOCK_ALLOCATOR()                               \
-    do {                                               \
+#define LOCK_ALLOCATOR()                                  \
+    do {                                                  \
         if (SDL_CompareAndSwapAtomicInt(&s_lock, 0, 1)) { \
-            break;                                     \
-        }                                              \
-        SDL_CPUPauseInstruction();                     \
+            break;                                        \
+        }                                                 \
+        SDL_CPUPauseInstruction();                        \
     } while (true)
 #define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
@@ -95,31 +95,36 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
 
-static SDL_tracked_allocation *SDL_GetTrackedAllocation(void *mem)
+static bool SDL_GetTrackedAllocation(void *mem, size_t *entry_size)
 {
     SDL_tracked_allocation *entry;
     LOCK_ALLOCATOR();
     int index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
+            if (entry_size) {
+                *entry_size = entry->size;
+            }
             UNLOCK_ALLOCATOR();
-            return entry;
+            return true;
         }
     }
     UNLOCK_ALLOCATOR();
-    return NULL;
+    return false;
 }
 
 static size_t SDL_GetTrackedAllocationSize(void *mem)
 {
-    SDL_tracked_allocation *entry = SDL_GetTrackedAllocation(mem);
-
-    return entry ? entry->size : SIZE_MAX;
+    size_t size = 0;
+    if (!SDL_GetTrackedAllocation(mem, &size)) {
+        size = SIZE_MAX;
+    }
+    return size;
 }
 
 static bool SDL_IsAllocationTracked(void *mem)
 {
-    return SDL_GetTrackedAllocation(mem) != NULL;
+    return SDL_GetTrackedAllocation(mem, NULL);
 }
 
 static void SDL_TrackAllocation(void *mem, size_t size)
@@ -194,23 +199,19 @@ static void SDL_TrackAllocation(void *mem, size_t size)
 
 static void SDL_UntrackAllocation(void *mem)
 {
-    SDL_tracked_allocation *entry, *prev;
+    SDL_tracked_allocation *entry, **prev_next_ptr;
     int index = get_allocation_bucket(mem);
 
     LOCK_ALLOCATOR();
-    prev = NULL;
+    prev_next_ptr = &s_tracked_allocations[index];
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
-            if (prev) {
-                prev->next = entry->next;
-            } else {
-                s_tracked_allocations[index] = entry->next;
-            }
+            *prev_next_ptr = entry->next;
             SDL_free_orig(entry);
             UNLOCK_ALLOCATOR();
             return;
         }
-        prev = entry;
+        prev_next_ptr = &entry->next;
     }
     s_unknown_frees += 1;
     UNLOCK_ALLOCATOR();
@@ -433,7 +434,7 @@ void SDLTest_LogAllocations(void)
                         }
                         dyn_dbghelp.pSymGetLineFromAddr64(GetCurrentProcess(), (DWORD64)entry->stack[stack_index], &lineColumn, &dbg_line);
                     }
-                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%I64x %s:%u", pSymbol->Name, dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
+                    SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%" SDL_PRIx64 " %s:%u", pSymbol->Name, (Uint64)dwDisplacement, dbg_line.FileName, (Uint32)dbg_line.LineNumber);
                 }
 #endif
                 (void)SDL_snprintf(line, sizeof(line), "\t0x%" SDL_PRIx64 ": %s\n", entry->stack[stack_index], stack_entry_description);

@@ -146,7 +146,7 @@ struct MonitorInfo
 
     int width_mm;        // -1 if not specified
     int height_mm;       // -1 if not specified
-    double aspect_ratio; // -1.0 if not specified
+    double aspect_ratio; // -1.0 if not specififed
 
     double gamma; // -1.0 if not specified
 

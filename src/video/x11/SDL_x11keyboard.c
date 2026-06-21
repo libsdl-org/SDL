@@ -831,14 +831,14 @@ bool X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
-    return videodata->is_steam_deck;
+    return videodata->use_steam_screen_keyboard;
 }
 
 void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_VideoData *videodata = _this->internal;
 
-    if (videodata->is_steam_deck) {
+    if (videodata->use_steam_screen_keyboard) {
         /* For more documentation of the URL parameters, see:
          * https://partner.steamgames.com/doc/api/ISteamUtils#ShowFloatingGamepadTextInput
          */
@@ -880,7 +880,7 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = _this->internal;
 
-    if (videodata->is_steam_deck) {
+    if (videodata->use_steam_screen_keyboard) {
         SDL_OpenURL("steam://close/keyboard");
         SDL_SendScreenKeyboardHidden();
     }

@@ -53,8 +53,8 @@ void NGAGE_DebugPrintf(const char *fmt, ...)
 
 TInt NGAGE_GetFreeHeapMemory()
 {
-    TInt free = 0;
-    return User::Available(free);
+    TInt heap_available = 0;
+    return User::Available(heap_available);
 }
 
 #ifdef __cplusplus

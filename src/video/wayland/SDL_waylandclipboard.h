@@ -23,7 +23,7 @@
 #ifndef SDL_waylandclipboard_h_
 #define SDL_waylandclipboard_h_
 
-extern const char **Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
+extern const char *const *Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
 extern bool Wayland_SetClipboardData(SDL_VideoDevice *_this);
 extern void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
 extern bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);

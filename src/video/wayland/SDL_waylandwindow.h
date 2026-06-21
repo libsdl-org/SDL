@@ -234,6 +234,7 @@ struct SDL_WindowData
     bool scale_to_display;
     bool reparenting_required;
     bool double_buffer;
+    bool accepts_drag_and_drop;
 
     SDL_HitTestResult hit_test_result;
 
@@ -271,6 +272,7 @@ extern bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SD
 extern bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window);
 extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
+extern void Wayland_AcceptDragAndDrop(SDL_Window *window, bool accept);
 
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

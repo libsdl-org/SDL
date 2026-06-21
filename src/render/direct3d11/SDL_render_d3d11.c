@@ -898,7 +898,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 
         IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
-        SDL_SetError(SDL_FUNCTION ", Unable to find something to attach a swap chain to");
+        SDL_SetError("%s, Unable to find something to attach a swap chain to", SDL_FUNCTION);
         goto done;
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK) / else
     }

@@ -13,7 +13,7 @@ Requirements
 Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r15c or later
+Android NDK r28c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 21 (Android 5.0)
@@ -49,10 +49,10 @@ There's two ways of using it:
 
 sources.list should be a text file with a source file name in each line
 Filenames should be specified relative to the current directory, for example if
-you are in the build-scripts directory and want to create the testgles.c test, you'll
+you are in the build-scripts directory and want to create the testspriteminimal.c test, you'll
 run:
 
-    ./create-android-project.py org.libsdl.testgles ../test/testgles.c
+    ./create-android-project.py org.libsdl.testspriteminimal ../test/testspriteminimal.c ../test/icon.h
 
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
@@ -60,6 +60,9 @@ a single directory, thus all your source files should have a unique name.
 Once the project is complete the script will tell you how to build the project.
 If you want to create a signed release APK, you can use the project created by this
 utility to generate it.
+
+If you see link errors about missing `SDLTest_*` symbols,
+you need to add `../src/test/*.c` as an extra argument to `create-android-project.py`.
 
 Running the script with `--help` will list all available options, and their purposes.
 
@@ -212,6 +215,24 @@ Any files you put in the "app/src/main/assets" directory of your project
 directory will get bundled into the application package and you can load
 them using the standard functions in SDL_iostream.h.
 
+As of SDL 3.6.0, SDL APIs, such as SDL_EnumerateDirectory() and
+SDL_IOFromFile(), understand paths that are prefixed with "assets://" and will
+look for paths exclusively inside the APK's "assets" directory. Since this is
+where app-specific data files are meant to be located, SDL_GetBasePath() on
+Android now returns "assets://" to make this work as expected across platforms.
+Note that SDL 3.2.28 to 3.6.0 returned "./" on Android, and before that,
+SDL_GetBasePath() always returned NULL on this platform.
+
+Obviously, paths prefixed with "assets://" are only useful to SDL; other APIs,
+like fopen(), will not understand them at all.
+
+As an alternate approach: SDL APIs on Android treat relative paths in a
+special way. It will look for files under the path returned by
+SDL_GetAndroidInternalStoragePath() first, and failing that, will attempt to
+look for them as if they were prefixed by "assets://", with the relative path
+starting in the base of the assets tree. Absolute paths never check against
+internal storage or assets.
+
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:
 * SDL_GetAndroidInternalStoragePath()
@@ -254,7 +275,7 @@ e.g.
             */
             return false;
         case SDL_EVENT_LOW_MEMORY:
-            /* You will get this when your app is paused and iOS wants more memory.
+            /* You will get this when your app is paused and Android wants more memory.
                Release as much memory as possible.
             */
             return false;
@@ -281,7 +302,7 @@ e.g.
 
                You have access to the OpenGL context or rendering API at this point.
                However, there's a chance (on older hardware, or on systems under heavy load),
-               where the graphics context can not be restored. You should listen for the
+               where the graphics context cannot be restored. You should listen for the
                event SDL_EVENT_RENDER_DEVICE_RESET and recreate your OpenGL context and
                restore your textures when you get it, or quit the app.
             */
@@ -340,7 +361,7 @@ To enable/disable this behavior, see SDL_hints.h:
 Misc
 ================================================================================
 
-For some device, it appears to works better setting explicitly GL attributes
+For some devices, it appears to work better setting explicitly GL attributes
 before creating a window:
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);

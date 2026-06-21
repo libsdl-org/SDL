@@ -565,18 +565,21 @@ void Wayland_CursorStateDestroyFrameCallback(SDL_WaylandCursorState *state)
     SDL_UnlockMutex(cursor_thread_context.lock);
 }
 
+static void Wayland_CursorStateResetAnimationState(SDL_WaylandCursorState *state)
+{
+    state->last_frame_callback_time_ms = SDL_GetTicks();
+    state->current_frame_time_ms = 0;
+    state->current_frame = 0;
+}
+
 static void Wayland_CursorStateResetAnimation(SDL_WaylandCursorState *state, bool lock)
 {
     if (lock) {
         SDL_LockMutex(cursor_thread_context.lock);
-    }
-
-    state->last_frame_callback_time_ms = SDL_GetTicks();
-    state->current_frame_time_ms = 0;
-    state->current_frame = 0;
-
-    if (lock) {
+        Wayland_CursorStateResetAnimationState(state);
         SDL_UnlockMutex(cursor_thread_context.lock);
+    } else {
+        Wayland_CursorStateResetAnimationState(state);
     }
 }
 
@@ -989,7 +992,7 @@ static enum wp_cursor_shape_device_v1_shape Wayland_GetSystemCursorShape(SDL_Sys
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE;
         break;
     case SDL_SYSTEM_CURSOR_MOVE:
-        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE;
         break;
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NOT_ALLOWED;
@@ -1020,6 +1023,48 @@ static enum wp_cursor_shape_device_v1_shape Wayland_GetSystemCursorShape(SDL_Sys
         break;
     case SDL_SYSTEM_CURSOR_W_RESIZE:
         shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_W_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CONTEXT_MENU;
+        break;
+    case SDL_SYSTEM_CURSOR_HELP:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP;
+        break;
+    case SDL_SYSTEM_CURSOR_CELL:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CELL;
+        break;
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_VERTICAL_TEXT;
+        break;
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALIAS;
+        break;
+    case SDL_SYSTEM_CURSOR_COPY:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COPY;
+        break;
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP;
+        break;
+    case SDL_SYSTEM_CURSOR_GRAB:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB;
+        break;
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING;
+        break;
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE;
+        break;
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ALL_SCROLL;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ZOOM_IN;
+        break;
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        shape = WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ZOOM_OUT;
         break;
     default:
         SDL_assert(0); // Should never be here...
@@ -1104,13 +1149,27 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
             dst_height = dst_width;
         } else {
             /* If viewports aren't available, the scale is always 1.0.
-             * The dimensions are scaled by the pointer scale, so custom cursors will be scaled relative to the window size.
+             *
+             * If the pointer scale values are 1.0, the preferred backing buffer scale is the window scale.
+             *
+             * If the pointer is scaled, the dimensions are scaled by the pointer scale, so custom cursors will be scaled
+             * relative to the viewport size.
              */
-            state->scale = viddata->viewporter && focus ? SDL_min(focus->pointer_scale.x, focus->pointer_scale.y) : 1.0;
-            dst_width = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.width / state->scale), 1);
-            dst_height = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.height / state->scale), 1);
-            hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / state->scale);
-            hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / state->scale);
+            if (!focus || (focus->pointer_scale.x == 1.0 && focus->pointer_scale.y == 1.0)) {
+                state->scale = viddata->viewporter && focus ? focus->scale_factor : 1.0;
+                dst_width = cursor_data->cursor_data.custom.width;
+                dst_height = cursor_data->cursor_data.custom.height;
+                hot_x = cursor_data->cursor_data.custom.hot_x;
+                hot_y = cursor_data->cursor_data.custom.hot_y;
+            } else {
+                // The preferred buffer scale is the inverse of the pointer scale.
+                state->scale = 1.0 / SDL_min(focus->pointer_scale.x, focus->pointer_scale.y);
+                dst_width = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.width / focus->pointer_scale.x), 1);
+                dst_height = SDL_max((int)SDL_lround((double)cursor_data->cursor_data.custom.height / focus->pointer_scale.y), 1);
+                hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / focus->pointer_scale.x);
+                hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / focus->pointer_scale.y);
+            }
+
         }
 
         state->current_cursor = cursor_data;

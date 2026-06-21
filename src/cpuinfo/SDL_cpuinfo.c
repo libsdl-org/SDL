@@ -109,6 +109,7 @@
 #define CPU_HAS_ARM_SIMD (1 << 11)
 #define CPU_HAS_LSX      (1 << 12)
 #define CPU_HAS_LASX     (1 << 13)
+#define CPU_HAS_SVE2     (1 << 14)
 
 #define CPU_CFG2      0x2
 #define CPU_CFG2_LSX  (1 << 6)
@@ -510,6 +511,27 @@ static int CPU_haveNEON(void)
     return 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
+    return 0;
+#endif
+}
+
+#ifndef AT_HWCAP2
+#define AT_HWCAP2 26
+#endif
+#ifndef HWCAP_SVE
+#define HWCAP_SVE (1 << 22)
+#endif
+#ifndef HWCAP2_SVE2
+#define HWCAP2_SVE2 (1 << 1)
+#endif
+
+static int CPU_haveSVE2(void)
+{
+#if defined(__aarch64__) && \
+    ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID))
+    return ((getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2)
+        && ((getauxval(AT_HWCAP) & HWCAP_SVE) == HWCAP_SVE);
+#else
     return 0;
 #endif
 }
@@ -960,6 +982,8 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
                 spot_mask = CPU_HAS_LSX;
             } else if (ref_string_equals("lasx", spot, end)) {
                 spot_mask = CPU_HAS_LASX;
+            } else if (ref_string_equals("sve2", spot, end)) {
+                spot_mask = CPU_HAS_SVE2;
             } else {
                 // Ignore unknown/incorrect cpu feature(s)
                 continue;
@@ -1035,6 +1059,10 @@ static Uint32 SDL_GetCPUFeatures(void)
         if (CPU_haveLASX()) {
             SDL_CPUFeatures |= CPU_HAS_LASX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
+        }
+        if (CPU_haveSVE2()) {
+            SDL_CPUFeatures |= CPU_HAS_SVE2;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         SDL_CPUFeatures &= SDL_CPUFeatureMaskFromHint();
     }
@@ -1115,6 +1143,11 @@ bool SDL_HasLSX(void)
 bool SDL_HasLASX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);
+}
+
+bool SDL_HasSVE2(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_SVE2);
 }
 
 static int SDL_SystemRAM = 0;

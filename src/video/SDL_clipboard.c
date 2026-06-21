@@ -62,7 +62,7 @@ void SDL_CancelClipboardData(Uint32 sequence)
     _this->clipboard_userdata = NULL;
 }
 
-bool SDL_SaveClipboardMimeTypes(const char **mime_types, size_t num_mime_types)
+bool SDL_SaveClipboardMimeTypes(const char *const *mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -93,7 +93,7 @@ bool SDL_SaveClipboardMimeTypes(const char **mime_types, size_t num_mime_types)
     return true;
 }
 
-bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
+bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char *const *mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -265,7 +265,7 @@ bool SDL_HasClipboardData(const char *mime_type)
     }
 }
 
-char **SDL_CopyClipboardMimeTypes(const char **clipboard_mime_types, size_t num_mime_types, bool temporary)
+char **SDL_CopyClipboardMimeTypes(const char *const *clipboard_mime_types, size_t num_mime_types, bool temporary)
 {
     size_t allocSize = sizeof(char *);
     for (size_t i = 0; i < num_mime_types; i++) {
@@ -326,12 +326,12 @@ bool SDL_IsTextMimeType(const char *mime_type)
     return (SDL_strncmp(mime_type, "text", 4) == 0);
 }
 
-static const char **SDL_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
+static const char *const *SDL_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
 {
     if (_this->GetTextMimeTypes) {
         return _this->GetTextMimeTypes(_this, num_mime_types);
     } else {
-        static const char *text_mime_types[] = {
+        static const char *const text_mime_types[] = {
             "text/plain;charset=utf-8"
         };
 
@@ -355,7 +355,7 @@ bool SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t num_mime_types;
-    const char **text_mime_types;
+    const char *const *text_mime_types;
 
     if (!_this) {
         return SDL_UninitializedVideo();
@@ -373,7 +373,7 @@ char *SDL_GetClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i, num_mime_types;
-    const char **text_mime_types;
+    const char *const *text_mime_types;
     size_t length;
     char *text = NULL;
 
@@ -401,7 +401,7 @@ bool SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     size_t i, num_mime_types;
-    const char **text_mime_types;
+    const char *const *text_mime_types;
 
     if (!_this) {
         return SDL_UninitializedVideo();

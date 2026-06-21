@@ -37,19 +37,21 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
                       const char *separator, const char *suffix,
                       const char *filt_prefix, const char *filt_separator,
                       const char *filt_suffix, const char *ext_prefix,
-                      const char *ext_separator, const char *ext_suffix);
+                      const char *ext_separator, const char *ext_suffix,
+                      bool anycase);
 
 // Converts one filter into a single string.
 // <prefix>[filter name]<separator>[filter extension list]<suffix>
 char *convert_filter(SDL_DialogFileFilter filter, NameTransform ntf,
                      const char *prefix, const char *separator,
                      const char *suffix, const char *ext_prefix,
-                     const char *ext_separator, const char *ext_suffix);
+                     const char *ext_separator, const char *ext_suffix,
+                     bool anycase);
 
 // Converts the extension list of a filter into a single string.
 // <prefix>[extension]{<separator>[extension]...}<suffix>
 char *convert_ext_list(const char *list, const char *prefix,
-                       const char *separator, const char *suffix);
+                       const char *separator, const char *suffix, bool anycase);
 
 /* Must be used if convert_* functions aren't used */
 // Returns an error message if there's a problem, NULL otherwise

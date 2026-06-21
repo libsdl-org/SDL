@@ -20,10 +20,9 @@
 */
 #include "SDL_internal.h"
 
-#include "../video/SDL_sysvideo.h"
 #include "../events/SDL_events_c.h"
+#include "../video/SDL_sysvideo.h"
 #include "SDL_tray_utils.h"
-
 
 static int active_trays = 0;
 
@@ -90,4 +89,9 @@ void SDL_CleanupTrays(void)
 bool SDL_HasActiveTrays(void)
 {
     return (active_trays > 0);
+}
+
+int SDL_GetActiveTrayCount(void)
+{
+    return active_trays;
 }

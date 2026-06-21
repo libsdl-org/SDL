@@ -306,9 +306,9 @@ bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        // Must be a valid joystick
+        // Must be a valid joystick, but not a gamepad unless running under sdl2-compat
         if (SDL_IsJoystickValid(joystick) &&
-            !SDL_IsGamepad(SDL_GetJoystickID(joystick))) {
+            (SDL_GetHintBoolean("SDL2_COMPAT", false) || !SDL_IsGamepad(SDL_GetJoystickID(joystick)))) {
             #ifdef SDL_JOYSTICK_HIDAPI
             result = SDL_SYS_JoystickIsHaptic(joystick) || SDL_HIDAPI_JoystickIsHaptic(joystick);
             #else

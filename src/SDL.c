@@ -30,10 +30,6 @@
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
-#include "core/unix/SDL_gtk.h"
-#endif
-
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -48,9 +44,12 @@
 #include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
 #include "events/SDL_events_c.h"
+#include "filesystem/SDL_filesystem_c.h"
 #include "haptic/SDL_haptic_c.h"
+#include "io/SDL_asyncio_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
+#include "notification/SDL_notification_c.h"
 #include "render/SDL_sysrender.h"
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
@@ -59,8 +58,6 @@
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
-#include "filesystem/SDL_filesystem_c.h"
-#include "io/SDL_asyncio_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
@@ -173,7 +170,10 @@ const char *SDL_GetAppMetadataProperty(const char *name)
     }
     if (!value || !*value) {
         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
-            value = "SDL Application";
+            value = SDL_GetExeName();
+            if (!value) {
+                value = "SDL Application";
+            }
         } else if (SDL_strcmp(name, SDL_PROP_APP_METADATA_TYPE_STRING) == 0) {
             value = "application";
         }
@@ -299,6 +299,7 @@ void SDL_InitMainThread(void)
     SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
+    SDL_CreateEventLock();
 
     if (!done_info) {
         const char *value;
@@ -317,6 +318,7 @@ void SDL_InitMainThread(void)
 
 static void SDL_QuitMainThread(void)
 {
+    SDL_DestroyEventLock();
     SDL_QuitFilesystem();
     SDL_QuitTicks();
     SDL_QuitEnvironment();
@@ -355,6 +357,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Init();
+#endif
+
+#ifdef SDL_PLATFORM_APPLE
+    // Apple platforms require the notification delegate to be registered early.
+    Cocoa_RegisterNotificationDelegate();
 #endif
 
 #ifdef SDL_PLATFORM_WINDOWS
@@ -709,13 +716,10 @@ void SDL_Quit(void)
 #endif
     SDL_QuitSubSystem(SDL_ALL_SUBSYSTEM_FLAGS);
     SDL_CleanupTrays();
+    SDL_CleanupNotifications();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
-#endif
-
-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_EMSCRIPTEN) && !defined(SDL_PLATFORM_PRIVATE)
-    SDL_Gtk_Quit();
 #endif
 
     SDL_QuitTimers();
@@ -779,6 +783,8 @@ const char *SDL_GetPlatform(void)
     return "Linux";
 #elif defined(__MINT__)
     return "Atari MiNT";
+#elif defined(SDL_PLATFORM_MSDOS)
+    return "MS-DOS";
 #elif defined(SDL_PLATFORM_MACOS)
     return "macOS";
 #elif defined(SDL_PLATFORM_NETBSD)
@@ -799,6 +805,8 @@ const char *SDL_GetPlatform(void)
     return "Solaris";
 #elif defined(SDL_PLATFORM_WIN32)
     return "Windows";
+#elif defined(SDL_PLATFORM_CYGWIN)
+    return "Cygwin";
 #elif defined(SDL_PLATFORM_WINGDK)
     return "WinGDK";
 #elif defined(SDL_PLATFORM_XBOXONE)

@@ -29,10 +29,10 @@
  * provides a reasonable toolbox for transforming the data, including copying
  * between surfaces, filling rectangles in the image data, etc.
  *
- * There is also a simple .bmp loader, SDL_LoadBMP(), and a simple .png
- * loader, SDL_LoadPNG(). SDL itself does not provide loaders for other file
- * formats, but there are several excellent external libraries that do,
- * including its own satellite library,
+ * There is also a simple .bmp loader, SDL_LoadBMP(), a simple .png loader,
+ * SDL_LoadPNG(), and a simple .jpg loader, SDL_LoadJPG(). SDL itself does not
+ * provide loaders for other file formats, but there are several excellent
+ * external libraries that do, including its own satellite library,
  * [SDL_image](https://wiki.libsdl.org/SDL3_image)
  * .
  *
@@ -510,7 +510,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LockSurface(SDL_Surface *surface);
 extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 
 /**
- * Load a BMP or PNG image from a seekable SDL data stream.
+ * Load a BMP, PNG or JPEG image from a seekable SDL data stream.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -531,7 +531,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio);
 
 /**
- * Load a BMP or PNG image from a file.
+ * Load a BMP, PNG or JPEG image from a file.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -728,6 +728,54 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStre
  * \sa SDL_SavePNG_IO
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG(SDL_Surface *surface, const char *file);
+
+/**
+ * Load a JPEG image from a seekable SDL data stream.
+ *
+ * This is intended as a convenience function for loading images from trusted
+ * sources. If you want to load arbitrary images you should use libjpeg or
+ * another image loading library designed with security in mind.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param src the data stream for the surface.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadJPG
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadJPG_IO(SDL_IOStream *src, bool closeio);
+
+/**
+ * Load a JPEG image from a file.
+ *
+ * This is intended as a convenience function for loading images from trusted
+ * sources. If you want to load arbitrary images you should use libjpeg or
+ * another image loading library designed with security in mind.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param file the JPG file to load.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadJPG_IO
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadJPG(const char *file);
 
 /**
  * Set the RLE acceleration hint for a surface.

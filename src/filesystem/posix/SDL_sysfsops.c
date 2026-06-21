@@ -54,8 +54,17 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
     char *apath = NULL;  // absolute path (for Android, iOS, etc). Overrides `path`.
 
 #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
-    if (*path != '/') {
+    if (*path == '\0') {
+        return SDL_SetError("No such file or directory");
+    } else if (*path != '/') {
         #ifdef SDL_PLATFORM_ANDROID
+        if (SDL_strncmp(path, "assets://", 9) == 0) {
+            char *pathwithsep = NULL;
+            SDL_asprintf(&pathwithsep, "%s%s", path, (path[SDL_strlen(path) - 1] != '/') ? "/" : "");
+            const bool retval = pathwithsep ? Android_JNI_EnumerateAssetDirectory(pathwithsep, cb, userdata) : false;
+            SDL_free(pathwithsep);
+            return retval;
+        }
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
         #elif defined(SDL_PLATFORM_IOS)
         char *base = SDL_GetPrefPath("", "");
@@ -83,7 +92,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 #endif
 
     char *pathwithsep = NULL;
-    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", apath ? apath : path);
+    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s%s", apath ? apath : path, (apath ? *apath : *path) ? "/" : "");
     const size_t extralen = apath ? (SDL_strlen(apath) - SDL_strlen(path)) : 0;
     SDL_free(apath);
     if ((pathwithseplen == -1) || (!pathwithsep)) {
@@ -98,14 +107,15 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     DIR *dir = opendir(pathwithsep);
     if (!dir) {
-#ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
-        const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
-        SDL_free(pathwithsep);
-        return retval;
-#else
+#ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset... that didn't use an "assets://" URL?
+        if (*pathwithsep != '/') {  // don't fall back to asset tree for absolute paths, in case opendir() failed for other reasons, like opendir("/") returning EACCES.
+            const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
+            SDL_free(pathwithsep);
+            return retval;
+        }
+#endif
         SDL_free(pathwithsep);
         return SDL_SetError("Can't open directory: %s", strerror(errno));
-#endif
     }
 
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
@@ -349,8 +359,12 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     int rc;
 
 #ifdef SDL_PLATFORM_ANDROID
-    if (*path == '/') {
+    if (*path == '\0') {
+        return SDL_SetError("No such file or directory");
+    } else if (*path == '/') {
         rc = stat(path, &statbuf);
+    } else if (SDL_strncmp(path, "assets://", 9) == 0) {
+        return Android_JNI_GetAssetPathInfo(path, info);
     } else {
         char *apath = NULL;
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
@@ -360,7 +374,7 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         rc = stat(apath, &statbuf);
         SDL_free(apath);
     }
-    if (rc < 0) {
+    if (rc < 0) {  // Maybe it's an asset... that didn't use an "assets://" URL?
         return Android_JNI_GetAssetPathInfo(path, info);
     }
 #elif defined(SDL_PLATFORM_IOS)

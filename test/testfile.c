@@ -166,7 +166,11 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(iostrm);
     }
     if (0 != SDL_ReadIO(iostrm, test_buf, 1)) {
+#ifdef __DJGPP__
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DJGPP allowed read on write-only file");
+#else
         RWOP_ERR_QUIT(iostrm); /* we are in write only mode */
+#endif
     }
 
     SDL_CloseIO(iostrm);
@@ -203,7 +207,11 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(iostrm);
     }
     if (0 != SDL_WriteIO(iostrm, test_buf, 1)) {
+#ifdef __DJGPP__
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DJGPP allowed write on read-only file");
+#else
         RWOP_ERR_QUIT(iostrm); /* readonly mode */
+#endif
     }
 
     SDL_CloseIO(iostrm);

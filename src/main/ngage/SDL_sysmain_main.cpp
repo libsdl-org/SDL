@@ -35,12 +35,12 @@ extern void SDL_AppQuit(void *appstate, SDL_AppResult result);
 
 #include <e32std.h>
 #include <estlib.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "SDL_sysmain_main.hpp"
 #include "../../audio/ngage/SDL_ngageaudio.hpp"
 #include "../../render/ngage/SDL_render_ngage_c.hpp"
+#include "SDL_sysmain_main.hpp"
 
 CRenderer *gRenderer = 0;
 
@@ -56,69 +56,70 @@ GLDEF_C TInt E32Main()
     char **envp_lvalue = envp;
 
     CTrapCleanup *cleanup = CTrapCleanup::New();
-    if (!cleanup)
-    {
+    if (!cleanup) {
         return KErrNoMemory;
     }
 
     TRAPD(err,
-    {
-        CActiveScheduler *scheduler = new (ELeave) CActiveScheduler();
-        CleanupStack::PushL(scheduler);
-        CActiveScheduler::Install(scheduler);
+          {
+              CActiveScheduler *scheduler = new (ELeave) CActiveScheduler();
+              CleanupStack::PushL(scheduler);
+              CActiveScheduler::Install(scheduler);
 
-        TInt posixErr = SpawnPosixServerThread();
-        if (posixErr != KErrNone)
-        {
-            SDL_Log("Error: Failed to spawn POSIX server thread: %d", posixErr);
-            User::Leave(posixErr);
-        }
+              TInt posixErr = SpawnPosixServerThread();
+              if (posixErr != KErrNone) {
+                  SDL_Log("Error: Failed to spawn POSIX server thread: %d", posixErr);
+                  User::Leave(posixErr);
+              }
 
-        __crt0(argc, argv_lvalue, envp_lvalue);
+              __crt0(argc, argv_lvalue, envp_lvalue);
 
-        // Increase heap size.
-        RHeap *newHeap = User::ChunkHeap(NULL, 7500000, 7500000, KMinHeapGrowBy);
-        if (!newHeap)
-        {
-            SDL_Log("Error: Failed to create new heap");
-            User::Leave(KErrNoMemory);
-        }
-        CleanupStack::PushL(newHeap);
+              // Increase heap size.
+              RHeap *newHeap = User::ChunkHeap(NULL, 7500000, 7500000, KMinHeapGrowBy);
+              if (!newHeap) {
+                  SDL_Log("Error: Failed to create new heap");
+                  User::Leave(KErrNoMemory);
+              }
+              CleanupStack::PushL(newHeap);
 
-        RHeap *oldHeap = User::SwitchHeap(newHeap);
+              RHeap *oldHeap = User::SwitchHeap(newHeap);
 
-        TInt targetLatency = 225;
-        InitAudio(&targetLatency);
+              TInt targetLatency = 225;
+              InitAudio(&targetLatency);
 
-        // Wait until audio is ready.
-        while (!AudioIsReady())
-        {
-            User::After(100000); // 100ms.
-        }
+              // Wait until audio is ready (timeout after ~5 seconds).
+              TInt audioWaitMs = 0;
+              while (!AudioIsReady() && audioWaitMs < 5000) {
+                  User::After(100000); // 100ms.
+                  audioWaitMs += 100;
+              }
+              if (!AudioIsReady()) {
+                  SDL_Log("Error: Audio failed to initialise within timeout");
+                  User::Leave(KErrTimedOut);
+              }
 
-        // Create and start the rendering backend.
-        gRenderer = CRenderer::NewL();
-        CleanupStack::PushL(gRenderer);
+              // Create and start the rendering backend.
+              gRenderer = CRenderer::NewL();
+              CleanupStack::PushL(gRenderer);
 
-        // Create and start the SDL main runner.
-        CSDLmain *mainApp = CSDLmain::NewL();
-        CleanupStack::PushL(mainApp);
-        mainApp->Start();
+              // Create and start the SDL main runner.
+              CSDLmain *mainApp = CSDLmain::NewL();
+              CleanupStack::PushL(mainApp);
+              mainApp->Start();
 
-        // Start the active scheduler to handle events.
-        CActiveScheduler::Start();
+              // Start the active scheduler to handle events.
+              CActiveScheduler::Start();
 
-        CleanupStack::PopAndDestroy(gRenderer);
-        CleanupStack::PopAndDestroy(mainApp);
+              CleanupStack::PopAndDestroy(mainApp);
+              CleanupStack::PopAndDestroy(gRenderer);
 
-        User::SwitchHeap(oldHeap);
+              User::SwitchHeap(oldHeap);
 
-        CleanupStack::PopAndDestroy(newHeap);
-        CleanupStack::PopAndDestroy(scheduler);
-    });
+              CleanupStack::PopAndDestroy(newHeap);
+              CleanupStack::PopAndDestroy(scheduler);
+          });
 
-    if (err != KErrNone)
-    {
+    if (err != KErrNone) {
         SDL_Log("Error: %d", err);
     }
 
@@ -134,7 +135,7 @@ CSDLmain *CSDLmain::NewL()
     return self;
 }
 
-CSDLmain::CSDLmain() : CActive(EPriorityLow) {}
+CSDLmain::CSDLmain() : CActive(EPriorityStandard) {}
 
 void CSDLmain::ConstructL()
 {
@@ -157,40 +158,36 @@ void CSDLmain::DoCancel() {}
 
 static bool callbacks_initialized = false;
 
+static void ShutdownApp(SDL_AppResult result)
+{
+    callbacks_initialized = false;
+    DeinitAudio();
+    SDL_AppQuit(NULL, result);
+    SDL_Quit();
+    CActiveScheduler::Stop();
+}
+
 void CSDLmain::RunL()
 {
-    if (callbacks_initialized)
-    {
+    if (callbacks_initialized) {
         SDL_Event event;
 
-        iResult = SDL_AppIterate(NULL);
-        if (iResult != SDL_APP_CONTINUE)
-        {
-            DeinitAudio();
-            SDL_AppQuit(NULL, iResult);
-            SDL_Quit();
-            CActiveScheduler::Stop();
-            return;
-        }
-
-        SDL_PumpEvents();
-        if (SDL_PollEvent(&event))
-        {
+        while (SDL_PollEvent(&event)) {
             iResult = SDL_AppEvent(NULL, &event);
-            if (iResult != SDL_APP_CONTINUE)
-            {
-                DeinitAudio();
-                SDL_AppQuit(NULL, iResult);
-                SDL_Quit();
-                CActiveScheduler::Stop();
+            if (iResult != SDL_APP_CONTINUE) {
+                ShutdownApp(iResult);
                 return;
             }
         }
 
+        iResult = SDL_AppIterate(NULL);
+        if (iResult != SDL_APP_CONTINUE) {
+            ShutdownApp(iResult);
+            return;
+        }
+
         Start();
-    }
-    else
-    {
+    } else {
         SDL_SetMainReady();
         SDL_AppInit(NULL, 0, NULL);
         callbacks_initialized = true;

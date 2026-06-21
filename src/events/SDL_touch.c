@@ -25,21 +25,20 @@
 #include "SDL_events_c.h"
 #include "../video/SDL_sysvideo.h"
 
-static SDL_Mutex *SDL_touch_lock = NULL; // This needs to support recursive locks
 static int SDL_touch_locked = 0;
 
 struct SDL_Touch
 {
-    SDL_TouchID id SDL_GUARDED_BY(SDL_touch_lock);
-    SDL_TouchDeviceType type SDL_GUARDED_BY(SDL_touch_lock);
-    int num_fingers SDL_GUARDED_BY(SDL_touch_lock);
-    int max_fingers SDL_GUARDED_BY(SDL_touch_lock);
-    SDL_Finger **fingers SDL_GUARDED_BY(SDL_touch_lock);
-    char *name SDL_GUARDED_BY(SDL_touch_lock);
+    SDL_TouchID id SDL_GUARDED_BY(SDL_event_lock);
+    SDL_TouchDeviceType type SDL_GUARDED_BY(SDL_event_lock);
+    int num_fingers SDL_GUARDED_BY(SDL_event_lock);
+    int max_fingers SDL_GUARDED_BY(SDL_event_lock);
+    SDL_Finger **fingers SDL_GUARDED_BY(SDL_event_lock);
+    char *name SDL_GUARDED_BY(SDL_event_lock);
 };
 
-static int SDL_num_touch SDL_GUARDED_BY(SDL_touch_lock) = 0;
-static SDL_Touch **SDL_touchDevices SDL_GUARDED_BY(SDL_touch_lock) = NULL;
+static int SDL_num_touch SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_Touch **SDL_touchDevices SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 // for mapping touch events to mice
 static bool finger_touching = false;
@@ -49,23 +48,22 @@ static SDL_TouchID track_touchid;
 // Public functions
 bool SDL_InitTouch(void)
 {
-    SDL_touch_lock = SDL_CreateMutex();
     return true;
 }
 
-static void SDL_LockTouch(void) SDL_ACQUIRE(SDL_touch_lock)
+static void SDL_LockTouch(void) SDL_ACQUIRE(SDL_event_lock)
 {
-    SDL_LockMutex(SDL_touch_lock);
+    SDL_LockMutex(SDL_event_lock);
     ++SDL_touch_locked;
 }
 
-static void SDL_UnlockTouch(void) SDL_RELEASE(SDL_touch_lock)
+static void SDL_UnlockTouch(void) SDL_RELEASE(SDL_event_lock)
 {
     --SDL_touch_locked;
-    SDL_UnlockMutex(SDL_touch_lock);
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
-static void SDL_AssertTouchLocked(void) SDL_ASSERT_CAPABILITY(SDL_touch_lock)
+static void SDL_AssertTouchLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock)
 {
     SDL_assert(SDL_touch_locked > 0);
 }
@@ -614,9 +612,6 @@ void SDL_QuitTouch(void)
         SDL_touchDevices = NULL;
     }
     SDL_UnlockTouch();
-
-    SDL_DestroyMutex(SDL_touch_lock);
-    SDL_touch_lock = NULL;
 }
 
 int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale)

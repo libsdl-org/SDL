@@ -23,7 +23,7 @@
 #ifndef SDL_iostream_c_h_
 #define SDL_iostream_c_h_
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 SDL_IOStream *SDL_IOFromHandle(HANDLE handle, const char *mode, bool autoclose);
 #else
 #if defined(HAVE_STDIO_H)

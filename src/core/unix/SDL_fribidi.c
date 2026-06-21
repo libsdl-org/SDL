@@ -84,8 +84,8 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
     char *result;
     FriBidiStrIndex len;
     FriBidiLevel max_level;
-    FriBidiLevel start;
-    FriBidiLevel end;
+    FriBidiStrIndex start;
+    FriBidiStrIndex end;
     FriBidiParType direction;
     FriBidiParType str_direction;
     unsigned int i;

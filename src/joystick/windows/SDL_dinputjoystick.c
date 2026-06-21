@@ -28,6 +28,7 @@
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 #ifndef DIDFT_OPTIONAL
@@ -238,11 +239,12 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     SDL_GamepadType type;
 
-    // XInput and RawInput backends will pick up XInput-compatible devices
+    // Some other backends will pick up XInput-compatible devices
     if (!SDL_XINPUT_Enabled()
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
 #endif
+        && !SDL_UsingGameInputForXInputControllers()
     ) {
         return false;
     }
@@ -429,7 +431,7 @@ bool SDL_DINPUT_JoystickInit(void)
     if (!instance) {
         IDirectInput8_Release(dinput);
         dinput = NULL;
-        return SDL_SetError("GetModuleHandle() failed with error code %lu.", GetLastError());
+        return SDL_SetError("GetModuleHandle() failed with error code %" SDL_PRIuULONG ".", GetLastError());
     }
     result = IDirectInput8_Initialize(dinput, instance, DIRECTINPUT_VERSION);
 
@@ -644,6 +646,10 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
+        // DIJOYSTATE2.rgdwPOV only has room for 4 POVs, ignore any beyond that.
+        if (joystick->nhats >= 4) {
+            return DIENUM_CONTINUE;
+        }
         in->type = HAT;
         in->num = (Uint8)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
@@ -1068,7 +1074,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
             break;
         case HAT:
         {
-            Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
+            Uint8 pos = TranslatePOV(state.rgdwPOV[in->num]);
             SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }

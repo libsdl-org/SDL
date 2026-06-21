@@ -21,25 +21,16 @@
 #include "SDL_internal.h"
 
 #include "SDL_eventwatch_c.h"
+#include "SDL_events_c.h"
 
 
 bool SDL_InitEventWatchList(SDL_EventWatchList *list)
 {
-    if (list->lock == NULL) {
-        list->lock = SDL_CreateMutex();
-        if (list->lock == NULL) {
-            return false;
-        }
-    }
     return true;
 }
 
 void SDL_QuitEventWatchList(SDL_EventWatchList *list)
 {
-    if (list->lock) {
-        SDL_DestroyMutex(list->lock);
-        list->lock = NULL;
-    }
     if (list->watchers) {
         SDL_free(list->watchers);
         list->watchers = NULL;
@@ -56,13 +47,13 @@ bool SDL_DispatchEventWatchList(SDL_EventWatchList *list, SDL_Event *event)
         return true;
     }
 
-    SDL_LockMutex(list->lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         // Make sure we only dispatch the current watcher list
         int i, count = list->count;
 
         if (filter->callback && !filter->callback(filter->userdata, event)) {
-            SDL_UnlockMutex(list->lock);
+            SDL_UnlockMutex(SDL_event_lock);
             return false;
         }
 
@@ -86,7 +77,7 @@ bool SDL_DispatchEventWatchList(SDL_EventWatchList *list, SDL_Event *event)
             list->removed = false;
         }
     }
-    SDL_UnlockMutex(list->lock);
+    SDL_UnlockMutex(SDL_event_lock);
 
     return true;
 }
@@ -95,7 +86,7 @@ bool SDL_AddEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, voi
 {
     bool result = true;
 
-    SDL_LockMutex(list->lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         SDL_EventWatcher *watchers;
 
@@ -113,14 +104,14 @@ bool SDL_AddEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, voi
             result = false;
         }
     }
-    SDL_UnlockMutex(list->lock);
+    SDL_UnlockMutex(SDL_event_lock);
 
     return result;
 }
 
 void SDL_RemoveEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, void *userdata)
 {
-    SDL_LockMutex(list->lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         int i;
 
@@ -139,5 +130,5 @@ void SDL_RemoveEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, 
             }
         }
     }
-    SDL_UnlockMutex(list->lock);
+    SDL_UnlockMutex(SDL_event_lock);
 }

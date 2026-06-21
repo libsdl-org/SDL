@@ -52,6 +52,12 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 // Array of SDL_uikitviews owned by this window.
 @property(nonatomic, copy) NSMutableArray *views;
 
+#ifdef SDL_PLATFORM_VISIONOS
+// Hosting controller for curved content mode (UIHostingController-based)
+@property(nonatomic, strong) id curvedContentHosting;
+@property(nonatomic, strong) NSString *settings;
+#endif
+
 @end
 
 #endif // SDL_uikitwindow_h_

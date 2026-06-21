@@ -20,10 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#ifdef HAVE_GAMEINPUT_H
-
 #include "SDL_windows.h"
 #include "SDL_gameinput.h"
+
+#ifdef HAVE_GAMEINPUT_H
+
+#ifndef SDL_GAMEINPUT_DYNAMIC
+#define USE_GAMEINPUT_LIB
+#ifdef _MSC_VER
+#pragma comment(lib, "gameinput.lib")
+#endif
+#endif // !SDL_GAMEINPUT_DYNAMIC
 
 static SDL_SharedObject *g_hGameInputDLL;
 static IGameInput *g_pGameInput;
@@ -33,6 +40,32 @@ static int g_nGameInputRefCount;
 bool SDL_InitGameInput(IGameInput **ppGameInput)
 {
     if (g_nGameInputRefCount == 0) {
+#ifdef USE_GAMEINPUT_LIB
+        // This is recommended, as Microsoft's GameInputCreate() is robust
+        // and better handles various GameInput installations
+        HRESULT hr = GameInputCreate(&g_pGameInput);
+        if (FAILED(hr)) {
+            return WIN_SetErrorFromHRESULT("GameInputCreate failed", hr);
+        }
+#elif GAMEINPUT_API_VERSION > 0
+        g_hGameInputDLL = SDL_LoadObject("gameinputredist.dll");
+        if (!g_hGameInputDLL) {
+            return false;
+        }
+
+        typedef HRESULT (WINAPI *pfnGameInputInitialize)(REFIID riid, void **ppvObject);
+        pfnGameInputInitialize pGameInputInitialize = (pfnGameInputInitialize)SDL_LoadFunction(g_hGameInputDLL, "GameInputInitialize");
+        if (!pGameInputInitialize) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return false;
+        }
+
+        HRESULT hr = pGameInputInitialize(IID_IGameInput, (void **)&g_pGameInput);
+        if (FAILED(hr)) {
+            SDL_UnloadObject(g_hGameInputDLL);
+            return WIN_SetErrorFromHRESULT("GameInputInitialize failed", hr);
+        }
+#else
         g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
         if (!g_hGameInputDLL) {
             return false;
@@ -45,29 +78,12 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
             return false;
         }
 
-        IGameInput *pGameInput = NULL;
-        HRESULT hr = pGameInputCreate(&pGameInput);
+        HRESULT hr = pGameInputCreate(&g_pGameInput);
         if (FAILED(hr)) {
             SDL_UnloadObject(g_hGameInputDLL);
             return WIN_SetErrorFromHRESULT("GameInputCreate failed", hr);
         }
-
-#ifdef SDL_PLATFORM_WIN32
-#if GAMEINPUT_API_VERSION >= 1
-        hr = pGameInput->QueryInterface(IID_IGameInput, (void **)&g_pGameInput);
-#else
-        // We require GameInput v1.1 or newer
-        hr = E_NOINTERFACE;
-#endif
-        pGameInput->Release();
-        if (FAILED(hr)) {
-            SDL_UnloadObject(g_hGameInputDLL);
-            return WIN_SetErrorFromHRESULT("GameInput QueryInterface failed", hr);
-        }
-#else
-        // Assume that the version we get is compatible with the current SDK
-        g_pGameInput = pGameInput;
-#endif
+#endif // USE_GAMEINPUT_LIB
     }
     ++g_nGameInputRefCount;
 
@@ -75,6 +91,11 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
         *ppGameInput = g_pGameInput;
     }
     return true;
+}
+
+bool SDL_GameInputReady(void)
+{
+    return (g_pGameInput != NULL);
 }
 
 void SDL_QuitGameInput(void)
@@ -92,6 +113,22 @@ void SDL_QuitGameInput(void)
             g_hGameInputDLL = NULL;
         }
     }
+}
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT) &&
+        SDL_GameInputReady()) {
+        return true;
+    }
+    return false;
+}
+
+#else
+
+bool SDL_UsingGameInputForXInputControllers(void)
+{
+    return false;
 }
 
 #endif // HAVE_GAMEINPUT_H

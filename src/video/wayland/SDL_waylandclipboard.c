@@ -96,7 +96,7 @@ bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return result;
 }
 
-static const char *text_mime_types[] = {
+static const char *const text_mime_types[] = {
     TEXT_MIME,
     "text/plain",
     "TEXT",
@@ -104,7 +104,7 @@ static const char *text_mime_types[] = {
     "STRING"
 };
 
-const char **Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
+const char *const *Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
 {
     *num_mime_types = SDL_arraysize(text_mime_types);
     return text_mime_types;
@@ -185,7 +185,7 @@ bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
             result = true;
         } else {
             size_t mime_count = 0;
-            const char **mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
+            const char *const *mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
             for (size_t i = 0; i < mime_count; i++) {
                 if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, mime_types[i])) {
                     result = true;

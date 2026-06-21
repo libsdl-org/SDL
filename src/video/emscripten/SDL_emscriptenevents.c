@@ -713,6 +713,15 @@ static void Emscripten_UpdateMouseFromEvent(SDL_WindowData *window_data, const E
 {
     SDL_assert(event->pointer_type == PTRTYPE_MOUSE);
 
+    // Hidden windows (e.g. a shared GL-context window) may share the DOM canvas with the
+    // visible window. Their pointer-event listeners would otherwise fire alongside the
+    // visible window's, fighting over `mouse->focus` and producing events tagged with the
+    // hidden window's ID -- causing downstream consumers that key by window ID to silently
+    // drop them. Hidden windows shouldn't take part in user-input dispatch.
+    if (window_data->window->flags & SDL_WINDOW_HIDDEN) {
+        return;
+    }
+
     // rescale (in case canvas is being scaled)
     double client_w, client_h;
     emscripten_get_element_css_size(window_data->canvas_id, &client_w, &client_h);
@@ -837,6 +846,11 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
 static void Emscripten_HandleMouseFocus(SDL_WindowData *window_data, const Emscripten_PointerEvent *event, bool isenter)
 {
     SDL_assert(event->pointer_type == PTRTYPE_MOUSE);
+
+    // Hidden windows shouldn't ever become the mouse-focus target.
+    if (window_data->window->flags & SDL_WINDOW_HIDDEN) {
+        return;
+    }
 
     const bool isPointerLocked = window_data->has_pointer_lock;
 
@@ -1327,11 +1341,33 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     keyElement = Emscripten_GetKeyboardTargetElement(data->keyboard_element);
     if (keyElement) {
+        // Emscripten's HTML5 helpers do not deduplicate `addEventListener` calls:
+        // see `registerOrRemoveHandler` in `emscripten/src/lib/libhtml5.js`.
+        //
+        // If a previous SDL window already registered keyboard handlers on the same
+        // target, the new registration would *stack* a second listener, causing every
+        // browser keydown to fire `Emscripten_HandleKey` twice.
+        //
+        // The duplicate calls then produce two `SDL_EVENT_KEY_DOWN` events per physical
+        // keypress (the second one with `repeat=true`, due to the keystate-based repeat
+        // detection in `SDL_SendKeyboardKeyInternal`).
+        //
+        // We must clear any prior handler on this target before installing ours:
+        emscripten_set_keydown_callback(keyElement, NULL, 0, NULL);
+        emscripten_set_keyup_callback(keyElement, NULL, 0, NULL);
+        emscripten_set_keypress_callback(keyElement, NULL, 0, NULL);
+
         MAIN_THREAD_EM_ASM_INT({
             var data = $0;
             // our keymod state can get confused in various ways (changed capslock when browser didn't have focus, etc), and you can't query the current
             //  state from the DOM, outside of a keyboard event, so catch keypresses globally and reset mod state if it's unexpectedly wrong. Best we can do.
             //  Note that this thing _only_ adjusts the lock keys if necessary; the real SDL keypress handling happens elsewhere.
+
+            // Remove any prior listener first -- `addEventListener` does not deduplicate either.
+            if (document.sdlEventHandlerLockKeysCheck) {
+                document.removeEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+            }
+
             document.sdlEventHandlerLockKeysCheck = function(event) {
                 // don't try to adjust the state on the actual lock key presses; the normal key handler will catch that and adjust.
                 if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock"))

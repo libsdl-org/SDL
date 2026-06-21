@@ -206,7 +206,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
         for (i = 0; i < players_len; i++) {
             const Player *player = &players[i];
             float mod_x = (float)(i % part_hor);
-            float mod_y = (float)(i / part_hor);
+            float mod_y = (float)i / part_hor;
             float hor_origin = (mod_x + 0.5f) * size_hor;
             float ver_origin = (mod_y + 0.5f) * size_ver;
             float cam_origin = (float)(0.5 * SDL_sqrt(size_hor * size_hor + size_ver * size_ver));

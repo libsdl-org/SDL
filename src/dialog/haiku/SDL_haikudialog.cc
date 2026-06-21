@@ -222,9 +222,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     };
 
     if (!SDL_InitBeApp()) {
-        char *err = SDL_strdup(SDL_GetError());
-        SDL_SetError("Couldn't init Be app: %s", err);
-        SDL_free(err);
+        SDL_SetError("Couldn't init Be app: %s", SDL_GetError());
         callback(userdata, NULL, -1);
         return;
     }

@@ -72,6 +72,10 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("Couldn't create thread");
     }
 
+    u32 thread_ID = 0;
+    svcGetThreadId(&thread_ID, threadGetHandle(thread->handle));
+    thread->threadid = (SDL_ThreadID) thread_ID;
+
     return true;
 }
 

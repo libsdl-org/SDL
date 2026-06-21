@@ -26,12 +26,16 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
-
-#include <unistd.h>
+#include "../../core/android/SDL_android.h"
 
 char *SDL_SYS_GetBasePath(void)
 {
-    return SDL_strdup("./");
+    return SDL_strdup("assets://");
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    return SDL_GetAndroidPackageName();
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

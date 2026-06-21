@@ -61,6 +61,7 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_notification.h>
 #include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_power.h>
 #include <SDL3/SDL_sensor.h>
@@ -163,8 +164,9 @@ typedef enum SDL_EventType
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
     SDL_EVENT_WINDOW_HDR_STATE_CHANGED, /**< Window HDR properties have changed */
+    SDL_EVENT_WINDOW_SETTINGS_CHANGED,  /**< Window settings have changed (on visionOS) */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_HDR_STATE_CHANGED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_SETTINGS_CHANGED,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
@@ -211,6 +213,8 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
+    SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
+    SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,
@@ -259,8 +263,11 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
 
+    /* Notification events */
+    SDL_EVENT_NOTIFICATION_ACTION_INVOKED = 0x1500, /**< A user response to a system notification was received. */
+
     /* Path watch events */
-    SDL_EVENT_PATH_MODIFIED = 0x1500, /**< Data was written/over-written/deleted in a watched file or a file in a watched directory. */
+    SDL_EVENT_PATH_MODIFIED = 0x1600, /**< Data was written/over-written/deleted in a watched file or a file in a watched directory. */
     SDL_EVENT_PATH_CREATED,           /**< A new file or directory was created in a watched directory. */
     SDL_EVENT_PATH_REMOVED,           /**< A file or directory was removed in a watched directory. */
     SDL_EVENT_PATH_REMOVED_SELF,      /**< Watched path (file or directory) was removed. */
@@ -463,7 +470,7 @@ typedef struct SDL_MouseMotionEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 */
+    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, SDL_PEN_MOUSEID for pen events, or 0 */
     SDL_MouseButtonFlags state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
@@ -718,6 +725,23 @@ typedef struct SDL_GamepadSensorEvent
 } SDL_GamepadSensorEvent;
 
 /**
+ * Gamepad capsense event structure (event.gcapsense.*)
+ *
+ * \since This struct is available since SDL 3.6.0.
+ */
+typedef struct SDL_GamepadCapSenseEvent
+{
+    SDL_EventType type;     /**< SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH or SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE */
+    Uint32 reserved;
+    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_JoystickID which;   /**< The joystick instance id */
+    Uint8 capsense;         /**< The capsense type (SDL_GamepadCapSenseType) */
+    bool down;              /**< true if the capsense is touched */
+    Uint8 padding1;
+    Uint8 padding2;
+} SDL_GamepadCapSenseEvent;
+
+/**
  * Audio device event structure (event.adevice.*)
  *
  * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
@@ -751,6 +775,24 @@ typedef struct SDL_CameraDeviceEvent
     SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
 } SDL_CameraDeviceEvent;
 
+/**
+ * Notification dialog event structure (event.notification.*)
+ *
+ * An `action_id` value of 'default' for an
+ * SDL_EVENT_NOTIFICATION_ACTION_INVOKED event indicates that the notification
+ * was interacted with without selecting a specific action (e.g. the body of
+ * the notification was clicked on).
+ *
+ * \since This struct is available since SDL 3.6.0.
+ */
+typedef struct SDL_NotificationEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_NOTIFICATION_ACTION_INVOKED */
+    Uint32 reserved;
+    Uint64 timestamp;         /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_NotificationID which; /**< The ID of the notification that generated this event. */
+    const char *action_id;    /**< The identifier string of the action invoked in the notification dialog. */
+} SDL_NotificationEvent;
 
 /**
  * Renderer event structure (event.render.*)
@@ -1061,6 +1103,7 @@ typedef union SDL_Event
     SDL_GamepadButtonEvent gbutton;         /**< Gamepad button event data */
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
+    SDL_GamepadCapSenseEvent gcapsense;     /**< Gamepad capsense event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_CameraDeviceEvent cdevice;          /**< Camera device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
@@ -1076,7 +1119,8 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
-    SDL_PathWatchEvent path_watch;          /**< File watch event data */
+    SDL_NotificationEvent notification;     /**< Notification event data */
+    SDL_PathWatchEvent path_watch;          /**< Path watch event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

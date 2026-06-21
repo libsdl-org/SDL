@@ -77,15 +77,18 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         thread->handle = (SYS_ThreadHandle)((size_t)pfnBeginThread(NULL, (unsigned int)thread->stacksize,
                                                                    RunThreadViaBeginThreadEx,
                                                                    thread, flags, &threadid));
+        thread->threadid = (SDL_ThreadID) threadid;
     } else {
         DWORD threadid = 0;
         thread->handle = CreateThread(NULL, thread->stacksize,
                                       RunThreadViaCreateThread,
                                       thread, flags, &threadid);
+        thread->threadid = (SDL_ThreadID) threadid;
     }
     if (!thread->handle) {
         return SDL_SetError("Not enough resources to create thread");
     }
+
     return true;
 }
 

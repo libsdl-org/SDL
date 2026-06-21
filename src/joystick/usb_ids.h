@@ -31,6 +31,7 @@
 #define USB_VENDOR_ASUS         0x0b05
 #define USB_VENDOR_BACKBONE     0x358a
 #define USB_VENDOR_CRKD         0x3651
+#define USB_VENDOR_CORSAIR      0x1b1c
 #define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_FLYDIGI_V1   0x04b4
@@ -54,6 +55,7 @@
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_RED_OCTANE   0x1430
+#define USB_VENDOR_RED_OCTANE_GAMES   0x3958
 #define USB_VENDOR_SAITEK       0x06a3
 #define USB_VENDOR_SCEA         0x12ba
 #define USB_VENDOR_SHANWAN      0x2563
@@ -79,6 +81,7 @@
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
+#define USB_PRODUCT_BACKBONE_ONE_PS5_V2                   0x0304
 #define USB_PRODUCT_BDA_XB1_CLASSIC                       0x581a
 #define USB_PRODUCT_BDA_XB1_FIGHTPAD                      0x791a
 #define USB_PRODUCT_BDA_XB1_SPECTRA_PRO                   0x592a
@@ -154,6 +157,8 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
 #define USB_PRODUCT_RAZER_WOLVERINE_V3_PRO                0x0a3f
 #define USB_PRODUCT_RED_OCTANE_XB1_GUITAR_HERO_LIVE_GUITAR 0x0170
+#define USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR      0x4161
+#define USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS       0xD300
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SCEA_PS3_GH_GUITAR                    0x0100
 #define USB_PRODUCT_SCEA_PS3_GH_DRUMS                     0x0120

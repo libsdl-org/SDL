@@ -1,0 +1,66 @@
+name: 'Setup DJGPP toolchain'
+description: 'Download DJGPP and setup CMake toolchain'
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Calculate variables'
+      id: calc
+      shell: sh
+      run: |
+        version="12.2.0"
+        case "${{ runner.os }}-${{ runner.arch }}" in
+          "Linux-X86")
+            archive="djgpp-linux32-gcc1220.tar.bz2"
+            ;;
+          "Linux-X64")
+            archive="djgpp-linux64-gcc1220.tar.bz2"
+            ;;
+          "macOS-X86" | "macOS-X64" | "macOS-ARM64")
+            archive="djgpp-osx-gcc1220.tar.bz2"
+            ;;
+          "Windows-X86" | "Windows-X64")
+            archive="djgpp-mingw-gcc1220.zip"
+            ;;
+          *)
+            echo "Unsupported ${{ runner.os }}-${{ runner.arch }}"
+            exit 1;
+            ;;
+        esac
+        echo "url=https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/${archive}" >> ${GITHUB_OUTPUT}
+        echo "archive=${archive}" >> ${GITHUB_OUTPUT}
+        echo "version=${version}" >> ${GITHUB_OUTPUT}
+        echo "cache-key=${archive}-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}" >> ${GITHUB_OUTPUT}
+    - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
+      id: cache-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
+        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Download DJGPP ${{ steps.calc.outputs.version }} for ${{ runner.os }} (${{ runner.arch }})'
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      shell: pwsh
+      run: |
+        Invoke-WebRequest "${{ steps.calc.outputs.url }}" -OutFile "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
+    - name: 'Cache ${{ steps.calc.outputs.archive }}'
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      uses: actions/cache/save@v5
+      with:
+        path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
+        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Extract DJGPP archive'
+      shell: pwsh
+      run: |
+        $archive = "${{ steps.calc.outputs.archive }}";
+        if ($archive.EndsWith(".bz2")) {
+          # Remove ".bz2" suffix
+          $tar_archive = $archive.Substring(0, $archive.Length - 4)
+          7z "-o${{ runner.temp }}" x "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
+          7z "-o${{ runner.temp }}" x "${{ runner.temp }}/$tar_archive"
+        } else {
+          7z "-o${{ runner.temp }}" x "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
+        }
+    - name: 'Set output variables'
+      id: final
+      shell: pwsh
+      run: |
+        echo "${{ runner.temp }}/djgpp/bin" >> $env:GITHUB_PATH

@@ -453,10 +453,10 @@ typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata, SDL_EGLDi
 /**
  * An enumeration of OpenGL configuration attributes.
  *
- * While you can set most OpenGL attributes normally, the attributes listed
- * above must be known before SDL creates the window that will be used with
- * the OpenGL context. These attributes are set and read with
- * SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
+ * While you can set most OpenGL attributes normally, they must be known
+ * before SDL creates the window that will be used with the OpenGL context.
+ * These attributes are set and read with SDL_GL_SetAttribute() and
+ * SDL_GL_GetAttribute().
  *
  * In some cases, these attributes are minimum requests; the GL does not
  * promise to give you exactly what you asked for. It's possible to ask for a
@@ -1384,6 +1384,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   popup windows and have the behaviors and guidelines outlined in
  *   SDL_CreatePopupWindow().
  *
+ * These are additional supported properties with visionOS:
+ *
+ * - `SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING`: the settings of the
+ *   window in JSON format. If this isn't set, the window will have standard
+ *   UIKit behavior. If this is set to "" or a valid setting string then the
+ *   window is created with enhanced features allowing curved display. The
+ *   curvature in the settings is defined as a radius in millimeters. A common
+ *   value for a gaming monitor is 1000 and a setting string for that would be
+ *   "{\"curvatureRadius\":1000}".
+ *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
  * (`SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`, etc), as SDL will handle that
@@ -1446,6 +1456,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING            "SDL.window.create.visionos.settings"
 
 /**
  * Get the numeric ID of a window.
@@ -1624,6 +1635,12 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
  *
+ * On visionOS:
+ *
+ * - `SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING`: the current settings of the
+ *   window in JSON format, or NULL if the window has standard UIKit behavior.
+ *   SDL_EVENT_WINDOW_SETTINGS_CHANGED is sent when this value changes.
+ *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1673,6 +1690,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING                    "SDL.window.visionos.settings"
 
 /**
  * Get the window flags.

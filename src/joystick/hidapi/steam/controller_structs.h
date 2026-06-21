@@ -179,9 +179,8 @@ typedef struct
     uint16_t on_us;
     uint16_t off_us;
     uint16_t repeat_count;
-    uint16_t gain_db; 
 } MsgHapticPulse;
-#define HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES 10
+#define HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES 8
 
 typedef struct
 {
@@ -228,8 +227,8 @@ typedef enum
     ID_OUT_REPORT_HAPTIC_PULSE		= 0x81,
     ID_OUT_REPORT_HAPTIC_COMMAND	= 0x82,
     ID_OUT_REPORT_HAPTIC_LFO_TONE	= 0x83,
-    ID_OUT_REPORT_HAPTIC_LOG_SWEEP	= 0x85,
-    ID_OUT_REPORT_HAPTIC_SCRIPT		= 0x86,
+    ID_OUT_REPORT_HAPTIC_LOG_SWEEP	= 0x84,
+    ID_OUT_REPORT_HAPTIC_SCRIPT		= 0x85,
 } ValveTritonOutReportMessageIDs;
 
 typedef struct
@@ -556,6 +555,8 @@ enum ETritonReportIDTypes
     ID_TRITON_BATTERY_STATUS	= 0x43,
     ID_TRITON_CONTROLLER_STATE_BLE = 0x45,
     ID_TRITON_WIRELESS_STATUS_X = 0x46,
+    ID_TRITON_CONTROLLER_STATE_TIMESTAMP = 0x47,
+
     ID_TRITON_WIRELESS_STATUS   = 0x79,
 };
 
@@ -595,6 +596,18 @@ typedef struct {
 
 typedef struct
 {
+    uint16_t timestamp;
+    short sAccelX;
+    short sAccelY;
+    short sAccelZ;
+
+    short sGyroX;
+    short sGyroY;
+    short sGyroZ;
+} TritonMTUIMUNoQuat32usTS_t;
+
+typedef struct
+{
     uint8_t seq_num;
     uint32_t buttons;
     short sTriggerLeft;
@@ -607,11 +620,11 @@ typedef struct
 
     short sLeftPadX;
     short sLeftPadY;
-    unsigned short ucPressureLeft;
+    unsigned short unPressureLeft;
 
     short sRightPadX;
     short sRightPadY;
-    unsigned short ucPressureRight;
+    unsigned short unPressureRight;
     TritonMTUIMU_t imu;
 } TritonMTUFull_t;
 
@@ -628,13 +641,39 @@ typedef struct {
 
 	short sLeftPadX;
 	short sLeftPadY;
-	unsigned short ucPressureLeft;
+	unsigned short unPressureLeft;
 
 	short sRightPadX;
 	short sRightPadY;
-	unsigned short ucPressureRight;
+	unsigned short unPressureRight;
 	TritonMTUIMUNoQuat_t imu;
 } TritonMTUNoQuat_t;
+
+// New Ibex packet that adds a timestamp to the trackpad sampling
+// and reduces the size of the IMU timestamp.  Timestamps are now 16 bits
+typedef struct
+{
+    uint8_t seq_num;
+    uint32_t buttons;
+    short sTriggerLeft;
+    short sTriggerRight;
+
+    short sLeftStickX;
+    short sLeftStickY;
+    short sRightStickX;
+    short sRightStickY;
+
+    unsigned short unTrackpadTimestamp;
+    short sLeftPadX;
+    short sLeftPadY;
+    unsigned short unPressureLeft;
+
+    short sRightPadX;
+    short sRightPadY;
+    unsigned short unPressureRight;
+
+    TritonMTUIMUNoQuat32usTS_t imu;
+} TritonMTUNoQuat32TS_t;
 
 enum EChargeState
 {

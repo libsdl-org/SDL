@@ -38,6 +38,8 @@
 #include "vita/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_N3DS)
 #include "n3ds/SDL_systhread_c.h"
+#elif defined(SDL_THREAD_DOS)
+#include "dos/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform
 #include "generic/SDL_systhread_c.h"
@@ -54,7 +56,6 @@ struct SDL_Thread
     SDL_error errbuf;
     char *name;
     size_t stacksize; // 0 for default, >0 for user-specified stack size.
-    SDL_Semaphore *ready_sem;  // signals when the thread is set up and about to start running.
     int(SDLCALL *userfunc)(void *);
     void *userdata;
     void *data;

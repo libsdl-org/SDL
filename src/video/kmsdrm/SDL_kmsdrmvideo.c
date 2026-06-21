@@ -1689,7 +1689,23 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (ret) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
+    }
+
+    /***************************/
+    // Destroy the GBM buffers
+    /***************************/
+
+    if (windata->bo) {
+        if (windata->bo != windata->next_bo) {
+            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        }
+        windata->bo = NULL;
+    }
+
+    if (windata->next_bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+        windata->next_bo = NULL;
     }
 
     /***************************/
@@ -1701,20 +1717,6 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     if (windata->egl_surface != EGL_NO_SURFACE) {
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
         windata->egl_surface = EGL_NO_SURFACE;
-    }
-
-    /***************************/
-    // Destroy the GBM buffers
-    /***************************/
-
-    if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
-
-    if (windata->next_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-        windata->next_bo = NULL;
     }
 
     /***************************/

@@ -86,6 +86,20 @@
 #define SDL_NEON_INTRINSICS 1
 
 /**
+ * Defined if (and only if) the compiler supports ARM SVE2 intrinsics.
+ *
+ * If this macro is defined, `<arm_sve.h>` (providing SVE intrinsics) will
+ * only be included if the target architecture supports SVE
+ * (`__ARM_FEATURE_SVE` feature macro). Some toolchains do not support
+ * `SDL_TARGETING("arch=armv8-a+sve2")`, so for best portability you need to
+ * write all SVE code in a separate translation unit and add appropriate
+ * compile flags.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_SVE2_INTRINSICS 1
+
+/**
  * Defined if (and only if) the compiler supports PowerPC Altivec intrinsics.
  *
  * If this macro is defined, SDL will have already included `<altivec.h>`
@@ -237,6 +251,12 @@ _m_prefetch(void *__P)
 #  define SDL_NEON_INTRINSICS 1
 #  include <arm_neon.h>
 #endif
+#if !defined(SDL_DISABLE_SVE2)
+#  define SDL_SVE2_INTRINSICS 1
+#  if defined(__ARM_FEATURE_SVE)
+#    include <arm_sve.h>
+#  endif
+#endif
 
 #else
 /* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC to have it included. */
@@ -262,6 +282,26 @@ _m_prefetch(void *__P)
 #      include <arm64_neon.h>
 #      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #      define __ARM_ARCH 8
+#    endif
+#  endif
+#endif
+#ifndef SDL_DISABLE_SVE2
+#  if defined(SDL_PLATFORM_WINDOWS)
+/* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
+#    if defined (_M_ARM64) && 0 /* Please only remove this 0 when MSVC releasing support for SVE2 officially. */
+#      define SDL_SVE2_INTRINSICS 1
+#      define __ARM_FEATURE_SVE2 1 /* Set __ARM_FEATURE_SVE2 so that it can be used elsewhere, at compile time */
+#      define __ARM_FEATURE_SVE 1 /* Set __ARM_FEATURE_SVE so that it can be used elsewhere, at compile time */
+#      define __ARM_ARCH 8
+#      include <arm_sve.h>
+#    endif
+#  elif defined(SDL_PLATFORM_APPLE)
+/* Apple has no AArch64 device supporting SVE2 */
+#  elif defined(__ARM_ARCH) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64)) && \
+        defined(__has_include) && __has_include(<arm_sve.h>)
+#    define SDL_SVE2_INTRINSICS 1
+#    if defined(__ARM_FEATURE_SVE)
+#      include <arm_sve.h>
 #    endif
 #  endif
 #endif

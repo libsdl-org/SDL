@@ -1286,6 +1286,19 @@ SDL3_0.0.0 {
     SDL_GDKSuspendRenderer;
     SDL_GDKResumeRenderer;
     SDL_IsPhone;
+    SDL_LoadJPG_IO;
+    SDL_LoadJPG;
+    SDL_HasSVE2;
+    SDL_GamepadHasCapSense;
+    SDL_GetGamepadCapSense;
+    SDL_aligned_alloc_zero;
+    SDL_wcstoul;
+    SDL_wcstoll;
+    SDL_wcstoull;
+    SDL_RequestNotificationPermission;
+    SDL_ShowNotificationWithProperties;
+    SDL_ShowNotification;
+    SDL_RemoveNotification;
     # extra symbols go here (don't modify this line)
   local: *;
 };

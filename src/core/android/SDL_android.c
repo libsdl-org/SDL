@@ -44,6 +44,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <time.h>
 
 #define SDL_JAVA_PREFIX                               org_libsdl_app
 #define CONCAT1(prefix, class, function)              CONCAT2(prefix, class, function)
@@ -139,10 +140,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     JNIEnv *env, jclass jcls,
     jint pen_id_in, jint device_type, jint button, jint action, jfloat x, jfloat y, jfloat p);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
-    JNIEnv *env, jclass jcls,
-    jfloat x, jfloat y, jfloat z);
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
     JNIEnv *env, jclass jcls);
 
@@ -236,7 +233,6 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativePinchEnd", "()V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
     { "onNativePen", "(IIIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
-    { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
     { "onNativeLocaleChanged", "()V", SDL_JAVA_INTERFACE(onNativeLocaleChanged) },
@@ -297,11 +293,11 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode);
+    jint device_id, jint keycode, jint scancode);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
     JNIEnv *env, jclass jcls,
@@ -311,10 +307,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint hat_id, jint x, jint y);
 
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint sensor_type, jlong sensor_timestamp, jfloat x, jfloat y, jfloat z);
+
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led);
+    jint button_mask, jint naxes, jint axis_mask, jint nhats,
+    jboolean can_rumble, jboolean has_rgb_led, jboolean has_accelerometer, jboolean has_gyroscope);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
@@ -330,11 +331,12 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 
 static JNINativeMethod SDLControllerManager_tab[] = {
     { "nativeSetupJNI", "()V", SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI) },
-    { "onNativePadDown", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
-    { "onNativePadUp", "(II)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
+    { "onNativePadDown", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown) },
+    { "onNativePadUp", "(III)Z", SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp) },
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "onNativeJoySensor", "(IIJFFF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor) },
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
     { "nativeAddHaptic", "(ILjava/lang/String;)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
     { "nativeRemoveHaptic", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic) }
@@ -405,18 +407,17 @@ static jmethodID midAudioSetThreadPriority;
 static jclass mControllerManagerClass;
 
 // method signatures
-static jmethodID midPollInputDevices;
+static jmethodID midDetectDevices;
 static jmethodID midJoystickSetLED;
-static jmethodID midPollHapticDevices;
+static jmethodID midJoystickSetSensorsEnabled;
+static jmethodID midDetectHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticRumble;
 static jmethodID midHapticStop;
 
-// Accelerometer data storage
+// display orientation
 static SDL_DisplayOrientation displayNaturalOrientation;
 static SDL_DisplayOrientation displayCurrentOrientation;
-static float fLastAccelerometer[3];
-static bool bHasNewData;
 
 static bool bHasEnvironmentVariables;
 
@@ -427,6 +428,7 @@ static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
 static SDL_Mutex *Android_ActivityMutex = NULL;
+static int Android_ActivityMutexCount = 0;
 static SDL_Mutex *Android_LifecycleMutex = NULL;
 static SDL_Semaphore *Android_LifecycleEventSem = NULL;
 static SDL_AndroidLifecycleEvent Android_LifecycleEvents[SDL_NUM_ANDROID_LIFECYCLE_EVENTS];
@@ -680,7 +682,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShowTextInput = (*env)->GetStaticMethodID(env, mActivityClass, "showTextInput", "(IIIII)Z");
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
-    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
@@ -751,12 +753,14 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 
     mControllerManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
-    midPollInputDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                    "pollInputDevices", "()V");
+    midDetectDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                    "detectDevices", "()V");
     midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "joystickSetLED", "(IIII)V");
-    midPollHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                     "pollHapticDevices", "()V");
+    midJoystickSetSensorsEnabled = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                              "joystickSetSensorsEnabled", "(IZ)V");
+    midDetectHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
+                                                     "detectHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                              "hapticRun", "(IFI)V");
     midHapticRumble = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -764,7 +768,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midJoystickSetLED || !midPollHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
+    if (!midDetectDevices || !midJoystickSetLED || !midJoystickSetSensorsEnabled || !midDetectHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -994,6 +998,15 @@ bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeout
 {
     bool got_event = false;
 
+    int relock_count = 0;
+    Android_LockActivityMutex();
+    while (Android_ActivityMutexCount > 1) {
+        // We came into this function with the activity lock held, we need to unlock so lifecycle events can be dispatched
+        ++relock_count;
+        Android_UnlockActivityMutex();
+    }
+    Android_UnlockActivityMutex();
+
     while (!got_event && SDL_WaitSemaphoreTimeoutNS(Android_LifecycleEventSem, timeoutNS)) {
         SDL_LockMutex(Android_LifecycleMutex);
         {
@@ -1005,16 +1018,23 @@ bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeout
         }
         SDL_UnlockMutex(Android_LifecycleMutex);
     }
+
+    while (relock_count > 0) {
+        Android_LockActivityMutex();
+        --relock_count;
+    }
     return got_event;
 }
 
 void Android_LockActivityMutex(void)
 {
     SDL_LockMutex(Android_ActivityMutex);
+    ++Android_ActivityMutexCount;
 }
 
 void Android_UnlockActivityMutex(void)
 {
+    --Android_ActivityMutexCount;
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
@@ -1149,10 +1169,10 @@ SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboo
 // Paddown
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadDown(device_id, keycode);
+    return Android_OnPadDown(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID
@@ -1161,10 +1181,10 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
 // Padup
 JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
     JNIEnv *env, jclass jcls,
-    jint device_id, jint keycode)
+    jint device_id, jint keycode, jint scancode)
 {
 #ifdef SDL_JOYSTICK_ANDROID
-    return Android_OnPadUp(device_id, keycode);
+    return Android_OnPadUp(device_id, keycode, scancode);
 #else
     return false;
 #endif // SDL_JOYSTICK_ANDROID
@@ -1190,17 +1210,29 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 #endif // SDL_JOYSTICK_ANDROID
 }
 
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint sensor_type, jlong sensor_timestamp, jfloat x, jfloat y, jfloat z)
+{
+#ifdef SDL_JOYSTICK_ANDROID
+    // In Java there's no Uint64 type, so pass Sint64 as if it was Uint64.
+    Android_OnJoySensor(device_id, sensor_type, sensor_timestamp, x, y, z);
+#endif // SDL_JOYSTICK_ANDROID
+}
+
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
-    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led)
+    jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led,
+    jboolean has_accelerometer, jboolean has_gyroscope)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats, can_rumble, has_rgb_led);
+    Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats,
+        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -1452,17 +1484,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
     Android_OnPen(Android_Window, pen_id_in, device_type, button, action, x, y, p);
 
     SDL_UnlockMutex(Android_ActivityMutex);
-}
-
-// Accelerometer
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
-    JNIEnv *env, jclass jcls,
-    jfloat x, jfloat y, jfloat z)
-{
-    fLastAccelerometer[0] = x;
-    fLastAccelerometer[1] = y;
-    fLastAccelerometer[2] = z;
-    bHasNewData = true;
 }
 
 // Clipboard
@@ -1740,22 +1761,6 @@ bool Android_JNI_ShouldMinimizeOnFocusLoss(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
 }
 
-bool Android_JNI_GetAccelerometerValues(float values[3])
-{
-    bool result = false;
-
-    if (bHasNewData) {
-        int i;
-        for (i = 0; i < 3; ++i) {
-            values[i] = fLastAccelerometer[i];
-        }
-        bHasNewData = false;
-        result = true;
-    }
-
-    return result;
-}
-
 /*
  * Audio support
  */
@@ -1838,9 +1843,485 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
     return false;
 }
 
+
+// APK file tree discovery...
+
+// APK files are just .zip files, so try to find parse out the file tree from it. We'll still
+// use Android's system APIs to actually access data, but those APIs aren't reliable for
+// enumerating the tree for various reasons.
+
+// we only care about the directories; Android's AAssetManager can enumerate all files in any
+// known directory, but it won't enumerate subdirectories, so we track that by ourselves.
+typedef struct APKNode
+{
+    char *name;
+    SDL_PathInfo info;
+    struct APKNode *parent;
+    struct APKNode *children;
+    struct APKNode *children_tail;
+    struct APKNode *next_sibling;
+} APKNode;
+
+static APKNode *APKRootNode = NULL;
+
+static void FreeAPKNode(APKNode *node)
+{
+    if (node) {
+        FreeAPKNode(node->next_sibling);
+        FreeAPKNode(node->children);
+        SDL_free(node->name);
+        SDL_free(node);
+    }
+}
+
+static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
+{
+    if ((child[0] == '.') && (child[1] == '\0')) {  // "." paths just return the current dir.
+        return parent;
+    } else if ((child[0] == '.') && (child[1] == '.') && (child[2] == '\0')) {  // ".." paths return the parent dir (or the current dir if at the root).
+        return parent->parent ? parent->parent : parent;
+    }
+
+    for (APKNode *node = parent->children; node != NULL; node = node->next_sibling) {
+        if (SDL_strcmp(child, node->name) == 0) {
+            return node;
+        }
+    }
+    return NULL;
+}
+
+static const APKNode *FindAPKNode(const char *constpath)
+{
+    //SDL_Log("FindAPKNode('%s') ...", constpath);
+
+    if (SDL_strncmp(constpath, "assets://", 9) == 0) {
+        constpath += 9;
+    }
+
+    APKNode *parent = APKRootNode;
+    if (!parent) {
+        return NULL;
+    } else if (*constpath == '\0') {
+        return parent;
+    }
+
+    const size_t pathlen = SDL_strlen(constpath);
+    bool isstack = false;
+    char *alloc_path = SDL_small_alloc(char, pathlen + 1, &isstack);
+    if (!alloc_path) {
+        return NULL;
+    }
+    char *path = alloc_path;
+    SDL_strlcpy(path, constpath, pathlen + 1);
+
+    while (parent) {
+        while (*path == '/') {
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
+        }
+
+        if (*path == '\0') {  // ended with a '/'? We're done.
+            break;
+        }
+
+        char *ptr = SDL_strchr(path, '/');
+        if (ptr) {
+            *ptr = '\0';  // terminate on the end of this subdir's name.
+        }
+
+        APKNode *node = FindAPKChildNode(parent, path);
+        if (!node) {
+            SDL_SetError("No such file or directory");
+            parent = NULL;
+        } else if ((node->info.type == SDL_PATHTYPE_FILE) && ptr) {  // file where we want a directory?
+            SDL_SetError("%s is not a directory", alloc_path);
+            parent = NULL;
+        } else {
+            parent = node;
+            if (!ptr) {
+                break;
+            }
+            *ptr = '/';
+            path = ptr + 1;
+        }
+    }
+
+    SDL_small_free(alloc_path, isstack);
+    return parent;
+}
+
+static APKNode *AddAPKChildNode(APKNode *parent, const char *child)
+{
+    APKNode *node = FindAPKChildNode(parent, child);
+    if (!node) {  // don't have this one yet, make a new node.
+        node = (APKNode *) SDL_calloc(1, sizeof (*node));
+        if (!node) {
+            return NULL;  // uhoh.
+        }
+
+        node->name = SDL_strdup(child);
+        if (!node->name) {
+            SDL_free(node);
+            return NULL;  // uhoh.
+        }
+
+        SDL_copyp(&node->info, &parent->info);  // you probably need to update this afterwards.
+
+        node->parent = parent;
+        if (parent->children_tail) {  // APKs tend to be sorted alphabetically, so insert new nodes at the end of the list to maintain this order.
+            parent->children_tail->next_sibling = node;
+        } else {
+            parent->children = node;
+        }
+        parent->children_tail = node;
+    }
+    return node;
+}
+
+static APKNode *AddAPKDirs(char *path, APKNode *parent)
+{
+    // zip files specify explicit directories by just having a path that ends with a dir separator,
+    // which works nicely for our needs here; if the last segment of the path doesn't end with a
+    // '/', it's a file and we can drop it, or we filled in the final subdirectory and the '/' at
+    // the end will put us at an empty string to be dropped.
+    //
+    // directories do not need to be explicitly specified if something uses some deeper path, they
+    // may need to be inferred from those references, so we build out the tree by looking at all
+    // files and filling in nodes they mention.
+
+    SDL_assert(parent->info.type == SDL_PATHTYPE_DIRECTORY);
+    SDL_assert(parent->info.size == 0);
+
+    while (true) {  // while still subdirectories to handle...
+        while (*path == '/') {
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
+        }
+
+        char *ptr = SDL_strchr(path, '/');
+        if (!ptr) {
+            break;  // last thing is either an empty string (we ended with a '/'), or an actual file's name, so drop it.
+        }
+
+        if ((path[0] == '.') && ((path[1] == '\0') || ((path[1] == '.') ||(path[2] == '\0')))) {
+            // whoa, there's a "." or ".." subdir in a zip entry's path? Fail!
+            SDL_SetError("bogus file path in APK file entry");
+            return NULL;
+        }
+
+        *ptr = '\0';  // terminate on the end of this subdir's name.
+        APKNode *node = AddAPKChildNode(parent, path);
+        *ptr = '/';
+
+        if (!node) {
+            return NULL;  // uhoh.
+        }
+
+        parent = node;
+        path = ptr + 1;  // point to start of next section.
+    }
+
+    return parent;
+}
+
+
+static SDL_Time ZipDosTimeToSDLTime(Uint32 dostime)
+{
+    // Note that DOS-style datetimes in a zip don't have timezone info, etc,
+    // so these are treated as UTC for lack of a better option. Also, they have
+    // 2-second precision and the year bits are going to roll over in 2108.
+    // There are possibly better timestamps in extended fields (!!! FIXME: add
+    // support for those), but this field is guaranteed to exist with all its
+    // flaws and is probably Good Enough anyhow.
+    const Uint32 dosdate = (Uint32) ((dostime >> 16) & 0xFFFF);
+    const Uint32 dostime16 = dostime & 0xFFFF;
+
+    const int m = (int) ((dosdate >> 5) & 0x0F);
+    const int d = (int) ((dosdate >> 0) & 0x1F) + 1;
+    const int y = (int) (((dosdate >> 9) & 0x7F) + 1980) - (m <= 2 ? 1 : 0);
+    const int hour   = (int) ((dostime16 >> 11) & 0x1F);
+    const int minute = (int) ((dostime16 >>  5) & 0x3F);
+    const int sec    = (int) ((dostime16 <<  1) & 0x3E);
+
+    // days since 1/1/1970: https://howardhinnant.github.io/date_algorithms.html#days_from_civil
+    const int era = ((y >= 0) ? y : (y - 399)) / 400;
+    const unsigned int yoe = (unsigned int) (y - era * 400);      // [0, 399]
+    const unsigned int doy = (((153 * ((m > 2) ? (m - 3) : (m + 9))) + 2) / 5) + (d - 1);  // [0, 365]
+    const unsigned int doe = (yoe * 365) + (yoe / 4) - (yoe / 100) + doy;         // [0, 146096]
+    const int days = (era * 146097) + ((int) doe) - 719468;
+    const int seconds = (hour * (60 * 60)) + (minute * 60) + (sec);
+    return (SDL_Time) (((Sint64) days) * 86400) + seconds;
+}
+
+
+
+#define ZIP_CENTRAL_DIR_SIG                         0x02014b50
+#define ZIP_END_OF_CENTRAL_DIR_SIG                  0x06054b50
+#define ZIP64_END_OF_CENTRAL_DIR_SIG                0x06064b50
+#define ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG  0x07064b50
+#define ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG         0x0001
+
+static bool ProcessZip(SDL_IOStream *io, APKNode *root)
+{
+    // There is a record at the end of a .zip file we can use to find the central directory;
+    // unfortunately it's before the variable-length comment field, so we might need to read
+    // from the end of the file until we see a magic signature. For now, we assume APKs don't
+    // have a comment, so we don't have to search backwards for the signature and it's always
+    // 22 bytes from EOF.
+    const Sint64 eocd = SDL_GetIOSize(io) - 22;
+    if (eocd < 0) {
+        SDL_Log("ANDROID: Couldn't find End Of Central Directory in APK (%s). Filesystem enumeration will fail.", SDL_GetError());
+        return false;
+    }
+
+    bool zip64 = false;
+    Sint64 centraldir = -1;
+    Uint64 num_entries = 0;
+    Uint16 val16 = 0;
+    Uint32 val32 = 0;
+    Uint64 val64 = 0;
+
+    // First, check if this is actually zip64 format instead. The zip64 magic is 20 bytes back.
+    if (eocd < 20) {  // presumably we always _are_ > 20, but let's be defensive here.
+        goto corrupterr;
+    } else if (SDL_SeekIO(io, eocd - 20, SDL_IO_SEEK_SET) < 0) {
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {
+        goto ioerr;
+    } else if (val32 == ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG) {  // this is a zip64 archive?
+        if (!SDL_ReadU32LE(io, &val32)) {  // disk number with start of central directory.
+            goto ioerr;
+        } else if (val32 != 0) {
+            goto corrupterr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // file offset of zip64 end-of-central-dir record
+            goto ioerr;
+
+        // note that this gets significantly more complex if there is data prepended to the .zip file
+        //  (like a self-extracting .exe, etc), but until that happens, we're keeping this as simple
+        //  as possible and assuming the file offset in val64 is correct.
+
+        } else if (SDL_SeekIO(io, (Sint64) val64, SDL_IO_SEEK_SET) < 0) {
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // zip64 end-of-central-dir signature.
+            goto ioerr;
+        } else if (val32 != ZIP64_END_OF_CENTRAL_DIR_SIG) {
+            goto corrupterr;
+        } else if (SDL_SeekIO(io, 28, SDL_IO_SEEK_CUR) < 0) {  // we don't care about several of the fields, skip over them.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &num_entries)) {  // total entries in the central dir.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // size of the central dir.
+            goto ioerr;
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // offset of the central dir.
+            goto ioerr;
+        }
+
+        zip64 = true;
+        centraldir = (Sint64) val64;
+    } else if (SDL_SeekIO(io, eocd + 4 + 6, SDL_IO_SEEK_SET) < 0) {  // skip back to where we were, plus skip some fields we don't care about.
+        goto ioerr;
+    } else if (!SDL_ReadU16LE(io, &val16)) {
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // size of the central dir.
+        goto ioerr;
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // offset of the central dir.
+        goto ioerr;
+    } else {
+        num_entries = (Uint64) val16;
+        centraldir = (Sint64) val32;
+    }
+
+    // okay, we know where the central dir is now, go there and start reading entries.
+    SDL_assert(centraldir > 0);  // negative means we failed, zero is impossible since there should be something else there.
+
+    for (Uint64 i = 0; i < num_entries; i++) {
+        Uint16 fnamelen = 0;
+        Uint16 extralen = 0;
+        Uint16 commentlen = 0;
+        Uint32 dosmodtime = 0;
+        Uint32 uncompressed32 = 0;
+        Uint64 uncompressed64 = 0;
+
+        // we don't care about most of this information, just parse through it to get what we need.
+        if (SDL_SeekIO(io, centraldir, SDL_IO_SEEK_SET) < 0) {
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // central dir item signature.
+            goto ioerr;
+        } else if (val32 != ZIP_CENTRAL_DIR_SIG) {
+            goto corrupterr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version made by
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version needed
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // general bits
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // compression method
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &dosmodtime)) {  // last mod date/time
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // CRC-32
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // compressed size
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &uncompressed32)) {  // uncompressed size
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &fnamelen)) {  // filename length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &extralen)) {  // extra length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &commentlen)) {  // comment length
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // disk number start
+            goto ioerr;
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // internal file attributes
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // external file attributes
+            goto ioerr;
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // relative offset of local header
+            goto ioerr;
+        }
+
+        char fnamebuf[0xFFFF+1];  // just eat 64k of stack like a boss until someone complains.
+        if (SDL_ReadIO(io, fnamebuf, (size_t) fnamelen) != ((size_t) fnamelen)) {
+            goto ioerr;
+        }
+
+        // technically zip files might have '\\' dir separators, but these were mostly old DOS files and not Android APKs, I think. Revisit if necessary.
+
+        fnamebuf[fnamelen] = '\0';  // make sure the string is null-terminated.
+
+        //SDL_Log("ANDROID: Saw ZIP entry '%s'", fnamebuf);
+
+        uncompressed64 = (Uint64) uncompressed32;
+        if (zip64 && (uncompressed32 == 0xFFFFFFFF)) {  // file is larger than 4gig, find the zip64 extended info field in the extra section.
+            bool found = false;
+            Uint16 remaining = extralen;
+            while (remaining > 4) {  // Two 16-bit values at a minimum, tag and len.
+                Uint16 tag, len;
+                if (!SDL_ReadU16LE(io, &tag) || !SDL_ReadU16LE(io, &len)) {
+                    goto ioerr;
+                } else if (remaining < (len + 4)) {
+                    goto corrupterr;
+                } else if (tag != ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG) {  // not the field we need, skip over it.
+                    if (SDL_SeekIO(io, (Sint64) len, SDL_IO_SEEK_CUR) < 0) {
+                        goto ioerr;
+                    }
+                } else if (len < 8) {
+                    goto corrupterr;
+                } else if ((uncompressed32 == 0xFFFFFFFF) && !SDL_ReadU64LE(io, &uncompressed64)) {
+                    goto ioerr;
+
+                // there are other values in here, but we don't care about them and we're done, so don't try to skip over them.
+
+                } else {
+                    found = true;
+                    break;  // got what we need, drop out.
+                }
+                remaining -= len + 4;
+            }
+
+            if (!found) {
+                goto corrupterr;
+            }
+        }
+
+        char *ptr = fnamebuf;
+        while (*ptr == '/') {  // drop absolute paths.
+            ptr++;
+        }
+
+        if (SDL_strncmp(ptr, "assets/", 7) == 0) {  //  we only care about things under 'assets' for now. Drop everything else.
+            ptr += 6;  // keep the '/' so strrchr never returns NULL.
+            APKNode *node = AddAPKDirs(ptr, root);  // this builds out any missing subdirs, returns parent dir's node.
+            if (!node) {
+                goto ioerr;  // (probably out of memory.)
+            }
+
+            const SDL_Time modtime = ZipDosTimeToSDLTime(dosmodtime);
+            ptr = SDL_strrchr(ptr, '/');
+            SDL_assert(ptr != NULL);
+            if (*(++ptr) == '\0') {  // explicit directory entry paths end with '/' ...`node` is the new node.
+                node->info.type = SDL_PATHTYPE_DIRECTORY;
+                node->info.size = 0;
+            } else {
+                node = AddAPKChildNode(node, ptr);
+                if (!node) {
+                    goto ioerr;  // (probably out of memory.)
+                }
+                node->info.type = SDL_PATHTYPE_FILE;
+                node->info.size = uncompressed64;
+            }
+            node->info.create_time = node->info.modify_time = node->info.access_time = modtime;
+        }
+
+        centraldir += (Sint64) (46 + fnamelen + extralen + commentlen);  // will seek to next file entry.
+    }
+
+    return true;
+
+corrupterr:
+    SDL_Log("ANDROID: Unexpected or corrupt data in APK. Filesystem enumeration will fail.");
+    return false;
+
+ioerr:
+    SDL_Log("ANDROID: i/o error in APK (%s). Filesystem enumeration will fail.", SDL_GetError());
+    return false;
+}
+
+static bool CreateAPKNodes(const char *path)
+{
+    //SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
+
+    SDL_IOStream *io = SDL_IOFromFile(path, "rb");
+    if (!io) {
+        SDL_Log("ANDROID: Can't open APK '%s' for reading (%s). Filesystem enumeration will fail.", path, SDL_GetError());
+    } else {
+        ProcessZip(io, APKRootNode);
+        SDL_CloseIO(io);
+    }
+    return true;
+}
+
+static bool PrepareAPK(void)
+{
+    // the assetmanager isn't useful for enumerating directories, so parse the APK directly for that info upfront.
+    bool retval = (APKRootNode != NULL);
+    if (!retval) {
+        // allocate this upfront, so if there's a failure, we'll not try again and just have an empty file tree.
+        APKRootNode = (APKNode *) SDL_calloc(1, sizeof (*APKRootNode));
+        if (!APKRootNode) {
+            return false;  // oh well.
+        }
+        APKRootNode->info.type = SDL_PATHTYPE_DIRECTORY;
+
+        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+        JNIEnv *env = Android_JNI_GetEnv();
+        if (LocalReferenceHolder_Init(&refs, env)) {
+            jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+            jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getPackageResourcePath", "()Ljava/lang/String;");
+            jstring jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
+            jthrowable jexception = (*env)->ExceptionOccurred(env);
+            if (jexception != NULL) {
+                (*env)->ExceptionClear(env);  // oh well
+            } else {
+                const char *apkpath = (*env)->GetStringUTFChars(env, jstr, NULL);
+                SDL_PathInfo apkinfo;
+                SDL_assert(apkpath[0] == '/');  // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
+                if (SDL_GetPathInfo(apkpath, &apkinfo)) {   // we just want the file times here, so oh well if it fails.
+                    APKRootNode->info.create_time = apkinfo.create_time;
+                    APKRootNode->info.modify_time = apkinfo.modify_time;
+                    APKRootNode->info.access_time = apkinfo.access_time;
+                }
+                CreateAPKNodes(apkpath);
+                (*env)->ReleaseStringUTFChars(env, jstr, apkpath);
+                retval = true;
+            }
+        }
+        LocalReferenceHolder_Cleanup(&refs);
+    }
+    return retval;  // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
+}
+
 static void Internal_Android_Create_AssetManager(void)
 {
-
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
@@ -1885,16 +2366,29 @@ static void Internal_Android_Destroy_AssetManager(void)
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
         asset_manager = NULL;
     }
+
+    if (APKRootNode) {
+        FreeAPKNode(APKRootNode);
+        APKRootNode = NULL;
+    }
 }
 
 static const char *GetAssetPath(const char *path)
 {
-    if (path && path[0] == '.' && path[1] == '/') {
-        path += 2;
-        while (*path == '/') {
-            ++path;
-        }
+    if (!path) {
+        return NULL;
     }
+
+    if (path[0] == '.' && ((path[1] == '/') || (path[1] == '\0'))) {
+        path++;
+    } else if (SDL_strncmp(path, "assets://", 9) == 0) {
+        path += 9;
+    }
+
+    while (*path == '/') {
+        ++path;
+    }
+
     return path;
 }
 
@@ -1963,63 +2457,42 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
 {
     SDL_assert(path != NULL);
 
-    if (!asset_manager) {
-        Internal_Android_Create_AssetManager();
-        if (!asset_manager) {
-            return SDL_SetError("Couldn't create asset manager");
-        }
-    }
-
-    path = GetAssetPath(path);
-
-    AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
-    if (!adir) {
-        return SDL_SetError("AAssetManager_openDir failed");
+    if (!PrepareAPK()) {
+        return false;
     }
 
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
-    const char *ent;
-    while ((result == SDL_ENUM_CONTINUE) && ((ent = AAssetDir_getNextFileName(adir)) != NULL)) {
-        result = cb(userdata, path, ent);
-    }
+    const char *asset_path = GetAssetPath(path);
 
-    AAssetDir_close(adir);
+    const APKNode *apknode = FindAPKNode(asset_path);
+    if (!apknode) {
+        return SDL_SetError("No such directory");
+    } else if (apknode->info.type != SDL_PATHTYPE_DIRECTORY) {
+        return SDL_SetError("Not a directory");
+    } else {
+        for (const APKNode *node = apknode->children; node && (result == SDL_ENUM_CONTINUE); node = node->next_sibling) {
+            result = cb(userdata, path, node->name);
+        }
+    }
 
     return (result != SDL_ENUM_FAILURE);
 }
 
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
 {
-    if (!asset_manager) {
-        Internal_Android_Create_AssetManager();
-        if (!asset_manager) {
-            return SDL_SetError("Couldn't create asset manager");
-        }
+    SDL_assert(path != NULL);
+
+    if (!PrepareAPK()) {
+        return false;
     }
 
     path = GetAssetPath(path);
-
-    // this is sort of messy, but there isn't a stat()-like interface to the Assets.
-    AAsset *aasset = AAssetManager_open(asset_manager, path, AASSET_MODE_UNKNOWN);
-    if (aasset) {  // it's a file!
-        info->type = SDL_PATHTYPE_FILE;
-        info->size = (Uint64) AAsset_getLength64(aasset);
-        AAsset_close(aasset);
-        return true;
+    const APKNode *apknode = FindAPKNode(path);
+    if (!apknode) {
+        return SDL_SetError("No such file or directory");
     }
-
-    AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
-    if (adir) {  // This does _not_ return NULL for a missing directory! Treat empty directories as missing. Better than nothing.  :/
-        const bool contains_something = (AAssetDir_getNextFileName(adir) != NULL);  // if not NULL, there are files in this directory, so it's _definitely_ a directory.
-        AAssetDir_close(adir);
-        if (contains_something) {
-            info->type = SDL_PATHTYPE_DIRECTORY;
-            info->size = 0;
-            return true;
-        }
-    }
-
-    return SDL_SetError("Couldn't open asset '%s'", path);
+    SDL_copyp(info, &apknode->info);
+    return true;
 }
 
 bool Android_JNI_SetClipboardText(const char *text)
@@ -2183,10 +2656,10 @@ void Android_JNI_InitTouch(void)
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
 }
 
-void Android_JNI_PollInputDevices(void)
+void Android_JNI_DetectDevices(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollInputDevices);
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midDetectDevices);
 }
 
 void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue)
@@ -2195,10 +2668,16 @@ void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetLED, device_id, red, green, blue);
 }
 
-void Android_JNI_PollHapticDevices(void)
+void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midPollHapticDevices);
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midJoystickSetSensorsEnabled, device_id, (enabled == 1));
+}
+
+void Android_JNI_DetectHapticDevices(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midDetectHapticDevices);
 }
 
 void Android_JNI_HapticRun(int device_id, float intensity, int length)
@@ -2389,6 +2868,43 @@ int SDL_GetAndroidSDKVersion(void)
     }
     return sdk_version;
 }
+
+char *SDL_GetAndroidPackageName(void)
+{
+    // this doesn't currently cache this, because it's only used by SDL_GetExeName, which _does_ cache it.
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // context = SDLActivity.getContext();
+    jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+    if (!context) {
+        SDL_SetError("Couldn't get Android context!");
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // fileObj = context.getFilesDir();
+    jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getPackageName", "()Ljava/lang/String;");
+    jstring jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    const char *cstr = (*env)->GetStringUTFChars(env, jstr, NULL);
+    char *retval = cstr ? SDL_strdup(cstr) : NULL;
+    (*env)->ReleaseStringUTFChars(env, jstr, cstr);
+
+    LocalReferenceHolder_Cleanup(&refs);
+
+    return retval;
+}
+
 
 bool SDL_IsAndroidTablet(void)
 {
@@ -2687,12 +3203,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     JNIEnv *env, jclass cls,
     jint requestCode, jboolean result)
 {
-    SDL_LockMutex(Android_ActivityMutex);
+    SDL_LockMutex(SDL_event_lock);
     NativePermissionRequestInfo *prev = &pending_permissions;
     for (NativePermissionRequestInfo *info = prev->next; info != NULL; info = info->next) {
         if (info->request_code == (int) requestCode) {
             prev->next = info->next;
-            SDL_UnlockMutex(Android_ActivityMutex);
+            SDL_UnlockMutex(SDL_event_lock);
             info->callback(info->userdata, info->permission, result ? true : false);
             SDL_free(info->permission);
             SDL_free(info);
@@ -2701,7 +3217,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         prev = info;
     }
 
-    SDL_UnlockMutex(Android_ActivityMutex);
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
@@ -2729,10 +3245,10 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
     info->callback = cb;
     info->userdata = userdata;
 
-    SDL_LockMutex(Android_ActivityMutex);
+    SDL_LockMutex(SDL_event_lock);
     info->next = pending_permissions.next;
     pending_permissions.next = info;
-    SDL_UnlockMutex(Android_ActivityMutex);
+    SDL_UnlockMutex(SDL_event_lock);
 
     JNIEnv *env = Android_JNI_GetEnv();
     jstring jpermission = (*env)->NewStringUTF(env, permission);
@@ -2913,18 +3429,34 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     }
 }
 
-bool Android_JNI_OpenFileDialog(
+bool Android_JNI_ShowFileDialog(
     SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple)
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath)
 {
     if (mAndroidFileDialogData.callback != NULL) {
         SDL_SetError("Only one file dialog can be run at a time.");
         return false;
     }
 
-    if (forwrite) {
+    // Setup type
+    int dialogType = 0;
+
+    switch (type) {
+    case SDL_FILEDIALOG_OPENFILE:
+        dialogType = 0;
+        break;
+    case SDL_FILEDIALOG_SAVEFILE:
         multiple = false;
+        dialogType = 1;
+        break;
+    case SDL_FILEDIALOG_OPENFOLDER:
+        multiple = false;
+        dialogType = 2;
+        break;
+    default:
+        SDL_SetError("Invalid file dialog type");
+        return false;
     }
 
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2944,6 +3476,12 @@ bool Android_JNI_OpenFileDialog(
         }
     }
 
+    // Setup initial path
+    jstring initialPathString = NULL;
+    if (initialPath && *initialPath) {
+        initialPathString = (*env)->NewStringUTF(env, initialPath);
+    }
+
     // Setup data
     static SDL_AtomicInt next_request_code;
     mAndroidFileDialogData.request_code = SDL_AddAtomicInt(&next_request_code, 1);
@@ -2952,8 +3490,10 @@ bool Android_JNI_OpenFileDialog(
 
     // Invoke JNI
     jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
-        midShowFileDialog, filtersArray, (jboolean) multiple, (jboolean) forwrite, mAndroidFileDialogData.request_code);
+        midShowFileDialog, filtersArray, (jboolean) multiple,
+        dialogType, initialPathString, mAndroidFileDialogData.request_code);
     (*env)->DeleteLocalRef(env, filtersArray);
+    (*env)->DeleteLocalRef(env, initialPathString);
     if (!success) {
         mAndroidFileDialogData.callback = NULL;
         SDL_AddAtomicInt(&next_request_code, -1);

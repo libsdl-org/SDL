@@ -267,6 +267,11 @@ extern "C" {
    anything calling it without an extremely good reason. */
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
+// Get just the process's binary name, no path. NULL if it doesn't make sense for a platform.
+// Can be something not a file, like a package ID on Android. Meant to be human-readable, not appended to a path, etc.
+// Calculates and caches the string on first call. String lives until SDL_Quit(). This is not a public API right now!
+extern const char *SDL_GetExeName(void);
+
 #ifdef HAVE_LIBC
 #define SDL_abort() abort()
 #else
@@ -276,11 +281,16 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
     } while (0)
 #endif
 
-#define PUSH_SDL_ERROR() \
-    { char *_error = SDL_strdup(SDL_GetError());
+// Macros to save and restore error values
+#define SDL_PushError() do { \
+    char *saved_error = SDL_strdup(SDL_GetError())
 
-#define POP_SDL_ERROR() \
-    SDL_SetError("%s", _error); SDL_free(_error); }
+#define SDL_PopError()                          \
+    if (saved_error) {                      \
+        SDL_SetError("%s", saved_error);    \
+        SDL_free(saved_error);              \
+    }                                       \
+} while (0)
 
 #if defined(SDL_DISABLE_INVALID_PARAMS)
 #ifdef DEBUG

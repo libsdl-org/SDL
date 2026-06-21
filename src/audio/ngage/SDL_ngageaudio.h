@@ -23,9 +23,27 @@
 #ifndef SDL_ngageaudio_h
 #define SDL_ngageaudio_h
 
+#ifndef SDL_HINT_AUDIO_NGAGE_LATENCY
+#define SDL_HINT_AUDIO_NGAGE_LATENCY "SDL_AUDIO_NGAGE_LATENCY"
+#endif
+
+#ifndef SDL_HINT_AUDIO_NGAGE_SCHEDULER_TICK
+#define SDL_HINT_AUDIO_NGAGE_SCHEDULER_TICK   "SDL_AUDIO_NGAGE_SCHEDULER_TICK"
+#endif
+
+#ifndef SDL_HINT_AUDIO_NGAGE_PROCESS_TICK
+#define SDL_HINT_AUDIO_NGAGE_PROCESS_TICK     "SDL_AUDIO_NGAGE_PROCESS_TICK"
+#endif
+
+#ifndef SDL_HINT_AUDIO_NGAGE_PROCESS_PRIORITY
+#define SDL_HINT_AUDIO_NGAGE_PROCESS_PRIORITY "SDL_AUDIO_NGAGE_PROCESS_PRIORITY"
+#endif
 typedef struct SDL_PrivateAudioData
 {
-    Uint8 *buffer;
+    Uint8 *buffer[2];
+    int fill_index; /* Which buffer SDL is currently filling */
+    int play_index; /* Which buffer the hardware is currently using*/
+    int buffer_size;
 
 } SDL_PrivateAudioData;
 

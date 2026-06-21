@@ -27,7 +27,8 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
                       const char *separator, const char *suffix,
                       const char *filt_prefix, const char *filt_separator,
                       const char *filt_suffix, const char *ext_prefix,
-                      const char *ext_separator, const char *ext_suffix)
+                      const char *ext_separator, const char *ext_suffix,
+                      bool anycase)
 {
     char *combined;
     char *new_combined;
@@ -52,7 +53,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
 
         converted = convert_filter(*f, ntf, filt_prefix, filt_separator,
                                    filt_suffix, ext_prefix, ext_separator,
-                                   ext_suffix);
+                                   ext_suffix, anycase);
 
         if (!converted) {
             SDL_free(combined);
@@ -97,7 +98,8 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
 char *convert_filter(SDL_DialogFileFilter filter, NameTransform ntf,
                      const char *prefix, const char *separator,
                      const char *suffix, const char *ext_prefix,
-                     const char *ext_separator, const char *ext_suffix)
+                     const char *ext_separator, const char *ext_suffix,
+                     bool anycase)
 {
     char *converted;
     char *name_filtered;
@@ -105,7 +107,7 @@ char *convert_filter(SDL_DialogFileFilter filter, NameTransform ntf,
     char *list;
 
     list = convert_ext_list(filter.pattern, ext_prefix, ext_separator,
-                            ext_suffix);
+                            ext_suffix, anycase);
 
     if (!list) {
         return NULL;
@@ -145,7 +147,7 @@ char *convert_filter(SDL_DialogFileFilter filter, NameTransform ntf,
 }
 
 char *convert_ext_list(const char *list, const char *prefix,
-                       const char *separator, const char *suffix)
+                       const char *separator, const char *suffix, bool anycase)
 {
     char *converted;
     int semicolons;
@@ -158,7 +160,7 @@ char *convert_ext_list(const char *list, const char *prefix,
     }
 
     total_length =
-        SDL_strlen(list) - semicolons // length of list contents
+        (SDL_strlen(list) - semicolons) * 4 // length of list contents (including "a" -> "[aA]")
       + semicolons * SDL_strlen(separator) // length of separators
       + SDL_strlen(prefix) + SDL_strlen(suffix) // length of prefix/suffix
       + 1; // terminating null byte
@@ -179,9 +181,17 @@ char *convert_ext_list(const char *list, const char *prefix,
         SDL_strlcat(converted, "*", total_length);
     } else {
         for (const char *c = list; *c; c++) {
-            if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')
-             || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_'
-             || *c == '.') {
+            if (anycase && ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z'))) {
+                char str[5];
+                str[0] = '[';
+                str[1] = *c;
+                str[2] = *c ^ 0x20; // ASCII case toggle
+                str[3] = ']';
+                str[4] = '\0';
+                SDL_strlcat(converted, str, total_length);
+            } else if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')
+                    || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_'
+                    || *c == '.') {
                 char str[2];
                 str[0] = *c;
                 str[1] = '\0';

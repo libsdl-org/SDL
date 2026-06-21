@@ -33,7 +33,6 @@ typedef struct {
     SDL_Renderer* renderer;
     SDL_Palette* palette;
     SDL_Texture* texture;
-    SDL_Texture* rendertarget; /* we need this render target for text to look good */
     SDL_AudioStream* audiostream;
     char status[SCREEN_W / 8];
     int status_ticks;
@@ -74,6 +73,8 @@ static void set_status(BytePusher* vm, const char* fmt, ...) {
 static bool load(BytePusher* vm, SDL_IOStream* stream, bool closeio) {
     size_t bytes_read = 0;
     bool ok = true;
+
+    vm->display_help = true;  // will set to false if load succeeds.
 
     SDL_memset(vm->ram, 0, RAM_SIZE);
 
@@ -199,13 +200,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
 
     vm->texture = SDL_CreateTexture(vm->renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
-    vm->rendertarget = SDL_CreateTexture(vm->renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, SCREEN_W, SCREEN_H);
-    if (!vm->texture || !vm->rendertarget) {
+    if (!vm->texture) {
         return SDL_APP_FAILURE;
     }
     SDL_SetTexturePalette(vm->texture, vm->palette);
     SDL_SetTextureScaleMode(vm->texture, SDL_SCALEMODE_NEAREST);
-    SDL_SetTextureScaleMode(vm->rendertarget, SDL_SCALEMODE_NEAREST);
 
     if (!(vm->audiostream = SDL_OpenAudioDeviceStream(
         SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audiospec, NULL, NULL
@@ -274,26 +273,26 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     if (updated) {
         const void *pixels = &vm->ram[(Uint32)vm->ram[IO_SCREEN_PAGE] << 16];
         SDL_UpdateTexture(vm->texture, NULL, pixels, SCREEN_W);
-
-        SDL_SetRenderTarget(vm->renderer, vm->rendertarget);
-        SDL_RenderTexture(vm->renderer, vm->texture, NULL, NULL);
-
-        if (vm->display_help) {
-            print(vm, 4, 4, "Drop a BytePusher file in this");
-            print(vm, 8, 12, "window to load and run it!");
-            print(vm, 4, 28, "Press ENTER to switch between");
-            print(vm, 8, 36, "positional and symbolic input.");
-        }
-
-        if (vm->status_ticks > 0) {
-            vm->status_ticks -= 1;
-            print(vm, 4, SCREEN_H - 12, vm->status);
-        }
     }
 
-    SDL_SetRenderTarget(vm->renderer, NULL);
     SDL_RenderClear(vm->renderer);
-    SDL_RenderTexture(vm->renderer, vm->rendertarget, NULL, NULL);
+
+    if (vm->display_help) {
+        print(vm, 4, 4, "Drop a BytePusher file in this");
+        print(vm, 8, 12, "window to load and run it!");
+        print(vm, 4, 28, "Press ENTER to switch between");
+        print(vm, 8, 36, "positional and symbolic input.");
+    } else {
+        SDL_RenderTexture(vm->renderer, vm->texture, NULL, NULL);
+    }
+
+    if (vm->status_ticks > 0) {
+        if (updated) {
+            vm->status_ticks--;
+        }
+        print(vm, 4, SCREEN_H - 12, vm->status);
+    }
+
     SDL_RenderPresent(vm->renderer);
 
     return SDL_APP_CONTINUE;
@@ -387,7 +386,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     if (appstate) {
         BytePusher* vm = (BytePusher*)appstate;
         SDL_DestroyAudioStream(vm->audiostream);
-        SDL_DestroyTexture(vm->rendertarget);
         SDL_DestroyTexture(vm->texture);
         SDL_DestroyPalette(vm->palette);
         SDL_DestroyRenderer(vm->renderer);

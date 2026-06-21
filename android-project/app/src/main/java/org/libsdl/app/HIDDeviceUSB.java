@@ -21,6 +21,7 @@ class HIDDeviceUSB implements HIDDevice {
     protected InputThread mInputThread;
     protected boolean mRunning;
     protected boolean mFrozen;
+    protected boolean mClaimed;
 
     public HIDDeviceUSB(HIDDeviceManager manager, UsbDevice usbDevice, int interface_index) {
         mManager = manager;
@@ -29,6 +30,7 @@ class HIDDeviceUSB implements HIDDevice {
         mInterface = mDevice.getInterface(mInterfaceIndex).getId();
         mDeviceId = manager.getDeviceIDForIdentifier(getIdentifier());
         mRunning = false;
+        mClaimed = false;
     }
 
     String getIdentifier() {
@@ -56,7 +58,7 @@ class HIDDeviceUSB implements HIDDevice {
         try {
             result = mDevice.getSerialNumber();
         }
-        catch (SecurityException exception) {
+        catch (Exception exception) {
             //Log.w(TAG, "App permissions mean we cannot get serial number for device " + getDeviceName() + " message: " + exception.getMessage());
         }
         if (result == null) {
@@ -114,6 +116,7 @@ class HIDDeviceUSB implements HIDDevice {
             close();
             return false;
         }
+        mClaimed = true;
 
         // Find the endpoints
         for (int j = 0; j < iface.getEndpointCount(); j++) {
@@ -132,9 +135,12 @@ class HIDDeviceUSB implements HIDDevice {
             }
         }
 
-        // Make sure the required endpoints were present
-        if (mInputEndpoint == null || mOutputEndpoint == null) {
+        // Make sure the required endpoints were present. The original Steam Controller and the wireless dongle for it do NOT
+        // actually have -- or require -- output endpoints, so we need to accept only an input one for them or else we'll fall
+        // back to the Android system gamepad functionality (and lose our paddles et al).
+        if (mInputEndpoint == null) {
             Log.w(TAG, "Missing required endpoint on USB device " + getDeviceName());
+            mConnection.releaseInterface(iface);
             close();
             return false;
         }
@@ -151,6 +157,11 @@ class HIDDeviceUSB implements HIDDevice {
     public int writeReport(byte[] report, boolean feature) {
         if (mConnection == null) {
             Log.w(TAG, "writeReport() called with no device connection");
+            return -1;
+        }
+
+        if (!mClaimed) {
+            Log.w(TAG, "writeReport() called but some other process currently owns the USB device");
             return -1;
         }
 
@@ -185,6 +196,11 @@ class HIDDeviceUSB implements HIDDevice {
             }
             return length;
         } else {
+            if (mOutputEndpoint == null)
+            {
+                Log.e(TAG, "Tried to write an output report to an interface with no output endpoint!");
+                return -1;
+            }
             int res = mConnection.bulkTransfer(mOutputEndpoint, report, report.length, 1000);
             if (res != report.length) {
                 Log.w(TAG, "writeOutputReport() returned " + res + " on device " + getDeviceName());
@@ -204,6 +220,12 @@ class HIDDeviceUSB implements HIDDevice {
         if (mConnection == null) {
             Log.w(TAG, "readReport() called with no device connection");
             return false;
+        }
+        if (!mClaimed) {
+            if (feature) {
+                return false;
+            }
+            return true;            
         }
 
         if (report_number == 0x0) {
@@ -258,10 +280,13 @@ class HIDDeviceUSB implements HIDDevice {
             mInputThread = null;
         }
         if (mConnection != null) {
-            UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
-            mConnection.releaseInterface(iface);
+            if (mClaimed) {
+                UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
+                mConnection.releaseInterface(iface);                
+            }
             mConnection.close();
             mConnection = null;
+            mClaimed = false;
         }
     }
 
@@ -274,6 +299,22 @@ class HIDDeviceUSB implements HIDDevice {
     @Override
     public void setFrozen(boolean frozen) {
         mFrozen = frozen;
+
+        /* If we have a valid device connection and the claim state doesn't match what we want, try to correct that. */
+        if (mConnection != null && mClaimed == mFrozen) {
+            UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
+            if (frozen) {
+                mClaimed = !mConnection.releaseInterface(iface);
+                if (mClaimed) {
+                    Log.e(TAG, "Tried to release claim on USB device, but failed!");
+                }
+            } else {
+                mClaimed = mConnection.claimInterface(iface, true);
+                if (!mClaimed) {
+                    Log.e(TAG, "Tried to regain claim on USB device, but failed!");
+                }
+            }
+        }
     }
 
     protected class InputThread extends Thread {

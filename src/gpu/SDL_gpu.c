@@ -1277,6 +1277,11 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: num_levels must be >= 1");
             failed = true;
         }
+        if (createinfo->type == SDL_GPU_TEXTURETYPE_2D && createinfo->layer_count_or_depth != 1)
+        {
+            SDL_assert_release(!"2D textures must have a layer count of 1");
+            failed = true;
+        }
         if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) && (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER)) {
             SDL_assert_release(!"For any texture: usage cannot contain both GRAPHICS_STORAGE_READ and SAMPLER");
             failed = true;
@@ -1363,10 +1368,6 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
         } else {
             if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
                 // Array Texture Validation
-                if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
-                    SDL_assert_release(!"For array textures: usage must not contain DEPTH_STENCIL_TARGET");
-                    failed = true;
-                }
                 if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
                     SDL_assert_release(!"For array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");
                     failed = true;
@@ -3467,7 +3468,11 @@ bool SDL_WaitForGPUFences(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM(fences == NULL && num_fences > 0) {
+    if (!num_fences) {
+        return true;
+    }
+
+    CHECK_PARAM(fences == NULL) {
         SDL_InvalidParamError("fences");
         return false;
     }

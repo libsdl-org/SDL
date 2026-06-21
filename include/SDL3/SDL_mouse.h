@@ -116,6 +116,20 @@ typedef enum SDL_SystemCursor
     SDL_SYSTEM_CURSOR_S_RESIZE,     /**< Window resize bottom. May be NS_RESIZE. */
     SDL_SYSTEM_CURSOR_SW_RESIZE,    /**< Window resize bottom-left. May be NESW_RESIZE. */
     SDL_SYSTEM_CURSOR_W_RESIZE,     /**< Window resize left. May be EW_RESIZE. */
+    SDL_SYSTEM_CURSOR_CONTEXT_MENU, /**< A context menu is available for the object under the cursor. */
+    SDL_SYSTEM_CURSOR_HELP,         /**< Help is available for the object under the cursor. */
+    SDL_SYSTEM_CURSOR_CELL,         /**< A set of cells may be selected. */
+    SDL_SYSTEM_CURSOR_VERTICAL_TEXT,/**< Text selection. May be TEXT */
+    SDL_SYSTEM_CURSOR_ALIAS,        /**< A shortcut is to be created. */
+    SDL_SYSTEM_CURSOR_COPY,         /**< Something is to be copied. */
+    SDL_SYSTEM_CURSOR_NO_DROP,      /**< The dragged item cannot be dropped at this location. May be NOT_ALLOWED. */
+    SDL_SYSTEM_CURSOR_GRAB,         /**< The object under the cursor can be grabbed */
+    SDL_SYSTEM_CURSOR_GRABBING,     /**< An object is currently being grabbed. */
+    SDL_SYSTEM_CURSOR_COL_RESIZE,   /**< Column resize. May be EW_RESIZE. */
+    SDL_SYSTEM_CURSOR_ROW_RESIZE,   /**< Row resize. May be NS_RESIZE. */
+    SDL_SYSTEM_CURSOR_ALL_SCROLL,   /**< Four pointed arrow pointing north, south, east, and west. */
+    SDL_SYSTEM_CURSOR_ZOOM_IN,      /**< Zoom in. */
+    SDL_SYSTEM_CURSOR_ZOOM_OUT,     /**< Zoom out. */
     SDL_SYSTEM_CURSOR_COUNT
 } SDL_SystemCursor;
 

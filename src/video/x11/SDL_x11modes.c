@@ -27,8 +27,6 @@
 #include "edid.h"
 #include "../../events/SDL_displayevents_c.h"
 
-#include "../../core/unix/SDL_gtk.h"
-
 // #define X11MODES_DEBUG
 
 /* Timeout and revert mode switches if the timespan has elapsed without the window becoming fullscreen.

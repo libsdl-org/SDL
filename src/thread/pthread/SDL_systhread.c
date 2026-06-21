@@ -116,6 +116,8 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("Not enough resources to create thread");
     }
 
+    thread->threadid = (SDL_ThreadID) thread->handle;  // the SDL thread ID is just the pthread_t.
+
     return true;
 }
 
