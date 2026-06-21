@@ -587,6 +587,10 @@ void SDL_QuitFilesystem(void)
             CachedUserFolders[i] = NULL;
         }
     }
+}
+
+void SDL_QuitPathWatch()
+{
     SDL_SYS_QuitPathWatch();
 }
 

@@ -706,7 +706,10 @@ void SDL_SYS_QuitPathWatch(void)
 #ifdef HAVE_INOTIFY
     if (inotify_fd >= 0) {
         SDL_SetAtomicInt(&quit_watch_file, 1);
-        SDL_WaitThread(file_watch_thread, NULL);
+        int thread_status;
+        SDL_WaitThread(file_watch_thread, &thread_status);
+        SDL_assert(thread_status != -1);
+        file_watch_thread = NULL;
         close(inotify_fd);
         inotify_fd = -1;
         SDL_DestroyMutex(file_watch_lock);

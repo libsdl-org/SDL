@@ -45,7 +45,7 @@ void SDLCALL FileWatchCallback(void *userdata, const char *path, SDL_PathWatchEv
 
 static void CheckWatchEvent(const char *expected_path, SDL_PathWatchEventType expected_event_type)
 {
-    if (SDL_WaitConditionTimeout(condvar, lock, 2000)) {
+    if (SDL_WaitConditionTimeout(condvar, lock, 500)) { // There is a timeout for the full test in CI, so keep this short
         if (!last_path || SDL_strcmp(last_path, expected_path) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed: wrong path for event %s: got '%s', expected '%s'", EventTotString(expected_event_type), last_path, expected_path);
         }
@@ -95,7 +95,10 @@ int main(int argc, char *argv[])
     const char *text = "foo\n";
 
     if (SDL_CreateDirectory("./testpathwatch-test")) {
-        SDL_AddPathWatch("./testpathwatch-test", FileWatchCallback, NULL);
+        if (!SDL_AddPathWatch("./testpathwatch-test", FileWatchCallback, NULL)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_AddPathWatch('./testpathwatch-test') failed: %s", SDL_GetError());
+            goto error;
+        }
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('./testpathwatch-test') failed: %s", SDL_GetError());
         goto error;
@@ -152,6 +155,11 @@ int main(int argc, char *argv[])
 
 error:
     SDL_RemovePathWatch("./testpathwatch-test", FileWatchCallback, NULL);
+    SDL_free((void *)last_path);
+    {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {}
+    }
     SDL_DestroyMutex(lock);
     SDL_DestroyCondition(condvar);
     SDL_Quit();

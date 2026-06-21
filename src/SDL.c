@@ -724,6 +724,7 @@ void SDL_Quit(void)
 
     SDL_QuitTimers();
     SDL_QuitAsyncIO();
+    SDL_QuitPathWatch();
 
     SDL_SetObjectsInvalid();
     SDL_AssertionsQuit();
