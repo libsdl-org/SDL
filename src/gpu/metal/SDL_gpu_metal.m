@@ -454,8 +454,7 @@ typedef struct MetalTextureContainer
 
 typedef struct MetalFence
 {
-    // can be NULL if the command buffer was recycled
-    MetalCommandBuffer *commandBuffer;
+    id<MTLCommandBuffer> commandBuffer;
     SDL_AtomicInt referenceCount;
 } MetalFence;
 
@@ -2137,7 +2136,7 @@ static bool METAL_INTERNAL_AcquireFence(
 
     // Associate the fence with the command buffer
     commandBuffer->fence = fence;
-    fence->commandBuffer = commandBuffer;
+    fence->commandBuffer = commandBuffer->handle;
     (void)SDL_AtomicIncRef(&commandBuffer->fence->referenceCount);
 
     return true;
@@ -3407,6 +3406,7 @@ static void METAL_ReleaseFence(
     SDL_GPUFence *fence)
 {
     MetalFence *metalFence = (MetalFence *)fence;
+    metalFence->commandBuffer = nil;
     if (SDL_AtomicDecRef(&metalFence->referenceCount)) {
         METAL_INTERNAL_ReleaseFenceToPool(
             (MetalRenderer *)driverData,
@@ -3518,8 +3518,6 @@ static void METAL_INTERNAL_CleanCommandBuffer(
         METAL_ReleaseFence(
             (SDL_GPURenderer *)renderer,
             (SDL_GPUFence *)commandBuffer->fence);
-    } else {
-        commandBuffer->fence->commandBuffer = NULL;
     }
 
     // Return command buffer to pool
@@ -3593,11 +3591,7 @@ static void METAL_INTERNAL_PerformPendingDestroys(
 static bool METAL_INTERNAL_IsFenceBusy(
         MetalFence *fence
 ) {
-    if (!fence->commandBuffer) {
-        return false; // command buffer was recycled
-    }
-
-    MTLCommandBufferStatus status = fence->commandBuffer->handle.status;
+    MTLCommandBufferStatus status = fence->commandBuffer.status;
     return status == MTLCommandBufferStatusCommitted || status == MTLCommandBufferStatusScheduled;
 }
 
@@ -3613,25 +3607,19 @@ static bool METAL_WaitForFences(
         if (waitAll) {
             for (Uint32 i = 0; i < numFences; i += 1) {
                 MetalFence *fence = (MetalFence *)fences[i];
-                if (METAL_INTERNAL_IsFenceBusy(fence)) {
-                    [fence->commandBuffer->handle waitUntilCompleted];
-                }
+                [fence->commandBuffer waitUntilCompleted];
             }
         } else {
-            dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-            for (Uint32 i = 0; i < numFences; i += 1) {
-                MetalFence *fence = (MetalFence *)fences[i];
-                // command buffer has completed and been recycled
-                if(!fence->commandBuffer)
-                    return true;
-
-                // even if it's completed, the handle will call back straight away
-                [fence->commandBuffer->handle addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
-                    dispatch_semaphore_signal(semaphore);
-                }];
+            bool waiting = true;
+            while (waiting) {
+                for (Uint32 i = 0; i < numFences; i += 1) {
+                    MetalFence *fence = (MetalFence *)fences[i];
+                    if (!METAL_INTERNAL_IsFenceBusy(fence)) {
+                        waiting = false;
+                        break;
+                    }
+                }
             }
-
-            dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
         }
 
         METAL_INTERNAL_PerformPendingDestroys(renderer);
@@ -4125,7 +4113,6 @@ static bool METAL_Submit(
 
         // Check if we can perform any cleanups
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
-
             if (!METAL_INTERNAL_IsFenceBusy(renderer->submittedCommandBuffers[i]->fence)) {
                 METAL_INTERNAL_CleanCommandBuffer(
                     renderer,
