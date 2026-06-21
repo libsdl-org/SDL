@@ -1325,5 +1325,7 @@
 #define SDL_ShowNotificationWithProperties SDL_ShowNotificationWithProperties_REAL
 #define SDL_ShowNotification SDL_ShowNotification_REAL
 #define SDL_RemoveNotification SDL_RemoveNotification_REAL
+#define SDL_GetDeviceFormFactor SDL_GetDeviceFormFactor_REAL
+#define SDL_GetDeviceFormFactorName SDL_GetDeviceFormFactorName_REAL
 #define SDL_AddPathWatch SDL_AddPathWatch_REAL
 #define SDL_RemovePathWatch SDL_RemovePathWatch_REAL

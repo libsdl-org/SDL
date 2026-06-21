@@ -1298,5 +1298,7 @@ _SDL_RequestNotificationPermission
 _SDL_ShowNotificationWithProperties
 _SDL_ShowNotification
 _SDL_RemoveNotification
+_SDL_GetDeviceFormFactor
+_SDL_GetDeviceFormFactorName
 _SDL_AddPathWatch
 _SDL_RemovePathWatch
