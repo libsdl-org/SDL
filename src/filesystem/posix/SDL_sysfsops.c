@@ -437,7 +437,7 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 static int inotify_fd = -1;
 typedef struct WatchEntry
 {
-    SDL_FileWatchCallback callback;
+    SDL_PathWatchCallback callback;
     void *user_data;
     size_t path_len;
     char path[]; // directory or file path
@@ -469,7 +469,7 @@ static int SDL_inotify_init1(void)
 
 #endif // HAVE_INOTIFY
 
-bool SDL_SYS_AddPathWatch(const char *path, SDL_FileWatchCallback cb, void *user_data)
+bool SDL_SYS_AddPathWatch(const char *path, SDL_PathWatchCallback cb, void *user_data)
 {
 #ifdef HAVE_INOTIFY
     if (!watch_descriptor_table) {
@@ -667,7 +667,7 @@ static bool SDLCALL FindWatchEntryByValue(void *userdata, const SDL_HashTable *t
 }
 #endif // HAVE_INOTIFY
 
-void SDL_SYS_RemovePathWatch(const char *path, SDL_FileWatchCallback cb, void *user_data)
+void SDL_SYS_RemovePathWatch(const char *path, SDL_PathWatchCallback cb, void *user_data)
 {
 #ifdef HAVE_INOTIFY
     if (!watch_descriptor_table) {

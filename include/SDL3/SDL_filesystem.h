@@ -532,7 +532,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
 /**
  * Type of event that happened on a watched path.
  *
- * \sa SDL_FileWatchCallback
+ * \sa SDL_PathWatchCallback
  */
 typedef enum SDL_PathWatchEventType
 {
@@ -553,7 +553,7 @@ typedef enum SDL_PathWatchEventType
  *               application is responsible for locking resources the callback
  *               touches that need to be protected.
  */
-typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path, SDL_PathWatchEventType event);
+typedef void (SDLCALL *SDL_PathWatchCallback)(void *userdata, const char *path, SDL_PathWatchEventType event);
 
 /**
  * This function adds a file watcher that will fires an app-provided callback
@@ -574,7 +574,7 @@ typedef void (SDLCALL *SDL_FileWatchCallback)(void *userdata, const char *path, 
  * \sa SDL_FileWatchEvent
  * \sa SDL_RemovePathWatch
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_AddPathWatch(const char *path, SDL_FileWatchCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_AddPathWatch(const char *path, SDL_PathWatchCallback callback, void *userdata);
 
 /**
  * Remove an file watch callback added with SDL_AddPathWatch().
@@ -590,7 +590,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddPathWatch(const char *path, SDL_FileWatc
  *
  * \sa SDL_AddPathWatch
  */
-extern SDL_DECLSPEC void SDLCALL SDL_RemovePathWatch(const char *path, SDL_FileWatchCallback callback, void *userdata);
+extern SDL_DECLSPEC void SDLCALL SDL_RemovePathWatch(const char *path, SDL_PathWatchCallback callback, void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
