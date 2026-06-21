@@ -1298,3 +1298,5 @@ _SDL_RequestNotificationPermission
 _SDL_ShowNotificationWithProperties
 _SDL_ShowNotification
 _SDL_RemoveNotification
+_SDL_AddPathWatch
+_SDL_RemovePathWatch
