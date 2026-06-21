@@ -947,7 +947,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
 #define SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_HOOK_STRING "SDL.system.ubuntu_touch.hook"
 
 /**
- * The version of the application on Ubuntu Touch, as reported in the manifest.
+ * The version of the application on Ubuntu Touch, as reported in the
+ * manifest.
  *
  * \since This macro is available since SDL 3.6.0.
  *
