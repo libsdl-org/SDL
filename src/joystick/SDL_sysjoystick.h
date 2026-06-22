@@ -102,6 +102,9 @@ struct SDL_Joystick
     int nhats _guarded;   // Number of hats on the joystick
     Uint8 *hats _guarded; // Current hat states
 
+    // Do NOT use Uint8 for looping over a joystick's buttons. Even though a physical controller can't have 256 or more buttons,
+    // it will make the application stuck in case `nbuttons` is 256 (`i < joystick->nbuttons` is always true in case of Uint8).
+    // See https://github.com/libsdl-org/SDL/pull/15304 and https://github.com/libsdl-org/SDL/issues/14961
     int nbuttons _guarded;   // Number of buttons on the joystick
     bool *buttons _guarded; // Current button states
 
