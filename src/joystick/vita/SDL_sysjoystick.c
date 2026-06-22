@@ -43,6 +43,8 @@ static int ext_port_map[4] = { 1, 2, 3, 4 }; // index: SDL joy number, entry: Vi
 
 static int SDL_numjoysticks = 1;
 
+#define VITA_HAT_MASK (SCE_CTRL_DOWN | SCE_CTRL_LEFT | SCE_CTRL_UP | SCE_CTRL_RIGHT)  // we offer the dpad as a hat switch.
+
 static const unsigned int ext_button_map[] = {
     SCE_CTRL_TRIANGLE,
     SCE_CTRL_CIRCLE,
@@ -50,10 +52,6 @@ static const unsigned int ext_button_map[] = {
     SCE_CTRL_SQUARE,
     SCE_CTRL_L1,
     SCE_CTRL_R1,
-    SCE_CTRL_DOWN,
-    SCE_CTRL_LEFT,
-    SCE_CTRL_UP,
-    SCE_CTRL_RIGHT,
     SCE_CTRL_SELECT,
     SCE_CTRL_START,
     SCE_CTRL_L2,
@@ -205,7 +203,7 @@ static bool VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = SDL_arraysize(ext_button_map);
     joystick->naxes = 6;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // we treat the dpad as a hat switch, even though its just buttons.
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
@@ -297,13 +295,34 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     changed = old_buttons[index] ^ buttons;
     old_buttons[index] = buttons;
 
-    if (changed) {
+    if (changed & ~VITA_HAT_MASK) {
         for (i = 0; i < SDL_arraysize(ext_button_map); i++) {
             if (changed & ext_button_map[i]) {
-                bool down = ((buttons & ext_button_map[i]) != 0);
+                const bool down = ((buttons & ext_button_map[i]) != 0);
                 SDL_SendJoystickButton(timestamp, joystick, i, down);
             }
         }
+    }
+
+    if (changed & VITA_HAT_MASK) {
+        // The Vita dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+        // (but they should _really_ be using the gamepad API.)
+        Uint8 hat = SDL_HAT_CENTERED;
+        #define HATSTATE(name) if (buttons & SCE_CTRL_##name) { hat |= SDL_HAT_##name; }
+        HATSTATE(UP);
+        HATSTATE(RIGHT);
+        HATSTATE(DOWN);
+        HATSTATE(LEFT);
+        #undef HATSTATE
+
+        // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+        if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+            hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+        }
+        if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+            hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 }
 
