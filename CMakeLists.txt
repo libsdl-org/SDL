@@ -385,6 +385,8 @@ dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT
 dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" OFF)
 dep_option(SDL_WGPU_STATIC         "Statically link the WebGPU library" OFF "SDL_WGPU" OFF)
 option_string(SDL_WGPU_LIB         "The library which SDL will use for WebGPU. Either 'wgpu-native' or 'dawn'" "wgpu-native")
+# TODO: Polish up this bad explanation
+dep_option(SDL_WGPU_LIB_BYO        "If this is ON, SDL will not link to the WebGPU library itself, instead relying on you to do it." OFF "SDL_WGPU_STATIC" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -3549,33 +3551,39 @@ if (SDL_WGPU_STATIC)
       # Turns out, no it isn't. (sorta)
       # It's its own library and everything.
       # I'm still gonna keep the native Dawn support since I strictly adhere to the sunk cost fallacy.
-      find_library(
-      WGPU_STATIC_LIB NAMES libemdawnwebgpu_c.a emdawnwebgpu_c
-      HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
-      REQUIRED
-    )
+      if(NOT SDL_WGPU_LIB_BYO)
+        find_library(
+          WGPU_STATIC_LIB NAMES libemdawnwebgpu_c.a emdawnwebgpu_c
+          HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+          REQUIRED
+        )
+      endif()
       message("-- Using Emdawnwebgpu as WebGPU implementation")
     else()
-      find_library(
-      WGPU_STATIC_LIB NAMES libwebgpu_dawn webgpu_dawn
-      HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
-      REQUIRED
-    )
+      if(NOT SDL_WGPU_LIB_BYO)
+        find_library(
+          WGPU_STATIC_LIB NAMES libwebgpu_dawn webgpu_dawn
+          HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+          REQUIRED
+        )
+      endif()
       message("-- Using Dawn as WebGPU implementation")
     endif()
 
   elseif(HAVE_WGPU_NATIVE)
-    find_library(
+    if(NOT SDL_WGPU_LIB_BYO)
+      find_library(
       WGPU_STATIC_LIB NAMES libwgpu_native wgpu_native
       HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
       REQUIRED
     )
+    endif()
     message("-- Using wgpu-native (statically linked) as WebGPU implementation")
   endif()
 
-  if (SDL_STATIC)
+  if (SDL_STATIC AND NOT SDL_WGPU_LIB_BYO)
     target_link_libraries(SDL3-static PRIVATE ${WGPU_STATIC_LIB})
-  elseif (SDL_SHARED)
+  elseif (SDL_SHARED AND NOT SDL_WGPU_LIB_BYO)
     target_link_libraries(SDL3-shared PRIVATE ${WGPU_STATIC_LIB})
   endif()
 elseif (HAVE_WGPU_NATIVE)
