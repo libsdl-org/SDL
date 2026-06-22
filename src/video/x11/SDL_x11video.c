@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,6 +77,16 @@ static bool X11_IsXWayland(Display *d)
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
 }
 
+static bool X11_IsWSL(void)
+{
+#ifdef SDL_PLATFORM_LINUX
+    if (SDL_GetPathInfo("/proc/sys/fs/binfmt_misc/WSLInterop", NULL) || SDL_GetPathInfo("/run/WSL", NULL)) { // if either of these exist, we're on WSL.
+         return true;
+    }
+#endif
+    return false;
+}
+
 static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -97,6 +107,14 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     if (!x11_display) {
         SDL_X11_UnloadSymbols();
+
+        const char *session = SDL_getenv("XDG_SESSION_TYPE");
+        if (session && SDL_strcasecmp(session, "wayland") == 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to connect to the X11 (XWayland) display server");
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Failed to connect to the X11 display server");
+        }
+
         return NULL;
     }
 
@@ -135,7 +153,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     /* Steam Deck will have an on-screen keyboard, so check their environment
      * variable so we can make use of SDL_StartTextInput.
      */
-    data->is_steam_deck = SDL_GetHintBoolean("SteamDeck", false);
+    data->use_steam_screen_keyboard = SDL_GetHintBoolean(SDL_HINT_ENABLE_STEAM_SCREEN_KEYBOARD, false);
 
     // Set the function pointers
     device->VideoInit = X11_VideoInit;
@@ -220,6 +238,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->GL_SwapWindow = X11_GLES_SwapWindow;
         device->GL_DestroyContext = X11_GLES_DestroyContext;
         device->GL_GetEGLSurface = X11_GLES_GetEGLSurface;
+        device->GL_SetDefaultProfileConfig = X11_GLES_SetDefaultProfileConfig;
 #ifdef SDL_VIDEO_OPENGL_GLX
     }
 #endif
@@ -255,7 +274,8 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
-    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                          VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
 
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
@@ -263,6 +283,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
         device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
                                VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+    }
+    if (X11_IsWSL()) {
+        // On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer.
+        device->device_caps &= ~VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER;
     }
 
     return device;
@@ -362,6 +386,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(WM_TAKE_FOCUS);
     GET_ATOM(WM_NAME);
     GET_ATOM(WM_TRANSIENT_FOR);
+    GET_ATOM(WM_STATE);
     GET_ATOM(_NET_WM_STATE);
     GET_ATOM(_NET_WM_STATE_HIDDEN);
     GET_ATOM(_NET_WM_STATE_FOCUSED);

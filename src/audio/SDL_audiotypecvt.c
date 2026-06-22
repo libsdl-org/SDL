@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -938,7 +938,7 @@ void SDL_ChooseAudioConverters(void)
 
 #define SET_CONVERTER_FUNCS(fntype) \
     SDL_Convert_Swap16 = SDL_Convert_Swap16_##fntype; \
-    SDL_Convert_Swap32 = SDL_Convert_Swap32_##fntype;
+    SDL_Convert_Swap32 = SDL_Convert_Swap32_##fntype
 
 #ifdef SDL_SSE4_1_INTRINSICS
     if (SDL_HasSSE41()) {
@@ -964,7 +964,7 @@ void SDL_ChooseAudioConverters(void)
     SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype; \
     SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype; \
     SDL_Convert_F32_to_S16 = SDL_Convert_F32_to_S16_##fntype; \
-    SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
+    SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype \
 
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -122,7 +122,7 @@ static char *search_path_for_binary(const char *bin)
 }
 #endif
 
-char *SDL_SYS_GetBasePath(void)
+static char *GetExePath(void)
 {
     char *result = NULL;
 
@@ -235,26 +235,41 @@ char *SDL_SYS_GetBasePath(void)
     /* If we had access to argv[0] here, we could check it for a path,
         or troll through $PATH looking for it, too. */
 
-    if (result) { // chop off filename.
-        char *ptr = SDL_strrchr(result, '/');
-        if (ptr) {
-            *(ptr + 1) = '\0';
-        } else { // shouldn't happen, but just in case...
-            SDL_free(result);
-            result = NULL;
-        }
-    }
-
-    if (result) {
-        // try to shrink buffer...
-        char *ptr = (char *)SDL_realloc(result, SDL_strlen(result) + 1);
-        if (ptr) {
-            result = ptr; // oh well if it failed.
-        }
-    }
-
     return result;
 }
+
+char *SDL_SYS_GetBasePath(void)
+{
+    char *path = GetExePath();
+    if (!path) {
+        return NULL;
+    }
+
+    char *ptr = SDL_strrchr(path, '/');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+
+    ptr[1] = '\0'; // chop off filename, leave '/'.
+
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+
+char *SDL_SYS_GetExeName(void)
+{
+    char *path = GetExePath();
+    if (!path) {
+        return NULL;
+    }
+
+    char *ptr = SDL_strrchr(path, '/');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
@@ -266,9 +281,30 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
      */
     const char *envr = SDL_getenv("XDG_DATA_HOME");
-    const char *append;
+    const char *prepend;
     char *result = NULL;
     char *ptr = NULL;
+
+#ifdef SDL_PLATFORM_LINUX
+    if (SDL_IsUbuntuTouch()) {
+        // On Ubuntu Touch, the only allowed data folder is:
+        //     ~/.local/share/<app id>/
+
+        SDL_PropertiesID props = SDL_GetGlobalProperties();
+        if (!props) {
+            return NULL;
+        }
+
+        const char *appid = SDL_GetStringProperty(props, SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APPID_STRING, NULL);
+        if (!appid) {
+            SDL_SetError("Ubuntu Touch App ID missing from global properties");
+            return NULL;
+        }
+
+        app = appid;
+        org = "";
+    }
+#endif
 
     if (!envr) {
         // You end up with "$HOME/.local/share/Game Name 2"
@@ -278,26 +314,26 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
-        append = "/.local/share/";
+        prepend = "/.local/share/";
     } else {
-        append = "/";
+        prepend = "/";
     }
 
     size_t len = SDL_strlen(envr);
     if (envr[len - 1] == '/') {
-        append += 1;
+        prepend += 1;
     }
 
-    len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
+    len += SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 3;
     result = (char *)SDL_malloc(len);
     if (!result) {
         return NULL;
     }
 
     if (*org) {
-        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, append, org, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, prepend, org, app);
     } else {
-        (void)SDL_snprintf(result, len, "%s%s%s/", envr, append, app);
+        (void)SDL_snprintf(result, len, "%s%s%s/", envr, prepend, app);
     }
 
     for (ptr = result + 1; *ptr; ptr++) {

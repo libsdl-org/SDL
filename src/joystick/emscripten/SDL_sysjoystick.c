@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,60 +35,135 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
-EM_JS(int, SDL_GetEmscriptenJoystickVendor, (int device_index), {
-    // Let's assume that if we're calling these function then the gamepad object definitely exists
-    let gamepad = navigator['getGamepads']()[device_index];
+static int SDL_GetEmscriptenJoystickVendor(int device_index)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            return 0;
+        }
 
-    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
-    let vendor_str = 'Vendor: ';
-    if (gamepad['id']['indexOf'](vendor_str) > 0) {
-        let vendor_str_index = gamepad['id']['indexOf'](vendor_str) + vendor_str['length'];
-        return parseInt(gamepad['id']['substr'](vendor_str_index, 4), 16);
-    }
+        // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+        let vendor_str = 'Vendor: ';
+        if (gamepad['id']['indexOf'](vendor_str) > 0) {
+            let vendor_str_index = gamepad['id']['indexOf'](vendor_str) + vendor_str['length'];
+            return parseInt(gamepad['id']['substr'](vendor_str_index, 4), 16);
+        }
 
-    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
-    let id_split = gamepad['id']['split']('-');
-    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
-        return parseInt(id_split[0], 16);
-    }
+        // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+        let id_split = gamepad['id']['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            return parseInt(id_split[0], 16);
+        }
 
-    return 0;
-});
+        return 0;
+    }, device_index);
+}
 
-EM_JS(int, SDL_GetEmscriptenJoystickProduct, (int device_index), {
-    let gamepad = navigator['getGamepads']()[device_index];
+static int SDL_GetEmscriptenJoystickProduct(int device_index)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            return 0;
+        }
 
-    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
-    let product_str = 'Product: ';
-    if (gamepad['id']['indexOf'](product_str) > 0) {
-        let product_str_index = gamepad['id']['indexOf'](product_str) + product_str['length'];
-        return parseInt(gamepad['id']['substr'](product_str_index, 4), 16);
-    }
+        // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+        let product_str = 'Product: ';
+        if (gamepad['id']['indexOf'](product_str) > 0) {
+            let product_str_index = gamepad['id']['indexOf'](product_str) + product_str['length'];
+            return parseInt(gamepad['id']['substr'](product_str_index, 4), 16);
+        }
 
-    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
-    let id_split = gamepad['id']['split']('-');
-    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[1], 16))) {
-        return parseInt(id_split[1], 16);
-    }
+        // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+        let id_split = gamepad['id']['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[1], 16))) {
+            return parseInt(id_split[1], 16);
+        }
 
-    return 0;
-});
+        return 0;
+    }, device_index);
+}
 
-EM_JS(int, SDL_IsEmscriptenJoystickXInput, (int device_index), {
-    let gamepad = navigator['getGamepads']()[device_index];
+static int SDL_IsEmscriptenJoystickXInput(int device_index)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            return 0;
+        }
 
-    // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
-    // Firefox: xinput
-    // TODO: Safari
-    return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
-});
+        // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
+        // Firefox: xinput
+        // TODO: Safari
+        return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
+    }, device_index);
+}
+
+static int SDL_GetEmscriptenOSID()
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        const os = ([
+            'Android',
+            'Linux',
+            'iPhone',
+            'Macintosh',
+            'Windows',
+        ]);
+        const ua = navigator['userAgent'];
+        for (let i = 0; i < os.length; i++) {
+            if (ua['indexOf'](os[i]) >= 0) {
+                return i + 1;
+            }
+        }
+        return 0;
+    });
+}
+
+EM_JS_DEPS(sdljoystick, "$stringToUTF8");
+
+static void SDL_GetEmscriptenNormalizedName(int device_index, char *out, int length)
+{
+    MAIN_THREAD_EM_ASM({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            stringToUTF8('\0', $1, $2); // Silence the compiler here, because '' is not valid
+            return;
+        }
+
+        let id = gamepad['id'];
+        let output = id;
+        // Chrome
+        if (id['indexOf'](' (STANDARD GAMEPAD') > 0) { // Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+            output = id['substr'](0, id['indexOf'](' (STANDARD GAMEPAD'));
+        } else if (id['indexOf'](' (Vendor:') > 0) { // usb gamepad            (Vendor: 0810 Product: e501)
+            output = id['substr'](0, id['indexOf'](' (Vendor:'));
+        } else if (id['indexOf'](' (XInput') > 0) { // Xbox 360 Controller (XInput STANDARD GAMEPAD)
+            output = id['substr'](0, id['indexOf'](' (XInput'));
+        }
+
+        // Firefox, Safari: "046d-c216-Logitech Dual Action", "46d-c216-Logicool Dual Action", or "xinput"
+        let id_split = id['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            // Let's not assume the length of the vendor/product IDs in the string
+            // and just find the second '-' using indexOf
+            let start = id['indexOf']('-', id['indexOf']('-')+1)+1;
+            output = id['substr'](start);
+        }
+
+        stringToUTF8(output.trim(), $1, $2);
+    }, device_index, out, length);
+}
 
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
     int i;
+    Uint16 bus;
     Uint16 vendor, product;
+    Uint8 os_id;
     bool is_xinput;
+    char name[128];
 
     SDL_LockJoysticks();
 
@@ -104,30 +179,62 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     SDL_zerop(item);
     item->index = gamepadEvent->index;
 
+    bus = SDL_HARDWARE_BUS_UNKNOWN;
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
+    
+    os_id = SDL_GetEmscriptenOSID();
 
-    // Use a generic VID/PID representing an XInput controller
-    if (!vendor && !product && is_xinput) {
-        vendor = USB_VENDOR_MICROSOFT;
-        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+    item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        // This effect is not supported in Safari, so it's okay for us to check the vibrationActuator.effects array here for the browsers that do support it
+        if (!gamepad || !gamepad['vibrationActuator'] || !gamepad['vibrationActuator']['effects'] || !gamepad['vibrationActuator']['effects']['includes']('trigger-rumble')) {
+            return false;
+        }
+        return true;
+        }, item->index);
+
+    if (os_id != 0) {
+        if (os_id == 1 || os_id == 3) { // Android or iOS (mobile)
+            bus = SDL_HARDWARE_BUS_BLUETOOTH;
+        } else { // Desktop
+            bus = SDL_HARDWARE_BUS_USB;
+        }
     }
 
-    item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
+    if (!vendor && !product && is_xinput) {
+        // Use a generic VID/PID representing an XInput controller
+        vendor = USB_VENDOR_MICROSOFT;
+        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+
+        if (item->trigger_rumble_available) {
+            // Assume Xbox One S Controller
+            if (bus == SDL_HARDWARE_BUS_BLUETOOTH) {
+                product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+            } else {
+                product = USB_PRODUCT_XBOX_ONE_S;
+            }            
+        }
+    }
+
+    if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
+        // We should differentiate between devices that are mapped or unmapped by the browser.
+        os_id += 0x80;
+    }
+
+    SDL_GetEmscriptenNormalizedName(gamepadEvent->index, name, sizeof(name));
+    item->name = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!item->name) {
         SDL_free(item);
         goto done;
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, vendor, product, 0, NULL, item->name, 0, 0);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, os_id);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
-    }
-
-    if (is_xinput) {
-        item->guid.data[14] = 'x'; // See SDL_IsJoystickXInput
+        item->guid.data[15] = os_id;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
@@ -431,7 +538,6 @@ static SDL_JoystickID EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
-    bool rumble_available = false;
 
     if (!item) {
         return SDL_SetError("No such device");
@@ -449,20 +555,22 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
-    rumble_available = EM_ASM_INT({
-        let gamepads = navigator['getGamepads']();
-        if (!gamepads) {
-            return 0;
-        }
-        let gamepad = gamepads[$0];
+    item->rumble_available = MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        // Don't check the vibrationActuator.effects array here, because it's not defined in Safari
         if (!gamepad || !gamepad['vibrationActuator']) {
-            return 0;
+            return false;
         }
-        return 1;
+        return true;
         }, item->index);
 
-    if (rumble_available) {
+    if (item->rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+    }
+
+    // item->trigger_rumble_available is set in Emscripten_JoyStickConnected
+    if (item->trigger_rumble_available) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
 
     return true;
@@ -565,36 +673,49 @@ static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
     return JoystickByDeviceIndex(device_index)->guid;
 }
 
-static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool Emscripten_UpdateRumble(SDL_joylist_item *item)
 {
-    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
-
-    // clang-format off
-    bool result = EM_ASM_INT({
-        let gamepads = navigator['getGamepads']();
-        if (!gamepads) {
-            return 0;
+    bool result = MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            return false;
         }
-        let gamepad = gamepads[$0];
-        if (!gamepad || !gamepad['vibrationActuator']) {
-            return 0;
-        }
-
+        // We check if rumble is available in EMSCRIPTEN_JoystickRumble() and EMSCRIPTEN_JoystickRumbleTriggers().
+        // From my testing using "dual-rumble" here covers both main rumble and trigger rumble.
         gamepad['vibrationActuator']['playEffect']('dual-rumble', {
             'startDelay': 0,
             'duration': 3000,
-            'weakMagnitude': $2 / 0xFFFF,
-            'strongMagnitude': $1 / 0xFFFF,
+            'weakMagnitude': $1 / 0xFFFF,
+            'strongMagnitude': $2 / 0xFFFF,
+            'leftTrigger': $3 / 0xFFFF,
+            'rightTrigger': $4 / 0xFFFF,
         });
-        return 1;
-        }, item->index, low_frequency_rumble, high_frequency_rumble);
 
+        return true;
+        }, item->index, item->weak_magnitude_rumble, item->strong_magnitude_rumble, item->left_trigger_rumble, item->right_trigger_rumble);
     return result;
+}
+
+static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+{
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item || !item->rumble_available) {
+        return SDL_Unsupported();
+    }
+    item->strong_magnitude_rumble = low_frequency_rumble;
+    item->weak_magnitude_rumble = high_frequency_rumble;
+    return Emscripten_UpdateRumble(item);
 }
 
 static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item || !item->trigger_rumble_available) {
+        return SDL_Unsupported();
+    }
+    item->left_trigger_rumble = left_rumble;
+    item->right_trigger_rumble = right_rumble;
+    return Emscripten_UpdateRumble(item);
 }
 
 static bool EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)

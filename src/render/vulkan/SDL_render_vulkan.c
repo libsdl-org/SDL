@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -134,6 +134,7 @@
     VULKAN_INSTANCE_FUNCTION(vkEnumeratePhysicalDevices)                \
     VULKAN_INSTANCE_FUNCTION(vkGetDeviceProcAddr)                       \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures)               \
+    VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceImageFormatProperties)  \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties)             \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties)       \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceQueueFamilyProperties)  \
@@ -144,7 +145,6 @@
     VULKAN_INSTANCE_FUNCTION(vkQueueWaitIdle)                           \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2KHR)              \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceFormatProperties2KHR)      \
-    VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceImageFormatProperties2KHR) \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties2KHR)      \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)            \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkCreateSamplerYcbcrConversionKHR)              \
@@ -392,28 +392,48 @@ typedef struct
 
 static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImage image, VkFormat format, int plane, int x, int y, int w, int h, const void *pixels, int pitch, VkImageLayout *imageLayout);
 
+// TODO: Sort this list based on what the Vulkan driver prefers?
+static const struct
+{
+    SDL_PixelFormat sdl;
+    VkFormat unorm;
+    VkFormat srgb;
+} vk_format_map[] = {
+    { SDL_PIXELFORMAT_BGRA32,       VK_FORMAT_B8G8R8A8_UNORM,            VK_FORMAT_B8G8R8A8_SRGB             }, // SDL_PIXELFORMAT_ARGB8888 on little endian systems
+    { SDL_PIXELFORMAT_RGBA32,       VK_FORMAT_R8G8B8A8_UNORM,            VK_FORMAT_R8G8B8A8_SRGB             },
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    { SDL_PIXELFORMAT_ABGR8888,     VK_FORMAT_A8B8G8R8_UNORM_PACK32,     VK_FORMAT_A8B8G8R8_SRGB_PACK32      },
+#endif
+    { SDL_PIXELFORMAT_ABGR2101010,  VK_FORMAT_A2B10G10R10_UNORM_PACK32,  VK_FORMAT_A2B10G10R10_UNORM_PACK32  },
+    { SDL_PIXELFORMAT_RGBA64_FLOAT, VK_FORMAT_R16G16B16A16_SFLOAT,       VK_FORMAT_R16G16B16A16_SFLOAT       },
+    { SDL_PIXELFORMAT_RGB565,       VK_FORMAT_R5G6B5_UNORM_PACK16,       VK_FORMAT_R5G6B5_UNORM_PACK16       },
+    { SDL_PIXELFORMAT_BGR565,       VK_FORMAT_B5G6R5_UNORM_PACK16,       VK_FORMAT_B5G6R5_UNORM_PACK16       },
+    { SDL_PIXELFORMAT_RGBA5551,     VK_FORMAT_R5G5B5A1_UNORM_PACK16,     VK_FORMAT_R5G5B5A1_UNORM_PACK16     },
+    { SDL_PIXELFORMAT_BGRA5551,     VK_FORMAT_B5G5R5A1_UNORM_PACK16,     VK_FORMAT_B5G5R5A1_UNORM_PACK16     },
+    { SDL_PIXELFORMAT_ARGB1555,     VK_FORMAT_A1R5G5B5_UNORM_PACK16,     VK_FORMAT_A1R5G5B5_UNORM_PACK16     },
+    { SDL_PIXELFORMAT_RGBA4444,     VK_FORMAT_R4G4B4A4_UNORM_PACK16,     VK_FORMAT_R4G4B4A4_UNORM_PACK16     },
+    { SDL_PIXELFORMAT_BGRA4444,     VK_FORMAT_B4G4R4A4_UNORM_PACK16,     VK_FORMAT_B4G4R4A4_UNORM_PACK16     },
+    { SDL_PIXELFORMAT_ARGB4444,     VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT, VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT },
+    { SDL_PIXELFORMAT_ABGR4444,     VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT, VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT }
+};
+
 static SDL_PixelFormat VULKAN_VkFormatToSDLPixelFormat(VkFormat vkFormat)
 {
-    switch (vkFormat) {
-    case VK_FORMAT_R8G8B8A8_UNORM:
-        return SDL_PIXELFORMAT_RGBA32;
-    case VK_FORMAT_B8G8R8A8_UNORM:
-        return SDL_PIXELFORMAT_BGRA32;
-    case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-        return SDL_PIXELFORMAT_ABGR8888;
-    case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-        return SDL_PIXELFORMAT_ABGR2101010;
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
-        return SDL_PIXELFORMAT_RGBA64_FLOAT;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
+    for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
+        if (vk_format_map[i].unorm == vkFormat ||
+            vk_format_map[i].srgb == vkFormat) {
+            return vk_format_map[i].sdl;
+        }
     }
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static int VULKAN_VkFormatGetNumPlanes(VkFormat vkFormat)
 {
     switch (vkFormat) {
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+    case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+    case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
         return 3;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
     case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
@@ -432,51 +452,23 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
         return 2;
     case VK_FORMAT_R16G16_UNORM:
         return 4;
-    case VK_FORMAT_R8G8B8A8_SRGB:
-    case VK_FORMAT_R8G8B8A8_UNORM:
-    case VK_FORMAT_B8G8R8A8_SRGB:
-    case VK_FORMAT_B8G8R8A8_UNORM:
-    case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-    case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-    case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-        return 4;
-    case VK_FORMAT_R16G16B16A16_SFLOAT:
-        return 8;
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+    case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
         return 1;
+    case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
+        return 2;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
         return (plane == 0) ? 1 : 2;
     case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
         return (plane == 0) ? 2 : 4;
     default:
-        return 4;
+        return SDL_BYTESPERPIXEL(VULKAN_VkFormatToSDLPixelFormat(vkFormat));
     }
 }
 
-static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 output_colorspace)
+static VkFormat SDLPixelFormatToVkTextureFormat(SDL_PixelFormat format, Uint32 output_colorspace)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGBA64_FLOAT:
-        return VK_FORMAT_R16G16B16A16_SFLOAT;
-    case SDL_PIXELFORMAT_ABGR2101010:
-        return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
-    case SDL_PIXELFORMAT_RGBA32:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return VK_FORMAT_R8G8B8A8_SRGB;
-        }
-        return VK_FORMAT_R8G8B8A8_UNORM;
-    case SDL_PIXELFORMAT_BGRA32:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return VK_FORMAT_B8G8R8A8_SRGB;
-        }
-        return VK_FORMAT_B8G8R8A8_UNORM;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    case SDL_PIXELFORMAT_ABGR8888:
-        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            return VK_FORMAT_A8B8G8R8_SRGB_PACK32;
-        }
-        return VK_FORMAT_A8B8G8R8_UNORM_PACK32;
-#endif
     case SDL_PIXELFORMAT_INDEX8:
         return VK_FORMAT_R8_UNORM;
     case SDL_PIXELFORMAT_YUY2:
@@ -486,12 +478,25 @@ static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 output_col
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
         return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
+    case SDL_PIXELFORMAT_P408:
+        return VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM;
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return  VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
     case SDL_PIXELFORMAT_P010:
         return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+    case SDL_PIXELFORMAT_P416:
+        return VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM;
     default:
+        for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
+            if (vk_format_map[i].sdl == format) {
+                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                    return vk_format_map[i].srgb;
+                } else {
+                    return vk_format_map[i].unorm;
+                }
+            }
+        }
         return VK_FORMAT_UNDEFINED;
     }
 }
@@ -591,7 +596,7 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
     for (uint32_t i = 0; i < SDL_arraysize(rendererData->vertexBuffers); i++ ) {
         VULKAN_DestroyBuffer(rendererData, &rendererData->vertexBuffers[i]);
     }
-    SDL_memset(rendererData->vertexBuffers, 0, sizeof(rendererData->vertexBuffers));
+    SDL_zeroa(rendererData->vertexBuffers);
     for (uint32_t i = 0; i < VULKAN_RENDERPASS_COUNT; i++) {
         if (rendererData->renderPasses[i] != VK_NULL_HANDLE) {
             vkDestroyRenderPass(rendererData->device, rendererData->renderPasses[i], NULL);
@@ -718,7 +723,7 @@ static void VULKAN_DestroyBuffer(VULKAN_RenderData *rendererData, VULKAN_Buffer 
         vkFreeMemory(rendererData->device, vulkanBuffer->deviceMemory, NULL);
         vulkanBuffer->deviceMemory = VK_NULL_HANDLE;
     }
-    SDL_memset(vulkanBuffer, 0, sizeof(VULKAN_Buffer));
+    SDL_zerop(vulkanBuffer);
 }
 
 static VkResult VULKAN_AllocateBuffer(VULKAN_RenderData *rendererData, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags requiredMemoryProps, VkMemoryPropertyFlags desiredMemoryProps, VULKAN_Buffer *bufferOut)
@@ -794,7 +799,7 @@ static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *v
         }
         vulkanImage->deviceMemory = VK_NULL_HANDLE;
     }
-    SDL_memset(vulkanImage, 0, sizeof(VULKAN_Image));
+    SDL_zerop(vulkanImage);
 }
 
 static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_PropertiesID create_props, uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags imageUsage, VkComponentMapping swizzle, VkSamplerYcbcrConversionKHR samplerYcbcrConversion, VULKAN_Image *imageOut)
@@ -802,7 +807,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
     VkResult result;
     VkSamplerYcbcrConversionInfoKHR samplerYcbcrConversionInfo = { 0 };
 
-    SDL_memset(imageOut, 0, sizeof(VULKAN_Image));
+    SDL_zerop(imageOut);
     imageOut->format = format;
     imageOut->image = (VkImage)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, 0);
 
@@ -1235,7 +1240,7 @@ static VULKAN_PipelineState *VULKAN_CreatePipelineState(SDL_Renderer *renderer,
     // Shaders
     const char *name = "main";
     for (uint32_t i = 0; i < 2; i++) {
-        SDL_memset(&shaderStageCreateInfo[i], 0, sizeof(shaderStageCreateInfo[i]));
+        SDL_zero(shaderStageCreateInfo[i]);
         shaderStageCreateInfo[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[i].module = (i == 0) ? rendererData->vertexShaderModules[shader] : rendererData->fragmentShaderModules[shader];
         shaderStageCreateInfo[i].stage = (i == 0) ? VK_SHADER_STAGE_VERTEX_BIT : VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2631,7 +2636,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
 
     if (textureFormat == VK_FORMAT_UNDEFINED) {
-        return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified", __FUNCTION__, texture->format);
+        return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified", SDL_FUNCTION, texture->format);
     }
 
     textureData = (VULKAN_TextureData *)SDL_calloc(1, sizeof(*textureData));
@@ -2644,9 +2649,11 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     // YUV textures must have even width and height.  Also create Ycbcr conversion
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV ||
+        texture->format == SDL_PIXELFORMAT_P408 ||
         texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
-        texture->format == SDL_PIXELFORMAT_P010) {
+        texture->format == SDL_PIXELFORMAT_P010 ||
+        texture->format == SDL_PIXELFORMAT_P416) {
         const uint32_t YUV_SD_THRESHOLD = 576;
 
         // Check that we have VK_KHR_sampler_ycbcr_conversion support
@@ -2657,9 +2664,12 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo = { 0 };
         samplerYcbcrConversionCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
 
-        // Pad width/height to multiple of 2
-        width = (width + 1) & ~1;
-        height = (height + 1) & ~1;
+        if (texture->format != SDL_PIXELFORMAT_P408 &&
+            texture->format != SDL_PIXELFORMAT_P416) {
+            // Pad width/height to multiple of 2
+            width = (width + 1) & ~1;
+            height = (height + 1) & ~1;
+        }
 
         // Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler
         samplerYcbcrConversionCreateInfo.format = textureFormat;
@@ -2978,16 +2988,24 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     } else if (numPlanes == 3) {
         // YUV data
-        int Ypitch = srcPitch;
-        int UVpitch = ((Ypitch + 1) / 2);
-        const Uint8 *plane0 = (const Uint8 *)srcPixels;
-        const Uint8 *plane1 = plane0 + rect->h * Ypitch;
-        const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
+        if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+            const Uint8 *plane0 = (const Uint8 *)srcPixels;
+            const Uint8 *plane1 = plane0 + rect->h * srcPitch;
+            const Uint8 *plane2 = plane1 + rect->h * srcPitch;
 
-        if (texture->format == SDL_PIXELFORMAT_YV12) {
-            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, srcPitch, plane1, srcPitch, plane2, srcPitch);
         } else {
-            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+            int Ypitch = srcPitch;
+            int UVpitch = ((Ypitch + 1) / 2);
+            const Uint8 *plane0 = (const Uint8 *)srcPixels;
+            const Uint8 *plane1 = plane0 + rect->h * Ypitch;
+            const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
+
+            if (texture->format == SDL_PIXELFORMAT_YV12) {
+                return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+            } else {
+                return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+            }
         }
     }
 #endif
@@ -3014,7 +3032,14 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
-    if (texture->format == SDL_PIXELFORMAT_YV12) {
+    if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x, rect->y, rect->w, rect->h, Uplane, Upitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 2, rect->x, rect->y, rect->w, rect->h, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+    } else if (texture->format == SDL_PIXELFORMAT_YV12) {
         if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
             return false;
         }
@@ -3352,7 +3377,7 @@ static bool VULKAN_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        // SDL_Log("%s, no viewport was set!", __FUNCTION__);
+        // SDL_Log("%s, no viewport was set!", SDL_FUNCTION);
         return false;
     }
 
@@ -3454,11 +3479,13 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
         switch (texture->format) {
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
+        case SDL_PIXELFORMAT_P408:
         case SDL_PIXELFORMAT_NV12:
         case SDL_PIXELFORMAT_NV21:
             constants->input_type = INPUTTYPE_SRGB;
             break;
         case SDL_PIXELFORMAT_P010:
+        case SDL_PIXELFORMAT_P416:
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
@@ -3874,6 +3901,11 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
 
 static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
+    if (format == SDL_PIXELFORMAT_INDEX8) {
+        // We'll do linear sampling in the shader if needed
+        scale_mode = SDL_SCALEMODE_NEAREST;
+    }
+
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
     if (!data->samplers[key]) {
@@ -3893,14 +3925,8 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_PixelFormat form
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            if (format == SDL_PIXELFORMAT_INDEX8) {
-                // We'll do linear sampling in the shader
-                samplerCreateInfo.magFilter = VK_FILTER_NEAREST;
-                samplerCreateInfo.minFilter = VK_FILTER_NEAREST;
-            } else {
-                samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-                samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
-            }
+            samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+            samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -4038,7 +4064,7 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VkSurfaceTransformFlagBitsKHR currentRotation = VULKAN_GetRotationForCurrentRenderTarget(rendererData);
     VULKAN_DrawStateCache stateCache;
-    SDL_memset(&stateCache, 0, sizeof(stateCache));
+    SDL_zero(stateCache);
 
     if (!rendererData->device) {
         return SDL_SetError("Device lost and couldn't be recovered");
@@ -4580,14 +4606,6 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
     VULKAN_InvalidateCachedState(renderer);
 
     renderer->name = VULKAN_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-#endif
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
@@ -4604,13 +4622,43 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
         return false;
     }
 
+    for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
+        VkImageFormatProperties properties;
+
+        if (vkGetPhysicalDeviceImageFormatProperties(rendererData->physicalDevice,
+                                                     vk_format_map[i].unorm,
+                                                     VK_IMAGE_TYPE_2D,
+                                                     VK_IMAGE_TILING_OPTIMAL,
+                                                     VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                     0,
+                                                     &properties) != VK_SUCCESS) {
+            continue;
+        }
+
+        if (vkGetPhysicalDeviceImageFormatProperties(rendererData->physicalDevice,
+                                                     vk_format_map[i].srgb,
+                                                     VK_IMAGE_TYPE_2D,
+                                                     VK_IMAGE_TILING_OPTIMAL,
+                                                     VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                     0,
+                                                     &properties) != VK_SUCCESS) {
+            continue;
+        }
+
+        SDL_AddSupportedTextureFormat(renderer, vk_format_map[i].sdl);
+    }
+
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+
 #ifdef SDL_HAVE_YUV
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P416);
     }
 #endif
 

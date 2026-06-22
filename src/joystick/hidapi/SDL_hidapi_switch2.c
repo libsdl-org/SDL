@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -232,16 +232,17 @@ static void MapTriggerAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis,
 
 static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
 {
-    unsigned char SET_LED_DATA[] = {
+    Uint8 set_led_data[] = {
         0x09, 0x91, 0x00, 0x07, 0x00, 0x08, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
-    unsigned char reply[8] = {0};
+    Uint8 reply[8] = {0};
+    const Uint8 player_pattern[] = { 0x1, 0x3, 0x7, 0xf, 0x9, 0x5, 0xd, 0x6 };
 
     if (ctx->player_lights && ctx->player_index >= 0) {
-        SET_LED_DATA[8] = (1 << (ctx->player_index % 4));
+        set_led_data[8] = player_pattern[ctx->player_index % 8];
     }
-    int res = SendBulkData(ctx, SET_LED_DATA, sizeof(SET_LED_DATA));
+    int res = SendBulkData(ctx, set_led_data, sizeof(set_led_data));
     if (res < 0) {
         return SDL_SetError("Couldn't set LED data: %d\n", res);
     }
@@ -381,6 +382,7 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         return SDL_SetError("Couldn't find bulk endpoints");
     }
 
+    ctx->libusb->set_auto_detach_kernel_driver(ctx->device_handle, true);
     int res = ctx->libusb->claim_interface(ctx->device_handle, ctx->interface_number);
     if (res < 0) {
         return SDL_SetError("Couldn't claim interface %d: %d\n", ctx->interface_number, res);
@@ -770,8 +772,6 @@ static void HandleGameCubeState(Uint64 timestamp, SDL_Joystick *joystick, SDL_Dr
 
 static void HandleCombinedControllerStateL(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch2_Context *ctx, Uint8 *data, int size)
 {
-    // FIXME: When we find out what the SL and SR buttons are, map them to paddles
-
     if (data[6] != ctx->last_state[6]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data[6] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[6] & 0x08) != 0));
@@ -825,8 +825,6 @@ static void HandleCombinedControllerStateL(Uint64 timestamp, SDL_Joystick *joyst
 
 static void HandleMiniControllerStateL(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch2_Context *ctx, Uint8 *data, int size)
 {
-    // FIXME: When we find out what the SL and SR buttons are, map them to shoulder buttons
-
     if (data[6] != ctx->last_state[6]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[6] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[6] & 0x08) != 0));
@@ -839,6 +837,8 @@ static void HandleMiniControllerStateL(Uint64 timestamp, SDL_Joystick *joystick,
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[7] & 0x02) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[7] & 0x04) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[7] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[7] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[7] & 0x20) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_LEFT_PADDLE1, ((data[7] & 0x40) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_LEFT_PADDLE2, ((data[7] & 0x80) != 0));
     }
@@ -863,8 +863,6 @@ static void HandleMiniControllerStateL(Uint64 timestamp, SDL_Joystick *joystick,
 
 static void HandleCombinedControllerStateR(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch2_Context *ctx, Uint8 *data, int size)
 {
-    // FIXME: When we find out what the SL and SR buttons are, map them to paddles
-
     if (data[5] != ctx->last_state[5]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[5] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[5] & 0x02) != 0));
@@ -907,13 +905,13 @@ static void HandleCombinedControllerStateR(Uint64 timestamp, SDL_Joystick *joyst
 
 static void HandleMiniControllerStateR(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverSwitch2_Context *ctx, Uint8 *data, int size)
 {
-    // FIXME: When we find out what the SL and SR buttons are, map them to shoulder buttons
-
     if (data[5] != ctx->last_state[5]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[5] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[5] & 0x02) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[5] & 0x04) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[5] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[5] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[5] & 0x20) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_RIGHT_PADDLE1, ((data[5] & 0x40) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_RIGHT_PADDLE2, ((data[5] & 0x80) != 0));
     }
@@ -1162,10 +1160,14 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
                 ctx->sensor_ts_coeff = 10000;
                 ctx->gyro_coeff = 34.8f;
                 ctx->sensors_ready = true;
-            } else {
+            } else if (coeff != 0) {
                 ctx->sensor_ts_coeff = 10000000000 / coeff;
                 ctx->gyro_coeff = 40.0f;
                 ctx->sensors_ready = true;
+            } else {
+                // Didn't get a valid reading, try again
+                ctx->first_sensor_timestamp = 0;
+                ctx->sample_count = 0;
             }
 
             if (ctx->sensors_ready && !ctx->sensors_enabled) {

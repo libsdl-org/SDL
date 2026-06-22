@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,6 +90,7 @@ static int (*PIPEWIRE_pw_stream_queue_buffer)(struct pw_stream *, struct pw_buff
 static struct pw_properties *(*PIPEWIRE_pw_properties_new)(const char *, ...)SPA_SENTINEL;
 static int (*PIPEWIRE_pw_properties_set)(struct pw_properties *, const char *, const char *);
 static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, const char *, ...) SPA_PRINTF_FUNC(3, 4);
+static int (*PIPEWIRE_pw_stream_update_properties)(struct pw_stream *, const struct spa_dict *);
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
@@ -183,6 +184,7 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_properties_new);
     SDL_PIPEWIRE_SYM(pw_properties_set);
     SDL_PIPEWIRE_SYM(pw_properties_setf);
+    SDL_PIPEWIRE_SYM(pw_stream_update_properties);
 
     return true;
 }
@@ -256,6 +258,8 @@ static int hotplug_init_seq_val;
 static bool hotplug_init_complete;
 static bool hotplug_events_enabled;
 
+static bool pipewire_have_session_services;
+static bool pipewire_have_audio_service;
 static int pipewire_version_major;
 static int pipewire_version_minor;
 static int pipewire_version_patch;
@@ -438,7 +442,7 @@ static void core_events_interface_callback(void *object, uint32_t id, int seq)
     }
 }
 
-static void core_events_metadata_callback(void *object, uint32_t id, int seq)
+static void core_events_generic_callback(void *object, uint32_t id, int seq)
 {
     struct node_object *node = object;
 
@@ -449,7 +453,7 @@ static void core_events_metadata_callback(void *object, uint32_t id, int seq)
 
 static const struct pw_core_events hotplug_init_core_events = { PW_VERSION_CORE_EVENTS, .info = core_events_hotplug_info_callback, .done = core_events_hotplug_init_callback };
 static const struct pw_core_events interface_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_interface_callback };
-static const struct pw_core_events metadata_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_metadata_callback };
+static const struct pw_core_events generic_core_events = { PW_VERSION_CORE_EVENTS, .done = core_events_generic_callback };
 
 static void hotplug_core_sync(struct node_object *node)
 {
@@ -652,6 +656,35 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
 
 static const struct pw_metadata_events metadata_node_events = { PW_VERSION_METADATA_EVENTS, .property = metadata_property };
 
+// Client info node callback.
+static void client_info(void *data, const struct pw_client_info *info)
+{
+    // If WirePlumber lists the session services, check to see if audio is enabled.
+    const char *services = spa_dict_lookup(info->props, "session.services");
+    if (services) {
+        pipewire_have_session_services = true;
+
+        // Services are in a JSON array.
+        struct spa_json iter[2];
+        spa_json_init(&iter[0], services, SDL_strlen(services));
+        if (spa_json_enter_array(&iter[0], &iter[1]) > 0) {
+            char element[PW_MAX_IDENTIFIER_LENGTH];
+            while (spa_json_get_string(&iter[1], element, sizeof(element)) > 0) {
+                if (SDL_strcmp(element, "audio") == 0) {
+                    pipewire_have_audio_service = true;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+static const struct pw_client_events client_node_events = {
+    .version = PW_VERSION_CLIENT_EVENTS,
+    .info = client_info,
+    .permissions = NULL
+};
+
 // Global registry callbacks
 static void registry_event_global_callback(void *object, uint32_t id, uint32_t permissions, const char *type, uint32_t version,
                                            const struct spa_dict *props)
@@ -673,7 +706,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
             // Just want sink and source
             if (!SDL_strcasecmp(media_class, "Audio/Sink")) {
                 recording = false;
-            } else if (!SDL_strcasecmp(media_class, "Audio/Source")) {
+            } else if (!SDL_strcasecmp(media_class, "Audio/Source") || !SDL_strcasecmp(media_class, "Audio/Source/Virtual")) {
                 recording = true;
             } else {
                 return;
@@ -714,9 +747,18 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
             }
         }
     } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Metadata)) {
-        node = node_object_new(id, type, version, &metadata_node_events, &metadata_core_events);
+        node = node_object_new(id, type, version, &metadata_node_events, &generic_core_events);
         if (!node) {
             SDL_SetError("Pipewire: Failed to allocate metadata node");
+            return;
+        }
+
+        // Update sync points
+        hotplug_core_sync(node);
+    } else if (!SDL_strcmp(type, PW_TYPE_INTERFACE_Client)) {
+        node = node_object_new(id, type, version, &client_node_events, &generic_core_events);
+        if (!node) {
+            SDL_SetError("Pipewire: Failed to allocate client info node");
             return;
         }
 
@@ -934,18 +976,18 @@ static void initialize_spa_info(const SDL_AudioSpec *spec, struct spa_audio_info
 
 static Uint8 *PIPEWIRE_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
-    // See if a buffer is available. If this returns NULL, SDL_PlaybackAudioThreadIterate will return false, but since we own the thread, it won't kill playback.
-    // !!! FIXME: It's not clear to me if this ever returns NULL or if this was just defensive coding.
-
+    // See if a buffer is available. If this sets *buffer_size=0, then SDL_PlaybackAudioThreadIterate will skip this iteration but try again next time.
     struct pw_stream *stream = device->hidden->stream;
     struct pw_buffer *pw_buf = PIPEWIRE_pw_stream_dequeue_buffer(stream);
     if (pw_buf == NULL) {
+        *buffer_size = 0;
         return NULL;
     }
 
     struct spa_buffer *spa_buf = pw_buf->buffer;
     if (spa_buf->datas[0].data == NULL) {
         PIPEWIRE_pw_stream_queue_buffer(stream, pw_buf);
+        *buffer_size = 0;
         return NULL;
     }
 
@@ -1078,6 +1120,23 @@ static const struct pw_stream_events stream_input_events = { PW_VERSION_STREAM_E
                                                              .add_buffer = stream_add_buffer_callback,
                                                              .process = input_callback };
 
+static void SDLCALL PIPEWIRE_StreamNameChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    struct SDL_PrivateAudioData *priv = device->hidden;
+
+    if (!priv || !priv->stream || !priv->loop) {
+        return;  // stream not ready yet, skip it.
+    }
+
+    struct spa_dict_item items[] = { { PW_KEY_MEDIA_NAME, newValue } };
+    struct spa_dict dict = SPA_DICT_INIT(items, 1);
+
+    PIPEWIRE_pw_thread_loop_lock(priv->loop);
+    PIPEWIRE_pw_stream_update_properties(priv->stream, &dict);
+    PIPEWIRE_pw_thread_loop_unlock(priv->loop);
+}
+
 static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
 {
     /*
@@ -1187,8 +1246,11 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     if (app_id) {
         PIPEWIRE_pw_properties_set(props, PW_KEY_APP_ID, app_id);
     }
-    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, stream_name);
-    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, stream_name);
+    // node_name/description describes the app, media_name what's currently playing
+    const char *node_name = (app_name && *app_name) ? app_name : stream_name;
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, node_name);
+    PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, node_name);
+    PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
@@ -1206,6 +1268,9 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         }
         PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
     }
+
+    // add this early so it will do its initial trigger when we aren't setup--skipping the attempt to update the name--since we're already explicitly setting it here.
+    SDL_AddHintCallback(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PIPEWIRE_StreamNameChanged, device);
 
     // Create the new stream
     priv->stream = PIPEWIRE_pw_stream_new_simple(PIPEWIRE_pw_thread_loop_get_loop(priv->loop), stream_name, props,
@@ -1248,6 +1313,8 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
         return;
     }
 
+    SDL_RemoveHintCallback(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, PIPEWIRE_StreamNameChanged, device);
+
     if (device->hidden->loop) {
         PIPEWIRE_pw_thread_loop_stop(device->hidden->loop);
     }
@@ -1282,6 +1349,8 @@ static void PIPEWIRE_Deinitialize(void)
     if (pipewire_initialized) {
         hotplug_loop_destroy();
         deinit_pipewire_library();
+        pipewire_have_session_services = false;
+        pipewire_have_audio_service = false;
         pipewire_initialized = false;
     }
 }
@@ -1335,7 +1404,8 @@ static bool PIPEWIRE_PREFERRED_Init(SDL_AudioDriverImpl *impl)
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug_loop);
 
-    if (no_devices || !pipewire_core_version_at_least(1, 0, 0)) {
+    if ((pipewire_have_session_services && !pipewire_have_audio_service) ||
+        (!pipewire_have_session_services && (no_devices || !pipewire_core_version_at_least(1, 0, 0)))) {
         PIPEWIRE_Deinitialize();
         return false;
     }

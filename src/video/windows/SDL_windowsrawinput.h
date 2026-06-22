@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,10 @@
 #ifndef SDL_windowsrawinput_h_
 #define SDL_windowsrawinput_h_
 
+extern void WIN_QuitRawInput(SDL_VideoDevice *_this);
 extern bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled);
 extern bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled);
 extern bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled);
+extern bool WIN_SetRawKeyboardFlag_Inputsink(SDL_VideoDevice *_this, bool enabled);
 
 #endif // SDL_windowsrawinput_h_

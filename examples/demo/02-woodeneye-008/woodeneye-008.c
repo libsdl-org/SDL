@@ -206,7 +206,7 @@ static void draw(SDL_Renderer *renderer, const float (*edges)[6], const Player p
         for (i = 0; i < players_len; i++) {
             const Player *player = &players[i];
             float mod_x = (float)(i % part_hor);
-            float mod_y = (float)(i / part_hor);
+            float mod_y = (float)i / part_hor;
             float hor_origin = (mod_x + 0.5f) * size_hor;
             float ver_origin = (mod_y + 0.5f) * size_ver;
             float cam_origin = (float)(0.5 * SDL_sqrt(size_hor * size_hor + size_ver * size_ver));
@@ -371,7 +371,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
         case SDL_EVENT_QUIT:
             return SDL_APP_SUCCESS;
-            break;
         case SDL_EVENT_MOUSE_REMOVED:
             for (i = 0; i < player_count; i++) {
                 if (players[i].mouse == event->mdevice.which) {

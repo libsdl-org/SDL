@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -93,6 +93,9 @@ int main(int argc, char *argv[])
     char *pref_path;
     char *curdir;
     const char *base_path;
+
+    /* this will be SDL's best guess at the human-readable exe name (or bundle id, or whatever) by default. */
+    SDL_Log("Default app name: '%s'", SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING));
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);

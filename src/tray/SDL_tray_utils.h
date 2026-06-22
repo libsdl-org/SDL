@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,3 +26,4 @@ extern void SDL_RegisterTray(SDL_Tray *tray);
 extern void SDL_UnregisterTray(SDL_Tray *tray);
 extern void SDL_CleanupTrays(void);
 extern bool SDL_HasActiveTrays(void);
+extern int SDL_GetActiveTrayCount(void);

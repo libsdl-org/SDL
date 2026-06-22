@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -160,6 +160,23 @@ static struct
     SDL_EventEntry *free;
 } SDL_EventQ = { NULL, false, { 0 }, 0, NULL, NULL, NULL };
 
+
+SDL_Mutex *SDL_event_lock = NULL; // This needs to support recursive locks
+
+void SDL_CreateEventLock(void)
+{
+    if (!SDL_event_lock) {
+        SDL_event_lock = SDL_CreateMutex();
+    }
+}
+
+void SDL_DestroyEventLock(void)
+{
+    if (SDL_event_lock) {
+        SDL_DestroyMutex(SDL_event_lock);
+        SDL_event_lock = NULL;
+    }
+}
 
 static void SDL_CleanupTemporaryMemory(void *data)
 {
@@ -565,6 +582,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DESTROYED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_HDR_STATE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SETTINGS_CHANGED);
 #undef SDL_WINDOWEVENT_CASE
 
 #define PRINT_KEYDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%u)", event->kdevice.timestamp, (uint)event->kdevice.which)
@@ -757,6 +775,18 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
                            event->gsensor.data[0], event->gsensor.data[1], event->gsensor.data[2]);
         break;
 
+#define PRINT_CAPSENSE_EVENT(event)                                                                            \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d capsense=%u state=%s)", \
+                       event->gcapsense.timestamp, (int)event->gcapsense.which,                                \
+                       event->gcapsense.capsense, event->gcapsense.down ? "touch" : "release")
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE)
+        PRINT_CAPSENSE_EVENT(event);
+        break;
+#undef PRINT_CAPSENSE_EVENT
+
 #define PRINT_FINGER_EVENT(event)                                                                                                                      \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " touchid=%" SDL_PRIu64 " fingerid=%" SDL_PRIu64 " x=%f y=%f dx=%f dy=%f pressure=%f)", \
                        event->tfinger.timestamp, event->tfinger.touchID,                                                              \
@@ -793,7 +823,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
-                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up");
+                       event->ptouch.eraser ? "yes" : "no", event->ptouch.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_DOWN)
         PRINT_PTOUCH_EVENT(event);
         break;
@@ -804,7 +834,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 
 #define PRINT_PPROXIMITY_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u)", \
-                       event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which);
+                       event->pproximity.timestamp, (uint)event->pproximity.windowID, (uint)event->pproximity.which)
         SDL_EVENT_CASE(SDL_EVENT_PEN_PROXIMITY_IN)
         PRINT_PPROXIMITY_EVENT(event);
         break;
@@ -827,7 +857,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #define PRINT_PBUTTON_EVENT(event)                                                                                                               \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g button=%u state=%s)", \
                        event->pbutton.timestamp, (uint)event->pbutton.windowID, (uint)event->pbutton.which, (uint)event->pbutton.pen_state, event->pbutton.x, event->pbutton.y, \
-                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up");
+                       (uint)event->pbutton.button, event->pbutton.down ? "down" : "up")
         SDL_EVENT_CASE(SDL_EVENT_PEN_BUTTON_DOWN)
         PRINT_PBUTTON_EVENT(event);
         break;
@@ -880,6 +910,11 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         PRINT_CAMERADEV_EVENT(event);
         break;
 #undef PRINT_CAMERADEV_EVENT
+
+        SDL_EVENT_CASE(SDL_EVENT_NOTIFICATION_ACTION_INVOKED)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d button_id='%s')",
+                           event->notification.timestamp, (uint)event->notification.which, event->notification.action_id);
+        break;
 
         SDL_EVENT_CASE(SDL_EVENT_SENSOR_UPDATE)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " which=%d data[0]=%f data[1]=%f data[2]=%f data[3]=%f data[4]=%f data[5]=%f)",
@@ -952,8 +987,9 @@ void SDL_StopEventLoop(void)
     const char *report = SDL_GetHint("SDL_EVENT_QUEUE_STATISTICS");
     int i;
     SDL_EventEntry *entry;
+    SDL_Mutex *lock = SDL_EventQ.lock;
 
-    SDL_LockMutex(SDL_EventQ.lock);
+    SDL_LockMutex(lock);
 
     SDL_EventQ.active = false;
 
@@ -991,17 +1027,10 @@ void SDL_StopEventLoop(void)
     SDL_QuitEventWatchList(&SDL_event_watchers);
     SDL_QuitWindowEventWatch();
 
-    SDL_Mutex *lock = NULL;
-    if (SDL_EventQ.lock) {
-        lock = SDL_EventQ.lock;
-        SDL_EventQ.lock = NULL;
-    }
+    SDL_EventQ.lock = NULL;
 
     SDL_UnlockMutex(lock);
-
-    if (lock) {
-        SDL_DestroyMutex(lock);
-    }
+    SDL_DestroyMutex(lock);
 }
 
 // This function (and associated calls) may be called more than once
@@ -1484,6 +1513,8 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_SendPendingPenProximity();
+
     SDL_UpdateCursorAnimation();
 
     SDL_UpdateTrays();
@@ -1818,7 +1849,7 @@ bool SDL_PushEvent(SDL_Event *event)
 void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
     SDL_EventEntry *event, *next;
-    SDL_LockMutex(SDL_event_watchers.lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         // Set filter and discard pending events
         SDL_event_watchers.filter.callback = filter;
@@ -1837,18 +1868,18 @@ void SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
             SDL_UnlockMutex(SDL_EventQ.lock);
         }
     }
-    SDL_UnlockMutex(SDL_event_watchers.lock);
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_GetEventFilter(SDL_EventFilter *filter, void **userdata)
 {
     SDL_EventWatcher event_ok;
 
-    SDL_LockMutex(SDL_event_watchers.lock);
+    SDL_LockMutex(SDL_event_lock);
     {
         event_ok = SDL_event_watchers.filter;
     }
-    SDL_UnlockMutex(SDL_event_watchers.lock);
+    SDL_UnlockMutex(SDL_event_lock);
 
     if (filter) {
         *filter = event_ok.callback;

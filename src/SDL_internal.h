@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,11 +191,6 @@
 #define SDL_VIDEO_RENDER_SW 1
 #endif
 
-/* STB image conversion */
-#if !defined(SDL_HAVE_STB) && !defined(SDL_LEAN_AND_MEAN)
-#define SDL_HAVE_STB 1
-#endif
-
 /* YUV formats
    - handling of YUV surfaces
    - blitting and conversion functions */
@@ -233,6 +228,7 @@
 #undef SDL_GPU_D3D12
 #undef SDL_GPU_METAL
 #undef SDL_GPU_VULKAN
+#undef HAVE_GPU_OPENXR
 #undef SDL_VIDEO_RENDER_GPU
 #endif // SDL_GPU_DISABLED
 
@@ -271,6 +267,11 @@ extern "C" {
    anything calling it without an extremely good reason. */
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
+// Get just the process's binary name, no path. NULL if it doesn't make sense for a platform.
+// Can be something not a file, like a package ID on Android. Meant to be human-readable, not appended to a path, etc.
+// Calculates and caches the string on first call. String lives until SDL_Quit(). This is not a public API right now!
+extern const char *SDL_GetExeName(void);
+
 #ifdef HAVE_LIBC
 #define SDL_abort() abort()
 #else
@@ -280,11 +281,16 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
     } while (0)
 #endif
 
-#define PUSH_SDL_ERROR() \
-    { char *_error = SDL_strdup(SDL_GetError());
+// Macros to save and restore error values
+#define SDL_PushError() do { \
+    char *saved_error = SDL_strdup(SDL_GetError())
 
-#define POP_SDL_ERROR() \
-    SDL_SetError("%s", _error); SDL_free(_error); }
+#define SDL_PopError()                          \
+    if (saved_error) {                      \
+        SDL_SetError("%s", saved_error);    \
+        SDL_free(saved_error);              \
+    }                                       \
+} while (0)
 
 #if defined(SDL_DISABLE_INVALID_PARAMS)
 #ifdef DEBUG
@@ -305,6 +311,9 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
+
+// Return true if this thread has initialized video
+extern bool SDL_IsVideoThread(void);
 
 /* The internal implementations of these functions have up to nanosecond precision.
    We can expose these functions as part of the API if we want to later.

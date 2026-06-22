@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,16 @@
 #include "SDL_x11opengl.h"
 #include "SDL_x11xsync.h"
 
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
+#endif
+
 // EGL implementation of SDL OpenGL support
+
+void X11_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
+{
+    _this->gl_config.egl_platform = EGL_PLATFORM_X11_KHR;
+}
 
 bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -53,7 +62,7 @@ bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 #endif
     }
 
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display);
 }
 
 XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent)

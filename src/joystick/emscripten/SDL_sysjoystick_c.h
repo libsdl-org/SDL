@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,12 @@ typedef struct SDL_joylist_item
     double analogButton[64];
     EM_BOOL digitalButton[64];
     Uint8 hat;  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    bool rumble_available;
+    bool trigger_rumble_available;
+    Uint16 weak_magnitude_rumble;
+    Uint16 strong_magnitude_rumble;
+    Uint16 left_trigger_rumble;
+    Uint16 right_trigger_rumble;
 
     struct SDL_joylist_item *next;
 } SDL_joylist_item;

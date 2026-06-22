@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,8 +29,10 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../core/android/SDL_android.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "../usb_ids.h"
 
 #include "android/keycodes.h"
+#include <linux/input-event-codes.h>
 
 // As of platform android-14, android/keycodes.h is missing these defines
 #ifndef AKEYCODE_BUTTON_1
@@ -106,7 +108,8 @@ static int keycode_to_SDL(int keycode)
         button = SDL_GAMEPAD_BUTTON_GUIDE;
         break;
     case AKEYCODE_BUTTON_L2:
-        button = 15;
+    case AKEYCODE_MEDIA_RECORD:
+        button = SDL_GAMEPAD_BUTTON_MISC1;
         break;
     case AKEYCODE_BUTTON_R2:
         button = 16;
@@ -169,6 +172,31 @@ static int keycode_to_SDL(int keycode)
     return button;
 }
 
+static int scancode_to_SDL(int scancode)
+{
+    int button = 0;
+    switch (scancode) {
+    // D-Pad buttons on the left JoyCon
+    case BTN_DPAD_UP:
+        button = SDL_GAMEPAD_BUTTON_DPAD_UP;
+        break;
+    case BTN_DPAD_DOWN:
+        button = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+        break;
+    case BTN_DPAD_LEFT:
+        button = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+        break;
+    case BTN_DPAD_RIGHT:
+        button = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+        break;
+
+    default:
+        return -1;
+    }
+    SDL_assert(button < ANDROID_MAX_NBUTTONS);
+    return button;
+}
+
 static SDL_Scancode button_to_scancode(int button)
 {
     switch (button) {
@@ -194,11 +222,14 @@ static SDL_Scancode button_to_scancode(int button)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-bool Android_OnPadDown(int device_id, int keycode)
+bool Android_OnPadDown(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
+    if (button < 0) {
+        button = scancode_to_SDL(scancode);
+    }
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
@@ -214,11 +245,14 @@ bool Android_OnPadDown(int device_id, int keycode)
     return false;
 }
 
-bool Android_OnPadUp(int device_id, int keycode)
+bool Android_OnPadUp(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
+    if (button < 0) {
+        button = scancode_to_SDL(scancode);
+    }
     if (button >= 0) {
         SDL_LockJoysticks();
         item = JoystickByDeviceId(device_id);
@@ -305,11 +339,62 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
     return false;
 }
 
-void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats, bool can_rumble)
+void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp, float x, float y, float z)
+{
+    Uint64 timestamp = SDL_GetTicksNS();
+    SDL_joylist_item *item;
+    SDL_SensorType sensor;
+
+    if (sensor_type == 1) { // Sensor.TYPE_ACCELEROMETER
+        sensor = SDL_SENSOR_ACCEL;
+    } else if (sensor_type == 4) { // Sensor.TYPE_GYROSCOPE
+        sensor = SDL_SENSOR_GYRO;
+    } else {
+        // Unsupported sensor
+        return;
+    }
+
+    SDL_LockJoysticks();
+    item = JoystickByDeviceId(device_id);
+    if (item && item->joystick) {
+        float data[3];
+
+        if (item->vendor_id == USB_VENDOR_NINTENDO) {
+            // The Nintendo driver uses a different axis order than SDL
+            data[0] = -y;
+            data[1] = z;
+            data[2] = -x;
+
+            if (sensor == SDL_SENSOR_GYRO) {
+                // The values are experimentally 3x what they should be
+                data[0] /= 3;
+                data[1] /= 3;
+                data[2] /= 3;
+            }
+        } else {
+            // The axes of sensor events and their signs are the same as SDL's, so no conversion required
+            data[0] = x;
+            data[1] = y;
+            data[2] = z;
+        }
+        SDL_SendJoystickSensor(timestamp, item->joystick, sensor, sensor_timestamp, data, 3);
+    }
+    SDL_UnlockJoysticks();
+}
+
+void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
+    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope)
 {
     SDL_joylist_item *item;
     SDL_GUID guid;
     int i;
+
+    // Java might notify us about joysticks being added before joysticks have
+    // been initialized. That's fine, we'll get called again with the full set
+    // in Android_JNI_DetectDevices()
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
 
     SDL_LockJoysticks();
 
@@ -336,8 +421,9 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats", name, desc, vendor_id, product_id, naxes, nhats);
 #endif
 
-    if (nhats > 0) {
+    if (nhats > 0 || (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT)) {
         // Hat is translated into DPAD buttons
+        // D-Pad on the left JoyCon is a special case, it's not recognized via keycodes or hats, only scancodes
         button_mask |= ((1 << SDL_GAMEPAD_BUTTON_DPAD_UP) |
                         (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN) |
                         (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT) |
@@ -362,6 +448,8 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_zerop(item);
     item->guid = guid;
     item->device_id = device_id;
+    item->vendor_id = vendor_id;
+    item->product_id = product_id;
     item->name = SDL_CreateJoystickName(vendor_id, product_id, NULL, name);
     if (!item->name) {
         SDL_free(item);
@@ -380,6 +468,9 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     item->naxes = naxes;
     item->nhats = nhats;
     item->can_rumble = can_rumble;
+    item->has_rgb_led = has_rgb_led;
+    item->has_accelerometer = has_accelerometer;
+    item->has_gyroscope = has_accelerometer;
     item->device_instance = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
@@ -405,6 +496,12 @@ void Android_RemoveJoystick(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+
+    // Java might notify us about joysticks being removed before joysticks have
+    // been initialized.
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
 
     SDL_LockJoysticks();
 
@@ -451,11 +548,9 @@ done:
     SDL_UnlockJoysticks();
 }
 
-static void ANDROID_JoystickDetect(void);
-
 static bool ANDROID_JoystickInit(void)
 {
-    ANDROID_JoystickDetect();
+    Android_JNI_DetectDevices();
     return true;
 }
 
@@ -466,16 +561,9 @@ static int ANDROID_JoystickGetCount(void)
 
 static void ANDROID_JoystickDetect(void)
 {
-    /* Support for device connect/disconnect is API >= 16 only,
-     * so we poll every three seconds
+    /* Support for device connect/disconnect is implemented using InputDeviceListener
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint64 timeout = 0;
-    Uint64 now = SDL_GetTicks();
-    if (!timeout || now >= timeout) {
-        timeout = now + 3000;
-        Android_JNI_PollInputDevices();
-    }
 }
 
 static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -504,16 +592,6 @@ static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 static SDL_joylist_item *JoystickByDeviceId(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
-
-    while (item) {
-        if (item->device_id == device_id) {
-            return item;
-        }
-        item = item->next;
-    }
-
-    // Joystick not found, try adding it
-    ANDROID_JoystickDetect();
 
     while (item) {
         if (item->device_id == device_id) {
@@ -581,6 +659,17 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
+    if (item->has_rgb_led) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
+    }
+
+    if (item->has_accelerometer) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+    }
+    if (item->has_gyroscope) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+    }
+
     return true;
 }
 
@@ -607,7 +696,15 @@ static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_r
 
 static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item) {
+        return SDL_SetError("SetLED failed, device disconnected");
+    }
+    if (!item->has_rgb_led) {
+        return SDL_Unsupported();
+    }
+    Android_JNI_JoystickSetLED(item->device_id, red, green, blue);
+    return true;
 }
 
 static bool ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
@@ -617,7 +714,15 @@ static bool ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data,
 
 static bool ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+    if (!item) {
+        return SDL_SetError("SetSensorsEnabled failed, device disconnected");
+    }
+    if (!item->has_accelerometer && !item->has_gyroscope) {
+        return SDL_Unsupported();
+    }
+    Android_JNI_JoystickSetSensorsEnabled(item->device_id, enabled);
+    return true;
 }
 
 static void ANDROID_JoystickUpdate(SDL_Joystick *joystick)
@@ -634,10 +739,6 @@ static void ANDROID_JoystickClose(SDL_Joystick *joystick)
 
 static void ANDROID_JoystickQuit(void)
 {
-/* We don't have any way to scan for joysticks at init, so don't wipe the list
- * of joysticks here in case this is a reinit.
- */
-#if 0
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
@@ -650,7 +751,6 @@ static void ANDROID_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-#endif // 0
 }
 
 static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)

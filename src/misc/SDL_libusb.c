@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -79,6 +79,7 @@ bool SDL_InitLibUSB(SDL_LibUSBContext **ctx)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), kernel_driver_active)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), detach_kernel_driver)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), attach_kernel_driver)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int), set_auto_detach_kernel_driver)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, int, int), set_interface_alt_setting)
             LOAD_LIBUSB_SYMBOL(struct libusb_transfer * (LIBUSB_CALL *)(int), alloc_transfer)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(struct libusb_transfer *), submit_transfer)
@@ -89,6 +90,10 @@ bool SDL_InitLibUSB(SDL_LibUSBContext **ctx)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), bulk_transfer)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *), handle_events)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *, int *), handle_events_completed)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_context *ctx), interrupt_event_handler)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(uint32_t), has_capability)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *, int, int, int, int, int, libusb_hotplug_callback_fn, void *, libusb_hotplug_callback_handle *), hotplug_register_callback)
+            LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(libusb_context *, libusb_hotplug_callback_handle), hotplug_deregister_callback)
             LOAD_LIBUSB_SYMBOL(const char * (LIBUSB_CALL *)(int), error_name)
 #undef LOAD_LIBUSB_SYMBOL
         }

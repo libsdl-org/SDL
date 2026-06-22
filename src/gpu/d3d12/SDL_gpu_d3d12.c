@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,17 @@
 
 #ifdef SDL_GPU_D3D12
 
+#include "../../events/SDL_windowevents_c.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
+
+#ifdef HAVE_GPU_OPENXR
+#define XR_USE_GRAPHICS_API_D3D12 1
+#include "../xr/SDL_openxr_internal.h"
+#include "../xr/SDL_openxrdyn.h"
+#include "../xr/SDL_gpu_openxr.h"
+#endif
+
 #include "../SDL_sysgpu.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
@@ -110,7 +119,8 @@
 #define CREATE_DXGI_FACTORY1_FUNC           "CreateDXGIFactory1"
 #define DXGI_GET_DEBUG_INTERFACE_FUNC       "DXGIGetDebugInterface"
 #define D3D12_GET_DEBUG_INTERFACE_FUNC      "D3D12GetDebugInterface"
-#define WINDOW_PROPERTY_DATA                "SDL_GPUD3D12WindowPropertyData"
+#define D3D12_GET_INTERFACE_FUNC            "D3D12GetInterface"
+#define WINDOW_PROPERTY_DATA                "SDL.internal.gpu.d3d12.data"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
 #define MAX_ROOT_SIGNATURE_PARAMETERS         64
@@ -124,6 +134,8 @@
 #define SDL_GPU_SHADERSTAGE_COMPUTE (SDL_GPUShaderStage)2
 
 #ifdef _WIN32
+#define HRESULT_FMT "(0x%08lX)"
+#elif defined(__CYGWIN__) && !defined(_LP64)
 #define HRESULT_FMT "(0x%08lX)"
 #else
 #define HRESULT_FMT "(0x%08X)"
@@ -174,6 +186,12 @@ static const IID D3D_IID_ID3D12PipelineState = { 0x765a30f3, 0xf624, 0x4c6f, { 0
 static const IID D3D_IID_ID3D12Debug = { 0x344488b7, 0x6846, 0x474b, { 0xb9, 0x89, 0xf0, 0x27, 0x44, 0x82, 0x45, 0xe0 } };
 static const IID D3D_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58 } };
 static const IID D3D_IID_ID3D12InfoQueue1 = { 0x2852dd88, 0xb484, 0x4c0c, { 0xb6, 0xb1, 0x67, 0x16, 0x85, 0x00, 0xe6, 0x00 } };
+
+static const GUID D3D_CLSID_ID3D12SDKConfiguration = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x94, 0x58, 0x03, 0x34, 0xd2, 0x0e, 0x07, 0xce } };
+static const GUID D3D_CLSID_ID3D12Debug = { 0xf2352aeb, 0xdd84, 0x49fe, { 0xb9, 0x7b, 0xa9, 0xdc, 0xfd, 0xcc, 0x1b, 0x4f } };
+static const IID D3D_IID_ID3D12SDKConfiguration = { 0xe9eb5314, 0x33aa, 0x42b2, { 0xa7, 0x18, 0xd7, 0x7f, 0x58, 0xb1, 0xf1, 0xc7 } };
+static const IID D3D_IID_ID3D12SDKConfiguration1 = { 0x8aaf9303, 0xad25, 0x48b9, { 0x9a, 0x57, 0xd9, 0xc3, 0x7e, 0x00, 0x9d, 0x9f } };
+static const IID D3D_IID_ID3D12DeviceFactory = { 0x61f307d3, 0xd34e, 0x4e7c, { 0x83, 0x74, 0x3b, 0xa4, 0xde, 0x23, 0xcc, 0xcb } };
 
 // Enums
 
@@ -255,7 +273,7 @@ static D3D12_BLEND_OP SDLToD3D12_BlendOp[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendOp, SDL_arraysize(SDLToD3D12_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 // These are actually color formats.
-// For some genius reason, D3D12 splits format capabilites for depth-stencil views.
+// For some genius reason, D3D12 splits format capabilities for depth-stencil views.
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
     DXGI_FORMAT_UNKNOWN,              // INVALID
     DXGI_FORMAT_A8_UNORM,             // A8_UNORM
@@ -583,6 +601,30 @@ static DXGI_FORMAT SDLToD3D12_TypelessFormat[] = {
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TypelessFormat, SDL_arraysize(SDLToD3D12_TypelessFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
+#ifdef HAVE_GPU_OPENXR
+// For XR sRGB format selection - maps DXGI sRGB formats to SDL formats
+typedef struct TextureFormatPair
+{
+    DXGI_FORMAT dxgi;
+    SDL_GPUTextureFormat sdl;
+} TextureFormatPair;
+
+static TextureFormatPair SDLToD3D12_TextureFormat_SrgbOnly[] = {
+    { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB },
+    { DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB },
+    { DXGI_FORMAT_BC1_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB },
+    { DXGI_FORMAT_BC2_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB },
+    { DXGI_FORMAT_BC3_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB },
+    { DXGI_FORMAT_BC7_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB },
+};
+
+// Forward declarations for XR helper functions
+static bool D3D12_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *found_extension);
+static XrResult D3D12_INTERNAL_GetXrGraphicsRequirements(XrInstance instance, XrSystemId systemId, D3D_FEATURE_LEVEL *minimumFeatureLevel, LUID *adapter);
+static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, IDXGIAdapter1 **outAdapter);
+static bool D3D12_INTERNAL_FindXRSrgbSwapchain(int64_t *supportedFormats, Uint32 supportedFormatsCount, SDL_GPUTextureFormat *sdlFormat, DXGI_FORMAT *dxgiFormat);
+#endif /* HAVE_GPU_OPENXR */
+
 static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
     D3D12_COMPARISON_FUNC_NEVER,         // INVALID
     D3D12_COMPARISON_FUNC_NEVER,         // NEVER
@@ -788,6 +830,9 @@ typedef struct D3D12TextureContainer
     bool canBeCycled;
 
     char *debugName;
+
+    // XR swapchain images are managed by OpenXR runtime
+    bool externallyManaged;
 } D3D12TextureContainer;
 
 // Null views represent by heap = NULL
@@ -818,6 +863,9 @@ struct D3D12Texture
     D3D12StagingDescriptor srvHandle;
 
     SDL_AtomicInt referenceCount;
+
+    // XR swapchain images are managed by OpenXR runtime
+    bool externallyManaged;
 };
 
 typedef struct D3D12Sampler
@@ -830,6 +878,8 @@ typedef struct D3D12Sampler
 typedef struct D3D12WindowData
 {
     SDL_Window *window;
+    D3D12Renderer *renderer;
+    int refcount;
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     D3D12XBOX_FRAME_PIPELINE_TOKEN frameToken;
 #else
@@ -894,6 +944,7 @@ struct D3D12Renderer
 
     bool debug_mode;
     bool GPUUploadHeapSupported;
+    bool UnrestrictedBufferTextureCopyPitchSupported;
     // FIXME: these might not be necessary since we're not using custom heaps
     bool UMA;
     bool UMACacheCoherent;
@@ -974,6 +1025,13 @@ struct D3D12Renderer
     SDL_Mutex *windowLock;
     SDL_Mutex *fenceLock;
     SDL_Mutex *disposeLock;
+
+#ifdef HAVE_GPU_OPENXR
+    // OpenXR state
+    XrInstance xrInstance;
+    XrSystemId xrSystemId;
+    XrInstancePfns *xr;
+#endif
 };
 
 struct D3D12CommandBuffer
@@ -1406,7 +1464,8 @@ static void D3D12_INTERNAL_DestroyTexture(
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         &texture->srvHandle);
 
-    if (texture->resource) {
+    // XR swapchain images are owned by the OpenXR runtime
+    if (texture->resource && !texture->externallyManaged) {
         ID3D12Resource_Release(texture->resource);
     }
 
@@ -1781,6 +1840,16 @@ static inline Uint32 D3D12_INTERNAL_CalcSubresource(
     return mipLevel + (layer * numLevels);
 }
 
+static inline Uint32 D3D12_INTERNAL_CalcSubresourceWithPlane(
+    Uint32 mipLevel,
+    Uint32 layer,
+    Uint32 planeSlice,
+    Uint32 numLevels,
+    Uint32 arraySize)
+{
+    return mipLevel + (layer * numLevels) + (planeSlice * numLevels * arraySize);
+}
+
 static void D3D12_INTERNAL_ResourceBarrier(
     D3D12CommandBuffer *commandBuffer,
     D3D12_RESOURCE_STATES sourceState,
@@ -1837,6 +1906,27 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
         textureSubresource->parent->resource,
         textureSubresource->index,
         needsUAVBarrier);
+
+    // D3D12 stores planar values on a separate subresource.
+    // Since depth-stencil is our only supported planar format,
+    // just force an extra transition if we're using a stencil format.
+    if (IsStencilFormat(textureSubresource->parent->container->header.info.format)) {
+        Uint32 planeSubresourceIndex = D3D12_INTERNAL_CalcSubresourceWithPlane(
+            textureSubresource->level,
+            textureSubresource->layer,
+            1,
+            textureSubresource->parent->container->header.info.num_levels,
+            textureSubresource->parent->container->header.info.layer_count_or_depth
+        );
+
+        D3D12_INTERNAL_ResourceBarrier(
+            commandBuffer,
+            sourceState,
+            destinationState,
+            textureSubresource->parent->resource,
+            planeSubresourceIndex,
+            needsUAVBarrier);
+    }
 }
 
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultTextureResourceState(
@@ -2903,8 +2993,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     const SDL_GPUComputePipelineCreateInfo *createinfo)
 {
     D3D12Renderer *renderer = (D3D12Renderer *)driverData;
-    void *bytecode;
-    size_t bytecodeSize;
     ID3D12PipelineState *pipelineState;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
@@ -2912,8 +3000,8 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
             createinfo->code,
             createinfo->code_size,
             createinfo->format,
-            &bytecode,
-            &bytecodeSize)) {
+            NULL,
+            NULL)) {
         return NULL;
     }
 
@@ -2922,13 +3010,12 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         createinfo);
 
     if (rootSignature == NULL) {
-        SDL_free(bytecode);
         SET_STRING_ERROR_AND_RETURN("Could not create root signature!", NULL);
     }
 
     D3D12_COMPUTE_PIPELINE_STATE_DESC pipelineDesc;
-    pipelineDesc.CS.pShaderBytecode = bytecode;
-    pipelineDesc.CS.BytecodeLength = bytecodeSize;
+    pipelineDesc.CS.pShaderBytecode = createinfo->code;
+    pipelineDesc.CS.BytecodeLength = createinfo->code_size;
     pipelineDesc.pRootSignature = rootSignature->handle;
     pipelineDesc.CachedPSO.CachedBlobSizeInBytes = 0;
     pipelineDesc.CachedPSO.pCachedBlob = NULL;
@@ -2943,7 +3030,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     if (FAILED(res)) {
         D3D12_INTERNAL_SetError(renderer, "Could not create compute pipeline state", res);
-        SDL_free(bytecode);
         return NULL;
     }
 
@@ -2952,7 +3038,6 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
 
     if (!computePipeline) {
         ID3D12PipelineState_Release(pipelineState);
-        SDL_free(bytecode);
         return NULL;
     }
 
@@ -3594,7 +3679,12 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                 dsvDesc.Format = SDLToD3D12_DepthFormat[createinfo->format];
                 dsvDesc.Flags = (D3D12_DSV_FLAGS)0;
 
-                if (isMultisample) {
+                if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE || createinfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
+                    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
+                    dsvDesc.Texture2DArray.MipSlice = levelIndex;
+                    dsvDesc.Texture2DArray.FirstArraySlice = layerIndex;
+                    dsvDesc.Texture2DArray.ArraySize = 1;
+                } else if (isMultisample) {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DMS;
                 } else {
                     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -3624,6 +3714,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
                     uavDesc.Texture2DArray.MipSlice = levelIndex;
                     uavDesc.Texture2DArray.FirstArraySlice = layerIndex;
                     uavDesc.Texture2DArray.ArraySize = 1;
+                    uavDesc.Texture2DArray.PlaneSlice = 0;
                 } else if (createinfo->type == SDL_GPU_TEXTURETYPE_3D) {
                     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
                     uavDesc.Texture3D.MipSlice = levelIndex;
@@ -5916,12 +6007,16 @@ static void D3D12_UploadToTexture(
     bool cycle)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Renderer *renderer = (D3D12Renderer *)d3d12CommandBuffer->renderer;
     D3D12BufferContainer *transferBufferContainer = (D3D12BufferContainer *)source->transfer_buffer;
     D3D12Buffer *temporaryBuffer = NULL;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
     Uint32 pixelsPerRow = source->pixels_per_row;
+    Uint32 blockWidth;
+    Uint32 blockSize;
     Uint32 rowPitch;
+    Uint32 blockHeight;
     Uint32 alignedRowPitch;
     Uint32 rowsPerSlice = source->rows_per_layer;
     Uint32 bytesPerSlice;
@@ -5940,11 +6035,12 @@ static void D3D12_UploadToTexture(
         cycle,
         D3D12_RESOURCE_STATE_COPY_DEST);
 
-    /* D3D12 requires texture data row pitch to be 256 byte aligned, which is obviously insane.
-     * Instead of exposing that restriction to the client, which is a huge rake to step on,
-     * and a restriction that no other backend requires, we're going to copy data to a temporary buffer,
-     * copy THAT data to the texture, and then get rid of the temporary buffer ASAP.
-     * If we're lucky and the row pitch and depth pitch are already aligned, we can skip all of that.
+    /* Unless the UnrestrictedBufferTextureCopyPitchSupported feature is supported, D3D12 requires
+     * texture data row pitch to be 256 byte aligned, which is obviously insane. Instead of exposing
+     * that restriction to the client, which is a huge rake to step on, and a restriction that no
+     * other backend requires, we're going to copy data to a temporary buffer, copy THAT data to the
+     * texture, and then get rid of the temporary buffer ASAP. If we're lucky and the row pitch and
+     * depth pitch are already aligned, we can skip all of that.
      *
      * D3D12 also requires offsets to be 512 byte aligned. We'll fix that for the client and warn them as well.
      *
@@ -5955,18 +6051,27 @@ static void D3D12_UploadToTexture(
         pixelsPerRow = destination->w;
     }
 
-    rowPitch = BytesPerRow(pixelsPerRow, textureContainer->header.info.format);
-
     if (rowsPerSlice == 0) {
         rowsPerSlice = destination->h;
     }
 
+    blockWidth = Texture_GetBlockWidth(textureContainer->header.info.format);
+    blockSize = SDL_GPUTextureFormatTexelBlockSize(textureContainer->header.info.format);
+    rowPitch = (pixelsPerRow + (blockWidth - 1)) / blockWidth * blockSize;
+    blockHeight = (rowsPerSlice + (blockWidth - 1)) / blockWidth;
+
     bytesPerSlice = rowsPerSlice * rowPitch;
 
-    alignedRowPitch = BytesPerRow(destination->w, textureContainer->header.info.format);
-    alignedRowPitch = D3D12_INTERNAL_Align(alignedRowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-    needsRealignment = rowsPerSlice != destination->h || rowPitch != alignedRowPitch;
-    needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    if (renderer->UnrestrictedBufferTextureCopyPitchSupported) {
+        alignedRowPitch = rowPitch;
+        needsRealignment = false;
+        needsPlacementCopy = false;
+    } else {
+        alignedRowPitch = (destination->w + (blockWidth - 1)) / blockWidth * blockSize;
+        alignedRowPitch = D3D12_INTERNAL_Align(alignedRowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+        needsRealignment = rowsPerSlice != destination->h || rowPitch != alignedRowPitch;
+        needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    }
 
     alignedBytesPerSlice = alignedRowPitch * destination->h;
 
@@ -5982,7 +6087,7 @@ static void D3D12_UploadToTexture(
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
             0,
-            alignedRowPitch * destination->h * destination->d,
+            alignedRowPitch * blockHeight * destination->d,
             D3D12_BUFFER_TYPE_UPLOAD,
             NULL);
 
@@ -5993,21 +6098,13 @@ static void D3D12_UploadToTexture(
         sourceLocation.pResource = temporaryBuffer->handle;
 
         for (Uint32 sliceIndex = 0; sliceIndex < destination->d; sliceIndex += 1) {
-            // copy row count minus one to avoid overread
-            for (Uint32 rowIndex = 0; rowIndex < destination->h - 1; rowIndex += 1) {
-
+            for (Uint32 rowIndex = 0; rowIndex < blockHeight; rowIndex += 1) {
                 SDL_memcpy(
                     temporaryBuffer->mapPointer + (sliceIndex * alignedBytesPerSlice) + (rowIndex * alignedRowPitch),
                     transferBufferContainer->activeBuffer->mapPointer + source->offset + (sliceIndex * bytesPerSlice) + (rowIndex * rowPitch),
-                    alignedRowPitch);
+                    rowPitch);
 
             }
-            Uint32 offset = source->offset + (sliceIndex * bytesPerSlice) + ((destination->h - 1) * rowPitch);
-
-            SDL_memcpy(
-                temporaryBuffer->mapPointer + (sliceIndex * alignedBytesPerSlice) + ((destination->h - 1) * alignedRowPitch),
-                transferBufferContainer->activeBuffer->mapPointer + offset,
-                SDL_min(alignedRowPitch, transferBufferContainer->size - offset));
 
             sourceLocation.PlacedFootprint.Footprint.Width = destination->w;
             sourceLocation.PlacedFootprint.Footprint.Height = destination->h;
@@ -6036,7 +6133,7 @@ static void D3D12_UploadToTexture(
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
             0,
-            alignedRowPitch * destination->h * destination->d,
+            alignedRowPitch * blockHeight * destination->d,
             D3D12_BUFFER_TYPE_UPLOAD,
             NULL);
 
@@ -6047,7 +6144,7 @@ static void D3D12_UploadToTexture(
         SDL_memcpy(
             temporaryBuffer->mapPointer,
             transferBufferContainer->activeBuffer->mapPointer + source->offset,
-            alignedRowPitch * destination->h * destination->d);
+            alignedRowPitch * blockHeight * destination->d);
 
         sourceLocation.pResource = temporaryBuffer->handle;
         sourceLocation.PlacedFootprint.Offset = 0;
@@ -6253,6 +6350,7 @@ static void D3D12_DownloadFromTexture(
     const SDL_GPUTextureTransferInfo *destination)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
     D3D12_TEXTURE_COPY_LOCATION sourceLocation;
     D3D12_TEXTURE_COPY_LOCATION destinationLocation;
     Uint32 pixelsPerRow = destination->pixels_per_row;
@@ -6270,11 +6368,12 @@ static void D3D12_DownloadFromTexture(
     D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->transfer_buffer;
     D3D12Buffer *destinationBuffer = destinationContainer->activeBuffer;
 
-    /* D3D12 requires texture data row pitch to be 256 byte aligned, which is obviously insane.
-     * Instead of exposing that restriction to the client, which is a huge rake to step on,
-     * and a restriction that no other backend requires, we're going to copy data to a temporary buffer,
-     * copy THAT data to the texture, and then get rid of the temporary buffer ASAP.
-     * If we're lucky and the row pitch and depth pitch are already aligned, we can skip all of that.
+    /* Unless the UnrestrictedBufferTextureCopyPitchSupported feature is supported, D3D12 requires
+     * texture data row pitch to be 256 byte aligned, which is obviously insane. Instead of exposing
+     * that restriction to the client, which is a huge rake to step on, and a restriction that no
+     * other backend requires, we're going to copy data to a temporary buffer, copy THAT data to the
+     * texture, and then get rid of the temporary buffer ASAP. If we're lucky and the row pitch and
+     * depth pitch are already aligned, we can skip all of that.
      *
      * D3D12 also requires offsets to be 512 byte aligned. We'll fix that for the client and warn them as well.
      *
@@ -6294,9 +6393,15 @@ static void D3D12_DownloadFromTexture(
         rowsPerSlice = source->h;
     }
 
-    alignedRowPitch = D3D12_INTERNAL_Align(rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-    needsRealignment = rowsPerSlice != source->h || rowPitch != alignedRowPitch;
-    needsPlacementCopy = destination->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    if (renderer->UnrestrictedBufferTextureCopyPitchSupported) {
+        alignedRowPitch = rowPitch;
+        needsRealignment = false;
+        needsPlacementCopy = false;
+    } else {
+        alignedRowPitch = D3D12_INTERNAL_Align(rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+        needsRealignment = rowsPerSlice != source->h || rowPitch != alignedRowPitch;
+        needsPlacementCopy = destination->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
+    }
 
     sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     sourceLocation.SubresourceIndex = sourceSubresource->index;
@@ -7082,6 +7187,8 @@ static bool D3D12_ClaimWindow(
             return false;
         }
         windowData->window = window;
+        windowData->renderer = renderer;
+        windowData->refcount = 1;
 
         if (D3D12_INTERNAL_CreateSwapchain(renderer, windowData, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
@@ -7097,13 +7204,16 @@ static bool D3D12_ClaimWindow(
             renderer->claimedWindowCount += 1;
             SDL_UnlockMutex(renderer->windowLock);
 
-            SDL_AddEventWatch(D3D12_INTERNAL_OnWindowResize, window);
+            SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, D3D12_INTERNAL_OnWindowResize, window);
 
             return true;
         } else {
             SDL_free(windowData);
-            SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", false);
+            return false;
         }
+    } else if (windowData->renderer == renderer) {
+        ++windowData->refcount;
+        return true;
     } else {
         SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
     }
@@ -7117,7 +7227,15 @@ static void D3D12_ReleaseWindow(
     D3D12WindowData *windowData = D3D12_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
-        SET_STRING_ERROR_AND_RETURN("Window already unclaimed!", );
+        return;
+    }
+    if (windowData->renderer != renderer) {
+        SDL_SetError("Window not claimed by this device");
+        return;
+    }
+    if (windowData->refcount > 1) {
+        --windowData->refcount;
+        return;
     }
 
     D3D12_Wait(driverData);
@@ -7145,7 +7263,7 @@ static void D3D12_ReleaseWindow(
 
     SDL_free(windowData);
     SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
-    SDL_RemoveEventWatch(D3D12_INTERNAL_OnWindowResize, window);
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, D3D12_INTERNAL_OnWindowResize, window);
 }
 
 static bool D3D12_SetSwapchainParameters(
@@ -8022,7 +8140,10 @@ static bool D3D12_Submit(
 
         windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
         (void)SDL_AtomicIncRef(&d3d12CommandBuffer->inFlightFence->referenceCount);
-        windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
+
+        // Normally this is '% allowedFramesInFlight', but the value gets clamped
+        // at swapchain creation time, so use swapchainTextureCount instead
+        windowData->frameCounter = (windowData->frameCounter + 1) % windowData->swapchainTextureCount;
     }
 
     // Check for cleanups
@@ -8609,6 +8730,25 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         return false;
     }
 
+#ifdef HAVE_GPU_OPENXR
+    // Check for OpenXR support if requested
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
+    if (xr) {
+        if (!SDL_OpenXR_LoadLibrary()) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to load OpenXR: %s", SDL_GetError());
+            return false;
+        }
+
+        XrExtensionProperties gpuExtension;
+        if (!D3D12_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to find " XR_KHR_D3D12_ENABLE_EXTENSION_NAME " extension");
+            SDL_OpenXR_UnloadLibrary();
+            return false;
+        }
+        SDL_OpenXR_UnloadLibrary();
+    }
+#endif
+
     return true;
 #endif
 }
@@ -8645,10 +8785,26 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 }
 #endif
 
-static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
-{
+static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    , ID3D12DeviceFactory * factory
+#endif
+) {
     PFN_D3D12_GET_DEBUG_INTERFACE pD3D12GetDebugInterface;
     HRESULT res;
+
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    if (factory) {
+        res = ID3D12DeviceFactory_GetConfigurationInterface(factory, &D3D_CLSID_ID3D12Debug, &D3D_IID_ID3D12Debug, (void **)&renderer->d3d12Debug);
+
+        if (FAILED(res)) {
+            return false;
+        }
+
+        ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
+        return true;
+    }
+#endif
 
     pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
         renderer->d3d12_dll,
@@ -8810,6 +8966,403 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
 }
 #endif
 
+// OpenXR D3D12 Support
+#ifdef HAVE_GPU_OPENXR
+static bool D3D12_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *found_extension)
+{
+    XrResult result;
+    Uint32 extension_count;
+    Uint32 i;
+
+    result = xrEnumerateInstanceExtensionProperties(NULL, 0, &extension_count, NULL);
+    if (result != XR_SUCCESS) {
+        return false;
+    }
+
+    XrExtensionProperties *extension_properties = (XrExtensionProperties *)SDL_calloc(extension_count, sizeof(XrExtensionProperties));
+    for (i = 0; i < extension_count; i++) {
+        extension_properties[i] = (XrExtensionProperties){ XR_TYPE_EXTENSION_PROPERTIES };
+    }
+
+    result = xrEnumerateInstanceExtensionProperties(NULL, extension_count, &extension_count, extension_properties);
+    if (result != XR_SUCCESS) {
+        SDL_free(extension_properties);
+        return false;
+    }
+
+    for (i = 0; i < extension_count; i++) {
+        XrExtensionProperties extension = extension_properties[i];
+
+        if (SDL_strcmp(extension.extensionName, XR_KHR_D3D12_ENABLE_EXTENSION_NAME) == 0) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Found " XR_KHR_D3D12_ENABLE_EXTENSION_NAME " extension");
+
+            *found_extension = extension;
+
+            SDL_free(extension_properties);
+            return true;
+        }
+    }
+
+    SDL_free(extension_properties);
+    return false;
+}
+
+static XrResult D3D12_INTERNAL_GetXrGraphicsRequirements(XrInstance instance, XrSystemId systemId, D3D_FEATURE_LEVEL *minimumFeatureLevel, LUID *adapter)
+{
+    XrResult xrResult;
+
+    PFN_xrGetD3D12GraphicsRequirementsKHR xrGetD3D12GraphicsRequirementsKHR;
+    if ((xrResult = xrGetInstanceProcAddr(instance, "xrGetD3D12GraphicsRequirementsKHR", (PFN_xrVoidFunction *)&xrGetD3D12GraphicsRequirementsKHR)) != XR_SUCCESS) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get xrGetD3D12GraphicsRequirementsKHR");
+        return xrResult;
+    }
+
+    XrGraphicsRequirementsD3D12KHR graphicsRequirementsD3D12 = { XR_TYPE_GRAPHICS_REQUIREMENTS_D3D12_KHR };
+    if ((xrResult = xrGetD3D12GraphicsRequirementsKHR(instance, systemId, &graphicsRequirementsD3D12)) != XR_SUCCESS) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get D3D12 graphics requirements, got OpenXR error %d", xrResult);
+        return xrResult;
+    }
+
+    *adapter = graphicsRequirementsD3D12.adapterLuid;
+    *minimumFeatureLevel = graphicsRequirementsD3D12.minFeatureLevel;
+    return XR_SUCCESS;
+}
+
+static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, IDXGIAdapter1 **outAdapter)
+{
+    HRESULT res;
+
+    // We need to iterate over all the adapters in the system to find the one with the matching LUID
+    for (Uint32 adapterIndex = 0;; adapterIndex++) {
+        // EnumAdapters1 will fail with DXGI_ERROR_NOT_FOUND when there are no more adapters to enumerate.
+        IDXGIAdapter1 *adapter;
+        res = IDXGIFactory1_EnumAdapters1(factory, adapterIndex, &adapter);
+        if (FAILED(res)) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %d, res: %" SDL_PRIdSLONG, adapterIndex, res);
+            return false;
+        }
+
+        DXGI_ADAPTER_DESC1 adapterDesc;
+        res = IDXGIAdapter1_GetDesc1(adapter, &adapterDesc);
+        if (FAILED(res)) {
+            IDXGIAdapter1_Release(adapter);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %d, res %" SDL_PRIdSLONG, adapterIndex, res);
+            return false;
+        }
+        if (SDL_memcmp(&adapterDesc.AdapterLuid, &luid, sizeof(luid)) == 0) {
+            *outAdapter = adapter;
+            return true;
+        }
+        IDXGIAdapter1_Release(adapter);
+    }
+}
+
+static bool D3D12_INTERNAL_FindXRSrgbSwapchain(
+    int64_t *supportedFormats,
+    Uint32 supportedFormatsCount,
+    SDL_GPUTextureFormat *sdlFormat,
+    DXGI_FORMAT *dxgiFormat)
+{
+    for (Uint32 i = 0; i < SDL_arraysize(SDLToD3D12_TextureFormat_SrgbOnly); i++) {
+        for (Uint32 j = 0; j < supportedFormatsCount; j++) {
+            if (SDLToD3D12_TextureFormat_SrgbOnly[i].dxgi == supportedFormats[j]) {
+                *sdlFormat = SDLToD3D12_TextureFormat_SrgbOnly[i].sdl;
+                *dxgiFormat = SDLToD3D12_TextureFormat_SrgbOnly[i].dxgi;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+#endif /* HAVE_GPU_OPENXR */
+
+static XrResult D3D12_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+#ifdef HAVE_GPU_OPENXR
+    XrResult result;
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    D3D12_Wait(driverData);
+
+    Uint32 swapchainCount;
+    result = renderer->xr->xrEnumerateSwapchainImages(swapchain, 0, &swapchainCount, NULL);
+    if (result != XR_SUCCESS) {
+        return result;
+    }
+
+    // We always want to destroy the swapchain images, so don't early return if xrDestroySwapchain fails for some reason
+    for (Uint32 i = 0; i < swapchainCount; i++) {
+        D3D12Texture *container = (D3D12Texture *)swapchainImages[i];
+
+        if (!container->externallyManaged) {
+            SDL_SetError("Invalid GPU Texture handle.");
+            return XR_ERROR_HANDLE_INVALID;
+        }
+
+        D3D12_INTERNAL_DestroyTexture(container);
+
+        // Free the container now that it's unused
+        SDL_free(container);
+    }
+
+    SDL_free(swapchainImages);
+
+    return renderer->xr->xrDestroySwapchain(swapchain);
+#else
+    (void)driverData;
+    (void)swapchain;
+    (void)swapchainImages;
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    int *num_formats)
+{
+#ifdef HAVE_GPU_OPENXR
+    XrResult result;
+    Uint32 i, j, num_supported_formats;
+    int64_t *supported_formats;
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    result = renderer->xr->xrEnumerateSwapchainFormats(session, 0, &num_supported_formats, NULL);
+    if (result != XR_SUCCESS) {
+        return NULL;
+    }
+
+    supported_formats = SDL_stack_alloc(int64_t, num_supported_formats);
+    result = renderer->xr->xrEnumerateSwapchainFormats(session, num_supported_formats, &num_supported_formats, supported_formats);
+    if (result != XR_SUCCESS) {
+        SDL_stack_free(supported_formats);
+        return NULL;
+    }
+
+    // FIXME: For now we're just searching for the optimal format, not all supported formats.
+    // FIXME: Expand this search for all SDL_GPU formats!
+
+    SDL_GPUTextureFormat sdlFormat = SDL_GPU_TEXTUREFORMAT_INVALID;
+    DXGI_FORMAT dxgiFormat = DXGI_FORMAT_UNKNOWN;
+    // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
+    if (!D3D12_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &dxgiFormat)) {
+        // Iterate over all formats the runtime supports
+        for (i = 0; i < num_supported_formats && dxgiFormat == DXGI_FORMAT_UNKNOWN; i++) {
+            // Iterate over all formats we support
+            for (j = 0; j < SDL_arraysize(SDLToD3D12_TextureFormat); j++) {
+                // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
+                if (SDLToD3D12_TextureFormat[j] == supported_formats[i]) {
+                    dxgiFormat = (DXGI_FORMAT)supported_formats[i];
+                    sdlFormat = j;
+                    break;
+                }
+            }
+        }
+    }
+
+    SDL_stack_free(supported_formats);
+
+    if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+        SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
+        return NULL;
+    }
+
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
+    retval[0] = sdlFormat;
+    retval[1] = SDL_GPU_TEXTUREFORMAT_INVALID;
+    *num_formats = 1;
+    return retval;
+#else
+    SDL_SetError("SDL not built with OpenXR support");
+    return NULL;
+#endif
+}
+
+static XrResult D3D12_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+#ifdef HAVE_GPU_OPENXR
+    XrResult result;
+    Uint32 layerIndex, levelIndex;
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    XrSwapchainCreateInfo createInfo = *oldCreateInfo;
+    createInfo.format = SDLToD3D12_TextureFormat[format];
+
+    result = renderer->xr->xrCreateSwapchain(session, &createInfo, swapchain);
+    if (result != XR_SUCCESS) {
+        return result;
+    }
+
+    Uint32 swapchainImageCount;
+    result = renderer->xr->xrEnumerateSwapchainImages(*swapchain, 0, &swapchainImageCount, NULL);
+    if (result != XR_SUCCESS) {
+        return result;
+    }
+
+    XrSwapchainImageD3D12KHR *swapchainImages = (XrSwapchainImageD3D12KHR *)SDL_calloc(swapchainImageCount, sizeof(XrSwapchainImageD3D12KHR));
+    for (layerIndex = 0; layerIndex < swapchainImageCount; layerIndex++) {
+        swapchainImages[layerIndex].type = XR_TYPE_SWAPCHAIN_IMAGE_D3D12_KHR;
+    }
+
+    result = renderer->xr->xrEnumerateSwapchainImages(*swapchain, swapchainImageCount, &swapchainImageCount, (XrSwapchainImageBaseHeader *)swapchainImages);
+    if (result != XR_SUCCESS) {
+        SDL_free(swapchainImages);
+        return result;
+    }
+
+    D3D12TextureContainer **textureContainers = (D3D12TextureContainer **)SDL_calloc(swapchainImageCount, sizeof(D3D12TextureContainer *));
+
+    Uint32 depth = 1;
+
+    for (Uint32 idx = 0; idx < swapchainImageCount; idx++) {
+        ID3D12Resource *d3d12Texture = swapchainImages[idx].texture;
+
+        D3D12Texture *texture = (D3D12Texture *)SDL_calloc(1, sizeof(D3D12Texture));
+
+        texture->resource = d3d12Texture;
+        texture->externallyManaged = true;
+        SDL_SetAtomicInt(&texture->referenceCount, 0);
+
+        texture->subresourceCount = createInfo.arraySize * createInfo.mipCount;
+        texture->subresources = (D3D12TextureSubresource *)SDL_calloc(
+            texture->subresourceCount,
+            sizeof(D3D12TextureSubresource));
+
+        for (layerIndex = 0; layerIndex < createInfo.arraySize; layerIndex += 1) {
+            for (levelIndex = 0; levelIndex < createInfo.mipCount; levelIndex += 1) {
+                Uint32 subresourceIndex = D3D12_INTERNAL_CalcSubresource(
+                    levelIndex,
+                    layerIndex,
+                    createInfo.mipCount);
+
+                texture->subresources[subresourceIndex].parent = texture;
+                texture->subresources[subresourceIndex].layer = layerIndex;
+                texture->subresources[subresourceIndex].level = levelIndex;
+                texture->subresources[subresourceIndex].depth = depth;
+                texture->subresources[subresourceIndex].index = subresourceIndex;
+
+                texture->subresources[subresourceIndex].rtvHandles = NULL;
+                texture->subresources[subresourceIndex].uavHandle.heap = NULL;
+                texture->subresources[subresourceIndex].dsvHandle.heap = NULL;
+
+                if (createInfo.usageFlags & XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT) {
+                    texture->subresources[subresourceIndex].rtvHandles = (D3D12StagingDescriptor *)SDL_calloc(depth, sizeof(D3D12StagingDescriptor));
+
+                    for (Uint32 depthIndex = 0; depthIndex < depth; depthIndex += 1) {
+                        D3D12_RENDER_TARGET_VIEW_DESC rtvDesc;
+
+                        D3D12_INTERNAL_AssignStagingDescriptorHandle(
+                            renderer,
+                            D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
+                            &texture->subresources[subresourceIndex].rtvHandles[depthIndex]);
+
+                        rtvDesc.Format = SDLToD3D12_TextureFormat[format];
+
+                        // For XR we typically use 2D array textures for stereo rendering
+                        if (createInfo.arraySize > 1) {
+                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+                            rtvDesc.Texture2DArray.MipSlice = levelIndex;
+                            rtvDesc.Texture2DArray.FirstArraySlice = layerIndex;
+                            rtvDesc.Texture2DArray.ArraySize = 1;
+                            rtvDesc.Texture2DArray.PlaneSlice = 0;
+                        } else {
+                            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+                            rtvDesc.Texture2D.MipSlice = levelIndex;
+                            rtvDesc.Texture2D.PlaneSlice = 0;
+                        }
+
+                        ID3D12Device_CreateRenderTargetView(
+                            renderer->device,
+                            texture->resource,
+                            &rtvDesc,
+                            texture->subresources[subresourceIndex].rtvHandles[depthIndex].cpuHandle);
+                    }
+                }
+            }
+        }
+
+        textureContainers[idx] = (D3D12TextureContainer *)SDL_malloc(sizeof(D3D12TextureContainer));
+        D3D12TextureContainer *container = textureContainers[idx];
+        SDL_zero(container->header.info);
+        container->header.info.width = createInfo.width;
+        container->header.info.height = createInfo.height;
+        container->header.info.format = format;
+        container->header.info.layer_count_or_depth = createInfo.arraySize;
+        container->header.info.num_levels = createInfo.mipCount;
+        container->header.info.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        container->header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+
+        container->externallyManaged = true;
+        container->canBeCycled = false;
+        container->activeTexture = texture;
+        container->textureCapacity = 1;
+        container->textureCount = 1;
+        container->textures = (D3D12Texture **)SDL_malloc(
+            container->textureCapacity * sizeof(D3D12Texture *));
+        container->textures[0] = container->activeTexture;
+        container->debugName = NULL;
+
+        texture->container = container;
+        texture->containerIndex = 0;
+    }
+
+    *textures = (SDL_GPUTexture **)textureContainers;
+
+    SDL_free(swapchainImages);
+
+    return XR_SUCCESS;
+#else
+    (void)driverData;
+    (void)session;
+    (void)oldCreateInfo;
+    (void)format;
+    (void)swapchain;
+    (void)textures;
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
+static XrResult D3D12_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+#ifdef HAVE_GPU_OPENXR
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    // Copy out the existing next ptr so that we can append it to the end of the chain we create
+    const void *XR_MAY_ALIAS currentNextPtr = createinfo->next;
+
+    XrGraphicsBindingD3D12KHR graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D12_KHR };
+    graphicsBinding.device = renderer->device;
+    graphicsBinding.queue = renderer->commandQueue;
+    graphicsBinding.next = currentNextPtr;
+
+    XrSessionCreateInfo sessionCreateInfo = *createinfo;
+    sessionCreateInfo.systemId = renderer->xrSystemId;
+    sessionCreateInfo.next = &graphicsBinding;
+
+    return renderer->xr->xrCreateSession(renderer->xrInstance, &sessionCreateInfo, session);
+#else
+    (void)driverData;
+    (void)createinfo;
+    (void)session;
+    SDL_SetError("SDL not built with OpenXR support");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif
+}
+
 static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     SDL_GPUDevice *result;
@@ -8826,6 +9379,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     IDXGIFactory6 *factory6;
     DXGI_ADAPTER_DESC1 adapterDesc;
     LARGE_INTEGER umdVersion;
+    PFN_D3D12_GET_INTERFACE pD3D12GetInterface;
     PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
 #endif
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
@@ -8928,29 +9482,100 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         IDXGIFactory5_Release(factory5);
     }
 
-    // Select the appropriate device for rendering
-    res = IDXGIFactory4_QueryInterface(
-        renderer->factory,
-        D3D_GUID(D3D_IID_IDXGIFactory6),
-        (void **)&factory6);
-    if (SUCCEEDED(res)) {
-        res = IDXGIFactory6_EnumAdapterByGpuPreference(
-            factory6,
-            0,
-            preferLowPower ? DXGI_GPU_PREFERENCE_MINIMUM_POWER : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-            D3D_GUID(D3D_IID_IDXGIAdapter1),
-            (void **)&renderer->adapter);
-        IDXGIFactory6_Release(factory6);
-    } else {
-        res = IDXGIFactory4_EnumAdapters1(
-            renderer->factory,
-            0,
-            &renderer->adapter);
-    }
+#ifdef HAVE_GPU_OPENXR
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN, false);
+    XrInstance *xrInstance = (XrInstance *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER, NULL);
+    XrSystemId *xrSystemId = (XrSystemId *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER, NULL);
+    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 
-    if (FAILED(res)) {
-        D3D12_INTERNAL_DestroyRenderer(renderer);
-        CHECK_D3D12_ERROR_AND_RETURN("Could not find adapter for D3D12Device", NULL);
+    if (xr) {
+        XrExtensionProperties gpuExtension;
+
+        if (!xrInstance) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("You must specify an out pointer for the OpenXR instance", NULL);
+        }
+
+        if (!xrSystemId) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("You must specify an out pointer for the OpenXR system ID", NULL);
+        }
+
+        if (!SDL_OpenXR_LoadLibrary()) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("This should have failed in PrepareDevice first!", NULL);
+        }
+
+        if (!D3D12_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to find a compatible OpenXR D3D12 extension");
+            SDL_OpenXR_UnloadLibrary();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("Failed to find XR_KHR_D3D12_enable extension", NULL);
+        }
+
+        if (!SDL_OPENXR_INTERNAL_GPUInitOpenXR(debugMode, gpuExtension, props, xrInstance, xrSystemId, &renderer->xr)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to init OpenXR");
+            SDL_OpenXR_UnloadLibrary();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("Failed to initialize OpenXR", NULL);
+        }
+
+        renderer->xrInstance = *xrInstance;
+        renderer->xrSystemId = *xrSystemId;
+
+        LUID xrAdapter;
+
+        if (D3D12_INTERNAL_GetXrGraphicsRequirements(*xrInstance, *xrSystemId, &featureLevel, &xrAdapter) != XR_SUCCESS) {
+            SDL_OpenXR_UnloadLibrary();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("Failed to get XR graphics requirements", NULL);
+        }
+
+        // Need factory1 again for adapter enumeration
+        IDXGIFactory1 *factory1ForXr;
+        res = pCreateDXGIFactory1(
+            &D3D_IID_IDXGIFactory1,
+            (void **)&factory1ForXr);
+        if (FAILED(res)) {
+            SDL_OpenXR_UnloadLibrary();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create DXGIFactory for XR adapter lookup", NULL);
+        }
+
+        if (!D3D12_INTERNAL_GetAdapterByLuid(xrAdapter, factory1ForXr, &renderer->adapter)) {
+            IDXGIFactory1_Release(factory1ForXr);
+            SDL_OpenXR_UnloadLibrary();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            SET_STRING_ERROR_AND_RETURN("Failed to find adapter matching XR LUID", NULL);
+        }
+        IDXGIFactory1_Release(factory1ForXr);
+    } else
+#endif /* HAVE_GPU_OPENXR */
+    {
+        // Select the appropriate device for rendering
+        res = IDXGIFactory4_QueryInterface(
+            renderer->factory,
+            D3D_GUID(D3D_IID_IDXGIFactory6),
+            (void **)&factory6);
+        if (SUCCEEDED(res)) {
+            res = IDXGIFactory6_EnumAdapterByGpuPreference(
+                factory6,
+                0,
+                preferLowPower ? DXGI_GPU_PREFERENCE_MINIMUM_POWER : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+                D3D_GUID(D3D_IID_IDXGIAdapter1),
+                (void **)&renderer->adapter);
+            IDXGIFactory6_Release(factory6);
+        } else {
+            res = IDXGIFactory4_EnumAdapters1(
+                renderer->factory,
+                0,
+                &renderer->adapter);
+        }
+
+        if (FAILED(res)) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not find adapter for D3D12Device", NULL);
+        }
     }
 
     // Get information about the selected adapter. Used for logging info.
@@ -9034,9 +9659,46 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         SET_STRING_ERROR_AND_RETURN("Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC, NULL);
     }
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // A device factory allows a D3D12 redistributable provided by the client to be loaded.
+    ID3D12DeviceFactory *factory = NULL;
+
+    if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING) && SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER)) {
+        int d3d12SDKVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER, 0);
+        const char *d3d12SDKPath = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING, ".\\D3D12\\");
+        ID3D12SDKConfiguration *sdk_config = NULL;
+
+        pD3D12GetInterface = (PFN_D3D12_GET_INTERFACE)SDL_LoadFunction(
+            renderer->d3d12_dll,
+            D3D12_GET_INTERFACE_FUNC);
+        if (pD3D12GetInterface == NULL) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load D3D12GetInterface, custom D3D12 SDK will not load.");
+        } else if (SUCCEEDED(pD3D12GetInterface(D3D_GUID(D3D_CLSID_ID3D12SDKConfiguration), D3D_GUID(D3D_IID_ID3D12SDKConfiguration), (void**) &sdk_config))) {
+            ID3D12SDKConfiguration1 *sdk_config1 = NULL;
+            if (SUCCEEDED(IUnknown_QueryInterface(sdk_config, &D3D_IID_ID3D12SDKConfiguration1, (void**) &sdk_config1))) {
+                if (SUCCEEDED(ID3D12SDKConfiguration1_CreateDeviceFactory(sdk_config1, d3d12SDKVersion, d3d12SDKPath, &D3D_IID_ID3D12DeviceFactory, (void**) &factory))) {
+                    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Loaded vendored D3D12Core.dll");
+                } else {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to load vendored D3D12Core.dll");
+                }
+
+                ID3D12SDKConfiguration1_Release(sdk_config1);
+            }
+
+            ID3D12SDKConfiguration_Release(sdk_config);
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to load vendored D3D12 SDK Configuration");
+        }
+    }
+#endif
+
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
-        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+            , factory
+#endif
+        );
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
         if (hasD3d12Debug) {
             SDL_LogInfo(
@@ -9090,15 +9752,33 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         s_Device = renderer->device;
     }
 #else
-    res = pD3D12CreateDevice(
-        (IUnknown *)renderer->adapter,
-        D3D_FEATURE_LEVEL_CHOICE,
-        D3D_GUID(D3D_IID_ID3D12Device),
-        (void **)&renderer->device);
 
-    if (FAILED(res)) {
-        D3D12_INTERNAL_DestroyRenderer(renderer);
-        CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+    if (factory) {
+        ID3D12DeviceFactory_SetFlags(factory, D3D12_DEVICE_FACTORY_FLAG_ALLOW_RETURNING_EXISTING_DEVICE);
+        res = ID3D12DeviceFactory_CreateDevice(
+            factory,
+            (IUnknown *)renderer->adapter,
+            D3D_FEATURE_LEVEL_CHOICE,
+            D3D_GUID(D3D_IID_ID3D12Device),
+            (void**)&renderer->device);
+
+        ID3D12DeviceFactory_Release(factory);
+
+        if (FAILED(res)) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+        }
+    } else {
+        res = pD3D12CreateDevice(
+            (IUnknown *)renderer->adapter,
+            D3D_FEATURE_LEVEL_CHOICE,
+            D3D_GUID(D3D_IID_ID3D12Device),
+            (void **)&renderer->device);
+
+        if (FAILED(res)) {
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            CHECK_D3D12_ERROR_AND_RETURN("Could not create D3D12Device", NULL);
+        }
     }
 
     // Initialize the D3D12 debug info queue, if applicable
@@ -9139,6 +9819,22 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->GPUUploadHeapSupported = options16.GPUUploadHeapSupported;
     }
 #endif
+
+    // Check for unrestricted texture-buffer copy pitch support
+    D3D12_FEATURE_DATA_D3D12_OPTIONS13 options13;
+    res = ID3D12Device_CheckFeatureSupport(
+        renderer->device,
+        D3D12_FEATURE_D3D12_OPTIONS13,
+        &options13,
+        sizeof(options13));
+
+    if (SUCCEEDED(res)) {
+        renderer->UnrestrictedBufferTextureCopyPitchSupported = options13.UnrestrictedBufferTextureCopyPitchSupported;
+    }
+    else
+    {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "CheckFeatureSupport for UnrestrictedBufferTextureCopyPitchSupported failed. You may need to provide a vendored D3D12Core.dll through the Agility SDK on older platforms.");
+    }
 
     // Create command queue
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))

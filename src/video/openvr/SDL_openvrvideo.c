@@ -74,7 +74,7 @@ SDL_ELF_NOTE_DLOPEN(
 // For access to functions that don't get the video data context.
 SDL_VideoData * global_openvr_driver;
 
-static void InitializeMouseFunctions();
+static void InitializeMouseFunctions(void);
 
 struct SDL_CursorData
 {
@@ -92,9 +92,9 @@ static void (APIENTRY *ov_glRenderbufferStorage)(GLenum target, GLenum internalf
 static void (APIENTRY *ov_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
 static void (APIENTRY *ov_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
 static GLenum (APIENTRY *ov_glCheckNamedFramebufferStatus)(GLuint framebuffer, GLenum target);
-static GLenum (APIENTRY *ov_glGetError)();
-static void (APIENTRY *ov_glFlush)();
-static void (APIENTRY *ov_glFinish)();
+static GLenum (APIENTRY *ov_glGetError)(void);
+static void (APIENTRY *ov_glFlush)(void);
+static void (APIENTRY *ov_glFinish)(void);
 static void (APIENTRY *ov_glGenTextures)(GLsizei n, GLuint *textures);
 static void (APIENTRY *ov_glDeleteTextures)(GLsizei n, GLuint *textures);
 static void (APIENTRY *ov_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
@@ -505,7 +505,7 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
         return SDL_SetError("Failed to get action set handle");
     }
 
-    videodata->input_action_handles_buttons_count = sizeof(k_pchBooleanActionPaths) / sizeof(k_pchBooleanActionPaths[0]);
+    videodata->input_action_handles_buttons_count = SDL_arraysize(k_pchBooleanActionPaths);
     videodata->input_action_handles_buttons = SDL_malloc(videodata->input_action_handles_buttons_count * sizeof(VRActionHandle_t));
 
     for (int i = 0; i < videodata->input_action_handles_buttons_count; i++)
@@ -518,7 +518,7 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
         }
     }
 
-    videodata->input_action_handles_axes_count = sizeof(k_pchAnalogActionPaths) / sizeof(k_pchAnalogActionPaths[0]);
+    videodata->input_action_handles_axes_count = SDL_arraysize(k_pchAnalogActionPaths);
     videodata->input_action_handles_axes = SDL_malloc(videodata->input_action_handles_axes_count * sizeof(VRActionHandle_t));
 
     for (int i = 0; i < videodata->input_action_handles_axes_count; i++)
@@ -568,7 +568,7 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
     return true;
 }
 
-static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
+static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
 
@@ -611,6 +611,32 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
         videodata->bHasShownOverlay = false;
     }
     {
+        Uint32 overlay_flags = 0;
+
+        const char *hint = SDL_GetHint("SDL_OPENVR_OVERLAY_FLAGS");
+        if (hint && *hint) {
+            overlay_flags = SDL_atoi(hint);
+        } else {
+            overlay_flags |= (1 << 23); //vr::VROverlayFlags_EnableControlBar
+            overlay_flags |= (1 << 24); //vr::VROverlayFlags_EnableControlBarKeyboard
+            overlay_flags |= (1 << 25); //vr::VROverlayFlags_EnableControlBarClose
+#if 0
+            /* OpenVR overlays assume unpremultiplied alpha by default, set this flag to tag the source buffer as premultiplied.
+             * Note that (as of 2025) OpenVR overlay composition is higher quality when premultiplied buffers are provided,
+             * as texture samplers that blend energy (such as bilinear) do not yield sensical results when operating on natively
+             * unpremultiplied textures. It is thus preferable to hand openvr natively premultiplied buffers when accurate
+             * sampling / composition is required. */
+            overlay_flags |= (1 << 21);    // vr::VROverlayFlags_IsPremultiplied
+#endif
+        }
+
+        for (int i = 0; i < sizeof(overlay_flags) * 8; ++i) {
+            if (overlay_flags & (1 << i)) {
+                videodata->oOverlay->SetOverlayFlag(videodata->overlayID, (VROverlayFlags)(1 << i), true);
+            }
+        }
+    }
+    {
         const char * hint = SDL_GetHint("SDL_OPENVR_OVERLAY_PANEL_WIDTH");
         float fWidth = hint ? (float)SDL_atof(hint) : 1.0f;
         videodata->oOverlay->SetOverlayWidthInMeters(videodata->overlayID, fWidth);
@@ -629,7 +655,7 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
             EVROverlayError err = videodata->oOverlay->SetOverlayFromFile(videodata->thumbID, tmpcopy);
             SDL_free(tmpcopy);
             if (err == EVROverlayError_VROverlayError_None) {
-                videodata->bIconOverridden = SDL_GetHintBoolean("SDL_OPENVR_WINDOW_ICON_OVERRIDE",false);
+                videodata->bIconOverridden = SDL_GetHintBoolean("SDL_OPENVR_WINDOW_ICON_OVERRIDE", false);
             }
         }
     }
@@ -646,22 +672,10 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
         return false;
     }
 
-
     global_openvr_driver = videodata;
     InitializeMouseFunctions();
 
     // Actually show the overlay.
-    videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<23, true); //vr::VROverlayFlags_EnableControlBar
-    videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<24, true); //vr::VROverlayFlags_EnableControlBarKeyboard
-    videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<25, true); //vr::VROverlayFlags_EnableControlBarClose
-#if 0
-    /* OpenVR overlays assume unpremultiplied alpha by default, set this flag to tag the source buffer as premultiplied.
-     * Note that (as of 2025) OpenVR overlay composition is higher quality when premultiplied buffers are provided,
-     * as texture samplers that blend energy (such as bilinear) do not yield sensical results when operating on natively
-     * unpremultiplied textures. It is thus preferable to hand openvr natively premultiplied buffers when accurate
-     * sampling / composition is required. */
-    videodata->oOverlay->SetOverlayFlag(videodata->overlayID, VROverlayFlags_IsPremultiplied, true );
-#endif
     videodata->oOverlay->SetOverlayName(videodata->overlayID, window->title);
 
     videodata->bDidCreateOverlay = true;
@@ -830,7 +844,7 @@ static SDL_GLContext OPENVR_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window 
     int i;
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     if (!videodata->hglrc) {
-        // Crate a surfaceless EGL Context
+        // Create a surfaceless EGL Context
         HWND hwnd;
 
         WNDCLASSA wnd;
@@ -982,7 +996,7 @@ static EGLint context_attribs[] = {
 
 static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 {
-    // Crate a surfaceless EGL Context
+    // Create a surfaceless EGL Context
     EGLint major, minor;
     EGLConfig eglCfg=NULL;
     EGLBoolean b;
@@ -1029,7 +1043,7 @@ static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 // Linux, EGL, etc.
 static bool OVR_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    return SDL_EGL_LoadLibrary(_this, path, /*displaydata->native_display*/0, 0);
+    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY);
 }
 
 static SDL_FunctionPointer OVR_EGL_GetProcAddress(SDL_VideoDevice *_this, const char *proc)
@@ -1038,7 +1052,7 @@ static SDL_FunctionPointer OVR_EGL_GetProcAddress(SDL_VideoDevice *_this, const 
 }
 static void OVR_EGL_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    return SDL_EGL_UnloadLibrary(_this);
+    SDL_EGL_UnloadLibrary(_this);
 }
 static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window)
 {
@@ -1431,7 +1445,7 @@ static bool OPENVR_ShowMessageBox(SDL_VideoDevice *_this,const SDL_MessageBoxDat
     return true;
 }
 
-static void InitializeMouseFunctions()
+static void InitializeMouseFunctions(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     mouse->CreateCursor = OPENVR_CreateCursor;
@@ -1473,7 +1487,7 @@ static void OPENVR_PumpEvents(SDL_VideoDevice *_this)
                 break;
             case EVREventType_VREvent_OverlayClosed:
             case EVREventType_VREvent_Quit:
-                SDL_Quit();
+                SDL_SendQuit();
                 break;
             }
         }
@@ -1667,5 +1681,5 @@ VideoBootStrap OPENVR_bootstrap = {
     "openvr", "SDL OpenVR video driver", OPENVR_CreateDevice, NULL, false
 };
 
-#endif // SDL_VIDEO_DRIVER_WINDOWS
+#endif // SDL_VIDEO_DRIVER_OPENVR
 

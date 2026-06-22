@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -123,6 +123,7 @@ STDLIB_SYMBOLS = (
     'strtol',
     'strtoll',
     'strtoul',
+    'strtoull',
     'strupr',
     'tan',
     'tanf',
@@ -147,6 +148,10 @@ STDLIB_SYMBOLS = (
     'wcsncasecmp',
     'wcsncmp',
     'wcsstr',
+    'wcstol',
+    'wcstoll',
+    'wcstoul',
+    'wcstoull',
 )
 RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 

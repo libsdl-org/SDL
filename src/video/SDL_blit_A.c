@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,10 @@
 
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
+
+#ifdef SDL_SVE2_INTRINSICS
+#include "./arm/SDL_sve2_blit_A.h"
+#endif
 
 // Functions to perform alpha blended blitting
 
@@ -1477,6 +1481,17 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
+#ifdef SDL_SVE2_INTRINSICS
+            if (SDL_HasSVE2()) {
+                if (sf->bytes_per_pixel == 4 &&
+                    df->bytes_per_pixel == 2 &&
+                    df->Rmask == 0x0000F800 &&
+                    df->Gmask == 0x000007E0 &&
+                    df->Bmask == 0x0000001F) {
+                    return Blit8888to565PixelAlphaSwizzleSVE2;
+                }
+            }
+#endif
             if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
                 if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
@@ -1504,18 +1519,29 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                     return Blit8888to8888PixelAlphaSwizzleLSX;
                 }
 #endif
+#ifdef SDL_SVE2_INTRINSICS
+                if (SDL_HasSVE2() 
+            /* NEON is faster than SVE2 when vector size is 128bit */
+            #if defined(SDL_NEON_INTRINSICS)
+                && (SDL_GetSVEVectorSize() > 128 || !SDL_HasNEON())
+            #endif
+                ) {
+                    // To prevent "unused function" compiler warnings/errors
+                    (void)Blit8888to8888PixelAlpha;
+                    (void)Blit8888to8888PixelAlphaSwizzle;
+                    return Blit8888to8888PixelAlphaSwizzleSVE2;
+                }
+#endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-                // To prevent "unused function" compiler warnings/errors
-                (void)Blit8888to8888PixelAlpha;
-                (void)Blit8888to8888PixelAlphaSwizzle;
-                return Blit8888to8888PixelAlphaSwizzleNEON;
-#else
+                if (SDL_HasNEON()) {
+                    return Blit8888to8888PixelAlphaSwizzleNEON;
+                }
+#endif
                 if (sf->format == df->format) {
                     return Blit8888to8888PixelAlpha;
                 } else {
                     return Blit8888to8888PixelAlphaSwizzle;
                 }
-#endif
             }
             return BlitNtoNPixelAlpha;
 
@@ -1544,6 +1570,11 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                         if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
                         } else
+#endif
+#ifdef SDL_SVE2_INTRINSICS
+                        if (SDL_HasSVE2()) {
+                            return Blit565to565SurfaceAlphaSVE2;
+                        } else 
 #endif
                         {
                             return Blit565to565SurfaceAlpha;

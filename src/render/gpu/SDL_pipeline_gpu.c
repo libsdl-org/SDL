@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -99,6 +99,9 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     bool have_attr_uv = false;
 
     switch (params->vert_shader) {
+    case VERT_SHADER_TRI_COLOR:
+        have_attr_uv = true;
+        break;
     case VERT_SHADER_TRI_TEXTURE:
         have_attr_uv = true;
         break;

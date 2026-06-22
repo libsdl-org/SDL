@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1227,7 +1227,7 @@ static void WIN_UpdateCornerRoundingForHWND(SDL_VideoDevice *_this, HWND hwnd, D
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
-    if (videodata->DwmSetWindowAttribute) {
+    if (videodata->DwmSetWindowAttribute && WIN_IsWindows11OrGreater()) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
     }
 #endif
@@ -1237,7 +1237,7 @@ static void WIN_UpdateBorderColorForHWND(SDL_VideoDevice *_this, HWND hwnd, COLO
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
-    if (videodata->DwmSetWindowAttribute) {
+    if (videodata->DwmSetWindowAttribute && WIN_IsWindows11OrGreater()) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
     }
 #endif
@@ -1771,16 +1771,16 @@ static STDMETHODIMP SDLDropTarget_DragEnter(SDLDropTarget *target,
                                             POINTL pt, DWORD *pdwEffect)
 {
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In DragEnter at %ld, %ld", pt.x, pt.y);
+                 ". In DragEnter at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y);
     *pdwEffect = DROPEFFECT_COPY;
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In DragEnter at %ld, %ld => window %u at %ld, %ld", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+                     ". In DragEnter at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In DragEnter at %ld, %ld => nil, nil", pt.x, pt.y);
+                     ". In DragEnter at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
     }
     return S_OK;
 }
@@ -1790,16 +1790,16 @@ static STDMETHODIMP SDLDropTarget_DragOver(SDLDropTarget *target,
                                            POINTL pt, DWORD *pdwEffect)
 {
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In DragOver at %ld, %ld", pt.x, pt.y);
+                 ". In DragOver at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y);
     *pdwEffect = DROPEFFECT_COPY;
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In DragOver at %ld, %ld => window %u at %ld, %ld", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+                     ". In DragOver at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In DragOver at %ld, %ld => nil, nil", pt.x, pt.y);
+                     ". In DragOver at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
     }
     return S_OK;
 }
@@ -1820,11 +1820,11 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
     POINT pnt = { pt.x, pt.y };
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In Drop at %ld, %ld => window %u at %ld, %ld", pt.x, pt.y, target->window->id, pnt.x, pnt.y);
+                     ". In Drop at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
         SDL_SendDropPosition(target->window, pnt.x, pnt.y);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In Drop at %ld, %ld => nil, nil", pt.x, pt.y);
+                     ". In Drop at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
     }
 
     {
@@ -1832,7 +1832,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
         HRESULT hres;
         hres = pDataObject->lpVtbl->EnumFormatEtc(pDataObject, DATADIR_GET, &pEnumFormatEtc);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In Drop for EnumFormatEtc, HRESULT is %08lx", hres);
+                     ". In Drop for EnumFormatEtc, HRESULT is %08" SDL_PRIxSLONG, hres);
         if (hres == S_OK) {
             FORMATETC fetc;
             while (pEnumFormatEtc->lpVtbl->Next(pEnumFormatEtc, 1, &fetc, NULL) == S_OK) {
@@ -1864,7 +1864,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx",
+                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08" SDL_PRIxSLONG,
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
@@ -1912,7 +1912,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08" SDL_PRIxSLONG,
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
@@ -1958,7 +1958,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08" SDL_PRIxSLONG,
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
@@ -2012,7 +2012,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08lx",
+                         ". In Drop Text for      GetData, format %08x '%s', HRESULT is %08" SDL_PRIxSLONG,
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);
@@ -2058,7 +2058,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
             STGMEDIUM med;
             HRESULT hres = pDataObject->lpVtbl->GetData(pDataObject, &fetc, &med);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08lx",
+                         ". In Drop File for      GetData, format %08x '%s', HRESULT is %08" SDL_PRIxSLONG,
                          fetc.cfFormat, format_mime, hres);
             if (SUCCEEDED(hres)) {
                 const size_t bsize = GlobalSize(med.hGlobal);

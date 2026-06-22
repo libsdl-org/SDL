@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -219,6 +219,53 @@ static void RGBtoYUV(const Uint8 *rgb, int rgb_bits, int *yuv, int yuv_bits, YUV
 
     if (luminance != 100) {
         yuv[0] = (int)clip3(0, SDL_powf(2.0f, M) - 1, SDL_roundf(yuv[0] * (luminance / 100.0f)));
+    }
+}
+
+static void ConvertRGBtoPlanar1x1(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
+{
+    int x, y;
+    int yuv[3];
+    Uint8 *Y, *U, *V;
+    const Uint8 *rgb;
+    int rgb_row_advance = (pitch - w * 3);
+    int yuv_bits;
+    int yuv_bytes_per_pixel = SDL_BYTESPERPIXEL(format);
+
+    rgb = src;
+    Y = out;
+    U = (Y + h * w * yuv_bytes_per_pixel);
+    V = (U + h * w * yuv_bytes_per_pixel);
+    switch (format) {
+    case SDL_PIXELFORMAT_P408:
+        yuv_bits = 8;
+        break;
+    case SDL_PIXELFORMAT_P416:
+        yuv_bits = 16;
+        break;
+    default:
+        SDL_assert(!"Unsupported planar YUV format");
+        return;
+    }
+
+    for (y = 0; y < h; ++y) {
+        for (x = 0; x < w; ++x) {
+            RGBtoYUV(rgb, 8, yuv, yuv_bits, mode, monochrome, luminance);
+            rgb += 3;
+            if (format == SDL_PIXELFORMAT_P408) {
+                *Y = (Uint8)yuv[0];
+                *U = (Uint8)yuv[1];
+                *V = (Uint8)yuv[2];
+            } else {
+                *(Uint16 *)Y = (Uint16)yuv[0];
+                *(Uint16 *)U = (Uint16)yuv[1];
+                *(Uint16 *)V = (Uint16)yuv[2];
+            }
+            Y += yuv_bytes_per_pixel;
+            U += yuv_bytes_per_pixel;
+            V += yuv_bytes_per_pixel;
+        }
+        rgb += rgb_row_advance;
     }
 }
 
@@ -517,6 +564,10 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
 bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
+    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_P416:
+        ConvertRGBtoPlanar1x1(format, src, pitch, out, w, h, mode, monochrome, luminance);
+        return true;
     case SDL_PIXELFORMAT_P010:
         ConvertRGBtoPlanar2x2_P010(format, src, pitch, out, w, h, mode, monochrome, luminance);
         return true;
@@ -540,9 +591,11 @@ int CalculateYUVPitch(Uint32 format, int width)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:
+    case SDL_PIXELFORMAT_P416:
         return width * 2;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_P408:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return width;

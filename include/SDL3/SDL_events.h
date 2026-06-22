@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,6 +61,7 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_notification.h>
 #include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_power.h>
 #include <SDL3/SDL_sensor.h>
@@ -151,7 +152,7 @@ typedef enum SDL_EventType
     SDL_EVENT_WINDOW_FOCUS_LOST,        /**< Window has lost keyboard focus */
     SDL_EVENT_WINDOW_CLOSE_REQUESTED,   /**< The window manager requests that the window be closed */
     SDL_EVENT_WINDOW_HIT_TEST,          /**< Window had a hit test that wasn't SDL_HITTEST_NORMAL */
-    SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The ICC profile of the window's display has changed */
+    SDL_EVENT_WINDOW_ICCPROF_CHANGED,   /**< The window's ICC profile has changed */
     SDL_EVENT_WINDOW_DISPLAY_CHANGED,   /**< Window has been moved to display data1 */
     SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED, /**< Window display scale has been changed */
     SDL_EVENT_WINDOW_SAFE_AREA_CHANGED, /**< The window safe area has been changed */
@@ -163,8 +164,9 @@ typedef enum SDL_EventType
                                              associated with the window. Otherwise, the handle has already been destroyed and all resources
                                              associated with it are invalid */
     SDL_EVENT_WINDOW_HDR_STATE_CHANGED, /**< Window HDR properties have changed */
+    SDL_EVENT_WINDOW_SETTINGS_CHANGED,  /**< Window settings have changed (on visionOS) */
     SDL_EVENT_WINDOW_FIRST = SDL_EVENT_WINDOW_SHOWN,
-    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_HDR_STATE_CHANGED,
+    SDL_EVENT_WINDOW_LAST = SDL_EVENT_WINDOW_SETTINGS_CHANGED,
 
     /* Keyboard events */
     SDL_EVENT_KEY_DOWN        = 0x300, /**< Key pressed */
@@ -211,6 +213,8 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
+    SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
+    SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,
@@ -258,6 +262,9 @@ typedef enum SDL_EventType
     SDL_EVENT_CAMERA_DEVICE_REMOVED,         /**< A camera device has been removed. */
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
+
+    /* Notification events */
+    SDL_EVENT_NOTIFICATION_ACTION_INVOKED = 0x1500, /**< A user response to a system notification was received. */
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
@@ -456,7 +463,7 @@ typedef struct SDL_MouseMotionEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 */
+    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, SDL_PEN_MOUSEID for pen events, or 0 */
     SDL_MouseButtonFlags state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
@@ -711,6 +718,23 @@ typedef struct SDL_GamepadSensorEvent
 } SDL_GamepadSensorEvent;
 
 /**
+ * Gamepad capsense event structure (event.gcapsense.*)
+ *
+ * \since This struct is available since SDL 3.6.0.
+ */
+typedef struct SDL_GamepadCapSenseEvent
+{
+    SDL_EventType type;     /**< SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH or SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE */
+    Uint32 reserved;
+    Uint64 timestamp;       /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_JoystickID which;   /**< The joystick instance id */
+    Uint8 capsense;         /**< The capsense type (SDL_GamepadCapSenseType) */
+    bool down;              /**< true if the capsense is touched */
+    Uint8 padding1;
+    Uint8 padding2;
+} SDL_GamepadCapSenseEvent;
+
+/**
  * Audio device event structure (event.adevice.*)
  *
  * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
@@ -744,6 +768,24 @@ typedef struct SDL_CameraDeviceEvent
     SDL_CameraID which;       /**< SDL_CameraID for the device being added or removed or changing */
 } SDL_CameraDeviceEvent;
 
+/**
+ * Notification dialog event structure (event.notification.*)
+ *
+ * An `action_id` value of 'default' for an
+ * SDL_EVENT_NOTIFICATION_ACTION_INVOKED event indicates that the notification
+ * was interacted with without selecting a specific action (e.g. the body of
+ * the notification was clicked on).
+ *
+ * \since This struct is available since SDL 3.6.0.
+ */
+typedef struct SDL_NotificationEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_NOTIFICATION_ACTION_INVOKED */
+    Uint32 reserved;
+    Uint64 timestamp;         /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_NotificationID which; /**< The ID of the notification that generated this event. */
+    const char *action_id;    /**< The identifier string of the action invoked in the notification dialog. */
+} SDL_NotificationEvent;
 
 /**
  * Renderer event structure (event.render.*)
@@ -795,6 +837,9 @@ typedef struct SDL_TouchFingerEvent
 
 /**
  * Pinch event structure (event.pinch.*)
+ *
+ * span_(x/y) and focus_(x/y) are only available for pinch gestures on mobile
+ * devices
  */
 typedef struct SDL_PinchFingerEvent
 {
@@ -803,6 +848,10 @@ typedef struct SDL_PinchFingerEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     float scale;        /**< The scale change since the last SDL_EVENT_PINCH_UPDATE. Scale < 1 is "zoom out". Scale > 1 is "zoom in". */
     SDL_WindowID windowID; /**< The window underneath the finger, if any */
+    float span_x;        /**< On mobile devices, the average X distance between each of the pointers forming the pinch in window coordinates.  Otherwise, -1. */
+    float span_y;        /**< On mobile devices, the average Y distance between each of the pointers forming the pinch in window coordinates.  Otherwise, -1. */
+    float focus_x;        /**< On mobile devices, the X coordinate of the current gesture's focal point in window coordinates.  Otherwise, -1. */
+    float focus_y;        /**< On mobile devices, the Y coordinate of the current gesture's focal point in window coordinates.  Otherwise, -1. */
 } SDL_PinchFingerEvent;
 
 /**
@@ -1039,6 +1088,7 @@ typedef union SDL_Event
     SDL_GamepadButtonEvent gbutton;         /**< Gamepad button event data */
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
+    SDL_GamepadCapSenseEvent gcapsense;     /**< Gamepad capsense event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_CameraDeviceEvent cdevice;          /**< Camera device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
@@ -1054,6 +1104,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_NotificationEvent notification;     /**< Notification event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of
@@ -1256,15 +1307,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * Poll for currently pending events.
  *
  * If `event` is not NULL, the next event is removed from the queue and stored
- * in the SDL_Event structure pointed to by `event`. The 1 returned refers to
- * this event, immediately stored in the SDL Event structure -- not an event
- * to follow.
+ * in the SDL_Event structure pointed to by `event`.
  *
- * If `event` is NULL, it simply returns 1 if there is an event in the queue,
- * but will not remove it from the queue.
+ * If `event` is NULL, it simply returns true if there is an event in the
+ * queue, but will not remove it from the queue.
  *
  * As this function may implicitly call SDL_PumpEvents(), you can only call
- * this function in the thread that set the video mode.
+ * this function in the thread that initialized the video subsystem.
  *
  * SDL_PollEvent() is the favored way of receiving system events since it can
  * be done from the main loop and does not suspend the main loop while waiting
@@ -1345,7 +1394,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  * \param event the SDL_Event structure to be filled in with the next event
  *              from the queue, or NULL.
  * \param timeoutMS the maximum number of milliseconds to wait for the next
- *                  available event.
+ *                  available event, or -1 to wait indefinitely.
  * \returns true if this got an event or false if the timeout elapsed without
  *          any events available.
  *

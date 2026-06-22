@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,7 +72,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
         if (data_device->selection_source) {
             buffer = SDL_GetInternalClipboardData(_this, mime_type, length);
         } else if (Wayland_data_offer_has_mime(data_device->selection_offer, mime_type)) {
-            buffer = Wayland_data_offer_receive(data_device->selection_offer, mime_type, length);
+            buffer = Wayland_data_offer_receive(data_device->selection_offer, mime_type, length, true);
         }
     }
 
@@ -96,7 +96,7 @@ bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return result;
 }
 
-static const char *text_mime_types[] = {
+static const char *const text_mime_types[] = {
     TEXT_MIME,
     "text/plain",
     "TEXT",
@@ -104,7 +104,7 @@ static const char *text_mime_types[] = {
     "STRING"
 };
 
-const char **Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
+const char *const *Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types)
 {
     *num_mime_types = SDL_arraysize(text_mime_types);
     return text_mime_types;
@@ -185,7 +185,7 @@ bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
             result = true;
         } else {
             size_t mime_count = 0;
-            const char **mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
+            const char *const *mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
             for (size_t i = 0; i < mime_count; i++) {
                 if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, mime_types[i])) {
                     result = true;

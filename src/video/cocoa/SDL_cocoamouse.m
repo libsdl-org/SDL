@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,12 +27,16 @@
 
 #include "../../events/SDL_mouse_c.h"
 
+#import <GameController/GameController.h>
+
 #if 0
 #define DEBUG_COCOAMOUSE
 #endif
 
+//#define USE_GCMOUSE_SCROLL
+
 #ifdef DEBUG_COCOAMOUSE
-#define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
+#define DLog(fmt, ...) printf("%s: " fmt "\n", SDL_FUNCTION, ##__VA_ARGS__)
 #else
 #define DLog(...) \
     do {          \
@@ -196,9 +200,11 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
             nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
             break;
         case SDL_SYSTEM_CURSOR_MOVE:
+        case SDL_SYSTEM_CURSOR_ALL_SCROLL:
             nscursor = LoadHiddenSystemCursor(@"move", @selector(closedHandCursor));
             break;
         case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
+        case SDL_SYSTEM_CURSOR_NO_DROP:
             nscursor = [NSCursor operationNotAllowedCursor];
             break;
         case SDL_SYSTEM_CURSOR_POINTER:
@@ -228,6 +234,42 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_W_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
+        case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+            nscursor = [NSCursor contextualMenuCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_HELP:
+            nscursor = LoadHiddenSystemCursor(@"help", @selector(helpCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_CELL:
+            nscursor = LoadHiddenSystemCursor(@"cell", @selector(cellCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+            nscursor = [NSCursor IBeamCursorForVerticalLayout];
+            break;
+        case SDL_SYSTEM_CURSOR_ALIAS:
+            nscursor = [NSCursor dragLinkCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_COPY:
+            nscursor = [NSCursor dragCopyCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_GRAB:
+            nscursor = [NSCursor openHandCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_GRABBING:
+            nscursor = [NSCursor closedHandCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_COL_RESIZE:
+            nscursor = [NSCursor resizeLeftRightCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+            nscursor = [NSCursor resizeUpDownCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_ZOOM_IN:
+            nscursor = LoadHiddenSystemCursor(@"zoomin", @selector(zoomInCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+            nscursor = LoadHiddenSystemCursor(@"zoomout", @selector(zoomOutCursor));
+            break;
         default:
             SDL_assert(!"Unknown system cursor");
             return NULL;
@@ -252,6 +294,234 @@ static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 {
     SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
     return Cocoa_CreateSystemCursor(id);
+}
+
+// GCMouse support for raw (unaccelerated) mouse input on macOS 11.0+
+static id cocoa_mouse_connect_observer = nil;
+static id cocoa_mouse_disconnect_observer = nil;
+// Atomic for thread-safe access during high-frequency mouse input
+static SDL_AtomicInt cocoa_gcmouse_relative_mode;
+static bool cocoa_has_gcmouse = false;
+
+
+#ifdef USE_GCMOUSE_SCROLL
+static SDL_MouseWheelDirection cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
+
+static void Cocoa_UpdateGCMouseScrollDirection(void)
+{
+    Boolean keyExistsAndHasValidFormat = NO;
+    Boolean naturalScrollDirection = CFPreferencesGetAppBooleanValue(
+        CFSTR("com.apple.swipescrolldirection"),
+        kCFPreferencesAnyApplication,
+        &keyExistsAndHasValidFormat);
+    if (!keyExistsAndHasValidFormat) {
+        // Couldn't read the preference, assume natural scrolling direction
+        naturalScrollDirection = YES;
+    }
+    if (naturalScrollDirection) {
+        cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_FLIPPED;
+    } else {
+        cocoa_mouse_scroll_direction = SDL_MOUSEWHEEL_NORMAL;
+    }
+}
+#endif
+
+static bool Cocoa_SetGCMouseRelativeMode(bool enabled)
+{
+    SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, enabled ? 1 : 0);
+    return true;
+}
+
+static void Cocoa_OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button,
+                                         BOOL pressed)
+{
+    Uint64 timestamp = SDL_GetTicksNS();
+    SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button,
+                        pressed);
+}
+
+static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
+    API_AVAILABLE(macos(11.0))
+{
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
+
+    SDL_AddMouse(mouseID, NULL);
+    cocoa_has_gcmouse = true;
+
+    // Sync with SDL's current relative mode state (may have been set before
+    // GCMouse connected)
+    SDL_Mouse *sdl_mouse = SDL_GetMouse();
+    if (sdl_mouse && sdl_mouse->relative_mode) {
+        SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 1);
+    }
+
+    mouse.mouseInput.leftButton.pressedChangedHandler =
+        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
+        };
+    mouse.mouseInput.middleButton.pressedChangedHandler =
+        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
+        };
+    mouse.mouseInput.rightButton.pressedChangedHandler =
+        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
+        };
+
+    int auxiliary_button = SDL_BUTTON_X1;
+    for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
+        const int current_button = auxiliary_button;
+        btn.pressedChangedHandler =
+            ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+                Cocoa_OnGCMouseButtonChanged(mouseID, current_button, pressed);
+            };
+        ++auxiliary_button;
+    }
+
+    mouse.mouseInput.mouseMovedHandler =
+        ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
+            if (Cocoa_GCMouseRelativeMode()) {
+                // Skip raw input if user wants system-scaled (accelerated) deltas
+                SDL_Mouse *m = SDL_GetMouse();
+                if (m && m->enable_relative_system_scale) {
+                    return;
+                }
+                Uint64 timestamp = SDL_GetTicksNS();
+                SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID,
+                                    true, deltaX, -deltaY);
+            }
+        };
+
+    #ifdef USE_GCMOUSE_SCROLL
+    /*
+    18/04/2026
+    There seems to be a bug in the CGMouse API, at least when using some mouse types.
+    An event is fired only for the first scroll in one direction. Repeated 1-step
+    scrolls in the same direction do not raise an event.
+    Observed on macOS 26.3.1 with 2 different USB mice.
+    */
+    mouse.mouseInput.scroll.valueChangedHandler =
+        ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+            DLog("GCMouse scroll: %f, %f", xValue, yValue);
+            Uint64 timestamp = SDL_GetTicksNS();
+            float vertical = yValue;
+            float horizontal = xValue;
+
+            if (cocoa_mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
+                vertical = -vertical;
+                horizontal = -horizontal;
+            }
+            SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), mouseID,
+                               horizontal, vertical,
+                               cocoa_mouse_scroll_direction);
+        };
+    Cocoa_UpdateGCMouseScrollDirection();
+    #endif // USE_GCMOUSE_SCROLL
+    
+    // Use high-priority queue for low-latency input
+    dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.mouse",
+                                                   DISPATCH_QUEUE_SERIAL);
+    dispatch_set_target_queue(queue,
+        dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
+    mouse.handlerQueue = queue;
+}
+
+static void Cocoa_OnGCMouseDisconnected(GCMouse *mouse)
+    API_AVAILABLE(macos(11.0))
+{
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)mouse;
+
+    mouse.mouseInput.mouseMovedHandler = nil;
+    mouse.mouseInput.leftButton.pressedChangedHandler = nil;
+    mouse.mouseInput.middleButton.pressedChangedHandler = nil;
+    mouse.mouseInput.rightButton.pressedChangedHandler = nil;
+    mouse.mouseInput.scroll.valueChangedHandler = nil;
+
+    for (GCControllerButtonInput *button in mouse.mouseInput.auxiliaryButtons) {
+        button.pressedChangedHandler = nil;
+    }
+
+    SDL_RemoveMouse(mouseID);
+
+    // Check if any GCMouse devices remain
+    if (@available(macOS 11.0, *)) {
+        cocoa_has_gcmouse = ([GCMouse mice].count > 0);
+    }
+}
+
+void Cocoa_InitGCMouse(void)
+{
+    @autoreleasepool {
+        // These APIs are available starting in macOS Big Sur, but we don't enable
+        // GCMouse until Sonoma due to broken motion and button events on MacBooks
+        // running Monterey and Ventura.
+        if (@available(macOS 14.0, *)) {
+            NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+            cocoa_mouse_connect_observer = [center
+                addObserverForName:GCMouseDidConnectNotification
+                            object:nil
+                             queue:nil
+                        usingBlock:^(NSNotification *note) {
+                            GCMouse *mouse = note.object;
+                            Cocoa_OnGCMouseConnected(mouse);
+                        }];
+
+            cocoa_mouse_disconnect_observer = [center
+                addObserverForName:GCMouseDidDisconnectNotification
+                            object:nil
+                             queue:nil
+                        usingBlock:^(NSNotification *note) {
+                            GCMouse *mouse = note.object;
+                            Cocoa_OnGCMouseDisconnected(mouse);
+                        }];
+
+            // Enumerate already-connected mice
+            for (GCMouse *mouse in [GCMouse mice]) {
+                Cocoa_OnGCMouseConnected(mouse);
+            }
+        }
+    }
+}
+
+bool Cocoa_GCMouseRelativeMode(void)
+{
+    return SDL_GetAtomicInt(&cocoa_gcmouse_relative_mode) != 0;
+}
+
+bool Cocoa_HasGCMouse(void)
+{
+    return cocoa_has_gcmouse;
+}
+
+void Cocoa_QuitGCMouse(void)
+{
+    @autoreleasepool {
+        if (@available(macOS 14.0, *)) {
+            NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+            if (cocoa_mouse_connect_observer) {
+                [center removeObserver:cocoa_mouse_connect_observer
+                                  name:GCMouseDidConnectNotification
+                                object:nil];
+                cocoa_mouse_connect_observer = nil;
+            }
+
+            if (cocoa_mouse_disconnect_observer) {
+                [center removeObserver:cocoa_mouse_disconnect_observer
+                                  name:GCMouseDidDisconnectNotification
+                                object:nil];
+                cocoa_mouse_disconnect_observer = nil;
+            }
+
+            for (GCMouse *mouse in [GCMouse mice]) {
+                Cocoa_OnGCMouseDisconnected(mouse);
+            }
+
+            cocoa_has_gcmouse = false;
+            SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 0);
+        }
+    }
 }
 
 static void Cocoa_FreeCursor(SDL_Cursor *cursor)
@@ -360,19 +630,29 @@ static bool Cocoa_SetRelativeMouseMode(bool enabled)
 {
     CGError result;
 
+    // Update GCMouse relative mode state if available
+    if (Cocoa_HasGCMouse()) {
+        Cocoa_SetGCMouseRelativeMode(enabled);
+    }
+
     if (enabled) {
         SDL_Window *window = SDL_GetKeyboardFocus();
         if (window) {
-            /* We will re-apply the relative mode when the window finishes being moved,
-             * if it is being moved right now.
+            /* We will re-apply the relative mode when the window finishes
+             * being moved, if it is being moved right now.
              */
-            SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+            SDL_CocoaWindowData *data =
+                (__bridge SDL_CocoaWindowData *)window->internal;
             if ([data.listener isMovingOrFocusClickPending]) {
                 return true;
             }
 
-            // make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click.
-            const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
+            // Make sure the mouse isn't at the corner of the window, as this
+            // can confuse things if macOS thinks a window resize is happening
+            // on the first click.
+            const CGPoint point = CGPointMake(
+                (float)(window->x + (window->w / 2)),
+                (float)(window->y + (window->h / 2)));
             Cocoa_HandleMouseWarp(point.x, point.y);
             CGWarpMouseCursorPosition(point);
         }
@@ -409,9 +689,11 @@ static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
     SDL_MouseButtonFlags result = 0;
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)device->internal;
 
     *x = cocoaLocation.x;
-    *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
+    *y = (videodata.mainDisplayHeight - cocoaLocation.y);
 
     result |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
     result |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
@@ -521,7 +803,7 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     // has mouse focus, so we'll always set the focus even if we happen to miss
     // NSEventTypeMouseEntered, which apparently happens if the window is
     // created under the mouse on macOS 12.7.  But, only set the focus if
-    // the event acutally has a non-NULL window, otherwise what would happen
+    // the event actually has a non-NULL window, otherwise what would happen
     // is that after an NSEventTypeMouseEntered there would sometimes be
     // NSEventTypeMouseMoved without a window causing us to suppress subsequent
     // mouse move events.
@@ -588,6 +870,17 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         return;
     }
 
+    // When GCMouse is active in relative mode, it handles motion events
+    // directly with raw (unaccelerated) deltas. Skip NSEvent-based motion
+    // unless the user wants system-scaled (accelerated) input.
+    if (Cocoa_HasGCMouse() && Cocoa_GCMouseRelativeMode()) {
+        if (!mouse->enable_relative_system_scale) {
+            // GCMouse is providing raw input, skip NSEvent deltas
+            return;
+        }
+        // SYSTEM_SCALE is enabled: use NSEvent accelerated deltas instead
+    }
+
     // Ignore events that aren't inside the client area (i.e. title bar.)
     if ([event window]) {
         NSRect windowRect = [[[event window] contentView] frame];
@@ -600,17 +893,27 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     deltaY = [event deltaY];
 
     if (seenWarp) {
+        SDL_CocoaVideoData *videodata = (__bridge SDL_CocoaVideoData *)_this->internal;
         deltaX += (lastMoveX - data->lastWarpX);
-        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - data->lastWarpY);
+        deltaY += ((videodata.mainDisplayHeight - lastMoveY) - data->lastWarpY);
 
-        DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
+        DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX],
+             [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, true, deltaX, deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]),
+                        mouse->focus, mouseID, true, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
+    #ifdef USE_GCMOUSE_SCROLL
+    // GCMouse handles scroll events directly, skip NSEvent path to avoid duplicates
+    if (Cocoa_HasGCMouse()) {
+        return;
+    }
+    #endif
+
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
     CGFloat x, y;

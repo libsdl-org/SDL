@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,6 +59,10 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
+#ifdef SDL_PLATFORM_VISIONOS
+- (void)initializeVisionOSCurvedUI;
+#endif
+
 #ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
@@ -75,7 +79,9 @@
 - (void)deinitKeyboard;
 
 - (void)keyboardWillShow:(NSNotification *)notification;
+- (void)keyboardDidShow:(NSNotification *)notification;
 - (void)keyboardWillHide:(NSNotification *)notification;
+- (void)keyboardDidHide:(NSNotification *)notification;
 
 - (void)updateKeyboard;
 

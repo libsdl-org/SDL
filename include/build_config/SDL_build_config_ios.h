@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -225,5 +225,8 @@
 
 /* Enable tray subsystem */
 #define SDL_TRAY_DUMMY 1
+
+/* Disable ARM SVE2 intrinsics until we confirm they're available on all Apple mobile and TV hardware */
+#define SDL_DISABLE_SVE2 1
 
 #endif /* SDL_build_config_ios_h_ */

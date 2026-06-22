@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1297,3 +1297,34 @@
 #define SDL_LoadSurface_IO SDL_LoadSurface_IO_REAL
 #define SDL_LoadSurface SDL_LoadSurface_REAL
 #define SDL_SetWindowFillDocument SDL_SetWindowFillDocument_REAL
+#define SDL_TryLockJoysticks SDL_TryLockJoysticks_REAL
+#define SDL_CreateGPUXRSession SDL_CreateGPUXRSession_REAL
+#define SDL_GetGPUXRSwapchainFormats SDL_GetGPUXRSwapchainFormats_REAL
+#define SDL_CreateGPUXRSwapchain SDL_CreateGPUXRSwapchain_REAL
+#define SDL_DestroyGPUXRSwapchain SDL_DestroyGPUXRSwapchain_REAL
+#define SDL_OpenXR_LoadLibrary SDL_OpenXR_LoadLibrary_REAL
+#define SDL_OpenXR_UnloadLibrary SDL_OpenXR_UnloadLibrary_REAL
+#define SDL_OpenXR_GetXrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr_REAL
+#define SDL_CreateTrayWithProperties SDL_CreateTrayWithProperties_REAL
+#define SDL_SetGPURenderStateSamplerBindings SDL_SetGPURenderStateSamplerBindings_REAL
+#define SDL_SetGPURenderStateStorageTextures SDL_SetGPURenderStateStorageTextures_REAL
+#define SDL_SetGPURenderStateStorageBuffers SDL_SetGPURenderStateStorageBuffers_REAL
+#define SDL_GDKSuspendRenderer SDL_GDKSuspendRenderer_REAL
+#define SDL_GDKResumeRenderer SDL_GDKResumeRenderer_REAL
+#define SDL_IsPhone SDL_IsPhone_REAL
+#define SDL_LoadJPG_IO SDL_LoadJPG_IO_REAL
+#define SDL_LoadJPG SDL_LoadJPG_REAL
+#define SDL_HasSVE2 SDL_HasSVE2_REAL
+#define SDL_GamepadHasCapSense SDL_GamepadHasCapSense_REAL
+#define SDL_GetGamepadCapSense SDL_GetGamepadCapSense_REAL
+#define SDL_aligned_alloc_zero SDL_aligned_alloc_zero_REAL
+#define SDL_wcstoul SDL_wcstoul_REAL
+#define SDL_wcstoll SDL_wcstoll_REAL
+#define SDL_wcstoull SDL_wcstoull_REAL
+#define SDL_RequestNotificationPermission SDL_RequestNotificationPermission_REAL
+#define SDL_ShowNotificationWithProperties SDL_ShowNotificationWithProperties_REAL
+#define SDL_ShowNotification SDL_ShowNotification_REAL
+#define SDL_RemoveNotification SDL_RemoveNotification_REAL
+#define SDL_GetDeviceFormFactor SDL_GetDeviceFormFactor_REAL
+#define SDL_GetDeviceFormFactorName SDL_GetDeviceFormFactorName_REAL
+#define SDL_IsUbuntuTouch SDL_IsUbuntuTouch_REAL

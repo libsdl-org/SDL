@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,8 +51,6 @@
 #define XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  7849
 #define XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE 8689
 #define XINPUT_GAMEPAD_TRIGGER_THRESHOLD    -25058 // Uint8 30 scaled to Sint16 full range
-
-#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 enum
 {
@@ -275,8 +273,14 @@ static bool SendSerialRequest(SDL_DriverXboxOne_Context *ctx)
 
 static bool ControllerSendsAnnouncement(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_PDP && product_id == 0x0246) {
-        // The PDP Rock Candy (PID 0x0246) doesn't send the announce packet on Linux for some reason
+    // The PDP Rock Candy (PID 0x0246) and PowerA Fusion Pro 4 (PID 0x400b)
+    // don't send the announce packet on Linux for some reason.
+    //
+    // Just to be safe and cover future products, we'll always send the startup
+    // protocol sequence for PDP and PowerA controllers
+    if (vendor_id == USB_VENDOR_PDP ||
+        vendor_id == USB_VENDOR_POWERA ||
+        vendor_id == USB_VENDOR_POWERA_ALT) {
         return false;
     }
     return true;
@@ -359,14 +363,33 @@ static bool HIDAPI_DriverXboxOne_IsEnabled(void)
 
 static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
+    static const int LIBUSB_CLASS_VENDOR_SPEC = 0xFF;
+    static const int XBONE_IFACE_SUBCLASS = 71;
+    static const int XBONE_IFACE_PROTOCOL = 208;
+
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
-    if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
+    if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true) &&
+        !SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id) &&
+        (device && SDL_strncmp(device->path, "DevSrvsID", 9) == 0)) {
         // On macOS we get a shortened version of the real report and
         // you can't write output reports for wired controllers, so
-        // we'll just use the GCController support instead.
+        // we'll just use the GCController support instead, if available.
         return false;
     }
 #endif
+#ifdef SDL_PLATFORM_WIN32
+    if (device && SDL_strncmp(device->path, "\\\\?\\HID#", 8) == 0) {
+        // Windows provides a fake HID endpoint for XGIP controllers, don't use this
+        return false;
+    }
+#endif
+    if (interface_class &&
+        (interface_class != LIBUSB_CLASS_VENDOR_SPEC ||
+         interface_subclass != XBONE_IFACE_SUBCLASS ||
+         interface_protocol != XBONE_IFACE_PROTOCOL)) {
+        // This isn't the Xbox gamepad interface
+        return false;
+    }
     return (type == SDL_GAMEPAD_TYPE_XBOXONE);
 }
 
@@ -382,6 +405,8 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 
     device->context = ctx;
 
+// The Xbox controller doesn't have real HID report descriptors, but Linux synthesizes them for us
+#ifdef SDL_PLATFORM_LINUX
     Uint8 descriptor[1024];
     int descriptor_len = SDL_hid_get_report_descriptor(device->dev, descriptor, sizeof(descriptor));
     if (descriptor_len > 0) {
@@ -431,6 +456,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     } else {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Xbox report descriptor not available");
     }
+#endif // SDL_PLATFORM_LINUX
 
     ctx->vendor_id = device->vendor_id;
     ctx->product_id = device->product_id;

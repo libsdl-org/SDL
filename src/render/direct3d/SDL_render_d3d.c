@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,7 @@ typedef struct
     bool cliprect_dirty;
     D3D9_Shader shader;
     const float *shader_params;
+    bool texture_state_dirty;
 } D3D_DrawStateCache;
 
 typedef struct
@@ -198,38 +199,50 @@ static bool D3D_SetError(const char *prefix, HRESULT result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
+static const struct {
+    Uint32 sdl;
+    D3DFORMAT d3d;
+} d3d_format_map[] = {
+    { SDL_PIXELFORMAT_ARGB8888,     D3DFMT_A8R8G8B8      },
+    { SDL_PIXELFORMAT_XRGB8888,     D3DFMT_X8R8G8B8      },
+    { SDL_PIXELFORMAT_ABGR8888,     D3DFMT_A8B8G8R8      },
+    { SDL_PIXELFORMAT_XBGR8888,     D3DFMT_X8B8G8R8      },
+    { SDL_PIXELFORMAT_ARGB2101010,  D3DFMT_A2R10G10B10   },
+    { SDL_PIXELFORMAT_RGB565,       D3DFMT_R5G6B5        },
+    { SDL_PIXELFORMAT_ARGB1555,     D3DFMT_A1R5G5B5      },
+    { SDL_PIXELFORMAT_XRGB1555,     D3DFMT_X1R5G5B5      },
+    { SDL_PIXELFORMAT_ARGB4444,     D3DFMT_A4R4G4B4      },
+    { SDL_PIXELFORMAT_XRGB4444,     D3DFMT_X4R4G4B4      }
+};
+
 static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_RGB565:
-        return D3DFMT_R5G6B5;
-    case SDL_PIXELFORMAT_XRGB8888:
-        return D3DFMT_X8R8G8B8;
-    case SDL_PIXELFORMAT_ARGB8888:
-        return D3DFMT_A8R8G8B8;
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
+    case SDL_PIXELFORMAT_P408:
         return D3DFMT_L8;
     default:
+        for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+            if (d3d_format_map[i].sdl == format) {
+                return d3d_format_map[i].d3d;
+            }
+        }
         return D3DFMT_UNKNOWN;
     }
 }
 
 static SDL_PixelFormat D3DFMTToPixelFormat(D3DFORMAT format)
 {
-    switch (format) {
-    case D3DFMT_R5G6B5:
-        return SDL_PIXELFORMAT_RGB565;
-    case D3DFMT_X8R8G8B8:
-        return SDL_PIXELFORMAT_XRGB8888;
-    case D3DFMT_A8R8G8B8:
-        return SDL_PIXELFORMAT_ARGB8888;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
+    for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+        if (d3d_format_map[i].d3d == format) {
+            return d3d_format_map[i].sdl;
+        }
     }
+    return SDL_PIXELFORMAT_UNKNOWN;
 }
 
 static void D3D_InitRenderState(D3D_RenderData *data)
@@ -616,17 +629,30 @@ static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 #ifdef SDL_HAVE_YUV
     if (texturedata->yuv) {
-        // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+        if (texture->format == SDL_PIXELFORMAT_P408) {
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x, rect->y, rect->w, rect->h, pixels, pitch)) {
+                return false;
+            }
 
-        if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->vtexture : &texturedata->utexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
-            return false;
-        }
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            if (!D3D_UpdateTextureRep(data->device, &texturedata->vtexture, rect->x, rect->y, rect->w, rect->h, pixels, pitch)) {
+                return false;
+            }
+        } else {
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->vtexture : &texturedata->utexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
+                return false;
+            }
 
-        // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
-        if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->utexture : &texturedata->vtexture, rect->x / 2, (rect->y + 1) / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
-            return false;
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
+            if (!D3D_UpdateTextureRep(data->device, texture->format == SDL_PIXELFORMAT_YV12 ? &texturedata->utexture : &texturedata->vtexture, rect->x / 2, (rect->y + 1) / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, pixels, (pitch + 1) / 2)) {
+                return false;
+            }
         }
     }
 #endif
@@ -673,6 +699,23 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         }
 
         if (!D3D_CreateTextureRep(data->device, &texturedata->vtexture, usage, texture->format, PixelFormatToD3DFMT(texture->format), (texture->w + 1) / 2, (texture->h + 1) / 2)) {
+            return false;
+        }
+
+        texturedata->shader_params_length = 4; // The YUV shader takes 4 float4 parameters
+        texturedata->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
+        if (texturedata->shader_params == NULL) {
+            return SDL_SetError("Unsupported YUV colorspace");
+        }
+    }
+    if (texture->format == SDL_PIXELFORMAT_P408) {
+        texturedata->yuv = true;
+
+        if (!D3D_CreateTextureRep(data->device, &texturedata->utexture, usage, texture->format, PixelFormatToD3DFMT(texture->format), texture->w, texture->h)) {
+            return false;
+        }
+
+        if (!D3D_CreateTextureRep(data->device, &texturedata->vtexture, usage, texture->format, PixelFormatToD3DFMT(texture->format), texture->w, texture->h)) {
             return false;
         }
 
@@ -729,11 +772,20 @@ static bool D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D_UpdateTextureRep(data->device, &texturedata->texture, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch)) {
         return false;
     }
-    if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Uplane, Upitch)) {
-        return false;
-    }
-    if (!D3D_UpdateTextureRep(data->device, &texturedata->vtexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch)) {
-        return false;
+    if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x, rect->y, rect->w, rect->h, Uplane, Upitch)) {
+            return false;
+        }
+        if (!D3D_UpdateTextureRep(data->device, &texturedata->vtexture, rect->x, rect->y, rect->w, rect->h, Vplane, Vpitch)) {
+            return false;
+        }
+    } else {
+        if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Uplane, Upitch)) {
+            return false;
+        }
+        if (!D3D_UpdateTextureRep(data->device, &texturedata->vtexture, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch)) {
+            return false;
+        }
     }
     return true;
 }
@@ -815,6 +867,7 @@ static void D3D_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             data->drawstate.texture = NULL;
             data->drawstate.shader = SHADER_NONE;
             data->drawstate.shader_params = NULL;
+            data->drawstate.texture_state_dirty = false;
             IDirect3DDevice9_SetPixelShader(data->device, NULL);
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
         }
@@ -1093,7 +1146,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
-    if (texture != data->drawstate.texture) {
+    if (texture != data->drawstate.texture || data->drawstate.texture_state_dirty) {
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *)data->drawstate.texture->internal : NULL;
         D3D_TextureData *newtexturedata = texture ? (D3D_TextureData *)texture->internal : NULL;
         D3D9_Shader shader = SHADER_NONE;
@@ -1104,11 +1157,11 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
         }
         if ((!newtexturedata || !texture->palette) &&
-            (oldtexturedata && (data->drawstate.texture->palette))) {
+            ((oldtexturedata && data->drawstate.texture->palette) || data->drawstate.texture_state_dirty)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
         }
 #ifdef SDL_HAVE_YUV
-        if ((!newtexturedata || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
+        if ((!newtexturedata || !newtexturedata->yuv) && ((oldtexturedata && oldtexturedata->yuv) || data->drawstate.texture_state_dirty)) {
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
@@ -1117,7 +1170,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             return false;
         }
 
-        if (shader != data->drawstate.shader) {
+        if (shader != data->drawstate.shader || data->drawstate.texture_state_dirty) {
             const HRESULT result = IDirect3DDevice9_SetPixelShader(data->device, data->shaders[shader]);
             if (FAILED(result)) {
                 return D3D_SetError("IDirect3DDevice9_SetPixelShader()", result);
@@ -1125,7 +1178,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             data->drawstate.shader = shader;
         }
 
-        if (shader_params != data->drawstate.shader_params) {
+        if (shader_params != data->drawstate.shader_params || data->drawstate.texture_state_dirty) {
             if (shader_params) {
                 const UINT shader_params_length = 4; // The YUV shader takes 4 float4 parameters
                 const HRESULT result = IDirect3DDevice9_SetPixelShaderConstantF(data->device, 0, shader_params, shader_params_length);
@@ -1137,6 +1190,7 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         }
 
         data->drawstate.texture = texture;
+        data->drawstate.texture_state_dirty = false;
     } else if (texture) {
         D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
         if (texturedata) {
@@ -1250,6 +1304,7 @@ static void D3D_InvalidateCachedState(SDL_Renderer *renderer)
     data->drawstate.texture = NULL;
     data->drawstate.shader = SHADER_NONE;
     data->drawstate.shader_params = NULL;
+    data->drawstate.texture_state_dirty = true;
 }
 
 static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -1612,6 +1667,7 @@ static void D3D_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->drawstate.texture = NULL;
         renderdata->drawstate.shader = SHADER_NONE;
         renderdata->drawstate.shader_params = NULL;
+        renderdata->drawstate.texture_state_dirty = false;
         IDirect3DDevice9_SetPixelShader(renderdata->device, NULL);
         IDirect3DDevice9_SetTexture(renderdata->device, 0, NULL);
         if (texture->palette) {
@@ -1815,6 +1871,7 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     D3D_RenderData *data;
     HRESULT result;
     HWND hwnd;
+    D3DDISPLAYMODE displayMode;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
@@ -1873,7 +1930,6 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     D3D_InvalidateCachedState(renderer);
 
     renderer->name = D3D_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
@@ -1958,6 +2014,20 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
     data->currentRenderTarget = NULL;
 
+    // Detect the supported texture formats
+    IDirect3D9_GetAdapterDisplayMode(data->d3d, data->adapter, &displayMode);
+    for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
+        if (SUCCEEDED(IDirect3D9_CheckDeviceFormat(data->d3d,
+                                                   data->adapter,
+                                                   D3DDEVTYPE_HAL,
+                                                   displayMode.Format,
+                                                   0,
+                                                   D3DRTYPE_TEXTURE,
+                                                   d3d_format_map[i].d3d))) {
+            SDL_AddSupportedTextureFormat(renderer, d3d_format_map[i].sdl);
+        }
+    }
+
     // Set up parameters for rendering
     D3D_InitRenderState(data);
     for (int i = SHADER_NONE + 1; i < SDL_arraysize(data->shaders); ++i) {
@@ -1975,6 +2045,7 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     if (caps.MaxSimultaneousTextures >= 3 && data->shaders[SHADER_YUV]) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
     }
 #endif
 

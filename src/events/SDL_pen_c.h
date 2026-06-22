@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -81,8 +81,11 @@ extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window 
 // Backend calls this when a pen's button changes, to generate events and update state.
 extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down);
 
-// Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool in);
+// Backend calls this when a pen's proximity changes, to generate events and update state.
+extern void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool in, bool immediate);
+
+// Pumping events calls this to generate pending pen proximity events
+extern void SDL_SendPendingPenProximity(void);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);

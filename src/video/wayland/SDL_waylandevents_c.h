@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,10 @@ typedef struct SDL_WaylandCursorState
 
     Uint64 last_frame_callback_time_ms;
     Uint32 current_frame_time_ms;
+
+    // 0 or greater if a buffer is attached, -1 if in the reset state.
     int current_frame;
+
     SDL_HitTestResult hit_test_result;
 } SDL_WaylandCursorState;
 
@@ -186,7 +189,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
 
         SDL_WindowData *focus;
-        SDL_CursorData *current_cursor;
+        struct wl_surface *focus_surface;
 
         // According to the spec, a seat can only have one active gesture of any type at a time.
         SDL_WindowData *gesture_focus;
@@ -205,7 +208,9 @@ typedef struct SDL_WaylandSeat
             bool have_absolute;
             bool have_relative;
             bool have_axis;
-            bool have_enter;
+
+            Uint32 buttons_pressed;
+            Uint32 buttons_released;
 
             struct
             {
@@ -231,6 +236,9 @@ typedef struct SDL_WaylandSeat
 
                 SDL_MouseWheelDirection direction;
             } axis;
+
+            struct wl_surface *enter_surface;
+            struct wl_surface *leave_surface;
 
             // Event timestamp in nanoseconds
             Uint64 timestamp_ns;

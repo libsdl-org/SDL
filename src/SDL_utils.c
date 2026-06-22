@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,14 @@
 
 #include "joystick/SDL_joystick_c.h" // For SDL_GetGamepadTypeFromVIDPID()
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_force_free(void *ptr)
+{
+    free(ptr);  // This should NOT be SDL_free()
+}
+#endif
 
 // Common utility functions that aren't in the public API
 
@@ -103,7 +111,8 @@ void SDL_CalculateFraction(float x, int *numerator, int *denominator)
 
 bool SDL_startswith(const char *string, const char *prefix)
 {
-    if (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
+    if (string && prefix &&
+        SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
         return true;
     }
     return false;
@@ -376,6 +385,39 @@ int SDL_URIToLocal(const char *src, char *dst)
     return -1;
 }
 
+bool SDL_IsURI(const char *uri)
+{
+    /* A valid URI begins with a letter and is followed by any sequence of
+     * letters, digits, '+', '.', or '-'.
+     */
+    if (!uri) {
+        return false;
+    }
+
+    // The first character of the scheme must be a letter.
+    if (!((*uri >= 'a' && *uri <= 'z') || (*uri >= 'A' && *uri <= 'Z'))) {
+        return false;
+    }
+
+    /* If the colon is found before encountering the end of the string or
+     * any invalid characters, the scheme can be considered valid.
+     */
+    while (*uri) {
+        if (!((*uri >= 'a' && *uri <= 'z') ||
+              (*uri >= 'A' && *uri <= 'Z') ||
+              (*uri >= '0' && *uri <= '9') ||
+              *uri == '+' || *uri == '-' || *uri == '.')) {
+            return false;
+        }
+
+        if (*++uri == ':') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // This is a set of per-thread persistent strings that we can return from the SDL API.
 // This is used for short strings that might persist past the lifetime of the object
 // they are related to.
@@ -445,6 +487,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "(Standard system devices) ", "" },
         { "8BitDo Tech Ltd", "8BitDo" },
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
@@ -504,6 +547,9 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
             break;
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_STEAM:
+            name = SDL_strdup("Steam Controller");
             break;
         default:
             len = (6 + 1 + 6 + 1);
@@ -579,4 +625,3 @@ void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
 }
-

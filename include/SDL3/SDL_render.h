@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,6 +168,7 @@ struct SDL_Texture
 #endif /* !SDL_INTERNAL */
 
 typedef struct SDL_Texture SDL_Texture;
+
 
 /* Function prototypes */
 
@@ -752,8 +753,6 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *
  * With the opengles2 renderer:
  *
- * - `SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER`: the GLuint texture
- *   associated with the texture, if you want to wrap an existing texture.
  * - `SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER`: the GLuint texture
  *   associated with the texture, if you want to wrap an existing texture.
  * - `SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER`: the GLuint texture
@@ -2436,8 +2435,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *rende
 
 /**
  * Render a list of triangles, optionally using a texture and indices into the
- * vertex array Color and alpha modulation is done per vertex
- * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ * vertex array.
+ *
+ * Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and
+ * SDL_SetTextureAlphaMod are ignored).
  *
  * \param renderer the rendering context.
  * \param texture (optional) The SDL texture to use.
@@ -2464,8 +2465,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
 
 /**
  * Render a list of triangles, optionally using a texture and indices into the
- * vertex arrays Color and alpha modulation is done per vertex
- * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ * vertex arrays.
+ *
+ * Color and alpha modulation is done per vertex (SDL_SetTextureColorMod and
+ * SDL_SetTextureAlphaMod are ignored).
  *
  * \param renderer the rendering context.
  * \param texture (optional) The SDL texture to use.
@@ -2509,6 +2512,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_RenderGeometry
@@ -2529,6 +2534,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderTextureAddressMode(SDL_Renderer *r
  *               be NULL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.4.0.
  *
@@ -2963,7 +2970,65 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * \sa SDL_SetGPURenderState
  * \sa SDL_DestroyGPURenderState
  */
-extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo);
+extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_GPURenderStateCreateInfo *createinfo);
+
+/**
+ * Set sampler bindings variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using SDL_BindGPUFragmentSamplers()
+ * during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_sampler_bindings The number of additional fragment samplers to
+ *                             bind.
+ * \param sampler_bindings Additional fragment samplers to bind.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateSamplerBindings(SDL_GPURenderState *state, int num_sampler_bindings, const SDL_GPUTextureSamplerBinding *sampler_bindings);
+
+/**
+ * Set storage textures variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using
+ * SDL_BindGPUFragmentStorageTextures() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_storage_textures The number of storage textures to bind.
+ * \param storage_textures Storage textures to bind.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageTextures(SDL_GPURenderState *state, int num_storage_textures, SDL_GPUTexture *const *storage_textures);
+
+/**
+ * Set storage buffers variables in a custom GPU render state.
+ *
+ * The data is copied and will be binded using
+ * SDL_BindGPUFragmentStorageBuffers() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param num_storage_buffers The number of storage buffers to bind.
+ * \param storage_buffers Storage buffers to bind.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateStorageBuffers(SDL_GPURenderState *state, int num_storage_buffers, SDL_GPUBuffer *const *storage_buffers);
 
 /**
  * Set fragment shader uniform variables in a custom GPU render state.
@@ -3016,6 +3081,44 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderState(SDL_Renderer *renderer, S
  * \sa SDL_CreateGPURenderState
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPURenderState(SDL_GPURenderState *state);
+
+#ifdef SDL_PLATFORM_GDK
+
+/**
+ * Call this to suspend Render operations on Xbox after receiving the
+ * SDL_EVENT_DID_ENTER_BACKGROUND event.
+ *
+ * Do NOT call any SDL_Render functions after calling this function! This must
+ * also be called before calling SDL_GDKSuspendComplete.
+ *
+ * This function MUST be called on the application's render thread.
+ *
+ * \param renderer the renderer which should suspend operation.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_AddEventWatch
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer);
+
+/**
+ * Call this to resume Render operations on Xbox after receiving the
+ * SDL_EVENT_WILL_ENTER_FOREGROUND event.
+ *
+ * When resuming, this function MUST be called before calling any other
+ * SDL_Render functions.
+ *
+ * This function MUST be called on the application's render thread.
+ *
+ * \param renderer the renderer which should resume operation.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_AddEventWatch
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(SDL_Renderer *renderer);
+
+#endif /* SDL_PLATFORM_GDK */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

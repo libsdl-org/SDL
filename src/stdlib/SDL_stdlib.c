@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -523,7 +523,7 @@ int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A' + ((x) - 'a'
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A')) : (x); }
 int SDL_isblank(int x) { return ((x) == ' ') || ((x) == '\t'); }
 
-void *SDL_aligned_alloc(size_t alignment, size_t size)
+static void *SDL_aligned_alloc_internal(size_t alignment, size_t size, bool clear_memory)
 {
     size_t padding;
     Uint8 *result = NULL;
@@ -537,7 +537,7 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
     if (SDL_size_add_check_overflow(size, alignment, &size) &&
         SDL_size_add_check_overflow(size, sizeof(void *), &size) &&
         SDL_size_add_check_overflow(size, padding, &size)) {
-        void *original = SDL_malloc(size);
+        void *original = clear_memory ? SDL_calloc(1, size) : SDL_malloc(size);
         if (original) {
             // Make sure we have enough space to store the original pointer
             result = (Uint8 *)original + sizeof(original);
@@ -555,6 +555,16 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
         }
     }
     return result;
+}
+
+void *SDL_aligned_alloc(size_t alignment, size_t size)
+{
+	return SDL_aligned_alloc_internal(alignment, size, false);
+}
+
+void *SDL_aligned_alloc_zero(size_t alignment, size_t size)
+{
+	return SDL_aligned_alloc_internal(alignment, size, true);
 }
 
 void SDL_aligned_free(void *mem)

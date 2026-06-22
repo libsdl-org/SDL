@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,12 @@
 
 void SDL_UpdateTrays(void)
 {
+}
+
+SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    return NULL;
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)

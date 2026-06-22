@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,10 +41,8 @@
 static const char *SDL_UDEV_LIBS[] = { SDL_UDEV_FALLBACK_LIBS };
 
 #ifdef SDL_UDEV_DYNAMIC
+
 #define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_DYNAMIC, SDL_UDEV_FALLBACK_LIBS
-#else
-#define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_FALLBACK_LIBS
-#endif
 
 SDL_ELF_NOTE_DLOPEN(
     "events-udev",
@@ -52,17 +50,21 @@ SDL_ELF_NOTE_DLOPEN(
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_UDEV_DLNOTE_LIBS
 )
+#endif
 
 static SDL_UDEV_PrivateData *_this = NULL;
 
+#ifdef SDL_UDEV_DYNAMIC
 static bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static bool SDL_UDEV_load_syms(void);
+#endif
 static bool SDL_UDEV_hotplug_update_available(void);
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len);
 static int guess_device_class(struct udev_device *dev);
 static int device_class(struct udev_device *dev);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
+#ifdef SDL_UDEV_DYNAMIC
 static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
@@ -73,13 +75,26 @@ static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 
     return true;
 }
+#endif
 
 static bool SDL_UDEV_load_syms(void)
 {
+
+#ifdef SDL_UDEV_DYNAMIC
 /* cast funcs to char* first, to please GCC's strict aliasing rules. */
 #define SDL_UDEV_SYM(x)                                          \
     if (!SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x)) \
         return false
+
+#define SDL_UDEV_SYM_OPTIONAL(x)                                 \
+    SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x);
+#else
+#define SDL_UDEV_SYM(x)                                          \
+    _this->syms.x = x;
+
+#define SDL_UDEV_SYM_OPTIONAL(x)                                 \
+    _this->syms.x = x;
+#endif
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
@@ -98,6 +113,7 @@ static bool SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_enumerate_scan_devices);
     SDL_UDEV_SYM(udev_enumerate_unref);
     SDL_UDEV_SYM(udev_list_entry_get_name);
+    SDL_UDEV_SYM(udev_list_entry_get_value);
     SDL_UDEV_SYM(udev_list_entry_get_next);
     SDL_UDEV_SYM(udev_monitor_enable_receiving);
     SDL_UDEV_SYM(udev_monitor_filter_add_match_subsystem_devtype);
@@ -109,6 +125,11 @@ static bool SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_unref);
     SDL_UDEV_SYM(udev_device_new_from_devnum);
     SDL_UDEV_SYM(udev_device_get_devnum);
+
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_new);
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_unref);
+    SDL_UDEV_SYM_OPTIONAL(udev_hwdb_get_properties_list_entry);
+
 #undef SDL_UDEV_SYM
 
     return true;

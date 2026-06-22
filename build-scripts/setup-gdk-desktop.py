@@ -262,8 +262,6 @@ def main():
     parser.add_argument("--no-user-props", required=False, dest="user_props", action="store_false", help="Don't ")
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO)
-
     git_ref = None
     gdk_edition = None
     if args.ref_edition is not None:

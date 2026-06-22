@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -44,6 +44,7 @@ SDL_ROOT = Path(__file__).resolve().parents[2]
 SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 SDL_DYNAPI_PROCS_H = SDL_ROOT / "src/dynapi/SDL_dynapi_procs.h"
 SDL_DYNAPI_OVERRIDES_H = SDL_ROOT / "src/dynapi/SDL_dynapi_overrides.h"
+SDL_DYNAPI_EXPORTS = SDL_ROOT / "src/dynapi/SDL_dynapi.exports"
 SDL_DYNAPI_SYM = SDL_ROOT / "src/dynapi/SDL_dynapi.sym"
 
 RE_EXTERN_C = re.compile(r'.*extern[ "]*C[ "].*')
@@ -493,9 +494,15 @@ def add_dyn_api(proc: SdlProcedure) -> None:
     #
     # Add at last
     # "#define SDL_DelayNS SDL_DelayNS_REAL
-    f = open(SDL_DYNAPI_OVERRIDES_H, "a", newline="")
-    f.write(f"#define {proc.name} {proc.name}_REAL\n")
-    f.close()
+    with open(SDL_DYNAPI_OVERRIDES_H, "a", newline="") as f:
+        f.write(f"#define {proc.name} {proc.name}_REAL\n")
+
+    # File: SDL_dynapi.exports
+    #
+    # Append to end
+    # "_SDL_DelayNS"
+    with open(SDL_DYNAPI_EXPORTS, "a", newline="") as f:
+        f.write(f"_{proc.name}\n")
 
     # File: SDL_dynapi.sym
     #

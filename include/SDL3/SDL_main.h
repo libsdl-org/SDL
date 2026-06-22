@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -219,6 +219,19 @@
            void reset_IOP(); \
            void reset_IOP() {}
 
+    #elif defined(SDL_PLATFORM_DOS)
+        /*
+          On DOS, SDL provides a main function that sets up memory
+          page locking (code, data, stack are locked, future
+          malloc calls are not locked), and sets up the "fat DS"
+          trick, so we can use C pointers from protected mode that
+          access conventional memory. SDL _requires_ the "fat DS"
+          trick!
+
+          If you provide this yourself, you may define SDL_MAIN_HANDLED
+        */
+        #define SDL_MAIN_AVAILABLE
+
     #elif defined(SDL_PLATFORM_3DS)
         /*
           On N3DS, SDL provides a main function that sets up the screens
@@ -257,7 +270,7 @@
 #else
 /* usually this is empty */
 #define SDLMAIN_DECLSPEC
-#endif /* SDL_MAIN_EXPORTED */
+#endif /* SDL_WIKI_DOCUMENTATION_SECTION */
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)
 #define main SDL_main
@@ -332,6 +345,9 @@ extern "C" {
  *             arguments.
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
+ *
+ * \threadsafety This function is called once by SDL, at startup, on a single
+ *               thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -537,6 +553,8 @@ extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
  * will not be changed it is necessary to define SDL_MAIN_HANDLED before
  * including SDL.h.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Init
@@ -629,6 +647,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
@@ -646,6 +666,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style,
  * deregistered when the registration counter in SDL_RegisterApp decrements to
  * zero through calls to this function.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
@@ -655,10 +677,28 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 /**
  * Callback from the application to let the suspend continue.
  *
+ * This should be called in response to an `SDL_EVENT_DID_ENTER_BACKGROUND`
+ * event, which can be detected via event watch. However, do NOT call this
+ * function directly from within an event watch callback. Instead, wait until
+ * the app has suppressed all rendering operations, then call this from the
+ * application render thread.
+ *
+ * When using SDL_Render, this should be called after calling
+ * SDL_GDKSuspendRenderer.
+ *
+ * When using SDL_GPU, this should be called after calling SDL_GDKSuspendGPU.
+ *
+ * If you're writing your own D3D12 renderer, this should be called after
+ * calling `ID3D12CommandQueue::SuspendX`.
+ *
  * This function is only needed for Xbox GDK support; all other platforms will
  * do nothing and set an "unsupported" error message.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_AddEventWatch
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 

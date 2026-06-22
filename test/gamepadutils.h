@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,15 @@ enum
     SDL_GAMEPAD_ELEMENT_MAX,
 };
 
+enum
+{
+    SDL_GAMEPAD_CAPSENSE_ELEMENT_LEFT_STICK,
+    SDL_GAMEPAD_CAPSENSE_ELEMENT_RIGHT_STICK,
+    SDL_GAMEPAD_CAPSENSE_ELEMENT_LEFT_GRIP,
+    SDL_GAMEPAD_CAPSENSE_ELEMENT_RIGHT_GRIP,
+    SDL_GAMEPAD_CAPSENSE_ELEMENT_MAX
+};
+
 #define HIGHLIGHT_COLOR         224, 255, 255, SDL_ALPHA_OPAQUE
 #define HIGHLIGHT_TEXTURE_MOD   224, 255, 255
 #define PRESSED_COLOR           175, 238, 238, SDL_ALPHA_OPAQUE
@@ -69,7 +78,7 @@ enum
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
 extern void SetGamepadImagePosition(GamepadImage *ctx, float x, float y);
 extern void GetGamepadImageArea(GamepadImage *ctx, SDL_FRect *area);
-extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area);
+extern void GetGamepadTouchpadArea(GamepadImage *ctx, SDL_FRect *area, int touchpad);
 extern void SetGamepadImageShowingFront(GamepadImage *ctx, bool showing_front);
 extern SDL_GamepadType GetGamepadImageType(GamepadImage *ctx);
 extern void SetGamepadImageDisplayMode(GamepadImage *ctx, ControllerDisplayMode display_mode);

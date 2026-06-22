@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -150,6 +150,29 @@ char *SDL_SYS_GetBasePath(void)
     result = SDL_unixify_std(canon, NULL, 0, __RISCOSIFY_FILETYPE_NOTSPECIFIED);
     SDL_free(canon);
     return result;
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    _kernel_swi_regs regs;
+    _kernel_oserror *error;
+    char *canon, *ptr, *retval;
+
+    error = _kernel_swi(OS_GetEnv, &regs, &regs);
+    if (error) {
+        return NULL;
+    }
+
+    canon = canonicalisePath((const char *)regs.r[0], "Run$Path");
+    if (!canon) {
+        return NULL;
+    }
+
+    // find filename.
+    ptr = SDL_strrchr(canon, '.');
+    retval = SDL_strdup(ptr ? ptr + 1 : canon);
+    SDL_free(canon);
+    return retval;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

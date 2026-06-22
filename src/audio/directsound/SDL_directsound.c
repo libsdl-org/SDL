@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -545,6 +545,7 @@ static bool DSOUND_OpenDevice(SDL_AudioDevice *device)
             tried_format = true;
 
             device->spec.format = test_format;
+            device->spec.freq = SDL_min(DSBFREQUENCY_MAX, device->spec.freq);
 
             // Update the fragment size as size in bytes
             SDL_UpdatedAudioDeviceFormat(device);

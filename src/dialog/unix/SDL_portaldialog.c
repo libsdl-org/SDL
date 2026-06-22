@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,9 +86,24 @@ static void DBus_AppendFilter(SDL_DBusContext *dbus, DBusMessageIter *parent, co
     dbus->message_iter_append_basic(&filter_entry, DBUS_TYPE_STRING, &filter.name);
     dbus->message_iter_open_container(&filter_entry, DBUS_TYPE_ARRAY, "(us)", &filter_array);
 
-    patterns = SDL_strdup(filter.pattern);
+    /* Copy the filter string, converting to a case-insensitive version.
+     * For example, for case-insensitive matching of '*.png', the pattern '*.[pP][nN][gG]' is used.
+     */
+    const size_t len = SDL_strlen(filter.pattern) + 1;
+    patterns = SDL_malloc(len * 4); // Single characters may be expanded to 4 characters.
     if (!patterns) {
         goto cleanup;
+    }
+    for (size_t i = 0, p = 0; i < len; ++i) {
+        if ((filter.pattern[i] >= 'a' && filter.pattern[i] <= 'z') ||
+            (filter.pattern[i] >= 'A' && filter.pattern[i] <= 'Z')) {
+            patterns[p++] = '[';
+            patterns[p++] = SDL_tolower(filter.pattern[i]);
+            patterns[p++] = SDL_toupper(filter.pattern[i]);
+            patterns[p++] = ']';
+        } else {
+            patterns[p++] = filter.pattern[i];
+        }
     }
 
     pattern = SDL_strtok_r(patterns, ";", &state);

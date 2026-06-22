@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,6 @@ extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *
 extern void Android_JNI_MinimizeWindow(void);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
-extern bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
@@ -103,10 +102,12 @@ bool Android_JNI_HasClipboardText(void);
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent);
 
 // Joystick support
-void Android_JNI_PollInputDevices(void);
+void Android_JNI_DetectDevices(void);
+void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue);
+void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled);
 
 // Haptic support
-void Android_JNI_PollHapticDevices(void);
+void Android_JNI_DetectHapticDevices(void);
 void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length);
 void Android_JNI_HapticStop(int device_id);
@@ -150,11 +151,14 @@ int SDL_GetAndroidSDKVersion(void);
 
 bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
+SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void);
+
+char *SDL_GetAndroidPackageName(void);  // this is a SDL_malloc'd string the caller will own.
 
 // File Dialogs
-bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
-    bool multiple);
+bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

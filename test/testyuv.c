@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -15,8 +15,8 @@
 #include "testyuv_cvt.h"
 #include "testutils.h"
 
-/* 422 (YUY2, etc) and P010 formats are the largest */
-#define MAX_YUV_SURFACE_SIZE(W, H, P) ((H + 1) * ((W + 1) + P) * 4)
+/* 422 (YUY2, etc) and P416 formats are the largest */
+#define MAX_YUV_SURFACE_SIZE(W, H, P) ((H + 1) * ((W + 1) + P) * 3 * 2)
 
 /* Return true if the YUV format is packed pixels */
 static bool is_packed_yuv_format(Uint32 format)
@@ -109,6 +109,7 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
     const Uint32 formats[] = {
         SDL_PIXELFORMAT_YV12,
         SDL_PIXELFORMAT_IYUV,
+        SDL_PIXELFORMAT_P408,
         SDL_PIXELFORMAT_NV12,
         SDL_PIXELFORMAT_NV21,
         SDL_PIXELFORMAT_YUY2,
@@ -164,6 +165,11 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
     /* Verify conversion between YUV formats */
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         for (j = 0; j < SDL_arraysize(formats); ++j) {
+            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_P408 || formats[j] == SDL_PIXELFORMAT_P408)) {
+                // Converting between 444 and 420 formats is lossy and not currently supported
+                continue;
+            }
+
             yuv1_pitch = CalculateYUVPitch(formats[i], pattern->w) + extra_pitch;
             yuv2_pitch = CalculateYUVPitch(formats[j], pattern->w) + extra_pitch;
             if (!SDL_ConvertPixelsAndColorspace(pattern->w, pattern->h, pattern->format, SDL_COLORSPACE_SRGB, 0, pattern->pixels, pattern->pitch, formats[i], colorspace, 0, yuv1, yuv1_pitch)) {
@@ -186,6 +192,11 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
         for (j = 0; j < SDL_arraysize(formats); ++j) {
             if (is_packed_yuv_format(formats[i]) != is_packed_yuv_format(formats[j])) {
                 /* Can't change plane vs packed pixel layout in-place */
+                continue;
+            }
+
+            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_P408 || formats[j] == SDL_PIXELFORMAT_P408)) {
+                // Converting between 444 and 420 formats is lossy and not currently supported
                 continue;
             }
 
@@ -370,16 +381,16 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
     int pitch;
     SDL_Surface *converted = NULL;
     bool result = false;
+    size_t max_size;
 
     YUV_CONVERSION_MODE yuv_mode = GetYUVConversionModeForResolution(original->w, original->h);
     if (yuv_mode == YUV_CONVERSION_BT2020) {
-        yuv_format = SDL_PIXELFORMAT_P010;
-        rgb_format = SDL_PIXELFORMAT_XBGR2101010;
         rgb_colorspace = SDL_COLORSPACE_HDR10;
     }
     yuv_colorspace = GetColorspaceForYUVConversionMode(yuv_mode);
 
-    raw_yuv = SDL_calloc(1, MAX_YUV_SURFACE_SIZE(original->w, original->h, 0));
+    max_size = MAX_YUV_SURFACE_SIZE(original->w, original->h, 0);
+    raw_yuv = SDL_calloc(1, max_size);
     ConvertRGBtoYUV(yuv_format, original->pixels, original->pitch, raw_yuv, original->w, original->h, yuv_mode, monochrome, luminance);
     pitch = CalculateYUVPitch(yuv_format, original->w);
 
@@ -455,6 +466,53 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         } else {
             SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         }
+        SDL_free(plane0);
+        SDL_free(plane1);
+        SDL_free(plane2);
+    } else if (planar && (yuv_format == SDL_PIXELFORMAT_P408 || yuv_format == SDL_PIXELFORMAT_P416)) {
+        const int rows = original->h;
+        const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
+        const Uint8 *src_plane1 = src_plane0 + rows * pitch;
+        const Uint8 *src_plane2 = src_plane1 + rows * pitch;
+        const int Ypitch = pitch + 37;
+        const int UVpitch = Ypitch;
+        Uint8 *plane0 = (Uint8 *)SDL_calloc(1, rows * Ypitch);
+        Uint8 *plane1 = (Uint8 *)SDL_calloc(1, rows * UVpitch);
+        Uint8 *plane2 = (Uint8 *)SDL_calloc(1, rows * UVpitch);
+        int row;
+        const Uint8 *src;
+        Uint8 *dst;
+
+        if (!plane0 || !plane1 || !plane0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV planes: %s", SDL_GetError());
+            goto done;
+        }
+
+        src = src_plane0;
+        dst = plane0;
+        for (row = 0; row < rows; ++row) {
+            SDL_memcpy(dst, src, pitch);
+            src += pitch;
+            dst += Ypitch;
+        }
+
+        src = src_plane1;
+        dst = plane1;
+        for (row = 0; row < rows; ++row) {
+            SDL_memcpy(dst, src, pitch);
+            src += pitch;
+            dst += UVpitch;
+        }
+
+        src = src_plane2;
+        dst = plane2;
+        for (row = 0; row < rows; ++row) {
+            SDL_memcpy(dst, src, pitch);
+            src += pitch;
+            dst += UVpitch;
+        }
+
+        SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         SDL_free(plane0);
         SDL_free(plane1);
         SDL_free(plane2);
@@ -586,6 +644,7 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
     const SDL_PixelFormat yuv_formats[] = {
         SDL_PIXELFORMAT_YV12,
         SDL_PIXELFORMAT_IYUV,
+        SDL_PIXELFORMAT_P408,
         SDL_PIXELFORMAT_YUY2,
         SDL_PIXELFORMAT_UYVY,
         SDL_PIXELFORMAT_YVYU,
@@ -676,6 +735,7 @@ static bool run_interactive(SDL_Window *window, const char *renderer_name, SDL_S
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         return false;
     }
+    renderer_name = SDL_GetRendererName(renderer);
 
     SDL_Texture *output[3];
     if (!create_textures(renderer, original, yuv_format, rgb_format, planar, monochrome, luminance, output)) {
@@ -695,7 +755,6 @@ static bool run_interactive(SDL_Window *window, const char *renderer_name, SDL_S
         break;
     case YUV_CONVERSION_BT2020:
         yuv_mode_name = "BT.2020";
-        yuv_format = SDL_PIXELFORMAT_P010;
         break;
     default:
         yuv_mode_name = "UNKNOWN";
@@ -745,7 +804,7 @@ static bool run_interactive(SDL_Window *window, const char *renderer_name, SDL_S
         if (current == 0) {
             SDLTest_DrawString(renderer, 4, 4, titles[current]);
         } else {
-            if (SDL_snprintf(title, sizeof(title), "%s %s %s", titles[current], yuv_format_name, yuv_mode_name) > 0) {
+            if (SDL_snprintf(title, sizeof(title), "%s %s %s %s", titles[current], yuv_format_name, yuv_mode_name, renderer_name) > 0) {
                 SDLTest_DrawString(renderer, 4, 4, title);
             }
         }
@@ -766,7 +825,7 @@ done:
 
 int main(int argc, char **argv)
 {
-    struct
+    static const struct
     {
         bool enable_intrinsics;
         int pattern_size;
@@ -838,9 +897,6 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--bt709") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_BT709);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--bt2020") == 0) {
-                SetYUVConversionMode(YUV_CONVERSION_BT2020);
-                consumed = 1;
             } else if (SDL_strcmp(argv[i], "--auto") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_AUTOMATIC);
                 consumed = 1;
@@ -849,6 +905,9 @@ int main(int argc, char **argv)
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--iyuv") == 0) {
                 yuv_format = SDL_PIXELFORMAT_IYUV;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--p408") == 0) {
+                yuv_format = SDL_PIXELFORMAT_P408;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--yuy2") == 0) {
                 yuv_format = SDL_PIXELFORMAT_YUY2;
@@ -864,6 +923,16 @@ int main(int argc, char **argv)
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--nv21") == 0) {
                 yuv_format = SDL_PIXELFORMAT_NV21;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--p010") == 0) {
+                yuv_format = SDL_PIXELFORMAT_P010;
+                rgb_format = SDL_PIXELFORMAT_XBGR2101010;
+                SetYUVConversionMode(YUV_CONVERSION_BT2020);
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--p416") == 0) {
+                yuv_format = SDL_PIXELFORMAT_P416;
+                rgb_format = SDL_PIXELFORMAT_XBGR2101010;
+                SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--rgb555") == 0) {
                 rgb_format = SDL_PIXELFORMAT_XRGB1555;
@@ -911,8 +980,8 @@ int main(int argc, char **argv)
         }
         if (consumed <= 0) {
             static const char *options[] = {
-                "[--jpeg|--bt601|--bt709|--bt2020|--auto]",
-                "[--yv12|--iyuv|--yuy2|--uyvy|--yvyu|--nv12|--nv21]",
+                "[--jpeg|--bt601|--bt709|--auto]",
+                "[--yv12|--iyuv|--p408|--yuy2|--uyvy|--yvyu|--nv12|--nv21|--p010|--p416]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
                 "[--monochrome] [--luminance N%] [--planar]",
                 "[--automated] [--colorspace-test] [--renderer NAME]",

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -247,9 +247,6 @@ static void EMSCRIPTENCAMERA_DetectDevices(void)
 static bool EMSCRIPTENCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) === 'undefined') {
-            Module['SDL3'] = {};
-        }
         Module['SDL3'].camera = {};
     });
 

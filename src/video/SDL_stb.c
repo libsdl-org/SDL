@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,12 @@
 
 #include "SDL_stb_c.h"
 #include "SDL_surface_c.h"
+#include "SDL_yuv_c.h"
+
+/* STB image conversion */
+#ifndef SDL_DISABLE_STB
+#define SDL_HAVE_STB
+#endif
 
 #ifdef SDL_HAVE_STB
 ////////////////////////////////////////////////////////////////////////////
@@ -109,8 +115,37 @@ bool SDL_ConvertPixels_STB(int width, int height,
                            SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
 #ifdef SDL_HAVE_STB
-    if (src_format == SDL_PIXELFORMAT_MJPG && dst_format == SDL_PIXELFORMAT_NV12) {
-        return SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, dst, dst_pitch);
+    if (src_format == SDL_PIXELFORMAT_MJPG) {
+        if (dst_format == SDL_PIXELFORMAT_NV12) {
+            return SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, dst, dst_pitch);
+        } else if (
+            dst_format == SDL_PIXELFORMAT_YV12 ||
+            dst_format == SDL_PIXELFORMAT_IYUV ||
+            dst_format == SDL_PIXELFORMAT_YUY2 ||
+            dst_format == SDL_PIXELFORMAT_UYVY ||
+            dst_format == SDL_PIXELFORMAT_YVYU ||
+            dst_format == SDL_PIXELFORMAT_NV21 ||
+            dst_format == SDL_PIXELFORMAT_P010
+        ) {
+            size_t temp_size = 0;
+            size_t temp_pitch = 0;
+            if (!SDL_CalculateYUVSize(dst_format, width, height, &temp_size, &temp_pitch)) {
+                return false;
+            }
+            void *temp_pixels = SDL_malloc(temp_size);
+            if (!temp_pixels) {
+                return false;
+            }
+
+            if (!SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, temp_pixels, (int)temp_pitch)) {
+                SDL_free(temp_pixels);
+                return false;
+            }
+
+            bool result = SDL_ConvertPixelsAndColorspace(width, height, SDL_PIXELFORMAT_NV12, src_colorspace, 0 /*props*/, temp_pixels, (int)temp_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+            SDL_free(temp_pixels);
+            return result;
+        }
     }
 
     bool result;
@@ -295,7 +330,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
         }
 
     } else if (format == STBI_grey_alpha) {
-        surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+        surface = SDL_CreateSurfaceUninitialized(w, h, SDL_PIXELFORMAT_RGBA32);
         if (surface) {
             Uint8 *src_ptr = pixels;
             Uint8 *dst = (Uint8 *)surface->pixels;
@@ -327,6 +362,116 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
     return surface;
 }
 #endif // SDL_HAVE_STB
+
+/* FIXME: This is a copypaste from JPEGLIB! Pull that out of the ifdefs */
+/* Define this for quicker (but less perfect) JPEG identification */
+#define FAST_IS_JPEG
+
+/* See if an image is contained in a data source */
+bool SDL_IsJPG(SDL_IOStream *src)
+{
+    Sint64 start;
+    bool is_JPG;
+    bool in_scan;
+    Uint8 magic[4];
+
+    /* This detection code is by Steaphan Greene <stea@cs.binghamton.edu> */
+    /* Blame me, not Sam, if this doesn't work right. */
+    /* And don't forget to report the problem to the the sdl list too! */
+
+    if (!src) {
+        return false;
+    }
+
+    start = SDL_TellIO(src);
+    is_JPG = false;
+    in_scan = false;
+    if (SDL_ReadIO(src, magic, 2) == 2) {
+        if ( (magic[0] == 0xFF) && (magic[1] == 0xD8) ) {
+            is_JPG = true;
+            while (is_JPG) {
+                if (SDL_ReadIO(src, magic, 2) != 2) {
+                    is_JPG = false;
+                } else if ( (magic[0] != 0xFF) && !in_scan ) {
+                    is_JPG = false;
+                } else if ( (magic[0] != 0xFF) || (magic[1] == 0xFF) ) {
+                    /* Extra padding in JPEG (legal) */
+                    /* or this is data and we are scanning */
+                    SDL_SeekIO(src, -1, SDL_IO_SEEK_CUR);
+                } else if (magic[1] == 0xD9) {
+                    /* Got to end of good JPEG */
+                    break;
+                } else if ( in_scan && (magic[1] == 0x00) ) {
+                    /* This is an encoded 0xFF within the data */
+                } else if ( (magic[1] >= 0xD0) && (magic[1] < 0xD9) ) {
+                    /* These have nothing else */
+                } else if (SDL_ReadIO(src, magic+2, 2) != 2) {
+                    is_JPG = false;
+                } else {
+                    /* Yes, it's big-endian */
+                    Sint64 innerStart;
+                    Uint32 size;
+                    Sint64 end;
+                    innerStart = SDL_TellIO(src);
+                    size = (magic[2] << 8) + magic[3];
+                    end = SDL_SeekIO(src, size-2, SDL_IO_SEEK_CUR);
+                    if ( end != innerStart + size - 2 ) {
+                        is_JPG = false;
+                    }
+                    if ( magic[1] == 0xDA ) {
+                        /* Now comes the actual JPEG meat */
+#ifdef  FAST_IS_JPEG
+                        /* Ok, I'm convinced.  It is a JPEG. */
+                        break;
+#else
+                        /* I'm not convinced.  Prove it! */
+                        in_scan = true;
+#endif
+                    }
+                }
+            }
+        }
+    }
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    return is_JPG;
+}
+
+SDL_Surface *SDL_LoadJPG_IO(SDL_IOStream *src, bool closeio)
+{
+    SDL_Surface *surface = NULL;
+
+    CHECK_PARAM(!src) {
+        SDL_InvalidParamError("src");
+        goto done;
+    }
+
+    if (!SDL_IsJPG(src)) {
+        SDL_SetError("File is not a JPEG file");
+        goto done;
+    }
+
+#ifdef SDL_HAVE_STB
+    surface = SDL_LoadSTB_IO(src);
+#else
+    SDL_SetError("SDL not built with STB image support");
+#endif // SDL_HAVE_STB
+
+done:
+    if (src && closeio) {
+        SDL_CloseIO(src);
+    }
+    return surface;
+}
+
+SDL_Surface *SDL_LoadJPG(const char *file)
+{
+    SDL_IOStream *stream = SDL_IOFromFile(file, "rb");
+    if (!stream) {
+        return NULL;
+    }
+
+    return SDL_LoadJPG_IO(stream, true);
+}
 
 bool SDL_IsPNG(SDL_IOStream *src)
 {
@@ -395,7 +540,7 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     Uint8 *trns = NULL;
     bool free_surface = false;
 
-    // Make sure we have somewhere to save
+    // Make sure we have something to save
     CHECK_PARAM(!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         goto done;
@@ -478,6 +623,14 @@ done:
 bool SDL_SavePNG(SDL_Surface *surface, const char *file)
 {
 #ifdef SDL_HAVE_STB
+    // Make sure we have something to save
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        return SDL_InvalidParamError("surface");
+    }
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format) && !surface->palette) {
+        return SDL_SetError("Indexed surfaces must have a palette");
+    }
     SDL_IOStream *stream = SDL_IOFromFile(file, "wb");
     if (!stream) {
         return false;

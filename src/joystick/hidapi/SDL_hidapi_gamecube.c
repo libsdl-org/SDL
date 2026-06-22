@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,6 +37,7 @@
 #endif
 
 #define MAX_CONTROLLERS 4
+#define PC_RUMBLE_REFRESH 16
 
 typedef struct
 {
@@ -50,6 +51,8 @@ typedef struct
     // Without this variable, hid_write starts to lag a TON
     bool rumbleUpdate;
     bool useRumbleBrake;
+    bool rumbleActive;
+    Uint64 pc_rumble_sent;
 } SDL_DriverGameCube_Context;
 
 static void HIDAPI_DriverGameCube_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -202,8 +205,30 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     if (ctx->pc_mode) {
+        // Check to see if this firmware supports rumble
+        bool rumbleAllowed = false;
+        if ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+#ifdef DEBUG_GAMECUBE_PROTOCOL
+            HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
+#endif
+            if (size == 9) {
+                // This is firmware version 0x7 or newer
+                // Rumble is supported if the second USB cable is plugged in
+                rumbleAllowed = true;
+            }
+        }
+#ifdef SDL_PLATFORM_WIN32
+        // We get a separate device for each slot
+        ctx->rumbleAllowed[0] = rumbleAllowed;
         ResetAxisRange(ctx, 0);
         HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
+#else
+        for (i = 0; i < MAX_CONTROLLERS; ++i) {
+            ctx->rumbleAllowed[i] = rumbleAllowed;
+            ResetAxisRange(ctx, i);
+            HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
+        }
+#endif
     } else {
         if (!HIDAPI_DriverGameCube_EnableAdapter(device)) {
             return false;
@@ -267,13 +292,24 @@ static void HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device
 {
 }
 
-static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, const Uint8 *packet, bool invert_c_stick)
+static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 slot, const Uint8 *packet, bool invert_c_stick)
 {
     SDL_Joystick *joystick;
-    const Uint8 i = 0;  // We have a separate context for each connected controller in PC mode, just use the first index
+    Uint8 i;
     Uint8 v;
     Sint16 axis_value;
     Uint64 timestamp = SDL_GetTicksNS();
+
+#ifdef SDL_PLATFORM_WIN32
+    // We get a separate device for each slot
+    i = 0;
+#else
+    i = slot;
+    if (i >= MAX_CONTROLLERS) {
+        // Invalid packet?
+        return;
+    }
+#endif
 
     joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
     if (!joystick) {
@@ -408,6 +444,14 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
     }
 }
 
+static void HIDAPI_DriverGameCube_SendPCRumble(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx)
+{
+    Uint8 rumblepkt[3] = { 0x00, 0x00, 0x00 };
+    rumblepkt[1] = rumblepkt[2] = ctx->rumbleActive ? 0xFF : 0x00;
+    SDL_HIDAPI_SendRumble(device, rumblepkt, sizeof(rumblepkt));
+    ctx->pc_rumble_sent = SDL_GetTicks();
+}
+
 static bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -424,17 +468,22 @@ static bool HIDAPI_DriverGameCube_UpdateDevice(SDL_HIDAPI_Device *device)
                 // This is the older firmware
                 // The first byte is the index of the connected controller
                 // The C stick has an inverted value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, &packet[1], true);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet[0] - 1, &packet[1], true);
             } else if (size == 9) {
                 // This is the newer firmware (version 0x7)
                 // The C stick has the same value range compared to the left stick
-                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, packet, false);
+                HIDAPI_DriverGameCube_HandleJoystickPacket(device, ctx, 0, packet, false);
             } else {
                 // How do we handle this packet?
             }
         } else {
             HIDAPI_DriverGameCube_HandleNintendoPacket(device, ctx, packet, size);
         }
+    }
+
+    // PC_Mode rumble needs constant packets in order to keep rumble going
+    if (ctx->pc_mode && ctx->rumbleActive && SDL_GetTicks() >= (ctx->pc_rumble_sent + PC_RUMBLE_REFRESH)) {
+        HIDAPI_DriverGameCube_SendPCRumble(device, ctx);
     }
 
     // Write rumble packet
@@ -477,33 +526,51 @@ static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     SDL_AssertJoysticksLocked();
 
     if (ctx->pc_mode) {
-        return SDL_Unsupported();
-    }
-
-    for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-        if (joystick->instance_id == ctx->joysticks[i]) {
-            if (ctx->wireless[i]) {
-                return SDL_SetError("Nintendo GameCube WaveBird controllers do not support rumble");
-            }
-            if (!ctx->rumbleAllowed[i]) {
-                return SDL_SetError("Second USB cable for WUP-028 not connected");
-            }
-            if (ctx->useRumbleBrake) {
-                if (low_frequency_rumble == 0 && high_frequency_rumble > 0) {
-                    val = 0; // if only low is 0 we want to do a regular stop
-                } else if (low_frequency_rumble == 0 && high_frequency_rumble == 0) {
-                    val = 2; // if both frequencies are 0 we want to do a hard stop
-                } else {
-                    val = 1; // normal rumble
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (!ctx->rumbleAllowed[i]) {
+                    return SDL_SetError("Rumble is disabled because the adapter is not at least of firmware 0x7");
                 }
-            } else {
-                val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
+                bool shouldrumble = false, coast = false;
+                if (ctx->useRumbleBrake) {
+                    coast = (low_frequency_rumble == 0 && high_frequency_rumble > 0);
+                }
+                shouldrumble = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
+                if (coast) {
+                    ctx->rumbleActive = false;
+                } else if (shouldrumble != ctx->rumbleActive) {
+                    ctx->rumbleActive = shouldrumble;
+                    HIDAPI_DriverGameCube_SendPCRumble(device, ctx);
+                }
+                return true;
             }
-            if (val != ctx->rumble[i + 1]) {
-                ctx->rumble[i + 1] = val;
-                ctx->rumbleUpdate = true;
+        }
+    } else {
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (ctx->wireless[i]) {
+                    return SDL_SetError("Nintendo GameCube WaveBird controllers do not support rumble");
+                }
+                if (!ctx->rumbleAllowed[i]) {
+                    return SDL_SetError("Second USB cable for WUP-028 not connected");
+                }
+                if (ctx->useRumbleBrake) {
+                    if (low_frequency_rumble == 0 && high_frequency_rumble > 0) {
+                        val = 0; // if only low is 0 we want to do a regular stop
+                    } else if (low_frequency_rumble == 0 && high_frequency_rumble == 0) {
+                        val = 2; // if both frequencies are 0 we want to do a hard stop
+                    } else {
+                        val = 1; // normal rumble
+                    }
+                } else {
+                    val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
+                }
+                if (val != ctx->rumble[i + 1]) {
+                    ctx->rumble[i + 1] = val;
+                    ctx->rumbleUpdate = true;
+                }
+                return true;
             }
-            return true;
         }
     }
 
@@ -522,10 +589,17 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
     Uint32 result = 0;
 
     SDL_AssertJoysticksLocked();
-
-    if (!ctx->pc_mode) {
-        Uint8 i;
-
+    Uint8 i;
+    if (ctx->pc_mode) {
+        for (i = 0; i < MAX_CONTROLLERS; i += 1) {
+            if (joystick->instance_id == ctx->joysticks[i]) {
+                if (ctx->rumbleAllowed[i]) {
+                    result |= SDL_JOYSTICK_CAP_RUMBLE;
+                    break;
+                }
+            }
+        }
+    } else {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
             if (joystick->instance_id == ctx->joysticks[i]) {
                 if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
@@ -562,6 +636,11 @@ static void HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_J
     if (ctx->rumbleUpdate) {
         SDL_HIDAPI_SendRumble(device, ctx->rumble, sizeof(ctx->rumble));
         ctx->rumbleUpdate = false;
+    }
+
+    if (ctx->pc_mode && ctx->rumbleActive) {
+        ctx->rumbleActive = false;
+        HIDAPI_DriverGameCube_SendPCRumble(device, ctx);
     }
 }
 

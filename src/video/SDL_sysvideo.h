@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,7 +191,8 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04,
     VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY = 0x08,
     VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES = 0x10,
-    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x20
+    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x20,
+    VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER = 0x40
 } DeviceCaps;
 
 // Fullscreen operations
@@ -330,7 +331,7 @@ struct SDL_VideoDevice
     bool (*GL_GetSwapInterval)(SDL_VideoDevice *_this, int *interval);
     bool (*GL_SwapWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*GL_DestroyContext)(SDL_VideoDevice *_this, SDL_GLContext context);
-    void (*GL_DefaultProfileConfig)(SDL_VideoDevice *_this, int *mask, int *major, int *minor);
+    void (*GL_SetDefaultProfileConfig)(SDL_VideoDevice *_this);
 
     /* * * */
     /*
@@ -375,7 +376,7 @@ struct SDL_VideoDevice
     void (*SetTextInputProperties)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 
     // Clipboard
-    const char **(*GetTextMimeTypes)(SDL_VideoDevice *_this, size_t *num_mime_types);
+    const char *const *(*GetTextMimeTypes)(SDL_VideoDevice *_this, size_t *num_mime_types);
     bool (*SetClipboardData)(SDL_VideoDevice *_this);
     void *(*GetClipboardData)(SDL_VideoDevice *_this, const char *mime_type, size_t *size);
     bool (*HasClipboardData)(SDL_VideoDevice *_this, const char *mime_type);
@@ -404,7 +405,6 @@ struct SDL_VideoDevice
     // Data common to all drivers
     SDL_ThreadID thread;
     bool checked_texture_framebuffer;
-    bool is_dummy;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;
@@ -546,6 +546,7 @@ extern VideoBootStrap Emscripten_bootstrap;
 extern VideoBootStrap OFFSCREEN_bootstrap;
 extern VideoBootStrap QNX_bootstrap;
 extern VideoBootStrap OPENVR_bootstrap;
+extern VideoBootStrap DOSVESA_bootstrap;
 
 extern bool SDL_UninitializedVideo(void);
 // Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work

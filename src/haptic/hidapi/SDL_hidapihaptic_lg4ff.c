@@ -694,9 +694,9 @@ static int lg4ff_init_slots(struct lg4ff_device *device)
         return -1;
     }
 
-    SDL_memset(&device->states, 0, sizeof(device->states));
-    SDL_memset(&device->slots, 0, sizeof(device->slots));
-    SDL_memset(&parameters, 0, sizeof(parameters));
+    SDL_zero(device->states);
+    SDL_zero(device->slots);
+    SDL_zero(parameters);
 
     device->slots[0].effect_type = SDL_HAPTIC_CONSTANT;
     device->slots[1].effect_type = SDL_HAPTIC_SPRING;
@@ -737,7 +737,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
 
     // XXX how to detect stacked up effects here?
 
-    SDL_memset(parameters, 0, sizeof(parameters));
+    SDL_zeroa(parameters);
 
     gain = (Uint16)((Uint32)device->gain * device->app_gain / 0xffff);
 
@@ -836,7 +836,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_JoystickSupported(SDL_Joystick *joystic
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return false;
     }
-    for (int i = 0;i < sizeof(supported_device_ids) / sizeof(Uint32);i++) {
+    for (int i = 0;i < SDL_arraysize(supported_device_ids);i++) {
         if (supported_device_ids[i] == product_id) {
             return true;
         }
@@ -895,7 +895,7 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
         SDL_OutOfMemory();
         return NULL;
     }
-    SDL_memset(ctx, 0, sizeof(lg4ff_device));
+    SDL_zerop(ctx);
 
     ctx->hid_handle = joystick;
     if (lg4ff_init_slots(ctx) != 0) {
@@ -1200,7 +1200,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *
         }
         expand_a = expand_a >> 1;
 
-        SDL_memset(cmd, 0x00, 7);
+        SDL_zeroa(cmd);
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
         cmd[2] = (Uint8)(expand_a / 0xaaaa);
@@ -1215,7 +1215,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *
         }
 
         // enable
-        SDL_memset(cmd, 0x00, 7);
+        SDL_zeroa(cmd);
         cmd[0] = 0x14;
 
         ret = SDL_SendJoystickEffect(ctx->hid_handle, cmd, sizeof(cmd));

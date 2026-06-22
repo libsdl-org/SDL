@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,6 +191,66 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
     return device_index + 1;
 }
 
+static void PS2_WaitPadReady(int port, int slot)
+{
+    int state = padGetState(port, slot);
+    while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) {
+        SDL_Delay(1);
+        state = padGetState(port, slot);
+    }
+}
+
+static void PS2_InitializePad(int port, int slot)
+{
+    int modes;
+    int i;
+    char actAlign[6];
+
+    PS2_WaitPadReady(port, slot);
+
+    // How many different modes can this device operate in?
+    modes = padInfoMode(port, slot, PAD_MODETABLE, -1);
+
+    // Verify that the controller has a DUAL SHOCK mode
+    for (i = 0; i < modes; i++) {
+        if (padInfoMode(port, slot, PAD_MODETABLE, i) == PAD_TYPE_DUALSHOCK) {
+            break;
+        }
+    }
+    if (i >= modes) {
+        // This is no Dual Shock controller
+        return;
+    }
+    
+    // If ExId != 0x0 => This controller has actuator engines
+    // This check should always pass if the Dual Shock test above passed
+    if (!padInfoMode(port, slot, PAD_MODECUREXID, 0)) {
+        // This is no Dual Shock controller??
+        return;
+    }
+
+    // When using MMODE_LOCK, user cant change mode with Select button
+    padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+
+    PS2_WaitPadReady(port, slot);
+    padEnterPressMode(port, slot);
+
+    PS2_WaitPadReady(port, slot);
+    if (padInfoAct(port, slot, -1, 0)) {
+        actAlign[0] = 0;   // Enable small engine
+        actAlign[1] = 1;   // Enable big engine
+        actAlign[2] = 0xff;
+        actAlign[3] = 0xff;
+        actAlign[4] = 0xff;
+        actAlign[5] = 0xff;
+
+        PS2_WaitPadReady(port, slot);
+        padSetActAlign(port, slot, actAlign);
+    }
+
+    PS2_WaitPadReady(port, slot);
+}
+
 /*  Function to open a joystick for use.
     The joystick to open is specified by the device index.
     This should fill the nbuttons and naxes fields of the joystick structure.
@@ -198,8 +258,7 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
 */
 static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    int index = joystick->instance_id;
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = &joyInfo[device_index];
 
     if (!info->opened) {
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
@@ -208,6 +267,8 @@ static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
             return false;
         }
     }
+    PS2_InitializePad(info->port, info->slot);
+
     joystick->nbuttons = PS2_BUTTONS;
     joystick->naxes = PS2_TOTAL_AXIS;
     joystick->nhats = 0;
@@ -222,7 +283,7 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     char actAlign[6];
     int res;
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
 
     if (!rumble_status(index)) {
@@ -277,7 +338,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     uint16_t mask, previous, current;
     struct padButtonStatus buttons;
     uint8_t all_axis[PS2_TOTAL_AXIS];
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
     Uint64 timestamp = SDL_GetTicksNS();
@@ -322,7 +383,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void PS2_JoystickClose(SDL_Joystick *joystick)
 {
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     padPortClose(info->port, info->slot);
     info->opened = 0;

@@ -173,7 +173,7 @@ If you used SDL_QueueAudio instead of a callback in SDL2, this is also straightf
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
 
-The `SDL_AUDIO_ALLOW_*` symbols have been removed; now one may request the format they desire from the audio device, but ultimately SDL_AudioStream will manage the difference. One can use SDL_GetAudioDeviceFormat() to see what the final format is, if any "allowed" changes should be accomodated by the app.
+The `SDL_AUDIO_ALLOW_*` symbols have been removed; now one may request the format they desire from the audio device, but ultimately SDL_AudioStream will manage the difference. One can use SDL_GetAudioDeviceFormat() to see what the final format is, if any "allowed" changes should be accommodated by the app.
 
 SDL_AudioDeviceID now represents both an open audio device's handle (a "logical" device) and the instance ID that the hardware owns as long as it exists on the system (a "physical" device). The separation between device instances and device indexes is gone, and logical and physical devices are almost entirely interchangeable at the API level.
 
@@ -273,7 +273,7 @@ If you need to convert U16 audio data to a still-supported format at runtime, th
     }
 ```
 
-All remaining `AUDIO_*` symbols have been renamed to `SDL_AUDIO_*` for API consistency, but othewise are identical in value and usage.
+All remaining `AUDIO_*` symbols have been renamed to `SDL_AUDIO_*` for API consistency, but otherwise are identical in value and usage.
 
 In SDL2, SDL_AudioStream would convert/resample audio data during input (via SDL_AudioStreamPut). In SDL3, it does this work when requesting audio (via SDL_GetAudioStreamData, which would have been SDL_AudioStreamGet in SDL2). The way you use an AudioStream is roughly the same, just be aware that the workload moved to a different phase.
 
@@ -1447,7 +1447,7 @@ The following functions have been removed:
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
-* SDL_RenderTargetSupported() - render targets are always supported
+* SDL_RenderTargetSupported() - render targets are usually supported; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following enums have been renamed:
@@ -1461,7 +1461,7 @@ The following symbols have been removed:
 * SDL_RENDERER_ACCELERATED - all renderers except `SDL_SOFTWARE_RENDERER` are accelerated
 * SDL_RENDERER_PRESENTVSYNC - replaced with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER during renderer creation and SDL_PROP_RENDERER_VSYNC_NUMBER after renderer creation
 * SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
-* SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
+* SDL_RENDERER_TARGETTEXTURE - most renderers support target texture functionality; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_ScaleModeBest - use SDL_SCALEMODE_LINEAR instead
 
 ## SDL_rwops.h

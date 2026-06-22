@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,11 @@
 #include <SLES/OpenSLES_Android.h>
 #include <android/log.h>
 
+// OpenSL ES is deprecated, but we still support it for now.
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif // HAVE_GCC_DIAGNOSTIC_PRAGMA
 
 #define NUM_BUFFERS 2 // -- Don't lower this!
 
@@ -804,5 +809,9 @@ void OPENSLES_PauseDevices(void)
         }
     }
 }
+
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
+#endif // HAVE_GCC_DIAGNOSTIC_PRAGMA
 
 #endif // SDL_AUDIO_DRIVER_OPENSLES

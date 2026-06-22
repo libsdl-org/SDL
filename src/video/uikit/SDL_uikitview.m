@@ -1,22 +1,22 @@
 /*
- Simple DirectMedia Layer
- Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Simple DirectMedia Layer
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
- This software is provided 'as-is', without any express or implied
- warranty.  In no event will the authors be held liable for any damages
- arising from the use of this software.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
- Permission is granted to anyone to use this software for any purpose,
- including commercial applications, and to alter it and redistribute it
- freely, subject to the following restrictions:
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
- 1. The origin of this software must not be misrepresented; you must not
-    claim that you wrote the original software. If you use this software
-    in a product, an acknowledgment in the product documentation would be
-    appreciated but is not required.
- 2. Altered source versions must be plainly marked as such, and must not be
-    misrepresented as being the original software.
- 3. This notice may not be removed or altered from any source distribution.
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
 
@@ -484,17 +484,28 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     CGFloat scale = sender.scale;
     UIGestureRecognizerState state = sender.state;
+    CGPoint point1 = [sender locationOfTouch:0 inView:self];
+    CGPoint point2 = [sender locationOfTouch:1 inView:self];
+    CGFloat focus_x = (point1.x + point2.x)/2;
+    CGFloat focus_y = (point1.y + point2.y)/2;
+    CGFloat span_x = SDL_fabs(point1.x - point2.x);
+    CGFloat span_y = SDL_fabs(point1.y - point2.y);
+    CGRect bounds = self.bounds;
+    focus_x /= bounds.size.width;
+    focus_y /= bounds.size.height;
+    span_x /= bounds.size.width;
+    span_y /= bounds.size.height;
 
     switch (state) {
 
         case UIGestureRecognizerStateBegan:
             pinch_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         case UIGestureRecognizerStateChanged:
             if (pinch_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
+                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale, span_x, span_y, focus_x, focus_y);
             }
             pinch_scale = scale;
             break;
@@ -502,7 +513,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         default:

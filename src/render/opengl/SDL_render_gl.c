@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,11 @@
 
 #define RENDERER_CONTEXT_MAJOR 2
 #define RENDERER_CONTEXT_MINOR 1
+
+// This is always the same number between the various EXT/ARB/GLES extensions.
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
 
 // OpenGL renderer implementation
 
@@ -430,6 +435,7 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_P408:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         *internalFormat = GL_LUMINANCE;
@@ -588,6 +594,10 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
             // Need to add size for the U and V planes
             size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
         }
+        if (texture->format == SDL_PIXELFORMAT_P408) {
+            // Need to add size for the U and V planes
+            size += 2 * texture->h * data->pitch;
+        }
         if (texture->format == SDL_PIXELFORMAT_NV12 ||
             texture->format == SDL_PIXELFORMAT_NV21) {
             // Need to add size for the U/V plane
@@ -719,6 +729,35 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
     }
 
+    if (texture->format == SDL_PIXELFORMAT_P408) {
+        data->yuv = true;
+
+        data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER, 0);
+        if (data->utexture) {
+            data->utexture_external = true;
+        } else {
+            renderdata->glGenTextures(1, &data->utexture);
+        }
+        data->vtexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER, 0);
+        if (data->vtexture) {
+            data->vtexture_external = true;
+        } else {
+            renderdata->glGenTextures(1, &data->vtexture);
+        }
+
+        renderdata->glBindTexture(textype, data->utexture);
+        renderdata->glTexImage2D(textype, 0, internalFormat, texture_w, texture_h, 0, format, type, NULL);
+        SetTextureScaleMode(renderdata, textype, texture->format, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_U_NUMBER, data->utexture);
+
+        renderdata->glBindTexture(textype, data->vtexture);
+        renderdata->glTexImage2D(textype, 0, internalFormat, texture_w, texture_h, 0, format, type, NULL);
+        SetTextureScaleMode(renderdata, textype, texture->format, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
+    }
+
     if (texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21) {
         data->nv12 = true;
@@ -802,29 +841,43 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 pixels);
 #ifdef SDL_HAVE_YUV
     if (data->yuv) {
-        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
-
-        // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
-        if (texture->format == SDL_PIXELFORMAT_YV12) {
-            renderdata->glBindTexture(textype, data->vtexture);
-        } else {
+        if (texture->format == SDL_PIXELFORMAT_P408) {
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
             renderdata->glBindTexture(textype, data->utexture);
-        }
-        renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
-                                    (rect->w + 1) / 2, (rect->h + 1) / 2,
-                                    data->format, data->formattype, pixels);
+            renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w, rect->h,
+                                        data->format, data->formattype, pixels);
 
-        // Skip to the correct offset into the next texture
-        pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
-        if (texture->format == SDL_PIXELFORMAT_YV12) {
-            renderdata->glBindTexture(textype, data->utexture);
-        } else {
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
             renderdata->glBindTexture(textype, data->vtexture);
+            renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w, rect->h,
+                                        data->format, data->formattype, pixels);
+        } else {
+            renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
+
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
+            if (texture->format == SDL_PIXELFORMAT_YV12) {
+                renderdata->glBindTexture(textype, data->vtexture);
+            } else {
+                renderdata->glBindTexture(textype, data->utexture);
+            }
+            renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
+                                        (rect->w + 1) / 2, (rect->h + 1) / 2,
+                                        data->format, data->formattype, pixels);
+
+            // Skip to the correct offset into the next texture
+            pixels = (const void *)((const Uint8 *)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
+            if (texture->format == SDL_PIXELFORMAT_YV12) {
+                renderdata->glBindTexture(textype, data->utexture);
+            } else {
+                renderdata->glBindTexture(textype, data->vtexture);
+            }
+            renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
+                                        (rect->w + 1) / 2, (rect->h + 1) / 2,
+                                        data->format, data->formattype, pixels);
         }
-        renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
-                                    (rect->w + 1) / 2, (rect->h + 1) / 2,
-                                    data->format, data->formattype, pixels);
     }
 
     if (data->nv12) {
@@ -863,17 +916,29 @@ static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                 rect->h, data->format, data->formattype,
                                 Yplane);
 
-    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
-    renderdata->glBindTexture(textype, data->utexture);
-    renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
-                                (rect->w + 1) / 2, (rect->h + 1) / 2,
-                                data->format, data->formattype, Uplane);
+    if (texture->format == SDL_PIXELFORMAT_P408) {
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
+        renderdata->glBindTexture(textype, data->utexture);
+        renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w, rect->h,
+                                    data->format, data->formattype, Uplane);
 
-    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Vpitch);
-    renderdata->glBindTexture(textype, data->vtexture);
-    renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
-                                (rect->w + 1) / 2, (rect->h + 1) / 2,
-                                data->format, data->formattype, Vplane);
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Vpitch);
+        renderdata->glBindTexture(textype, data->vtexture);
+        renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w, rect->h,
+                                    data->format, data->formattype, Vplane);
+    } else {
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
+        renderdata->glBindTexture(textype, data->utexture);
+        renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
+                                    (rect->w + 1) / 2, (rect->h + 1) / 2,
+                                    data->format, data->formattype, Uplane);
+
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Vpitch);
+        renderdata->glBindTexture(textype, data->vtexture);
+        renderdata->glTexSubImage2D(textype, 0, rect->x / 2, rect->y / 2,
+                                    (rect->w + 1) / 2, (rect->h + 1) / 2,
+                                    data->format, data->formattype, Vplane);
+    }
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
@@ -1625,7 +1690,7 @@ static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *
         return NULL;
     }
 
-    surface = SDL_CreateSurface(rect->w, rect->h, format);
+    surface = SDL_CreateSurfaceUninitialized(rect->w, rect->h, format);
     if (!surface) {
         return NULL;
     }
@@ -1838,6 +1903,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     renderer->name = GL_RenderDriver.name;
 
+    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
         goto error;
@@ -1971,6 +2037,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         data->num_texture_units >= 3) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL YUV not supported");
     }
@@ -2006,6 +2073,10 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     } else {
         SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
         goto error;
+    }
+
+    if ((real_major >= 3) || SDL_GL_ExtensionSupported("GL_EXT_framebuffer_sRGB") || SDL_GL_ExtensionSupported("GL_ARB_framebuffer_sRGB")) {
+        data->glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
     // Set up parameters for rendering

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 
 // return a string that we can SDL_free(). It will be cached at the higher level.
 extern char *SDL_SYS_GetBasePath(void);
+extern char *SDL_SYS_GetExeName(void);
 extern char *SDL_SYS_GetPrefPath(const char *org, const char *app);
 extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
 extern char *SDL_SYS_GetCurrentDirectory(void);

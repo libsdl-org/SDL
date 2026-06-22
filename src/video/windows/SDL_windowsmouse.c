@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -148,9 +148,23 @@ static SDL_Cursor *WIN_CreateAnimatedCursorAndData(SDL_CursorFrameInfo *frames, 
     data->hot_y = hot_y;
     data->num_frames = frame_count;
     for (int i = 0; i < frame_count; ++i) {
-        data->frames[i].surface = frames[i].surface;
+        SDL_Surface *surface = frames[i].surface;
+        if (surface->flags & SDL_SURFACE_PREALLOCATED) {
+            surface = SDL_DuplicateSurface(surface);
+            if (!surface) {
+                while (i > 0) {
+                    --i;
+                    SDL_DestroySurface(data->frames[i].surface);
+                }
+                SDL_free(data);
+                SDL_free(cursor);
+                return NULL;
+            }
+        } else {
+            ++surface->refcount;
+        }
+        data->frames[i].surface = surface;
         data->frames[i].duration = frames[i].duration;
-        ++frames[i].surface->refcount;
     }
     cursor->internal = data;
     return cursor;
@@ -218,7 +232,9 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
 {
     Uint8 *dst;
-    const int pitch = ((surface->w + 15) & ~15) / 8;
+    const int w = (surface->w + 7) / 8;
+    const int pad = (((w) % 4) ? (4 - ((w) % 4)) : 0);
+    const int pitch = (w + pad);
     const size_t size = pitch * surface->h;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
@@ -454,7 +470,7 @@ static SDL_Cursor *WIN_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int fra
 static SDL_Cursor *WIN_CreateBlankCursor(void)
 {
     SDL_Cursor *cursor = NULL;
-    SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    SDL_Surface *surface = SDL_CreateSurfaceZeroed(32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
         cursor = WIN_CreateCursor(surface, 0, 0);
         SDL_DestroySurface(surface);
@@ -474,61 +490,61 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         name = IDC_ARROW;
         break;
     case SDL_SYSTEM_CURSOR_TEXT:
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
         name = IDC_IBEAM;
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
         name = IDC_WAIT;
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
+    case SDL_SYSTEM_CURSOR_CELL:
         name = IDC_CROSS;
         break;
     case SDL_SYSTEM_CURSOR_PROGRESS:
         name = IDC_APPSTARTING;
         break;
     case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
-        name = IDC_SIZENWSE;
-        break;
-    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
-        name = IDC_SIZENESW;
-        break;
-    case SDL_SYSTEM_CURSOR_EW_RESIZE:
-        name = IDC_SIZEWE;
-        break;
-    case SDL_SYSTEM_CURSOR_NS_RESIZE:
-        name = IDC_SIZENS;
-        break;
-    case SDL_SYSTEM_CURSOR_MOVE:
-        name = IDC_SIZEALL;
-        break;
-    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
-        name = IDC_NO;
-        break;
-    case SDL_SYSTEM_CURSOR_POINTER:
-        name = IDC_HAND;
-        break;
     case SDL_SYSTEM_CURSOR_NW_RESIZE:
-        name = IDC_SIZENWSE;
-        break;
-    case SDL_SYSTEM_CURSOR_N_RESIZE:
-        name = IDC_SIZENS;
-        break;
-    case SDL_SYSTEM_CURSOR_NE_RESIZE:
-        name = IDC_SIZENESW;
-        break;
-    case SDL_SYSTEM_CURSOR_E_RESIZE:
-        name = IDC_SIZEWE;
-        break;
     case SDL_SYSTEM_CURSOR_SE_RESIZE:
         name = IDC_SIZENWSE;
         break;
-    case SDL_SYSTEM_CURSOR_S_RESIZE:
-        name = IDC_SIZENS;
-        break;
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
     case SDL_SYSTEM_CURSOR_SW_RESIZE:
         name = IDC_SIZENESW;
         break;
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
     case SDL_SYSTEM_CURSOR_W_RESIZE:
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
         name = IDC_SIZEWE;
+        break;
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        name = IDC_SIZENS;
+        break;
+    case SDL_SYSTEM_CURSOR_MOVE:
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        name = IDC_SIZEALL;
+        break;
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        name = IDC_NO;
+        break;
+    case SDL_SYSTEM_CURSOR_POINTER:
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+    case SDL_SYSTEM_CURSOR_ALIAS:
+    case SDL_SYSTEM_CURSOR_COPY:
+    case SDL_SYSTEM_CURSOR_GRAB:
+    case SDL_SYSTEM_CURSOR_GRABBING:
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        name = IDC_HAND;
+        break;
+    case SDL_SYSTEM_CURSOR_HELP:
+        name = IDC_HELP;
         break;
     }
     return WIN_CreateCursorAndData(LoadCursor(NULL, name));

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
     c128.m128_u32[0] = color; \
     c128.m128_u32[1] = color; \
     c128.m128_u32[2] = color; \
-    c128.m128_u32[3] = color;
+    c128.m128_u32[3] = color
 #else
 #define SSE_BEGIN \
     __m128 c128; \
@@ -40,7 +40,7 @@
     cccc[1] = color; \
     cccc[2] = color; \
     cccc[3] = color; \
-    c128 = *(__m128 *)cccc;
+    c128 = *(__m128 *)cccc
 #endif
 
 #define SSE_WORK \
@@ -131,7 +131,7 @@ DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
 /* *INDENT-ON* */ // clang-format on
-#endif            // __SSE__
+#endif            // SDL_SSE_INTRINSICS
 
 #ifdef SDL_LSX_INTRINSICS
 /* *INDENT-OFF* */ // clang-format off
@@ -194,7 +194,7 @@ static void SDL_TARGETING("lsx") SDL_FillSurfaceRect##bpp##LSX(Uint8 *pixels, in
 DEFINE_LSX_FILLRECT(4, Uint32)
 
 /* *INDENT-ON* */ // clang-format on
-#endif /* __LSX__ */
+#endif // SDL_LSX_INTRINSICS
 
 static void SDL_FillSurfaceRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {

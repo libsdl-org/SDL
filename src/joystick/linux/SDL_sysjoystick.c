@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -186,10 +186,10 @@ typedef struct SDL_sensorlist_item
 } SDL_sensorlist_item;
 
 static bool SDL_classic_joysticks = false;
-static SDL_joylist_item *SDL_joylist SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_joylist_item *SDL_joylist_tail SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static int numjoysticks SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static SDL_sensorlist_item *SDL_sensorlist SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_joylist_item *SDL_joylist SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_joylist_item *SDL_joylist_tail SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static int numjoysticks SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_sensorlist_item *SDL_sensorlist SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static int inotify_fd = -1;
 
 static Uint64 last_joy_detect_time;
@@ -1539,7 +1539,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
         return NULL;
     }
 
-    SDL_memset(uniq_item, 0, sizeof(uniq_item));
+    SDL_zeroa(uniq_item);
     fd_item = open(item->path, O_RDONLY | O_CLOEXEC, 0);
     if (fd_item < 0) {
         return NULL;
@@ -1561,7 +1561,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
             continue;
         }
 
-        SDL_memset(uniq_sensor, 0, sizeof(uniq_sensor));
+        SDL_zeroa(uniq_sensor);
         fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
         if (fd_sensor < 0) {
             continue;
@@ -2086,7 +2086,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                     if (code == MSC_TIMESTAMP) {
                         Sint32 tick = event->value;
                         Sint32 delta;
-                        if (joystick->hwdata->last_tick < tick) {
+                        if (joystick->hwdata->last_tick <= tick) {
                             delta = (tick - joystick->hwdata->last_tick);
                         } else {
                             delta = (SDL_MAX_SINT32 - joystick->hwdata->last_tick + tick + 1);
