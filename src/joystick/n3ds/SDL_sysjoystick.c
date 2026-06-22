@@ -28,7 +28,8 @@
 
 #include "../SDL_sysjoystick.h"
 
-#define NB_BUTTONS 23
+#define NB_BUTTONS 23   // physical buttons on the device (although we treat four of these, the dpad, as a hat switch).
+#define N3DS_HAT_MASK 0xF0   // 0xF0==d-pad bits, which we handle elsewhere, so mask them out here.
 
 /*
   N3DS sticks values are roughly within +/-160
@@ -54,8 +55,9 @@ static inline int Correct_Axis_Y(int Y) {
     return Correct_Axis_X(-Y);
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick);
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick);
+static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
+static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_down_state, u32 current_down_state, u32 previous_up_state, u32 current_up_state);
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
@@ -89,9 +91,9 @@ static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
 
 static bool N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    joystick->nbuttons = NB_BUTTONS;
+    joystick->nbuttons = NB_BUTTONS - 4;  // -4 for the dpad (which we treat as a hat).
     joystick->naxes = 4;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // treat the dpad as a hat.
 
     return true;
 }
@@ -103,45 +105,84 @@ static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 
 static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
-    Uint64 timestamp = SDL_GetTicksNS();
+    static u32 previous_down_state = 0;
+    static u32 previous_up_state = 0;
+    const Uint64 timestamp = SDL_GetTicksNS();
+    const u32 current_down_state = hidKeysDown();
+    const u32 current_up_state = hidKeysUp();
 
-    UpdateN3DSPressedButtons(timestamp, joystick);
-    UpdateN3DSReleasedButtons(timestamp, joystick);
+    UpdateN3DSPressedButtons(timestamp, joystick, previous_down_state, current_down_state);
+    UpdateN3DSReleasedButtons(timestamp, joystick, previous_up_state, current_up_state);
+    UpdateN3DSHat(timestamp, joystick, previous_down_state, current_down_state, previous_up_state, current_up_state);
     UpdateN3DSCircle(timestamp, joystick);
     UpdateN3DSCStick(timestamp, joystick);
+
+    previous_down_state = current_down_state;
+    previous_up_state = current_up_state;
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state)
 {
-    static u32 previous_state = 0;
-    u32 updated_down;
-    u32 current_state = hidKeysDown();
-    updated_down = previous_state ^ current_state;
+    const u32 updated_down = (previous_state ^ current_state) & ~N3DS_HAT_MASK;
     if (updated_down) {
-        for (Uint8 i = 0; i < joystick->nbuttons; i++) {
-            if (current_state & BIT(i) & updated_down) {
-                SDL_SendJoystickButton(timestamp, joystick, i, true);
+        Uint8 buttonidx = 0;
+        Uint8 i = 0;
+        while (i < joystick->nbuttons) {
+            if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
+                if (current_state & BIT(buttonidx) & updated_down) {
+                    SDL_SendJoystickButton(timestamp, joystick, i, true);
+                }
+                i++;
             }
+            buttonidx++;
         }
     }
-    previous_state = current_state;
 }
 
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick)
+static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state)
 {
-    static u32 previous_state = 0;
-    u32 updated_up;
-    u32 current_state = hidKeysUp();
-    updated_up = previous_state ^ current_state;
+    const u32 updated_up = (previous_state ^ current_state) & ~N3DS_HAT_MASK;
     if (updated_up) {
-        for (Uint8 i = 0; i < joystick->nbuttons; i++) {
-            if (current_state & BIT(i) & updated_up) {
-                SDL_SendJoystickButton(timestamp, joystick, i, false);
-            }
+        Uint8 buttonidx = 0;
+        Uint8 i = 0;
+        while (i < joystick->nbuttons) {
+            if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
+                if (current_state & BIT(buttonidx) & updated_up) {
+                    SDL_SendJoystickButton(timestamp, joystick, i, false);
+                }
+                i++;
+             }
+            buttonidx++;
         }
     }
-    previous_state = current_state;
 }
+
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_down_state, u32 current_down_state, u32 previous_up_state, u32 current_up_state)
+{
+    // The 3DS dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+    // (but they should _really_ be using the gamepad API.)
+    const u32 updated_hat = (((previous_up_state ^ current_up_state) | (previous_down_state ^ current_down_state)) & N3DS_HAT_MASK);  // did bits 4 through 7 change?
+    if (updated_hat) {
+        Uint8 hat = SDL_HAT_CENTERED;
+
+        #define HATSTATE(n3dsbit, sdlenum) if (current_down_state & BIT(n3dsbit)) { hat |= SDL_HAT_##sdlenum; }
+        HATSTATE(4, RIGHT);
+        HATSTATE(5, LEFT);
+        HATSTATE(6, UP);
+        HATSTATE(7, DOWN);
+        #undef HATSTATE
+
+        // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+        if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+            hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+        }
+        if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+            hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+}
+
 
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
 {
@@ -194,19 +235,19 @@ static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping 
     *out = (SDL_GamepadMapping){
         .a = { EMappingKind_Button, 0 },
         .b = { EMappingKind_Button, 1 },
-        .x = { EMappingKind_Button, 10 },
-        .y = { EMappingKind_Button, 11 },
+        .x = { EMappingKind_Button, 6 },
+        .y = { EMappingKind_Button, 7 },
         .back = { EMappingKind_Button, 2 },
         .guide = { EMappingKind_None, 255 },
         .start = { EMappingKind_Button, 3 },
         .leftstick = { EMappingKind_None, 255 },
         .rightstick = { EMappingKind_None, 255 },
-        .leftshoulder = { EMappingKind_Button, 9 },
-        .rightshoulder = { EMappingKind_Button, 8 },
-        .dpup = { EMappingKind_Button, 6 },
-        .dpdown = { EMappingKind_Button, 7 },
-        .dpleft = { EMappingKind_Button, 5 },
-        .dpright = { EMappingKind_Button, 4 },
+        .leftshoulder = { EMappingKind_Button, 5 },
+        .rightshoulder = { EMappingKind_Button, 4 },
+        .dpup = { EMappingKind_Hat, SDL_HAT_UP },
+        .dpdown = { EMappingKind_Hat, SDL_HAT_DOWN },
+        .dpleft = { EMappingKind_Hat, SDL_HAT_LEFT },
+        .dpright = { EMappingKind_Hat, SDL_HAT_RIGHT },
         .misc1 = { EMappingKind_None, 255 },
         .right_paddle1 = { EMappingKind_None, 255 },
         .left_paddle1 = { EMappingKind_None, 255 },
@@ -216,8 +257,8 @@ static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping 
         .lefty = { EMappingKind_Axis, 1 },
         .rightx = { EMappingKind_Axis, 2 },
         .righty = { EMappingKind_Axis, 3 },
-        .lefttrigger = { EMappingKind_Button, 14 },
-        .righttrigger = { EMappingKind_Button, 15 },
+        .lefttrigger = { EMappingKind_Button, 10 },
+        .righttrigger = { EMappingKind_Button, 11 },
     };
     return true;
 }
