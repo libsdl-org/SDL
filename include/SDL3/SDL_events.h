@@ -838,7 +838,8 @@ typedef struct SDL_TouchFingerEvent
 /**
  * Pinch event structure (event.pinch.*)
  *
- * span_(x/y) and focus_(x/y) are only available for pinch gestures on mobile devices
+ * span_(x/y) and focus_(x/y) are only available for pinch gestures on mobile
+ * devices
  */
 typedef struct SDL_PinchFingerEvent
 {
