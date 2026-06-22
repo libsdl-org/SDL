@@ -32,6 +32,7 @@
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 #define PSMOVE_BUFFER_SIZE       9
 #define PSMOVE_EXT_DATA_BUF_SIZE 5
+//#define DEBUG_PSMOVE_PROTOCOL
 
 typedef struct
 {
@@ -43,7 +44,7 @@ typedef struct
     Uint8 _zero2;                           /* must be zero */
     Uint8 rumble;                           /* rumble value, 0x00..0xff */
     Uint8 _padding[PSMOVE_BUFFER_SIZE - 7]; /* must be zero */
-} PSMove_Data_LEDs;
+} PSMove_Data_Effects;
 
 typedef struct
 {
@@ -117,12 +118,11 @@ typedef struct
     SDL_Joystick *joystick;
 
     PSMove_Model_Type model;
-    PSMove_Data_LEDs leds;
+    PSMove_Data_Effects effects;
     PSMove_Data_Input input;
     PSMove_Data_Input last_state;
 
     bool report_sensors;
-    bool effects_updated;
 } SDL_DriverPSMove_Context;
 
 static void HIDAPI_DriverPSMove_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -156,7 +156,7 @@ static bool HIDAPI_DriverPSMove_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
     device->context = ctx;
 
-    ctx->leds.type = 0x06; // PSMove_Req_SetLEDs
+    ctx->effects.type = 0x06; // PSMove_Req_SetLEDs
     ctx->model = (device->product_id == USB_PRODUCT_SONY_PSMOVE) ? Model_ZCM1 : Model_ZCM2;
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -183,7 +183,7 @@ static bool HIDAPI_DriverPSMove_UpdateEffects(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPSMove_Context *ctx = (SDL_DriverPSMove_Context *)device->context;
 
-    return HIDAPI_DriverPSMove_SendJoystickEffect(device, ctx->joystick, &(ctx->leds), sizeof(ctx->leds));
+    return HIDAPI_DriverPSMove_SendJoystickEffect(device, ctx->joystick, &(ctx->effects), sizeof(ctx->effects));
 }
 
 static inline int
@@ -288,10 +288,7 @@ static bool HIDAPI_DriverPSMove_UpdateDevice(SDL_HIDAPI_Device *device)
                 SDL_memcpy(&(ctx->input.zcm2), data, sizeof(ctx->input.zcm2));
             }
             HIDAPI_DriverPSMove_HandleStatePacket(joystick, ctx);
-            if (!ctx->effects_updated) {
-                HIDAPI_DriverPSMove_UpdateEffects(device);
-                ctx->effects_updated = true;
-            }
+            HIDAPI_DriverPSMove_UpdateEffects(device);
             break;
         default:
 #ifdef DEBUG_JOYSTICK
@@ -315,8 +312,7 @@ static bool HIDAPI_DriverPSMove_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     SDL_AssertJoysticksLocked();
 
     ctx->joystick = joystick;
-    ctx->effects_updated = false;
-    ctx->leds.rumble = 0;
+    ctx->effects.rumble = 0;
 
     // Initialize the joystick capabilities
     joystick->nbuttons = 8;
@@ -335,7 +331,7 @@ static bool HIDAPI_DriverPSMove_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
     Uint8 rumble = (high_frequency_rumble >> 8);
 
-    ctx->leds.rumble = rumble;
+    ctx->effects.rumble = rumble;
 
     return HIDAPI_DriverPSMove_UpdateEffects(device);
 }
@@ -354,9 +350,9 @@ static bool HIDAPI_DriverPSMove_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 {
     SDL_DriverPSMove_Context *ctx = (SDL_DriverPSMove_Context *)device->context;
 
-    ctx->leds.r = red;
-    ctx->leds.g = green;
-    ctx->leds.b = blue;
+    ctx->effects.r = red;
+    ctx->effects.g = green;
+    ctx->effects.b = blue;
 
     return HIDAPI_DriverPSMove_UpdateEffects(device);
 }
