@@ -432,6 +432,8 @@ static int VULKAN_VkFormatGetNumPlanes(VkFormat vkFormat)
 {
     switch (vkFormat) {
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+    case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+    case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
         return 3;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
     case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
@@ -451,7 +453,10 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
     case VK_FORMAT_R16G16_UNORM:
         return 4;
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+    case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
         return 1;
+    case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
+        return 2;
     case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
         return (plane == 0) ? 1 : 2;
     case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
@@ -473,11 +478,15 @@ static VkFormat SDLPixelFormatToVkTextureFormat(SDL_PixelFormat format, Uint32 o
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
         return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
+    case SDL_PIXELFORMAT_P408:
+        return VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM;
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return  VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
     case SDL_PIXELFORMAT_P010:
         return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+    case SDL_PIXELFORMAT_P416:
+        return VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM;
     default:
         for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
             if (vk_format_map[i].sdl == format) {
@@ -2640,9 +2649,11 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     // YUV textures must have even width and height.  Also create Ycbcr conversion
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV ||
+        texture->format == SDL_PIXELFORMAT_P408 ||
         texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
-        texture->format == SDL_PIXELFORMAT_P010) {
+        texture->format == SDL_PIXELFORMAT_P010 ||
+        texture->format == SDL_PIXELFORMAT_P416) {
         const uint32_t YUV_SD_THRESHOLD = 576;
 
         // Check that we have VK_KHR_sampler_ycbcr_conversion support
@@ -2653,9 +2664,12 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo = { 0 };
         samplerYcbcrConversionCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
 
-        // Pad width/height to multiple of 2
-        width = (width + 1) & ~1;
-        height = (height + 1) & ~1;
+        if (texture->format != SDL_PIXELFORMAT_P408 &&
+            texture->format != SDL_PIXELFORMAT_P416) {
+            // Pad width/height to multiple of 2
+            width = (width + 1) & ~1;
+            height = (height + 1) & ~1;
+        }
 
         // Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler
         samplerYcbcrConversionCreateInfo.format = textureFormat;
@@ -2974,16 +2988,24 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     } else if (numPlanes == 3) {
         // YUV data
-        int Ypitch = srcPitch;
-        int UVpitch = ((Ypitch + 1) / 2);
-        const Uint8 *plane0 = (const Uint8 *)srcPixels;
-        const Uint8 *plane1 = plane0 + rect->h * Ypitch;
-        const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
+        if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+            const Uint8 *plane0 = (const Uint8 *)srcPixels;
+            const Uint8 *plane1 = plane0 + rect->h * srcPitch;
+            const Uint8 *plane2 = plane1 + rect->h * srcPitch;
 
-        if (texture->format == SDL_PIXELFORMAT_YV12) {
-            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, srcPitch, plane1, srcPitch, plane2, srcPitch);
         } else {
-            return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+            int Ypitch = srcPitch;
+            int UVpitch = ((Ypitch + 1) / 2);
+            const Uint8 *plane0 = (const Uint8 *)srcPixels;
+            const Uint8 *plane1 = plane0 + rect->h * Ypitch;
+            const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
+
+            if (texture->format == SDL_PIXELFORMAT_YV12) {
+                return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+            } else {
+                return VULKAN_UpdateTextureYUV(renderer, texture, rect, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+            }
         }
     }
 #endif
@@ -3010,7 +3032,14 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
-    if (texture->format == SDL_PIXELFORMAT_YV12) {
+    if (texture->format == SDL_PIXELFORMAT_P408 || texture->format == SDL_PIXELFORMAT_P416) {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x, rect->y, rect->w, rect->h, Uplane, Upitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 2, rect->x, rect->y, rect->w, rect->h, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+    } else if (texture->format == SDL_PIXELFORMAT_YV12) {
         if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
             return false;
         }
@@ -3450,11 +3479,13 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
         switch (texture->format) {
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
+        case SDL_PIXELFORMAT_P408:
         case SDL_PIXELFORMAT_NV12:
         case SDL_PIXELFORMAT_NV21:
             constants->input_type = INPUTTYPE_SRGB;
             break;
         case SDL_PIXELFORMAT_P010:
+        case SDL_PIXELFORMAT_P416:
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
@@ -4623,9 +4654,11 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P416);
     }
 #endif
 
