@@ -518,7 +518,7 @@ bool SDL_SYS_AddPathWatch(const char *path, SDL_PathWatchCallback cb, void *user
     SDL_memcpy(watch_entry->path, path, slen + 1);
 
     SDL_LockMutex(file_watch_lock);
-    int wd = inotify_add_watch(inotify_fd, path, IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF);
+    int wd = inotify_add_watch(inotify_fd, path, IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MOVED_TO | IN_MOVED_FROM | IN_MOVE_SELF);
     if (wd == -1) {
         SDL_UnlockMutex(file_watch_lock);
         SDL_free(watch_entry);
@@ -586,7 +586,7 @@ static int SDL_FileWatchThread(void *userdata)
                 } else if (buf.event.mask & IN_UNMOUNT) {
                     // file system containing watched path was unmounted
                 } else if (buf.event.len != 0) {
-                    // event happened in a watched directory
+                    // event happened on a file or direcory in a watched directory
                     if (buf.event.mask & IN_ISDIR) {
                         // SDL functions that return a path always end it with a separator.
                         if (watch_entry->path[watch_entry->path_len - 1] == '/') {
@@ -603,9 +603,11 @@ static int SDL_FileWatchThread(void *userdata)
                     }
 
                     SDL_PathWatchEventType event_type = -1;
-                    if (buf.event.mask & IN_CREATE) {
+                    if (buf.event.mask & (IN_CREATE | IN_MOVED_TO)) {
+                        // IN_MOVED_TO means a file or directory was renamed
                         event_type = SDL_PATHWATCH_CREATED;
-                    } else if (buf.event.mask & IN_DELETE) {
+                    } else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
+                        // IN_MOVED_FROM means a file or directory was renamed
                         event_type = SDL_PATHWATCH_REMOVED;
                     } else if (buf.event.mask & IN_MODIFY) {
                         event_type = SDL_PATHWATCH_MODIFIED;
@@ -620,8 +622,13 @@ static int SDL_FileWatchThread(void *userdata)
                 } else {
                     // event happened for the watched file or directory
                     SDL_PathWatchEventType event_type = -1;
-                    if (buf.event.mask & IN_DELETE_SELF) {
+                    bool remove_entry = false;
+                    if (buf.event.mask & (IN_DELETE_SELF | IN_MOVE_SELF | IN_MOVED_FROM)) {
+                        // IN_MOVE_SELF means a parent directory was renamed
                         event_type = SDL_PATHWATCH_REMOVED_SELF;
+                        // inotify identifies file by inode, remove entry now to avoid receiving
+                        // event for a different path than the one specified by SDL_AddPathWatch()
+                        remove_entry = true;
                     } else if (buf.event.mask & IN_MODIFY) {
                         event_type = SDL_PATHWATCH_MODIFIED;
                     }
@@ -631,6 +638,10 @@ static int SDL_FileWatchThread(void *userdata)
                             watch_entry->callback(watch_entry->user_data, watch_entry->path, event_type);
                         }
                         SendFileWatchEvent(event_type + SDL_EVENT_PATH_MODIFIED, watch_entry->path);
+                    }
+                    if (remove_entry) {
+                        SDL_RemoveFromHashTable(watch_descriptor_table, (void *) (intptr_t) buf.event.wd);
+                        inotify_rm_watch(inotify_fd, buf.event.wd);
                     }
                 }
             }

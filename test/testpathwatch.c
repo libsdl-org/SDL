@@ -35,17 +35,21 @@ void SDLCALL FileWatchCallback(void *userdata, const char *path, SDL_PathWatchEv
 {
     (void)userdata;
     SDL_LockMutex(lock);
+    if (last_path) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed: ^^^ unexpected event ^^^");
+    }
     SDL_Log("received event %s for path '%s'", EventTotString(type), path);
     last_event = type;
     SDL_free((void *)last_path);
     last_path = SDL_strdup(path);
     SDL_SignalCondition(condvar);
     SDL_UnlockMutex(lock);
+    SDL_Delay(50); // give time to CheckWatchEvent() to consume current event
 }
 
 static void CheckWatchEvent(const char *expected_path, SDL_PathWatchEventType expected_event_type)
 {
-    if (SDL_WaitConditionTimeout(condvar, lock, 500)) { // There is a timeout for the full test in CI, so keep this short
+    if (SDL_WaitConditionTimeout(condvar, lock, 500)) { // There is a timeout for the full test in CI, so keep this short.
         if (!last_path || SDL_strcmp(last_path, expected_path) != 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed: wrong path for event %s: got '%s', expected '%s'", EventTotString(expected_event_type), last_path, expected_path);
         }
@@ -104,31 +108,41 @@ int main(int argc, char *argv[])
         goto error;
     }
 
+    if (SDL_CreateDirectory("./testpathwatch-test-2")) {
+        if (!SDL_AddPathWatch("./testpathwatch-test-2", FileWatchCallback, NULL)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_AddPathWatch('./testpathwatch-test') failed: %s", SDL_GetError());
+            goto error;
+        }
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('./testpathwatch-test') failed: %s", SDL_GetError());
+        goto error;
+    }
+
     SDL_LockMutex(lock);
 
-    // create sub-directory
+    // create sub-directory in watched directory
     if (!SDL_CreateDirectory("./testpathwatch-test/1/")) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateDirectory('./testpathwatch-test/1/') failed: %s", SDL_GetError());
     } else {
         CheckWatchEvent("./testpathwatch-test/1/", SDL_PATHWATCH_CREATED);
     }
 
-    // delete sub-directory
+    // delete sub-directory in watched directory
     if (!SDL_RemovePath("./testpathwatch-test/1/")) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('./testpathwatch-test/1/') failed: %s", SDL_GetError());
     } else {
         CheckWatchEvent("./testpathwatch-test/1/", SDL_PATHWATCH_REMOVED);
     }
 
-    // create file
+    // create file in watched directory
     stream = SDL_IOFromFile("./testpathwatch-test/A", "wb");
     if (!stream) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile('./testpathwatch/A', 'wb') failed: %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile('./testpathwatch-test/A', 'wb') failed: %s", SDL_GetError());
     } else {
         CheckWatchEvent("./testpathwatch-test/A", SDL_PATHWATCH_CREATED);
     }
 
-    // write to file
+    // write to file in watched directory
     if (SDL_WriteIO(stream, text, SDL_strlen(text)) > SDL_strlen(text)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WriteIO(stream, text, SDL_strlen(text)) failed: %s", SDL_GetError());
     } else {
@@ -137,24 +151,68 @@ int main(int argc, char *argv[])
     }
     SDL_CloseIO(stream);
 
-    // delete file
+    // delete file in watched directory
     if (!SDL_RemovePath("./testpathwatch-test/A")) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('./testpathwatch-test/A') failed: %s", SDL_GetError());
     } else {
         CheckWatchEvent("./testpathwatch-test/A", SDL_PATHWATCH_REMOVED);
     }
 
-    // delete directory
+    // create file in watched directory
+    stream = SDL_IOFromFile("./testpathwatch-test/B", "wb");
+    if (!stream) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile('./testpathwatch-test/B', 'wb') failed: %s", SDL_GetError());
+    } else {
+        CheckWatchEvent("./testpathwatch-test/B", SDL_PATHWATCH_CREATED);
+    }
+
+    // rename file in watched directory
+    if (!SDL_RenamePath("./testpathwatch-test/B", "./testpathwatch-test/C")) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RenamePath('./testpathwatch-test/B', './testpathwatch-test/C') failed: %s", SDL_GetError());
+    } else {
+        CheckWatchEvent("./testpathwatch-test/B", SDL_PATHWATCH_REMOVED);
+        CheckWatchEvent("./testpathwatch-test/C", SDL_PATHWATCH_CREATED);
+    }
+    SDL_CloseIO(stream);
+
+    // delete file in watched directory
+    if (!SDL_RemovePath("./testpathwatch-test/C")) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('./testpathwatch-test/C') failed: %s", SDL_GetError());
+    } else {
+        CheckWatchEvent("./testpathwatch-test/C", SDL_PATHWATCH_REMOVED);
+    }
+
+    // delete watched directory
     if (!SDL_RemovePath("./testpathwatch-test")) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('./testpathwatch-test') failed: %s", SDL_GetError());
     } else {
         CheckWatchEvent("./testpathwatch-test", SDL_PATHWATCH_REMOVED_SELF);
     }
 
+    // rename watched directory
+    if (!SDL_RenamePath("./testpathwatch-test-2", "./testpathwatch-test-3")) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RenamePath('./testpathwatch-test-2', './testpathwatch-test-3') failed: %s", SDL_GetError());
+    } else {
+        CheckWatchEvent("./testpathwatch-test-2", SDL_PATHWATCH_REMOVED_SELF);
+    }
+
+    // delete renamed watched directory
+    if (!SDL_RemovePath("./testpathwatch-test-3")) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_RemovePath('./testpathwatch-test-3') failed: %s", SDL_GetError());
+    } else {
+        // we do not expect an event because directory now has a different name from the one specified in SDL_AddPathWatch()
+    }
     SDL_UnlockMutex(lock);
 
+    SDL_Delay(100); // wait for unexpected events
+    SDL_LockMutex(lock);
+    if (last_path) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed: ^^^ unexpected event ^^^");
+    }
+    SDL_UnlockMutex(lock);
 error:
     SDL_RemovePathWatch("./testpathwatch-test", FileWatchCallback, NULL);
+    SDL_RemovePathWatch("./testpathwatch-test-2", FileWatchCallback, NULL);
     SDL_free((void *)last_path);
     {
         SDL_Event event;

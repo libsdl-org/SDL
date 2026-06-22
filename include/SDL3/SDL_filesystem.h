@@ -543,10 +543,11 @@ typedef enum SDL_PathWatchEventType
 } SDL_PathWatchEventType;
 
 /**
- * A function pointer used for callbacks that watch for files change.
+ * A function pointer used for callbacks that watch for files or directories
+ * change.
  *
  * \param userdata what was passed as `userdata` to SDL_AddPathWatch().
- * \param path path of file that was modified.
+ * \param path path of file or directory that was modified/created/removed.
  * \param event event that happened on `path`.
  *
  * \threadsafety SDL may call this callback at any time from any thread; the
@@ -556,13 +557,24 @@ typedef enum SDL_PathWatchEventType
 typedef void (SDLCALL *SDL_PathWatchCallback)(void *userdata, const char *path, SDL_PathWatchEventType event);
 
 /**
- * This function adds a file watcher that will fires an app-provided callback
- * and send an SDL_EVENT_FILE_CHANGED event every time data is written in the
- * file. If path is a directory, the callback will be called for every file
- * in that directory that has data written into.
+ * This function adds a path watcher that will fires an app-provided callback
+ * and send an SDL_EVENT_PATH_* event every time the watched path, or a file or
+ * directory in a watched directory, is modified/created/removed.
+ *
+ * If there is an error while watching a path (after this function returns),
+ * SDL_EVENT_PATH_WATCH_ERROR is sent but the callback will not fire.
+ *
+ * NOTE: SDL identifies files and directories by path, this means that:
+ *  - if a file or drectory in a watched path is renamed, you will receive an
+ * SDL_PATHWATCH_REMOVED event with the old name then an SDL_PATHWATCH_CREATED
+ * with the new name.
+ *  - if a file or directory part of the watched path is renamed then you will
+ * receive an SDL_PATHWATCH_REMOVED_SELF event. You will not receive event for
+ * the newly named path.
  *
  * \param path file or directory path to watch.
- * \param callback a function that is called when the watched file is modified.
+ * \param callback a function that is called when the watched file is
+ *                 modified/created/removed.
  *                 Can be NULL if you only want to receive event.
  * \param userdata a pointer that is passed to `callback`.
  *
@@ -571,13 +583,13 @@ typedef void (SDLCALL *SDL_PathWatchCallback)(void *userdata, const char *path, 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \sa SDL_FileWatchEvent
+ * \sa SDL_PathWatchEvent
  * \sa SDL_RemovePathWatch
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_AddPathWatch(const char *path, SDL_PathWatchCallback callback, void *userdata);
 
 /**
- * Remove an file watch callback added with SDL_AddPathWatch().
+ * Remove an path watch callback added with SDL_AddPathWatch().
  *
  * This function takes the same input as SDL_AddPathWatch() to identify and
  * delete the corresponding callback.
