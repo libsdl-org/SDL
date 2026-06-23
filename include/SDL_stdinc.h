@@ -178,12 +178,17 @@ void *alloca(size_t);
 /* @{ */
 
 #ifdef __CC_ARM
+#ifndef SDL_WIKI_DOCUMENTATION_SECTION
 /* ARM's compiler throws warnings if we use an enum: like "SDL_bool x = a < b;" */
 #define SDL_FALSE 0
 #define SDL_TRUE 1
 typedef int SDL_bool;
+#endif
 #else
-typedef enum
+/**
+ * A boolean (true/false) type.
+ */
+typedef enum SDL_bool
 {
     SDL_FALSE = 0,
     SDL_TRUE = 1
