@@ -98,7 +98,7 @@ static bool UpdateRawInputDeviceFlags(HWND window, Uint32 last_flags, Uint32 new
         devices[count].usUsage = USB_USAGE_GENERIC_MOUSE;
 
         if (new_flags & ENABLE_RAW_MOUSE_INPUT) {
-            devices[count].dwFlags = 0;
+            devices[count].dwFlags = RIDEV_NOLEGACY;
             devices[count].hwndTarget = window;
         } else {
             devices[count].dwFlags = RIDEV_REMOVE;
