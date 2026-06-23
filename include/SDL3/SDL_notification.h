@@ -41,8 +41,8 @@
  * There is both a customizable function
  * `SDL_ShowNotificationWithProperties()` that offers many options for what is
  * displayed, and also a much-simplified version
- * `SDL_ShowSimpleNotification()`, which simply takes a header (required),
- * body (optional), and image (optional).
+ * `SDL_ShowNotification()`, which simply takes a header (required),
+ * message (optional), image (optional), and button array (optional).
  */
 
 #ifndef SDL_notification_h_
@@ -71,8 +71,8 @@ extern "C" {
  * On *nix platforms, this can also be the name of a system icon, as specified
  * by the Icon Naming Specification.
  *
- * Can be set before calling SDL_ShowNotification() or
- * SDL_ShowSimpleNotification() for the first time.
+ * Can be set before calling SDL_ShowNotificationWithProperties() or
+ * SDL_ShowNotification() for the first time.
  *
  * \since This macro is available since SDL 3.6.0.
  */
