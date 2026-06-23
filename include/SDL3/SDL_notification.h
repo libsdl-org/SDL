@@ -23,26 +23,25 @@
  * # CategoryNotification
  *
  * Notifications are temporary popup dialogs that passively present
- * information to the user, or prompt user action. They are managed
- * and presented by the system, and can present simple options for
- * user feedback, usually in the form of buttons.
+ * information to the user, or prompt user action. They are managed and
+ * presented by the system, and can present simple options for user feedback,
+ * usually in the form of buttons.
  *
- * The capabilities of notifications, and how they are displayed,
- * vary between systems, but they generally allow for a title,
- * message body, an associated image, and buttons to allow the user
- * to provide feedback.
+ * The capabilities of notifications, and how they are displayed, vary between
+ * systems, but they generally allow for a title, message body, an associated
+ * image, and buttons to allow the user to provide feedback.
  *
- * How notifications are presented and handled are subject to system
- * policy, and it should not be assumed that showing a notification
- * means that the user will see it immediately, if at all. The
- * user may disable notifications for certain applications, they may
- * be suppressed based on the current activity, and most systems
- * provide a "do not disturb" mode that universally silences
- * notifications when activated.
+ * How notifications are presented and handled are subject to system policy,
+ * and it should not be assumed that showing a notification means that the
+ * user will see it immediately, if at all. The user may disable notifications
+ * for certain applications, they may be suppressed based on the current
+ * activity, and most systems provide a "do not disturb" mode that universally
+ * silences notifications when activated.
  *
- * There is both a customizable function `SDL_ShowNotificationWithProperties()`
- * that offers many options for what is displayed, and also a much-simplified
- * version `SDL_ShowSimpleNotification()`, which simply takes a header (required),
+ * There is both a customizable function
+ * `SDL_ShowNotificationWithProperties()` that offers many options for what is
+ * displayed, and also a much-simplified version
+ * `SDL_ShowSimpleNotification()`, which simply takes a header (required),
  * body (optional), and image (optional).
  */
 
