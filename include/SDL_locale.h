@@ -47,7 +47,7 @@ extern "C" {
  * would be "en"), and the country, if not NULL, will be an ISO-3166 country
  * code (so Canada would be "CA").
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This struct is available since SDL 2.0.14.
  *
  * \sa SDL_GetPreferredLocales
  */
