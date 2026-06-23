@@ -595,13 +595,13 @@ static const char *GetIconURI()
     SDL_PropertiesID props = SDL_GetGlobalProperties();
     const char *icon = SDL_GetStringProperty(props, SDL_PROP_GLOBAL_NOTIFICATION_HEADER_ICON_STRING, NULL);
     if (icon && realpath(icon, full_path)) {
-        size_t len = SDL_strlen(full_path) + 8;
+        const size_t len = SDL_strlen(full_path) + 8;
         icon_uri = SDL_malloc(len);
         if (icon_uri) {
             SDL_strlcpy(icon_uri, "file://", len);
             SDL_strlcat(icon_uri, full_path, len);
         }
-    } else {
+    } else if (icon) {
         // If the path can't be retrieved, assume it is the system name of an icon.
         icon_uri = SDL_strdup(icon);
     }
