@@ -40,9 +40,9 @@
  *
  * There is both a customizable function
  * `SDL_ShowNotificationWithProperties()` that offers many options for what is
- * displayed, and also a much-simplified version
- * `SDL_ShowNotification()`, which simply takes a header (required),
- * message (optional), image (optional), and button array (optional).
+ * displayed, and also a much-simplified version `SDL_ShowNotification()`,
+ * which simply takes a header (required), message (optional), image
+ * (optional), and button array (optional).
  */
 
 #ifndef SDL_notification_h_
