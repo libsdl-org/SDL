@@ -185,6 +185,7 @@ void *alloca(size_t);
 typedef int SDL_bool;
 #endif
 #else
+
 /**
  * A boolean (true/false) type.
  */
