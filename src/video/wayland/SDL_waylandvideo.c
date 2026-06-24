@@ -71,6 +71,7 @@
 #include "pointer-gestures-unstable-v1-client-protocol.h"
 #include "single-pixel-buffer-v1-client-protocol.h"
 #include "xdg-session-management-v1-client-protocol.h"
+#include "xdg-toplevel-tag-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1511,6 +1512,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         d->single_pixel_buffer_manager = wl_registry_bind(d->registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, xdg_session_manager_v1_interface.name) == 0) {
         d->xdg_session_manager = wl_registry_bind(d->registry, id, &xdg_session_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, xdg_toplevel_tag_manager_v1_interface.name) == 0) {
+        d->xdg_toplevel_tag_manager = wl_registry_bind(d->registry, id, &xdg_toplevel_tag_manager_v1_interface, 1);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, wl_fixes_interface.name) == 0) {
@@ -1933,6 +1936,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->xdg_session_manager) {
         xdg_session_manager_v1_destroy(data->xdg_session_manager);
         data->xdg_session_manager = NULL;
+    }
+
+    if (data->xdg_toplevel_tag_manager) {
+        xdg_toplevel_tag_manager_v1_destroy(data->xdg_toplevel_tag_manager);
+        data->xdg_toplevel_tag_manager = NULL;
     }
 
     if (data->subcompositor) {

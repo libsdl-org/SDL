@@ -50,6 +50,7 @@
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
 #include "xdg-session-management-v1-client-protocol.h"
+#include "xdg-toplevel-tag-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -2053,22 +2054,26 @@ bool Wayland_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool mod
 
 static void Wayland_RegisterToplevelForSession(SDL_WindowData *data)
 {
-    SDL_VideoDevice *viddev = SDL_GetVideoDevice();
-    SDL_VideoData *viddata = viddev->internal;
-
     struct xdg_toplevel *toplevel = GetToplevelForWindow(data);
     if (!toplevel) {
         return;
     }
 
-    if (viddata->xdg_session_manager) {
-        const char *id = SDL_GetStringProperty(data->sdlwindow->props, SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING, NULL);
-        if (id && *id != '\0') {
+    const char *id = SDL_GetStringProperty(data->sdlwindow->props, SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING, NULL);
+    if (id && *id != '\0') {
+        SDL_VideoDevice *viddev = SDL_GetVideoDevice();
+        SDL_VideoData *viddata = viddev->internal;
+
+        if (viddata->xdg_toplevel_tag_manager) {
+            xdg_toplevel_tag_manager_v1_set_toplevel_tag(viddata->xdg_toplevel_tag_manager, toplevel, id);
+        }
+
+        if (viddata->xdg_session_manager) {
             Wayland_CreateSession(viddata);
 
             if (viddata->xdg_session) {
                 CHECK_PARAM (true) {
-                    // Windows must not have a duplicate ID string, or a protocol error will result.
+                    // Windows added to a session must not have a duplicate ID string, or a protocol error will result.
                     for (SDL_Window *w = viddev->windows; w; w = w->next) {
                         SDL_WindowData *d = w->internal;
                         if (d->session_id && SDL_strcmp(d->session_id, id) == 0) {
