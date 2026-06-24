@@ -58,6 +58,7 @@
 		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; platformFilters = (ios, maccatalyst, macos, tvos, xros, ); settings = {ATTRIBUTES = (Required, ); }; };
 		00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; platformFilters = (macos, ); };
 		02D6A1C228A84B8F00A7F002 /* SDL_hidapi_sinput.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */; };
+		1095A6892FEBDF7200554160 /* SDL_notification.h in Headers */ = {isa = PBXBuildFile; fileRef = 1095A6882FEBDF7200554160 /* SDL_notification.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */; platformFilters = (maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		30840D4C2F76A822000F1D1B /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30840D4B2F76A822000F1D1B /* UserNotifications.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		30840D4E2F76A8E7000F1D1B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30840D4D2F76A8E7000F1D1B /* Security.framework */; };
@@ -632,6 +633,7 @@
 		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
 		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_sinput.c; sourceTree = "<group>"; };
+		1095A6882FEBDF7200554160 /* SDL_notification.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SDL_notification.h; path = ../../include/SDL3/SDL_notification.h; sourceTree = "<group>"; };
 		1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		30840D4B2F76A822000F1D1B /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		30840D4D2F76A8E7000F1D1B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -1410,6 +1412,7 @@
 		0867D691FE84028FC02AAC07 /* SDLFramework */ = {
 			isa = PBXGroup;
 			children = (
+				1095A6882FEBDF7200554160 /* SDL_notification.h */,
 				F3F7BE3B2CBD79D200C984AF /* config.xcconfig */,
 				F5A2EF3900C6A39A01000001 /* BUGS.txt */,
 				F59C70FC00D5CB5801000001 /* pkg-support */,
@@ -2595,6 +2598,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1095A6892FEBDF7200554160 /* SDL_notification.h in Headers */,
 				E4F257942C81903800FCEAFC /* SDL_gpu_vulkan_vkfuncs.h in Headers */,
 				F3C1BD762D1F1A3000846529 /* SDL_tray_utils.h in Headers */,
 				F310138D2C1F2CB700FBE946 /* SDL_getenv_c.h in Headers */,
