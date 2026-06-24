@@ -296,7 +296,13 @@ typedef enum SDL_EventType
 } SDL_EventType;
 
 /**
- * Fields shared by every event
+ * Fields shared by every event (event.common.*)
+ *
+ * All the individual structs that comprise the SDL_Event union start with
+ * these same fields, so you can access them from any struct directly.
+ *
+ * Event types that don't have further data in a specific struct will still
+ * have valid CommonEvent data, accessible via the event.common field.
  *
  * \since This struct is available since SDL 3.2.0.
  */
