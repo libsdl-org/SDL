@@ -33,9 +33,10 @@
 #include "../../thread/SDL_systhread.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
-#define ENABLE_RAW_KEYBOARD_INPUT   0x02
-#define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x04
-#define RAW_KEYBOARD_FLAG_INPUTSINK 0x08
+#define RAW_MOUSE_FLAG_NOLEGACY     0x02
+#define ENABLE_RAW_KEYBOARD_INPUT   0x10
+#define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x20
+#define RAW_KEYBOARD_FLAG_INPUTSINK 0x40
 
 typedef struct
 {
@@ -93,13 +94,19 @@ static bool UpdateRawInputDeviceFlags(HWND window, Uint32 last_flags, Uint32 new
     RAWINPUTDEVICE devices[2] = { 0 };
     UINT count = 0;
 
-    if ((new_flags & ENABLE_RAW_MOUSE_INPUT) != (last_flags & ENABLE_RAW_MOUSE_INPUT)) {
+    const Uint32 old_mouse_flags = last_flags & (ENABLE_RAW_MOUSE_INPUT | RAW_MOUSE_FLAG_NOLEGACY);
+    const Uint32 new_mouse_flags = new_flags & (ENABLE_RAW_MOUSE_INPUT | RAW_MOUSE_FLAG_NOLEGACY);
+
+    if (old_mouse_flags != new_mouse_flags) {
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_MOUSE;
 
         if (new_flags & ENABLE_RAW_MOUSE_INPUT) {
-            devices[count].dwFlags = RIDEV_NOLEGACY;
+            devices[count].dwFlags = 0;
             devices[count].hwndTarget = window;
+            if (new_mouse_flags & RAW_MOUSE_FLAG_NOLEGACY) {
+                devices[count].dwFlags |= RIDEV_NOLEGACY;
+            }
         } else {
             devices[count].dwFlags = RIDEV_REMOVE;
             devices[count].hwndTarget = NULL;
@@ -121,7 +128,6 @@ static bool UpdateRawInputDeviceFlags(HWND window, Uint32 last_flags, Uint32 new
             if (new_kb_flags & RAW_KEYBOARD_FLAG_NOHOTKEYS) {
                 devices[count].dwFlags |= RIDEV_NOHOTKEYS;
             }
-
             if (new_kb_flags & RAW_KEYBOARD_FLAG_INPUTSINK) {
                 devices[count].dwFlags |= RIDEV_INPUTSINK;
             }
@@ -241,17 +247,22 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->internal;
     Uint32 desired_flags = 0;
 
-    if (data->raw_mouse_enabled) {
-        desired_flags |= ENABLE_RAW_MOUSE_INPUT;
-    }
-    if (data->raw_keyboard_enabled) {
-        desired_flags |= ENABLE_RAW_KEYBOARD_INPUT;
-    }
-    if (data->raw_keyboard_flag_nohotkeys) {
-        desired_flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
-    }
-    if (data->raw_keyboard_flag_inputsink) {
-        desired_flags |= RAW_KEYBOARD_FLAG_INPUTSINK;
+    if (!data->gameinput_context) {
+        if (data->raw_mouse_enabled) {
+            desired_flags |= ENABLE_RAW_MOUSE_INPUT;
+            if (data->raw_mouse_flag_nolegacy) {
+                desired_flags |= RAW_MOUSE_FLAG_NOLEGACY;
+            }
+        }
+        if (data->raw_keyboard_enabled) {
+            desired_flags |= ENABLE_RAW_KEYBOARD_INPUT;
+            if (data->raw_keyboard_flag_nohotkeys) {
+                desired_flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
+            }
+            if (data->raw_keyboard_flag_inputsink) {
+                desired_flags |= RAW_KEYBOARD_FLAG_INPUTSINK;
+            }
+        }
     }
 
     if (desired_flags == SDL_GetAtomicU32(&thread_data.flags)) {
@@ -336,6 +347,15 @@ bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
+bool WIN_SetRawMouseFlag_NoLegacy(SDL_VideoDevice *_this, bool enabled)
+{
+    SDL_VideoData *data = _this->internal;
+
+    data->raw_mouse_flag_nolegacy = enabled;
+
+    return WIN_UpdateRawInputEnabled(_this);
+}
+
 bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
@@ -354,41 +374,22 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
-typedef enum WIN_RawKeyboardFlag {
-    NOHOTKEYS,
-    INPUTSINK,
-} WIN_RawKeyboardFlag;
-
-static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
 
-    switch(flag) {
-        case NOHOTKEYS:
-            data->raw_keyboard_flag_nohotkeys = enabled;
-            break;
-        case INPUTSINK:
-            data->raw_keyboard_flag_inputsink = enabled;
-            break;
-        default:
-            return false;
-    }
-
-    if (data->gameinput_context) {
-        return true;
-    }
+    data->raw_keyboard_flag_nohotkeys = enabled;
 
     return WIN_UpdateRawInputEnabled(_this);
 }
 
-bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
-{
-    return WIN_SetRawKeyboardFlag(_this, NOHOTKEYS, enabled);
-}
-
 bool WIN_SetRawKeyboardFlag_Inputsink(SDL_VideoDevice *_this, bool enabled)
 {
-    return WIN_SetRawKeyboardFlag(_this, INPUTSINK, enabled);
+    SDL_VideoData *data = _this->internal;
+
+    data->raw_keyboard_flag_inputsink = enabled;
+
+    return WIN_UpdateRawInputEnabled(_this);
 }
 
 void WIN_QuitRawInput(SDL_VideoDevice *_this)
@@ -399,6 +400,11 @@ void WIN_QuitRawInput(SDL_VideoDevice *_this)
 #else
 
 bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
+{
+    return SDL_Unsupported();
+}
+
+bool WIN_SetRawMouseFlag_NoLegacy(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }
