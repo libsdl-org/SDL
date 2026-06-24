@@ -4735,6 +4735,21 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"
 
 /**
+ * A variable controlling whether the RIDEV_NOLEGACY flag is set when
+ * enabling Windows raw mouse events.
+ *
+ * If RIDEV_NOLEGACY is set, then Windows mouse events will not be sent for mouse motion while relative mode is enabled. This improves performance when players are using high DPI mice, but should be disabled while showing custom assert dialogs in your application code.
+ *
+ * - "0": Windows mouse events will be generated while relative motion is enabled. (default)
+ * - "1": Windows mouse events will not be generated while relative motion is enabled.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_WINDOWS_RAW_MOUSE_NOLEGACY "SDL_WINDOWS_RAW_MOUSE_NOLEGACY"
+
+/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every

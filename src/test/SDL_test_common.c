@@ -2690,6 +2690,11 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 FullscreenTo(state, 1, event->key.windowID);
             }
             break;
+        case SDLK_9:
+            if (withControl) {
+                SDL_assert_always(!"Test Assertion");
+            }
+            break;
         case SDLK_ESCAPE:
             return SDL_APP_SUCCESS;
         default:
