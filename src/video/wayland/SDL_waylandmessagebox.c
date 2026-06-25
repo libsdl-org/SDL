@@ -24,7 +24,32 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL_waylandmessagebox.h"
+#include "SDL_waylandtoolkit.h"
 #include "../../dialog/unix/SDL_zenitymessagebox.h"
+
+typedef struct SDL_MessageBoxDataToolkit
+{
+	SDL_WaylandTextRenderer *text_renderer;
+
+    const SDL_MessageBoxData *messageboxdata;
+} SDL_MessageBoxDataToolkit;
+
+bool Wayland_ShowToolkitMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID) {
+	SDL_MessageBoxDataToolkit data;
+	SDL_Color color;
+	
+	data.messageboxdata = messageboxdata;
+	color.r = 255;
+	color.g = 0;
+	color.b = 255;
+	color.a = 255;
+	
+	data.text_renderer = WaylandToolkit_CreateTextRenderer();
+	WaylandToolkit_RenderText(data.text_renderer, (char *)messageboxdata->message, &color);
+	WaylandToolkit_FreeTextRenderer(data.text_renderer);
+	
+	return true;
+}
 
 bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
@@ -35,8 +60,19 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
             return SDL_SetError("Not on a wayland display");
         }
     }
-
-    return SDL_Zenity_ShowMessageBox(messageboxdata, buttonID);
+    
+	if (SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_PREFER_TOOLKIT, false)) {
+		return Wayland_ShowToolkitMessageBox(messageboxdata, buttonID);
+    } else {
+		bool ret;
+		
+		ret = SDL_Zenity_ShowMessageBox(messageboxdata, buttonID);
+		if (!ret) {
+			return Wayland_ShowToolkitMessageBox(messageboxdata, buttonID);		
+		} else {
+			return ret;
+		}
+	}     
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND
