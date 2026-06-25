@@ -3348,10 +3348,6 @@ elseif(PS2)
   )
   set(HAVE_SDL_THREADS TRUE)
 
-  set(SDL_TIME_PS2 1)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/ps2/*.c")
-  set(HAVE_SDL_TIME TRUE)
-
   set(SDL_TIMER_PS2 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ps2/*.c")
   set(HAVE_SDL_TIMERS TRUE)
@@ -3845,6 +3841,12 @@ if(NOT HAVE_SDL_THREADS)
     message(FATAL_ERROR "Threads are needed by many SDL subsystems and may not be disabled")
   endif()
 endif()
+
+if(NOT HAVE_SDL_TIME)
+  set(SDL_TIME_DUMMY 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/dummy/*.c")
+endif()
+
 if(NOT HAVE_SDL_TIMERS)
   message(FATAL_ERROR "Timers are needed by many SDL subsystems and may not be disabled")
 endif()
