@@ -2627,6 +2627,15 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  * - [[texture]]: Sampled textures, followed by read-only storage textures,
  *   followed by read-write storage textures
  *
+ * For WGSL, use the following order:
+ * - 0: Sampled textures, followed by read-only storage textures, followed by
+ *   read-only storage buffers
+ * - 1: Read-write storage textures, followed by read-write storage buffers
+ * - 2: Uniform buffers
+ *
+ * Like with SDL_CreateGPUShader, if you're planning on using R32G32_FLOAT or R32G32B32A32_FLOAT textures you must include
+ * "//!SDLGPU_COMPAT_F32_UNFILTERABLE" somewhere in your shader source, to tell the backend that you're using an unfilterable texture.
+ *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
  *
