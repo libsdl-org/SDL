@@ -1129,6 +1129,8 @@ static void SDLCALL PIPEWIRE_StreamNameChanged(void *userdata, const char *name,
 
     if (!priv || !priv->stream || !priv->loop) {
         return;  // stream not ready yet, skip it.
+    } else if (newValue && (SDL_strcmp(priv->node_name, newValue) == 0)) {
+        return;  // don't set the media and node names to the same thing. Looks bad in the system UI, the node name is enough.
     }
 
     struct spa_dict_item items[] = { { PW_KEY_MEDIA_NAME, newValue } };
@@ -1251,12 +1253,21 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     }
     // node_name/description describes the app, media_name what's currently playing
     const char *node_name = (app_name && *app_name) ? app_name : stream_name;
+    priv->node_name = SDL_strdup(node_name);
+    if (!priv->node_name) {
+        return false;  // already set error string.
+    }
+
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, node_name);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, node_name);
-    PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
+
+    // only set a stream-specific name if it's different than the app name, otherwise the system UI might show the stream as "Team Fortress 2 - Team Fortress 2" or whatever. Better to just show the name once.
+    if ((node_name != stream_name) && (SDL_strcmp(node_name, stream_name) != 0)) {
+        PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
+    }
 
     // UPDATE: This prevents users from moving the audio to a new sink (device) using standard tools. This is slightly in conflict
     //  with how SDL wants to manage audio devices, but if people want to do it, we should let them, so this is commented out
@@ -1339,6 +1350,7 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
         PIPEWIRE_pw_thread_loop_destroy(device->hidden->loop);
     }
 
+    SDL_free(device->hidden->node_name);
     SDL_free(device->hidden);
     device->hidden = NULL;
 
