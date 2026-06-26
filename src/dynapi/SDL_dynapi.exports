@@ -299,6 +299,7 @@ _SDL_GetGamepadButton
 _SDL_GetGamepadButtonFromString
 _SDL_GetGamepadButtonLabel
 _SDL_GetGamepadButtonLabelForType
+_SDL_GetGamepadButtonLabelString
 _SDL_GetGamepadConnectionState
 _SDL_GetGamepadFirmwareVersion
 _SDL_GetGamepadFromID
@@ -1301,3 +1302,5 @@ _SDL_RemoveNotification
 _SDL_GetDeviceFormFactor
 _SDL_GetDeviceFormFactorName
 _SDL_IsUbuntuTouch
+_SDL_GetGamepadConventionalActionButton
+_SDL_GetGamepadConventionalActionButtonForType

@@ -3079,12 +3079,10 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT)) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
-            // We don't have a type for the Nintendo Online NES Controller
-            type = SDL_GAMEPAD_TYPE_STANDARD;
+            type = SDL_GAMEPAD_TYPE_NES;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
-
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         if (name && SDL_strstr(name, "(L)") != NULL) {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
@@ -3098,10 +3096,31 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR)) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
-
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_N64;
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_SNES;
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_SEGA_GENESIS;
     } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
         type = SDL_GAMEPAD_TYPE_GAMECUBE;
-
+    }
+    /* TODO -- we can remove this kludgy string comparison
+     * logic by updating the database with 'type: info. */
+    else if (name && SDL_strcasestr(name, "n64")) {
+        return SDL_GAMEPAD_TYPE_N64;
+    } else if (name && SDL_strcasestr(name, "pc engine")) {
+        return SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX;
+    } else if (name && SDL_strcasestr(name, "neogeo")) {
+        return SDL_GAMEPAD_TYPE_SNK_NEO_GEO;
+    } else if (name && SDL_strcasestr(name, "snes")) {
+        return SDL_GAMEPAD_TYPE_SNES;
+    } else if (name && SDL_strcasestr(name, "saturn")) {
+        return SDL_GAMEPAD_TYPE_SEGA_SATURN;
+    } else if (name && SDL_strcasestr(name, "genesis")) {
+        return SDL_GAMEPAD_TYPE_SEGA_GENESIS;
+    } else if (name && (SDL_strcasestr(name, " nes") || SDL_strncasecmp(name, "nes", 3) == 0)) {
+        return SDL_GAMEPAD_TYPE_NES;
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
@@ -3297,6 +3316,10 @@ bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickGameCube(Uint16 vendor_id, Uint16 product_id)
 {
+    if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER)
+    {
+        return true;
+    }
     return SDL_VIDPIDInList(vendor_id, product_id, &gamecube_devices);
 }
 

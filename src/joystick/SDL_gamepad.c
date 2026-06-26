@@ -46,9 +46,7 @@
 #define SDL_GAMEPAD_CRC_FIELD           "crc:"
 #define SDL_GAMEPAD_CRC_FIELD_SIZE      4 // hard-coded for speed
 #define SDL_GAMEPAD_TYPE_FIELD          "type:"
-#define SDL_GAMEPAD_TYPE_FIELD_SIZE     SDL_strlen(SDL_GAMEPAD_TYPE_FIELD)
-#define SDL_GAMEPAD_FACE_FIELD          "face:"
-#define SDL_GAMEPAD_FACE_FIELD_SIZE     5 // hard-coded for speed
+#define SDL_GAMEPAD_TYPE_FIELD_SIZE     5 // hard-coded for speed
 #define SDL_GAMEPAD_PLATFORM_FIELD      "platform:"
 #define SDL_GAMEPAD_PLATFORM_FIELD_SIZE SDL_strlen(SDL_GAMEPAD_PLATFORM_FIELD)
 #define SDL_GAMEPAD_HINT_FIELD          "hint:"
@@ -77,16 +75,6 @@
 static bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
-
-// The face button style of a gamepad
-typedef enum
-{
-    SDL_GAMEPAD_FACE_STYLE_UNKNOWN,
-    SDL_GAMEPAD_FACE_STYLE_ABXY,
-    SDL_GAMEPAD_FACE_STYLE_AXBY,
-    SDL_GAMEPAD_FACE_STYLE_BAYX,
-    SDL_GAMEPAD_FACE_STYLE_SONY,
-} SDL_GamepadFaceStyle;
 
 // our hard coded list of mapping support
 typedef enum
@@ -137,7 +125,6 @@ struct SDL_Gamepad
 
     const char *name _guarded;
     SDL_GamepadType type _guarded;
-    SDL_GamepadFaceStyle face_style _guarded;
     GamepadMapping_t *mapping _guarded;
     int num_bindings _guarded;
     SDL_GamepadBinding *bindings _guarded;
@@ -473,6 +460,11 @@ static void SDL_PrivateGamepadRemapped(SDL_JoystickID instance_id)
     SDL_PushEvent(&event);
 }
 
+// Cached region check used to pick the PlayStation gamepad confirm/cancel convention
+// thread safety: although accessed cross-thread, this really doesn't need to be atomic.
+static bool SDL_gamepad_region_is_jp;
+static bool SDL_GamepadLocaleIsJP(void);
+
 /*
  * Event filter to fire gamepad events from joystick ones
  */
@@ -533,6 +525,9 @@ static bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
             }
         }
     } break;
+    case SDL_EVENT_LOCALE_CHANGED:
+        SDL_gamepad_region_is_jp = SDL_GamepadLocaleIsJP();
+        break;
     default:
         break;
     }
@@ -1056,24 +1051,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 /*
 * Helper function to decode SInput features information packed into version
 */
-static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char* mapping_string, size_t mapping_string_len)
+static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, char* mapping_string, size_t mapping_string_len)
 {
     SDL_SInputStyles_t decoded = { 0 };
-
-    switch (face_style) {
-    default:
-        SDL_strlcat(mapping_string, "face:abxy,", mapping_string_len);
-        break;
-    case 2:
-        SDL_strlcat(mapping_string, "face:axby,", mapping_string_len);
-        break;
-    case 3:
-        SDL_strlcat(mapping_string, "face:bayx,", mapping_string_len);
-        break;
-    case 4:
-        SDL_strlcat(mapping_string, "face:sony,", mapping_string_len);
-        break;
-    }
 
     // Interpret the mapping string
     // dynamically based on the feature responses
@@ -1240,10 +1220,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
 
-        Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
         Uint8 sub_product  = guid.data[15] & 0x1F;
 
-        SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string));
+        SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, mapping_string, sizeof(mapping_string));
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
@@ -1498,7 +1477,16 @@ static const char *map_StringForGamepadType[] = {
     "joyconright",
     "joyconpair",
     "gamecube",
-    "steam"
+    "steam",
+    "nes",
+    "snes",
+    "n64",
+    "mastersystem",
+    "genesis",
+    "saturn",
+    "turbografx",
+    "neogeo",
+    "3do",
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_COUNT);
 
@@ -1864,75 +1852,23 @@ static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
     if (gamepad->type == SDL_GAMEPAD_TYPE_UNKNOWN) {
         gamepad->type = SDL_GetRealGamepadTypeForID(gamepad->joystick->instance_id);
     }
-}
-
-static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleFromString(const char *string)
-{
-    if (SDL_strcmp(string, "abxy") == 0) {
-        return SDL_GAMEPAD_FACE_STYLE_ABXY;
-    } else if (SDL_strcmp(string, "axby") == 0) {
-        return SDL_GAMEPAD_FACE_STYLE_AXBY;
-    } else if (SDL_strcmp(string, "bayx") == 0) {
-        return SDL_GAMEPAD_FACE_STYLE_BAYX;
-    } else if (SDL_strcmp(string, "sony") == 0) {
-        return SDL_GAMEPAD_FACE_STYLE_SONY;
-    } else {
-        return SDL_GAMEPAD_FACE_STYLE_UNKNOWN;
+    
+    // legacy hint overrides
+    if (SDL_strstr(gamepad->mapping->mapping, "SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS")) {
+        gamepad->type = SDL_GAMEPAD_TYPE_GAMECUBE;
     }
-}
-
-static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleForGamepadType(SDL_GamepadType type)
-{
-    switch (type) {
-    case SDL_GAMEPAD_TYPE_PS3:
-    case SDL_GAMEPAD_TYPE_PS4:
-    case SDL_GAMEPAD_TYPE_PS5:
-        return SDL_GAMEPAD_FACE_STYLE_SONY;
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
-    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-        return SDL_GAMEPAD_FACE_STYLE_BAYX;
-    case SDL_GAMEPAD_TYPE_GAMECUBE:
-        return SDL_GAMEPAD_FACE_STYLE_AXBY;
-    default:
-        return SDL_GAMEPAD_FACE_STYLE_ABXY;
-    }
-}
-
-static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
-{
-    char *face_string, *comma;
-
-    SDL_AssertJoysticksLocked();
-
-    gamepad->face_style = SDL_GAMEPAD_FACE_STYLE_UNKNOWN;
-
-    face_string = SDL_strstr(gamepad->mapping->mapping, SDL_GAMEPAD_FACE_FIELD);
-    if (face_string) {
-        face_string += SDL_GAMEPAD_TYPE_FIELD_SIZE;
-        comma = SDL_strchr(face_string, ',');
-        if (comma) {
-            *comma = '\0';
-            gamepad->face_style = SDL_GetGamepadFaceStyleFromString(face_string);
-            *comma = ',';
-        } else {
-            gamepad->face_style = SDL_GetGamepadFaceStyleFromString(face_string);
+    else if (SDL_strstr(gamepad->mapping->mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
+        // switch non-bayx types to pro controller
+        if (gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO
+            && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT
+            && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT
+            && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR
+            && gamepad->type != SDL_GAMEPAD_TYPE_NES
+            && gamepad->type != SDL_GAMEPAD_TYPE_SNES
+            && gamepad->type != SDL_GAMEPAD_TYPE_N64)
+        {
+            gamepad->type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
         }
-    }
-
-    if (gamepad->face_style == SDL_GAMEPAD_FACE_STYLE_UNKNOWN &&
-        SDL_strstr(gamepad->mapping->mapping, "SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS") != NULL) {
-        // This controller uses GameCube button style
-        gamepad->face_style = SDL_GAMEPAD_FACE_STYLE_AXBY;
-    }
-    if (gamepad->face_style == SDL_GAMEPAD_FACE_STYLE_UNKNOWN &&
-        SDL_strstr(gamepad->mapping->mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS") != NULL) {
-        // This controller uses Nintendo button style
-        gamepad->face_style = SDL_GAMEPAD_FACE_STYLE_BAYX;
-    }
-    if (gamepad->face_style == SDL_GAMEPAD_FACE_STYLE_UNKNOWN) {
-        gamepad->face_style = SDL_GetGamepadFaceStyleForGamepadType(gamepad->type);
     }
 }
 
@@ -2010,7 +1946,6 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
     }
 
     SDL_UpdateGamepadType(gamepad);
-    SDL_UpdateGamepadFaceStyle(gamepad);
 
     SDL_PrivateParseGamepadConfigString(gamepad, pGamepadMapping->mapping);
 
@@ -3039,6 +2974,8 @@ bool SDL_InitGamepads(void)
 
     SDL_gamepad_names = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
 
+    SDL_gamepad_region_is_jp = SDL_GamepadLocaleIsJP();
+
     // Watch for joystick events and fire gamepad ones if needed
     SDL_AddEventWatch(SDL_GamepadEventWatcher, NULL);
 
@@ -3582,79 +3519,222 @@ bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 /**
  * Get the label of a button on a gamepad.
  */
-static SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadFaceStyle face_style, SDL_GamepadButton button)
+SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button)
 {
-    SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
-
-    switch (face_style) {
-    case SDL_GAMEPAD_FACE_STYLE_ABXY:
-        switch (button) {
+    // Buttons that vary by gamepad type
+    switch (type)
+    {
+    case SDL_GAMEPAD_TYPE_XBOX360:
+    case SDL_GAMEPAD_TYPE_XBOXONE:
+    case SDL_GAMEPAD_TYPE_STEAM:
+    case SDL_GAMEPAD_TYPE_STANDARD:
+        switch (button)
+        {
         case SDL_GAMEPAD_BUTTON_SOUTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_A;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
         case SDL_GAMEPAD_BUTTON_EAST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_B;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
         case SDL_GAMEPAD_BUTTON_WEST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_X;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_X;
         case SDL_GAMEPAD_BUTTON_NORTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_Y;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            if (type == SDL_GAMEPAD_TYPE_XBOXONE) return SDL_GAMEPAD_BUTTON_LABEL_VIEW;
+            return SDL_GAMEPAD_BUTTON_LABEL_BACK;
+        case SDL_GAMEPAD_BUTTON_START:
+            if (type == SDL_GAMEPAD_TYPE_XBOXONE) return SDL_GAMEPAD_BUTTON_LABEL_MENU;
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_LEFT_BUMPER;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_RIGHT_BUMPER;
+        case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_LEFT_STICK;
+        case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_RIGHT_STICK;
         default:
             break;
         }
         break;
-    case SDL_GAMEPAD_FACE_STYLE_AXBY:
-        switch (button) {
+    case SDL_GAMEPAD_TYPE_PS3: /* PS3 or earlier*/
+    case SDL_GAMEPAD_TYPE_PS4:
+    case SDL_GAMEPAD_TYPE_PS5:
+        switch (button)
+        {
         case SDL_GAMEPAD_BUTTON_SOUTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_A;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_CROSS;
         case SDL_GAMEPAD_BUTTON_EAST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_X;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_CIRCLE;
         case SDL_GAMEPAD_BUTTON_WEST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_B;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_SQUARE;
         case SDL_GAMEPAD_BUTTON_NORTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            if (type == SDL_GAMEPAD_TYPE_PS3)
+                return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+            return SDL_GAMEPAD_BUTTON_LABEL_SHARE;
+        case SDL_GAMEPAD_BUTTON_START:
+            if (type == SDL_GAMEPAD_TYPE_PS3)
+                return SDL_GAMEPAD_BUTTON_LABEL_START;
+            return SDL_GAMEPAD_BUTTON_LABEL_OPTIONS;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L1;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_R1;
+        case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_L3;
+        case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_R3;
+        case SDL_GAMEPAD_BUTTON_MISC1:
+            return SDL_GAMEPAD_BUTTON_LABEL_MICROPHONE;
         default:
             break;
         }
         break;
-    case SDL_GAMEPAD_FACE_STYLE_BAYX:
-        switch (button) {
+    case SDL_GAMEPAD_TYPE_NES:
+    case SDL_GAMEPAD_TYPE_SNES:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+    // FIXME: do sideways joycons have different button names?
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+    case SDL_GAMEPAD_TYPE_N64:
+        switch (button)
+        {
         case SDL_GAMEPAD_BUTTON_SOUTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_B;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
         case SDL_GAMEPAD_BUTTON_EAST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_A;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
         case SDL_GAMEPAD_BUTTON_WEST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_Y;
         case SDL_GAMEPAD_BUTTON_NORTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_X;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_X;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_R;
+        case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_LEFT_STICK;
+        case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+            return SDL_GAMEPAD_BUTTON_LABEL_RIGHT_STICK;
+        case SDL_GAMEPAD_BUTTON_MISC1:
+            return SDL_GAMEPAD_BUTTON_LABEL_CAPTURE;
+        // ZL and ZR are axes lefttrigger and righttrigger
+        // C buttons map to right stick
         default:
             break;
         }
         break;
-    case SDL_GAMEPAD_FACE_STYLE_SONY:
-        switch (button) {
+    case SDL_GAMEPAD_TYPE_GAMECUBE:
+        switch (button)
+        {
         case SDL_GAMEPAD_BUTTON_SOUTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_CROSS;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
         case SDL_GAMEPAD_BUTTON_EAST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_CIRCLE;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_X;
         case SDL_GAMEPAD_BUTTON_WEST:
-            label = SDL_GAMEPAD_BUTTON_LABEL_SQUARE;
-            break;
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
         case SDL_GAMEPAD_BUTTON_NORTH:
-            label = SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE;
+            return SDL_GAMEPAD_BUTTON_LABEL_Y;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_Z;
+        default:
             break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
+        switch (button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_1;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_2;
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_SEGA_GENESIS:
+    case SDL_GAMEPAD_TYPE_SEGA_SATURN:
+        switch (button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_LABEL_X;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_Y;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            return SDL_GAMEPAD_BUTTON_LABEL_MODE;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_Z;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L;
+        // C and R are axes lefttrigger and righttrigger
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
+        switch (button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_II;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_I;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        // TODO: 6-button variation -- has many additional numerals
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_3DO:
+        switch (button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            return SDL_GAMEPAD_BUTTON_LABEL_X;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_P;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L;
+        // C is righttrigger; R is lefttrigger
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
+        switch (button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_LABEL_C;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_D;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_R;
         default:
             break;
         }
@@ -3662,15 +3742,22 @@ static SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadF
     default:
         break;
     }
-    return label;
-}
-
-/**
- * Get the label of a button on a gamepad.
- */
-SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button)
-{
-    return SDL_GetGamepadButtonLabelForFaceStyle(SDL_GetGamepadFaceStyleForGamepadType(type), button);
+    
+    // Buttons that are the same across all gamepad types
+    switch(button)
+    {
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+        return SDL_GAMEPAD_BUTTON_LABEL_DPAD_UP;
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+        return SDL_GAMEPAD_BUTTON_LABEL_DPAD_DOWN;
+    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+        return SDL_GAMEPAD_BUTTON_LABEL_DPAD_LEFT;
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+        return SDL_GAMEPAD_BUTTON_LABEL_DPAD_RIGHT;
+    default:
+        break;
+    }
+    return SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
 }
 
 /**
@@ -3678,17 +3765,170 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
  */
 SDL_GamepadButtonLabel SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    SDL_GamepadFaceStyle face_style;
+    return SDL_GetGamepadButtonLabelForType(SDL_GetGamepadType(gamepad), button);
+}
 
-    SDL_LockJoysticks();
-    {
-        CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN);
+static const char *map_StringForGamepadButtonLabel[] = {
+    "Unknown",
+    "A",
+    "B",
+    "X",
+    "Y",
+    "Cross",
+    "Circle",
+    "Square",
+    "Triangle",
+    "C",
+    "D",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "I",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "D-Pad up",
+    "D-Pad down",
+    "D-Pad left",
+    "D-Pad right",
+    "C-up",
+    "C-down",
+    "C-left",
+    "C-right",
+    "L",
+    "R",
+    "L1",
+    "R1",
+    "Left bumper",
+    "Right bumper",
+    "L3",
+    "R3",
+    "Left stick",
+    "Right stick",
+    "Z",
+    "Select",
+    "Back",
+    "View",
+    "Minus",
+    "Mode",
+    "Lock",
+    "Share",
+    "Start",
+    "Plus",
+    "Run",
+    "Menu",
+    "Options",
+    "P",
+    "Capture",
+    "Microphone",
+    "Touchpad",
+};
+SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButtonLabel, SDL_arraysize(map_StringForGamepadButtonLabel) == SDL_GAMEPAD_BUTTON_LABEL_COUNT);
 
-        face_style = gamepad->face_style;
+/**
+ * Convert from an SDL_GamepadButtonLabel enum to a string.
+ */
+const char *SDL_GetGamepadButtonLabelString(SDL_GamepadButtonLabel label)
+{
+    if ((unsigned int)label < SDL_GAMEPAD_BUTTON_LABEL_COUNT) {
+        return map_StringForGamepadButtonLabel[label];
     }
-    SDL_UnlockJoysticks();
+    return NULL;
+}
 
-    return SDL_GetGamepadButtonLabelForFaceStyle(face_style, button);
+static bool SDL_GamepadLocaleIsJP(void)
+{
+    int count = 0;
+    int i;
+    SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+
+    // check if first locale which specifies a country is jp
+    if (locales) {
+        for (i = 0; i < count; ++i)
+        {
+            if (locales[i]->country)
+            {
+                if (SDL_strcasecmp(locales[i]->country, "jp") == 0)
+                {
+                    SDL_free(locales);
+                    return true;
+                }
+                else
+                {
+                    SDL_free(locales);
+                    return false;
+                }
+            }
+        }
+        SDL_free(locales);
+    }
+    return false;
+}
+
+SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButtonForType(SDL_GamepadType type, SDL_GamepadConventionalAction action)
+{
+    if ((unsigned)type >= SDL_GAMEPAD_TYPE_COUNT) return SDL_GAMEPAD_BUTTON_INVALID;
+    
+    SDL_GamepadButton confirm_button = SDL_GAMEPAD_BUTTON_SOUTH;
+    SDL_GamepadButton cancel_button = SDL_GAMEPAD_BUTTON_EAST;
+
+    switch (type) {
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+    case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+    case SDL_GAMEPAD_TYPE_NES:
+    case SDL_GAMEPAD_TYPE_SNES:
+    case SDL_GAMEPAD_TYPE_N64:
+    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
+        confirm_button = SDL_GAMEPAD_BUTTON_EAST;
+        cancel_button = SDL_GAMEPAD_BUTTON_SOUTH;
+        break;
+    case SDL_GAMEPAD_TYPE_GAMECUBE:
+        confirm_button = SDL_GAMEPAD_BUTTON_SOUTH;
+        cancel_button = SDL_GAMEPAD_BUTTON_WEST;
+        break;
+    case SDL_GAMEPAD_TYPE_PS3:
+    case SDL_GAMEPAD_TYPE_PS4:
+        // confirm/cancel depends on region
+        if (SDL_gamepad_region_is_jp) {
+            confirm_button = SDL_GAMEPAD_BUTTON_EAST;
+            cancel_button = SDL_GAMEPAD_BUTTON_SOUTH;
+        } else {
+            confirm_button = SDL_GAMEPAD_BUTTON_SOUTH;
+            cancel_button = SDL_GAMEPAD_BUTTON_EAST;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_PS5:
+    default:
+        confirm_button = SDL_GAMEPAD_BUTTON_SOUTH;
+        cancel_button = SDL_GAMEPAD_BUTTON_EAST;
+        break;
+    }
+
+    switch (action)
+    {
+    case SDL_GAMEPAD_CONVENTION_CONFIRM:
+        return confirm_button;
+    case SDL_GAMEPAD_CONVENTION_CANCEL:
+        return cancel_button;
+    default:
+        return SDL_GAMEPAD_BUTTON_INVALID;
+    }
+}
+
+SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButton(SDL_Gamepad* gamepad, SDL_GamepadConventionalAction action)
+{
+    if (!gamepad) return SDL_GAMEPAD_BUTTON_INVALID;
+    return SDL_GetGamepadConventionalActionButtonForType(SDL_GetGamepadType(gamepad), action);
 }
 
 /**

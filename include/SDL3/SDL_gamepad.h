@@ -103,10 +103,12 @@ typedef struct SDL_Gamepad SDL_Gamepad;
  * Standard gamepad types.
  *
  * This type does not necessarily map to first-party controllers from
- * Microsoft/Sony/Nintendo; in many cases, third-party controllers can report
+ * Microsoft/Sony/Nintendo/etc.; in many cases, third-party controllers can report
  * as these, either because they were designed for a specific console, or they
  * simply most closely match that console's controllers (does it have A/B/X/Y
  * buttons or X/O/Square/Triangle? Does it have a touchpad? etc).
+ *
+ * PSX and PS1 controllers should be classified as PS3.
  */
 typedef enum SDL_GamepadType
 {
@@ -123,6 +125,15 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
     SDL_GAMEPAD_TYPE_GAMECUBE,
     SDL_GAMEPAD_TYPE_STEAM,
+    SDL_GAMEPAD_TYPE_NES,
+    SDL_GAMEPAD_TYPE_SNES,
+    SDL_GAMEPAD_TYPE_N64,
+    SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM,
+    SDL_GAMEPAD_TYPE_SEGA_GENESIS,
+    SDL_GAMEPAD_TYPE_SEGA_SATURN,
+    SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX,
+    SDL_GAMEPAD_TYPE_SNK_NEO_GEO,
+    SDL_GAMEPAD_TYPE_3DO,
     SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 
@@ -136,15 +147,25 @@ typedef enum SDL_GamepadType
  * would be A/X/B/Y, for PlayStation controllers this would be
  * Cross/Circle/Square/Triangle.
  *
+ * Gamepads which use a Sega Genesis-style layout (3 button or 6-button both)
+ * should map the bottom (or only) row to South, East, and Right Trigger, and
+ * the top row to West, North, and Right Button. L and R, if present, should
+ * be mapped to Left Button and Left Trigger respectively.
+ *
  * For controllers that don't use a diamond pattern for the face buttons, the
  * south/east/west/north buttons indicate the buttons labeled A, B, C, D, or
  * 1, 2, 3, 4, or for controllers that aren't labeled, they are the primary,
  * secondary, etc. buttons.
  *
  * The activate action is often the south button and the cancel action is
- * often the east button, but in some regions this is reversed, so your game
- * should allow remapping actions based on user preferences.
+ * often the east button, but in some regions and on some gamepads this is reversed,
+ * so your game should allow remapping actions based on user preferences, and you should
+ * check the gamepad type and region for the default mapping.
  *
+ * On some controllers, what would conventionally be considered buttons are instead
+ * considered axes by SDL, such as the R and C buttons on the genesis controller,
+ * or the ZL and ZR buttons on the Switch Pro controller.
+ * 
  * You can query the labels for the face buttons using
  * SDL_GetGamepadButtonLabel()
  *
@@ -185,12 +206,6 @@ typedef enum SDL_GamepadButton
 /**
  * The set of gamepad button labels
  *
- * This isn't a complete set, just the face buttons to make it easy to show
- * button prompts.
- *
- * For a complete set, you should look at the button and gamepad type and have
- * a set of symbols that work well with your art style.
- *
  * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_GamepadButtonLabel
@@ -203,8 +218,75 @@ typedef enum SDL_GamepadButtonLabel
     SDL_GAMEPAD_BUTTON_LABEL_CROSS,
     SDL_GAMEPAD_BUTTON_LABEL_CIRCLE,
     SDL_GAMEPAD_BUTTON_LABEL_SQUARE,
-    SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE
+    SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE,
+    SDL_GAMEPAD_BUTTON_LABEL_C,
+    SDL_GAMEPAD_BUTTON_LABEL_D,
+    SDL_GAMEPAD_BUTTON_LABEL_1,
+    SDL_GAMEPAD_BUTTON_LABEL_2,
+    SDL_GAMEPAD_BUTTON_LABEL_3,
+    SDL_GAMEPAD_BUTTON_LABEL_4,
+    SDL_GAMEPAD_BUTTON_LABEL_5,
+    SDL_GAMEPAD_BUTTON_LABEL_6,
+    SDL_GAMEPAD_BUTTON_LABEL_7,
+    SDL_GAMEPAD_BUTTON_LABEL_8,
+    SDL_GAMEPAD_BUTTON_LABEL_9,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_I,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_II,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_III,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_IV,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_V,
+    SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_VI,
+    SDL_GAMEPAD_BUTTON_LABEL_DPAD_UP,
+    SDL_GAMEPAD_BUTTON_LABEL_DPAD_DOWN,
+    SDL_GAMEPAD_BUTTON_LABEL_DPAD_LEFT,
+    SDL_GAMEPAD_BUTTON_LABEL_DPAD_RIGHT,
+    SDL_GAMEPAD_BUTTON_LABEL_C_UP,
+    SDL_GAMEPAD_BUTTON_LABEL_C_DOWN,
+    SDL_GAMEPAD_BUTTON_LABEL_C_LEFT,
+    SDL_GAMEPAD_BUTTON_LABEL_C_RIGHT,
+    SDL_GAMEPAD_BUTTON_LABEL_L,
+    SDL_GAMEPAD_BUTTON_LABEL_R,
+    SDL_GAMEPAD_BUTTON_LABEL_L1,
+    SDL_GAMEPAD_BUTTON_LABEL_R1,
+    SDL_GAMEPAD_BUTTON_LABEL_LEFT_BUMPER,
+    SDL_GAMEPAD_BUTTON_LABEL_RIGHT_BUMPER,
+    SDL_GAMEPAD_BUTTON_LABEL_L3,
+    SDL_GAMEPAD_BUTTON_LABEL_R3,
+    SDL_GAMEPAD_BUTTON_LABEL_LEFT_STICK,
+    SDL_GAMEPAD_BUTTON_LABEL_RIGHT_STICK,
+    SDL_GAMEPAD_BUTTON_LABEL_Z,
+    SDL_GAMEPAD_BUTTON_LABEL_SELECT,
+    SDL_GAMEPAD_BUTTON_LABEL_BACK,
+    SDL_GAMEPAD_BUTTON_LABEL_VIEW,
+    SDL_GAMEPAD_BUTTON_LABEL_MINUS,
+    SDL_GAMEPAD_BUTTON_LABEL_MODE,
+    SDL_GAMEPAD_BUTTON_LABEL_LOCK,
+    SDL_GAMEPAD_BUTTON_LABEL_SHARE,
+    SDL_GAMEPAD_BUTTON_LABEL_START,
+    SDL_GAMEPAD_BUTTON_LABEL_PLUS,
+    SDL_GAMEPAD_BUTTON_LABEL_RUN,
+    SDL_GAMEPAD_BUTTON_LABEL_MENU,
+    SDL_GAMEPAD_BUTTON_LABEL_OPTIONS,
+    SDL_GAMEPAD_BUTTON_LABEL_P,
+    SDL_GAMEPAD_BUTTON_LABEL_CAPTURE,
+    SDL_GAMEPAD_BUTTON_LABEL_MICROPHONE,
+    SDL_GAMEPAD_BUTTON_LABEL_TOUCHPAD,
+    SDL_GAMEPAD_BUTTON_LABEL_COUNT,
 } SDL_GamepadButtonLabel;
+
+/**
+ * Conventional UI actions whose button assignments
+ * are gamepad-dependent.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ */
+typedef enum SDL_GamepadConventionalAction
+{
+    SDL_GAMEPAD_CONVENTION_CONFIRM, /* typically 'A' */
+    SDL_GAMEPAD_CONVENTION_CANCEL, /* typically 'B' */
+    /* TODO - onscreen keyboard actions */
+} SDL_GamepadConventionalAction;
+ 
 
 /**
  * The list of axes available on a gamepad
@@ -732,6 +814,7 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeForID(SDL_Joystick
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGamepadTypeForID
+ * \sa SDL_GetGamepadStringForType
  * \sa SDL_GetGamepads
  * \sa SDL_GetRealGamepadType
  */
@@ -893,6 +976,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGamepadTypeForID
+ * \sa SDL_GetGamepadStringForType
  */
 extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad);
 
@@ -1389,8 +1473,61 @@ extern SDL_DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabelForT
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGamepadButtonLabelForType
+ * \sa SDL_GetGamepadButtonLabelString
  */
 extern SDL_DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+
+/**
+ * Convert from an SDL_GamepadButtonLabel enum to a string.
+ *
+ * \param label an enum value for a given SDL_GamepadButtonLabel.
+ * \returns a string for the given button label, or NULL if an invalid button label is
+ *          specified. In the case of controller buttons that are symbols,
+ *          they will be spelled out, such as "Triangle" or "Minus" for example.
+ *          
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadButtonLabel
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadButtonLabelString(SDL_GamepadButtonLabel label);
+
+/**
+ * Get the buttons conventionally used for common actions like
+ * "confirm/activate" and "cancel/back".
+ * In the case of PlayStation controllers up to and including PS4, the default
+ * confirm/cancel button is region-dependent, so it depends on the locale.
+ *
+ * \param type a gamepad type
+ * \param action the conventional action to query, such as "cancel"
+ * \returns a gamepad button, or SDL_GAMEPAD_BUTTON_INVALID if error or not applicable
+ *          
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadConventionalActionButton
+ */
+extern SDL_DECLSPEC SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButtonForType(SDL_GamepadType type, SDL_GamepadConventionalAction action);
+
+/**
+ * Get the buttons conventionally used for common actions like
+ * "confirm/activate" and "cancel/back".
+ * In the case of PlayStation controllers up to and including PS4, the default
+ * confirm/cancel button is region-dependent, so it depends on the locale.
+ *
+ * \param gamepad a gamepad
+ * \param action the conventional action to query, such as "cancel"
+ * \returns a gamepad button, or SDL_GAMEPAD_BUTTON_INVALID if error or not applicable
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadConventionalActionButtonForType
+ */
+extern SDL_DECLSPEC SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButton(SDL_Gamepad* gamepad, SDL_GamepadConventionalAction action);
 
 /**
  * Get the number of touchpads on a gamepad.

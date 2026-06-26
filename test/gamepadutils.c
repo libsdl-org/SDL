@@ -15,6 +15,8 @@
 #include "gamepadutils.h"
 #include "gamepad_front.h"
 #include "gamepad_back.h"
+#include "gamepad_face_1234.h"
+#include "gamepad_face_abcd.h"
 #include "gamepad_face_abxy.h"
 #include "gamepad_face_axby.h"
 #include "gamepad_face_bayx.h"
@@ -368,6 +370,8 @@ struct GamepadImage
     SDL_Renderer *renderer;
     SDL_Texture *front_texture;
     SDL_Texture *back_texture;
+    SDL_Texture *face_1234_texture;
+    SDL_Texture *face_abcd_texture;
     SDL_Texture *face_abxy_texture;
     SDL_Texture *face_axby_texture;
     SDL_Texture *face_bayx_texture;
@@ -403,7 +407,6 @@ struct GamepadImage
     bool showing_front;
     bool showing_touchpad;
     SDL_GamepadType type;
-    SDL_GamepadButtonLabel east_label;
     ControllerDisplayMode display_mode;
 
     bool elements[SDL_GAMEPAD_ELEMENT_MAX];
@@ -441,6 +444,8 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->back_texture = CreateTexture(renderer, gamepad_back_png, gamepad_back_png_len);
         SDL_GetTextureSize(ctx->front_texture, &ctx->gamepad_width, &ctx->gamepad_height);
 
+        ctx->face_1234_texture = CreateTexture(renderer, gamepad_face_1234_png, gamepad_face_1234_png_len);
+        ctx->face_abcd_texture = CreateTexture(renderer, gamepad_face_abcd_png, gamepad_face_abcd_png_len);
         ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_png, gamepad_face_abxy_png_len);
         ctx->face_axby_texture = CreateTexture(renderer, gamepad_face_axby_png, gamepad_face_axby_png_len);
         ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_png, gamepad_face_bayx_png_len);
@@ -743,7 +748,6 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     }
 
     ctx->type = SDL_GetGamepadType(gamepad);
-    ctx->east_label = SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_EAST);
     char *mapping = SDL_GetGamepadMapping(gamepad);
     if (mapping) {
         if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
@@ -884,20 +888,34 @@ void RenderGamepadImage(GamepadImage *ctx)
         dst.w = ctx->face_width;
         dst.h = ctx->face_height;
 
-        switch (ctx->east_label) {
-        case SDL_GAMEPAD_BUTTON_LABEL_B:
-            SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
-            break;
-        case SDL_GAMEPAD_BUTTON_LABEL_X:
+        switch (ctx->type) {
+        case SDL_GAMEPAD_TYPE_GAMECUBE:
             SDL_RenderTexture(ctx->renderer, ctx->face_axby_texture, NULL, &dst);
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_A:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+        case SDL_GAMEPAD_TYPE_NES:
+        case SDL_GAMEPAD_TYPE_SNES:
+        case SDL_GAMEPAD_TYPE_N64:
             SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
+        case SDL_GAMEPAD_TYPE_PS3:
+        case SDL_GAMEPAD_TYPE_PS4:
+        case SDL_GAMEPAD_TYPE_PS5:
             SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
             break;
+        case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
+        case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
+            SDL_RenderTexture(ctx->renderer, ctx->face_1234_texture, NULL, &dst);
+            break;
+        case SDL_GAMEPAD_TYPE_3DO:
+        case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
+            SDL_RenderTexture(ctx->renderer, ctx->face_abcd_texture, NULL, &dst);
+            break;
         default:
+            SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
             break;
         }
     }
@@ -1040,6 +1058,8 @@ void DestroyGamepadImage(GamepadImage *ctx)
 
         SDL_DestroyTexture(ctx->front_texture);
         SDL_DestroyTexture(ctx->back_texture);
+        SDL_DestroyTexture(ctx->face_1234_texture);
+        SDL_DestroyTexture(ctx->face_abcd_texture);
         SDL_DestroyTexture(ctx->face_abxy_texture);
         SDL_DestroyTexture(ctx->face_axby_texture);
         SDL_DestroyTexture(ctx->face_bayx_texture);
@@ -3636,6 +3656,12 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "PS4";
     case SDL_GAMEPAD_TYPE_PS5:
         return "PS5";
+    case SDL_GAMEPAD_TYPE_NES:
+        return "Nintendo NES";
+    case SDL_GAMEPAD_TYPE_SNES:
+        return "Nintendo SNES";
+    case SDL_GAMEPAD_TYPE_N64:
+        return "Nintendo N64";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
         return "Nintendo Switch";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
@@ -3648,8 +3674,20 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "GameCube";
     case SDL_GAMEPAD_TYPE_STEAM:
         return "Steam";
+    case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
+        return "Sega Master System";
+    case SDL_GAMEPAD_TYPE_SEGA_GENESIS:
+        return "Sega Genesis";
+    case SDL_GAMEPAD_TYPE_SEGA_SATURN:
+        return "Sega Saturn";
+    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
+        return "Hudson TurboGrafx-16";
+    case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
+        return "SNK Neo Geo";
+    case SDL_GAMEPAD_TYPE_3DO:
+        return "3DO";
     default:
-        return "";
+        return "(unknown)";
     }
 }
 
