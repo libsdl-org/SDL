@@ -252,6 +252,20 @@ static Uint8 keyevents_ringbuffer[256];
 static int keyevents_head = 0;
 static int keyevents_tail = 0;
 
+static void DOSVESA_DrainBIOSKeyboardBuffer(void)
+{
+    __dpmi_regs regs;
+    for (;;) {
+        regs.h.ah = 0x01; // BIOS: check for keystroke
+        __dpmi_int(0x16, &regs);
+        if (regs.x.flags & 0x40) { // ZF set = buffer empty
+            break;
+        }
+        regs.h.ah = 0x00; // BIOS: read keystroke (removes it)
+        __dpmi_int(0x16, &regs);
+    }
+}
+
 void DOSVESA_PumpEvents(SDL_VideoDevice *device)
 {
     /* Give cooperative threads a chance to run.  Audio mixing now runs
@@ -322,6 +336,10 @@ void DOSVESA_PumpEvents(SDL_VideoDevice *device)
         }
     }
 
+    // We chain IRQ1 to BIOS, so drain its keyboard queue continuously to prevent
+    // BIOS buffer overflow beeps during long key autorepeat.
+    DOSVESA_DrainBIOSKeyboardBuffer();
+
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->internal) { // if non-NULL, there's a mouse detected on the system.
         __dpmi_regs regs;
@@ -380,18 +398,7 @@ void DOSVESA_QuitKeyboard(SDL_VideoDevice *device)
 
     // Drain the BIOS keyboard buffer so held keys (like ESC) don't
     // bleed through to the DOS command line after we exit.
-    {
-        __dpmi_regs regs;
-        for (;;) {
-            regs.h.ah = 0x01; // BIOS: check for keystroke
-            __dpmi_int(0x16, &regs);
-            if (regs.x.flags & 0x40) { // ZF set = buffer empty
-                break;
-            }
-            regs.h.ah = 0x00; // BIOS: read keystroke (removes it)
-            __dpmi_int(0x16, &regs);
-        }
-    }
+    DOSVESA_DrainBIOSKeyboardBuffer();
 }
 
 #endif // SDL_VIDEO_DRIVER_DOSVESA
