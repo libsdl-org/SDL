@@ -22,23 +22,29 @@ public class SDL {
     public static final int SDL_INIT_EVERYTHING = SDL_INIT_AUDIO | SDL_INIT_VIDEO |
         SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | SDL_INIT_CAMERA;
 
+    // SDLControllerManager backs all three of these, so it is set up when any are present.
+    private static final int SDL_INIT_CONTROLLER = SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC;
+
     private static int mInitializedSubsystems = SDL_INIT_EVERYTHING;
+    private static int mCompiledSubsystems = SDL_INIT_EVERYTHING;
 
     static public void setupJNI() {
         setupJNI(SDL_INIT_EVERYTHING);
     }
 
-    // Mask must match the native build's SDL_*_DISABLED flags: dropping SDL_INIT_AUDIO when the lib was built with audio stalls checkJNIReady() and SDL_SetMainReady() never fires.
     static public void setupJNI(int subsystems) {
-        mInitializedSubsystems = subsystems;
-
         SDLActivity.nativeSetupJNI();
 
-        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+        mCompiledSubsystems = SDLActivity.nativeGetCompiledSubsystems();
+        mInitializedSubsystems = (subsystems & mCompiledSubsystems);
+
+        if (isSubsystemCompiled(SDL_INIT_AUDIO)) {
             SDLAudioManager.nativeSetupJNI();
         }
 
-        SDLControllerManager.nativeSetupJNI();
+        if (isSubsystemCompiled(SDL_INIT_CONTROLLER)) {
+            SDLControllerManager.nativeSetupJNI();
+        }
     }
 
     static public void initialize() {
@@ -50,16 +56,30 @@ public class SDL {
 
         SDLActivity.initialize();
 
-        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+        if (isSubsystemCompiled(SDL_INIT_AUDIO)) {
             SDLAudioManager.initialize();
         }
 
-        SDLControllerManager.initialize();
+        if (isSubsystemCompiled(SDL_INIT_CONTROLLER)) {
+            SDLControllerManager.initialize();
+        }
+    }
+
+    static boolean isSubsystemInitialized(int subsystem) {
+        return (mInitializedSubsystems & subsystem) != 0;
+    }
+
+    static boolean isSubsystemCompiled(int subsystem) {
+        return (mCompiledSubsystems & subsystem) != 0;
+    }
+
+    static boolean isControllerManagerReady() {
+        return isSubsystemInitialized(SDL_INIT_CONTROLLER);
     }
 
     // This function stores the current activity (SDL or not)
     static public void setContext(Activity context) {
-        if ((mInitializedSubsystems & SDL_INIT_AUDIO) != 0) {
+        if (isSubsystemCompiled(SDL_INIT_AUDIO)) {
             SDLAudioManager.setContext(context);
         }
         mContext = context;
