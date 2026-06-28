@@ -3849,6 +3849,7 @@ static bool SDL_GamepadLocaleIsJP(void)
     int count = 0;
     int i;
     SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+    bool locale_is_jp = false;
 
     // check if first locale which specifies a country is jp
     if (locales) {
@@ -3858,19 +3859,14 @@ static bool SDL_GamepadLocaleIsJP(void)
             {
                 if (SDL_strcasecmp(locales[i]->country, "jp") == 0)
                 {
-                    SDL_free(locales);
-                    return true;
+                    locale_is_jp = true;
                 }
-                else
-                {
-                    SDL_free(locales);
-                    return false;
-                }
+                break;
             }
         }
         SDL_free(locales);
     }
-    return false;
+    return locale_is_jp;
 }
 
 SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButtonForType(SDL_GamepadType type, SDL_GamepadConventionalAction action)
