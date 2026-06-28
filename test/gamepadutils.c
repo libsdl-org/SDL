@@ -896,7 +896,6 @@ void RenderGamepadImage(GamepadImage *ctx)
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-        case SDL_GAMEPAD_TYPE_NES:
         case SDL_GAMEPAD_TYPE_SNES:
         case SDL_GAMEPAD_TYPE_N64:
             SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
@@ -905,14 +904,6 @@ void RenderGamepadImage(GamepadImage *ctx)
         case SDL_GAMEPAD_TYPE_PS4:
         case SDL_GAMEPAD_TYPE_PS5:
             SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
-            break;
-        case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
-        case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
-            SDL_RenderTexture(ctx->renderer, ctx->face_1234_texture, NULL, &dst);
-            break;
-        case SDL_GAMEPAD_TYPE_3DO:
-        case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
-            SDL_RenderTexture(ctx->renderer, ctx->face_abcd_texture, NULL, &dst);
             break;
         default:
             SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
@@ -3656,8 +3647,6 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "PS4";
     case SDL_GAMEPAD_TYPE_PS5:
         return "PS5";
-    case SDL_GAMEPAD_TYPE_NES:
-        return "Nintendo NES";
     case SDL_GAMEPAD_TYPE_SNES:
         return "Nintendo SNES";
     case SDL_GAMEPAD_TYPE_N64:
@@ -3674,18 +3663,8 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "GameCube";
     case SDL_GAMEPAD_TYPE_STEAM:
         return "Steam";
-    case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
-        return "Sega Master System";
     case SDL_GAMEPAD_TYPE_SEGA_GENESIS:
         return "Sega Genesis";
-    case SDL_GAMEPAD_TYPE_SEGA_SATURN:
-        return "Sega Saturn";
-    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
-        return "Hudson TurboGrafx-16";
-    case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
-        return "SNK Neo Geo";
-    case SDL_GAMEPAD_TYPE_3DO:
-        return "3DO";
     default:
         return "(unknown)";
     }

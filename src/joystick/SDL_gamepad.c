@@ -1478,15 +1478,9 @@ static const char *map_StringForGamepadType[] = {
     "joyconpair",
     "gamecube",
     "steam",
-    "nes",
     "snes",
     "n64",
-    "mastersystem",
     "genesis",
-    "saturn",
-    "turbografx",
-    "neogeo",
-    "3do",
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_COUNT);
 
@@ -1863,7 +1857,6 @@ static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
             && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT
             && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT
             && gamepad->type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR
-            && gamepad->type != SDL_GAMEPAD_TYPE_NES
             && gamepad->type != SDL_GAMEPAD_TYPE_SNES
             && gamepad->type != SDL_GAMEPAD_TYPE_N64)
         {
@@ -3591,14 +3584,12 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
             break;
         }
         break;
-    case SDL_GAMEPAD_TYPE_NES:
     case SDL_GAMEPAD_TYPE_SNES:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
     // FIXME: do sideways joycons have different button names?
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-    case SDL_GAMEPAD_TYPE_N64:
         switch (button)
         {
         case SDL_GAMEPAD_BUTTON_SOUTH:
@@ -3610,9 +3601,13 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
         case SDL_GAMEPAD_BUTTON_NORTH:
             return SDL_GAMEPAD_BUTTON_LABEL_X;
         case SDL_GAMEPAD_BUTTON_BACK:
-            return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+            if (type == SDL_GAMEPAD_TYPE_SNES)
+                return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+            return SDL_GAMEPAD_BUTTON_LABEL_MINUS;
         case SDL_GAMEPAD_BUTTON_START:
-            return SDL_GAMEPAD_BUTTON_LABEL_START;
+            if (type == SDL_GAMEPAD_TYPE_SNES)
+                return SDL_GAMEPAD_BUTTON_LABEL_START;
+            return SDL_GAMEPAD_BUTTON_LABEL_PLUS;
         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
             return SDL_GAMEPAD_BUTTON_LABEL_L;
         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
@@ -3624,7 +3619,33 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
         case SDL_GAMEPAD_BUTTON_MISC1:
             return SDL_GAMEPAD_BUTTON_LABEL_CAPTURE;
         // ZL and ZR are axes lefttrigger and righttrigger
-        // C buttons map to right stick
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_TYPE_N64:
+        switch(button)
+        {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_A;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_LABEL_B;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_LABEL_C_DOWN;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_LABEL_C_LEFT;
+        case SDL_GAMEPAD_BUTTON_BACK:
+            // On some third-party PC models only
+            return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
+        case SDL_GAMEPAD_BUTTON_START:
+            return SDL_GAMEPAD_BUTTON_LABEL_START;
+        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_L;
+        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+            return SDL_GAMEPAD_BUTTON_LABEL_R;
+        case SDL_GAMEPAD_BUTTON_MISC1:
+            return SDL_GAMEPAD_BUTTON_LABEL_CAPTURE;
+        // Axes: ZL -> "Z"; ZR -> "ZR" (switch online) Ry- -> C-up Rx+ -> C-right
         default:
             break;
         }
@@ -3648,19 +3669,7 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
             break;
         }
         break;
-    case SDL_GAMEPAD_TYPE_SEGA_MASTER_SYSTEM:
-        switch (button)
-        {
-        case SDL_GAMEPAD_BUTTON_SOUTH:
-            return SDL_GAMEPAD_BUTTON_LABEL_1;
-        case SDL_GAMEPAD_BUTTON_EAST:
-            return SDL_GAMEPAD_BUTTON_LABEL_2;
-        default:
-            break;
-        }
-        break;
     case SDL_GAMEPAD_TYPE_SEGA_GENESIS:
-    case SDL_GAMEPAD_TYPE_SEGA_SATURN:
         switch (button)
         {
         case SDL_GAMEPAD_BUTTON_SOUTH:
@@ -3678,63 +3687,9 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
         case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
             return SDL_GAMEPAD_BUTTON_LABEL_Z;
         case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            /* Saturn only */
             return SDL_GAMEPAD_BUTTON_LABEL_L;
-        // C and R are axes lefttrigger and righttrigger
-        default:
-            break;
-        }
-        break;
-    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
-        switch (button)
-        {
-        case SDL_GAMEPAD_BUTTON_SOUTH:
-            return SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_II;
-        case SDL_GAMEPAD_BUTTON_EAST:
-            return SDL_GAMEPAD_BUTTON_LABEL_NUMERAL_I;
-        case SDL_GAMEPAD_BUTTON_START:
-            return SDL_GAMEPAD_BUTTON_LABEL_START;
-        // TODO: 6-button variation -- has many additional numerals
-        default:
-            break;
-        }
-        break;
-    case SDL_GAMEPAD_TYPE_3DO:
-        switch (button)
-        {
-        case SDL_GAMEPAD_BUTTON_SOUTH:
-            return SDL_GAMEPAD_BUTTON_LABEL_A;
-        case SDL_GAMEPAD_BUTTON_EAST:
-            return SDL_GAMEPAD_BUTTON_LABEL_B;
-        case SDL_GAMEPAD_BUTTON_BACK:
-            return SDL_GAMEPAD_BUTTON_LABEL_X;
-        case SDL_GAMEPAD_BUTTON_START:
-            return SDL_GAMEPAD_BUTTON_LABEL_P;
-        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
-            return SDL_GAMEPAD_BUTTON_LABEL_L;
-        // C is righttrigger; R is lefttrigger
-        default:
-            break;
-        }
-        break;
-    case SDL_GAMEPAD_TYPE_SNK_NEO_GEO:
-        switch (button)
-        {
-        case SDL_GAMEPAD_BUTTON_SOUTH:
-            return SDL_GAMEPAD_BUTTON_LABEL_A;
-        case SDL_GAMEPAD_BUTTON_EAST:
-            return SDL_GAMEPAD_BUTTON_LABEL_B;
-        case SDL_GAMEPAD_BUTTON_WEST:
-            return SDL_GAMEPAD_BUTTON_LABEL_C;
-        case SDL_GAMEPAD_BUTTON_NORTH:
-            return SDL_GAMEPAD_BUTTON_LABEL_D;
-        case SDL_GAMEPAD_BUTTON_BACK:
-            return SDL_GAMEPAD_BUTTON_LABEL_SELECT;
-        case SDL_GAMEPAD_BUTTON_START:
-            return SDL_GAMEPAD_BUTTON_LABEL_START;
-        case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
-            return SDL_GAMEPAD_BUTTON_LABEL_L;
-        case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
-            return SDL_GAMEPAD_BUTTON_LABEL_R;
+        // C and (Saturn) R are axes lefttrigger and righttrigger
         default:
             break;
         }
@@ -3780,21 +3735,6 @@ static const char *map_StringForGamepadButtonLabel[] = {
     "Triangle",
     "C",
     "D",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "I",
-    "II",
-    "III",
-    "IV",
-    "V",
-    "VI",
     "D-Pad up",
     "D-Pad down",
     "D-Pad left",
@@ -3819,17 +3759,13 @@ static const char *map_StringForGamepadButtonLabel[] = {
     "View",
     "Minus",
     "Mode",
-    "Lock",
     "Share",
     "Start",
     "Plus",
-    "Run",
     "Menu",
     "Options",
-    "P",
     "Capture",
     "Microphone",
-    "Touchpad",
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadButtonLabel, SDL_arraysize(map_StringForGamepadButtonLabel) == SDL_GAMEPAD_BUTTON_LABEL_COUNT);
 
@@ -3877,17 +3813,15 @@ SDL_GamepadButton SDLCALL SDL_GetGamepadConventionalActionButtonForType(SDL_Game
     SDL_GamepadButton cancel_button = SDL_GAMEPAD_BUTTON_EAST;
 
     switch (type) {
+    case SDL_GAMEPAD_TYPE_SNES:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
-    case SDL_GAMEPAD_TYPE_NES:
-    case SDL_GAMEPAD_TYPE_SNES:
-    case SDL_GAMEPAD_TYPE_N64:
-    case SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX:
         confirm_button = SDL_GAMEPAD_BUTTON_EAST;
         cancel_button = SDL_GAMEPAD_BUTTON_SOUTH;
         break;
+    case SDL_GAMEPAD_TYPE_N64:
     case SDL_GAMEPAD_TYPE_GAMECUBE:
         confirm_button = SDL_GAMEPAD_BUTTON_SOUTH;
         cancel_button = SDL_GAMEPAD_BUTTON_WEST;

@@ -3079,7 +3079,8 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT)) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
-            type = SDL_GAMEPAD_TYPE_NES;
+            /* TODO -- NES gamepad type */
+            type = SDL_GAMEPAD_TYPE_SNES;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
@@ -3109,18 +3110,16 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
      * logic by updating the database with 'type: info. */
     else if (name && SDL_strcasestr(name, "n64")) {
         return SDL_GAMEPAD_TYPE_N64;
-    } else if (name && SDL_strcasestr(name, "pc engine")) {
-        return SDL_GAMEPAD_TYPE_HUDSON_TURBOGRAFX;
-    } else if (name && SDL_strcasestr(name, "neogeo")) {
-        return SDL_GAMEPAD_TYPE_SNK_NEO_GEO;
     } else if (name && SDL_strcasestr(name, "snes")) {
         return SDL_GAMEPAD_TYPE_SNES;
     } else if (name && SDL_strcasestr(name, "saturn")) {
-        return SDL_GAMEPAD_TYPE_SEGA_SATURN;
+        /* TODO -- Saturn type separate from genesis? */
+        return SDL_GAMEPAD_TYPE_SEGA_GENESIS;
     } else if (name && SDL_strcasestr(name, "genesis")) {
         return SDL_GAMEPAD_TYPE_SEGA_GENESIS;
     } else if (name && (SDL_strcasestr(name, " nes") || SDL_strncasecmp(name, "nes", 3) == 0)) {
-        return SDL_GAMEPAD_TYPE_NES;
+        /* TODO -- NES gamepad type */
+        return SDL_GAMEPAD_TYPE_SNES;
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
