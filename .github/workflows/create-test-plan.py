@@ -157,9 +157,9 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "djgpp": JobSpec(name="DOS (DJGPP)",                                    priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
-    "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
-    "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
-    "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
+    "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
+    "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
+    "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
 }
 
 
