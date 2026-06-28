@@ -1648,8 +1648,6 @@ bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
     HWND hwnd = data->hwnd;
     const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-    SDL_assert(style != 0);
-
     if (opacity == 1.0f) {
         // want it fully opaque, just mark it unlayered if necessary.
         if (style & WS_EX_LAYERED) {
