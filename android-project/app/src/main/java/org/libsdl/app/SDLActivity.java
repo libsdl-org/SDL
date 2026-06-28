@@ -39,6 +39,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -952,15 +954,31 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     Window window = ((Activity) context).getWindow();
                     if (window != null) {
                         if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
-                            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                                // The legacy setSystemUiVisibility() flags are ignored on
+                                // Android 15+ (API 35+), where edge-to-edge is enforced for
+                                // apps targeting that SDK, so the status/navigation bars
+                                // would never hide. Use WindowInsetsController instead.
+                                window.setDecorFitsSystemWindows(false);
+                                final WindowInsetsController controller = window.getInsetsController();
+                                if (controller != null) {
+                                    controller.hide(WindowInsets.Type.systemBars());
+                                    // Sticky-immersive (replaces SYSTEM_UI_FLAG_IMMERSIVE_STICKY):
+                                    // a swipe shows the bars transiently, then they auto-hide.
+                                    controller.setSystemBarsBehavior(
+                                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                                }
+                            } else {
+                                int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
+                                window.getDecorView().setSystemUiVisibility(flags);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            }
                             SDLActivity.mFullscreenModeActive = true;
                         } else {
                             int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
@@ -1124,9 +1142,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native boolean nativeAllowRecreateActivity();
     public static native int nativeCheckSDLThreadCounter();
     public static native void onNativeFileDialog(int requestCode, String[] filelist, int filter);
-    public static native void onNativePinchStart();
-    public static native void onNativePinchUpdate(float scale);
-    public static native void onNativePinchEnd();
+    public static native void onNativePinchStart(float span_x, float span_y, float focus_x, float focus_y);
+    public static native void onNativePinchUpdate(float scale, float span_x, float span_y, float focus_x, float focus_y);
+    public static native void onNativePinchEnd(float span_x, float span_y, float focus_x, float focus_y);
 
     /**
      * This method is called by SDL using JNI.
@@ -1325,6 +1343,25 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return true;
         }
         return false;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static String getDeviceFormFactor()
+    {
+        // TODO: WearOS
+        if (isAndroidTV()) {
+            return "tv";
+        } else if (isVRHeadset()) {
+            return "headset";
+        } else if (isTablet()) {
+            return "tablet";
+        //} else if (isAndroidAutomotive()) {
+        //    return "car";
+        } else {
+            return "phone";
+        }
     }
 
     public static double getDiagonal()
@@ -1799,14 +1836,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private final Runnable rehideSystemUi = new Runnable() {
         @Override
         public void run() {
-            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
+            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                final WindowInsetsController controller =
+                        SDLActivity.this.getWindow().getInsetsController();
+                if (controller != null) {
+                    controller.hide(WindowInsets.Type.systemBars());
+                }
+            } else {
+                int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
 
-            SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
+                SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
+            }
         }
     };
 
@@ -2207,6 +2252,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (initialPathUri != null) {
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialPathUri);
+        }
+
+        /* Handle a suggested filename when saving */
+        if (type == SDL_FILEDIALOG_SAVEFILE && initialPath != null && !initialPath.isEmpty() &&
+            !initialPath.endsWith("/") && !initialPath.endsWith("\\")) {
+            String title = initialPath;
+            int lastSeparator = Math.max(title.lastIndexOf('/'), title.lastIndexOf('\\'));
+            if (lastSeparator >= 0) {
+                title = title.substring(lastSeparator + 1);
+            }
+            if (!title.isEmpty()) {
+                intent.putExtra(Intent.EXTRA_TITLE, title);
+            }
         }
 
         /* Display the file/folder dialog */

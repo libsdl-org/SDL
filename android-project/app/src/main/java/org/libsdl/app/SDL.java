@@ -10,26 +10,58 @@ import java.lang.reflect.Method;
 */
 public class SDL {
 
-    // This function should be called first and sets up the native code
-    // so it can call into the Java classes
+    // SDL_INIT_* values, mirrored so embedders can request a subset and skip stub classes for unused subsystems.
+    public static final int SDL_INIT_AUDIO      = 0x00000010;
+    public static final int SDL_INIT_VIDEO      = 0x00000020;
+    public static final int SDL_INIT_JOYSTICK   = 0x00000200;
+    public static final int SDL_INIT_HAPTIC     = 0x00001000;
+    public static final int SDL_INIT_GAMEPAD    = 0x00002000;
+    public static final int SDL_INIT_SENSOR     = 0x00008000;
+    public static final int SDL_INIT_CAMERA     = 0x00010000;
+
+    public static final int SDL_INIT_EVERYTHING = SDL_INIT_AUDIO | SDL_INIT_VIDEO |
+        SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_SENSOR | SDL_INIT_CAMERA;
+
+    private static int mInitializedSubsystems = SDL_INIT_EVERYTHING;
+
     static public void setupJNI() {
+        setupJNI(SDL_INIT_EVERYTHING);
+    }
+
+    // Mask must match the native build's SDL_*_DISABLED flags: dropping SDL_INIT_AUDIO when the lib was built with audio stalls checkJNIReady() and SDL_SetMainReady() never fires.
+    static public void setupJNI(int subsystems) {
+        mInitializedSubsystems = subsystems;
+
         SDLActivity.nativeSetupJNI();
-        SDLAudioManager.nativeSetupJNI();
+
+        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.nativeSetupJNI();
+        }
+
         SDLControllerManager.nativeSetupJNI();
     }
 
-    // This function should be called each time the activity is started
     static public void initialize() {
+        initialize(mInitializedSubsystems);
+    }
+
+    static public void initialize(int subsystems) {
         setContext(null);
 
         SDLActivity.initialize();
-        SDLAudioManager.initialize();
+
+        if ((subsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.initialize();
+        }
+
         SDLControllerManager.initialize();
     }
 
     // This function stores the current activity (SDL or not)
     static public void setContext(Activity context) {
-        SDLAudioManager.setContext(context);
+        if ((mInitializedSubsystems & SDL_INIT_AUDIO) != 0) {
+            SDLAudioManager.setContext(context);
+        }
         mContext = context;
     }
 

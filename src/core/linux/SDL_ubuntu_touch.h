@@ -20,47 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_TIME_PS2
+#ifdef SDL_PLATFORM_LINUX
 
-#include "../SDL_time_c.h"
+bool SDL_SetupUbuntuTouchGlobalProperties(SDL_PropertiesID props);
 
-// PS2 epoch is Jan 1 2000 JST (UTC +9)
-#define UNIX_EPOCH_OFFSET_SEC 946717200
-
-// TODO: Implement this...
-void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
-{
-}
-
-bool SDL_GetCurrentTime(SDL_Time *ticks)
-{
-    CHECK_PARAM(!ticks) {
-        return SDL_InvalidParamError("ticks");
-    }
-
-    *ticks = 0;
-
-    return true;
-}
-
-bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
-{
-    CHECK_PARAM(!dt) {
-        return SDL_InvalidParamError("dt");
-    }
-
-    // FIXME: Need implementation
-    dt->year = 1970;
-    dt->month = 1;
-    dt->day = 1;
-    dt->hour = 0;
-    dt->minute = 0;
-    dt->second = 0;
-    dt->nanosecond = 0;
-    dt->day_of_week = 4;
-    dt->utc_offset = 0;
-
-    return true;
-}
-
-#endif // SDL_TIME_PS2
+#endif

@@ -440,19 +440,31 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         float scale = detector.getScaleFactor();
-        SDLActivity.onNativePinchUpdate(scale);
+        float span_x = getNormalizedX(detector.getCurrentSpanX());
+        float span_y = getNormalizedY(detector.getCurrentSpanY());
+        float focus_x = getNormalizedX(detector.getFocusX());
+        float focus_y = getNormalizedY(detector.getFocusY());
+        SDLActivity.onNativePinchUpdate(scale, span_x, span_y, focus_x, focus_y);
         return true;
     }
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        SDLActivity.onNativePinchStart();
+        float span_x = getNormalizedX(detector.getCurrentSpanX());
+        float span_y = getNormalizedY(detector.getCurrentSpanY());
+        float focus_x = getNormalizedX(detector.getFocusX());
+        float focus_y = getNormalizedY(detector.getFocusY());
+        SDLActivity.onNativePinchStart(span_x, span_y, focus_x, focus_y);
         return true;
     }
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        SDLActivity.onNativePinchEnd();
+        float span_x = getNormalizedX(detector.getCurrentSpanX());
+        float span_y = getNormalizedY(detector.getCurrentSpanY());
+        float focus_x = getNormalizedX(detector.getFocusX());
+        float focus_y = getNormalizedY(detector.getFocusY());
+        SDLActivity.onNativePinchEnd(span_x, span_y, focus_x, focus_y);
     }
 
 }

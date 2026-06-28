@@ -33,6 +33,8 @@ struct SDL_PrivateAudioData
     struct pw_stream *stream;
     struct pw_context *context;
 
+    char *node_name;
+
     Sint32 stride; // Bytes-per-frame
     int stream_init_status;
 

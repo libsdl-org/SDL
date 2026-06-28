@@ -1531,7 +1531,7 @@ typedef struct IOStreamStdioFPData
     bool autoclose;
 } IOStreamStdioFPData;
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     int stdiowhence;
@@ -1551,7 +1551,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
         return -1;
     }
 
-    if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
+    if (fseek(fp, (long)offset, stdiowhence) == 0) {
         const Sint64 pos = ftell(fp);
         if (pos < 0) {
             SDL_SetError("Couldn't get stream offset");
@@ -1585,7 +1585,7 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
 
 static bool SDLCALL stdio_close(void *userdata)
 {
-    IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
+    IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
     bool status = true;
     if (rwopsdata->autoclose) {
         if (fclose(rwopsdata->fp) != 0) {

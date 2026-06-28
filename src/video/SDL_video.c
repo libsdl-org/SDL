@@ -660,6 +660,12 @@ bool SDL_VideoInit(const char *driver_name)
 
     // Select the proper video driver
     video = NULL;
+#ifdef SDL_PLATFORM_LINUX
+    // https://github.com/libsdl-org/SDL/issues/12247
+    if (SDL_IsUbuntuTouch()) {
+        driver_name = "wayland";
+    }
+#endif
     if (!driver_name) {
         driver_name = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     }
@@ -2669,16 +2675,6 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
         return false;
     }
 
-    // Don't attempt to reconfigure external windows.
-    if (window->flags & SDL_WINDOW_EXTERNAL) {
-        return false;
-    }
-
-    // Only attempt to reconfigure if the window has no existing graphics flags.
-    if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
-        return false;
-    }
-
     const SDL_WindowFlags graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
         return SDL_SetError("Conflicting window flags specified");
@@ -2692,6 +2688,28 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
     }
     if ((flags & SDL_WINDOW_METAL) && !_this->Metal_CreateView) {
         return SDL_ContextNotSupported("Metal");
+    }
+
+    if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+        // Only attempt to reconfigure if the window has no existing graphics flags.
+        if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
+            return false;
+        }
+    } else {
+        // Can't destroy and recreate an external window, so try our best to reconfigure it.
+        if (!_this->ReconfigureWindow(_this, window, 0)) {
+            return false;
+        }
+
+        // Reload the GL/Vulkan libraries in case the profile changed.
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_VULKAN) {
+            SDL_Vulkan_UnloadLibrary();
+        }
+
+        window->flags &= ~(SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     }
 
     SDL_DestroyWindowSurface(window);
@@ -4401,10 +4419,12 @@ void SDL_OnWindowEnter(SDL_Window *window)
     if (_this->OnWindowEnter) {
         _this->OnWindowEnter(_this, window);
     }
+    SDL_UpdateRelativeMouseMode();
 }
 
 void SDL_OnWindowLeave(SDL_Window *window)
 {
+    SDL_UpdateRelativeMouseMode();
 }
 
 void SDL_OnWindowFocusGained(SDL_Window *window)
@@ -5268,7 +5288,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
     }
     case SDL_GL_ACCELERATED_VISUAL:
     {
-        // FIXME: How do we get this information?
+        // Note that we can _not_ reasonably detect this once we have a context.
         *value = (_this->gl_config.accelerated != 0);
         return true;
     }
@@ -5778,8 +5798,10 @@ static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (!hint) {
-        // Steam will eventually have smarts about whether a keyboard is active, so always request the on-screen keyboard on Steam Deck
-        hint = SDL_GetHint("SteamDeck");
+        // This hint is currently only used by the X11 video driver
+        if (SDL_strcmp(_this->name, "x11") == 0) {
+            hint = SDL_GetHint(SDL_HINT_ENABLE_STEAM_SCREEN_KEYBOARD);
+        }
     }
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, false)) {

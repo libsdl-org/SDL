@@ -2259,6 +2259,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         }
         SDL_free(joystick->touchpads);
         SDL_free(joystick->sensors);
+        SDL_free(joystick->capsenses);
         SDL_free(joystick);
     }
     SDL_UnlockJoysticks();
@@ -3346,6 +3347,11 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
             product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE ||
             product_id == USB_PRODUCT_BONZIRICHANNEL_FIREBIRD ||
             product_id == USB_PRODUCT_VOIDGAMING_PS4FIREBIRD) {
+            return true;
+        }
+    }
+    if (vendor_id == USB_VENDOR_ANDGAMER) {
+        if (product_id == USB_PRODUCT_VOIDGAMING_GENESIS_SINPUT) {
             return true;
         }
     }
