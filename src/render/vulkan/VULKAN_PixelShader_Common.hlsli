@@ -161,9 +161,12 @@ float4 GetInputColor(PixelShaderInput input)
 
     if (texture_type == TEXTURETYPE_RGB) {
         rgba = texture0.Sample(sampler0, input.tex);
+// NVIDIA drivers crash when trying to use SampleGrad() on a texture with YCbCr conversion
+#ifndef BROKEN_YCbCr_NVIDIA
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
+#endif
     } else if (texture_type == TEXTURETYPE_PALETTE_NEAREST) {
         rgba = SamplePaletteNearest(input.tex);
     } else if (texture_type == TEXTURETYPE_PALETTE_LINEAR) {

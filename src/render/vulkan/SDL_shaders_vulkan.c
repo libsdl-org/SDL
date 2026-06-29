@@ -27,7 +27,9 @@
 // The shaders here were compiled with compile_shaders.bat
 #include "VULKAN_PixelShader_Colors.h"
 #include "VULKAN_PixelShader_Textures.h"
+#include "VULKAN_PixelShader_Textures_YUV.h"
 #include "VULKAN_PixelShader_Advanced.h"
+#include "VULKAN_PixelShader_Advanced_YUV.h"
 #include "VULKAN_VertexShader.h"
 
 static struct
@@ -41,7 +43,11 @@ static struct
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
     { VULKAN_PixelShader_Textures, sizeof(VULKAN_PixelShader_Textures),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
+    { VULKAN_PixelShader_Textures_YUV, sizeof(VULKAN_PixelShader_Textures_YUV),
+      VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
     { VULKAN_PixelShader_Advanced, sizeof(VULKAN_PixelShader_Advanced),
+      VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
+    { VULKAN_PixelShader_Advanced_YUV, sizeof(VULKAN_PixelShader_Advanced_YUV),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
 };
 
