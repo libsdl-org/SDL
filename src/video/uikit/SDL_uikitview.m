@@ -514,7 +514,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, -1.0f, -1.0f, -1.0f, -1.0f);
             break;
 
         default:

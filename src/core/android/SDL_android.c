@@ -134,8 +134,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchUpdate)(
     jfloat scale, jfloat span_x, jfloat span_y, jfloat focus_x, jfloat focus_y);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchEnd)(
-    JNIEnv *env, jclass jcls,
-    jfloat span_x, jfloat span_y, jfloat focus_x, jfloat focus_y);
+    JNIEnv *env, jclass jcls);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     JNIEnv *env, jclass jcls,
@@ -255,7 +254,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeTouch", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
     { "onNativePinchStart", "(FFFF)V", SDL_JAVA_INTERFACE(onNativePinchStart) },
     { "onNativePinchUpdate", "(FFFFF)V", SDL_JAVA_INTERFACE(onNativePinchUpdate) },
-    { "onNativePinchEnd", "(FFFF)V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
+    { "onNativePinchEnd", "()V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
     { "onNativePen", "(IIIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
@@ -1497,12 +1496,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchUpdate)(
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchEnd)(
-    JNIEnv *env, jclass jcls, jfloat span_x, jfloat span_y, jfloat focus_x, jfloat focus_y)
+    JNIEnv *env, jclass jcls)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
-        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, Android_Window, 0, span_x, span_y, focus_x, focus_y);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, Android_Window, 0, -1.0f, -1.0f, -1.0f, -1.0f);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
