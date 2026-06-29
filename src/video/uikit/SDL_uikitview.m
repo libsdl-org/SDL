@@ -484,17 +484,29 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     CGFloat scale = sender.scale;
     UIGestureRecognizerState state = sender.state;
+    bool pinchHasTwoPoints = sender.numberOfTouches == 2;
+    CGPoint point1 = [sender locationOfTouch:0 inView:self];
+    CGPoint point2 = pinchHasTwoPoints ? [sender locationOfTouch:1 inView:self] : point1;
+    CGFloat focus_x = (point1.x + point2.x)/2;
+    CGFloat focus_y = (point1.y + point2.y)/2;
+    CGFloat span_x = SDL_fabs(point1.x - point2.x);
+    CGFloat span_y = SDL_fabs(point1.y - point2.y);
+    CGRect bounds = self.bounds;
+    focus_x /= bounds.size.width;
+    focus_y /= bounds.size.height;
+    span_x /= bounds.size.width;
+    span_y /= bounds.size.height;
 
     switch (state) {
 
         case UIGestureRecognizerStateBegan:
             pinch_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         case UIGestureRecognizerStateChanged:
-            if (pinch_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
+            if (pinch_scale > 0.0f && pinchHasTwoPoints) {
+                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale, span_x, span_y, focus_x, focus_y);
             }
             pinch_scale = scale;
             break;
@@ -502,7 +514,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         default:

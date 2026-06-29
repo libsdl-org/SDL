@@ -10968,10 +10968,8 @@ static bool VULKAN_Submit(
             presentData->windowData->needsSwapchainRecreate = true;
             presentData->windowData->needsSurfaceRecreate = true;
         } else {
-            if (presentResult != VK_SUCCESS) {
-                VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
-                SDL_UnlockMutex(renderer->submitLock);
-            }
+            VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
+            SDL_UnlockMutex(renderer->submitLock);
 
             CHECK_VULKAN_ERROR_AND_RETURN(presentResult, vkQueuePresentKHR, false);
         }

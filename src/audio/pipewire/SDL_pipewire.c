@@ -71,6 +71,7 @@ static void (*PIPEWIRE_pw_thread_loop_lock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_unlock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_signal)(struct pw_thread_loop *, bool);
 static void (*PIPEWIRE_pw_thread_loop_wait)(struct pw_thread_loop *);
+static int (*PIPEWIRE_pw_thread_loop_timed_wait)(struct pw_thread_loop *, int);
 static int (*PIPEWIRE_pw_thread_loop_start)(struct pw_thread_loop *);
 static struct pw_context *(*PIPEWIRE_pw_context_new)(struct pw_loop *, struct pw_properties *, size_t);
 static void (*PIPEWIRE_pw_context_destroy)(struct pw_context *);
@@ -167,6 +168,7 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_thread_loop_unlock);
     SDL_PIPEWIRE_SYM(pw_thread_loop_signal);
     SDL_PIPEWIRE_SYM(pw_thread_loop_wait);
+    SDL_PIPEWIRE_SYM(pw_thread_loop_timed_wait);
     SDL_PIPEWIRE_SYM(pw_thread_loop_start);
     SDL_PIPEWIRE_SYM(pw_context_new);
     SDL_PIPEWIRE_SYM(pw_context_destroy);
@@ -1127,6 +1129,8 @@ static void SDLCALL PIPEWIRE_StreamNameChanged(void *userdata, const char *name,
 
     if (!priv || !priv->stream || !priv->loop) {
         return;  // stream not ready yet, skip it.
+    } else if (newValue && (SDL_strcmp(priv->node_name, newValue) == 0)) {
+        return;  // don't set the media and node names to the same thing. Looks bad in the system UI, the node name is enough.
     }
 
     struct spa_dict_item items[] = { { PW_KEY_MEDIA_NAME, newValue } };
@@ -1158,6 +1162,7 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     const char *app_name, *icon_name, *app_id, *stream_name, *stream_role, *error;
     Uint32 node_id = !device->handle ? PW_ID_ANY : PW_HANDLE_TO_ID(device->handle);
     const bool recording = device->recording;
+    bool wait_for_ready_timeouted = false;
     int res;
 
     // Clamp the period size to sane values
@@ -1248,12 +1253,21 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
     }
     // node_name/description describes the app, media_name what's currently playing
     const char *node_name = (app_name && *app_name) ? app_name : stream_name;
+    priv->node_name = SDL_strdup(node_name);
+    if (!priv->node_name) {
+        return false;  // already set error string.
+    }
+
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_NAME, node_name);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_DESCRIPTION, node_name);
-    PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_LATENCY, "%u/%i", device->sample_frames, device->spec.freq);
     PIPEWIRE_pw_properties_setf(props, PW_KEY_NODE_RATE, "1/%u", device->spec.freq);
     PIPEWIRE_pw_properties_set(props, PW_KEY_NODE_ALWAYS_PROCESS, "true");
+
+    // only set a stream-specific name if it's different than the app name, otherwise the system UI might show the stream as "Team Fortress 2 - Team Fortress 2" or whatever. Better to just show the name once.
+    if ((node_name != stream_name) && (SDL_strcmp(node_name, stream_name) != 0)) {
+        PIPEWIRE_pw_properties_set(props, PW_KEY_MEDIA_NAME, stream_name);
+    }
 
     // UPDATE: This prevents users from moving the audio to a new sink (device) using standard tools. This is slightly in conflict
     //  with how SDL wants to manage audio devices, but if people want to do it, we should let them, so this is commented out
@@ -1291,14 +1305,19 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Pipewire: Failed to start stream loop");
     }
 
-    // Wait until all pre-open init flags are set or the stream has failed.
+    // Wait until timeout (no device), or all pre-open init flags are set, or the stream has failed
     PIPEWIRE_pw_thread_loop_lock(priv->loop);
-    while (priv->stream_init_status != PW_READY_FLAG_ALL_PREOPEN_BITS &&
+    while (!wait_for_ready_timeouted &&
+           priv->stream_init_status != PW_READY_FLAG_ALL_PREOPEN_BITS &&
            PIPEWIRE_pw_stream_get_state(priv->stream, NULL) != PW_STREAM_STATE_ERROR) {
-        PIPEWIRE_pw_thread_loop_wait(priv->loop);
+        wait_for_ready_timeouted = PIPEWIRE_pw_thread_loop_timed_wait(priv->loop, 2) == ETIMEDOUT;
     }
     priv->stream_init_status |= PW_READY_FLAG_OPEN_COMPLETE;
     PIPEWIRE_pw_thread_loop_unlock(priv->loop);
+
+    if(wait_for_ready_timeouted) {
+        return SDL_SetError("Pipewire: timeout waiting for audio device to be ready");
+    }
 
     if (PIPEWIRE_pw_stream_get_state(priv->stream, &error) == PW_STREAM_STATE_ERROR) {
         return SDL_SetError("Pipewire: Stream error: %s", error);
@@ -1331,6 +1350,7 @@ static void PIPEWIRE_CloseDevice(SDL_AudioDevice *device)
         PIPEWIRE_pw_thread_loop_destroy(device->hidden->loop);
     }
 
+    SDL_free(device->hidden->node_name);
     SDL_free(device->hidden);
     device->hidden = NULL;
 
