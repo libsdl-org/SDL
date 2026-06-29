@@ -591,8 +591,10 @@
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Colors.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_VertexShader.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
