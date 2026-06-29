@@ -3060,6 +3060,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_PopGPUDebugGroup(
  *
  * You must not reference the texture after calling this function.
  *
+ * It is safe to pass NULL for `texture`, in that case this function
+ * is a no-op.
+ *
  * \param device a GPU context.
  * \param texture a texture to be destroyed.
  *
@@ -3073,6 +3076,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUTexture(
  * Frees the given sampler as soon as it is safe to do so.
  *
  * You must not reference the sampler after calling this function.
+ *
+ * It is safe to pass NULL for `sampler`, in that case this function
+ * is a no-op.
  *
  * \param device a GPU context.
  * \param sampler a sampler to be destroyed.
@@ -3088,6 +3094,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUSampler(
  *
  * You must not reference the buffer after calling this function.
  *
+ * It is safe to pass NULL for `buffer`, in that case this function
+ * is a no-op.
+ *
  * \param device a GPU context.
  * \param buffer a buffer to be destroyed.
  *
@@ -3101,6 +3110,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUBuffer(
  * Frees the given transfer buffer as soon as it is safe to do so.
  *
  * You must not reference the transfer buffer after calling this function.
+ *
+ * It is safe to pass NULL for `transfer_buffer`, in that case this
+ * function is a no-op.
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer to be destroyed.
@@ -3116,6 +3128,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUTransferBuffer(
  *
  * You must not reference the compute pipeline after calling this function.
  *
+ * It is safe to pass NULL for `compute_pipeline`, in that case this
+ * function is a no-op.
+ *
  * \param device a GPU context.
  * \param compute_pipeline a compute pipeline to be destroyed.
  *
@@ -3130,6 +3145,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUComputePipeline(
  *
  * You must not reference the shader after calling this function.
  *
+ * It is safe to pass NULL for `shader`, in that case this function
+ * is a no-op.
+ *
  * \param device a GPU context.
  * \param shader a shader to be destroyed.
  *
@@ -3143,6 +3161,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUShader(
  * Frees the given graphics pipeline as soon as it is safe to do so.
  *
  * You must not reference the graphics pipeline after calling this function.
+ *
+ * It is safe to pass NULL for `graphics_pipeline`, in that case this
+ * function is a no-op.
  *
  * \param device a GPU context.
  * \param graphics_pipeline a graphics pipeline to be destroyed.
@@ -4486,6 +4507,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_QueryGPUFence(
  * Releases a fence obtained from SDL_SubmitGPUCommandBufferAndAcquireFence.
  *
  * You must not reference the fence after calling this function.
+ *
+ * It is safe to pass NULL for `fence`, in that case this function
+ * is a no-op.
  *
  * \param device a GPU context.
  * \param fence a fence.
