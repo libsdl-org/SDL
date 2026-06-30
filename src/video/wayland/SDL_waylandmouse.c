@@ -720,8 +720,8 @@ static bool Wayland_GetSystemCursor(SDL_CursorData *cdata, SDL_WaylandCursorStat
 
 static int surface_sort_callback(const void *a, const void *b)
 {
-    SDL_Surface *s1 = (SDL_Surface *)a;
-    SDL_Surface *s2 = (SDL_Surface *)b;
+    SDL_Surface *s1 = *(SDL_Surface **)a;
+    SDL_Surface *s2 = *(SDL_Surface **)b;
 
     return (s1->w * s1->h) <= (s2->w * s2->h) ? -1 : 1;
 }
