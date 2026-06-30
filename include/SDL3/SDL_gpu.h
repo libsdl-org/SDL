@@ -2348,6 +2348,25 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  * not support indirect command buffers, MSAA depth resolve, and stencil
  * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
+ * TODO: This is gigantic and confusing, we need to polish this up
+ * With the WebGPU backend:
+ *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS`:
+ *   This property controls how aggressive the bind group cache pruning is.
+ *   If this is set to 100, any bind groups that haven't been used in the last
+ *   100 command buffer submissions will be automatically freed.
+ *   A proper explanation of this would take about a million years, but TLDR:
+ *   Every render & compute pass has multiple bind groups. Those bind groups are
+ *   only valid for the specific textures, samplers, and buffers you bound during
+ *   that pass. This means that for every new resource that gets bound, we must
+ *   create an entirely new bind group. SDLGPU automatically caches these groups
+ *   for better performance. However, every cached bind group takes up a small
+ *   amount of VRAM (a couple hundred bytes), so, SDLGPU will automatically free
+ *   any unused bind groups. This property is generally unimportant, but there
+ *   are usecases for when you want to disable caching (if so, set this to 0)
+ *   or if you want to disable cache pruning. (if so, set this to -1)
+ *   TLDR: Don't touch this if you don't know EXACTLY what it does.
+ *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2384,20 +2403,20 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
-
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN             "SDL.gpu.device.create.xr.enable"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER           "SDL.gpu.device.create.xr.instance_out"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER          "SDL.gpu.device.create.xr.system_id_out"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER             "SDL.gpu.device.create.xr.version"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER         "SDL.gpu.device.create.xr.form_factor"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT_NUMBER     "SDL.gpu.device.create.xr.extensions.count"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES_POINTER    "SDL.gpu.device.create.xr.extensions.names"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT_NUMBER         "SDL.gpu.device.create.xr.layers.count"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES_POINTER        "SDL.gpu.device.create.xr.layers.names"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING    "SDL.gpu.device.create.xr.application.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER "SDL.gpu.device.create.xr.application.version"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME_STRING         "SDL.gpu.device.create.xr.engine.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION_NUMBER      "SDL.gpu.device.create.xr.engine.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION_NUMBER                            "SDL.gpu.device.create.xr.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR_NUMBER                        "SDL.gpu.device.create.xr.form_factor"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT_NUMBER                    "SDL.gpu.device.create.xr.extensions.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES_POINTER                   "SDL.gpu.device.create.xr.extensions.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT_NUMBER                        "SDL.gpu.device.create.xr.layers.count"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES_POINTER                       "SDL.gpu.device.create.xr.layers.names"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING                   "SDL.gpu.device.create.xr.application.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER                "SDL.gpu.device.create.xr.application.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME_STRING                        "SDL.gpu.device.create.xr.engine.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION_NUMBER                     "SDL.gpu.device.create.xr.engine.version"
 
 /**
  * A structure specifying additional options when using Vulkan.
