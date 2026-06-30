@@ -224,13 +224,14 @@ static const SDL_VESAInfo *GetVESAInfo(void)
 // doesn't exist (reads 0xFF) or isn't writable.
 static bool DetectVGA(void)
 {
-    const Uint8 original = inportb(VGA_DAC_PIXEL_MASK);
-    outportb(VGA_DAC_PIXEL_MASK, 0xA5);
-    (void)inportb(0x80); // small I/O delay
-    const Uint8 readback = inportb(VGA_DAC_PIXEL_MASK);
-    outportb(VGA_DAC_PIXEL_MASK, original);
+    const uint8_t original = inportb(VGA_MISC_READ);
+    uint8_t test_val = original ^ 0x03;
+    outportb(VGA_MISC_WRITE, test_val);
+    (void)inportb(0x80);
+    uint8_t readback = inportb(VGA_MISC_READ);
+    outportb(VGA_MISC_WRITE, original);
 
-    return (readback == 0xA5);
+    return ((readback & 0x03) == (test_val & 0x03));
 }
 
 bool DOSVESA_SupportsVESA(void)

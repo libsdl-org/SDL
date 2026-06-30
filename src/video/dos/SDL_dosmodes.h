@@ -35,6 +35,8 @@ extern const char *DOSVESA_GetGPUName(void);
 #define VGA_DAC_PIXEL_MASK  0x3C6 // pixel mask register (read/write, VGA-only)
 #define VGA_DAC_WRITE_INDEX 0x3C8 // write index register (set starting color index)
 #define VGA_DAC_DATA        0x3C9 // data register (write R, G, B in sequence)
+#define VGA_MISC_READ       0x3CC // read miscellaneous output register (read-only, VGA-only)
+#define VGA_MISC_WRITE      0x3C2 // write miscellaneous output register (write-only, VGA-only)
 
 // VGA Input Status Register 1 (for vblank detection)
 #define VGA_STATUS_PORT   0x3DA
