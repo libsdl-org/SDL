@@ -757,8 +757,11 @@ static void SetAudioDeviceZombieFunctions(SDL_AudioDevice *device)
 // Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread.
 static void SDLCALL SDL_AudioDeviceDisconnected_OnMainThread(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
-    SDL_assert(device != NULL);
+    const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (size_t) userdata;
+    SDL_AudioDevice *device = ObtainPhysicalAudioDevice(devid);
+    if (device == NULL) {
+        return;  // apparently it went away already.
+    }
 
     // Save off removal info in a list so we can send events for each, next
     //  time the event queue pumps, in case something tries to close a device
@@ -768,10 +771,7 @@ static void SDLCALL SDL_AudioDeviceDisconnected_OnMainThread(void *userdata)
     pending.next = NULL;
     SDL_PendingAudioDeviceEvent *pending_tail = &pending;
 
-    ObtainPhysicalAudioDeviceObj(device);
-
     SDL_LockRWLockForReading(current_audio.subsystem_rwlock);
-    const SDL_AudioDeviceID devid = device->instance_id;
     const bool is_default_device = ((devid == current_audio.default_playback_device_id) || (devid == current_audio.default_recording_device_id));
     SDL_UnlockRWLock(current_audio.subsystem_rwlock);
 
@@ -838,7 +838,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
     if (device) {
         RefPhysicalAudioDevice(device);
         SDL_CompareAndSwapAtomicInt(&device->zombie, 0, 1);  // note that we're (un)dead right now, if we haven't already, but leave the event notifications for the main thread.
-        SDL_RunOnMainThread(SDL_AudioDeviceDisconnected_OnMainThread, device, false);
+        SDL_RunOnMainThread(SDL_AudioDeviceDisconnected_OnMainThread, (void *) (size_t) device->instance_id, false);
     }
 }
 
