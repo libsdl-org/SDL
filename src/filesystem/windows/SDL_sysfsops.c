@@ -231,5 +231,18 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return true;
 }
 
+bool SDL_SYS_AddPathWatch(const char *path, SDL_PathWatchCallback cb, void *userdata)
+{
+    return SDL_Unsupported();
+}
+
+void SDL_SYS_RemovePathWatch(const char *path, SDL_PathWatchCallback cb, void *userdata)
+{
+}
+
+void SDL_SYS_QuitPathWatch(void)
+{
+}
+
 #endif // SDL_FSOPS_WINDOWS
 

@@ -1301,3 +1301,5 @@ _SDL_RemoveNotification
 _SDL_GetDeviceFormFactor
 _SDL_GetDeviceFormFactorName
 _SDL_IsUbuntuTouch
+_SDL_AddPathWatch
+_SDL_RemovePathWatch

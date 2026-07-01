@@ -320,6 +320,12 @@ static void SDL_TransferTemporaryMemoryToEvent(SDL_EventEntry *event)
         // We need to copy the stack pointer into temporary memory
         SDL_TransferSysWMMemoryToEvent(event);
         break;
+    case SDL_EVENT_PATH_MODIFIED:
+    case SDL_EVENT_PATH_CREATED:
+    case SDL_EVENT_PATH_REMOVED:
+    case SDL_EVENT_PATH_REMOVED_SELF:
+        SDL_LinkTemporaryMemoryToEvent(event, event->event.path_watch.path);
+        break;
     default:
         break;
     }
