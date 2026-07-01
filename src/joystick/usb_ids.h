@@ -77,6 +77,7 @@
 #define USB_PRODUCT_8BITDO_PRO_2                          0x6003    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
+#define USB_PRODUCT_8BITDO_ULTIMATE2_BT                   0x6011    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
