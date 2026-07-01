@@ -2119,7 +2119,125 @@ static void BlitNtoNCopyAlpha(SDL_BlitInfo *info)
     }
 }
 
-static void Blit2to2Key(SDL_BlitInfo *info)
+static void Blit2to2KeyMaskAlpha(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint16 *srcp = (Uint16 *)info->src;
+    int srcskip = info->src_skip;
+    Uint16 *dstp = (Uint16 *)info->dst;
+    int dstskip = info->dst_skip;
+    Uint16 ckey = info->colorkey;
+    Uint16 rgbmask = ~info->src_fmt->Amask;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+
+    // Set up some basic variables
+    srcskip /= 2;
+    dstskip /= 2;
+    ckey &= rgbmask;
+
+    if (dstfmt->Amask) {
+        // RGB->RGBA, SET_ALPHA
+        Uint16 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
+
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ( (*srcp & rgbmask) != ckey ) {
+                    *dstp = *srcp | mask;
+                }
+                dstp++;
+                srcp++;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            srcp += srcskip;
+            dstp += dstskip;
+        }
+    } else {
+        // RGBA->RGB, NO_ALPHA
+        Uint16 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ( (*srcp & rgbmask) != ckey ) {
+                    *dstp = *srcp & mask;
+                }
+                dstp++;
+                srcp++;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            srcp += srcskip;
+            dstp += dstskip;
+        }
+    }
+}
+
+static void Blit4to4KeyMaskAlpha(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint32 *srcp = (Uint32 *)info->src;
+    int srcskip = info->src_skip;
+    Uint32 *dstp = (Uint32 *)info->dst;
+    int dstskip = info->dst_skip;
+    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = ~info->src_fmt->Amask;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+
+    // Set up some basic variables
+    srcskip /= 4;
+    dstskip /= 4;
+    ckey &= rgbmask;
+
+    if (dstfmt->Amask) {
+        // RGB->RGBA, SET_ALPHA
+        Uint32 mask = ((Uint32)info->a >> (8 - dstfmt->Abits)) << dstfmt->Ashift;
+
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ( (*srcp & rgbmask) != ckey ) {
+                    *dstp = *srcp | mask;
+                }
+                dstp++;
+                srcp++;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            srcp += srcskip;
+            dstp += dstskip;
+        }
+    } else {
+        // RGBA->RGB, NO_ALPHA
+        Uint32 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ( (*srcp & rgbmask) != ckey ) {
+                    *dstp = *srcp & mask;
+                }
+                dstp++;
+                srcp++;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            srcp += srcskip;
+            dstp += dstskip;
+        }
+    }
+}
+
+static void Blit2to2KeyCopyAlpha(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
     int height = info->dst_h;
@@ -2152,6 +2270,39 @@ static void Blit2to2Key(SDL_BlitInfo *info)
     }
 }
 
+static void Blit4to4KeyCopyAlpha(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint32 *srcp = (Uint32 *)info->src;
+    int srcskip = info->src_skip;
+    Uint32 *dstp = (Uint32 *)info->dst;
+    int dstskip = info->dst_skip;
+    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = ~info->src_fmt->Amask;
+
+    // Set up some basic variables
+    srcskip /= 4;
+    dstskip /= 4;
+    ckey &= rgbmask;
+
+    while (height--) {
+        /* *INDENT-OFF* */ // clang-format off
+        DUFFS_LOOP_TRIVIAL(
+        {
+            if ( (*srcp & rgbmask) != ckey ) {
+                *dstp = *srcp;
+            }
+            srcp++;
+            dstp++;
+        },
+        width);
+        /* *INDENT-ON* */ // clang-format on
+        srcp += srcskip;
+        dstp += dstskip;
+    }
+}
+
 static void BlitNtoNKey(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
@@ -2172,50 +2323,6 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
 
     // Set up some basic variables
     ckey &= rgbmask;
-
-    // BPP 4, same rgb
-    if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
-        Uint32 *src32 = (Uint32 *)src;
-        Uint32 *dst32 = (Uint32 *)dst;
-
-        if (dstfmt->Amask) {
-            // RGB->RGBA, SET_ALPHA
-            Uint32 mask = ((Uint32)info->a) << dstfmt->Ashift;
-            while (height--) {
-                /* *INDENT-OFF* */ // clang-format off
-                DUFFS_LOOP_TRIVIAL(
-                {
-                    if ((*src32 & rgbmask) != ckey) {
-                        *dst32 = *src32 | mask;
-                    }
-                    ++dst32;
-                    ++src32;
-                }, width);
-                /* *INDENT-ON* */ // clang-format on
-                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
-                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
-            }
-            return;
-        } else {
-            // RGBA->RGB, NO_ALPHA
-            Uint32 mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
-            while (height--) {
-                /* *INDENT-OFF* */ // clang-format off
-                DUFFS_LOOP_TRIVIAL(
-                {
-                    if ((*src32 & rgbmask) != ckey) {
-                        *dst32 = *src32 & mask;
-                    }
-                    ++dst32;
-                    ++src32;
-                }, width);
-                /* *INDENT-ON* */ // clang-format on
-                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
-                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
-            }
-            return;
-        }
-    }
 
 #if HAVE_FAST_WRITE_INT8
     // Blit with permutation: 4->4
@@ -2445,35 +2552,6 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     srcbpp = srcfmt->bytes_per_pixel;
     dstbpp = dstfmt->bytes_per_pixel;
     ckey &= rgbmask;
-
-    // Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster
-    if (srcfmt->format == dstfmt->format) {
-
-        if (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_RGBA8888) {
-
-            Uint32 *src32 = (Uint32 *)src;
-            Uint32 *dst32 = (Uint32 *)dst;
-            while (height--) {
-                /* *INDENT-OFF* */ // clang-format off
-                DUFFS_LOOP_TRIVIAL(
-                {
-                    if ((*src32 & rgbmask) != ckey) {
-                        *dst32 = *src32;
-                    }
-                    ++src32;
-                    ++dst32;
-                },
-                width);
-                /* *INDENT-ON* */ // clang-format on
-                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
-                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
-            }
-        }
-        return;
-    }
 
 #if HAVE_FAST_WRITE_INT8
     // Blit with permutation: 4->4
@@ -3204,19 +3282,44 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            because RLE is the preferred fast way to deal with this.
            If a particular case turns out to be useful we'll add it. */
 
-        if (srcfmt->bytes_per_pixel == 2 && surface->map.identity != 0) {
-            return Blit2to2Key;
-        } else {
 #ifdef SDL_ALTIVEC_BLITTERS
-            if ((srcfmt->bytes_per_pixel == 4) && (dstfmt->bytes_per_pixel == 4) && SDL_HasAltiVec()) {
-                return Blit32to32KeyAltivec;
-            } else
+        if ((srcfmt->bytes_per_pixel == 4) && (dstfmt->bytes_per_pixel == 4) && SDL_HasAltiVec()) {
+            return Blit32to32KeyAltivec;
+        } else
 #endif
+        if (srcfmt->bytes_per_pixel == dstfmt->bytes_per_pixel &&
+            srcfmt->Rmask == dstfmt->Rmask &&
+            srcfmt->Gmask == dstfmt->Gmask &&
+            srcfmt->Bmask == dstfmt->Bmask) {
             if (srcfmt->Amask && dstfmt->Amask) {
-                return BlitNtoNKeyCopyAlpha;
+                if (srcfmt->Amask == dstfmt->Amask) {
+                    if (srcfmt->bytes_per_pixel == 4) {
+                        // Fastpath C fallback: 32bit RGBA<->RGBA blit with matching RGBA
+                        return Blit4to4KeyCopyAlpha;
+                    } else if (srcfmt->bytes_per_pixel == 2) {
+                        // Fastpath C fallback: 16bit RGBA<->RGBA blit with matching RGBA
+                        return Blit2to2KeyCopyAlpha;
+                    } else {
+                        return BlitNtoNKeyCopyAlpha;
+                    }
+                } else {
+                    return BlitNtoNKey;
+                }
             } else {
-                return BlitNtoNKey;
+                if (srcfmt->bytes_per_pixel == 4) {
+                    // Fastpath C fallback: 32bit RGB<->RGBA key blit with matching RGB
+                    return Blit4to4KeyMaskAlpha;
+                } else if (srcfmt->bytes_per_pixel == 2) {
+                    // Fastpath C fallback: 16bit RGB<->RGBA key blit with matching RGB
+                    return Blit2to2KeyMaskAlpha;
+                } else {
+                    return BlitNtoNKey;
+                }
             }
+        } else if (srcfmt->Amask && dstfmt->Amask) {
+            return BlitNtoNKeyCopyAlpha;
+        } else {
+            return BlitNtoNKey;
         }
     }
 
