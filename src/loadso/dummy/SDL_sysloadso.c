@@ -37,9 +37,9 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
     return NULL;
 }
 
-void SDL_UnloadObject(SDL_SharedObject *handle)
+bool SDL_UnloadObject(SDL_SharedObject *handle)
 {
-    // no-op.
+    return true;
 }
 
 #endif // SDL_LOADSO_DUMMY
