@@ -463,7 +463,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
 
-    // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
+    // The 3 MSB represent a face button layout style
     // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
 

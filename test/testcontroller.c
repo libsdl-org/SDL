@@ -831,9 +831,10 @@ static void CommitBindingElement(const char *binding, bool force)
     if (!ignore_binding && binding_flow && !force) {
         int existing = GetElementForBinding(mapping, binding);
         if (existing != SDL_GAMEPAD_ELEMENT_INVALID) {
-            SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
-            SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
+            SDL_GamepadButton action_forward = SDL_GetGamepadConventionalActionButtonForType(GetGamepadImageType(image), SDL_GAMEPAD_CONVENTION_CONFIRM);
+            SDL_GamepadButton action_backward = SDL_GetGamepadConventionalActionButtonForType(GetGamepadImageType(image), SDL_GAMEPAD_CONVENTION_CANCEL);
             SDL_GamepadButton action_delete = SDL_GAMEPAD_BUTTON_WEST;
+            if (action_delete == action_backward || action_delete == action_forward) action_delete = SDL_GAMEPAD_BUTTON_NORTH;
             if (binding_element == action_forward) {
                 /* Bind it! */
             } else if (binding_element == action_backward) {
@@ -1056,26 +1057,15 @@ static const char *GetBindingInstruction(void)
     case SDL_GAMEPAD_BUTTON_EAST:
     case SDL_GAMEPAD_BUTTON_WEST:
     case SDL_GAMEPAD_BUTTON_NORTH:
-        switch (SDL_GetGamepadButtonLabelForType(GetGamepadImageType(image), (SDL_GamepadButton)binding_element)) {
-        case SDL_GAMEPAD_BUTTON_LABEL_A:
-            return "Press the A button";
-        case SDL_GAMEPAD_BUTTON_LABEL_B:
-            return "Press the B button";
-        case SDL_GAMEPAD_BUTTON_LABEL_X:
-            return "Press the X button";
-        case SDL_GAMEPAD_BUTTON_LABEL_Y:
-            return "Press the Y button";
-        case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-            return "Press the Cross (X) button";
-        case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-            return "Press the Circle button";
-        case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-            return "Press the Square button";
-        case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-            return "Press the Triangle button";
-        default:
+    {
+        static char text[32];
+        const char *label = SDL_GetGamepadButtonLabelString(SDL_GetGamepadButtonLabelForType(GetGamepadImageType(image), (SDL_GamepadButton)binding_element));
+        if (!label) {
             return "";
         }
+        SDL_snprintf(text, sizeof(text), "Press the \"%s\" button", label);
+        return text;
+    }
     case SDL_GAMEPAD_BUTTON_BACK:
         return "Press the left center button (Back/View/Share)";
     case SDL_GAMEPAD_BUTTON_GUIDE:
@@ -1878,26 +1868,8 @@ static void DrawGamepadInfo(SDL_Renderer *renderer)
 
 static const char *GetButtonLabel(SDL_GamepadType type, SDL_GamepadButton button)
 {
-    switch (SDL_GetGamepadButtonLabelForType(type, button)) {
-    case SDL_GAMEPAD_BUTTON_LABEL_A:
-        return "A";
-    case SDL_GAMEPAD_BUTTON_LABEL_B:
-        return "B";
-    case SDL_GAMEPAD_BUTTON_LABEL_X:
-        return "X";
-    case SDL_GAMEPAD_BUTTON_LABEL_Y:
-        return "Y";
-    case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-        return "Cross (X)";
-    case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-        return "Circle";
-    case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-        return "Square";
-    case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-        return "Triangle";
-    default:
-        return "UNKNOWN";
-    }
+    const char *label = SDL_GetGamepadButtonLabelString(SDL_GetGamepadButtonLabelForType(type, button));
+    return label ? label : "UNKNOWN";
 }
 
 static void DrawBindingTips(SDL_Renderer *renderer)
@@ -1919,12 +1891,14 @@ static void DrawBindingTips(SDL_Renderer *renderer)
     } else {
         Uint8 r, g, b, a;
         SDL_FRect rect;
-        SDL_GamepadButton action_forward = SDL_GAMEPAD_BUTTON_SOUTH;
-        bool bound_forward = MappingHasElement(controller->mapping, action_forward);
-        SDL_GamepadButton action_backward = SDL_GAMEPAD_BUTTON_EAST;
-        bool bound_backward = MappingHasElement(controller->mapping, action_backward);
         SDL_GamepadButton action_delete = SDL_GAMEPAD_BUTTON_WEST;
-        bool bound_delete = MappingHasElement(controller->mapping, action_delete);
+        bool bound_forward, bound_backward, bound_delete;
+        SDL_GamepadButton action_forward = SDL_GetGamepadConventionalActionButtonForType(GetGamepadImageType(image), SDL_GAMEPAD_CONVENTION_CONFIRM);
+        SDL_GamepadButton action_backward = SDL_GetGamepadConventionalActionButtonForType(GetGamepadImageType(image), SDL_GAMEPAD_CONVENTION_CANCEL);
+        if (action_delete == action_backward || action_delete == action_forward) action_delete = SDL_GAMEPAD_BUTTON_NORTH;
+        bound_forward = MappingHasElement(controller->mapping, action_forward);
+        bound_backward = MappingHasElement(controller->mapping, action_backward);
+        bound_delete = MappingHasElement(controller->mapping, action_delete);
 
         y -= (FONT_CHARACTER_SIZE + BUTTON_MARGIN) / 2;
 

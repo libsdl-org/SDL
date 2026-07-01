@@ -310,6 +310,8 @@ files2headers(gamepad_image_headers
     gamepad_button.png
     gamepad_button_small.png
     gamepad_dual_touchpad.png
+    gamepad_face_1234.png
+    gamepad_face_abcd.png
     gamepad_face_abxy.png
     gamepad_face_axby.png
     gamepad_face_bayx.png
