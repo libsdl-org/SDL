@@ -247,6 +247,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     const int real_button_count = gamepadEvent->numButtons;
     const int real_axis_count = gamepadEvent->numAxes;
     int first_trigger_button = -1;
+    int first_trigger_axis = real_axis_count;
     int first_hat_button = -1;
     int num_buttons = gamepadEvent->numButtons;
     int num_axes = gamepadEvent->numAxes;
@@ -257,6 +258,10 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
         if (num_axes == 4) {  // Chrome gives the triggers analog button values, Firefox exposes them as extra axes. Both have the digital buttons.
             num_axes += 2;  // the two trigger "buttons"
+            triggers_are_buttons = true;
+        } else if (num_axes == 2) { // JoyCon controllers separately have 2 axes each
+            num_axes += 4;  // the two trigger "buttons" and 2 dummy axes for the right stick
+            first_trigger_axis = 4;
             triggers_are_buttons = true;
         }
 
@@ -291,8 +296,8 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     }
 
     if (item->triggers_are_buttons) {
-        item->axis[real_axis_count] = (gamepadEvent->analogButton[first_trigger_button] * 2.0f) - 1.0f;
-        item->axis[real_axis_count+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
+        item->axis[first_trigger_axis] = (gamepadEvent->analogButton[first_trigger_button] * 2.0f) - 1.0f;
+        item->axis[first_trigger_axis+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
     }
 
     SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
@@ -598,6 +603,11 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 const int first_trigger_button = item->first_trigger_button;
                 const int real_button_count = gamepadState.numButtons;
                 const int real_axis_count = gamepadState.numAxes;
+                int first_trigger_axis = real_axis_count;
+                
+                if (real_axis_count == 2) {
+                    first_trigger_axis = 4;
+                }
 
                 int buttonidx = 0;
                 for (i = 0; i < real_button_count; i++, buttonidx++) {
@@ -625,9 +635,9 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
 
                 if (item->triggers_are_buttons) {
                     for (i = 0; i < 2; i++) {
-                        if (item->axis[real_axis_count+i] != gamepadState.analogButton[first_trigger_button+i]) {
-                            SDL_SendJoystickAxis(timestamp, item->joystick, real_axis_count+i, (Sint16)(32767.0f * ((gamepadState.analogButton[first_trigger_button+i] * 2.0f) - 1.0f)));
-                            item->axis[real_axis_count+i] = gamepadState.analogButton[first_trigger_button+i];
+                        if (item->axis[first_trigger_axis+i] != gamepadState.analogButton[first_trigger_button+i]) {
+                            SDL_SendJoystickAxis(timestamp, item->joystick, first_trigger_axis+i, (Sint16)(32767.0f * ((gamepadState.analogButton[first_trigger_button+i] * 2.0f) - 1.0f)));
+                            item->axis[first_trigger_axis+i] = gamepadState.analogButton[first_trigger_button+i];
                         }
                     }
                 }
