@@ -1581,10 +1581,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \param calloc_func custom calloc function.
  * \param realloc_func custom realloc function.
  * \param free_func custom free function.
- * \returns true on success or false on failure. This only fails if there is
- *          a mix of NULL and non-NULL parameters. Failure will not set an
- *          error message (which allocates memory) so do _not_ call
- *          SDL_GetError() in response to a failure here.
+ * \returns true on success or false on failure. This only fails if there is a
+ *          mix of NULL and non-NULL parameters. Failure will not set an error
+ *          message (which allocates memory) so do _not_ call SDL_GetError()
+ *          in response to a failure here.
  *
  * \threadsafety It is safe to call this function from any thread, but one
  *               should not replace the memory functions once any allocations
