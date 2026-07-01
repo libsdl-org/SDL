@@ -1573,12 +1573,18 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * If used, usually this needs to be the first call made into the SDL library,
  * if not the very first thing done at program startup time.
  *
+ * It is legal to call this with all 4 parameters set to NULL, which will
+ * restore the original memory functions without having to query them with
+ * SDL_GetOriginalMemoryFunctions() first.
+ *
  * \param malloc_func custom malloc function.
  * \param calloc_func custom calloc function.
  * \param realloc_func custom realloc function.
  * \param free_func custom free function.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
+ * \returns true on success or false on failure. This only fails if there is
+ *          a mix of NULL and non-NULL parameters. Failure will not set an
+ *          error message (which allocates memory) so do _not_ call
+ *          SDL_GetError() in response to a failure here.
  *
  * \threadsafety It is safe to call this function from any thread, but one
  *               should not replace the memory functions once any allocations
@@ -1590,9 +1596,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_
  * \sa SDL_GetOriginalMemoryFunctions
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
-                                                            SDL_calloc_func calloc_func,
-                                                            SDL_realloc_func realloc_func,
-                                                            SDL_free_func free_func);
+                                                        SDL_calloc_func calloc_func,
+                                                        SDL_realloc_func realloc_func,
+                                                        SDL_free_func free_func);
 
 /**
  * Allocate memory aligned to a specific alignment.
