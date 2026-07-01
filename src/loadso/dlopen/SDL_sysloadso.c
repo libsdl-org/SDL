@@ -72,11 +72,17 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
     return symbol;
 }
 
-void SDL_UnloadObject(SDL_SharedObject *handle)
+bool SDL_UnloadObject(SDL_SharedObject *handle)
 {
-    if (handle) {
-        dlclose(handle);
+    if (!handle) {
+        return true;
     }
+    int error_code = dlclose(handle);
+    if (error_code) {
+        SDL_SetError("Failed unloading library. Error code: %d. Message: %s
+                     error_code, (const char *)dlerror());
+    }
+    return error_code == 0;
 }
 
 #endif // SDL_LOADSO_DLOPEN
