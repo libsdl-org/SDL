@@ -62,6 +62,7 @@ class SdlPlatform(Enum):
     OpenBSD = "openbsd"
     NGage = "ngage"
     DJGPP = "djgpp"
+    Harmony = "harmony"
 
 
 class Msys2Platform(Enum):
@@ -107,6 +108,7 @@ class JobSpec:
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
     more_hard_deps: bool = False
+    harmony_arch: Optional[str] = None
 
 
 JOB_SPECS = {
@@ -155,6 +157,9 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "djgpp": JobSpec(name="DOS (DJGPP)",                                    priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
+    "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
+    "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
+    "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      priority=True, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
 }
 
 
@@ -886,6 +891,17 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.run_tests = False
             job.test_pkg_config = False
             job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
+        case SdlPlatform.Harmony:
+            job.cmake_arguments.extend((
+                f"-DOHOS_ARCH={spec.harmony_arch}",
+                "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
+                "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=1"
+            ))
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
+            job.run_tests = False
+            job.test_pkg_config = False
+            job.werror = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 

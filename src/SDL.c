@@ -62,6 +62,10 @@
 #include "core/android/SDL_android.h"
 #endif
 
+#ifdef SDL_PLATFORM_OHOS
+#include "core/ohos/SDL_ohos.h"
+#endif
+
 #define SDL_ALL_SUBSYSTEM_FLAGS ~0U
 
 // Initialization/Cleanup routines
@@ -841,6 +845,8 @@ const char *SDL_GetPlatform(void)
     return "GNU/Hurd";
 #elif defined(__managarm__)
     return "Managarm";
+#elif defined(SDL_PLATFORM_OHOS)
+    return "OpenHarmony/HarmonyOS";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif
@@ -853,6 +859,8 @@ bool SDL_IsPhone(void)
     if (!SDL_IsTablet() && !SDL_IsTV()) {
         return true;
     }
+#elif defined(SDL_PLATFORM_OHOS)
+    return OHOS_IsPhone();
 #endif
     return false;
 }
