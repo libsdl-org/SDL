@@ -55,6 +55,8 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
             const bool retval = pathwithsep ? Android_JNI_EnumerateAssetDirectory(pathwithsep, cb, userdata) : false;
             SDL_free(pathwithsep);
             return retval;
+        } else if  (SDL_strncmp(path, "content://", 10) == 0) {
+            return Android_JNI_EnumerateContentDirectory(path, cb, userdata);
         }
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
         #elif defined(SDL_PLATFORM_IOS)
@@ -356,6 +358,8 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         rc = stat(path, &statbuf);
     } else if (SDL_strncmp(path, "assets://", 9) == 0) {
         return Android_JNI_GetAssetPathInfo(path, info);
+    } else if (SDL_strncmp(path, "content://", 10) == 0) {
+        return Android_JNI_GetContentInfo(path, info);
     } else {
         char *apath = NULL;
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);

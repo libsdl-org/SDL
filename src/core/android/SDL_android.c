@@ -391,6 +391,8 @@ static jmethodID midSendMessage;
 static jmethodID midOpenFileDescriptor;
 static jmethodID midShowFileDialog;
 static jmethodID midGetPreferredLocales;
+static jmethodID midGetDocumentChildrenNames;
+static jmethodID midGetSAFDocument;
 
 #ifndef SDL_VIDEO_DISABLED
 // Video/surface method signatures
@@ -447,6 +449,13 @@ static void Internal_Android_Create_AssetManager(void);
 static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
+
+// Android content file handling
+static jclass mSAFDocumentClass = NULL;
+static jfieldID fidIsDirectory = NULL;
+static jfieldID fidLastModified = NULL;
+static jfieldID fidSize = NULL;
+static jmethodID midGetUri = NULL;
 
 static SDL_Mutex *Android_ActivityMutex = NULL;
 static int Android_ActivityMutexCount = 0;
@@ -697,6 +706,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
+    midGetDocumentChildrenNames = (*env)->GetStaticMethodID(env, mActivityClass, "getSAFDocumentChildrenNames", "(Ljava/lang/String;)[Ljava/lang/String;");
+    midGetSAFDocument = (*env)->GetStaticMethodID(env, mActivityClass, "getSAFDocument", "(Ljava/lang/String;)Lorg/libsdl/app/SDLActivity$SAFDocument;");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midGetContext ||
@@ -712,6 +723,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSendMessage ||
         !midOpenFileDescriptor ||
         !midShowFileDialog ||
+        !midGetDocumentChildrenNames ||
+        !midGetSAFDocument ||
         !midGetPreferredLocales) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some core Java callbacks, do you have the latest version of SDLActivity.java?");
     }
@@ -2547,6 +2560,345 @@ bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirector
     return (result != SDL_ENUM_FAILURE);
 }
 
+static char *GetURIWithNormalizedPath(const char *uri, bool should_append_slash)
+{
+    if (!uri) {
+        return NULL;
+    }
+
+    const char *uri_cursor = SDL_strchr(uri, '#');
+
+    // Don't try to normalize real URI's or empty paths
+    if (!uri_cursor || !uri_cursor[1]) {
+        char *normalized = SDL_strdup(uri);
+        if (!normalized) {
+            SDL_SetError("Out of memory");
+        }
+        return normalized;
+    }
+
+    uri_cursor++;
+
+    // Final size needs to account for a slash at the end and a null char after it
+    char *normalized = SDL_malloc(SDL_strlen(uri) + should_append_slash + 1);
+    if (!normalized) {
+        SDL_SetError("Out of memory");
+        return NULL;
+    }
+
+    // Copy "content://<tree>#" to the normalized string
+    SDL_strlcpy(normalized, uri, uri_cursor - uri + 1);
+    char *path = SDL_strchr(normalized, '#') + 1;
+    char *path_cursor = path;
+
+    while (*uri_cursor) {
+        // Skip empty path segments (double slashes)
+        if (*uri_cursor == '/' || *uri_cursor == '\\') {
+            uri_cursor++;
+            continue;
+        }
+        // Single dot path segment, skip
+        if (uri_cursor[0] == '.' &&
+            (uri_cursor[1] == '\0' || uri_cursor[1] == '/' || uri_cursor[1] == '\\')) {
+            uri_cursor++;
+            continue;
+        }
+        // Double dot path segment, remove the previous segment from the normalized path or
+        // fail if there is no previous segment to remove (attempting to traverse over the root path)
+        if (uri_cursor[0] == '.' && uri_cursor[1] == '.' &&
+            (uri_cursor[2] == '\0' || uri_cursor[2] == '/' || uri_cursor[2] == '\\')) {
+            if (path_cursor == path) {
+                SDL_SetError("Traversing over the root path is not allowed. Path: %s",
+                             SDL_strchr(uri, '#') + 1);
+                SDL_free(normalized);
+                return NULL;
+            }
+            path_cursor--;
+            // Move the path cursor back to the previous path segment,
+            // effectively removing the last segment from the normalized path
+            while (path_cursor != path && *(path_cursor - 1) != '/') {
+                *path_cursor = 0;
+                path_cursor--;
+            }
+            uri_cursor += 2;
+            continue;
+        }
+        // Copy the current path segment from the URI to the normalized path until the next slash or end of string
+        while (*uri_cursor && *uri_cursor != '/' && *uri_cursor != '\\') {
+            *path_cursor++ = *uri_cursor++;
+        }
+        // Append a slash to the normalized path if we already have a path segment
+        if (path_cursor != path) {
+            *path_cursor++ = '/';
+        }
+    }
+    // Remove the trailing slash if it was not requested
+    if (!should_append_slash && *(path_cursor -1) == '/') {
+        path_cursor--;
+    }
+    *path_cursor = '\0';
+
+    return normalized;
+}
+
+static bool CreateSAFDocumentClass(JNIEnv *env, jobject jSAFDocument)
+{
+    if (mSAFDocumentClass && fidIsDirectory && fidLastModified && fidSize && midGetUri) {
+        return true;
+    }
+
+    if (!env || !jSAFDocument) {
+        return false;
+    }
+
+    if (!mSAFDocumentClass) {
+        jclass jLocalSAFDocumentClass = (*env)->GetObjectClass(env, jSAFDocument);
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+
+        mSAFDocumentClass = (*env)->NewGlobalRef(env, jLocalSAFDocumentClass);
+        (*env)->DeleteLocalRef(env, jLocalSAFDocumentClass);
+
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+    }
+
+    if (!fidIsDirectory) {
+        fidIsDirectory = (*env)->GetFieldID(env, mSAFDocumentClass, "isDirectory", "Z");
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+    }
+
+    if (!fidLastModified) {
+        fidLastModified = (*env)->GetFieldID(env, mSAFDocumentClass, "lastModified", "J");
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+    }
+
+    if (!fidSize) {
+        fidSize = (*env)->GetFieldID(env, mSAFDocumentClass, "size", "J");
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+    }
+
+    if (!midGetUri) {
+        midGetUri = (*env)->GetMethodID(env, mSAFDocumentClass, "getUri", "()Ljava/lang/String;");
+        if (Android_JNI_ExceptionOccurred(false)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static char *GetDocumentURIFromTreeURI(JNIEnv *env, const char *uri)
+{
+    // Set "uri" parameter for JNI call
+    jstring juri = (*env)->NewStringUTF(env, uri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        return NULL;
+    }
+
+    // Invoke JNI
+    jobject jSAFDocument = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetSAFDocument, juri);
+
+    (*env)->DeleteLocalRef(env, juri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        return NULL;
+    }
+
+    if (!CreateSAFDocumentClass(env, jSAFDocument)) {
+        return NULL;
+    }
+
+    // Get the uri from the SAFDocument
+    jstring jdocument_uri = (*env)->CallObjectMethod(env, jSAFDocument, midGetUri);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        return NULL;
+    }
+
+    const char *document_uri = (*env)->GetStringUTFChars(env, jdocument_uri, NULL);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        return NULL;
+    }
+
+    // We need to reserve space for an encoded separator ("%2F") at the end
+    char *final_uri = SDL_calloc(SDL_strlen(document_uri) + 4, sizeof(char));
+    if (!final_uri) {
+        return NULL;
+    }
+    size_t offset = SDL_strlcpy(final_uri, document_uri, SDL_strlen(document_uri) + 1);
+    SDL_strlcpy(final_uri + offset, "%2F", 4);
+
+    (*env)->ReleaseStringUTFChars(env, jdocument_uri, document_uri);
+    (*env)->DeleteLocalRef(env, jdocument_uri);
+    (*env)->DeleteLocalRef(env, jSAFDocument);
+
+    return final_uri;
+}
+
+bool Android_JNI_EnumerateContentDirectory(const char *uri, SDL_EnumerateDirectoryCallback cb, void *userdata)
+{
+    SDL_assert(uri != NULL);
+    SDL_assert(SDL_strncmp(uri, "content://", 10) == 0);
+
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    char *dirname = NULL;
+
+    // If we are traversing a genuine tree URI and not an SDL generated one, the "dirname"
+    // parameter on the enumeration callback must provide the document URI, not the tree URI.
+    // Because of that, if we're using a tree URI, we need to fetch the document URI from Java.
+    if (!SDL_strchr(uri, '#')) {
+        dirname = GetDocumentURIFromTreeURI(env, uri);
+    } else {
+        dirname = GetURIWithNormalizedPath(uri, true);
+    }
+
+    if (!dirname) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Set "uri" parameter for JNI call
+    jstring juri = (*env)->NewStringUTF(env, dirname);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        SDL_free(dirname);
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Invoke JNI
+    jobjectArray jFileNamesArray = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDocumentChildrenNames, juri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        SDL_free(dirname);
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    jsize length = (*env)->GetArrayLength(env, jFileNamesArray);
+    bool success = true;
+
+    for (int i = 0; i < length; ++i) {
+        jstring jFileName = (*env)->GetObjectArrayElement(env, jFileNamesArray, i);
+
+        if (Android_JNI_ExceptionOccurred(false)) {
+            success = false;
+            break;
+        }
+
+        const char *filename = (*env)->GetStringUTFChars(env, jFileName, NULL);
+
+        if (Android_JNI_ExceptionOccurred(false)) {
+            success = false;
+            break;
+        }
+
+        SDL_EnumerationResult result = cb(userdata, dirname, filename);
+
+        (*env)->ReleaseStringUTFChars(env, jFileName, filename);
+        (*env)->DeleteLocalRef(env, jFileName);
+
+        if (result != SDL_ENUM_CONTINUE) {
+            success = result == SDL_ENUM_SUCCESS;
+            break;
+        }
+    }
+
+    SDL_free(dirname);
+    LocalReferenceHolder_Cleanup(&refs);
+
+    return success;
+}
+
+bool Android_JNI_GetContentInfo(const char *uri, SDL_PathInfo *info)
+{
+    SDL_assert(uri != NULL);
+    SDL_assert(SDL_strncmp(uri, "content://", 10) == 0);
+
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    char *normalizedUri = GetURIWithNormalizedPath(uri, false);
+    if (!normalizedUri) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Set "uri" parameter for JNI call
+    jstring juri = (*env)->NewStringUTF(env, normalizedUri);
+    SDL_free(normalizedUri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Invoke JNI
+    jobject jSAFDocument = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetSAFDocument, juri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    if (!CreateSAFDocumentClass(env, jSAFDocument)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Get the fields from the SAFDocument object
+    bool is_directory = (*env)->GetBooleanField(env, jSAFDocument, fidIsDirectory);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    jlong last_modified = (*env)->GetLongField(env, jSAFDocument, fidLastModified);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    jlong size = (*env)->GetLongField(env, jSAFDocument, fidSize);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return false;
+    }
+
+    // Populate the SDL_PathInfo structure
+    info->type = is_directory ? SDL_PATHTYPE_DIRECTORY : SDL_PATHTYPE_FILE;
+    info->modify_time = (SDL_Time)(last_modified / 1000); // Convert milliseconds to seconds
+    info->size = (Uint64)size;
+
+    // Android doesn't provide separate create and access times, so we use modify time for those as well.
+    info->create_time = info->modify_time;
+    info->access_time = info->modify_time;
+
+    LocalReferenceHolder_Cleanup(&refs);
+
+    return true;
+}
+
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
 {
     SDL_assert(path != NULL);
@@ -3382,6 +3734,7 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
 {
     // Get fopen-style modes
     int moderead = 0, modewrite = 0, modeappend = 0, modeupdate = 0;
+    jboolean no_overwrite = JNI_FALSE;
 
     for (const char *cmode = mode; *cmode; cmode++) {
         switch (*cmode) {
@@ -3396,6 +3749,9 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
                 break;
             case '+':
                 modeupdate = 1;
+                break;
+            case 'x':
+                no_overwrite = JNI_TRUE;
                 break;
             default:
                 break;
@@ -3418,17 +3774,32 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
         contentResolverMode = modeupdate ? "rw" : "wa";
     }
 
-    JNIEnv *env = Android_JNI_GetEnv();
-    jstring jstringUri = (*env)->NewStringUTF(env, uri);
-    jstring jstringMode = (*env)->NewStringUTF(env, contentResolverMode);
-    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode);
-    (*env)->DeleteLocalRef(env, jstringUri);
-    (*env)->DeleteLocalRef(env, jstringMode);
+    char *normalizedUri = GetURIWithNormalizedPath(uri, false);
+    if (!normalizedUri) {
+        return -1;
+    }
 
-    if (fd == -1) {
+    JNIEnv *env = Android_JNI_GetEnv();
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        SDL_free(normalizedUri);
+        LocalReferenceHolder_Cleanup(&refs);
+        return -1;
+    }
+
+    jstring jstringUri = (*env)->NewStringUTF(env, normalizedUri);
+    jstring jstringMode = (*env)->NewStringUTF(env, contentResolverMode);
+    jint fd = (*env)->CallStaticIntMethod(env, mActivityClass, midOpenFileDescriptor, jstringUri, jstringMode, no_overwrite);
+
+    SDL_free(normalizedUri);
+
+    if (Android_JNI_ExceptionOccurred(false)) {
+        fd = -1;
+    } else if (fd == -1) {
         SDL_SetError("Unspecified error in JNI");
     }
 
+    LocalReferenceHolder_Cleanup(&refs);
     return fd;
 }
 
@@ -3557,8 +3928,10 @@ bool Android_JNI_ShowFileDialog(
 
     // Setup initial path
     jstring initialPathString = NULL;
-    if (initialPath && *initialPath) {
-        initialPathString = (*env)->NewStringUTF(env, initialPath);
+    char *normalizedInitialPath = GetURIWithNormalizedPath(initialPath, false);
+    if (normalizedInitialPath && *normalizedInitialPath) {
+        initialPathString = (*env)->NewStringUTF(env, normalizedInitialPath);
+        SDL_free(normalizedInitialPath);
     }
 
     // Setup data

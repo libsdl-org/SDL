@@ -232,6 +232,20 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  * requires an event-handling loop. Apps that do not use SDL to handle events
  * should add a call to SDL_PumpEvents in their main loop.
  *
+ * On Android, if folder selection is successful, the callback will receive a
+ * custom `content://` URI with a `#` at the end. These custom URI's can have
+ * a regular path, separated by either forward or backward slashes, after the
+ * `#`.
+ *
+ * This allows the user to treat the selected folder as a regular filesystem
+ * base directory, and access its contents with the usual SDL file/directory
+ * I/O functions. Internally, the path after the `#` will be properly converted
+ * to the corresponding child document URI when needed.
+ *
+ * Both regular `content://` URIs and the ones with a `#<path>` at the end
+ * are supported by SDL_IOFromFile() with appropriate modes, as well as
+ * SDL_EnumerateDirectory() and SDL_GetPathInfo().
+ *
  * \param callback a function pointer to be invoked when the user selects a
  *                 file and accepts, or cancels the dialog, or an error
  *                 occurs.
@@ -249,6 +263,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *               different one, depending on the OS's constraints.
  *
  * \since This function is available since SDL 3.2.0.
+ *        On Android, the function is implemented since SDL 3.6.0.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog

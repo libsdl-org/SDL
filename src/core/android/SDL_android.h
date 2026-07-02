@@ -98,6 +98,8 @@ size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SD
 bool Android_JNI_FileClose(void *userdata);
 bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
+bool Android_JNI_EnumerateContentDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
+bool Android_JNI_GetContentInfo(const char *uri, SDL_PathInfo *info);
 
 // Environment support
 void Android_JNI_GetManifestEnvironmentVariables(void);
