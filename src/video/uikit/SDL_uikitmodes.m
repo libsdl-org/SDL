@@ -251,11 +251,7 @@ bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 #endif // !SDL_PLATFORM_TVOS
 
     // Allocate the display data
-#ifdef SDL_PLATFORM_VISIONOS
-    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
-#else
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] initWithScreen:uiscreen];
-#endif
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
