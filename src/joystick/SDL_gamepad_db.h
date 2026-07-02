@@ -867,16 +867,16 @@ static const char *s_GamepadMappings[] = {
     "default,*,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b10,leftshoulder:b4,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b7,x:b2,y:b3,",
 #endif
 #ifdef SDL_JOYSTICK_PS2
-    "0000000050533220436f6e74726f6c00,PS2 Controller,crc:ed87,a:b14,b:b13,back:b0,dpdown:b6,dpleft:b7,dpright:b5,dpup:b4,leftshoulder:b10,leftstick:b1,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b11,rightstick:b2,righttrigger:b9,rightx:a2,righty:a3,start:b3,x:b15,y:b12,",
+    "0000000050533220436f6e74726f6c00,PS2 Controller,crc:ed87,a:b10,b:b9,back:b0,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b6,leftstick:b1,lefttrigger:b4,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b2,righttrigger:b5,rightx:a2,righty:a3,start:b3,x:b11,y:b8,",
 #endif
 #ifdef SDL_JOYSTICK_PSP
-    "00000000505350206275696c74696e00,PSP builtin joypad,crc:bb86,a:b2,b:b1,back:b10,dpdown:b6,dpleft:b7,dpright:b9,dpup:b8,leftshoulder:b4,leftx:a0,lefty:a1,rightshoulder:b5,rightx:a2,righty:a3,start:b11,x:b3,y:b0,",
+    "00000000505350206275696c74696e00,PSP builtin joypad,crc:bb86,a:b2,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftx:a0,lefty:a1,rightshoulder:b5,rightx:a2,righty:a3,start:b7,x:b3,y:b0,",
 #endif
 #ifdef SDL_JOYSTICK_VITA
-    "0000000050535669746120436f6e7400,PSVita Controller,crc:d598,a:b2,b:b1,back:b10,dpdown:b6,dpleft:b7,dpright:b9,dpup:b8,leftshoulder:b4,leftstick:b14,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b15,righttrigger:a5,rightx:a2,righty:a3,start:b11,x:b3,y:b0,",
+    "0000000050535669746120436f6e7400,PSVita Controller,crc:d598,a:b2,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a5,rightx:a2,righty:a3,start:b7,x:b3,y:b0,",
 #endif
 #ifdef SDL_JOYSTICK_N3DS
-    "000000004e696e74656e646f20334400,Nintendo 3DS,crc:3210,a:b1,b:b0,back:b2,dpdown:b7,dpleft:b5,dpright:b4,dpup:b6,leftshoulder:b9,lefttrigger:b14,leftx:a0,lefty:a1,rightshoulder:b8,righttrigger:b15,rightx:a2,righty:a3,start:b3,x:b11,y:b10,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,",
+    "000000004e696e74656e646f20334400,Nintendo 3DS,crc:3210,a:b1,b:b0,back:b2,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b5,lefttrigger:b10,leftx:a0,lefty:a1,rightshoulder:b4,righttrigger:b11,rightx:a2,righty:a3,start:b3,x:b7,y:b6,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,",
 #endif
     NULL
 };
