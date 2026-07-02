@@ -22,6 +22,10 @@
 #include "SDL_internal.h"
 #include "SDL_main_callbacks.h"
 
+#ifdef SDL_PLATFORM_ANDROID
+#include "../video/android/SDL_androidevents.h"
+#endif
+
 static SDL_AppEvent_func SDL_main_event_callback;
 static SDL_AppIterate_func SDL_main_iteration_callback;
 static SDL_AppQuit_func SDL_main_quit_callback;
@@ -123,6 +127,11 @@ SDL_AppResult SDL_IterateMainCallbacks(bool pump_events)
     if (pump_events) {
         SDL_PumpEvents();
     }
+
+#ifdef SDL_PLATFORM_ANDROID
+    Android_BlockEventLoop();
+#endif
+
     SDL_DispatchMainCallbackEvents();
 
     SDL_AppResult rc = (SDL_AppResult)SDL_GetAtomicInt(&apprc);

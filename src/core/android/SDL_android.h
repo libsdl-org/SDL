@@ -42,22 +42,8 @@ extern "C" {
 #define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
 #endif
 
-// Life cycle
-typedef enum
-{
-    SDL_ANDROID_LIFECYCLE_WAKE,
-    SDL_ANDROID_LIFECYCLE_PAUSE,
-    SDL_ANDROID_LIFECYCLE_RESUME,
-    SDL_ANDROID_LIFECYCLE_LOWMEMORY,
-    SDL_ANDROID_LIFECYCLE_DESTROY,
-    SDL_NUM_ANDROID_LIFECYCLE_EVENTS
-} SDL_AndroidLifecycleEvent;
-
-void Android_SendLifecycleEvent(SDL_AndroidLifecycleEvent event);
-bool Android_WaitLifecycleEvent(SDL_AndroidLifecycleEvent *event, Sint64 timeoutNS);
-
-void Android_LockActivityMutex(void);
-void Android_UnlockActivityMutex(void);
+void Android_LockActivityState(void);
+void Android_UnlockActivityState(void);
 
 void Android_SetAllowRecreateActivity(bool enabled);
 
@@ -175,6 +161,11 @@ char *SDL_GetAndroidPackageName(void);  // this is a SDL_malloc'd string the cal
 bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
     bool multiple, const char *initialPath);
+
+// Pump RPC commands
+void Android_PumpRPC(SDL_Window *window);
+void Android_WaitForResume(void);
+
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
