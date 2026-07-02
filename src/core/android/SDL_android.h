@@ -30,17 +30,17 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
-#ifndef SDL_VIDEO_DISABLED
-#include <EGL/eglplatform.h>
-#include <android/native_window_jni.h>
-#endif
-
 #ifndef SDL_AUDIO_DISABLED
+// Audio support
 #include "../../audio/SDL_sysaudio.h"
 
 // this appears to be broken right now (on Android, not SDL, I think...?).
 #define ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES 0
-#endif
+
+void Android_StartAudioHotplug(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
+void Android_StopAudioHotplug(void);
+extern void Android_AudioThreadInit(SDL_AudioDevice *device);
+#endif // !SDL_AUDIO_DISABLED
 
 // Life cycle
 typedef enum
@@ -62,6 +62,9 @@ void Android_UnlockActivityMutex(void);
 void Android_SetAllowRecreateActivity(bool enabled);
 
 #ifndef SDL_VIDEO_DISABLED
+#include <EGL/eglplatform.h>
+#include <android/native_window_jni.h>
+
 // Interface from the SDL library into the Android Java activity
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(bool fullscreen);
@@ -71,24 +74,34 @@ extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
+bool Android_JNI_SuspendScreenSaver(bool suspend);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
-#endif // !SDL_VIDEO_DISABLED
-
-// Kept outside the video guard for the camera driver; stays SDL_ORIENTATION_UNKNOWN when video is disabled (only the video Java layer updates it).
 extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
+// Also used by the camera subsystem, which is safe because camera requires video.
 extern SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void);
 
-#ifndef SDL_AUDIO_DISABLED
-// Audio support
-void Android_StartAudioHotplug(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
-void Android_StopAudioHotplug(void);
-extern void Android_AudioThreadInit(SDL_AudioDevice *device);
-#endif // !SDL_AUDIO_DISABLED
+// Clipboard support
+bool Android_JNI_SetClipboardText(const char *text);
+char *Android_JNI_GetClipboardText(void);
+bool Android_JNI_HasClipboardText(void);
 
-// Detecting device type
-extern bool Android_IsDeXMode(void);
-extern bool Android_IsChromebook(void);
+// Touch support
+void Android_JNI_InitTouch(void);
+
+// Cursor support
+int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+void Android_JNI_DestroyCustomCursor(int cursorID);
+bool Android_JNI_SetCustomCursor(int cursorID);
+bool Android_JNI_SetSystemCursor(int cursorID);
+
+// Relative mouse support
+bool Android_JNI_SupportsRelativeMouse(void);
+bool Android_JNI_SetRelativeMouseEnabled(bool enabled);
+
+// MessageBox
+bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
+#endif // !SDL_VIDEO_DISABLED
 
 bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mode);
 Sint64 Android_JNI_FileSize(void *userdata);
@@ -103,34 +116,25 @@ bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
 void Android_JNI_GetManifestEnvironmentVariables(void);
 int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode);
 
-#ifndef SDL_VIDEO_DISABLED
-// Clipboard support
-bool Android_JNI_SetClipboardText(const char *text);
-char *Android_JNI_GetClipboardText(void);
-bool Android_JNI_HasClipboardText(void);
-#endif // !SDL_VIDEO_DISABLED
-
+#ifndef SDL_POWER_DISABLED
 // Power support
 int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent);
+#endif // !SDL_POWER_DISABLED
 
+#ifndef SDL_JOYSTICK_DISABLED
 // Joystick support
 void Android_JNI_DetectDevices(void);
 void Android_JNI_JoystickSetLED(int device_id, int red, int green, int blue);
 void Android_JNI_JoystickSetSensorsEnabled(int device_id, bool enabled);
+#endif // !SDL_JOYSTICK_DISABLED
 
+#ifndef SDL_HAPTIC_DISABLED
 // Haptic support
 void Android_JNI_DetectHapticDevices(void);
 void Android_JNI_HapticRun(int device_id, float intensity, int length);
 void Android_JNI_HapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length);
 void Android_JNI_HapticStop(int device_id);
-
-// Video
-bool Android_JNI_SuspendScreenSaver(bool suspend);
-
-#ifndef SDL_VIDEO_DISABLED
-// Touch support
-void Android_JNI_InitTouch(void);
-#endif // !SDL_VIDEO_DISABLED
+#endif // !SDL_HAPTIC_DISABLED
 
 // Threads
 #include <jni.h>
@@ -142,21 +146,6 @@ bool Android_JNI_GetLocale(char *buf, size_t buflen);
 
 // Generic messages
 bool Android_JNI_SendMessage(int command, int param);
-
-// MessageBox
-bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
-
-#ifndef SDL_VIDEO_DISABLED
-// Cursor support
-int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
-void Android_JNI_DestroyCustomCursor(int cursorID);
-bool Android_JNI_SetCustomCursor(int cursorID);
-bool Android_JNI_SetSystemCursor(int cursorID);
-
-// Relative mouse support
-bool Android_JNI_SupportsRelativeMouse(void);
-bool Android_JNI_SetRelativeMouseEnabled(bool enabled);
-#endif // !SDL_VIDEO_DISABLED
 
 // Show toast notification
 bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int xOffset, int yOffset);
@@ -171,10 +160,11 @@ SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void);
 
 char *SDL_GetAndroidPackageName(void);  // this is a SDL_malloc'd string the caller will own.
 
+#ifndef SDL_DIALOG_DISABLED
 // File Dialogs
-bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
-    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
-    bool multiple, const char *initialPath);
+bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, const SDL_DialogFileFilter *filters,
+    int nfilters, SDL_FileDialogType type, bool multiple, const char *initialPath);
+#endif // !SDL_DIALOG_DISABLED
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
