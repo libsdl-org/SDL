@@ -460,11 +460,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        float span_x = getNormalizedX(detector.getCurrentSpanX());
-        float span_y = getNormalizedY(detector.getCurrentSpanY());
-        float focus_x = getNormalizedX(detector.getFocusX());
-        float focus_y = getNormalizedY(detector.getFocusY());
-        SDLActivity.onNativePinchEnd(span_x, span_y, focus_x, focus_y);
+        SDLActivity.onNativePinchEnd();
     }
 
 }
