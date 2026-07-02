@@ -720,7 +720,115 @@ static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 lef
 
 static bool EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return false;
+    SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
+    Uint16 vendor, product;
+
+    if (!item) {
+        // Controller was disconnected?
+        return false;
+    }
+
+    // Here we don't check if the controller's mapping is "standard" to preserve the previous behavior
+
+    // if ((item->guid.data[15] & 0x80) == 0) {
+    //     return false;
+    // }
+
+    SDL_GetJoystickGUIDInfo(item->guid, &vendor, &product, NULL, NULL);
+
+    // Standard web mapping, with SDL changes described in the code (see Emscripten_JoyStickConnected)
+    out->a.kind = EMappingKind_Button;
+    out->a.target = 0;
+
+    out->b.kind = EMappingKind_Button;
+    out->b.target = 1;
+
+    out->x.kind = EMappingKind_Button;
+    out->x.target = 2;
+
+    out->y.kind = EMappingKind_Button;
+    out->y.target = 3;
+
+    out->back.kind = EMappingKind_Button;
+    out->back.target = 6;
+
+    out->guide.kind = EMappingKind_Button;
+    out->guide.target = 10;
+
+    out->start.kind = EMappingKind_Button;
+    out->start.target = 7;
+
+    out->leftstick.kind = EMappingKind_Button;
+    out->leftstick.target = 8;
+
+    out->rightstick.kind = EMappingKind_Button;
+    out->rightstick.target = 9;
+
+    out->leftshoulder.kind = EMappingKind_Button;
+    out->leftshoulder.target = 4;
+
+    out->rightshoulder.kind = EMappingKind_Button;
+    out->rightshoulder.target = 5;
+
+    out->dpup.kind = EMappingKind_Hat;
+    out->dpup.target = SDL_HAT_UP;
+
+    out->dpdown.kind = EMappingKind_Hat;
+    out->dpdown.target = SDL_HAT_DOWN;
+
+    out->dpleft.kind = EMappingKind_Hat;
+    out->dpleft.target = SDL_HAT_LEFT;
+
+    out->dpright.kind = EMappingKind_Hat;
+    out->dpright.target = SDL_HAT_RIGHT;
+
+    out->leftx.kind = EMappingKind_Axis;
+    out->leftx.target = 0;
+
+    out->lefty.kind = EMappingKind_Axis;
+    out->lefty.target = 1;
+
+    out->rightx.kind = EMappingKind_Axis;
+    out->rightx.target = 2;
+
+    out->righty.kind = EMappingKind_Axis;
+    out->righty.target = 3;
+
+    out->lefttrigger.kind = EMappingKind_Axis;
+    out->lefttrigger.target = 4;
+
+    out->righttrigger.kind = EMappingKind_Axis;
+    out->righttrigger.target = 5;
+
+    // Non-standard buttons
+    if (item->nbuttons >= 12) {
+        SDL_InputMapping *misc_buttons[] = {
+            &out->misc1,
+            &out->misc2,
+            &out->misc3,
+            &out->misc4,
+            &out->misc5,
+            &out->misc6,
+        };
+
+        if (SDL_IsJoystickPS4(vendor, product) || SDL_IsJoystickPS5(vendor, product)) {
+            // This button describes the touchpad, tested in Chromium and Firefox
+            misc_buttons[0] = &out->touchpad;
+        }
+
+        const int start_button = 11;
+        int misc_button_count = item->nbuttons - 11;
+        if (misc_button_count > SDL_arraysize(misc_buttons)) {
+            misc_button_count = SDL_arraysize(misc_buttons);
+        }
+
+        for (int i = 0; i < misc_button_count; i++) {
+            misc_buttons[i]->kind = EMappingKind_Button;
+            misc_buttons[i]->target = start_button + i;
+        }
+    }
+
+    return true;
 }
 
 static bool EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
