@@ -1566,7 +1566,10 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         } else {
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
         }
-        [NSMenu setMenuBarVisible:YES];
+
+        if (![NSMenu menuBarVisible]) {
+            [NSMenu setMenuBarVisible:YES];
+        }
 
         // Toggle zoom, if changed while fullscreen.
         if ([self windowOperationIsPending:PENDING_OPERATION_ZOOM]) {
