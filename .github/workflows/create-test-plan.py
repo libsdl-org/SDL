@@ -378,6 +378,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.clang_tidy = False
             case _:
                 raise ValueError(f"Invalid intel={spec.intel}")
+        job.apt_packages.append("intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic")
         job.source_cmd = f"source /opt/intel/oneapi/setvars.sh;"
         job.intel = True
         job.shell = "bash"
@@ -494,6 +495,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     "libavutil-dev",
                     "libswresample-dev",
                     "libswscale-dev",
+                    # testqt6
+                    "qt6-base-dev",
                 ))
                 match = re.match(r"ubuntu-(?P<year>[0-9]+)\.(?P<month>[0-9]+|latest).*", spec.os.value)
                 ubuntu_ge_24 = True
@@ -790,6 +793,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
                 job.msys2_packages.append(f"{msys2_env}-perl")
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
+                job.msys2_packages.append(f"{msys2_env}-qt6")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
             job.microsoft_gameinput = True
