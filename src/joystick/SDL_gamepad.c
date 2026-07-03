@@ -717,7 +717,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
     int button_mask;
     int axis_mask;
     Uint16 vendor, product;
-    
+
     SDL_strlcpy(mapping_string, "none,", sizeof(mapping_string));
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
@@ -1265,6 +1265,10 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                    SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
             // Nintendo Switch Pro controllers have a screenshot button
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickNintendoSwitch2Pro(vendor, product) ||
+                   SDL_IsJoystickNintendoSwitch2ProInputOnly(vendor, product)) {
+            // Nintendo Switch 2 Pro controllers have a screenshot button and C button
+            SDL_strlcat(mapping_string, "misc1:b11,misc2:b12", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
             // The Nintendo Switch Joy-Con combined controllers has a share button and paddles
             SDL_strlcat(mapping_string, "misc1:b11,paddle1:b12,paddle2:b13,paddle3:b14,paddle4:b15,", sizeof(mapping_string));

@@ -73,6 +73,19 @@ enum
     SDL_GAMEPAD_NUM_SWITCH_BUTTONS,
 };
 
+enum
+{
+    SDL_GAMEPAD_BUTTON_SWITCH_INPUT_ONLY_SHARE = 11,
+    SDL_GAMEPAD_NUM_SWITCH_INPUT_ONLY_BUTTONS,
+};
+
+enum
+{
+    SDL_GAMEPAD_BUTTON_SWITCH2_SHARE = 11,
+    SDL_GAMEPAD_BUTTON_SWITCH2_C,
+    SDL_GAMEPAD_NUM_SWITCH2_BUTTONS,
+};
+
 typedef enum
 {
     k_eSwitchInputReportIDs_SubcommandReply = 0x21,
@@ -286,6 +299,7 @@ typedef struct
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     bool m_bInputOnly;
+    bool m_bSwitch2;
     bool m_bUseButtonLabels;
     bool m_bPlayerLights;
     int m_nPlayerIndex;
@@ -1425,7 +1439,7 @@ static bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device, con
        controller to continually attempt to reconnect is to filter it out by manufacturer/product string.
        Note that the controller does have a different product string when connected over Bluetooth.
      */
-    if (SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
+    if (name && SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
         return false;
     }
 
@@ -1561,7 +1575,9 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     ctx->m_bSyncWrite = true;
 
     // Find out whether or not we can send output reports
-    ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
+    ctx->m_bSwitch2 = SDL_IsJoystickNintendoSwitch2Pro(device->vendor_id, device->product_id);
+    ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id) ||
+                        SDL_IsJoystickNintendoSwitch2ProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
         // Initialize rumble data, important for reading device info on the MOBAPAD M073
         SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[0]);
@@ -1689,7 +1705,13 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
                         SDL_PlayerLEDHintChanged, ctx);
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH_BUTTONS;
+    if (ctx->m_bSwitch2) {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH2_BUTTONS;
+    } else if (ctx->m_bInputOnly) {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH_INPUT_ONLY_BUTTONS;
+    } else {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_SWITCH_BUTTONS;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
@@ -1944,7 +1966,11 @@ static void HandleInputOnlyControllerState(SDL_Joystick *joystick, SDL_DriverSwi
     if (packet->ucStickHat != ctx->m_lastInputOnlyState.ucStickHat) {
         Uint8 hat;
 
-        switch (packet->ucStickHat) {
+        if (ctx->m_bSwitch2) {
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_C, ((packet->ucStickHat & 0x80) != 0));
+        }
+
+        switch (packet->ucStickHat & 0x0F) {
         case 0:
             hat = SDL_HAT_UP;
             break;
@@ -2596,6 +2622,9 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data & 0x10) != 0));
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH_SHARE, ((data & 0x20) != 0));
+            if (ctx->m_bSwitch2) {
+                SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_C, ((data & 0x40) != 0));
+            }
         }
 
         if (packet->controllerState.rgucButtons[2] != ctx->m_lastFullState.controllerState.rgucButtons[2]) {
