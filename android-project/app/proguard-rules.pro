@@ -24,6 +24,7 @@
     int createCustomCursor(int[], int, int, int, int);
     void destroyCustomCursor(int);
     android.app.Activity getContext();
+    java.lang.String getDeviceFormFactor();
     boolean getManifestEnvironmentVariables();
     android.view.Surface getNativeSurface();
     void initTouch();
