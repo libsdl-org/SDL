@@ -768,7 +768,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 static NSWindow *Cocoa_MouseFocus;
 
-NSWindow *Cocoa_GetMouseFocus()
+NSWindow *Cocoa_GetMouseFocus(void)
 {
     return Cocoa_MouseFocus;
 }
