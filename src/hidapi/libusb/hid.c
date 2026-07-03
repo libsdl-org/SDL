@@ -76,6 +76,11 @@ extern "C" {
 #pragma warning(disable:5287) /* operands are different enum types */
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wenum-enum-conversion"
+#endif
+
 /* Uncomment to enable the retrieval of Usage and Usage Page in
 hid_enumerate(). Warning, on platforms different from FreeBSD
 this is very invasive as it requires the detach
@@ -2273,6 +2278,10 @@ uint16_t get_usb_code_for_current_locale(void)
 	/* Found nothing. */
 	return 0x0;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #if defined(_MSC_VER)
 #pragma warning (pop)
