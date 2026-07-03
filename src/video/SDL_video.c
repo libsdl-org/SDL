@@ -146,6 +146,9 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_NGAGE
     &NGAGE_bootstrap,
 #endif
+#ifdef SDL_VIDEO_DRIVER_KOBO
+    &KOBO_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_OFFSCREEN
     &OFFSCREEN_bootstrap,
 #endif

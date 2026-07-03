@@ -459,6 +459,7 @@ typedef struct VideoBootStrap
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern VideoBootStrap COCOA_bootstrap;
 extern VideoBootStrap X11_bootstrap;
+extern VideoBootStrap KOBO_bootstrap;
 extern VideoBootStrap DirectFB_bootstrap;
 extern VideoBootStrap WINDOWS_bootstrap;
 extern VideoBootStrap WINRT_bootstrap;
