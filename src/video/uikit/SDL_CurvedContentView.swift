@@ -285,6 +285,7 @@ internal struct SDL_CurvedContentView: View {
             helper.updateSnappedStatus(snapped: snappedStatus.isSnapped)
         }
         .preferredSurroundingsEffect(shouldEnableDimming ? .dark : nil)
+        .allowedDynamicRange(.high)
         .frame(depth: 0)
         .ignoresSafeArea()
         .persistentSystemOverlays(settings.sceneState == .cinematic ? .hidden : .automatic)

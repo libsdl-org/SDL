@@ -283,6 +283,11 @@ bool UIKit_AddDisplay(bool send_event)
 
     display.desktop_mode = mode;
 
+    // There isn't currently a way to query the EDR headeroom on visionOS.
+    // The range is 1 - 16, so we'll assume a current value of 2 for now.
+    display.HDR.SDR_white_level = 1.0f;
+    display.HDR.HDR_headroom = 2.0f;
+
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
 
     if (!data) {
