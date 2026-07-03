@@ -1146,7 +1146,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
                                                       repeats:TRUE
                                                         block:^(NSTimer *unusedTimer)
     {
-        SDL_OnWindowLiveResizeUpdate(_data.window);
+        SDL_OnWindowLiveResizeUpdate(self->_data.window);
     }];
 
     [[NSRunLoop currentRunLoop] addTimer:liveResizeTimer forMode:NSRunLoopCommonModes];
