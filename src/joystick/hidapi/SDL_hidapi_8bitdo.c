@@ -190,8 +190,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         }
-    }
-    else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         // Supported by default
         ctx->sensors_supported = true;
         ctx->rumble_supported = true;
