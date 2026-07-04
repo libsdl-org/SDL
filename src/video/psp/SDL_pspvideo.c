@@ -398,10 +398,14 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     int i = 0;
     int done = 0;
     int input_text_length = 128;
-    void * received_text = SDL_calloc(input_text_length, sizeof(Uint16));
-    void * received_text_start = received_text;
-    void * text_string = NULL;
-    void * string_to_send = NULL;
+    void *received_text = SDL_calloc(input_text_length, sizeof(Uint16));
+    if (!received_text) {
+        SDL_Log("Error: Failed to allocate buffer for receiving osk input");
+        return;
+    }
+    void *received_text_start = received_text;
+    void *text_string = NULL;
+    void *string_to_send = NULL;
 
     SDL_iconv_t iconv = NULL;
     size_t outbytesleft = input_text_length;
@@ -495,7 +499,24 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
 
     // Convert input list to strings
     iconv = SDL_iconv_open("UTF-8", "UCS-2-INTERNAL");
+    if (iconv == SDL_ICONV_ERROR) {
+        SDL_Log("Error: Failed to open iconv for ucs-2-internal conversion to utf-8");
+        SDL_free(string_to_send);
+        SDL_free(received_text_start);
+        SDL_SendScreenKeyboardHidden();
+        return;
+    }
+
     string_to_send = SDL_calloc(input_text_length, 3);  // utf-8 characters can use up to 4 bytes, but the PSP keyboard has characters up to 3
+    if (!string_to_send) {
+        SDL_Log("Error: Failed to allocate buffer for converting osk input to utf-8");
+        SDL_free(string_to_send);
+        SDL_free(received_text_start);
+        SDL_iconv_close(iconv);
+        SDL_SendScreenKeyboardHidden();
+        return;
+    }
+
     text_string = string_to_send;
     outbytesleft = input_text_length * 3;
     iconv_result = SDL_iconv(iconv, (const char **) &received_text, (size_t *) &inbytesleft, (char **) &text_string, &outbytesleft);
@@ -504,6 +525,7 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     } else {
         SDL_SetError("Conversion of string received from on screen keyboard to utf-8 failed with status %u", iconv_result);
     }
+
     SDL_free(string_to_send);
     SDL_free(received_text_start);
     SDL_iconv_close(iconv);
