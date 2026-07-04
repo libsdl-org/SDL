@@ -395,16 +395,21 @@ bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char list[0x20000] __attribute__((aligned(64)));  // Needed for sceGuStart to work
-    int i;
+    int i = 0;
     int done = 0;
-    int input_text_length = 32; // SDL_SendKeyboardText supports up to 32 characters per event
-    unsigned short outtext[input_text_length];
-    char text_string[input_text_length];
+    int input_text_length = 128;
+    void * received_text = SDL_calloc(input_text_length, sizeof(Uint16));
+    void * received_text_start = received_text;
+    void * text_string = NULL;
+    void * string_to_send = NULL;
+
+    SDL_iconv_t iconv = NULL;
+    size_t outbytesleft = input_text_length;
+    size_t inbytesleft = input_text_length * sizeof(Uint16);
+    size_t iconv_result = 0;
 
     SceUtilityOskData data;
     SceUtilityOskParams params;
-
-    SDL_memset(outtext, 0, input_text_length * sizeof(unsigned short));
 
     data.language = PSP_UTILITY_OSK_LANGUAGE_DEFAULT;
     data.lines = 1;
@@ -443,7 +448,7 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     data.intext = NULL;
     data.outtextlength = input_text_length;
     data.outtextlimit = input_text_length;
-    data.outtext = outtext;
+    data.outtext = (unsigned short *) received_text;
 
     params.base.size = sizeof(params);
     sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_LANGUAGE, &params.base.language);
@@ -462,8 +467,11 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     while(!done) {
         sceGuStart(GU_DIRECT, list);
         sceGuClearColor(0);
-        sceGuClearDepth(0);
-        sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
+        sceGuClear(GU_COLOR_BUFFER_BIT);
+        if (sceGuGetStatus(GU_DEPTH_TEST)) {
+            sceGuClearDepth(0);
+            sceGuClear(GU_DEPTH_BUFFER_BIT);
+        }
         sceGuFinish();
         sceGuSync(0,0);
 
@@ -485,11 +493,20 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
         sceGuSwapBuffers();
     }
 
-    // Convert input list to string
-    for (i = 0; i < input_text_length; i++) {
-        text_string[i] = outtext[i];
+    // Convert input list to strings
+    iconv = SDL_iconv_open("UTF-8", "UCS-2-INTERNAL");
+    string_to_send = SDL_calloc(input_text_length, 3);  // utf-8 characters can use up to 4 bytes, but the PSP keyboard has characters up to 3
+    text_string = string_to_send;
+    outbytesleft = input_text_length * 3;
+    iconv_result = SDL_iconv(iconv, (const char **) &received_text, (size_t *) &inbytesleft, (char **) &text_string, &outbytesleft);
+    if (iconv_result == 0) {
+        SDL_SendKeyboardText(string_to_send);
+    } else {
+        SDL_SetError("Conversion of string received from on screen keyboard to utf-8 failed with status %u", iconv_result);
     }
-    SDL_SendKeyboardText((const char *) text_string);
+    SDL_free(string_to_send);
+    SDL_free(received_text_start);
+    SDL_iconv_close(iconv);
 
     SDL_SendScreenKeyboardHidden();
 }
