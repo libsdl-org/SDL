@@ -789,6 +789,8 @@ static int process_testNonExistingExecutable(void *arg)
     char *random_stem;
     char *random_path;
     SDL_Process *process = NULL;
+    bool result;
+    int exit_code = 0;
 
     random_stem = SDLTest_RandomAsciiStringOfSize(STEM_LENGTH);
     random_path = SDL_malloc(STEM_LENGTH + SDL_strlen(EXE) + 1);
@@ -801,7 +803,15 @@ static int process_testNonExistingExecutable(void *arg)
 
     SDLTest_AssertPass("About to call SDL_CreateProcess");
     process = SDL_CreateProcess((const char * const *)process_args, false);
-    SDLTest_AssertCheck(process == NULL, "SDL_CreateProcess() should have failed (%s)", SDL_GetError());
+    if (process) {
+        SDLTest_AssertPass("SDL_CreateProcess() returned a process, waiting for exec failure");
+        result = SDL_WaitProcess(process, true, &exit_code);
+        SDLTest_AssertCheck(result, "SDL_WaitProcess()");
+        SDLTest_AssertCheck(exit_code != 0, "Exit code should be non-zero, is %d", exit_code);
+        SDL_DestroyProcess(process);
+    } else {
+        SDLTest_AssertPass("SDL_CreateProcess() failed synchronously (%s)", SDL_GetError());
+    }
 
     DestroyStringArray(process_args);
     return TEST_COMPLETED;
