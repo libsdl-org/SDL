@@ -395,7 +395,6 @@ bool PSP_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char list[0x20000] __attribute__((aligned(64)));  // Needed for sceGuStart to work
-    int i = 0;
     int done = 0;
     int input_text_length = 128;
     void *received_text = SDL_calloc(input_text_length, sizeof(Uint16));
@@ -499,7 +498,7 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
 
     // Convert input list to strings
     iconv = SDL_iconv_open("UTF-8", "UCS-2-INTERNAL");
-    if (iconv == SDL_ICONV_ERROR) {
+    if ((size_t)iconv == SDL_ICONV_ERROR) {
         SDL_Log("Error: Failed to open iconv for ucs-2-internal conversion to utf-8");
         SDL_free(string_to_send);
         SDL_free(received_text_start);
