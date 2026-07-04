@@ -1431,8 +1431,8 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
     }
 
     if (device->debug_mode) {
-        if (createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD
-            && createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD) {
+        if (createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD &&
+            createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD) {
             SDL_assert_release(!"Invalid transfer buffer usage!");
         }
     }
