@@ -498,21 +498,13 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     // Convert input list to strings
     iconv = SDL_iconv_open("UTF-8", "UCS-2-INTERNAL");
     if ((size_t)iconv == SDL_ICONV_ERROR) {
-        SDL_Log("Error: Failed to open iconv for ucs-2-internal conversion to utf-8");
-        SDL_free(string_to_send);
-        SDL_free(received_text_start);
-        SDL_SendScreenKeyboardHidden();
-        return;
+        goto done;
     }
 
     string_to_send = SDL_calloc(input_text_length, 3); // utf-8 characters can use up to 4 bytes, but the PSP keyboard has characters up to 3
     if (!string_to_send) {
-        SDL_Log("Error: Failed to allocate buffer for converting osk input to utf-8");
-        SDL_free(string_to_send);
-        SDL_free(received_text_start);
         SDL_iconv_close(iconv);
-        SDL_SendScreenKeyboardHidden();
-        return;
+        goto done;
     }
 
     text_string = string_to_send;
@@ -520,10 +512,11 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     iconv_result = SDL_iconv(iconv, (const char **)&received_text, (size_t *)&inbytesleft, (char **)&text_string, &outbytesleft);
     if (iconv_result == 0) {
         SDL_SendKeyboardText(string_to_send);
-    } else {
-        SDL_SetError("Conversion of string received from on screen keyboard to utf-8 failed with status %u", iconv_result);
     }
 
+    SDL_iconv_close(iconv);
+
+done:
     SDL_free(string_to_send);
     SDL_free(received_text_start);
     SDL_iconv_close(iconv);
