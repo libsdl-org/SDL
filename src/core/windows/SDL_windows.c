@@ -605,7 +605,7 @@ HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
         for (int x = 0; x < width; x++) {
             BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
             BYTE alpha = pixel[3];
-            COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
+            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
             SetPixel(hdcMem, x, y, maskColor);
         }
     }
