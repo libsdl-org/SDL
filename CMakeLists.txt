@@ -3471,6 +3471,7 @@ if(SDL_SHARED)
     if(HAS_Q_NO_USE_LIBIRC)
       target_compile_options(SDL2 PRIVATE /Q_no-use-libirc)
     endif()
+    set_property(TARGET SDL2 PROPERTY MSVC_RUNTIME_CHECKS "")
   endif()
   if(APPLE)
     # FIXME: Remove SOVERSION in SDL3
