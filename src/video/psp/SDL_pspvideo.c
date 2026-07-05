@@ -519,7 +519,6 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
 done:
     SDL_free(string_to_send);
     SDL_free(received_text_start);
-    SDL_iconv_close(iconv);
 
     SDL_SendScreenKeyboardHidden();
 }
