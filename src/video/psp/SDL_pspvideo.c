@@ -399,7 +399,6 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     int input_text_length = 128;
     void *received_text = SDL_calloc(input_text_length, sizeof(Uint16));
     if (!received_text) {
-        SDL_Log("Error: Failed to allocate buffer for receiving osk input");
         return;
     }
     void *received_text_start = received_text;
