@@ -4325,7 +4325,8 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
- * A variable controlling whether the HDR headroom slider should be shown in the visionOS window settings.
+ * A variable controlling whether the HDR headroom slider should be shown in
+ * the visionOS window settings.
  *
  * The variable can be set to the following values:
  *
