@@ -39,6 +39,7 @@ enum
     SDL_GAMEPAD_BUTTON_8BITDO_R4,
     SDL_GAMEPAD_BUTTON_8BITDO_PL,
     SDL_GAMEPAD_BUTTON_8BITDO_PR,
+    SDL_GAMEPAD_BUTTON_8BITDO_SHARE,
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
@@ -597,7 +598,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[9] & 0x08) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[9] & 0x20) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[9] & 0x40) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, ((data[9] & 0x80) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_SHARE, ((data[9] & 0x80) != 0));
     }
 
     if (size > 10 && ctx->last_state[10] != data[10]) {
