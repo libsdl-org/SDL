@@ -38,7 +38,7 @@
 #define GAMESIR_IMU_RATE_HZ_WIRED 1000
 #define GAMESIR_IMU_RATE_HZ_WIRELESS 250
 // We can't tell whether it's connected via dongle or not...
-#define GAMESIR_IMU_RATE_HZ	GAMESIR_IMU_RATE_HZ_WIRED
+#define GAMESIR_IMU_RATE_HZ    GAMESIR_IMU_RATE_HZ_WIRED
 
 #define BTN_A        0x01
 #define BTN_B        0x02
@@ -599,26 +599,35 @@ static void HIDAPI_DriverGameSir_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         // Handle the directional pad (D-pad)
         Uint8 hat = SDL_HAT_CENTERED;
 
-        if (buttons == BTN_UP_R) {
+        switch (buttons & 0x0F) {
+        case BTN_UP_R:
             hat = SDL_HAT_RIGHTUP;
-        } else if (buttons == BTN_UP_L) {
+            break;
+        case BTN_UP_L:
             hat = SDL_HAT_LEFTUP;
-        } else if (buttons == BTN_DOWN_R) {
+            break;
+        case BTN_DOWN_R:
             hat = SDL_HAT_RIGHTDOWN;
-        } else if (buttons == BTN_DOWN_L) {
+            break;
+        case BTN_DOWN_L:
             hat = SDL_HAT_LEFTDOWN;
-        } else if (buttons == BTN_UP) {
+            break;
+        case BTN_UP:
             hat = SDL_HAT_UP;
-        } else if (buttons == BTN_DOWN) {
+            break;
+        case BTN_DOWN:
             hat = SDL_HAT_DOWN;
-        } else if (buttons == BTN_LEFT) {
+            break;
+        case BTN_LEFT:
             hat = SDL_HAT_LEFT;
-        } else if (buttons == BTN_RIGHT) {
+            break;
+        case BTN_RIGHT:
             hat = SDL_HAT_RIGHT;
-        } else {
+            break;
+        default:
             hat = SDL_HAT_CENTERED;
+            break;
         }
-
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
 
         // Handle other buttons
