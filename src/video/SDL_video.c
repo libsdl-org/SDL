@@ -5836,21 +5836,21 @@ bool SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props
         _this->SetTextInputProperties(_this, window, props);
     }
 
-    // Show the on-screen keyboard, if desired
-    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
-        if (_this->ShowScreenKeyboard) {
-            _this->ShowScreenKeyboard(_this, window, props);
-        }
-    }
-
     if (!window->text_input_active) {
-        // Finally start the text input system
+        // Start the text input system
         if (_this->StartTextInput) {
             if (!_this->StartTextInput(_this, window, props)) {
                 return false;
             }
         }
         window->text_input_active = true;
+    }
+
+    // Show the on-screen keyboard, if desired
+    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
+        if (_this->ShowScreenKeyboard) {
+            _this->ShowScreenKeyboard(_this, window, props);
+        }
     }
     return true;
 }
