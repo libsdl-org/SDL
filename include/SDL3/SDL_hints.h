@@ -4325,6 +4325,20 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable controlling whether the HDR headroom slider should be shown in the visionOS window settings.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The HDR headroom slider is not shown. (default)
+ * - "1": The HDR headroom slider is shown.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_VISIONOS_HDR_HEADROOM_UI "SDL_VISIONOS_HDR_HEADROOM_UI"
+
+/**
  * A variable controlling whether touch should be enabled on the back panel of
  * the PlayStation Vita.
  *

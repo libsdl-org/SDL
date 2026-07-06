@@ -264,6 +264,11 @@ internal struct SDL_CurvedContentView: View {
                 }
             }
         }
+        .onChange(of: settings.headroom, initial: true) { oldHeadroom, headroom in
+            if settings.headroom_enabled {
+                SDL_VisionOS_SendHeadroom(headroom)
+            }
+        }
         .modifier(AnimatedCurveRadiusModifier(helper: helper, curveRadius: animatedScreenRadius))
         .onChange(of: sceneActivationOrObject(shouldPopulateCollisionShape ? helper.collisionShape : nil)) {
             guard let curvedUIEntity else { return }

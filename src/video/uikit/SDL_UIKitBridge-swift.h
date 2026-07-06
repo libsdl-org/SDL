@@ -32,6 +32,12 @@ void SDL_VisionOS_SendWindowSettings(NSString *settings);
 // Called from Swift scene delegates when pointer mode changes
 void SDL_VisionOS_SendPointerMode(bool enabled);
 
+// Called from Swift scene delegates when window settings are loaded
+bool SDL_VisionOS_ShouldShowHeadroomUI();
+
+// Called from Swift scene delegates when headroom changes
+void SDL_VisionOS_SendHeadroom(float headroom);
+
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, float x, float y);
 
