@@ -465,6 +465,7 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     sceUtilityOskInitStart(&params);
 
     SDL_SendScreenKeyboardShown();
+    window->text_input_active = true;
 
     while (!done) {
         sceGuStart(GU_DIRECT, list);
