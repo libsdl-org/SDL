@@ -191,9 +191,8 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         }
-    }
-    else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
-        //Supported by default
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
+        // Supported by default
         ctx->sensors_supported = true;
         ctx->rumble_supported = true;
         ctx->powerstate_supported = true;
@@ -321,7 +320,6 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
             // This firmware appears to update at 1000 Hz over USB dongle
             return 1000;
         }
-
     case USB_PRODUCT_8BITDO_ULTIMATE3:
         return 120;
     default:
@@ -346,7 +344,7 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT ||
         device->product_id == USB_PRODUCT_8BITDO_PRO_3 ||
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS ||
-        device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3 ) {
+        device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
 		// This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
     } else {
@@ -413,8 +411,7 @@ static bool HIDAPI_Driver8BitDo_RumbleJoystickTriggers(SDL_HIDAPI_Device *device
             return SDL_SetError("Couldn't send rumble packet");
         }
         return true;
-    }
-    else {
+    } else {
         return SDL_Unsupported();
     }
 }
