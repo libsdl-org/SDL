@@ -465,6 +465,10 @@ void PSP_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     sceUtilityOskInitStart(&params);
 
     SDL_SendScreenKeyboardShown();
+
+    // window->text_input_active needs to be true for SDL_SendKeyboardText to be able to send events
+    // The SDL_StartTextInputWithProperties only sets text_input_active after PSP_ShowScreenKeyboard is called
+    // This means only setting it here too can guaranatee an events are created from the screen keyboard
     window->text_input_active = true;
 
     while (!done) {
