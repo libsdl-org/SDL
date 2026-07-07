@@ -3233,10 +3233,6 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 #endif
             if (srcfmt->Amask && dstfmt->Amask) {
                 return BlitNtoNKeyCopyAlpha;
-#ifdef SDL_SVE2_INTRINSICS
-            } else if (IsBBP4SameRGB(srcfmt, dstfmt) && SDL_HasSVE2()) {
-                return Blit4to4KeySVE2;
-#endif
             } else {
                 return BlitNtoNKey;
             }
