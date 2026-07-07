@@ -621,7 +621,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0186 ), k_eControllerType_SwitchProController, NULL },        // PDP Afterglow Wireless Switch Controller - working gyro. USB is for charging only. Many later "Wireless" line devices w/ gyro also use this vid/pid
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0187 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Rockcandy Wired Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0188 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wired Deluxe+ Audio Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018b ), k_eControllerType_SwitchProController, NULL },  // PDP Afterglow Wave Wireless Controller for Switch
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018b ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wave Wired/Wireless Controller for Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018c ), k_eControllerType_SwitchProController, "PDP REALMz Wireless Controller" },  // PDP REALMz Wireless Controller for Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0193 ), k_eControllerType_Switch2ProController, NULL },  // Turtle Beach Afterglow Wireless RGB Gaming Controller for Nintendo Switch 2 and the Turtle Beach Rematch Wireless RGB Gaming Controller for Nintendo Switch 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0196 ), k_eControllerType_Switch2InputOnlyController, NULL },  // Turtle Beach Rematch Wired Controller for Nintendo Switch 2

@@ -1575,9 +1575,13 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     ctx->m_bSyncWrite = true;
 
     // Find out whether or not we can send output reports
+    // Third party controllers use the full Switch Pro wireless protocol over Bluetooth
+    if (!device->is_bluetooth) {
+        ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id) ||
+                            SDL_IsJoystickNintendoSwitch2ProInputOnly(device->vendor_id, device->product_id);
+    }
     ctx->m_bSwitch2 = SDL_IsJoystickNintendoSwitch2Pro(device->vendor_id, device->product_id);
-    ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id) ||
-                        SDL_IsJoystickNintendoSwitch2ProInputOnly(device->vendor_id, device->product_id);
+
     if (!ctx->m_bInputOnly) {
         // Initialize rumble data, important for reading device info on the MOBAPAD M073
         SetNeutralRumble(device, &ctx->m_RumblePacket.rumbleData[0]);
