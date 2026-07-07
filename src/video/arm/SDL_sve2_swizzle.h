@@ -22,7 +22,7 @@
 /*
  * IMPORTANT: Please do NOT include this header file directly or indirectly
  *            outside the src/video/arm folder.
- * 
+ *
  */
 
 #if !defined(SD_SVE2_SWIZZLE_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
@@ -31,7 +31,7 @@
 #include "SDL_sve2_extension.h"
 
 #define sdl_sve_rgb32_stride_impl(ma_sve_chn_iterator, ...)   \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    sdl_sve_stride_loop_pixel(uStride, vTailPred)             \
     {                                                         \
                                                               \
         svuint16x4_t vSourceLow16x4 = svundef4_u16();         \
@@ -71,7 +71,7 @@
     ma_alpha_idx,                                             \
     ma_sve_chn_iterator,                                      \
     ...)                                                      \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    sdl_sve_stride_loop_pixel(uStride, vTailPred)             \
     {                                                         \
                                                               \
         svuint16x4_t vSourceLow16x4 = svundef4_u16();         \
@@ -115,7 +115,7 @@
     }
 
 #define sdl_sve_rgb32_to_rgb565_stride_impl(ma_sve_chn_iterator, ...) \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred)                     \
+    sdl_sve_stride_loop_pixel(uStride, vTailPred)                     \
     {                                                                 \
                                                                       \
         svuint16x4_t vSourceLow16x4 = svundef4_u16();                 \
@@ -153,7 +153,7 @@
     ma_alpha_idx,                                             \
     ma_sve_chn_iterator,                                      \
     ...)                                                      \
-    sdl_sve_stride_loop_rgb32(uStride, vTailPred)             \
+    sdl_sve_stride_loop_pixel(uStride, vTailPred)             \
     {                                                         \
                                                               \
         svuint16x4_t vSourceLow16x4 = svundef4_u16();         \

@@ -2152,6 +2152,19 @@ static void Blit2to2Key(SDL_BlitInfo *info)
     }
 }
 
+static inline bool IsBBP4SameRGB(const SDL_PixelFormatDetails *srcfmt, 
+                                 const SDL_PixelFormatDetails *dstfmt)
+{
+    int srcbpp = srcfmt->bytes_per_pixel;
+    int dstbpp = dstfmt->bytes_per_pixel;
+
+    return  (   srcbpp == 4 
+            &&  dstbpp == 4 
+            &&  srcfmt->Rmask == dstfmt->Rmask 
+            &&  srcfmt->Gmask == dstfmt->Gmask 
+            &&  srcfmt->Bmask == dstfmt->Bmask);
+}
+
 static void BlitNtoNKey(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
@@ -2174,7 +2187,8 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     ckey &= rgbmask;
 
     // BPP 4, same rgb
-    if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
+    //if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
+    if (IsBBP4SameRGB(srcfmt, dstfmt)) {
         Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
 
@@ -3205,6 +3219,11 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            If a particular case turns out to be useful we'll add it. */
 
         if (srcfmt->bytes_per_pixel == 2 && surface->map.identity != 0) {
+#ifdef SDL_SVE2_INTRINSICS
+            if (SDL_HasSVE2()) {
+                return Blit2to2KeySVE2;
+            }
+#endif
             return Blit2to2Key;
         } else {
 #ifdef SDL_ALTIVEC_BLITTERS
@@ -3214,6 +3233,10 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 #endif
             if (srcfmt->Amask && dstfmt->Amask) {
                 return BlitNtoNKeyCopyAlpha;
+#ifdef SDL_SVE2_INTRINSICS
+            } else if (IsBBP4SameRGB(srcfmt, dstfmt) && SDL_HasSVE2()) {
+                return Blit4to4KeySVE2;
+#endif
             } else {
                 return BlitNtoNKey;
             }
