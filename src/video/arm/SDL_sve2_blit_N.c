@@ -103,7 +103,6 @@ static inline void sdl_sve_rgb16_key(uint8_t *SDL_RESTRICT pchSource,
     assert(0 == ((uintptr_t)pchTarget & 0x01));
 
     while (nHeight--) {
-
         sdl_sve_rgb16_stride_key((uint16_t *)pchSource,
                                  (uint16_t *)pchTarget,
                                  nWidth,
@@ -240,7 +239,6 @@ static inline void sdl_sve_rgb32_key_copy_alpha(uint8_t *SDL_RESTRICT pchSource,
     assert(0 == ((uintptr_t)pchTarget & 0x03));
 
     while (nHeight--) {
-
         sdl_sve_rgb32_stride_key_copy_alpha((uint32_t *)pchSource,
                                             (uint32_t *)pchTarget,
                                             nWidth,
@@ -269,7 +267,6 @@ static inline void sdl_sve_rgb32_key_no_alpha(uint8_t *SDL_RESTRICT pchSource,
     assert(0 == ((uintptr_t)pchTarget & 0x03));
 
     while (nHeight--) {
-
         sdl_sve_rgb32_stride_key_no_alpha((uint32_t *)pchSource,
                                           (uint32_t *)pchTarget,
                                           nWidth,

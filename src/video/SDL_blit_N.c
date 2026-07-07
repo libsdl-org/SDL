@@ -2152,19 +2152,6 @@ static void Blit2to2Key(SDL_BlitInfo *info)
     }
 }
 
-static inline bool IsBBP4SameRGB(const SDL_PixelFormatDetails *srcfmt, 
-                                 const SDL_PixelFormatDetails *dstfmt)
-{
-    int srcbpp = srcfmt->bytes_per_pixel;
-    int dstbpp = dstfmt->bytes_per_pixel;
-
-    return  (   srcbpp == 4 
-            &&  dstbpp == 4 
-            &&  srcfmt->Rmask == dstfmt->Rmask 
-            &&  srcfmt->Gmask == dstfmt->Gmask 
-            &&  srcfmt->Bmask == dstfmt->Bmask);
-}
-
 static void BlitNtoNKey(SDL_BlitInfo *info)
 {
     int width = info->dst_w;
@@ -2187,8 +2174,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     ckey &= rgbmask;
 
     // BPP 4, same rgb
-    //if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
-    if (IsBBP4SameRGB(srcfmt, dstfmt)) {
+    if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
         Uint32 *src32 = (Uint32 *)src;
         Uint32 *dst32 = (Uint32 *)dst;
 
