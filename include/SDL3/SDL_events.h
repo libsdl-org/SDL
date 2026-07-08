@@ -500,6 +500,10 @@ typedef struct SDL_MouseButtonEvent
 /**
  * Mouse wheel event structure (event.wheel.*)
  *
+ * An SDL_EVENT_MOUSE_WHEEL event with a source value of SDL_MOUSEWHEEL_SOURCE_FINGER and
+ * 0.0 for the x and y values indicates that the scroll ended due to the finger being lifted
+ * from the device.
+ *
  * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_MouseWheelEvent
@@ -516,6 +520,7 @@ typedef struct SDL_MouseWheelEvent
     float mouse_y;      /**< Y coordinate, relative to window */
     Sint32 integer_x;   /**< The amount scrolled horizontally, accumulated to whole scroll "ticks" (added in 3.2.12) */
     Sint32 integer_y;   /**< The amount scrolled vertically, accumulated to whole scroll "ticks" (added in 3.2.12) */
+    SDL_MouseWheelSource source; /**< Set to one of the SDL_MOUSEWHEEL_SOURCE_* defines (added in 3.6.0) */
 } SDL_MouseWheelEvent;
 
 /**

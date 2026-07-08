@@ -1086,7 +1086,7 @@ static void pointer_handle_axis_common_v1(SDL_WaylandSeat *seat,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
     }
 }
 
@@ -1249,8 +1249,19 @@ static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
         break;
     }
 
+    // Treat continuous sources as a finger if an axis stop event was received at any point.
+    if (seat->pointer.pending_frame.have_stop && seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_CONTINUOUS) {
+        seat->pointer.continuous_axis_stop_received = true;
+    }
+
+    SDL_MouseWheelSource source = SDL_MOUSEWHEEL_SOURCE_WHEEL;
+    if (seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_FINGER ||
+        (seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_CONTINUOUS && seat->pointer.continuous_axis_stop_received)) {
+        source = SDL_MOUSEWHEEL_SOURCE_FINGER;
+    }
+
     SDL_SendMouseWheel(seat->pointer.pending_frame.timestamp_ns,
-                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction, source);
 }
 
 static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
@@ -1310,16 +1321,27 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_zero(seat->pointer.pending_frame);
 }
 
-static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
-                                       uint32_t axis_source)
+static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer, uint32_t axis_source)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.axis.source = axis_source;
 }
 
-static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
-                                     uint32_t time, uint32_t axis)
+static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);
+    seat->pointer.pending_frame.have_axis = true;
+    seat->pointer.pending_frame.have_stop = true;
+
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        seat->pointer.pending_frame.axis.y = 0.0f;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        seat->pointer.pending_frame.axis.x = 0.0f;
+        break;
+    }
 }
 
 static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
