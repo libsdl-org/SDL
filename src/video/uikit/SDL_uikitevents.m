@@ -380,7 +380,7 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
             vertical = -vertical;
             horizontal = -horizontal;
         }
-        SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), mouseID, horizontal, vertical, mouse_scroll_direction);
+        SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), mouseID, horizontal, vertical, mouse_scroll_direction, SDL_MOUSEWHEEL_SOURCE_WHEEL);
     };
     UpdateScrollDirection();
 

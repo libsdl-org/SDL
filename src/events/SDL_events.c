@@ -662,11 +662,12 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 #undef PRINT_MBUTTON_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_WHEEL)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u x=%g y=%g integer_x=%d integer_y=%d direction=%s)",
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u x=%g y=%g integer_x=%d integer_y=%d direction=%s source=%s)",
                            event->wheel.timestamp, (uint)event->wheel.windowID,
                            (uint)event->wheel.which, event->wheel.x, event->wheel.y,
                            (int)event->wheel.integer_x, (int)event->wheel.integer_y,
-                           event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
+                           event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped",
+                           event->wheel.source == SDL_MOUSEWHEEL_SOURCE_WHEEL ? "wheel" : "finger");
         break;
 
         SDL_EVENT_CASE(SDL_EVENT_JOYSTICK_AXIS_MOTION)

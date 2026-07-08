@@ -520,7 +520,7 @@ void SDL_EVDEV_Poll(void)
                                                mouse->focus, (SDL_MouseID)item->fd,
                                                item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
                                                item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
-                                               SDL_MOUSEWHEEL_NORMAL);
+                                               SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
                             item->mouse_wheel = item->mouse_hwheel = 0;
                         }
 
