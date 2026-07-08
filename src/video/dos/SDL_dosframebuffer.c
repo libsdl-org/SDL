@@ -502,6 +502,12 @@ bool DOSVESA_UpdateWindowFramebuffer(SDL_VideoDevice *device, SDL_Window *window
             }
         }
 
+        // No rectangles to update, so just program the palette and return.
+        // This is useful for pure palette animations.
+        if (numrects <= 0) {
+            return true;
+        }
+
         if (fb_state.use_dosmemput) {
             // dosmemput path (banked window, possibly multi-bank)
             const int src_pitch = fb_state.src_pitch;
