@@ -336,6 +336,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect, const void *pixels, int pitch)
 {
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     Uint8 *dst;
     int row, length, dpitch;
 
@@ -422,6 +423,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 #endif
 
+    data->drawstate.texture = NULL;
     return true;
 }
 
@@ -435,6 +437,7 @@ static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textu
     Uint8 *dst;
     int row, length, dpitch;
     SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     VITA_GXM_SetYUVProfile(renderer, texture);
 
@@ -497,6 +500,7 @@ static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textu
         }
     }
 
+    data->drawstate.texture = NULL;
     return true;
 }
 
@@ -509,6 +513,7 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
     Uint8 *dst;
     int row, length, dpitch;
     SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
 
     VITA_GXM_SetYUVProfile(renderer, texture);
 
@@ -552,6 +557,7 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
         }
     }
 
+    data->drawstate.texture = NULL;
     return true;
 }
 
@@ -580,6 +586,8 @@ static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     // No need to update texture data on ps vita.
     // VITA_GXM_LockTexture already returns a pointer to the texture pixels buffer.
     // This really improves framerate when using lock/unlock.
+    VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
+    data->drawstate.texture = NULL;
 }
 
 static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1259,6 +1267,13 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
     SDL_free(vita_texture);
 
     texture->internal = NULL;
+    if (data->drawstate.texture == texture) {
+        data->drawstate.texture = NULL;
+    }
+    if (data->drawstate.target == texture) {
+        data->drawstate.target = NULL;
+    }
+
 }
 
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
