@@ -200,6 +200,7 @@ struct SDL_WaylandSeat
         SDL_MouseButtonFlags buttons_pressed;
         SDL_Point last_motion;
         bool is_confined;
+        bool continuous_axis_stop_received;
 
         SDL_MouseID sdl_id;
 
@@ -210,6 +211,7 @@ struct SDL_WaylandSeat
             bool have_relative;
             bool have_warp;
             bool have_axis;
+            bool have_stop;
 
             Uint32 buttons_pressed;
             Uint32 buttons_released;
@@ -237,6 +239,7 @@ struct SDL_WaylandSeat
                 float y;
 
                 SDL_MouseWheelDirection direction;
+                enum wl_pointer_axis_source source;
             } axis;
 
             struct wl_surface *enter_surface;

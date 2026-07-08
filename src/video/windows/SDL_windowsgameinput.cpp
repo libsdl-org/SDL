@@ -318,7 +318,7 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
         if (delta.wheelX || delta.wheelY) {
             float fAmountX = (float)delta.wheelX / WHEEL_DELTA;
             float fAmountY = (float)delta.wheelY / WHEEL_DELTA;
-            SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), device->instance_id, fAmountX, fAmountY, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), device->instance_id, fAmountX, fAmountY, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
         }
     }
 }
