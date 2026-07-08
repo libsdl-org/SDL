@@ -1273,7 +1273,6 @@ static void VITA_GXM_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture
     if (data->drawstate.target == texture) {
         data->drawstate.target = NULL;
     }
-
 }
 
 static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
