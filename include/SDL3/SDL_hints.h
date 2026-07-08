@@ -4758,7 +4758,9 @@ extern "C" {
  * players are using high DPI mice, but should be disabled while showing
  * custom assert dialogs in your application code.
  *
- * Caution: Windows will not see mouse button releases in relative mode with this active. This means you should not enable relative mode while a mouse button is currently pressed.
+ * Caution: Windows will not see mouse button releases in relative mode with
+ * this active. This means you should not enable relative mode while a mouse
+ * button is currently pressed.
  *
  * - "0": Windows mouse events will be generated while relative motion is
  *   enabled. (default)
