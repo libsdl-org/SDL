@@ -1519,9 +1519,6 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    // Make sure our mode list is updated
-    SDL_UpdateFullscreenDisplayModes(display);
-
     return display->current_mode;
 }
 
