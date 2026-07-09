@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_report_descriptor_h_
+#define SDL_report_descriptor_h_
+
 typedef struct
 {
 	Uint8 report_id;
@@ -38,3 +41,5 @@ extern SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, 
 extern bool SDL_DescriptorHasUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page, Uint16 usage);
 extern void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor);
 extern bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_size, Uint32 *value);
+
+#endif // SDL_report_descriptor_h_
