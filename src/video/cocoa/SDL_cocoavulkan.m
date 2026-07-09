@@ -168,9 +168,7 @@ char const * const *Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, U
     static const char *const extensionsForCocoa[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if(count) {
-        *count = SDL_arraysize(extensionsForCocoa);
-    }
+    *count = SDL_arraysize(extensionsForCocoa);
     return extensionsForCocoa;
 }
 

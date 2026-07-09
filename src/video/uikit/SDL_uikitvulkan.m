@@ -172,9 +172,7 @@ char const * const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, U
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if(count) {
-        *count = SDL_arraysize(extensionsForUIKit);
-    }
+    *count = SDL_arraysize(extensionsForUIKit);
     return extensionsForUIKit;
 }
 

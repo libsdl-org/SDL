@@ -115,9 +115,7 @@ char const * const *Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     static const char *const extensionsForAndroid[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_ANDROID_SURFACE_EXTENSION_NAME
     };
-    if (count) {
-        *count = SDL_arraysize(extensionsForAndroid);
-    }
+    *count = SDL_arraysize(extensionsForAndroid);
     return extensionsForAndroid;
 }
 

@@ -6315,6 +6315,17 @@ void SDL_Vulkan_UnloadLibrary(void)
 
 char const * const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
+    Uint32 tmpcount = 0;
+    if (!count) {
+        count = &tmpcount;
+    }
+
+    if (!_this->Vulkan_GetInstanceExtensions) {
+        *count = 0;
+        SDL_Unsupported();
+        return NULL;
+    }
+
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 

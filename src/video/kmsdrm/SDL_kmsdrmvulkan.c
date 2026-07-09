@@ -152,9 +152,7 @@ char const * const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, 
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if (count) {
-        *count = SDL_arraysize(extensionsForKMSDRM);
-    }
+    *count = SDL_arraysize(extensionsForKMSDRM);
     return extensionsForKMSDRM;
 }
 
