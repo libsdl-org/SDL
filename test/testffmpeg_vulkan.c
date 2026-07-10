@@ -78,10 +78,6 @@ struct VulkanVideoContext
     VkCommandBuffer *commandBuffers;
     uint32_t commandBufferCount;
     uint32_t commandBufferIndex;
-    VkSemaphore *waitSemaphores;
-    uint32_t waitSemaphoreCount;
-    VkSemaphore *signalSemaphores;
-    uint32_t signalSemaphoreCount;
 
     const char **instanceExtensions;
     int instanceExtensionsCount;
@@ -723,44 +719,6 @@ static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *rende
 {
     uint32_t commandBufferCount = (uint32_t)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VULKAN_SWAPCHAIN_IMAGE_COUNT_NUMBER, 1);
 
-    if (commandBufferCount > context->waitSemaphoreCount) {
-        VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(context->waitSemaphores, commandBufferCount * sizeof(*semaphores));
-        if (!semaphores) {
-            return -1;
-        }
-        context->waitSemaphores = semaphores;
-
-        VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        while (context->waitSemaphoreCount < commandBufferCount) {
-            VkResult result = context->vkCreateSemaphore(context->device, &semaphoreCreateInfo, NULL, &context->waitSemaphores[context->waitSemaphoreCount]);
-            if (result != VK_SUCCESS) {
-                SDL_SetError("vkCreateSemaphore(): %s", getVulkanResultString(result));
-                return -1;
-            }
-            ++context->waitSemaphoreCount;
-        }
-    }
-
-    if (commandBufferCount > context->signalSemaphoreCount) {
-        VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(context->signalSemaphores, commandBufferCount * sizeof(*semaphores));
-        if (!semaphores) {
-            return -1;
-        }
-        context->signalSemaphores = semaphores;
-
-        VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        while (context->signalSemaphoreCount < commandBufferCount) {
-            VkResult result = context->vkCreateSemaphore(context->device, &semaphoreCreateInfo, NULL, &context->signalSemaphores[context->signalSemaphoreCount]);
-            if (result != VK_SUCCESS) {
-                SDL_SetError("vkCreateSemaphore(): %s", getVulkanResultString(result));
-                return -1;
-            }
-            ++context->signalSemaphoreCount;
-        }
-    }
-
     if (commandBufferCount > context->commandBufferCount) {
         uint32_t needed = (commandBufferCount - context->commandBufferCount);
         VkCommandBuffer *commandBuffers = (VkCommandBuffer *)SDL_realloc(context->commandBuffers, commandBufferCount * sizeof(*commandBuffers));
@@ -808,8 +766,6 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = pVkFrame->sem;
     submitInfo.pWaitDstStageMask = &pipelineStageMask;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &context->waitSemaphores[context->commandBufferIndex];
     submitInfo.pNext = &timeline;
 
     if (pVkFrame->layout[0] != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
@@ -858,8 +814,6 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION , "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
-    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (Sint64)context->waitSemaphores[context->commandBufferIndex], (Sint64)context->signalSemaphores[context->commandBufferIndex]);
-
     return 0;
 }
 
@@ -877,12 +831,8 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     timeline.signalSemaphoreValueCount = 1;
     timeline.pSignalSemaphoreValues = pVkFrame->sem_value;
 
-    VkPipelineStageFlags pipelineStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     VkSubmitInfo submitInfo = { 0 };
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &context->signalSemaphores[context->commandBufferIndex];
-    submitInfo.pWaitDstStageMask = &pipelineStageMask;
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = pVkFrame->sem;
     submitInfo.pNext = &timeline;
@@ -940,20 +890,6 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
         }
         SDL_free(context->instanceExtensions);
         SDL_free(context->deviceExtensions);
-        if (context->waitSemaphores) {
-            for (uint32_t i = 0; i < context->waitSemaphoreCount; ++i) {
-                context->vkDestroySemaphore(context->device, context->waitSemaphores[i], NULL);
-            }
-            SDL_free(context->waitSemaphores);
-            context->waitSemaphores = NULL;
-        }
-        if (context->signalSemaphores) {
-            for (uint32_t i = 0; i < context->signalSemaphoreCount; ++i) {
-                context->vkDestroySemaphore(context->device, context->signalSemaphores[i], NULL);
-            }
-            SDL_free(context->signalSemaphores);
-            context->signalSemaphores = NULL;
-        }
         if (context->commandBuffers) {
             context->vkFreeCommandBuffers(context->device, context->commandPool, context->commandBufferCount, context->commandBuffers);
             SDL_free(context->commandBuffers);

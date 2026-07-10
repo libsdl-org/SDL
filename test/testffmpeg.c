@@ -1087,6 +1087,10 @@ static void DisplayVideoTexture(AVFrame *frame)
         return;
     }
 
+    if (BeginFrameRendering(frame) < 0) {
+        return;
+    }
+
     SDL_FRect src;
     src.x = 0.0f;
     src.y = 0.0f;
@@ -1097,6 +1101,9 @@ static void DisplayVideoTexture(AVFrame *frame)
     } else {
         SDL_RenderTexture(renderer, video_texture, &src, NULL);
     }
+    SDL_FlushRenderer(renderer);
+
+    FinishFrameRendering(frame);
 }
 
 static void DisplayVideoFrame(AVFrame *frame)
@@ -1115,10 +1122,6 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
         SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
     }
 
-    if (BeginFrameRendering(frame) < 0) {
-        return;
-    }
-
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -1128,8 +1131,6 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
     MoveSprite();
 
     SDL_RenderPresent(renderer);
-
-    FinishFrameRendering(frame);
 }
 
 static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AVCodec *codec)
