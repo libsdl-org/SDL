@@ -559,10 +559,10 @@ static int createDevice(VulkanVideoContext *context)
         VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME
     };
     VkDeviceCreateInfo deviceCreateInfo;
-    SDL_zero(deviceCreateInfo);
     VkDeviceQueueCreateInfo *queueCreateInfos = NULL;
     uint32_t queueCreateInfoCount = 0;
     VulkanDeviceFeatures supported_features;
+    const char **deviceExtensionsCopy = NULL;
     VkResult result = VK_ERROR_UNKNOWN;
 
     if (addQueueFamily(&queueCreateInfos, &queueCreateInfoCount, context->presentQueueFamilyIndex, context->presentQueueCount) < 0 ||
@@ -578,6 +578,7 @@ static int createDevice(VulkanVideoContext *context)
     context->vkGetPhysicalDeviceFeatures2(context->physicalDevice, &supported_features.device_features);
     copyDeviceFeatures(&supported_features, &context->features);
 
+    SDL_zero(deviceCreateInfo);
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = queueCreateInfoCount;
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfos;
@@ -585,7 +586,7 @@ static int createDevice(VulkanVideoContext *context)
     deviceCreateInfo.enabledExtensionCount = SDL_arraysize(deviceExtensionNames);
     deviceCreateInfo.pNext = &context->features.device_features;
 
-    const char **deviceExtensionsCopy = (const char **)SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
+    deviceExtensionsCopy = (const char **)SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
     for (uint32_t i = 0; i < deviceCreateInfo.enabledExtensionCount; i++) {
         deviceExtensionsCopy[i] = deviceExtensionNames[i];
     }
