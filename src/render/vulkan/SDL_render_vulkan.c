@@ -4070,6 +4070,9 @@ static void VULKAN_InvalidateCachedState(SDL_Renderer *renderer)
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     rendererData->currentPipelineState = NULL;
     rendererData->cliprectDirty = true;
+
+    // Make sure pending drawing is submitted to the GPU
+    VULKAN_IssueBatch(rendererData);
 }
 
 static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
