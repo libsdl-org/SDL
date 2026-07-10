@@ -266,6 +266,13 @@ typedef enum SDL_EventType
     /* Notification events */
     SDL_EVENT_NOTIFICATION_ACTION_INVOKED = 0x1500, /**< A user response to a system notification was received. */
 
+    /* Path watch events */
+    SDL_EVENT_PATH_MODIFIED = 0x1600, /**< Data was written/over-written/deleted in a watched file or a file in a watched directory. */
+    SDL_EVENT_PATH_CREATED,           /**< A new file or directory was created in a watched directory. */
+    SDL_EVENT_PATH_REMOVED,           /**< A file or directory was removed in a watched directory. */
+    SDL_EVENT_PATH_REMOVED_SELF,      /**< Watched path (file or directory) was removed. */
+    SDL_EVENT_PATH_WATCH_ERROR,       /**< Watched path may have been modified/created/removed, but the events are lost. */
+
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
@@ -1026,6 +1033,21 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
+ * Path watch event structure (event.path_watch.*)
+ *
+ * You can add path to the watch list with SDL_AddPathWatch().
+ *
+ * \sa SDL_AddPathWatch
+ */
+typedef struct SDL_PathWatchEvent
+{
+    SDL_EventType type; /**< SDL_EVENT_PATH_MODIFIED or SDL_EVENT_PATH_CREATED or SDL_EVENT_PATH_REMOVED or SDL_EVENT_PATH_REMOVED_SELF or SDL_EVENT_PATH_WATCH_ERROR */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    const char *path;   /**< NULL for SDL_EVENT_PATH_WATCH_ERROR, path of the modified/created/removed file or directory for all others path events */
+} SDL_PathWatchEvent;
+
+/**
  * The "quit requested" event
  *
  * \since This struct is available since SDL 3.2.0.
@@ -1111,6 +1133,7 @@ typedef union SDL_Event
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
     SDL_NotificationEvent notification;     /**< Notification event data */
+    SDL_PathWatchEvent path_watch;          /**< Path watch event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

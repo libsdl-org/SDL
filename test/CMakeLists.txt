@@ -427,6 +427,7 @@ elseif(IOS OR TVOS)
     find_library(GLES_LIB OpenGLES REQUIRED)
     target_link_libraries(testgles PRIVATE "${GLES_LIB}")
 endif()
+
 add_sdl_test_executable(testgles2 SOURCES testgles2.c NAME83 gles2)
 add_sdl_test_executable(testhaptic SOURCES testhaptic.c NAME83 haptic)
 add_sdl_test_executable(testhotplug SOURCES testhotplug.c NAME83 hotplug)
@@ -447,6 +448,8 @@ add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverla
 add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c NAME83 platform)
 add_sdl_test_executable(testpower NONINTERACTIVE SOURCES testpower.c NAME83 power)
 add_sdl_test_executable(testfilesystem NONINTERACTIVE SOURCES testfilesystem.c NAME83 filesyst)
+add_sdl_test_executable(testpathwatch NONINTERACTIVE SOURCES testpathwatch.c NAME83 fwatch)
+
 if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_sdl_test_executable(pretest SOURCES pretest.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60)
 endif()
