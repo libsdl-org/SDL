@@ -198,8 +198,10 @@ static int createInstance(VulkanVideoContext *context)
         VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
     };
-    VkApplicationInfo appInfo = { 0 };
-    VkInstanceCreateInfo instanceCreateInfo = { 0 };
+    VkApplicationInfo appInfo;
+    SDL_zero(appInfo);
+    VkInstanceCreateInfo instanceCreateInfo;
+    SDL_zero(instanceCreateInfo);
     VkResult result;
     char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
@@ -208,7 +210,7 @@ static int createInstance(VulkanVideoContext *context)
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
 
-    const char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
+    const char **instanceExtensionsCopy = (const char **)SDL_calloc(instanceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
     for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
         instanceExtensionsCopy[i] = instanceExtensions[i];
     }
@@ -217,7 +219,7 @@ static int createInstance(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
+            VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {
@@ -257,14 +259,14 @@ static int createSurface(VulkanVideoContext *context, SDL_Window *window)
 }
 
 // Use the same queue scoring algorithm as ffmpeg to make sure we get the same device configuration
-static int selectQueueFamily(VkQueueFamilyProperties *queueFamiliesProperties, uint32_t queueFamiliesCount, VkQueueFlagBits flags, int *queueCount)
+static int selectQueueFamily(VkQueueFamilyProperties *queueFamiliesProperties, uint32_t queueFamiliesCount, VkQueueFlags flags, int *queueCount)
 {
     uint32_t queueFamilyIndex;
     uint32_t selectedQueueFamilyIndex = queueFamiliesCount;
     uint32_t min_score = ~0u;
 
     for (queueFamilyIndex = 0; queueFamilyIndex < queueFamiliesCount; ++queueFamilyIndex) {
-        VkQueueFlagBits current_flags = queueFamiliesProperties[queueFamilyIndex].queueFlags;
+        VkQueueFlags current_flags = queueFamiliesProperties[queueFamilyIndex].queueFlags;
         if (current_flags & flags) {
             uint32_t score = av_popcount(current_flags) + queueFamiliesProperties[queueFamilyIndex].timestampValidBits;
             if (score < min_score) {
@@ -404,7 +406,7 @@ static int findPhysicalDevice(VulkanVideoContext *context)
         if (deviceExtensionsAllocatedSize < deviceExtensionCount) {
             SDL_free(deviceExtensions);
             deviceExtensionsAllocatedSize = deviceExtensionCount;
-            deviceExtensions = SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
+            deviceExtensions = (VkExtensionProperties *)SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
             if (!deviceExtensions) {
                 SDL_free(physicalDevices);
                 SDL_free(queueFamiliesProperties);
@@ -556,7 +558,8 @@ static int createDevice(VulkanVideoContext *context)
         VK_KHR_VIDEO_DECODE_H265_EXTENSION_NAME,
         VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME
     };
-    VkDeviceCreateInfo deviceCreateInfo = { 0 };
+    VkDeviceCreateInfo deviceCreateInfo;
+    SDL_zero(deviceCreateInfo);
     VkDeviceQueueCreateInfo *queueCreateInfos = NULL;
     uint32_t queueCreateInfoCount = 0;
     VulkanDeviceFeatures supported_features;
@@ -582,7 +585,7 @@ static int createDevice(VulkanVideoContext *context)
     deviceCreateInfo.enabledExtensionCount = SDL_arraysize(deviceExtensionNames);
     deviceCreateInfo.pNext = &context->features.device_features;
 
-    const char **deviceExtensionsCopy = SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
+    const char **deviceExtensionsCopy = (const char **)SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
     for (uint32_t i = 0; i < deviceCreateInfo.enabledExtensionCount; i++) {
         deviceExtensionsCopy[i] = deviceExtensionNames[i];
     }
@@ -591,7 +594,7 @@ static int createDevice(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
+            VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {
@@ -626,7 +629,8 @@ static int createDevice(VulkanVideoContext *context)
     context->vkGetDeviceQueue(context->device, context->graphicsQueueFamilyIndex, 0, &context->graphicsQueue);
 
     // Create a command pool
-    VkCommandPoolCreateInfo commandPoolCreateInfo = { 0 };
+    VkCommandPoolCreateInfo commandPoolCreateInfo;
+    SDL_zero(commandPoolCreateInfo);
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = context->graphicsQueueFamilyIndex;
@@ -650,7 +654,7 @@ done:
 
 VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window)
 {
-    VulkanVideoContext *context = SDL_calloc(1, sizeof(*context));
+    VulkanVideoContext *context = (VulkanVideoContext *)SDL_calloc(1, sizeof(*context));
     if (!context) {
         return NULL;
     }
@@ -727,7 +731,8 @@ static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *rende
         }
         context->commandBuffers = commandBuffers;
 
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo = { 0 };
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo;
+        SDL_zero(commandBufferAllocateInfo);
         commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.commandPool = context->commandPool;
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -755,13 +760,15 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
 
     vk->lock_frame(frames, pVkFrame);
 
-    VkTimelineSemaphoreSubmitInfo timeline = { 0 };
+    VkTimelineSemaphoreSubmitInfo timeline;
+    SDL_zero(timeline);
     timeline.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     timeline.waitSemaphoreValueCount = 1;
     timeline.pWaitSemaphoreValues = pVkFrame->sem_value;
 
     VkPipelineStageFlags pipelineStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    VkSubmitInfo submitInfo = { 0 };
+    VkSubmitInfo submitInfo;
+    SDL_zero(submitInfo);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = pVkFrame->sem;
@@ -771,12 +778,14 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
     if (pVkFrame->layout[0] != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         VkCommandBuffer commandBuffer = context->commandBuffers[context->commandBufferIndex];
 
-        VkCommandBufferBeginInfo beginInfo = { 0 };
+        VkCommandBufferBeginInfo beginInfo;
+        SDL_zero(beginInfo);
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = 0;
         context->vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-        VkImageMemoryBarrier2 barrier = { 0 };
+        VkImageMemoryBarrier2 barrier;
+        SDL_zero(barrier);
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barrier.srcAccessMask = VK_ACCESS_2_NONE;
         barrier.dstAccessMask = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
@@ -791,7 +800,8 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
         barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
-        VkDependencyInfo dep = { 0 };
+        VkDependencyInfo dep;
+        SDL_zero(dep);
         dep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
         dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
         dep.imageMemoryBarrierCount = 1;
@@ -826,12 +836,14 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     // Transition the frame back to ffmpeg
     ++pVkFrame->sem_value[0];
 
-    VkTimelineSemaphoreSubmitInfo timeline = { 0 };
+    VkTimelineSemaphoreSubmitInfo timeline;
+    SDL_zero(timeline);
     timeline.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     timeline.signalSemaphoreValueCount = 1;
     timeline.pSignalSemaphoreValues = pVkFrame->sem_value;
 
-    VkSubmitInfo submitInfo = { 0 };
+    VkSubmitInfo submitInfo;
+    SDL_zero(submitInfo);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = pVkFrame->sem;
