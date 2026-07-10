@@ -82,6 +82,7 @@ static SDL_Renderer *renderer;
 static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
 static Uint64 video_start;
+static bool nodelay;
 static bool software_only;
 static bool has_eglCreateImage;
 #ifdef HAVE_EGL
@@ -1113,13 +1114,15 @@ static void DisplayVideoFrame(AVFrame *frame)
 
 static void HandleVideoFrame(AVFrame *frame, double pts)
 {
-    /* Quick and dirty PTS handling */
-    if (!video_start) {
-        video_start = SDL_GetTicks();
-    }
-    double now = (double)(SDL_GetTicks() - video_start) / 1000.0;
-    if (now < pts) {
-        SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
+    if (!nodelay) {
+        /* Quick and dirty PTS handling */
+        if (!video_start) {
+            video_start = SDL_GetTicks();
+        }
+        double now = (double)(SDL_GetTicks() - video_start) / 1000.0;
+        if (now < pts) {
+            SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
+        }
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -1288,7 +1291,7 @@ static void av_log_callback(void *avcl, int level, const char *fmt, va_list vl)
 
 static void print_usage(SDLTest_CommonState *state, const char *argv0)
 {
-    static const char *options[] = { "[--verbose]", "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
+    static const char *options[] = { "[--verbose]", "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "[--nodelay]", "video_file", NULL };
     SDLTest_CommonLogUsage(state, argv0, options);
 }
 
@@ -1345,6 +1348,9 @@ int main(int argc, char *argv[])
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--software") == 0) {
                 software_only = true;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--nodelay") == 0) {
+                nodelay = true;
                 consumed = 1;
             } else if (!file) {
                 /* We'll try to open this as a media file */
@@ -1567,7 +1573,7 @@ int main(int argc, char *argv[])
         }
 
         if (flushing && !decoded) {
-            if (SDL_GetAudioStreamQueued(audio) > 0) {
+            if (SDL_GetAudioStreamQueued(audio) > 0 && !nodelay) {
                 /* Wait a little bit for the audio to finish */
                 SDL_Delay(10);
             } else {
