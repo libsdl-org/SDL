@@ -20,7 +20,6 @@
 */
 #include "SDL_internal.h"
 #include "SDL_sysgpu.h"
-#include <stdio.h>
 
 /* Normally this macro would use something like SDL_IsObjectValid, but in GPU's
  * case we can prioritize performance and be more trusting of application

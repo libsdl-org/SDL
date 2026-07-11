@@ -2366,6 +2366,9 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDevice(
  *   are usecases for when you want to disable caching (if so, set this to 0)
  *   or if you want to disable cache pruning. (if so, set this to -1)
  *   TLDR: Don't touch this if you don't know EXACTLY what it does.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE`:
+ *   Allow filterable F32 textures. Hidden behind a property since the browser & device
+ *   support for this is unknown. TODO: Need more data!
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
@@ -2404,6 +2407,7 @@ extern SDL_DECLSPEC SDL_GPUDevice *SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
 #define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE                    "SDL.gpu.device.create.webgpu.float32filterable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
@@ -2653,7 +2657,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  * - 2: Uniform buffers
  *
  * Like with SDL_CreateGPUShader, if you're planning on using R32G32_FLOAT or R32G32B32A32_FLOAT textures you must include
- * "//!SDLGPU_COMPAT_F32_UNFILTERABLE" somewhere in your shader source, to tell the backend that you're using an unfilterable texture.
+ * "//!SDLGPU_COMPAT_F32_UNFILTERABLE" somewhere in your shader source, to tell the backend that you're using an unfilterable texture,
+ * unless you enable filterable float32 textures with the property "SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE"
  *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
@@ -2797,7 +2802,8 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  * NOTE: SDLGPU infers the WebGPU shader binding formats & types from the shader source code.
  * However there are occasions in which you MUST give the backend more information.
  * - If you are binding a sampled texture with the format R32G32_FLOAT or R32G32B32A32_FLOAT, you must add "//!SDLGPU_COMPAT_F32_UNFILTERABLE"
- *   somewhere inside your WGSL shader source code, otherwise it'll attempt to sample the texture with an invalid sample type.
+ *   somewhere inside your WGSL shader source code, otherwise it'll attempt to sample the texture with an invalid sample type. *
+ *   (*: Unless you enable the filterable f32 feature using the property SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE at device creation.)
  *
  * Shader semantics other than system-value semantics do not matter in D3D12
  * and for ease of use the SDL implementation assumes that non system-value
