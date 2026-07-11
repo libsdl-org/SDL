@@ -155,13 +155,38 @@ static void SDL_GetEmscriptenNormalizedName(int device_index, char *out, int len
     }, device_index, out, length);
 }
 
+#define IS_EQUAL_APPROX(a, b) (((a)-(b)) < 0.00001 && ((a)-(b)) > -0.00001)
+static Uint8 SDL_GetHatFromEmscriptenAxis(float hat_axis)
+{
+    if (IS_EQUAL_APPROX(hat_axis, -7.0/7)) {
+        return SDL_HAT_UP;
+    } else if (IS_EQUAL_APPROX(hat_axis, -5.0/7)) {
+        return SDL_HAT_UP | SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, -3.0/7)) {
+        return SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, -1.0/7)) {
+        return SDL_HAT_DOWN | SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 1.0/7)) {
+        return SDL_HAT_DOWN;
+    } else if (IS_EQUAL_APPROX(hat_axis, 3.0/7)) {
+        return SDL_HAT_DOWN | SDL_HAT_LEFT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 5.0/7)) {
+        return SDL_HAT_LEFT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 7.0/7)) {
+        return SDL_HAT_UP | SDL_HAT_LEFT;
+    } else {
+        return SDL_HAT_CENTERED;
+    }
+}
+#undef IS_EQUAL_APPROX
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
     int i;
     Uint16 bus;
     Uint16 vendor, product;
-    Uint8 os_id;
+    Uint8 os_id, subtype;
     bool is_xinput;
     char name[128];
 
@@ -185,6 +210,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
     
     os_id = SDL_GetEmscriptenOSID();
+    subtype = os_id;
 
     item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
@@ -220,7 +246,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
         // We should differentiate between devices that are mapped or unmapped by the browser.
-        os_id += 0x80;
+        subtype += 0x80;
     }
 
     SDL_GetEmscriptenNormalizedName(gamepadEvent->index, name, sizeof(name));
@@ -231,10 +257,10 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, os_id);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, subtype);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
-        item->guid.data[15] = os_id;
+        item->guid.data[15] = subtype;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
@@ -263,12 +289,16 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         // dump the digital trigger buttons in any case.
         first_trigger_button = 6;
         num_buttons -= 2;
+    } else if ((SDL_strcmp(gamepadEvent->mapping, "standard") != 0) && (num_axes >= 10) && (os_id == 5)) {
+        // The browsers (Chromium and Firefox) on Windows usually convert the hat on unmapped controllers to axis 9
+        // We can't know for sure that this axis is a hat, but most of the time it is
+        item->hat_is_axis = true;
     }
 
     item->first_hat_button = first_hat_button;
     item->first_trigger_button = first_trigger_button;
     item->triggers_are_buttons = triggers_are_buttons;
-    item->nhats = (first_hat_button >= 0) ? 1 : 0;
+    item->nhats = (first_hat_button >= 0 || item->hat_is_axis) ? 1 : 0;
     item->naxes = num_axes;
     item->nbuttons = num_buttons;
     item->device_instance = SDL_GetNextObjectID();
@@ -295,7 +325,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         item->axis[real_axis_count+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
     }
 
-    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons or the axis 9.
     if (first_hat_button != -1) {
         Uint8 value = SDL_HAT_CENTERED;
         // this currently expects the first button to be up, then down, then left, then right.
@@ -312,6 +342,9 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
             value |= SDL_HAT_RIGHT;
         }
         item->hat = value;
+    } else if (item->hat_is_axis) {
+        item->hat = SDL_GetHatFromEmscriptenAxis(gamepadEvent->axis[9]);
+        item->axis[9] = 0.0;
     }
 
     if (!SDL_joylist_tail) {
@@ -617,6 +650,9 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 }
 
                 for (i = 0; i < real_axis_count; i++) {
+                    if (item->hat_is_axis && i == 9) {
+                        continue;  // this axis is a hat
+                    }
                     if (item->axis[i] != gamepadState.axis[i]) {
                         SDL_SendJoystickAxis(timestamp, item->joystick, i, (Sint16)(32767.0f * gamepadState.axis[i]));
                         item->axis[i] = gamepadState.axis[i];
@@ -635,23 +671,26 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
                 if (item->nhats) {
                     Uint8 value = SDL_HAT_CENTERED;
-                    // this currently expects the first button to be up, then down, then left, then right.
-                    if (gamepadState.digitalButton[first_hat_button + 0]) {
-                        value |= SDL_HAT_UP;
-                    } else if (gamepadState.digitalButton[first_hat_button + 1]) {
-                        value |= SDL_HAT_DOWN;
-                    }
-                    if (gamepadState.digitalButton[first_hat_button + 2]) {
-                        value |= SDL_HAT_LEFT;
-                    } else if (gamepadState.digitalButton[first_hat_button + 3]) {
-                        value |= SDL_HAT_RIGHT;
+                    if (first_hat_button >= 0) {
+                        // this currently expects the first button to be up, then down, then left, then right.
+                        if (gamepadState.digitalButton[first_hat_button + 0]) {
+                            value |= SDL_HAT_UP;
+                        } else if (gamepadState.digitalButton[first_hat_button + 1]) {
+                            value |= SDL_HAT_DOWN;
+                        }
+                        if (gamepadState.digitalButton[first_hat_button + 2]) {
+                            value |= SDL_HAT_LEFT;
+                        } else if (gamepadState.digitalButton[first_hat_button + 3]) {
+                            value |= SDL_HAT_RIGHT;
+                        }
+                    } else if (item->hat_is_axis) {
+                        value = SDL_GetHatFromEmscriptenAxis(gamepadState.axis[9]);
                     }
                     if (item->hat != value) {
                         item->hat = value;
                         SDL_SendJoystickHat(timestamp, item->joystick, 0, value);
                     }
                 }
-
 
                 item->timestamp = gamepadState.timestamp;
             }
