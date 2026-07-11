@@ -2360,6 +2360,7 @@ elseif(WINDOWS OR CYGWIN)
          return 0;
         }" HAVE_GAMEINPUT_LIB
       )
+      cmake_pop_check_state()
       if(HAVE_GAMEINPUT_LIB)
         sdl_link_dependency(gameinput LIBS gameinput.lib PKG_CONFIG_LINK_OPTIONS -lgameinput)
         set(SDL_GAMEINPUT_DYNAMIC 0)
