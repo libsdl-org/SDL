@@ -3079,8 +3079,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT)) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
-            /* TODO -- NES gamepad type */
-            type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+            type = SDL_GAMEPAD_TYPE_NES;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
@@ -3100,8 +3099,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
         type = SDL_GAMEPAD_TYPE_N64;
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
-        /* TODO -- SNES gamepad type */
-        type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+        type = SDL_GAMEPAD_TYPE_SNES;
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER) {
         type = SDL_GAMEPAD_TYPE_SEGA_GENESIS;
     } else if (vendor == USB_VENDOR_NINTENDO &&

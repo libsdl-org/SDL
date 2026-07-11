@@ -108,26 +108,31 @@ typedef struct SDL_Gamepad SDL_Gamepad;
  * simply most closely match that console's controllers (does it have A/B/X/Y
  * buttons or X/O/Square/Triangle? Does it have a touchpad? etc).
  *
- * PSX and PS2 controllers should be classified as PS3.
- *
- * Sega Saturn controllers should be classified as Sega Genesis.
- *
+ * Each gamepad type has a minimum set of features that they're supposed to offer, but
+ * application developers should note that the gamepad type could be misreported; SDL
+ * relies on various heuristics for gamepad type detection when it's not specified, and
+ * not all physical gamepads can be reliably distinguished.
  */
 typedef enum SDL_GamepadType
 {
-    SDL_GAMEPAD_TYPE_UNKNOWN = 0,
-    SDL_GAMEPAD_TYPE_STANDARD,
-    SDL_GAMEPAD_TYPE_XBOX360,
-    SDL_GAMEPAD_TYPE_XBOXONE,
-    SDL_GAMEPAD_TYPE_PS3,
-    SDL_GAMEPAD_TYPE_PS4,
-    SDL_GAMEPAD_TYPE_PS5,
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO,
+    SDL_GAMEPAD_TYPE_UNKNOWN = 0, /**< Not a gamepad / error / etc. */
+    SDL_GAMEPAD_TYPE_STANDARD, /**< A non-specific gamepad with no particular guarantees */
+    SDL_GAMEPAD_TYPE_XBOX360, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
+    SDL_GAMEPAD_TYPE_XBOXONE, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
+    SDL_GAMEPAD_TYPE_PS3, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
+    SDL_GAMEPAD_TYPE_PS4, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
+    SDL_GAMEPAD_TYPE_PS5, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< At least B/A/Y/X, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
-    SDL_GAMEPAD_TYPE_GAMECUBE,
+    SDL_GAMEPAD_TYPE_GAMECUBE, /**< At least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, start */
     SDL_GAMEPAD_TYPE_STEAM,
+    SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with B/A/Y/X face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with A/X/B/Y face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Cross/Circle/Square/Triangle face button layout */
+    SDL_GAMEPAD_TYPE_NES, /**< At least B/A, d-pad, select, start */
+    SDL_GAMEPAD_TYPE_SNES, /**< At least B/A/Y/X, two bumpers, d-pad, select, start */
     SDL_GAMEPAD_TYPE_N64,
     SDL_GAMEPAD_TYPE_WII,
     SDL_GAMEPAD_TYPE_SEGA_GENESIS,

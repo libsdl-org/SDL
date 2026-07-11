@@ -1047,41 +1047,6 @@ static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
 {
     SDL_SInputStyles_t decoded = { 0 };
 
-    /* Use a gamepad type with a matching face button style. */
-    switch (face_style) {
-    case 1: // abxy
-        if (SDL_GetGamepadButtonLabelForType(gamepad_type, SDL_GAMEPAD_BUTTON_SOUTH) != SDL_GAMEPAD_BUTTON_LABEL_A ||
-            SDL_GetGamepadButtonLabelForType(gamepad_type, SDL_GAMEPAD_BUTTON_EAST) != SDL_GAMEPAD_BUTTON_LABEL_B) {
-            gamepad_type = SDL_GAMEPAD_TYPE_STANDARD;
-        }
-        break;
-    case 2: // axby
-        gamepad_type = SDL_GAMEPAD_TYPE_GAMECUBE;
-        break;
-    case 3: // bayx
-        /* change any non-bayx gamepad type to pro */
-        if (SDL_GetGamepadButtonLabelForType(gamepad_type, SDL_GAMEPAD_BUTTON_SOUTH) != SDL_GAMEPAD_BUTTON_LABEL_B ||
-            SDL_GetGamepadButtonLabelForType(gamepad_type, SDL_GAMEPAD_BUTTON_EAST) != SDL_GAMEPAD_BUTTON_LABEL_A) {
-            gamepad_type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
-        }
-        break;
-    case 4: // sony
-        if (SDL_GetGamepadButtonLabelForType(gamepad_type, SDL_GAMEPAD_BUTTON_SOUTH) != SDL_GAMEPAD_BUTTON_LABEL_CROSS) {
-            gamepad_type = SDL_GAMEPAD_TYPE_PS4;
-        }
-        break;
-    default:
-        break;
-    }
-    if (gamepad_type != SDL_GAMEPAD_TYPE_UNKNOWN) {
-        const char *gamepad_type_s = SDL_GetGamepadStringForType(gamepad_type);
-        if (gamepad_type_s) {
-            SDL_strlcat(mapping_string, SDL_GAMEPAD_TYPE_FIELD, mapping_string_len);
-            SDL_strlcat(mapping_string, gamepad_type_s, mapping_string_len);
-            SDL_strlcat(mapping_string, ",", mapping_string_len);
-        }
-    }
-
     // Interpret the mapping string
     // dynamically based on the feature responses
     decoded.misc_style = (SInput_MiscStyleType)(version % SINPUT_MISCSTYLE_MAX);
@@ -1103,6 +1068,85 @@ static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
     version /= SINPUT_BUMPERSTYLE_MAX;
 
     decoded.analog_style = (SInput_AnalogStyleType)(version % SINPUT_ANALOGSTYLE_MAX);
+
+    const bool no_type_configured = (gamepad_type == SDL_GAMEPAD_TYPE_UNKNOWN || gamepad_type == SDL_GAMEPAD_TYPE_STANDARD);
+
+    /* Use a gamepad type with a matching face button style.
+     * Try to find an actual matching gamepad type, otherwise fall
+     * back to SDL_GAMEPAD_TYPE_STANDARD<_face button style> */
+    /* FIXME -- no way to check sticks are clickable,
+     * d-pad and start button present, x and y buttons present */
+    switch (face_style) {
+    case 1: // abxy
+        if (no_type_configured) {
+            gamepad_type = SDL_GAMEPAD_TYPE_STANDARD;
+        }
+        break;
+    case 2: // axby
+        SDL_strlcat(mapping_string, "hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", mapping_string_len);
+        if (no_type_configured) {
+            if (decoded.bumper_style != SINPUT_BUMPERSTYLE_NONE && decoded.trigger_style == SINPUT_TRIGGERSTYLE_ANALOG && decoded.analog_style == SINPUT_ANALOGSTYLE_LEFTRIGHT) {
+                gamepad_type = SDL_GAMEPAD_TYPE_GAMECUBE;
+            } else {
+                gamepad_type = SDL_GAMEPAD_TYPE_STANDARD_AXBY;
+            }
+        }
+        break;
+    case 3: // bayx
+        SDL_strlcat(mapping_string, "hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", mapping_string_len);
+        if (no_type_configured) {
+            /* assign best-match gamepad style */
+            if (decoded.analog_style == SINPUT_ANALOGSTYLE_LEFTRIGHT &&
+                decoded.bumper_style != (int)SINPUT_BUMPERSTYLE_NONE &&
+                decoded.bumper_style != (int)SINPUT_BUMPERSTYLE_ONE &&
+                decoded.trigger_style != (int)SINPUT_TRIGGERSTYLE_NONE &&
+                decoded.meta_style != SINPUT_METASTYLE_NONE &&
+                decoded.meta_style != SINPUT_METASTYLE_BACK) {
+                gamepad_type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+            } else if (decoded.bumper_style != (int)SINPUT_BUMPERSTYLE_NONE &&
+                decoded.bumper_style != (int)SINPUT_BUMPERSTYLE_ONE &&
+                decoded.meta_style != SINPUT_METASTYLE_NONE) {
+                gamepad_type = SDL_GAMEPAD_TYPE_SNES;
+            } else if (decoded.meta_style != SINPUT_METASTYLE_NONE) {
+                gamepad_type = SDL_GAMEPAD_TYPE_NES;
+            } else {
+                /* not even so much as a 'select' button */
+                gamepad_type = SDL_GAMEPAD_TYPE_STANDARD_BAYX;
+            }
+        }
+        break;
+    case 4: // sony
+        if (no_type_configured) {
+            gamepad_type = SDL_GAMEPAD_TYPE_STANDARD_SONY;
+            if (decoded.analog_style != SINPUT_ANALOGSTYLE_LEFTRIGHT ||
+                decoded.trigger_style != SINPUT_TRIGGERSTYLE_ANALOG ||
+                decoded.meta_style == SINPUT_METASTYLE_NONE ||
+                decoded.meta_style == SINPUT_METASTYLE_BACK
+            ) {
+                // TODO -- psx gamepad?
+            } else if (decoded.touch_style == SINPUT_TOUCHSTYLE_NONE) {
+                gamepad_type = SDL_GAMEPAD_TYPE_PS3;
+            } else if (decoded.meta_style == SINPUT_METASTYLE_BACKGUIDE) {
+                gamepad_type = SDL_GAMEPAD_TYPE_PS4;
+            } else {
+                /* misc button present (mic) */
+                gamepad_type = SDL_GAMEPAD_TYPE_PS5;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    /* Append 'type:', even if it's just 'standard' */
+    if (gamepad_type != SDL_GAMEPAD_TYPE_UNKNOWN) {
+        const char *gamepad_type_s = SDL_GetGamepadStringForType(gamepad_type);
+        if (gamepad_type_s) {
+            SDL_strlcat(mapping_string, SDL_GAMEPAD_TYPE_FIELD, mapping_string_len);
+            SDL_strlcat(mapping_string, gamepad_type_s, mapping_string_len);
+            SDL_strlcat(mapping_string, ",", mapping_string_len);
+        }
+    }
 
     SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
 }
@@ -1134,13 +1178,13 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
           product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
           product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3))) {
         // GameCube driver has 12 buttons and 6 axes
-        SDL_strlcat(mapping_string, "a:b0,b:b2,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b1,y:b3,misc3:b11,misc4:b10,type:gamecube,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b2,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b1,y:b3,misc3:b11,misc4:b10,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,type:gamecube,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
-        SDL_strlcat(mapping_string, "a:b1,b:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b4,leftshoulder:b6,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b7,righttrigger:a5,rightx:a2,righty:a3,start:b5,x:b0,y:b2,misc1:b8,misc2:b9,misc3:b10,misc4:b11,type:gamecube,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b1,b:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b4,leftshoulder:b6,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b7,righttrigger:a5,rightx:a2,righty:a3,start:b5,x:b0,y:b2,misc1:b8,misc2:b9,misc3:b10,misc4:b11,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,type:gamecube,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_PRO) {
-        SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,misc1:b11,misc2:b12,paddle1:b13,paddle2:b14,type:switchpro,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,misc1:b11,misc2:b12,paddle1:b13,paddle2:b14,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:switchpro,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT) {
         if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, false)) {
@@ -1176,21 +1220,17 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConRight)) {
         switch (guid.data[15]) {
         case k_eSwitchDeviceInfoControllerType_HVCLeft:
-            /* TODO -- NES gamepad type */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,start:b6,type:nes,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,start:b6,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:nes,", sizeof(mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_HVCRight:
-            /* TODO -- NES gamepad type */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,type:nes,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:nes,", sizeof(mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_NESLeft:
         case k_eSwitchDeviceInfoControllerType_NESRight:
-            /* TODO -- NES gamepad type */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,start:b6,type:nes,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,rightshoulder:b10,start:b6,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:nes,", sizeof(mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_SNES:
-            /* TODO -- SNES gamepad type */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,type:snes,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:snes,", sizeof(mapping_string));
             break;
         case k_eSwitchDeviceInfoControllerType_N64:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b11,misc2:b4,rightshoulder:b10,righttrigger:b7,start:b6,x:a5,y:b2,type:n64,", sizeof(mapping_string));
@@ -1236,7 +1276,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_PRO_2 ||
                 product == USB_PRODUCT_8BITDO_PRO_2_BT ||
                 product == USB_PRODUCT_8BITDO_PRO_3)) {
-            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,type:switchpro,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:switchpro,", sizeof(mapping_string));
             if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
                 SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
             } else if (product == USB_PRODUCT_8BITDO_PRO_3) {
@@ -1249,7 +1289,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             if (product == USB_PRODUCT_8BITDO_SF30_PRO_BT) {
                 SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
             }
-            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,type:switchpro,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:switchpro,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
 
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
@@ -1260,7 +1300,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
-            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b1,y:b3,type:gamecube,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b1,y:b3,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,type:gamecube,", sizeof(mapping_string));
         } else {
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
         }
@@ -1347,7 +1387,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             default:
                 if (vendor == 0 && product == 0) {
                     // This is a Bluetooth Nintendo Switch Pro controller
-                    SDL_strlcat(mapping_string, "misc1:b11,type:switchpro,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "misc1:b11,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,type:switchpro,", sizeof(mapping_string));
                 }
                 break;
             }
@@ -1516,6 +1556,11 @@ static const char *map_StringForGamepadType[] = {
     "joyconpair",
     "gamecube",
     "steam",
+    "bayx",
+    "axby",
+    "sony",
+    "nes",
+    "snes",
     "n64",
     "wii",
     "genesis",
@@ -1529,12 +1574,10 @@ static const struct {
     SDL_GamepadType type;
 } gamepad_type_aliases[] = {
     // sony
-    {"psx", SDL_GAMEPAD_TYPE_PS3},
-    {"ps2", SDL_GAMEPAD_TYPE_PS3},
+    {"psx", SDL_GAMEPAD_TYPE_PS3}, /* FIXME -- implies guide and sticks present, but may not be */
+    {"ps2", SDL_GAMEPAD_TYPE_PS3}, /* FIXME -- implies 'guide' present, but may not be */
 
     // nintendo
-    {"nes", SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO},
-    {"snes", SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO},
     {"joyconlefthoriz", SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT},   /* joycon in solo horizontal grip */
     {"joyconrighthoriz", SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT}, /* joycon in solo horizontal grip */
     {"wiiclassic", SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO},
@@ -1547,7 +1590,7 @@ static const struct {
     {"dreamcast", SDL_GAMEPAD_TYPE_STANDARD},
 
     // microsoft
-    {"xbox", SDL_GAMEPAD_TYPE_XBOX360},
+    {"xbox", SDL_GAMEPAD_TYPE_XBOX360}, /* original xbox */
     {"xboxsx", SDL_GAMEPAD_TYPE_XBOXONE}, /* series s/x */
 
     // misc.
@@ -1570,7 +1613,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromString(const char *str)
     if (*str == '+' || *str == '-') {
         ++str;
     }
-    
+
     // check aliases
     for (i = 0; i < SDL_arraysize(gamepad_type_aliases); ++i) {
         if (SDL_strcasecmp(str, gamepad_type_aliases[i].alias) == 0) {
@@ -3598,6 +3641,7 @@ bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SDL_GamepadButton button)
 {
     switch (type) {
+    case SDL_GAMEPAD_TYPE_STANDARD_SONY:
     case SDL_GAMEPAD_TYPE_PS3:
     case SDL_GAMEPAD_TYPE_PS4:
     case SDL_GAMEPAD_TYPE_PS5:
@@ -3614,6 +3658,9 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
             break;
         }
         break;
+    case SDL_GAMEPAD_TYPE_STANDARD_BAYX:
+    case SDL_GAMEPAD_TYPE_NES:
+    case SDL_GAMEPAD_TYPE_SNES:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
     // TODO: confirm joycon label conventions
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
@@ -3633,6 +3680,7 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
         }
         break;
     case SDL_GAMEPAD_TYPE_GAMECUBE:
+    case SDL_GAMEPAD_TYPE_STANDARD_AXBY:
         switch (button) {
         case SDL_GAMEPAD_BUTTON_SOUTH:
             return SDL_GAMEPAD_BUTTON_LABEL_A;
