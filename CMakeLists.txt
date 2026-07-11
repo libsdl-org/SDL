@@ -2493,6 +2493,10 @@ elseif(WINDOWS OR CYGWIN)
         set(HAVE_RENDER_VULKAN TRUE)
       endif()
     endif()
+
+    if(SDL_WGPU)
+      CheckWGPU()
+    endif()
   endif()
 
   if(SDL_TRAY)

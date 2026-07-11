@@ -705,281 +705,264 @@ static WGPUStorageTextureAccess WGSLStorageTextureAccessIdentifiersIndexWowISuck
 // Thank you very much, I hate writing shaders. -- TheStickmahn
 // https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
 
-const char *blitVert = R"(
-struct VertexOutput {
-    @builtin(position) pos: vec4<f32>,
-    @location(0) tex: vec2<f32>
-};
+const char *blitVert = "\
+struct VertexOutput {\
+    @builtin(position) pos: vec4<f32>,\
+    @location(0) tex: vec2<f32>\
+};\
+@vertex\
+fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {\
+    var output: VertexOutput;\
+    let tex = vec2<f32>(\
+        f32((vertexIndex << 1u) & 2u),\
+        f32(vertexIndex & 2u)\
+    );\
+    output.tex = tex;\
+    output.pos = vec4<f32>(\
+        tex * vec2<f32>(2.0, -2.0) + vec2<f32>(-1.0, 1.0),\
+        0.0,\
+        1.0\
+    );\
+    return output;\
+}";
 
-@vertex
-fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
-    var output: VertexOutput;
-    let tex = vec2<f32>(
-        f32((vertexIndex << 1u) & 2u),
-        f32(vertexIndex & 2u)
-    );
-    output.tex = tex;
-    output.pos = vec4<f32>(
-        tex * vec2<f32>(2.0, -2.0) + vec2<f32>(-1.0, 1.0),
-        0.0,
-        1.0
-    );
-    return output;
-}
+const char *blit2DShader = "\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}";
+
+const char *blit2DArrayShader = "\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = vec2<f32>(\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\
+    );\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);\
+}";
+
+const char *blit3DShader = "\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = vec3<f32>(\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\
+        sourceRegion.layerOrDepth\
+    );\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}\
 )";
 
-const char *blit2DShader = R"(
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
+const char *blitCubeShader = "\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    let u = 2.0 * scaledUV.x - 1.0;\
+    let v = 2.0 * scaledUV.y - 1.0;\
+    var newCoord: vec3<f32>;\
+    switch(u32(sourceRegion.layerOrDepth)) {\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\
+    }\
+\
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}";
 
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
+const char *blitCubeArrayShader = "\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    let u = 2.0 * scaledUV.x - 1.0;\
+    let v = 2.0 * scaledUV.y - 1.0;\
+    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;\
+    var newCoord: vec3<f32>;\
+    \
+    switch(u32(sourceRegion.layerOrDepth) % 6u) {\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\
+    }\
+    \
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);\
+}";
 
-const char *blit2DArrayShader = R"(
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
+const char *blit2DShaderRGBA32 = "\
+//!SDLGPU_COMPAT_F32_UNFILTERABLE\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}";
 
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = vec2<f32>(
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex
-    );
-    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);
-}
-)";
+const char *blit2DArrayShaderRGBA32 = "\
+//!SDLGPU_COMPAT_F32_UNFILTERABLE\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = vec2<f32>(\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\
+    );\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);\
+}";
 
-const char *blit3DShader = R"(
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
+const char *blit3DShaderRGBA32 = "\
+//!SDLGPU_COMPAT_F32_UNFILTERABLE\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let newCoord = vec3<f32>(\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\
+        sourceRegion.layerOrDepth\
+    );\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}";
 
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = vec3<f32>(
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,
-        sourceRegion.layerOrDepth
-    );
-    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
+const char *blitCubeShaderRGBA32 = "\
+//!SDLGPU_COMPAT_F32_UNFILTERABLE\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    let u = 2.0 * scaledUV.x - 1.0;\
+    let v = 2.0 * scaledUV.y - 1.0;\
+    var newCoord: vec3<f32>;\
+\
+    switch(u32(sourceRegion.layerOrDepth)) {\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\
+    }\
+    \
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);\
+}";
 
-const char *blitCubeShader = R"(
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    let u = 2.0 * scaledUV.x - 1.0;
-    let v = 2.0 * scaledUV.y - 1.0;
-    var newCoord: vec3<f32>;
-
-    switch(u32(sourceRegion.layerOrDepth)) {
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }
-    }
-
-    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
-
-const char *blitCubeArrayShader = R""(
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    let u = 2.0 * scaledUV.x - 1.0;
-    let v = 2.0 * scaledUV.y - 1.0;
-    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;
-    var newCoord: vec3<f32>;
-
-    switch(u32(sourceRegion.layerOrDepth) % 6u) {
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }
-    }
-
-    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);
-}
-)"";
-
-const char *blit2DShaderRGBA32 = R"(
-//!SDLGPU_COMPAT_F32_UNFILTERABLE
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
-
-const char *blit2DArrayShaderRGBA32 = R"(
-//!SDLGPU_COMPAT_F32_UNFILTERABLE
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = vec2<f32>(
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex
-    );
-    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);
-}
-)";
-
-const char *blit3DShaderRGBA32 = R"(
-//!SDLGPU_COMPAT_F32_UNFILTERABLE
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let newCoord = vec3<f32>(
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,
-        sourceRegion.layerOrDepth
-    );
-    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
-
-const char *blitCubeShaderRGBA32 = R"(
-//!SDLGPU_COMPAT_F32_UNFILTERABLE
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    let u = 2.0 * scaledUV.x - 1.0;
-    let v = 2.0 * scaledUV.y - 1.0;
-    var newCoord: vec3<f32>;
-
-    switch(u32(sourceRegion.layerOrDepth)) {
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }
-    }
-
-    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);
-}
-)";
-
-const char *blitCubeArrayShaderRGBA32 = R""(
-//!SDLGPU_COMPAT_F32_UNFILTERABLE
-struct SourceRegionBuffer {
-    uvLeftTop: vec2<f32>,
-    uvDimensions: vec2<f32>,
-    mipLevel: f32,
-    layerOrDepth: f32
-}
-@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;
-@group(2) @binding(1) var sourceSampler: sampler;
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;
-
-@fragment
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;
-    let u = 2.0 * scaledUV.x - 1.0;
-    let v = 2.0 * scaledUV.y - 1.0;
-    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;
-    var newCoord: vec3<f32>;
-
-    switch(u32(sourceRegion.layerOrDepth) % 6u) {
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }
-    }
-
-    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);
-}
-)"";
+const char *blitCubeArrayShaderRGBA32 = "\
+//!SDLGPU_COMPAT_F32_UNFILTERABLE\
+struct SourceRegionBuffer {\
+    uvLeftTop: vec2<f32>,\
+    uvDimensions: vec2<f32>,\
+    mipLevel: f32,\
+    layerOrDepth: f32\
+}\
+@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\
+@group(2) @binding(1) var sourceSampler: sampler;\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\
+\
+@fragment\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\
+    let u = 2.0 * scaledUV.x - 1.0;\
+    let v = 2.0 * scaledUV.y - 1.0;\
+    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;\
+    var newCoord: vec3<f32>;\
+    \
+    switch(u32(sourceRegion.layerOrDepth) % 6u) {\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\
+    }\
+    \
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);\
+}";
 
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
 #define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)    \
@@ -1667,7 +1650,7 @@ static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device
 {
     WEBGPU_INTERNAL_ReleaseInvalidBindGroups((WebGPURenderer *)device);
 
-    ((WebGPURenderer *)device)->commandEncoder = wgpuDeviceCreateCommandEncoder(((WebGPURenderer *)device)->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
+    ((WebGPURenderer *)device)->commandEncoder = wgpuDeviceCreateCommandEncoder(((WebGPURenderer *)device)->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 
     // HACK:
     // WebGPU doesn't really have "command buffers" like SDL_GPU does.
@@ -2085,12 +2068,12 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
 
     samplerStorageLayoutDesc.entryCount = numSamplerStorageEntries;
     samplerStorageLayoutDesc.entries = samplerStorageEntries;
-    samplerStorageLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    samplerStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     samplerStorageLayoutDesc.nextInChain = NULL;
 
     uniformLayoutDesc.entryCount = numUniformBuffers;
     uniformLayoutDesc.entries = uniformEntries;
-    uniformLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    uniformLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     uniformLayoutDesc.nextInChain = NULL;
 
     samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &samplerStorageLayoutDesc);
@@ -2359,17 +2342,17 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
 
     samplerStorageLayoutDesc.entryCount = numSamplerStorageEntries;
     samplerStorageLayoutDesc.entries = samplerStorageEntries;
-    samplerStorageLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    samplerStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     samplerStorageLayoutDesc.nextInChain = NULL;
 
     readWriteStorageLayoutDesc.entryCount = numReadWriteStorageEntries;
     readWriteStorageLayoutDesc.entries = readWriteStorageEntries;
-    readWriteStorageLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    readWriteStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     readWriteStorageLayoutDesc.nextInChain = NULL;
 
     uniformLayoutDesc.entryCount = numUniformBuffers;
     uniformLayoutDesc.entries = uniformEntries;
-    uniformLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    uniformLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     uniformLayoutDesc.nextInChain = NULL;
 
     samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &samplerStorageLayoutDesc);
@@ -2861,7 +2844,7 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     }
 
     desc.entries = entries;
-    desc.label = WGPU_STRING_VIEW_INIT;
+    desc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     desc.nextInChain = NULL;
 
     bindGroup = wgpuDeviceCreateBindGroup(cmdBuf->device, &desc);
@@ -3003,7 +2986,7 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
 
     WGPUTextureFormat format = wgpuTextureGetFormat(texture->texture);
     WGPUTextureUsage usages = wgpuTextureGetUsage(texture->texture);
-    WGPUTextureViewDimension dimension;
+    WGPUTextureViewDimension dimension = WGPUTextureDimension_Undefined;
 
     uint32_t mipLevelCount = wgpuTextureGetMipLevelCount(texture->texture);
     uint32_t arrayLayerCount = wgpuTextureGetDepthOrArrayLayers(texture->texture);
@@ -3096,7 +3079,7 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
 
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL);
 
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
     desc.format = SDLToWebGPU_TextureFormat[createInfo->format];
     desc.mipLevelCount = createInfo->num_levels;
     desc.size = (WGPUExtent3D){
@@ -3193,7 +3176,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
 
     WGPUSamplerDescriptor desc;
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL);
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
     desc.nextInChain = NULL;
 
     desc.addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u];
@@ -3365,7 +3348,7 @@ static SDL_GPUShader *WEBGPU_CreateShader(
     shader = SDL_calloc(1, sizeof(*shader));
 
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING, NULL);
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
 
     WGPUShaderSourceWGSL source;
 
@@ -3418,14 +3401,14 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
                                                                                  .failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.fail_op],
                                                                                  .passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.pass_op],
                                                                              }
-                                                                           : WGPU_STENCIL_FACE_STATE_INIT,
+                                                                           : (WGPUStencilFaceState)WGPU_STENCIL_FACE_STATE_INIT,
         .stencilFront = createInfo->depth_stencil_state.enable_stencil_test ? (WGPUStencilFaceState){
                                                                                   .compare = SDLToWebGPU_CompareFunc[createInfo->depth_stencil_state.front_stencil_state.compare_op],
                                                                                   .depthFailOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.depth_fail_op],
                                                                                   .failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.fail_op],
                                                                                   .passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.pass_op],
                                                                               }
-                                                                            : WGPU_STENCIL_FACE_STATE_INIT,
+                                                                            : (WGPUStencilFaceState)WGPU_STENCIL_FACE_STATE_INIT,
         .stencilReadMask = createInfo->depth_stencil_state.enable_stencil_test ? createInfo->depth_stencil_state.compare_mask : 0,
         .stencilWriteMask = createInfo->depth_stencil_state.enable_stencil_test ? createInfo->depth_stencil_state.write_mask : 0,
         .format = SDLToWebGPU_TextureFormat[createInfo->target_info.depth_stencil_format],
@@ -3590,7 +3573,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(((WebGPURenderer *)driverData)->device, &pipelineLayoutDesc);
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
 
-    pipelineDesc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : WGPU_STRING_VIEW_INIT;
+    pipelineDesc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
     pipelineDesc.vertex = vertexState;
     pipelineDesc.fragment = &fragmentState;
     pipelineDesc.multisample = multisampleState;
@@ -3898,7 +3881,7 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, uint
     buf->resourceIdentifier = WEBGPU_INTERNAL_GenerateRandomStringIdentifier();
 
     WGPUBufferDescriptor desc = {
-        .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : WGPU_STRING_VIEW_INIT,
+        .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT,
         .size = size,
         .usage = usages,
         .mappedAtCreation = false,
@@ -4743,7 +4726,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
     shaderSource.chain.sType = WGPUSType_ShaderSourceWGSL;
     shaderSource.code = (WGPUStringView){ (char *)createInfo->code, createInfo->code_size };
 
-    shaderDesc.label = WGPU_STRING_VIEW_INIT;
+    shaderDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     shaderDesc.nextInChain = &shaderSource.chain;
 
     pipeline = SDL_calloc(1, sizeof(*pipeline));
@@ -4781,7 +4764,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
     pipelineLayoutDesc.bindGroupLayoutCount = 3;
     pipelineLayoutDesc.bindGroupLayouts = pipelineLayoutEntries;
     pipelineLayoutDesc.immediateSize = 0;
-    pipelineLayoutDesc.label = WGPU_STRING_VIEW_INIT;
+    pipelineLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     pipelineLayoutDesc.nextInChain = NULL;
 
     pipelineLayoutEntries[0] = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout;
@@ -4812,7 +4795,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
         .module = pipeline->computeShader,
         .nextInChain = NULL,
     };
-    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : WGPU_STRING_VIEW_INIT;
+    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
     pipelineDesc.layout = pipelineLayout;
     pipelineDesc.nextInChain = NULL;
 
@@ -4901,7 +4884,7 @@ static void WEBGPU_BeginComputePass(SDL_GPUCommandBuffer *commandBuffer, const S
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
     WGPUComputePassDescriptor passDesc;
 
-    passDesc.label = WGPU_STRING_VIEW_INIT;
+    passDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
     passDesc.nextInChain = NULL;
     // Timestamps are unsupported in SDLGPU.
     // 'erm acktually Cosmonaut made a PoC query API hghehgehg' Biden Blast!!!
@@ -4961,7 +4944,7 @@ static void WEBGPU_DispatchComputeIndirect(SDL_GPUCommandBuffer *commandBuffer, 
 
 static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 {
-    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
+    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &(WGPUCommandBufferDescriptor)WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
     WebGPUCommandBuffer *wrapper = (WebGPUCommandBuffer *)commandBuffer;
     if (!cmdBuf) {
         SDL_free(commandBuffer);
@@ -5299,7 +5282,7 @@ static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
     renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
     renderer->shouldRecreateLostDevice = true;
 
-    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+    renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
 
     if (!renderer->instance) {
         result = false;
@@ -5319,7 +5302,7 @@ static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
         goto finished;
     }
 
-    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
+    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 
     if (!renderer->commandEncoder) {
         result = false;
@@ -5390,7 +5373,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
         SDL_Log("Failed to copy properties! Oh no!\n%s", SDL_GetError());
     }
 
-    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+    renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
 
     if (!renderer->instance) {
         SDL_free(renderer);
@@ -5417,7 +5400,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     }
 
     renderer->queue = wgpuDeviceGetQueue(renderer->device);
-    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
+    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
     renderer->preAllocatedUniformBuffers = SDL_calloc(12, sizeof(*renderer->preAllocatedUniformBuffers));
 
     for (int i = 0; i < 12; i++) {

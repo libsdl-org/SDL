@@ -5,7 +5,7 @@
 #include "SDL_windowsvideo.h"
 
 #include "../SDL_wgpu_defs.h"
-#include "SDL_windoiwswgpu.h"
+#include "SDL_windowswgpu.h"
 
 WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance)
 {
@@ -22,7 +22,7 @@ WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
     source.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
     source.chain.next = NULL;
 
-    desc.label = (WGPUStringView){ NULL, WGPU_STRLEN };
+    desc.label = { NULL, WGPU_STRLEN };
     desc.nextInChain = &source.chain;
 
 #if defined(WGPU_STATIC)

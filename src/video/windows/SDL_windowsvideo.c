@@ -35,6 +35,7 @@
 #include "SDL_windowsrawinput.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsvulkan.h"
+#include "SDL_windowswgpu.h"
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include <shobjidl.h>
