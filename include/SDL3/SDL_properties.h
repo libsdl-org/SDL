@@ -509,6 +509,21 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, 
 extern SDL_DECLSPEC bool SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
 
 /**
+ * Get the current number of items in a group of properties.
+ *
+ * For an invalid SDL_PropertiesID, this returns zero and does not set an
+ * error message.
+ *
+ * \param props the properties to query.
+ * \returns the number of property items available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumProperties(SDL_PropertiesID props);
+
+/**
  * A callback used to enumerate all the properties in a group of properties.
  *
  * This callback is called from SDL_EnumerateProperties(), and is called once

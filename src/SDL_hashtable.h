@@ -394,10 +394,28 @@ extern bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
 extern void SDL_ClearHashTable(SDL_HashTable *table);
 
 /**
+ * Query the number of items currently in a hash table.
+ *
+ * Invalid tables report 0 items.
+ *
+ * \param table the hash table to check.
+ * \returns number of items in the table.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_HashTableEmpty
+ */
+extern int SDL_GetNumHashTableItems(SDL_HashTable *table);
+
+/**
  * Check if any items are currently stored in a hash table.
  *
  * If there are no items stored (the table is completely empty), this will
  * return true.
+ *
+ * Invalid tables report true.
  *
  * \param table the hash table to check.
  * \returns true if the table is completely empty, false otherwise.
