@@ -37,6 +37,7 @@ typedef struct SDL_joylist_item
     int first_hat_button;
     int first_trigger_button;
     bool triggers_are_buttons;
+    bool hat_is_axis;
     int nhats;
     SDL_GUID guid;
     int nbuttons;
@@ -45,7 +46,7 @@ typedef struct SDL_joylist_item
     double axis[64];            // !!! FIXME: don't hardcode 64 on all of these.
     double analogButton[64];
     EM_BOOL digitalButton[64];
-    Uint8 hat;  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    Uint8 hat;  // there is (currently) only ever one of these, faked from the d-pad buttons or the axis 9.
     bool rumble_available;
     bool trigger_rumble_available;
     Uint16 weak_magnitude_rumble;
