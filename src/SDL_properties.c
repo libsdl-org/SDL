@@ -746,6 +746,25 @@ bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
     return SDL_PrivateSetProperty(props, name, NULL);
 }
 
+int SDL_GetNumProperties(SDL_PropertiesID props)
+{
+    if (!props) {
+        return 0;
+    }
+
+    SDL_Properties *properties = NULL;
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    if (!properties) {
+        return 0;
+    }
+
+    SDL_LockMutex(properties->lock);
+    const int retval = SDL_GetNumHashTableItems(properties->props);
+    SDL_UnlockMutex(properties->lock);
+    return retval;
+}
+
+
 typedef struct EnumerateOnePropertyData
 {
     SDL_EnumeratePropertiesCallback callback;

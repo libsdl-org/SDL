@@ -409,18 +409,23 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallba
     return true;
 }
 
-bool SDL_HashTableEmpty(SDL_HashTable *table)
+int SDL_GetNumHashTableItems(SDL_HashTable *table)
 {
     CHECK_PARAM(!table) {
-        return SDL_InvalidParamError("table");
+        SDL_InvalidParamError("table");
+        return 0;
     }
 
     SDL_LockRWLockForReading(table->lock);
-    const bool retval = (table->num_occupied_slots == 0);
+    const int retval = (int) table->num_occupied_slots;
     SDL_UnlockRWLock(table->lock);
     return retval;
 }
 
+bool SDL_HashTableEmpty(SDL_HashTable *table)
+{
+    return SDL_GetNumHashTableItems(table) <= 0;
+}
 
 static void destroy_all(SDL_HashTable *table)
 {
