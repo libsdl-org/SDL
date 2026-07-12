@@ -153,6 +153,11 @@ static void loop(void *arg)
             }
             break;
 
+        case SDL_EVENT_HOLD_BEGIN:
+            /* Halt kinetic scrolling on a hold event */
+            kinetic_deceleration_deadline = 0;
+            break;
+
         case SDL_EVENT_MOUSE_MOTION:
             if (!active) {
                 break;
