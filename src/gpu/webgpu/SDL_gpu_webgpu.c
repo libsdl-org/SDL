@@ -1649,7 +1649,7 @@ static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device
 {
     WEBGPU_INTERNAL_ReleaseInvalidBindGroups((WebGPURenderer *)device);
 
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     ((WebGPURenderer *)device)->commandEncoder = wgpuDeviceCreateCommandEncoder(((WebGPURenderer *)device)->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 #else
     ((WebGPURenderer *)device)->commandEncoder = wgpuDeviceCreateCommandEncoder(((WebGPURenderer *)device)->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
@@ -4946,7 +4946,7 @@ static void WEBGPU_DispatchComputeIndirect(SDL_GPUCommandBuffer *commandBuffer, 
 
 static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 {
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &(WGPUCommandBufferDescriptor)WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
 #else
     WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
@@ -5288,7 +5288,7 @@ static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
     renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
     renderer->shouldRecreateLostDevice = true;
 
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
 #else
     renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
@@ -5311,7 +5311,7 @@ static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
         goto finished;
     }
 
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 #else
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
@@ -5386,7 +5386,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     }
 
 // I do not like MSVC.
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
 #else
     renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
@@ -5417,7 +5417,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     }
 
     renderer->queue = wgpuDeviceGetQueue(renderer->device);
-#ifdef __MSC_VER
+#ifdef _MSC_VER
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 #else
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
