@@ -34,6 +34,10 @@ cmake --build build
 ```
 You will have to provide your own compiled WebGPU library. Drop the library into the SDL root folder, and just pray it works.
 
+**NOTE**: I *highly* recommend building on Linux, either directly or through WSL.
+This project does *build* on Windows, however I have never got it working properly.
+Try it at your own risk.
+
 #### Emscripten (Or: How to get WebGPU on the Web)
 
 In order to build with Emscripten, you'll need to do a few things.
