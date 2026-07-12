@@ -319,6 +319,7 @@ static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *
     SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
     if (wind) {
         SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_PINCH;
         seat->pointer.gesture_focus = wind;
 
         const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
@@ -356,13 +357,52 @@ static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener
     handle_pinch_end
 };
 
+static void handle_hold_begin(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers)
+{
+    if (!surface) {
+        return;
+    }
+
+    SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
+    if (wind) {
+        SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_HOLD;
+        seat->pointer.gesture_focus = wind;
+
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_BEGIN, timestamp, wind->sdlwindow, fingers);
+    }
+}
+
+static void handle_hold_end(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, int32_t cancelled)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0);
+
+        seat->pointer.gesture_focus = NULL;
+    }
+}
+
+static const struct zwp_pointer_gesture_hold_v1_listener gesture_hold_listener = {
+    handle_hold_begin,
+    handle_hold_end
+};
+
 static void Wayland_SeatCreatePointerGestures(SDL_WaylandSeat *seat)
 {
-    if (seat->display->zwp_pointer_gestures) {
-        if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
+    if (seat->display->zwp_pointer_gestures && seat->pointer.wl_pointer) {
+        if (!seat->pointer.gesture_pinch) {
             seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
             zwp_pointer_gesture_pinch_v1_set_user_data(seat->pointer.gesture_pinch, seat);
             zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
+        }
+        if (!seat->pointer.gesture_hold) {
+            seat->pointer.gesture_hold = zwp_pointer_gestures_v1_get_hold_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
+            zwp_pointer_gesture_hold_v1_set_user_data(seat->pointer.gesture_hold, seat);
+            zwp_pointer_gesture_hold_v1_add_listener(seat->pointer.gesture_hold, &gesture_hold_listener, seat);
         }
     }
 }
@@ -2436,6 +2476,10 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat)
 
     if (seat->pointer.gesture_pinch) {
         zwp_pointer_gesture_pinch_v1_destroy(seat->pointer.gesture_pinch);
+    }
+
+    if (seat->pointer.gesture_hold) {
+        zwp_pointer_gesture_hold_v1_destroy(seat->pointer.gesture_hold);
     }
 
     if (seat->pointer.wl_pointer) {

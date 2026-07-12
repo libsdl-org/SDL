@@ -1938,6 +1938,13 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Pinch End");
         break;
 
+    case SDL_EVENT_HOLD_BEGIN:
+        SDL_Log("SDL EVENT: Hold Begin (fingers=%" SDL_PRIu32 ")", event->hold.fingers);
+        break;
+    case SDL_EVENT_HOLD_END:
+        SDL_Log("SDL EVENT: Hold End");
+        break;
+
     case SDL_EVENT_RENDER_TARGETS_RESET:
         SDL_Log("SDL EVENT: render targets reset in window %" SDL_PRIu32, event->render.windowID);
         break;

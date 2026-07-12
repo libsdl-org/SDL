@@ -821,6 +821,16 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         break;
 #undef PRINT_PINCH_EVENT
 
+#define PRINT_HOLD_EVENT(event)                                                                                                                      \
+    (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " fingers=%" SDL_PRIu32 ")", event->hold.timestamp, event->hold.fingers)
+        SDL_EVENT_CASE(SDL_EVENT_HOLD_BEGIN)
+        PRINT_HOLD_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_HOLD_END)
+        PRINT_HOLD_EVENT(event);
+        break;
+#undef PRINT_HOLD_EVENT
+
 #define PRINT_PTOUCH_EVENT(event)                                                                             \
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%" SDL_PRIu64 " windowid=%u which=%u pen_state=%u x=%g y=%g eraser=%s state=%s)", \
                        event->ptouch.timestamp, (uint)event->ptouch.windowID, (uint)event->ptouch.which, (uint)event->ptouch.pen_state, event->ptouch.x, event->ptouch.y, \
