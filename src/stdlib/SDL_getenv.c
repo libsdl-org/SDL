@@ -119,6 +119,11 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
                 *value++ = '\0';
 
+                // uppercase ASCII chars in environment variable names on Windows, since the system environment table is case-insensitive.
+                for (char *ptr = variable; *ptr; ptr++) {
+                    *ptr = (char) SDL_toupper((int) *ptr);  // the only UTF-8 bytes that don't have the high-bit set are single-byte ASCII chars, so SDL_toupper will leave multichar stuff alone.
+                }
+
                 SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
             FreeEnvironmentStringsW(strings);
@@ -142,6 +147,13 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                     continue;
                 }
                 *value++ = '\0';
+
+#ifdef SDL_PLATFORM_CYGWIN
+                // uppercase ASCII chars in environment variable names on Windows, since the system environment table is case-insensitive.
+                for (char *ptr = variable; *ptr; ptr++) {
+                    *ptr = (char) SDL_toupper((int) *ptr);  // the only UTF-8 bytes that don't have the high-bit set are single-byte ASCII chars, so SDL_toupper will leave multichar stuff alone.
+                }
+#endif
 
                 SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
