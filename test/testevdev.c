@@ -171,7 +171,7 @@ static unsigned char xbox_one_elite_2_hid_report_descriptor[] =
     0x06, 0x75, 0x08, 0x15, 0x00, 0x25, 0x65, 0x05,
     0x07, 0x19, 0x00, 0x29, 0x65, 0x81, 0x00, 0xc0,
 };
-SDL_COMPILE_TIME_ASSERT (xbox_one_elite_2, sizeof (xbox_one_elite_2_hid_report_descriptor) == 0720);
+SDL_COMPILE_TIME_ASSERT (xbox_one_elite_2, sizeof (xbox_one_elite_2_hid_report_descriptor) == 464);
 
 static unsigned char ps3_hid_report_descriptor[] =
 {
@@ -263,7 +263,7 @@ static unsigned char vrs_pedals_hid_report_descriptor[] =
     0x3f, 0x75, 0x08, 0x26, 0xff, 0x00, 0x15, 0x00,
     0x09, 0x01, 0x81, 0x02, 0xc0, 0xc0,
 };
-SDL_COMPILE_TIME_ASSERT (vrs_pedals, sizeof (vrs_pedals_hid_report_descriptor) == 0136);
+SDL_COMPILE_TIME_ASSERT (vrs_pedals, sizeof (vrs_pedals_hid_report_descriptor) == 94);
 
 static unsigned char thinkpad_usb_keyboard_hid_report_descriptor[] =
 {
@@ -323,7 +323,7 @@ static unsigned char heusinkveld_pedals_hid_report_descriptor[] =
     0x75, 0x08, 0x95, 0x03, 0x09, 0x00, 0x82, 0x01,
     0x01, 0xc0,
 };
-SDL_COMPILE_TIME_ASSERT (heusinkveld_pedals, sizeof (heusinkveld_pedals_hid_report_descriptor) == 072);
+SDL_COMPILE_TIME_ASSERT (heusinkveld_pedals, sizeof (heusinkveld_pedals_hid_report_descriptor) == 58);
 
 static unsigned char fanatec_handbrake_hid_report_descriptor[] =
 {
@@ -334,7 +334,7 @@ static unsigned char fanatec_handbrake_hid_report_descriptor[] =
     0x95, 0x03, 0x81, 0x02, 0x06, 0x00, 0xff, 0x09,
     0x01, 0x95, 0x02, 0x91, 0x02, 0xc0,
 };
-SDL_COMPILE_TIME_ASSERT (fanatec_handbrake, sizeof (fanatec_handbrake_hid_report_descriptor) == 046);
+SDL_COMPILE_TIME_ASSERT (fanatec_handbrake, sizeof (fanatec_handbrake_hid_report_descriptor) == 38);
 
 static unsigned char xpadneo09_xb1s_hid_report_descriptor[] =
 {
