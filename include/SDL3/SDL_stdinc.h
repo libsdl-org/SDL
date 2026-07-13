@@ -734,6 +734,61 @@ typedef Sint64 SDL_Time;
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PRILLX SDL_PRILL_PREFIX "X"
+
+/**
+ * A printf-formatting string prefix for a `size_t` value.
+ *
+ * This is just the prefix! You probably actually want SDL_PRISZu, SDL_PRISZx,
+ * or SDL_PRISZX instead.
+ *
+ * Use it like this:
+ *
+ * ```c
+ * SDL_Log("There are %" SDL_PRISZ_PREFIX "u bottles of beer on the wall.", bottles);
+ * ```
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PRISZ_PREFIX "z"
+
+/**
+ * A printf-formatting string for a `size_t` value.
+ *
+ * Use it like this:
+ *
+ * ```c
+ * SDL_Log("There are %" SDL_PRISZu " bottles of beer on the wall.", bottles);
+ * ```
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PRISZu SDL_PRISZ_PREFIX "u"
+
+/**
+ * A printf-formatting string for an `size_t` value as lower-case hexadecimal.
+ *
+ * Use it like this:
+ *
+ * ```c
+ * SDL_Log("There are %" SDL_PRISZx " bottles of beer on the wall.", bottles);
+ * ```
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PRISZx SDL_PRISZ_PREFIX "x"
+
+/**
+ * A printf-formatting string for an `size_t` value as upper-case hexadecimal.
+ *
+ * Use it like this:
+ *
+ * ```c
+ * SDL_Log("There are %" SDL_PRISZX " bottles of beer on the wall.", bottles);
+ * ```
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_PRISZX SDL_PRISZ_PREFIX "X"
 #endif /* SDL_WIKI_DOCUMENTATION_SECTION */
 
 /* Make sure we have macros for printing width-based integers.
@@ -831,6 +886,25 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
 #endif
 #ifndef SDL_PRILLX
 #define SDL_PRILLX SDL_PRILL_PREFIX "X"
+#endif
+/* Specifically for `size_t` -- SDL-specific. */
+#if defined(SDL_PLATFORM_CYGWIN)
+#define SDL_PRISZ_PREFIX "z"
+#elif defined(_WIN64)
+#define SDL_PRISZ_PREFIX "I64"
+#elif defined(SDL_PLATFORM_WIN32)
+#define SDL_PRISZ_PREFIX "I32"
+#else
+#define SDL_PRISZ_PREFIX "z"
+#endif
+#ifndef SDL_PRISZu
+#define SDL_PRISZu SDL_PRISZ_PREFIX "u"
+#endif
+#ifndef SDL_PRISZx
+#define SDL_PRISZx SDL_PRISZ_PREFIX "x"
+#endif
+#ifndef SDL_PRISZX
+#define SDL_PRISZX SDL_PRISZ_PREFIX "X"
 #endif
 
 /* Annotations to help code analysis tools */
