@@ -84,11 +84,16 @@ assert can have unique static variables associated with it.
 #define SDL_LINE    __LINE__
 
 /*
-sizeof (x) makes the compiler still parse the expression even without
-assertions enabled, so the code is always checked at compile time, but
+sizeof ((x) ? 1 : 0) makes the compiler still parse the expression even
+without assertions enabled, so the code is always checked at compile time, but
 doesn't actually generate code for it, so there are no side effects or
-expensive checks at run time, just the constant size of what x WOULD be,
+expensive checks at run time, just the constant size of what int would be,
 which presumably gets optimized out as unused.
+
+(The `? 1 : 0` is so this always dithers down to `sizeof (int)`...otherwise
+you'll have problems when bitfields are used as the condition, since the
+compiler will error out on the sizeof.)
+
 This also solves the problem of...
 
     int somevalue = blah();
@@ -107,7 +112,7 @@ disable assertions.
 #endif
 
 #define SDL_disabled_assert(condition) \
-    do { (void) sizeof ((condition)); } while (SDL_NULL_WHILE_LOOP_CONDITION)
+    do { (void) sizeof ((condition) ? 1 : 0); } while (SDL_NULL_WHILE_LOOP_CONDITION)
 
 typedef enum
 {
