@@ -356,6 +356,15 @@ static bool Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *sur
     return result;
 }
 
+static void PrepTextureForSubrectCopy(SDL_Texture *texture, SDL_Surface *surface, const SDL_Rect *srcrect)
+{
+    if (texture->access == SDL_TEXTUREACCESS_STATIC &&
+        SDL_ISPIXELFORMAT_ALPHA(surface->format) &&
+        (srcrect->x != 0 || srcrect->y != 0 || srcrect->w != surface->w || srcrect->h != surface->h)) {
+        SDL_SetSurfaceRLE(surface, false);
+    }
+}
+
 static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Texture *texture,
                             const SDL_Rect *srcrect, const SDL_Rect *final_rect,
                             const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y, const SDL_ScaleMode scaleMode)
@@ -857,6 +866,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
             SetDrawState(surface, &drawstate);
 
+            PrepTextureForSubrectCopy(texture, src, srcrect);
             PrepTextureForCopy(cmd, &drawstate);
 
             // Apply viewport
