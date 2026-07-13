@@ -480,7 +480,7 @@ static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, siz
         }
 
 #ifdef DEBUG_DESCRIPTOR
-        SDL_Log("Data: 0x%.2x, size: %d, type: %d, tag: %d", data, (int)size, type, tag);
+        SDL_Log("Data: 0x%.2x, size: %" SDL_PRISZu ", type: %d, tag: %d", data, size, type, tag);
 #endif
         switch (type) {
         case DescriptorItemTypeMain:
