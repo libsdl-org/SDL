@@ -711,10 +711,14 @@ static void HandleDescriptorTrigger(Uint64 timestamp, SDL_Joystick *joystick, SD
     SDL_SendJoystickAxis(timestamp, joystick, axis, axis_value);
 }
 
-static bool HIDAPI_DriverXboxOne_HandleDescriptorReport(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
+static bool HIDAPI_DriverXboxOne_HandleDescriptorReport(SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, Uint8 *data, size_t size)
 {
     const SDL_ReportDescriptor *descriptor = ctx->descriptor;
     Uint64 timestamp = SDL_GetTicksNS();
+
+    if (size == 0) {
+        return false;
+    }
 
     // Skip the report ID
     const Uint8 report_id = *data;
