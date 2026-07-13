@@ -3523,7 +3523,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     for (int i = 0; i < SDL_arraysize(sdltool->frame.buttons); i++) {
         const int state = sdltool->frame.buttons[i];
         if (state) {
-            SDL_SendPenButton(timestamp, instance_id, window, (Uint8)(i + 1), state == WAYLAND_TABLET_TOOL_BUTTON_DOWN);
+            SDL_SendPenButton(timestamp, instance_id, window, (Uint8)(i + 1), (Uint8)(i + 2), state == WAYLAND_TABLET_TOOL_BUTTON_DOWN);
         }
     }
 
