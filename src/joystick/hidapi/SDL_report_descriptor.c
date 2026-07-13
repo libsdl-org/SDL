@@ -196,7 +196,7 @@ static void DebugMainTag(DescriptorContext *ctx, const char *tag, Uint32 flags)
 #endif // DEBUG_DESCRIPTOR
 }
 
-static Uint32 ReadValue(const Uint8 *data, int size)
+static Uint32 ReadValue(const Uint8 *data, size_t size)
 {
     Uint32 value = 0;
 
@@ -294,7 +294,7 @@ static bool AddInputFields(DescriptorContext *ctx)
     return true;
 }
 
-static bool ParseMainItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
+static bool ParseMainItem(DescriptorContext *ctx, int tag, size_t size, const Uint8 *data)
 {
     Uint32 flags;
 
@@ -359,7 +359,7 @@ static bool ParseMainItem(DescriptorContext *ctx, int tag, int size, const Uint8
     return true;
 }
 
-static bool ParseGlobalItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
+static bool ParseGlobalItem(DescriptorContext *ctx, int tag, size_t size, const Uint8 *data)
 {
     Uint32 value;
 
@@ -416,7 +416,7 @@ static bool ParseGlobalItem(DescriptorContext *ctx, int tag, int size, const Uin
     return true;
 }
 
-static bool ParseLocalItem(DescriptorContext *ctx, int tag, int size, const Uint8 *data)
+static bool ParseLocalItem(DescriptorContext *ctx, int tag, size_t size, const Uint8 *data)
 {
     Uint32 value;
 
@@ -464,14 +464,14 @@ static bool ParseLocalItem(DescriptorContext *ctx, int tag, int size, const Uint
     return true;
 }
 
-static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, int descriptor_size)
+static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, size_t descriptor_size)
 {
     SDL_zerop(ctx);
 
     for (const Uint8 *here = descriptor; here < descriptor + descriptor_size; ) {
         static const int sizes[4] = { 0, 1, 2, 4 };
         Uint8 data = *here++;
-        int size = sizes[(data & 0x3)];
+        size_t size = sizes[(data & 0x3)];
         int type = ((data >> 2) & 0x3);
         int tag = (data >> 4);
 
@@ -480,7 +480,7 @@ static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, int
         }
 
 #ifdef DEBUG_DESCRIPTOR
-        SDL_Log("Data: 0x%.2x, size: %d, type: %d, tag: %d", data, size, type, tag);
+        SDL_Log("Data: 0x%.2x, size: %zu, type: %d, tag: %d", data, size, type, tag);
 #endif
         switch (type) {
         case DescriptorItemTypeMain:
@@ -514,7 +514,7 @@ static void CleanupContext(DescriptorContext *ctx)
     SDL_free(ctx->fields);
 }
 
-SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, int descriptor_size)
+SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, size_t descriptor_size)
 {
     SDL_ReportDescriptor *result = NULL;
 
@@ -555,10 +555,10 @@ void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor)
     }
 }
 
-bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_size, Uint32 *value)
+bool SDL_ReadReportData(const Uint8 *data, size_t size, int bit_offset, int bit_size, Uint32 *value)
 {
     int offset = (bit_offset / 8);
-    if (offset >= size) {
+    if ((size_t)offset >= size) {
         *value = 0;
         return SDL_SetError("Out of bounds reading report data");
     }
