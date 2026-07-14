@@ -1594,7 +1594,6 @@ static const struct {
     {"xboxsx", SDL_GAMEPAD_TYPE_XBOXONE}, /* series s/x */
 
     // misc.
-    {"arcade", SDL_GAMEPAD_TYPE_STANDARD},
     {"neogeo", SDL_GAMEPAD_TYPE_STANDARD},
     {"3do", SDL_GAMEPAD_TYPE_STANDARD},
 };
