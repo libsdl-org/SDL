@@ -126,7 +126,7 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
-    SDL_GAMEPAD_TYPE_GAMECUBE, /**< At least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, start */
+    SDL_GAMEPAD_TYPE_GAMECUBE, /**< A Nintendo GameCube or compatible third party controller. This has at least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, and start button, but may have more controls mapped. */
     SDL_GAMEPAD_TYPE_STEAM,
     SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with B/A/Y/X face button layout */
     SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with A/X/B/Y face button layout */
