@@ -2136,8 +2136,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
 
     // We're finally done putting the window together, raise if possible
-    if (c->activation_manager) {
-        /* Note that we don't check for empty strings, as that is still
+    if (c->activation_manager && SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true)) {
+        /* if the process was passed an activation token, use it when showing
+         * the initial window.
+         *
+         * Note that we don't check for empty strings, as that is still
          * considered a valid activation token!
          */
         const char *activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
@@ -2148,7 +2151,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             // Clear this variable, per the protocol's request
             SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
+        } else {
+            // Try to generate an activation token for this window.
+            Wayland_RaiseWindow(_this, window);
         }
+    } else {
+        // Clear the ignored activation token, as it won't be used.
+        SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
     }
 
     // No frame callback on an external surface, as it may already have one attached.
