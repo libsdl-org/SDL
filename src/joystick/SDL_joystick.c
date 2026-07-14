@@ -3086,7 +3086,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
             if (forUI) {
                 type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             } else {
-                type = SDL_GAMEPAD_TYPE_STANDARD;
+                type = SDL_GAMEPAD_TYPE_XBOX360;
             }
             break;
         default:
