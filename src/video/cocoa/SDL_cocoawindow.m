@@ -1430,12 +1430,18 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 }
 
 /* This is usually sent after an unexpected windowDidExitFullscreen if the window
- * failed to become fullscreen.
+ * failed to become fullscreen, but not always, so ensure that the state variables
+ * are cleared.
  *
  * Since something went wrong and the current state is unknown, dump any pending events.
+ *
+ * For testing purposes, this error can usually be induced by starting something that
+ * immedately enters a fullscreen space from a terminal that is in a fullscreen space.
  */
 - (void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
 {
+    inFullscreenTransition = NO;
+    isFullscreenSpace = NO;
     [self clearAllPendingWindowOperations];
 }
 
