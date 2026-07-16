@@ -902,6 +902,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb360w_iface_protocol = 129; /* Wireless */
 	static const int supported_vendors[] = {
 		0x0079, /* GPD Win 2 */
+		0x0351, /* CRKD */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x046d, /* Logitech */
@@ -913,6 +914,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x0f0d, /* Hori */
 		0x1038, /* SteelSeries */
 		0x11c9, /* Nacon */
+		0x1209, /* Generic */
 		0x12ab, /* Unknown */
 		0x1430, /* RedOctane */
 		0x146b, /* BigBen */
@@ -927,7 +929,9 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x2c22, /* Qanba */
 		0x2dc8, /* 8BitDo */
 		0x3537, /* GameSir */
+		0x3651, /* CRKD */
 		0x37d7, /* Flydigi */
+		0x3958, /* Red Octane Games */
 		0x9886, /* ASTRO Gaming */
 	};
 
@@ -950,6 +954,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb1_iface_subclass = 71;
 	static const int xb1_iface_protocol = 208;
 	static const int supported_vendors[] = {
+		0x0351, /* CRKD */
 		0x03f0, /* HP */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
@@ -958,6 +963,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x10f5, /* Turtle Beach */
+		0x1209, /* Generic */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
@@ -967,7 +973,9 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x2e95, /* SCUF */
 		0x3285, /* Nacon */
 		0x3537, /* GameSir */
+		0x3651, /* CRKD */
 		0x366c, /* ByoWave */
+		0x3958, /* Red Octane Games */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&

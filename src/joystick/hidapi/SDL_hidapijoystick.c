@@ -268,6 +268,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
 
         static const int SUPPORTED_VENDORS[] = {
             0x0079, // GPD Win 2
+            0x0351, // CRKD
             0x044f, // Thrustmaster
             0x045e, // Microsoft
             0x046d, // Logitech
@@ -279,6 +280,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
             0x0f0d, // Hori
             0x1038, // SteelSeries
             0x11c9, // Nacon
+            0x1209, // Generic
             0x12ab, // Unknown
             0x1430, // RedOctane
             0x146b, // BigBen
@@ -293,7 +295,9 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
             0x2c22, // Qanba
             0x2dc8, // 8BitDo
             0x3537, // GameSir
+            0x3651, // CRKD
             0x37d7, // Flydigi
+            0x3958, // Red Octane Games
             0x9886, // ASTRO Gaming
         };
 
@@ -312,6 +316,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
         interface_protocol == XBONE_IFACE_PROTOCOL) {
 
         static const int SUPPORTED_VENDORS[] = {
+            0x0351, // CRKD
             0x03f0, // HP
             0x044f, // Thrustmaster
             0x045e, // Microsoft
@@ -320,6 +325,7 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
             0x0e6f, // PDP
             0x0f0d, // Hori
             0x10f5, // Turtle Beach
+            0x1209, // Generic
             0x1532, // Razer
             0x20d6, // PowerA
             0x24c6, // PowerA
@@ -329,7 +335,9 @@ static SDL_GamepadType SDL_GetJoystickGameControllerProtocol(const char *name, U
             0x2e95, // SCUF
             0x3285, // Nacon
             0x3537, // GameSir
+            0x3651, // CRKD
             0x366c, // ByoWave
+            0x3958, // Red Octane Games
         };
 
         int i;
