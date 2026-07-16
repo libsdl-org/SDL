@@ -200,7 +200,7 @@ jobs:
         run: |
           ${{ matrix.platform.source-cmd }}
           ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -G "${{ matrix.platform.cmake-generator }}" \
-            -Wdeprecated -Wdev -Werror \
+            -Wdeprecated -Wdev -Werror=dev -Werror=deprecated \
             ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
             -DSDL_WERROR=${{ matrix.platform.werror }} \
             -DSDL_EXAMPLES=${{ matrix.platform.build-tests }} \
