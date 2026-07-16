@@ -202,7 +202,7 @@ endif()
 set(SDL_SHARED_DEFAULT ON)
 set(SDL_STATIC_DEFAULT ON)
 
-set(SDL_SHARED_AVAILABLE ON)
+get_cmake_property(SDL_SHARED_AVAILABLE TARGET_SUPPORTS_SHARED_LIBS)
 set(SDL_STATIC_AVAILABLE ON)
 
 # All these *_DEFAULT vars will default to ON if not specified,
@@ -212,11 +212,6 @@ if(EMSCRIPTEN)
   # Emscripten/Javascript does not have assembly support, a dynamic library
   # loading architecture, or low-level CPU inspection.
   set(SDL_ASSEMBLY_DEFAULT OFF)
-  set(SDL_SHARED_AVAILABLE OFF)
-endif()
-
-if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE OR DOS)
-  set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
 if((RISCOS OR UNIX_SYS) AND NOT (LINUX OR NETBSD OR OPENBSD))
