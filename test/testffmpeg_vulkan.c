@@ -1079,7 +1079,7 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     import_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
     import_fd_info.fd = dma_buf_fds[0];
 
-    uint32_t memoryTypeIndex = 0;
+    uint32_t memoryTypeIndex;
     if (!FindMemoryIndex(context, mem_reqs.memoryTypeBits, &memoryTypeIndex)) {
         goto error;
     }
