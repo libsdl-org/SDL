@@ -664,7 +664,7 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     return true;
 }
 
-static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate)
+static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate, const SDL_Rect *srcrect)
 {
     const Uint8 r = drawstate->color.r;
     const Uint8 g = drawstate->color.g;
@@ -673,6 +673,14 @@ static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
+
+    if (SDL_SurfaceHasRLE(surface) &&
+        srcrect &&
+        texture->access == SDL_TEXTUREACCESS_STATIC &&
+        SDL_ISPIXELFORMAT_ALPHA(surface->format) &&
+        (srcrect->x != 0 || srcrect->y != 0 || srcrect->w != surface->w || srcrect->h != surface->h)) {
+        SDL_SetSurfaceRLE(surface, false);
+    }
 
     // !!! FIXME: we can probably avoid some of these calls.
     SDL_SetSurfaceColorMod(surface, r, g, b);
@@ -857,7 +865,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
             SetDrawState(surface, &drawstate);
 
-            PrepTextureForCopy(cmd, &drawstate);
+            PrepTextureForCopy(cmd, &drawstate, srcrect);
 
             // Apply viewport
             if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
@@ -912,7 +920,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         {
             CopyExData *copydata = (CopyExData *)(((Uint8 *)vertices) + cmd->data.draw.first);
             SetDrawState(surface, &drawstate);
-            PrepTextureForCopy(cmd, &drawstate);
+            PrepTextureForCopy(cmd, &drawstate, &copydata->srcrect);
 
             // Apply viewport
             if (drawstate.viewport &&
@@ -943,7 +951,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
                 GeometryCopyData *ptr = (GeometryCopyData *)verts;
 
-                PrepTextureForCopy(cmd, &drawstate);
+                PrepTextureForCopy(cmd, &drawstate, NULL);
 
                 // Apply viewport
                 if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
