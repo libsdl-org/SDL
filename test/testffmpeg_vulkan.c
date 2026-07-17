@@ -16,6 +16,24 @@
 
 #ifdef FFMPEG_VULKAN_SUPPORT
 
+#ifndef SDL_PLATFORM_WINDOWS
+#define FFMPEG_DRMPRIME_SUPPORT
+
+#include <unistd.h>
+
+#define DRM_FORMAT_R8       SDL_FOURCC('R', '8', ' ', ' ')
+#define DRM_FORMAT_RG88     SDL_FOURCC('R', 'G', '8', '8')
+#define DRM_FORMAT_GR88     SDL_FOURCC('G', 'R', '8', '8')
+#define DRM_FORMAT_R16      SDL_FOURCC('R', '1', '6', ' ')
+#define DRM_FORMAT_RG1616   SDL_FOURCC('R', 'G', '3', '2')
+#define DRM_FORMAT_GR1616   SDL_FOURCC('G', 'R', '3', '2')
+#define DRM_FORMAT_NV12     SDL_FOURCC('N', 'V', '1', '2')
+#define DRM_FORMAT_P010     SDL_FOURCC('P', '0', '1', '0')
+#define DRM_FORMAT_YUYV     SDL_FOURCC('Y', 'U', 'Y', 'V')
+#define DRM_FORMAT_UYVY     SDL_FOURCC('U', 'Y', 'V', 'Y')
+#define DRM_FORMAT_ARGB8888 SDL_FOURCC('A', 'R', '2', '4')
+#endif
+
 #define VULKAN_FUNCTIONS()                                             \
     VULKAN_GLOBAL_FUNCTION(vkCreateInstance)                           \
     VULKAN_GLOBAL_FUNCTION(vkEnumerateInstanceExtensionProperties)     \
@@ -27,13 +45,17 @@
     VULKAN_INSTANCE_FUNCTION(vkEnumeratePhysicalDevices)               \
     VULKAN_INSTANCE_FUNCTION(vkGetDeviceProcAddr)                      \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2)             \
+    VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties)      \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceQueueFamilyProperties) \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)     \
     VULKAN_INSTANCE_FUNCTION(vkQueueWaitIdle)                          \
     VULKAN_DEVICE_FUNCTION(vkAllocateCommandBuffers)                   \
+    VULKAN_DEVICE_FUNCTION(vkAllocateMemory)                           \
     VULKAN_DEVICE_FUNCTION(vkBeginCommandBuffer)                       \
+    VULKAN_DEVICE_FUNCTION(vkBindImageMemory)                          \
     VULKAN_DEVICE_FUNCTION(vkCmdPipelineBarrier2)                      \
     VULKAN_DEVICE_FUNCTION(vkCreateCommandPool)                        \
+    VULKAN_DEVICE_FUNCTION(vkCreateImage)                              \
     VULKAN_DEVICE_FUNCTION(vkCreateSemaphore)                          \
     VULKAN_DEVICE_FUNCTION(vkDestroyCommandPool)                       \
     VULKAN_DEVICE_FUNCTION(vkDestroyDevice)                            \
@@ -42,6 +64,7 @@
     VULKAN_DEVICE_FUNCTION(vkEndCommandBuffer)                         \
     VULKAN_DEVICE_FUNCTION(vkFreeCommandBuffers)                       \
     VULKAN_DEVICE_FUNCTION(vkGetDeviceQueue)                           \
+    VULKAN_DEVICE_FUNCTION(vkGetImageMemoryRequirements)               \
     VULKAN_DEVICE_FUNCTION(vkQueueSubmit)                              \
 \
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceVideoFormatPropertiesKHR) \
@@ -864,7 +887,7 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     return 0;
 }
 
-SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+static SDL_Texture *CreateVulkanVideoTexturePixFmtVulkan(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
@@ -894,6 +917,218 @@ SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *fram
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, format);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)pVkFrame->img[0]);
     return SDL_CreateTextureWithProperties(renderer, props);
+}
+
+#ifdef FFMPEG_DRMPRIME_SUPPORT
+static bool FindMemoryIndex(VulkanVideoContext *context, uint32_t memoryTypeBits, uint32_t *memoryIndex)
+{
+    VkPhysicalDeviceMemoryProperties mem_properties;
+
+    context->vkGetPhysicalDeviceMemoryProperties(context->physicalDevice, &mem_properties);
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; ++i) {
+        if (memoryTypeBits & (1 << i)) {
+            *memoryIndex = i;
+            return true;
+        }
+    }
+    return SDL_SetError("Couldn't find memory index for type %u", memoryTypeBits);
+}
+#endif /* FFMPEG_DRMPRIME_SUPPORT */
+
+static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+#ifdef FFMPEG_DRMPRIME_SUPPORT
+    const AVDRMFrameDescriptor *drm_desc = (const AVDRMFrameDescriptor *)frame->data[0];
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    VkResult result;
+    SDL_Texture *texture;
+
+    if (drm_desc->nb_objects != 1) {
+        SDL_SetError("DRM frames with %d objects are not currently supported", drm_desc->nb_objects);
+        return NULL;
+    }
+
+    switch (drm_desc->layers[0].format) {
+    case DRM_FORMAT_R8:
+        if (drm_desc->nb_layers == 2) {
+            switch (drm_desc->layers[1].format) {
+            case DRM_FORMAT_GR88:
+                format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+                break;
+            case DRM_FORMAT_RG88:
+                format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV21);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    case DRM_FORMAT_R16:
+        if (drm_desc->nb_layers == 2) {
+            switch (drm_desc->layers[1].format) {
+            case DRM_FORMAT_GR1616:
+                format = VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    case DRM_FORMAT_NV12:
+        format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+        break;
+    case DRM_FORMAT_P010:
+        format = VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+        break;
+    case DRM_FORMAT_YUYV:
+        format = VK_FORMAT_G8B8G8R8_422_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_YUY2);
+        break;
+    case DRM_FORMAT_UYVY:
+        format = VK_FORMAT_B8G8R8G8_422_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_UYVY);
+        break;
+    case DRM_FORMAT_ARGB8888:
+        format = VK_FORMAT_B8G8R8A8_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_BGRA32);
+        break;
+    default:
+        break;
+    }
+    if (format == VK_FORMAT_UNDEFINED) {
+        SDL_SetError("Unsupported DRM format %d", drm_desc->layers[0].format);
+        return NULL;
+    }
+
+    int dma_buf_fds[AV_DRM_MAX_PLANES];
+    for (int i = 0; i < drm_desc->nb_objects; i++) {
+        // Duplicate the descriptor if your Vulkan driver or framework closes it automatically
+        dma_buf_fds[i] = dup(drm_desc->objects[i].fd);
+        if (dma_buf_fds[i] < 0) {
+            while (--i >= 0) {
+                close(dma_buf_fds[i]);
+            }
+            SDL_SetError("Couldn't duplicate file descriptor");
+            return NULL;
+        }
+    }
+
+    // Map your descriptor planes to Vulkan plane layouts
+    uint32_t planes = 0;
+    VkSubresourceLayout plane_layouts[AV_DRM_MAX_PLANES];
+    SDL_zeroa(plane_layouts);
+    for (int i = 0; i < drm_desc->nb_layers; ++i) {
+        for (int j = 0; j < drm_desc->layers[i].nb_planes; ++j) {
+            const AVDRMPlaneDescriptor *plane = &drm_desc->layers[i].planes[j];
+
+            plane_layouts[planes].offset = plane->offset;
+            plane_layouts[planes].rowPitch = plane->pitch;
+            ++planes;
+        }
+    }
+
+    VkImageDrmFormatModifierExplicitCreateInfoEXT modifier_info;
+    SDL_zero(modifier_info);
+    modifier_info.sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT;
+    modifier_info.drmFormatModifier = drm_desc->objects[0].format_modifier;
+    modifier_info.drmFormatModifierPlaneCount = planes;
+    modifier_info.pPlaneLayouts = plane_layouts;
+
+    VkExternalMemoryImageCreateInfo external_info;
+    SDL_zero(external_info);
+    external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+    external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+    external_info.pNext = &modifier_info;
+
+    VkImageCreateInfo image_info;
+    SDL_zero(image_info);
+    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    image_info.format = format;
+    image_info.extent.width = frame->width;
+    image_info.extent.height = frame->height;
+    image_info.extent.depth = 1;
+    image_info.mipLevels = 1;
+    image_info.arrayLayers = 1;
+    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_info.tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+    image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_info.pNext = &external_info;
+
+    VkImage image;
+    result = context->vkCreateImage(context->device, &image_info, NULL, &image);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkCreateImage(): %s", getVulkanResultString(result));
+        goto error;
+    }
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)image);
+
+    // Calculate total memory size from plane requirements
+    VkMemoryRequirements mem_reqs;
+    context->vkGetImageMemoryRequirements(context->device, image, &mem_reqs);
+
+    VkImportMemoryFdInfoKHR import_fd_info;
+    SDL_zero(import_fd_info);
+    import_fd_info.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR;
+    import_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+    import_fd_info.fd = dma_buf_fds[0];
+
+    uint32_t memoryTypeIndex = 0;
+    if (!FindMemoryIndex(context, mem_reqs.memoryTypeBits, &memoryTypeIndex)) {
+        goto error;
+    }
+    VkMemoryAllocateInfo alloc_info;
+    SDL_zero(alloc_info);
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.allocationSize = mem_reqs.size;
+    alloc_info.memoryTypeIndex = memoryTypeIndex;
+    alloc_info.pNext = &import_fd_info;
+
+    VkDeviceMemory image_memory;
+    result = context->vkAllocateMemory(context->device, &alloc_info, NULL, &image_memory);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkAllocateMemory(): %s", getVulkanResultString(result));
+        goto error;
+    }
+    result = context->vkBindImageMemory(context->device, image, image_memory, 0);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkBindImageMemory(): %s", getVulkanResultString(result));
+        goto error;
+    }
+
+    texture = SDL_CreateTextureWithProperties(renderer, props);
+    if (!texture) {
+        goto error;
+    }
+    return texture;
+
+error:
+    for (int i = 0; i < drm_desc->nb_objects; i++) {
+        close(dma_buf_fds[i]);
+    }
+    return NULL;
+#else
+    SDL_SetError("DRM prime frames not supported");
+    return NULL;
+#endif /* FFMPEG_DRMPRIME_SUPPORT */
+}
+
+SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+    if (frame->format == AV_PIX_FMT_VULKAN) {
+        return CreateVulkanVideoTexturePixFmtVulkan(context, frame, renderer, props);
+    } else if (frame->format == AV_PIX_FMT_DRM_PRIME) {
+        return CreateVulkanVideoTexturePixFmtDRMPrime(context, frame, renderer, props);
+    } else {
+        SDL_SetError("Unknown hardware frame format");
+        return NULL;
+    }
 }
 
 void DestroyVulkanVideoContext(VulkanVideoContext *context)
