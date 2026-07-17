@@ -674,7 +674,8 @@ static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
-    if (srcrect &&
+    if (SDL_SurfaceHasRLE(surface) &&
+        srcrect &&
         texture->access == SDL_TEXTUREACCESS_STATIC &&
         SDL_ISPIXELFORMAT_ALPHA(surface->format) &&
         (srcrect->x != 0 || srcrect->y != 0 || srcrect->w != surface->w || srcrect->h != surface->h)) {
