@@ -491,7 +491,6 @@ static int ALSA_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapt
     snd_pcm_stream_t stream;
     int card_index;
     const char *dev_name;
-    char *card_name = NULL;
     char final_name[256];
 
     SDL_zero(final_name);
@@ -515,11 +514,15 @@ static int ALSA_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapt
     card_index = ALSA_snd_pcm_info_get_card(pcm_info);
     dev_name = ALSA_snd_pcm_info_get_name(pcm_info);
 
-    if (card_index >= 0 && ALSA_snd_card_get_name(card_index, &card_name) >= 0) {
-        SDL_snprintf(final_name, sizeof(final_name), "%s, %s", card_name, dev_name);
-        *name = SDL_strdup(final_name);
-    } else {
-        *name = SDL_strdup(dev_name ? dev_name : "Unknown ALSA Device");
+    if (name) {
+        char *card_name = NULL;
+        if (card_index >= 0 && ALSA_snd_card_get_name(card_index, &card_name) >= 0) {
+            SDL_snprintf(final_name, sizeof(final_name), "%s, %s", card_name, dev_name);
+            free(card_name);  /* This should NOT be SDL_free() */
+            *name = SDL_strdup(final_name);
+        } else {
+            *name = SDL_strdup(dev_name ? dev_name : "Unknown ALSA Device");
+        }
     }
 
     if (spec) {
