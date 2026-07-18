@@ -1335,6 +1335,7 @@ retry:
 #endif
 
         if (data->native_window) {
+            SDL_SetPointerProperty(SDL_GetWindowProperties(Android_Window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
             ANativeWindow_release(data->native_window);
             data->native_window = NULL;
         }
