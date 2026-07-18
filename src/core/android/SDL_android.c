@@ -1315,6 +1315,7 @@ retry:
         if (data->native_window) {
             ANativeWindow_release(data->native_window);
             data->native_window = NULL;
+            SDL_SetPointerProperty(SDL_GetWindowProperties(Android_Window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
         }
 
         // GL Context handling is done in the event loop because this function is run from the Java thread
