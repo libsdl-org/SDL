@@ -1124,7 +1124,6 @@ struct WebGPUBuffer
     WebGPUBufferContainer *container;
     WGPUBuffer buffer;
 
-    // Needed for uniforms and defrag
     WebGPUBufferType type;
     SDL_GPUBufferUsageFlags usage;
 
@@ -1474,11 +1473,9 @@ static void
 WEBGPU_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType type, WGPUStringView message, void *debugMode, void *unused)
 {
     if (debugMode) {
-        // FIXME: Again, not sure if this is how I should report errors.
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n%s", message.data);
+        SDL_assert_release(!message.data);
     }
-
-    exit(-69);
 }
 
 static SDL_PropertiesID WEBGPU_GetDeviceProperties(
@@ -3996,7 +3993,7 @@ static SDL_GPUBuffer *WEBGPU_CreateBuffer(
 {
     // #15981
     if ((usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) && (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) && ((WebGPURenderer *)driverData)->debugMode) {
-        SDL_assert_release("Buffer cannot be created with both VERTEX and INDEX flags!");
+        SDL_assert_release(!"Buffer cannot be created with both VERTEX and INDEX flags!");
         return NULL;
     }
 
