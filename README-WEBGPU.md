@@ -16,6 +16,7 @@ It has multiple known issues which I've just chosen to ignore for now:
     - WebGPU only supports multisampling with 1x or 4x.
 - The backend currently doesn't fully follow SDLGPU conventions. (mostly due to my inability to read)
     - Pushing data to a uniform buffer instantly updates it. This breaks anything that requires uploading to a uniform buffer multiple times in one render pass.
+        - This is because you *can't* write to a buffer during a render pass. Why? Because fuck you.
     - You want to cancel a command buffer? No you don't.
 - Multiple things just don't work.
     - No mipmap generation. (Unimplemented)

@@ -4306,23 +4306,21 @@ static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, ui
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
-    // TODO: Manually handle uniform transfer buffers.
+    // HACK: WebGPU is a garbage API for garbage people.
+    // You can't write to a uniform buffer while a pass is being encoded (because fuck you)
+    // even though every other graphics API on the planet Earth allows you to do that (again, because fuck you)
     wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->uniformBuffers[slotIndex % 4].buffer, 0, data, length);
 }
 
 static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
-
-    // TODO: Manually handle uniform transfer buffers.
     wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->uniformBuffers[4 + slotIndex % 4].buffer, 0, data, length);
 }
 
 static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
-
-    // TODO: Manually handle uniform transfer buffers.
     wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->uniformBuffers[8 + slotIndex % 4].buffer, 0, data, length);
 }
 
