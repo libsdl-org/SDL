@@ -95,10 +95,18 @@ static HSTRING hsAppId = NULL;
 static __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationManagerStatics *pToastNotificationManager = NULL;
 static __x_ABI_CWindows_CUI_CNotifications_CIToastNotifier *pToastNotifier = NULL;
 static __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationFactory *pNotificationFactory = NULL;
+static __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationManagerStatics2 *pToastNotificationManagerStatics2 = NULL;
+static __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationHistory *pToastNotificationHistory = NULL;
 
 static WCHAR *app_reg_key = NULL;
 static WCHAR *app_icon_path = NULL;
 
+static enum
+{
+    WIN32_NOTIFICATIONS_INITIALIZATION_FAILED = -1,
+    WIN32_NOTIFICATIONS_UNINITIALIZED = 0,
+    WIN32_NOTIFICATIONS_INITIALIZED = 1
+} initialization_status = WIN32_NOTIFICATIONS_UNINITIALIZED;
 static bool ro_initialized = false;
 static bool co_initialized = false;
 
@@ -459,13 +467,68 @@ static WCHAR *GetAppMetadata(const char *metadata_name)
     return NULL;
 }
 
+static void QuitToastSystem()
+{
+    if (pToastNotificationHistory) {
+        pToastNotificationHistory->lpVtbl->Release(pToastNotificationHistory);
+        pToastNotificationHistory = NULL;
+    }
+    if (pToastNotificationManagerStatics2) {
+        pToastNotificationManagerStatics2->lpVtbl->Release(pToastNotificationManagerStatics2);
+        pToastNotificationManagerStatics2 = NULL;
+    }
+    if (pNotificationFactory) {
+        pNotificationFactory->lpVtbl->Release(pNotificationFactory);
+        pNotificationFactory = NULL;
+    }
+    if (pToastNotifier) {
+        pToastNotifier->lpVtbl->Release(pToastNotifier);
+        pToastNotifier = NULL;
+    }
+    if (pToastNotificationManager) {
+        pToastNotificationManager->lpVtbl->Release(pToastNotificationManager);
+        pToastNotificationManager = NULL;
+    }
+    if (pClassFactory) {
+        pClassFactory->lpVtbl->Release((IUnknown *)pClassFactory);
+        pClassFactory = NULL;
+    }
+    if (hsAppId) {
+        WIN_WindowsDeleteString(hsAppId);
+        hsAppId = NULL;
+    }
+    if (hsGroupId) {
+        WIN_WindowsDeleteString(hsGroupId);
+        hsGroupId = NULL;
+    }
+
+    CleanupIcons();
+
+    if (ro_initialized) {
+        WIN_RoUninitialize();
+        ro_initialized = false;
+    }
+    if (co_initialized) {
+        WIN_CoUninitialize();
+        co_initialized = false;
+    }
+
+    SDL_free(app_reg_key);
+    app_reg_key = NULL;
+
+    SDL_free(app_icon_path);
+    app_icon_path = NULL;
+}
+
 static bool InitToastSystem()
 {
-    static bool initialized = false;
-
-    if (initialized) {
-        return true;
+    // Only try to initialize once.
+    if (initialization_status != WIN32_NOTIFICATIONS_UNINITIALIZED) {
+        return initialization_status == WIN32_NOTIFICATIONS_INITIALIZED;
     }
+
+    // Failure of anything results in an early-out, so the initial value is failure.
+    initialization_status = WIN32_NOTIFICATIONS_INITIALIZATION_FAILED;
 
 #define RESOLVE(x)                                \
     WIN_##x = (x##_t)WIN_LoadComBaseFunction(#x); \
@@ -568,7 +631,18 @@ static bool InitToastSystem()
         goto cleanup;
     }
 
-    initialized = true;
+    // This acts as a version check, as notification history is only available on Win10+.
+    hr = pToastNotificationManager->lpVtbl->QueryInterface(pToastNotificationManager, &IID_IToastNotificationManagerStatics2, (LPVOID *)&pToastNotificationManagerStatics2);
+    if (FAILED(hr)) {
+        goto cleanup;
+    }
+
+    hr = pToastNotificationManagerStatics2->lpVtbl->get_History(pToastNotificationManagerStatics2, &pToastNotificationHistory);
+    if (FAILED(hr)) {
+        goto cleanup;
+    }
+
+    initialization_status = WIN32_NOTIFICATIONS_INITIALIZED;
 
 cleanup:
     WIN_WindowsDeleteString(hsToastNotificationManager);
@@ -577,7 +651,11 @@ cleanup:
     SDL_free(app_id);
     SDL_free(app_name);
 
-    return initialized;
+    if (initialization_status == WIN32_NOTIFICATIONS_INITIALIZATION_FAILED) {
+        QuitToastSystem();
+    }
+
+    return initialization_status == WIN32_NOTIFICATIONS_INITIALIZED;
 }
 
 static bool AppendXmlAudio(SDL_IOStream *dst, const char *sound)
@@ -860,23 +938,12 @@ done:
 
 static void ClearNotificationWithID(SDL_NotificationID id)
 {
-    __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationHistory *pToastNotificationHistory = NULL;
-    __x_ABI_CWindows_CUI_CNotifications_CIToastNotificationManagerStatics2 *pToastNotificationManagerStatics2 = NULL;
     HSTRING_HEADER hshTag;
     HSTRING hsTag = NULL;
     WCHAR tag[32];
 
-    HRESULT hr = pToastNotificationManager->lpVtbl->QueryInterface(pToastNotificationManager, &IID_IToastNotificationManagerStatics2, (LPVOID *)&pToastNotificationManagerStatics2);
-    if (FAILED(hr)) {
-        return;
-    }
-    hr = pToastNotificationManagerStatics2->lpVtbl->get_History(pToastNotificationManagerStatics2, &pToastNotificationHistory);
-    if (FAILED(hr)) {
-        goto cleanup;
-    }
-
     SDL_swprintf(tag, SDL_arraysize(tag), L"%" SDL_PRIu32, id);
-    hr = WIN_WindowsCreateStringReference(tag, (UINT32)SDL_wcslen(tag), &hshTag, &hsTag);
+    HRESULT hr = WIN_WindowsCreateStringReference(tag, (UINT32)SDL_wcslen(tag), &hshTag, &hsTag);
     if (FAILED(hr)) {
         goto cleanup;
     }
@@ -885,15 +952,9 @@ static void ClearNotificationWithID(SDL_NotificationID id)
 
 cleanup:
     WIN_WindowsDeleteString(hsTag);
-    if (pToastNotificationHistory) {
-        pToastNotificationHistory->lpVtbl->Release(pToastNotificationHistory);
-    }
-    if (pToastNotificationManagerStatics2) {
-        pToastNotificationManagerStatics2->lpVtbl->Release(pToastNotificationManagerStatics2);
-    }
 }
 
-NTSTATUS WIN_BCryptGenRandom(BCRYPT_ALG_HANDLE hAlgorithm, PUCHAR pbBuffer, ULONG cbBuffer, ULONG dwFlags)
+static NTSTATUS WIN_BCryptGenRandom(BCRYPT_ALG_HANDLE hAlgorithm, PUCHAR pbBuffer, ULONG cbBuffer, ULONG dwFlags)
 {
     static bool s_bLoaded;
     static HMODULE s_hBCrypt;
@@ -920,13 +981,8 @@ SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props)
     SDL_NotificationID ret = 0;
 
     // Need Win10 or higher for notifications.
-    if (!WIN_IsWindows10OrGreater()) {
-        SDL_SetError("Notifications require Windows 10 or higher");
-        return 0;
-    }
-
     if (!InitToastSystem()) {
-        SDL_CleanupNotifications();
+        SDL_SetError("Failed to initialize the notification system (requires Windows 10 or higher)");
         return 0;
     }
 
@@ -1101,8 +1157,8 @@ cleanup:
 
 bool SDL_RemoveNotification(SDL_NotificationID notification)
 {
-    if (!WIN_IsWindows10OrGreater()) {
-        return SDL_Unsupported();
+    if (!InitToastSystem()) {
+        return SDL_SetError("Failed to initialize the notification system (requires Windows 10 or higher)");
     }
 
     ClearNotificationWithID(notification);
@@ -1111,51 +1167,12 @@ bool SDL_RemoveNotification(SDL_NotificationID notification)
 
 void SDL_CleanupNotifications(void)
 {
-    if (pNotificationFactory) {
-        pNotificationFactory->lpVtbl->Release(pNotificationFactory);
-        pNotificationFactory = NULL;
-    }
-    if (pToastNotifier) {
-        pToastNotifier->lpVtbl->Release(pToastNotifier);
-        pToastNotifier = NULL;
-    }
-    if (pToastNotificationManager) {
-        pToastNotificationManager->lpVtbl->Release(pToastNotificationManager);
-        pToastNotificationManager = NULL;
-    }
-    if (pClassFactory) {
-        pClassFactory->lpVtbl->Release((IUnknown *)pClassFactory);
-        pClassFactory = NULL;
-    }
-    if (hsAppId) {
-        WIN_WindowsDeleteString(hsAppId);
-        hsAppId = NULL;
-    }
-    if (hsGroupId) {
-        WIN_WindowsDeleteString(hsGroupId);
-        hsGroupId = NULL;
-    }
-
-    CleanupIcons();
-
-    if (ro_initialized) {
-        WIN_RoUninitialize();
-        ro_initialized = false;
-    }
-    if (co_initialized) {
-        WIN_CoUninitialize();
-        co_initialized = false;
-    }
-
-    SDL_free(app_reg_key);
-    app_reg_key = NULL;
-
-    SDL_free(app_icon_path);
-    app_icon_path = NULL;
+    QuitToastSystem();
+    initialization_status = WIN32_NOTIFICATIONS_UNINITIALIZED;
 }
 
 bool SDL_RequestNotificationPermission(void)
 {
     // Notifications are supported on Win10 or higher.
-    return (bool)WIN_IsWindows10OrGreater();
+    return InitToastSystem();
 }
