@@ -87,8 +87,6 @@ DEFINE_GUID(IID_IToastActivatedEventHandler,
 DEFINE_GUID(IID_IToastDismissedEventHandler,
             0x61c2402f, 0x0ed0, 0x5a18, 0xab, 0x69, 0x59, 0xf4, 0xaa, 0x99, 0xa3, 0x68);
 
-static struct Impl_IGeneric *pClassFactory = NULL;
-
 static HSTRING hsGroupId = NULL;
 static HSTRING hsAppId = NULL;
 
@@ -119,7 +117,12 @@ typedef struct Impl_IGeneric
 
 static ULONG STDMETHODCALLTYPE Impl_IGeneric_AddRef(Impl_IGeneric *_this)
 {
-    return SDL_AddAtomicInt(&_this->refCount, 1) + 1;
+    return (ULONG)SDL_AddAtomicInt(&_this->refCount, 1) + 1UL;
+}
+
+static ULONG STDMETHODCALLTYPE Impl_IGeneric_Release(Impl_IGeneric *_this)
+{
+    return (ULONG)SDL_AddAtomicInt(&_this->refCount, -1) - 1UL;
 }
 
 // OnActivated interface
@@ -179,12 +182,13 @@ static HRESULT STDMETHODCALLTYPE Impl_OnActivated_Invoke(__FITypedEventHandler_2
 static __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_IInspectableVtbl WindowsToast__OnActivatedVtbl = {
     .QueryInterface = &Impl_OnActivated_QueryInterface,
     .AddRef = (void *)Impl_IGeneric_AddRef,
-    .Release = (void *)Impl_IGeneric_AddRef,
+    .Release = (void *)Impl_IGeneric_Release,
     .Invoke = &Impl_OnActivated_Invoke,
 };
 
-static __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_IInspectable OnActivated = {
-    .lpVtbl = &WindowsToast__OnActivatedVtbl
+static Impl_IGeneric OnActivated = {
+    .lpVtbl = (IUnknownVtbl *)&WindowsToast__OnActivatedVtbl,
+    .refCount.value = 1
 };
 
 // OnDismissed interface
@@ -227,12 +231,13 @@ static HRESULT STDMETHODCALLTYPE Impl_OnDismissed_Invoke(__FITypedEventHandler_2
 static __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_Windows__CUI__CNotifications__CToastDismissedEventArgsVtbl WindowsToast__OnDismissedVtbl = {
     .QueryInterface = &Impl_OnDismissed_QueryInterface,
     .AddRef = (void *)Impl_IGeneric_AddRef,
-    .Release = (void *)Impl_IGeneric_AddRef,
+    .Release = (void *)Impl_IGeneric_Release,
     .Invoke = &Impl_OnDismissed_Invoke,
 };
 
-static __FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_Windows__CUI__CNotifications__CToastDismissedEventArgs OnDismissed = {
-    .lpVtbl = &WindowsToast__OnDismissedVtbl
+static Impl_IGeneric OnDismissed = {
+    .lpVtbl = (IUnknownVtbl *)&WindowsToast__OnDismissedVtbl,
+    .refCount.value = 1
 };
 
 static bool IsInPackage()
@@ -488,10 +493,6 @@ static void QuitToastSystem()
     if (pToastNotificationManager) {
         pToastNotificationManager->lpVtbl->Release(pToastNotificationManager);
         pToastNotificationManager = NULL;
-    }
-    if (pClassFactory) {
-        pClassFactory->lpVtbl->Release((IUnknown *)pClassFactory);
-        pClassFactory = NULL;
     }
     if (hsAppId) {
         WIN_WindowsDeleteString(hsAppId);
@@ -1060,14 +1061,14 @@ SDL_NotificationID SDL_SYS_ShowNotification(SDL_PropertiesID props)
     // Register the OnDismissed notifier to clear transient notifications when cancelled or timed out.
     if (transient) {
         EventRegistrationToken dismissedToken;
-        hr = pToastNotification->lpVtbl->add_Dismissed(pToastNotification, &OnDismissed, &dismissedToken);
+        hr = pToastNotification->lpVtbl->add_Dismissed(pToastNotification, (__FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_Windows__CUI__CNotifications__CToastDismissedEventArgs *)&OnDismissed, &dismissedToken);
         if (FAILED(hr)) {
             goto cleanup;
         }
     }
     {
         EventRegistrationToken activatedToken;
-        hr = pToastNotification->lpVtbl->add_Activated(pToastNotification, &OnActivated, &activatedToken);
+        hr = pToastNotification->lpVtbl->add_Activated(pToastNotification, (__FITypedEventHandler_2_Windows__CUI__CNotifications__CToastNotification_IInspectable *)&OnActivated, &activatedToken);
         if (FAILED(hr)) {
             goto cleanup;
         }
