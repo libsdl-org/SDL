@@ -59,10 +59,12 @@
     VULKAN_DEVICE_FUNCTION(vkCreateSemaphore)                          \
     VULKAN_DEVICE_FUNCTION(vkDestroyCommandPool)                       \
     VULKAN_DEVICE_FUNCTION(vkDestroyDevice)                            \
+    VULKAN_DEVICE_FUNCTION(vkDestroyImage)                             \
     VULKAN_DEVICE_FUNCTION(vkDestroySemaphore)                         \
     VULKAN_DEVICE_FUNCTION(vkDeviceWaitIdle)                           \
     VULKAN_DEVICE_FUNCTION(vkEndCommandBuffer)                         \
     VULKAN_DEVICE_FUNCTION(vkFreeCommandBuffers)                       \
+    VULKAN_DEVICE_FUNCTION(vkFreeMemory)                               \
     VULKAN_DEVICE_FUNCTION(vkGetDeviceQueue)                           \
     VULKAN_DEVICE_FUNCTION(vkGetImageMemoryRequirements)               \
     VULKAN_DEVICE_FUNCTION(vkQueueSubmit)                              \
@@ -920,6 +922,7 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtVulkan(VulkanVideoContext *con
 }
 
 #ifdef FFMPEG_DRMPRIME_SUPPORT
+
 static bool FindMemoryIndex(VulkanVideoContext *context, uint32_t memoryTypeBits, uint32_t *memoryIndex)
 {
     VkPhysicalDeviceMemoryProperties mem_properties;
@@ -933,6 +936,23 @@ static bool FindMemoryIndex(VulkanVideoContext *context, uint32_t memoryTypeBits
     }
     return SDL_SetError("Couldn't find memory index for type %u", memoryTypeBits);
 }
+
+static void SDLCALL CleanupExternalVulkanImage(void *userdata, void *value)
+{
+    VulkanVideoContext *context = (VulkanVideoContext *)userdata;
+    VkImage image = (VkImage)value;
+
+    context->vkDestroyImage(context->device, image, NULL);
+}
+
+static void SDLCALL CleanupExternalVulkanImageMemory(void *userdata, void *value)
+{
+    VulkanVideoContext *context = (VulkanVideoContext *)userdata;
+    VkDeviceMemory imageMemory = (VkDeviceMemory)value;
+
+    context->vkFreeMemory(context->device, imageMemory, NULL);
+}
+
 #endif /* FFMPEG_DRMPRIME_SUPPORT */
 
 static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
@@ -941,6 +961,8 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     const AVDRMFrameDescriptor *drm_desc = (const AVDRMFrameDescriptor *)frame->data[0];
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkResult result;
+    VkImage image = 0;
+    VkDeviceMemory imageMemory = 0;
     SDL_Texture *texture;
 
     if (drm_desc->nb_objects != 1) {
@@ -1007,7 +1029,6 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
 
     int dma_buf_fds[AV_DRM_MAX_PLANES];
     for (int i = 0; i < drm_desc->nb_objects; i++) {
-        // Duplicate the descriptor if your Vulkan driver or framework closes it automatically
         dma_buf_fds[i] = dup(drm_desc->objects[i].fd);
         if (dma_buf_fds[i] < 0) {
             while (--i >= 0) {
@@ -1018,7 +1039,6 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
         }
     }
 
-    // Map your descriptor planes to Vulkan plane layouts
     uint32_t planes = 0;
     VkSubresourceLayout plane_layouts[AV_DRM_MAX_PLANES];
     SDL_zeroa(plane_layouts);
@@ -1061,7 +1081,6 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     image_info.pNext = &external_info;
 
-    VkImage image;
     result = context->vkCreateImage(context->device, &image_info, NULL, &image);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateImage(): %s", getVulkanResultString(result));
@@ -1090,13 +1109,12 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     alloc_info.memoryTypeIndex = memoryTypeIndex;
     alloc_info.pNext = &import_fd_info;
 
-    VkDeviceMemory image_memory;
-    result = context->vkAllocateMemory(context->device, &alloc_info, NULL, &image_memory);
+    result = context->vkAllocateMemory(context->device, &alloc_info, NULL, &imageMemory);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkAllocateMemory(): %s", getVulkanResultString(result));
         goto error;
     }
-    result = context->vkBindImageMemory(context->device, image, image_memory, 0);
+    result = context->vkBindImageMemory(context->device, image, imageMemory, 0);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkBindImageMemory(): %s", getVulkanResultString(result));
         goto error;
@@ -1106,11 +1124,24 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     if (!texture) {
         goto error;
     }
+
+    // Make sure this image is freed when the texture is destroyed
+    props = SDL_GetTextureProperties(texture);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImage", (void *)image, CleanupExternalVulkanImage, context);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImageMemory", (void *)imageMemory, CleanupExternalVulkanImageMemory, context);
+
     return texture;
 
 error:
-    for (int i = 0; i < drm_desc->nb_objects; i++) {
-        close(dma_buf_fds[i]);
+    if (image) {
+        context->vkDestroyImage(context->device, image, NULL);
+    }
+    if (imageMemory) {
+        context->vkFreeMemory(context->device, imageMemory, NULL);
+    } else {
+        for (int i = 0; i < drm_desc->nb_objects; i++) {
+            close(dma_buf_fds[i]);
+        }
     }
     return NULL;
 #else
