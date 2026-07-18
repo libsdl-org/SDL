@@ -120,9 +120,9 @@ static HRESULT STDMETHODCALLTYPE Impl_OnActivated_QueryInterface(__FITypedEventH
     if (ppvObject == NULL) {
         return E_POINTER;
     }
-    if (IsEqualGUID(riid, &IID_IToastActivatedEventHandler) ||
-        IsEqualGUID(riid, &IID_IAgileObject) ||
-        IsEqualGUID(riid, &IID_IUnknown)) {
+    if (WIN_IsEqualGUID(riid, &IID_IToastActivatedEventHandler) ||
+        WIN_IsEqualGUID(riid, &IID_IAgileObject) ||
+        WIN_IsEqualGUID(riid, &IID_IUnknown)) {
         *ppvObject = _this;
         _this->lpVtbl->AddRef(_this);
         return S_OK;
@@ -185,9 +185,9 @@ static HRESULT STDMETHODCALLTYPE Impl_OnDismissed_QueryInterface(__FITypedEventH
     if (ppvObject == NULL) {
         return E_POINTER;
     }
-    if (IsEqualGUID(riid, &IID_IToastDismissedEventHandler) ||
-        IsEqualGUID(riid, &IID_IAgileObject) ||
-        IsEqualGUID(riid, &IID_IUnknown)) {
+    if (WIN_IsEqualGUID(riid, &IID_IToastDismissedEventHandler) ||
+        WIN_IsEqualGUID(riid, &IID_IAgileObject) ||
+        WIN_IsEqualGUID(riid, &IID_IUnknown)) {
         *ppvObject = _this;
         _this->lpVtbl->AddRef(_this);
         return S_OK;
