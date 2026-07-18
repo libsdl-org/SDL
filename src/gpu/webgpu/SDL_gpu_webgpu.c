@@ -3994,6 +3994,12 @@ static SDL_GPUBuffer *WEBGPU_CreateBuffer(
     Uint32 size,
     const char *debugName)
 {
+    // #15981
+    if ((usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) && (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) && ((WebGPURenderer *)driverData)->debugMode) {
+        SDL_assert_release("Buffer cannot be created with both VERTEX and INDEX flags!");
+        return NULL;
+    }
+
     return (SDL_GPUBuffer *)WEBGPU_INTERNAL_CreateBufferContainer(
         (WebGPURenderer *)driverData,
         size,
