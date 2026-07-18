@@ -407,6 +407,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.cmake_arguments.extend((
                     "-DCMAKE_C_COMPILER=clang-cl",
                     "-DCMAKE_CXX_COMPILER=clang-cl",
+                    "-DCMAKE_MT=llvm-mt",
+                    "-DCMAKE_RC_COMPILER=llvm-rc",
                 ))
                 match spec.msvc_arch:
                     case MsvcArch.X86:
