@@ -940,7 +940,7 @@ static bool FindMemoryIndex(VulkanVideoContext *context, uint32_t memoryTypeBits
 static void SDLCALL CleanupExternalVulkanImage(void *userdata, void *value)
 {
     VulkanVideoContext *context = (VulkanVideoContext *)userdata;
-    VkImage image = (VkImage)value;
+    VkImage image = (VkImage)(uintptr_t)value;
 
     context->vkDestroyImage(context->device, image, NULL);
 }
@@ -948,7 +948,7 @@ static void SDLCALL CleanupExternalVulkanImage(void *userdata, void *value)
 static void SDLCALL CleanupExternalVulkanImageMemory(void *userdata, void *value)
 {
     VulkanVideoContext *context = (VulkanVideoContext *)userdata;
-    VkDeviceMemory imageMemory = (VkDeviceMemory)value;
+    VkDeviceMemory imageMemory = (VkDeviceMemory)(uintptr_t)value;
 
     context->vkFreeMemory(context->device, imageMemory, NULL);
 }
@@ -963,6 +963,7 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     VkResult result;
     VkImage image = 0;
     VkDeviceMemory imageMemory = 0;
+    uint32_t memoryTypeIndex = 0;
     SDL_Texture *texture;
 
     if (drm_desc->nb_objects != 1) {
@@ -1098,7 +1099,6 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
     import_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
     import_fd_info.fd = dma_buf_fds[0];
 
-    uint32_t memoryTypeIndex;
     if (!FindMemoryIndex(context, mem_reqs.memoryTypeBits, &memoryTypeIndex)) {
         goto error;
     }
@@ -1127,8 +1127,8 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
 
     // Make sure this image is freed when the texture is destroyed
     props = SDL_GetTextureProperties(texture);
-    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImage", (void *)image, CleanupExternalVulkanImage, context);
-    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImageMemory", (void *)imageMemory, CleanupExternalVulkanImageMemory, context);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImage", (void *)(uintptr_t)image, CleanupExternalVulkanImage, context);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImageMemory", (void *)(uintptr_t)imageMemory, CleanupExternalVulkanImageMemory, context);
 
     return texture;
 
