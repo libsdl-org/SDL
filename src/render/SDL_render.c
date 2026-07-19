@@ -4455,6 +4455,10 @@ static bool SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *
 {
     float tile_width = srcrect->w * scale;
     float tile_height = srcrect->h * scale;
+    if (tile_width <= 0.0f || tile_height <= 0.0f) {
+        return true;
+    }
+
     float float_rows, float_cols;
     float remaining_w = SDL_modff(dstrect->w / tile_width, &float_cols);
     float remaining_h = SDL_modff(dstrect->h / tile_height, &float_rows);
@@ -4535,7 +4539,7 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
     real_srcrect.w = (float)texture->w;
     real_srcrect.h = (float)texture->h;
     if (srcrect) {
-        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect) || real_srcrect.w == 0.0f || real_srcrect.h == 0.0f) {
             return true;
         }
     }
