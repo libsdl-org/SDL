@@ -3420,6 +3420,9 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
         break;
     case SDL_GPU_SAMPLECOUNT_2:
     case SDL_GPU_SAMPLECOUNT_8:
+        if (((WebGPURenderer *)driverData)->debugMode) {
+            SDL_assert_release(!"WebGPU only supports 1x or 4x multisampling!");
+        }
         break;
     }
 
