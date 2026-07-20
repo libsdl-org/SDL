@@ -6,6 +6,9 @@
 #include <SDL3/SDL_test.h>
 #include "../src/joystick/usb_ids.h"
 #include "testautomation_suites.h"
+#ifdef HAVE_BUILD_CONFIG
+#include "SDL_build_config.h"
+#endif
 
 /* ================= Test Case Implementation ================== */
 
@@ -36,6 +39,10 @@ static void SDLCALL joystickTearDown(void *arg)
  */
 static int SDLCALL joystick_testVirtual(void *arg)
 {
+#ifndef SDL_JOYSTICK_VIRTUAL
+    SDLTest_AssertPass("The joystick_testVirtual test requires SDL_JOYSTICK_VIRTUAL to be defined");
+    return TEST_SKIPPED;
+#else
     SDL_VirtualJoystickDesc desc;
     SDL_Joystick *joystick = NULL;
     SDL_Gamepad *gamepad = NULL;
@@ -207,6 +214,7 @@ static int SDLCALL joystick_testVirtual(void *arg)
     SDLTest_AssertCheck(!SDL_IsJoystickVirtual(device_id), "!SDL_IsJoystickVirtual()");
 
     return TEST_COMPLETED;
+#endif // SDL_JOYSTICK_VIRTUAL
 }
 
 /**
@@ -214,6 +222,10 @@ static int SDLCALL joystick_testVirtual(void *arg)
  */
 static int SDLCALL joystick_testMappings(void *arg)
 {
+#ifndef SDL_JOYSTICK_VIRTUAL
+    SDLTest_AssertPass("The joystick_testMappings test requires SDL_JOYSTICK_VIRTUAL to be defined");
+    return TEST_SKIPPED;
+#else
     SDL_VirtualJoystickDesc desc;
     SDL_Gamepad *gamepad = NULL;
     SDL_JoystickID device_id;
@@ -277,6 +289,7 @@ static int SDLCALL joystick_testMappings(void *arg)
     SDLTest_AssertCheck(SDL_DetachVirtualJoystick(device_id), "SDL_DetachVirtualJoystick()");
 
     return TEST_COMPLETED;
+#endif // SDL_JOYSTICK_VIRTUAL
 }
 
 /* ================= Test References ================== */
