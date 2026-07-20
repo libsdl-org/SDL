@@ -27,6 +27,11 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_gameinput.h"
 
+extern "C"
+{
+#include "../hidapi/SDL_hidapijoystick_c.h"
+}
+
 enum
 {
     SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
@@ -195,6 +200,35 @@ static bool IsXbox360WirelessAdapter(Uint16 vendor, Uint16 product)
     return false;
 }
 
+static void QueryDeviceName(const GameInputDeviceInfo *info, Uint16 vendor_id, Uint16 product_id, char **manufacturer_string, char **product_string)
+{
+    if (!info || !manufacturer_string || !product_string) {
+        return;
+    }
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    *manufacturer_string = HIDAPI_GetDeviceManufacturerName(vendor_id, product_id);
+    *product_string = HIDAPI_GetDeviceProductName(vendor_id, product_id);
+    if (*product_string) {
+        return;
+    }
+#endif
+
+    *manufacturer_string = NULL;
+#if GAMEINPUT_API_VERSION >= 1
+    if (info->displayName) {
+        *product_string = SDL_strdup(info->displayName);
+    }
+#else
+    if (info->displayName) {
+        *product_string = SDL_strdup(info->displayName->data);
+    }
+#endif
+    if (!info->displayName) {
+        *product_string = NULL;
+    }
+}
+
 static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
@@ -204,7 +238,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    const char *product_string = NULL;
+    char *manufacturer_string = NULL;
+    char *product_string = NULL;
     Uint8 driver_signature = 'g';
     Uint8 subtype = 0;
     int raw_type = SDL_GAMEINPUT_RAWTYPE_NONE;
@@ -232,15 +267,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     subtype = GAMEINPUT_GetDeviceSubtype(info);
     raw_type = GAMEINPUT_GetDeviceRawType(info);
 
-#if GAMEINPUT_API_VERSION >= 1
-    if (info->displayName) {
-        product_string = info->displayName;
-    }
-#else
-    if (info->displayName) {
-        product_string = info->displayName->data;
-    }
-#endif
+    QueryDeviceName(info, vendor, product, &manufacturer_string, &product_string);
 
     if (IsXbox360WirelessAdapter(vendor, product) ||
         SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
@@ -300,8 +327,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     pDevice->AddRef();
     elem->device = pDevice;
-    elem->name = SDL_CreateJoystickName(vendor, product, NULL, product_string);
-    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, product_string, driver_signature, subtype);
+    elem->name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
+    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, driver_signature, subtype);
     elem->device_instance = SDL_GetNextObjectID();
     elem->info = info;
     elem->vendor = vendor;
@@ -315,6 +342,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     g_GameInputList.devices = devicelist;
     g_GameInputList.devices[g_GameInputList.count++] = elem;
+
+    SDL_free(manufacturer_string);
+    SDL_free(product_string);
 
     return true;
 }
