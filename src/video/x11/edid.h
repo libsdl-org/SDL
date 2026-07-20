@@ -167,6 +167,10 @@ struct MonitorInfo
     double white_x;
     double white_y;
 
+    double min_luminance;
+    double max_luminance;
+    double max_frame_average_luminance;
+
     Timing established[24]; // Terminated by 0x0x0
     Timing standard[8];
 
@@ -185,7 +189,7 @@ struct MonitorInfo
     char dsc_string[14]; // Unspecified ASCII data
 };
 
-MonitorInfo *decode_edid(const uchar *data);
+MonitorInfo *decode_edid(const uchar *data, size_t size);
 void dump_monitor_info(MonitorInfo *info);
 char *make_display_name(const char *output_name,
                         const MonitorInfo *info);

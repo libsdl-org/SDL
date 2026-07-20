@@ -518,10 +518,54 @@ decode_check_sum (const uchar *edid,
     info->checksum = check;
 }
 
-MonitorInfo *
-decode_edid (const uchar *edid)
+static void
+decode_HDR_metadata_block (const uchar *data, int length, MonitorInfo *info)
 {
-    MonitorInfo *info = SDL_calloc (1, sizeof (MonitorInfo));
+    if (length >= 3)
+	info->max_luminance = 50.0 * SDL_pow(2, data[2] / 32.0);
+
+    if (length >= 4)
+	info->max_frame_average_luminance = 50.0 * SDL_pow(2, data[3] / 32.0);
+
+    if (length >= 5)
+	info->min_luminance = 50.0 * SDL_pow(2, data[4] / 32.0);
+}
+
+
+static void
+decode_cta_block (const uchar *edid,
+		  MonitorInfo *info)
+{
+    int offset = 4;
+    while (offset < 128) {
+	int length = edid[offset] & 0x1f;
+	int type = edid[offset] >> 5;
+	if (length == 0) {
+	    break;
+	}
+	if (type == 7) {
+	    type <<= 8;
+	    type |= edid[offset + 1];
+	}
+	if (type == 0x706) {
+	    decode_HDR_metadata_block (&edid[offset + 2], length - 1, info);
+	}
+	offset += (1 + length);
+    }
+}
+
+MonitorInfo *
+decode_edid (const uchar *edid, size_t size)
+{
+    const int EDID_PAGE_SIZE = 128;
+    int num_blocks = (size / EDID_PAGE_SIZE);
+    MonitorInfo *info;
+
+    if ((size % EDID_PAGE_SIZE) != 0) {
+	return NULL;
+    }
+
+    info = SDL_calloc (1, sizeof (MonitorInfo));
 
     decode_check_sum (edid, info);
     
@@ -533,10 +577,21 @@ decode_edid (const uchar *edid)
         !decode_established_timings (edid, info) ||
         !decode_standard_timings (edid, info) ||
         !decode_descriptors (edid, info)) {
-        SDL_free(info);
-        return NULL;
+	SDL_free(info);
+	return NULL;
     }
     
+    if (num_blocks > 1) {
+	for (int i = 1; i < num_blocks; ++i) {
+	    int offset = i * EDID_PAGE_SIZE;
+	    uchar extension = edid[offset];
+	    if (extension == 0x02) {
+		// CTA-861 Extension Block
+		decode_cta_block (&edid[offset], info);
+	    }
+	}
+    }
+
     return info;
 }
 

@@ -449,45 +449,74 @@ static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc 
     return false;
 }
 
-static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, RROutput output, const unsigned long widthmm, const unsigned long heightmm)
+static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, const char *name)
 {
-    // See if we can get the EDID data for the real monitor name
-    int inches;
-    int nprop;
-    Atom *props = X11_XRRListOutputProperties(dpy, output, &nprop);
-    int i;
+    MonitorInfo *info = NULL;
+    int real_format;
+    Atom real_type;
+    unsigned long items_read = 0, items_left = 0;
+    unsigned char *propdata = NULL;
+    int status;
 
-    for (i = 0; i < nprop; ++i) {
-        unsigned char *prop;
-        int actual_format;
-        unsigned long nitems, bytes_after;
-        Atom actual_type;
 
-        if (props[i] == EDID) {
-            if (X11_XRRGetOutputProperty(dpy, output, props[i], 0, 100, False,
-                                         False, AnyPropertyType, &actual_type,
-                                         &actual_format, &nitems, &bytes_after,
-                                         &prop) == Success) {
-                MonitorInfo *info = decode_edid(prop);
-                if (info) {
-#ifdef X11MODES_DEBUG
-                    printf("Found EDID data for %s\n", name);
-                    dump_monitor_info(info);
-#endif
-                    SDL_strlcpy(name, info->dsc_product_name, namelen);
-                    SDL_free(info);
+    if (!info) {
+        Atom GAMESCOPE_DISPLAY_EDID_PATH = X11_XInternAtom(dpy, "GAMESCOPE_DISPLAY_EDID_PATH", False);
+        if (GAMESCOPE_DISPLAY_EDID_PATH != None) {
+            status = X11_XGetWindowProperty(dpy, RootWindow(dpy, screen),
+                                            GAMESCOPE_DISPLAY_EDID_PATH, 0L, 1024L, False, AnyPropertyType,
+                                            &real_type, &real_format, &items_read, &items_left, &propdata);
+            if (status == Success && propdata) {
+                size_t size = 0;
+                void *data = SDL_LoadFile((char *)propdata, &size);
+                if (data) {
+                    info = decode_edid((uchar *)data, size);
+                    SDL_free(data);
                 }
-                X11_XFree(prop);
             }
-            break;
+            if (propdata) {
+                X11_XFree(propdata);
+            }
         }
     }
 
-    if (props) {
-        X11_XFree(props);
+    if (!info) {
+        Atom EDID = X11_XInternAtom(dpy, "EDID", False);
+        if (EDID != None) {
+            int nprop = 0;
+            Atom *props = X11_XRRListOutputProperties(dpy, output, &nprop);
+            for (int i = 0; i < nprop; ++i) {
+                if (props[i] == EDID) {
+                    status = X11_XRRGetOutputProperty(dpy, output, props[i], 0L, 128L, False,
+                                                       False, AnyPropertyType, &real_type,
+                                                       &real_format, &items_read, &items_left, &propdata);
+                    if (status == Success && propdata) {
+                        info = decode_edid(propdata, items_read);
+                    }
+                    if (propdata) {
+                        X11_XFree(propdata);
+                    }
+                    break;
+                }
+            }
+        }
     }
 
-    inches = (int)((SDL_sqrtf(widthmm * widthmm + heightmm * heightmm) / 25.4f) + 0.5f);
+#ifdef X11MODES_DEBUG
+    if (info) {
+        SDL_Log("Found EDID data for %s", name);
+        dump_monitor_info(info);
+    }
+#endif
+    return info;
+}
+
+static void SetXRandRDisplayName(MonitorInfo *info, char *name, size_t namelen, unsigned long widthmm, unsigned long heightmm)
+{
+    if (info) {
+        SDL_strlcpy(name, info->dsc_product_name, namelen);
+    }
+
+    int inches = (int)((SDL_sqrtf(widthmm * widthmm + heightmm * heightmm) / 25.4f) + 0.5f);
     if (*name && inches) {
         const size_t len = SDL_strlen(name);
         (void)SDL_snprintf(&name[len], namelen - len, " %d\"", inches);
@@ -500,7 +529,6 @@ static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size
 
 static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_VideoDisplay *display, char *display_name, size_t display_name_size)
 {
-    Atom EDID = X11_XInternAtom(dpy, "EDID", False);
     XRROutputInfo *output_info;
     int display_x, display_y;
     unsigned long display_mm_width, display_mm_height;
@@ -593,8 +621,10 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     displaydata->xrandr_output = outputid;
     SDL_strlcpy(displaydata->connector_name, display_name, sizeof(displaydata->connector_name));
 
+    MonitorInfo *info = GetMonitorInfo(dpy, screen, outputid, display_name);
+
     SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
-    SetXRandRDisplayName(dpy, EDID, display_name, display_name_size, outputid, display_mm_width, display_mm_height);
+    SetXRandRDisplayName(info, display_name, display_name_size, display_mm_width, display_mm_height);
 
     SDL_zero(*display);
     if (*display_name) {
@@ -603,6 +633,20 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     display->desktop_mode = mode;
     display->content_scale = X11_GetGlobalContentScaleForDevice(_this);
     display->internal = displaydata;
+
+    if (info) {
+        if (info->max_luminance > 0.0) {
+            /* ITU-R BT.2408-7 (Sept 2023) has the reference PQ white level at 203 nits,
+             * while older Dolby documentation claims a reference level of 100 nits.
+             *
+             * Use 203 nits for now.
+             */
+            display->HDR.HDR_headroom = (float)info->max_luminance / 203.0f;
+            display->HDR.SDR_white_level = 1.0f;
+        }
+
+        SDL_free(info);
+    }
 
     return true;
 }
