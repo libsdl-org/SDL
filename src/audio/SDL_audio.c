@@ -2475,6 +2475,9 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 logdev->physical_device = new_default_device;
                 logdev->prev = NULL;
                 logdev->next = new_default_device->logical_devices;
+                if (new_default_device->logical_devices) {
+                    new_default_device->logical_devices->prev = logdev;
+                }
                 new_default_device->logical_devices = logdev;
                 SDL_UnlockRWLock(current_audio.subsystem_rwlock);
 
