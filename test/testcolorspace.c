@@ -30,6 +30,7 @@ static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
 static int stage_index = 0;
+static float SDR_white_level = 1.0f;
 static float HDR_headroom = 1.0f;
 
 enum
@@ -42,6 +43,7 @@ enum
     StageBlendTexture,
     StageGradientDrawing,
     StageGradientTexture,
+    StageHDR10Texture,
     StageCount
 };
 
@@ -70,7 +72,11 @@ static void UpdateHDRState(void)
             colorspace != SDL_COLORSPACE_HDR10) {
             SDL_Log("Run with --colorspace linear to display HDR colors");
         }
+        SDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, 1.0f);
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
+    } else {
+        SDR_white_level = 1.0f;
+        HDR_headroom = 1.0f;
     }
 }
 
@@ -165,6 +171,41 @@ static bool ReadPixel(int x, int y, SDL_Color *c)
         SDL_Log("Couldn't read back pixels: %s", SDL_GetError());
     }
     return result;
+}
+
+typedef enum
+{
+    TextAlignLeft,
+    TextAlignRight,
+    TextAlignCenter
+} TextAlignment;
+
+static void DrawAlignedText(float x, float y, TextAlignment align, const char *fmt, ...)
+{
+    char *text;
+
+    va_list ap;
+    va_start(ap, fmt);
+    SDL_vasprintf(&text, fmt, ap);
+    va_end(ap);
+
+    size_t text_width = SDL_strlen(text) * SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+    switch (align) {
+    case TextAlignLeft:
+        break;
+    case TextAlignRight:
+        x -= text_width;
+        break;
+    case TextAlignCenter:
+        x -= text_width / 2.0f;
+        break;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, x + 1.0f, y + 1.0f, text);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDLTest_DrawString(renderer, x, y, text);
+    SDL_free(text);
 }
 
 static void DrawText(float x, float y, const char *fmt, ...)
@@ -376,7 +417,7 @@ static void RenderBlendDrawing(void)
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
                (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
-        DrawText(x, y, "Incorrect blend color, blending in PQ space");
+        DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
     }
@@ -438,7 +479,7 @@ static void RenderBlendTexture(void)
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
                (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
-        DrawText(x, y, "Incorrect blend color, blending in PQ space");
+        DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
     }
@@ -589,6 +630,98 @@ static void RenderGradientTexture(void)
     y += 64.0f;
 }
 
+float PQfromNits(float v)
+{
+    const float c1 = 0.8359375f;
+    const float c2 = 18.8515625f;
+    const float c3 = 18.6875f;
+    const float m1 = 0.1593017578125f;
+    const float m2 = 78.84375f;
+
+    float y = SDL_clamp(v / 10000.0f, 0.0f, 1.0f);
+    float num = c1 + c2 * SDL_powf(y, m1);
+    float den = 1.0f + c3 * SDL_powf(y, m1);
+    return SDL_powf(num / den, m2);
+}
+
+static SDL_Texture *CreateHDR10Texture(int width, float max_nits)
+{
+    SDL_Texture *texture;
+    Uint32 *pixels;
+
+    /* ABGR2101010 textures are in the HDR10 colorspace by default */
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_ABGR2101010);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 1);
+    // The white point for HDR10 textures is the SDR white level in nits
+    if (SDR_white_level > 1.0f) {
+        // We'll match the current display SDR white level so we don't get any scaling here
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * 80.0f);
+    } else {
+        // ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, 203.0f);
+    }
+    texture = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
+    if (!texture) {
+        return NULL;
+    }
+
+    pixels = (Uint32 *)SDL_malloc(width * sizeof(Uint32));
+    if (pixels) {
+        int i;
+
+        for (i = 0; i < width; ++i) {
+            float nits = (max_nits * i) / width;
+            Uint32 v = (Uint32)SDL_roundf(PQfromNits(nits) * 1023.0f);
+            pixels[i] = 0xC0000000 | (v << 20) | (v << 10) | v;
+        }
+        SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(Uint32));
+        SDL_free(pixels);
+    }
+    return texture;
+}
+
+static void DrawHDR10Texture(float x, float y, float width, float height, float max_nits)
+{
+    SDL_FRect rect = { x, y, width, height };
+    SDL_Texture *texture = CreateHDR10Texture((int)width, max_nits);
+    SDL_RenderTexture(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+}
+
+static void RenderHDR10Texture(void)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Texture HDR10 ramp");
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawText(x, y, "HDR10");
+    y += TEXT_LINE_ADVANCE;
+
+    /* The gradient texture is in the linear colorspace, so we can use the HDR_headroom value directly */
+    const float max_nits = 1000.0f;
+    float gradient_width = WINDOW_WIDTH - 2 * x;
+    DrawHDR10Texture(x, y, gradient_width, 64.0f, max_nits);
+    y += 64.0f;
+    y += 4.0f;
+    DrawAlignedText(x, y, TextAlignLeft, "Nits:");
+    DrawAlignedText(x + gradient_width / 4, y, TextAlignCenter, "%g", max_nits / 4);
+    DrawAlignedText(x + gradient_width / 2, y, TextAlignCenter, "%g", max_nits / 2);
+    DrawAlignedText(x + gradient_width * 400 / max_nits, y, TextAlignCenter, "400");
+    DrawAlignedText(x + gradient_width * 3 / 4, y, TextAlignCenter, "%g", max_nits * 3 / 4);
+    DrawAlignedText(x + gradient_width, y, TextAlignRight, "%g", max_nits);
+}
+
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     /* Check for events */
@@ -649,6 +782,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         break;
     case StageGradientTexture:
         RenderGradientTexture();
+        break;
+    case StageHDR10Texture:
+        RenderHDR10Texture();
         break;
     }
 
