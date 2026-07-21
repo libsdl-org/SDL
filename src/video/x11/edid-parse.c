@@ -719,6 +719,9 @@ dump_monitor_info (MonitorInfo *info)
     printf ("Blue Y: %f\n", info->blue_y);
     printf ("White X: %f\n", info->white_x);
     printf ("White Y: %f\n", info->white_y);
+    printf ("Min luminance: %f\n", info->min_luminance);
+    printf ("Max luminance: %f\n", info->max_luminance);
+    printf ("Max frame average luminance %f\n", info->max_frame_average_luminance);
     
     printf ("Established Timings:\n");
     
