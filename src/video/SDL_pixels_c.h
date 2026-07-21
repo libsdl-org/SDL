@@ -41,6 +41,7 @@ extern float SDL_PQfromNits(float v);
 extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel);
 extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst);
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
+extern void SDL_ConvertColor709to2020(float *fR, float *fG, float *fB);
 
 // Blit mapping functions
 extern bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);
