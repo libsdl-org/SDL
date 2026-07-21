@@ -130,7 +130,11 @@ static float PrintClipboardText(float x, float y, const char *mime_type)
 static float PrintPrimarySelectionText(float x, float y)
 {
     if (SDL_HasPrimarySelectionText()) {
-        SDL_RenderDebugText(renderer, x, y, SDL_GetPrimarySelectionText());
+        char *text = SDL_GetPrimarySelectionText();
+        if (text) {
+            SDL_RenderDebugText(renderer, x, y, text);
+            SDL_free(text);
+        }
         return SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
     }
     return 0.0f;
