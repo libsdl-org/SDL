@@ -25,11 +25,22 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static const char *renderer_name;
+static const char *colorspace_names[] = {
+       "sRGB",
+       "linear",
+       "HDR10"
+};
+static SDL_Colorspace colorspaces[] = {
+       SDL_COLORSPACE_SRGB,
+       SDL_COLORSPACE_SRGB_LINEAR,
+       SDL_COLORSPACE_HDR10
+};
+static int colorspace_count = SDL_arraysize(colorspaces);
+static int colorspace_index = 0;
 static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
-static int stage_index = 0;
 static float SDR_white_level = 1.0f;
 static float HDR_headroom = 1.0f;
 
@@ -46,6 +57,7 @@ enum
     StageHDR10Texture,
     StageCount
 };
+static int stage_index = StageClearBackground;
 
 static void FreeRenderer(void)
 {
@@ -58,7 +70,6 @@ static void UpdateHDRState(void)
 {
     SDL_PropertiesID props;
     bool HDR_enabled;
-    SDL_Colorspace colorspace;
 
     props = SDL_GetWindowProperties(window);
     HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
@@ -107,10 +118,19 @@ static void NextRenderer( void )
         return;
     }
 
+#ifdef CYCLE_COLORSPACES
+    ++colorspace_index;
+    if (colorspace_index == colorspace_count) {
+        colorspace_index = 0;
+    }
+    colorspace = colorspaces[colorspace_index];
+    colorspace_name = colorspace_names[colorspace_index];
+#else
     ++renderer_index;
     if (renderer_index == renderer_count) {
         renderer_index = 0;
     }
+#endif
     FreeRenderer();
     CreateRenderer();
 }
@@ -121,10 +141,19 @@ static void PrevRenderer(void)
         return;
     }
 
+#ifdef CYCLE_COLORSPACES
+    --colorspace_index;
+    if (colorspace_index == -1) {
+        colorspace_index += colorspace_count;
+    }
+    colorspace = colorspaces[colorspace_index];
+    colorspace_name = colorspace_names[colorspace_index];
+#else
     --renderer_index;
     if (renderer_index == -1) {
         renderer_index += renderer_count;
     }
+#endif
     FreeRenderer();
     CreateRenderer();
 }
@@ -815,13 +844,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         } else if (SDL_strcmp(argv[i], "--colorspace") == 0) {
             if (argv[i + 1]) {
                 colorspace_name = argv[i + 1];
-                if (SDL_strcasecmp(colorspace_name, "sRGB") == 0) {
-                    colorspace = SDL_COLORSPACE_SRGB;
-                } else if (SDL_strcasecmp(colorspace_name, "linear") == 0) {
-                    colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-                } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
-                    colorspace = SDL_COLORSPACE_HDR10;
-                } else {
+                colorspace = SDL_COLORSPACE_UNKNOWN;
+                for (int j = 0; j < colorspace_count; ++j) {
+                    if (SDL_strcasecmp(colorspace_name, colorspace_names[j]) == 0) {
+                        colorspace_index = j;
+                        colorspace = colorspaces[j];
+                        break;
+                    }
+                }
+                if (colorspace == SDL_COLORSPACE_UNKNOWN) {
                     SDL_Log("Unknown colorspace %s", argv[i + 1]);
                     return SDL_APP_FAILURE;
                 }
