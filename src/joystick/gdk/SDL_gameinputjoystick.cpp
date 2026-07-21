@@ -229,7 +229,7 @@ static void QueryDeviceName(const GameInputDeviceInfo *info, Uint16 vendor_id, U
     }
 }
 
-static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+static void GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
     GAMEINPUT_InternalDevice *elem = NULL;
@@ -251,7 +251,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #if GAMEINPUT_API_VERSION >= 1
     HRESULT hr = pDevice->GetDeviceInfo(&info);
     if (FAILED(hr)) {
-        return WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
+        WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
+        return;
     }
 #else
     info = pDevice->GetDeviceInfo();
@@ -272,13 +273,13 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     if (IsXbox360WirelessAdapter(vendor, product) ||
         SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
         SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
-        return true;
+        goto done;
     }
 
 #if defined(SDL_JOYSTICK_DINPUT) && defined(SDL_HAPTIC_DINPUT)
     // This joystick backend currently doesn't provide a haptic backend, so fallback to DirectInput for haptic-capable devices.
     if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) && info->forceFeedbackMotorCount > 0 && pDevice->IsForceFeedbackMotorPoweredOn(0)) {
-        return true;
+        goto done;
     }
 #endif
 
@@ -286,7 +287,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #if defined(SDL_JOYSTICK_DINPUT)
         // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
         if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {
-            return true;
+            goto done;
         }
 #endif
         if (info->supportedInput & GameInputKindController) {
@@ -295,7 +296,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
             subtype = 0;
         } else {
             // This joystick backend currently doesn't provide proper reading of other joystick types.
-            return true;
+            goto done;
         }
     }
 
@@ -304,19 +305,19 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         if (elem && elem->device == pDevice) {
             // we're already added
             elem->isDeleteRequested = false;
-            return true;
+            goto done;
         }
     }
 
     elem = (GAMEINPUT_InternalDevice *)SDL_calloc(1, sizeof(*elem));
     if (!elem) {
-        return false;
+        goto done;
     }
 
     devicelist = (GAMEINPUT_InternalDevice **)SDL_realloc(g_GameInputList.devices, sizeof(elem) * (g_GameInputList.count + 1LL));
     if (!devicelist) {
         SDL_free(elem);
-        return false;
+        goto done;
     }
 
     // Generate a device path
@@ -343,10 +344,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     g_GameInputList.devices = devicelist;
     g_GameInputList.devices[g_GameInputList.count++] = elem;
 
+done:
     SDL_free(manufacturer_string);
     SDL_free(product_string);
-
-    return true;
 }
 
 static bool GAMEINPUT_InternalRemoveByIndex(int idx)
