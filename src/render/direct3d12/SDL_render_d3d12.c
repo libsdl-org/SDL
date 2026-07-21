@@ -340,7 +340,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(SDL_PixelFormat format, Uin
     default:
         for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
             if (dxgi_format_map[i].sdl == format) {
-                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+                    output_colorspace == SDL_COLORSPACE_HDR10) {
                     return dxgi_format_map[i].srgb;
                 } else {
                     return dxgi_format_map[i].unorm;
@@ -2435,7 +2436,7 @@ static bool D3D12_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (i = 0; i < count; i++) {
@@ -2489,7 +2490,7 @@ static bool D3D12_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         verts->pos.y = xy_[1] * scale_y;
         verts->color = *(SDL_FColor *)((char *)color + j * color_stride);
         if (convert_color) {
-            SDL_ConvertToLinear(&verts->color);
+            SDL_ConvertToLinear(renderer, &verts->color);
         }
 
         if (texture) {
@@ -2741,19 +2742,39 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     }
 }
 
-static D3D12_Shader SelectShader(const D3D12_PixelShaderConstants *shader_constants)
+static D3D12_Shader SelectShader(SDL_Renderer *renderer, const D3D12_PixelShaderConstants *shader_constants)
 {
-    if (!shader_constants) {
+    if (shader_constants) {
+        if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+            float SDR_white_point;
+            if (renderer->target) {
+                SDR_white_point = renderer->target->SDR_white_point;
+            } else {
+                SDR_white_point = renderer->SDR_white_point;
+            }
+            if (shader_constants->input_type == INPUTTYPE_HDR10 &&
+                shader_constants->color_scale == SDR_white_point) {
+                // Do a simple 1-1 copy
+                return SHADER_RGB_SIMPLE;
+            } else {
+                return SHADER_RGB_PQ;
+            }
+        }
+
+        if (shader_constants->texture_type == TEXTURETYPE_RGB &&
+            shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
+            shader_constants->tonemap_method == TONEMAP_NONE) {
+            return SHADER_RGB;
+        }
+
+        return SHADER_ADVANCED;
+    } else {
+        if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+            return SHADER_SOLID_PQ;
+        }
+
         return SHADER_SOLID;
     }
-
-    if (shader_constants->texture_type == TEXTURETYPE_RGB &&
-        shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
-        shader_constants->tonemap_method == TONEMAP_NONE) {
-        return SHADER_RGB;
-    }
-
-    return SHADER_ADVANCED;
 }
 
 static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const D3D12_PixelShaderConstants *shader_constants,
@@ -2769,7 +2790,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     int i;
     DXGI_FORMAT rtvFormat = rendererData->renderTargetFormat;
     D3D12_PipelineState *currentPipelineState = rendererData->currentPipelineState;
-    D3D12_Shader shader = SelectShader(shader_constants);
+    D3D12_Shader shader = SelectShader(renderer, shader_constants);
     D3D12_PixelShaderConstants solid_constants;
 
     bool shaderResourcesChanged = false;
@@ -2874,9 +2895,11 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
             // Figure out the correct sampler descriptor table index based on the type of shader
             switch (shader) {
             case SHADER_RGB:
+            case SHADER_RGB_SIMPLE:
                 tableIndex = 3;
                 break;
             case SHADER_ADVANCED:
+            case SHADER_RGB_PQ:
                 tableIndex = 5;
                 break;
             default:
@@ -3141,14 +3164,21 @@ static bool D3D12_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         case SDL_RENDERCMD_CLEAR:
         {
             D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptor = D3D12_GetCurrentRenderTargetView(renderer);
-            bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
-            if (convert_color) {
-                SDL_ConvertToLinear(&color);
+            if (SDL_RenderingLinearSpace(renderer)) {
+                SDL_ConvertToLinear(renderer, &color);
             }
+
             color.r *= cmd->data.color.color_scale;
             color.g *= cmd->data.color.color_scale;
             color.b *= cmd->data.color.color_scale;
+
+            if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+                color.r = SDL_PQfromNits(color.r * 80.0f);
+                color.g = SDL_PQfromNits(color.g * 80.0f);
+                color.b = SDL_PQfromNits(color.b * 80.0f);
+            }
+
             ID3D12GraphicsCommandList2_ClearRenderTargetView(rendererData->commandList, rtvDescriptor, &color.r, 0, NULL);
             break;
         }
@@ -3425,7 +3455,7 @@ static SDL_Surface *D3D12_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     output = SDL_DuplicatePixels(
         rect->w, rect->h,
         D3D12_DXGIFormatToSDLPixelFormat(textureDesc.Format),
-        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
+        renderer->current_colorspace,
         textureMemory,
         pitchedDesc.RowPitch);
 
@@ -3551,8 +3581,8 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
-        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
         return SDL_SetError("Unsupported output colorspace");
     }
 

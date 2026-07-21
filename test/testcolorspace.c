@@ -56,6 +56,7 @@ static void UpdateHDRState(void)
 {
     SDL_PropertiesID props;
     bool HDR_enabled;
+    SDL_Colorspace colorspace;
 
     props = SDL_GetWindowProperties(window);
     HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
@@ -64,7 +65,9 @@ static void UpdateHDRState(void)
 
     if (HDR_enabled) {
         props = SDL_GetRendererProperties(renderer);
-        if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SRGB_LINEAR) {
+        colorspace = SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+        if (colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+            colorspace != SDL_COLORSPACE_HDR10) {
             SDL_Log("Run with --colorspace linear to display HDR colors");
         }
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
@@ -371,7 +374,8 @@ static void RenderBlendDrawing(void)
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if (cr.r == 214 && cr.g == 156 && cr.b == 113) {
+    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
         DrawText(x, y, "Incorrect blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
@@ -432,6 +436,9 @@ static void RenderBlendTexture(void)
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
+    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
+        DrawText(x, y, "Incorrect blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color, unknown reason");
     }
@@ -676,10 +683,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                     colorspace = SDL_COLORSPACE_SRGB;
                 } else if (SDL_strcasecmp(colorspace_name, "linear") == 0) {
                     colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-/* Not currently supported
                 } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
                     colorspace = SDL_COLORSPACE_HDR10;
-*/
                 } else {
                     SDL_Log("Unknown colorspace %s", argv[i + 1]);
                     return SDL_APP_FAILURE;

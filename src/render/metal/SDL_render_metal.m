@@ -1262,7 +1262,7 @@ static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (int i = 0; i < count; i++, points++) {
@@ -1293,7 +1293,7 @@ static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (int i = 0; i < count; i++, points++) {
@@ -1370,7 +1370,7 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
         if (convert_color) {
-            SDL_ConvertToLinear(&col_);
+            SDL_ConvertToLinear(renderer, &col_);
         }
 
         *(verts++) = col_.r;
@@ -1844,7 +1844,7 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                     bool convert_color = SDL_RenderingLinearSpace(renderer);
                     SDL_FColor color = cmd->data.color.color;
                     if (convert_color) {
-                        SDL_ConvertToLinear(&color);
+                        SDL_ConvertToLinear(renderer, &color);
                     }
                     color.r *= cmd->data.color.color_scale;
                     color.g *= cmd->data.color.color_scale;
