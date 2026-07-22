@@ -812,6 +812,15 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 "pkg-config",
                 "perl",
                 "python",
+                "libXrandr-devel",      # SDL_X11_XRANDR
+                "libXcursor-devel",     # SDL_X11_XCURSOR
+                "libXtst-devel",        # SDL_X11_XINPUT
+                "libXss-devel",         # SDL_X11_XSCRNSAVER
+                "libdbus1-devel",       # SDL_DBUS
+                "libfribidi-devel",     # SDL_FRIBIDI
+                "libthai-devel",        # SDL_LIBTHAI
+                "libGL-devel",
+                "libEGL-devel",
             ])
         case SdlPlatform.Riscos:
             job.ccache = False  # FIXME: enable when container gets upgrade
