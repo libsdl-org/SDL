@@ -88,7 +88,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     dbus_uint32_t uint32_val;
     dbus_bool_t bool_value;
 
-    menu_dbus = (SDL_TrayMenuDBus *)tray->menu->internal;
+    menu_dbus = tray->menu ? (SDL_TrayMenuDBus *)tray->menu->internal : NULL;
 
     empty = "";
     driver->dbus->message_iter_init(msg, &iter);
@@ -149,7 +149,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     key = "ItemIsMenu";
-    menu_dbus = (SDL_TrayMenuDBus *)tray->menu->internal;
+    menu_dbus = tray->menu ? (SDL_TrayMenuDBus *)tray->menu->internal : NULL;
     if (menu_dbus && menu_dbus->menu_path) {
         bool_value = TRUE;
     } else {
