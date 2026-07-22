@@ -635,14 +635,32 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     display->internal = displaydata;
 
     if (info) {
-        if (info->max_luminance > 0.0) {
-            /* ITU-R BT.2408-7 (Sept 2023) has the reference PQ white level at 203 nits,
-             * while older Dolby documentation claims a reference level of 100 nits.
-             *
-             * Use 203 nits for now.
-             */
-            display->HDR.HDR_headroom = (float)info->max_luminance / 203.0f;
-            display->HDR.SDR_white_level = 1.0f;
+        /* ITU-R BT.2408-7 (Sept 2023) has the reference PQ white level at 203 nits,
+         * while older Dolby documentation claims a reference level of 100 nits.
+         *
+         * Use 203 nits for now.
+         */
+        float SDR_white_level = 203.0f;
+
+        bool steam_deck = SDL_GetHintBoolean("SteamDeck", false);
+        if (steam_deck) {
+            // The SDR white level is dynamic, but typically is 400 nits
+            // We'll need some other way to get this for external displays
+            SDR_white_level = 400.0f;
+        } else {
+            // Support for HDR on X11 seems spotty, let's disable this for now
+            SDR_white_level = 0.0f;
+        }
+
+        // Allow a hint override for the SDR white level
+        const char *hint = SDL_GetHint("SDL_X11_SDR_WHITE_LEVEL");
+        if (hint && *hint) {
+            SDR_white_level = (float)SDL_atof(hint);
+        }
+
+        if (info->max_luminance > 0.0 && SDR_white_level > 0.0f) {
+            display->HDR.HDR_headroom = (float)info->max_luminance / SDR_white_level;
+            display->HDR.SDR_white_level = SDR_white_level / 80.0f;
         }
 
         SDL_free(info);
