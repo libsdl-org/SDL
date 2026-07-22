@@ -399,8 +399,16 @@ static void CalculateXRandRRefreshRate(const XRRModeInfo *info, int *numerator, 
     }
 
     if (info->hTotal && vTotal) {
-        *numerator = info->dotClock;
-        *denominator = (info->hTotal * vTotal);
+        // The pixel clock can exceed INT_MAX (e.g. 4K@240Hz), overflowing the int numerator.
+        // Scale the fraction to fit while preserving the ratio (the rate is rounded afterwards).
+        Uint64 num = info->dotClock;
+        Uint64 den = (Uint64)info->hTotal * vTotal;
+        while (num > SDL_MAX_SINT32 || den > SDL_MAX_SINT32) {
+            num >>= 1;
+            den >>= 1;
+        }
+        *numerator = (int)num;
+        *denominator = (int)den;
     } else {
         *numerator = 0;
         *denominator = 0;
