@@ -340,16 +340,14 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     // Spawn the new process
     if (process->background) {
         int status = -1;
-        #ifdef SDL_PLATFORM_APPLE  // Apple has vfork marked as deprecated and (as of macOS 10.12) is almost identical to calling fork() anyhow.
+        int pid_pipe[2];
+        if (!CreatePipe(pid_pipe)) {
+            goto posix_spawn_fail_all;
+        }
         const pid_t pid = fork();
-        const char *forkname = "fork";
-        #else
-        const pid_t pid = vfork();
-        const char *forkname = "vfork";
-        #endif
         switch (pid) {
         case -1:
-            SDL_SetError("%s() failed: %s", forkname, strerror(errno));
+            SDL_SetError("fork() failed: %s", strerror(errno));
             goto posix_spawn_fail_all;
 
         case 0:
@@ -358,9 +356,23 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp) != 0) {
                 _exit(errno);
             }
+            // Write the PID back to the parent so it can be waited on
+            close(pid_pipe[READ_END]);
+            if (write(pid_pipe[WRITE_END], &data->pid, sizeof(data->pid)) != sizeof(data->pid)) {
+                _exit(errno);
+            }
+            close(pid_pipe[WRITE_END]);
             _exit(0);
 
         default:
+            // Wait for the child to launch and report the PID back
+            close(pid_pipe[WRITE_END]);
+            ssize_t bytes_read = read(pid_pipe[READ_END], &data->pid, sizeof(data->pid));
+            close(pid_pipe[READ_END]);
+            if ((size_t)bytes_read != sizeof(data->pid)) {
+                SDL_SetError("Failed to read child PID from pipe: %s", strerror(errno));
+                goto posix_spawn_fail_all;
+            }
             if (waitpid(pid, &status, 0) < 0) {
                 SDL_SetError("waitpid() failed: %s", strerror(errno));
                 goto posix_spawn_fail_all;
