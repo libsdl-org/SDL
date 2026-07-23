@@ -26,6 +26,7 @@
 #include "SDL_x11settings.h"
 #include "edid.h"
 #include "../../events/SDL_displayevents_c.h"
+#include "../SDL_pixels_c.h"
 
 // #define X11MODES_DEBUG
 
@@ -344,14 +345,14 @@ static bool CheckXRandR(Display *display, int *major, int *minor)
 #ifdef XRANDR_DISABLED_BY_DEFAULT
     if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, false)) {
 #ifdef X11MODES_DEBUG
-        printf("XRandR disabled by default due to window manager issues\n");
+        SDL_Log("XRandR disabled by default due to window manager issues\n");
 #endif
         return false;
     }
 #else
     if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, true)) {
 #ifdef X11MODES_DEBUG
-        printf("XRandR disabled due to hint\n");
+        SDL_Log("XRandR disabled due to hint\n");
 #endif
         return false;
     }
@@ -359,7 +360,7 @@ static bool CheckXRandR(Display *display, int *major, int *minor)
 
     if (!SDL_X11_HAVE_XRANDR) {
 #ifdef X11MODES_DEBUG
-        printf("XRandR support not available\n");
+        SDL_Log("XRandR support not available\n");
 #endif
         return false;
     }
@@ -369,13 +370,13 @@ static bool CheckXRandR(Display *display, int *major, int *minor)
     *minor = 3; // we want 1.3
     if (!X11_XRRQueryVersion(display, major, minor)) {
 #ifdef X11MODES_DEBUG
-        printf("XRandR not active on the display\n");
+        SDL_Log("XRandR not active on the display\n");
 #endif
         *major = *minor = 0;
         return false;
     }
 #ifdef X11MODES_DEBUG
-    printf("XRandR available at version %d.%d!\n", *major, *minor);
+    SDL_Log("XRandR available at version %d.%d!\n", *major, *minor);
 #endif
     return true;
 }
@@ -440,8 +441,8 @@ static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc 
             CalculateXRandRRefreshRate(info, &mode->refresh_rate_numerator, &mode->refresh_rate_denominator);
             mode->internal->xrandr_mode = modeID;
 #ifdef X11MODES_DEBUG
-            printf("XRandR mode %d: %dx%d@%d/%dHz\n", (int)modeID,
-                   mode->screen_w, mode->screen_h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
+            SDL_Log("XRandR mode %d: %dx%d@%d/%dHz\n", (int)modeID,
+                    mode->screen_w, mode->screen_h, mode->refresh_rate_numerator, mode->refresh_rate_denominator);
 #endif
             return true;
         }
@@ -449,7 +450,90 @@ static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc 
     return false;
 }
 
-static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, const char *name)
+static bool GetRootWindowCardinalProperty(Display *dpy, int screen, const char *name, Uint32 *value)
+{
+    Atom atom = X11_XInternAtom(dpy, name, False);
+    if (atom == None) {
+        return false;
+    }
+
+    int real_format;
+    Atom real_type;
+    unsigned long items_read = 0, items_left = 0;
+    unsigned char *propdata = NULL;
+    int status;
+    bool result = false;
+
+    status = X11_XGetWindowProperty(dpy, RootWindow(dpy, screen),
+                                    atom, 0L, 1024L, False, AnyPropertyType,
+                                    &real_type, &real_format, &items_read, &items_left, &propdata);
+    if (status == Success && propdata) {
+        if (real_type == XA_CARDINAL && items_read > 0) {
+            switch (real_format) {
+            case 8:
+                *value = propdata[0];
+                break;
+            case 16:
+                *value = propdata[0] | (propdata[1] << 8);
+                break;
+            default:
+                *value = propdata[0] | (propdata[1] << 8) | (propdata[2] << 16) | (propdata[3] << 24);
+                break;
+            }
+            result = true;
+        }
+        X11_XFree(propdata);
+    }
+    return result;
+}
+
+static bool GetRootWindowBoolProperty(Display *dpy, int screen, const char *name, bool *value)
+{
+    Uint32 v;
+    if (GetRootWindowCardinalProperty(dpy, screen, name, &v)) {
+        *value = (v != 0);
+        return true;
+    }
+    return false;
+}
+
+static bool GetRootWindowFloatProperty(Display *dpy, int screen, const char *name, float *value)
+{
+    Uint32 v;
+    if (GetRootWindowCardinalProperty(dpy, screen, name, &v)) {
+        SDL_memcpy(value, &v, sizeof(v));
+        return true;
+    }
+    return false;
+}
+
+static float GetGamescopeSDRWhiteLevel(Display *dpy, int screen)
+{
+    // These properties are currently only available on X display :0
+    // If this changes, please remove the XCloseDisplay() call below.
+    dpy = X11_XOpenDisplay(":0");
+    screen = 0;
+    if (!dpy) {
+        return 0.0f;
+    }
+
+    float SDR_white_level = 0.0f;
+    bool external_display = false;
+    if (GetRootWindowBoolProperty(dpy, screen, "GAMESCOPE_DISPLAY_IS_EXTERNAL", &external_display) &&
+        external_display) {
+        GetRootWindowFloatProperty(dpy, screen, "GAMESCOPE_SDR_ON_HDR_CONTENT_BRIGHTNESS", &SDR_white_level);
+    } else {
+        // We're using the Steam Deck internal display, which has an SDR white level of 500 nits
+        SDR_white_level = 500.0f;
+    }
+
+    // Closing the display opened above
+    X11_XCloseDisplay(dpy);
+
+    return SDR_white_level;
+}
+
+static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, bool *gamescope)
 {
     MonitorInfo *info = NULL;
     int real_format;
@@ -458,6 +542,7 @@ static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, co
     unsigned char *propdata = NULL;
     int status;
 
+    *gamescope = false;
 
     if (!info) {
         Atom GAMESCOPE_DISPLAY_EDID_PATH = X11_XInternAtom(dpy, "GAMESCOPE_DISPLAY_EDID_PATH", False);
@@ -470,6 +555,9 @@ static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, co
                 void *data = SDL_LoadFile((char *)propdata, &size);
                 if (data) {
                     info = decode_edid((uchar *)data, size);
+                    if (info) {
+                        *gamescope = true;
+                    }
                     SDL_free(data);
                 }
             }
@@ -503,7 +591,6 @@ static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, co
 
 #ifdef X11MODES_DEBUG
     if (info) {
-        SDL_Log("Found EDID data for %s", name);
         dump_monitor_info(info);
     }
 #endif
@@ -523,7 +610,7 @@ static void SetXRandRDisplayName(MonitorInfo *info, char *name, size_t namelen, 
     }
 
 #ifdef X11MODES_DEBUG
-    printf("Display name: %s\n", name);
+    SDL_Log("Display name: %s\n", name);
 #endif
 }
 
@@ -621,7 +708,8 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     displaydata->xrandr_output = outputid;
     SDL_strlcpy(displaydata->connector_name, display_name, sizeof(displaydata->connector_name));
 
-    MonitorInfo *info = GetMonitorInfo(dpy, screen, outputid, display_name);
+    bool gamescope = false;
+    MonitorInfo *info = GetMonitorInfo(dpy, screen, outputid, &gamescope);
 
     SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
     SetXRandRDisplayName(info, display_name, display_name_size, display_mm_width, display_mm_height);
@@ -635,32 +723,20 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     display->internal = displaydata;
 
     if (info) {
-        /* ITU-R BT.2408-7 (Sept 2023) has the reference PQ white level at 203 nits,
-         * while older Dolby documentation claims a reference level of 100 nits.
-         *
-         * Use 203 nits for now.
-         */
-        float SDR_white_level = 203.0f;
-
-        bool steam_deck = SDL_GetHintBoolean("SteamDeck", false);
-        if (steam_deck) {
-            // The SDR white level is dynamic, but typically is 400 nits
-            // We'll need some other way to get this for external displays
-            SDR_white_level = 400.0f;
+        float SDR_white_level;
+        if (gamescope) {
+            SDR_white_level = GetGamescopeSDRWhiteLevel(dpy, screen);
         } else {
             // Support for HDR on X11 seems spotty, let's disable this for now
             SDR_white_level = 0.0f;
         }
 
-        // Allow a hint override for the SDR white level
-        const char *hint = SDL_GetHint("SDL_X11_SDR_WHITE_LEVEL");
-        if (hint && *hint) {
-            SDR_white_level = (float)SDL_atof(hint);
-        }
-
-        if (info->max_luminance > 0.0 && SDR_white_level > 0.0f) {
+#ifdef X11MODES_DEBUG
+        SDL_Log("HDR values: %f / %f", SDR_white_level, info->max_luminance);
+#endif
+        if (SDR_white_level > 0.0f && info->max_luminance > SDR_white_level) {
             display->HDR.HDR_headroom = (float)info->max_luminance / SDR_white_level;
-            display->HDR.SDR_white_level = SDR_white_level / 80.0f;
+            display->HDR.SDR_white_level = SDR_white_level / SCRGB_NITS;
         }
 
         SDL_free(info);
@@ -716,8 +792,11 @@ static bool X11_UpdateXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int sc
     // update scale
     SDL_SetDisplayContentScale(existing_display, display.content_scale);
 
+    // update HDR properties
+    SDL_SetDisplayHDRProperties(existing_display, &display.HDR);
+
     // SDL_DisplayData is updated piece-meal above, free our local copy of this data
-    SDL_free( display.internal );
+    SDL_free(display.internal);
 
     return true;
 }
@@ -734,7 +813,7 @@ static XRRScreenResources *X11_GetScreenResources(Display *dpy, int screen)
     return res;
 }
 
-static void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy)
+void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy)
 {
     const int screencount = ScreenCount(dpy);
 
@@ -816,7 +895,7 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
     int i;
 
 #if 0
-    printf("XRROutputChangeNotifyEvent! [output=%u, crtc=%u, mode=%u, rotation=%u, connection=%u]\n", (unsigned int) ev->output, (unsigned int) ev->crtc, (unsigned int) ev->mode, (unsigned int) ev->rotation, (unsigned int) ev->connection);
+    SDL_Log("XRROutputChangeNotifyEvent! [output=%u, crtc=%u, mode=%u, rotation=%u, connection=%u]\n", (unsigned int) ev->output, (unsigned int) ev->crtc, (unsigned int) ev->mode, (unsigned int) ev->rotation, (unsigned int) ev->connection);
 #endif
 
     // XWayland doesn't always send output disconnected events
@@ -1125,8 +1204,8 @@ bool X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, S
 
         if (crtc->mode == modedata->xrandr_mode) {
 #ifdef X11MODES_DEBUG
-            printf("already in desired mode 0x%lx (%ux%u), nothing to do\n",
-                   crtc->mode, crtc->width, crtc->height);
+            SDL_Log("already in desired mode 0x%lx (%ux%u), nothing to do\n",
+                    crtc->mode, crtc->width, crtc->height);
 #endif
             status = Success;
             goto freeInfo;

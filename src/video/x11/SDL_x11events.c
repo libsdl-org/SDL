@@ -1455,6 +1455,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     for (i = 0; i < _this->num_displays; ++i) {
                         SDL_SendDisplayEvent(_this->displays[i], SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, 0, 0);
                     }
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+                } else if (SDL_strcmp(name_of_atom, "GAMESCOPE_DISPLAY_IS_EXTERNAL") == 0 ||
+                           SDL_strcmp(name_of_atom, "GAMESCOPE_SDR_ON_HDR_CONTENT_BRIGHTNESS") == 0) {
+                    X11_CheckDisplaysMoved(_this, display);
+#endif
                 }
                 X11_XFree(name_of_atom);
             }

@@ -3558,14 +3558,9 @@ static VULKAN_Shader SelectShader(SDL_Renderer *renderer, const VULKAN_PixelShad
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-            float SDR_white_point;
-            if (renderer->target) {
-                SDR_white_point = renderer->target->SDR_white_point;
-            } else {
-                SDR_white_point = renderer->SDR_white_point;
-            }
             if (shader_constants->input_type == INPUTTYPE_HDR10 &&
-                shader_constants->color_scale == SDR_white_point) {
+                shader_constants->tonemap_method == 0.0f &&
+                (shader_constants->sdr_white_point / SCRGB_NITS) == shader_constants->color_scale) {
                 // Do a simple 1-1 copy
                 return SHADER_RGB_SIMPLE;
             } else {
@@ -4166,9 +4161,9 @@ static bool VULKAN_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cm
             color.b *= cmd->data.color.color_scale;
 
             if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-                color.r = SDL_PQfromNits(color.r * 80.0f);
-                color.g = SDL_PQfromNits(color.g * 80.0f);
-                color.b = SDL_PQfromNits(color.b * 80.0f);
+                color.r = SDL_PQfromNits(color.r * SCRGB_NITS);
+                color.g = SDL_PQfromNits(color.g * SCRGB_NITS);
+                color.b = SDL_PQfromNits(color.b * SCRGB_NITS);
             }
 
             VkClearColorValue clearColor;

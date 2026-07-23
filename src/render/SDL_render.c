@@ -5448,7 +5448,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
 
             if (SDL_COLORSPACETRANSFER(target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * 80.0f);
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * SCRGB_NITS);
             } else {
                 SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
             }
@@ -5464,7 +5464,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             }
         } else {
             if (SDL_COLORSPACETRANSFER(renderer->output_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point * 80.0f);
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point * SCRGB_NITS);
             } else {
                 SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
             }

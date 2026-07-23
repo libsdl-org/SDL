@@ -15,6 +15,9 @@
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_main.h>
 
+// The value, in nits, of scRGB 1.0
+#define SCRGB_NITS 80.0f
+
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
 
@@ -85,6 +88,12 @@ static void UpdateHDRState(void)
         }
         SDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, 1.0f);
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
+        if (((SDR_white_level * SCRGB_NITS) * HDR_headroom) == 10000.0f) {
+			// The system is advertising the PQ luminance range (10000 nits)
+			// and tone mapping into the actual display capabilities.
+			// Let's use a more reasonable range for the gradient test.
+			HDR_headroom = 5.0f;
+		}
     } else {
         SDR_white_level = 1.0f;
         HDR_headroom = 1.0f;
@@ -445,10 +454,12 @@ static void RenderBlendDrawing(void)
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
+               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 }
@@ -507,10 +518,12 @@ static void RenderBlendTexture(void)
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
+               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 
@@ -687,7 +700,7 @@ static SDL_Texture *CreateHDR10Texture(int width, float max_nits)
     // The white point for HDR10 textures is the SDR white level in nits
     if (SDR_white_level > 1.0f) {
         // We'll match the current display SDR white level so we don't get any scaling here
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * 80.0f);
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * SCRGB_NITS);
     } else {
         // ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
         SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, 203.0f);
