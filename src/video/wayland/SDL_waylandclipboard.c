@@ -46,7 +46,7 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         SDL_WaylandDataDevice *data_device = seat->data_device;
 
         if (_this->clipboard_callback && _this->clipboard_mime_types) {
-            SDL_WaylandDataSource *source = Wayland_data_source_create(_this);
+            SDL_WaylandDataSource *source = Wayland_data_source_create(video_data);
             Wayland_data_source_set_callback(source, _this->clipboard_callback, _this->clipboard_userdata, _this->clipboard_sequence);
 
             result = Wayland_data_device_set_selection(data_device, source, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types);
@@ -126,7 +126,7 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;
         if (text[0] != '\0') {
-            SDL_WaylandPrimarySelectionSource *source = Wayland_primary_selection_source_create(_this);
+            SDL_WaylandPrimarySelectionSource *source = Wayland_primary_selection_source_create(video_data);
             Wayland_primary_selection_source_set_callback(source, SDL_ClipboardTextCallback, SDL_strdup(text));
 
             result = Wayland_primary_selection_device_set_selection(primary_selection_device,
