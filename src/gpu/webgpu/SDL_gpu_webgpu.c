@@ -866,16 +866,10 @@ typedef struct WebGPURenderer
     WGPUQueue queue;
     WGPUCommandEncoder commandEncoder;
 
-    struct UniformBufferPool
-    {
-        WebGPUBufferContainer **unused;
-        WebGPUBufferContainer **active;
-
-        uint32_t unusedCapacity;
-        uint32_t activeCapacity;
-        uint32_t unusedCount;
-        uint32_t activeCount;
-    } uniformBufferPool;
+    // 0-3: Vertex
+    // 4-7: Fragment
+    // 8-11: Compute
+    WebGPUBufferContainer *uniformBuffers[12];
 
     BlitPipelineCacheEntry *blitPipelines;
 
@@ -1129,11 +1123,10 @@ typedef struct WebGPUQueuedResourceBindStorageBuffer
 
 typedef struct WebGPUQueuedResourceBindUniformBuffer
 {
-    WGPUShaderStage visibleTo;
-    WebGPUBuffer *uniformBuffer;
-
-    const char *identifier;
-    uint16_t slot;
+    uint32_t length;
+    // Stage-relative
+    // (they're cousins)
+    uint32_t slot;
 } WebGPUQueuedResourceBindUniformBuffer;
 
 typedef struct WebGPUQueuedResourceBindVertexBuffer
@@ -1152,6 +1145,16 @@ typedef struct WebGPUQueuedResourceBindIndexBuffer
     const char *identifier;
     uint32_t offset;
 } WebGPUQueuedResourceBindIndexBuffer;
+
+typedef struct WebGPUQueuedUniformDataUpload
+{
+    void *data;
+
+    uint64_t offset;
+    uint32_t length;
+    // This doesn't care about stage visibility. It's the raw index of the uniform buffer it'll write to.
+    uint32_t slot;
+} WebGPUQueuedUniformDataUpload;
 
 typedef struct WebGPUShaderBindGroupLayouts
 {
@@ -1247,6 +1250,14 @@ typedef struct WebGPUCommandBuffer
     WebGPUGraphicsPipeline *boundGraphicsPipeline;
     WebGPUComputePipeline *boundComputePipeline;
 
+    // These'll run right before the command buffer is submitted.
+    WebGPUQueuedUniformDataUpload *queuedUniformUploads;
+
+    uint32_t numQueuedUniformUploads;
+    uint32_t queuedUniformUploadCapacity;
+
+    size_t totalUniformDataLen;
+
     bool hasBoundGraphicsPipeline;
     bool hasBoundComputePipeline;
     bool hasBoundGraphicsPipelineResources;
@@ -1265,6 +1276,9 @@ typedef struct WebGPUCommandBuffer
 
         WebGPUQueuedResourceBindIndexBuffer indexBuffer;
         WGPUIndexFormat indexFormat;
+
+        uint32_t currentUniformWriteOffsets[4];
+        uint32_t currentUniformReadOffsets[4];
 
         uint16_t samplerArraySize;
         uint16_t storageTextureArraySize;
@@ -1288,6 +1302,9 @@ typedef struct WebGPUCommandBuffer
         WebGPUQueuedResourceBindStorageBuffer *storageBuffers;
         WebGPUQueuedResourceBindUniformBuffer *uniformBuffers;
 
+        uint32_t currentUniformWriteOffsets[4];
+        uint32_t currentUniformReadOffsets[4];
+
         uint16_t samplerArraySize;
         uint16_t storageTextureArraySize;
         uint16_t storageBufferArraySize;
@@ -1307,6 +1324,9 @@ typedef struct WebGPUCommandBuffer
         WebGPUQueuedResourceBindStorageBuffer *readOnlyStorageBuffers;
         WebGPUQueuedResourceBindStorageBuffer *readWriteStorageBuffers;
         WebGPUQueuedResourceBindUniformBuffer *uniformBuffers;
+
+        uint32_t currentUniformWriteOffsets[4];
+        uint32_t currentUniformReadOffsets[4];
 
         uint16_t samplerArraySize;
         uint16_t readOnlyStorageTextureArraySize;
@@ -1882,7 +1902,7 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
                         uniformEntries[numUniformBuffers].buffer = (WGPUBufferBindingLayout){
                             .minBindingSize = 0,
                             .nextInChain = NULL,
-                            .hasDynamicOffset = false,
+                            .hasDynamicOffset = true,
                             .type = WGPUBufferBindingType_Uniform,
                         };
                         numUniformBuffers++;
@@ -2199,7 +2219,7 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
                     uniformEntries[numUniformBuffers].buffer = (WGPUBufferBindingLayout){
                         .minBindingSize = 0,
                         .nextInChain = NULL,
-                        .hasDynamicOffset = false,
+                        .hasDynamicOffset = true,
                         .type = WGPUBufferBindingType_Uniform,
                     };
                     numUniformBuffers++;
@@ -2381,8 +2401,9 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
         return NULL;
     }
 
-    // three for the header, 9 for each resource except for the last one which is only 8 since it doesn't have a dash
-    identifier = SDL_calloc((size_t)3 + numResources * 8 + (numResources - 1), sizeof(char));
+    // HACK: Dear god in heaven above what have I done
+    // I have NO idea how this works, and I'm too scared to touch it.
+    identifier = SDL_calloc((size_t)3 + numResources * 8 + (numResources - 5), sizeof(char));
 
     switch (desiredGroup) {
     case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
@@ -2424,7 +2445,7 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
         uint32_t offset = 3;
 
         for (int i = 0; i < cmdBuf->vertexStageBinds.numUniformBuffers; i++) {
-            SDL_memcpy(identifier + offset, cmdBuf->vertexStageBinds.uniformBuffers[i].identifier, 8);
+            SDL_memcpy(identifier + offset, cmdBuf->renderer->uniformBuffers[cmdBuf->vertexStageBinds.uniformBuffers[i].slot]->activeBuffer->resourceIdentifier, 8);
             identifier[offset + 8] = '-';
             offset += 9;
         }
@@ -2469,7 +2490,7 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
         uint32_t offset = 3;
 
         for (int i = 0; i < cmdBuf->fragmentStageBinds.numUniformBuffers; i++) {
-            SDL_memcpy(identifier + offset, cmdBuf->fragmentStageBinds.uniformBuffers[i].identifier, 8);
+            SDL_memcpy(identifier + offset, cmdBuf->renderer->uniformBuffers[3 + cmdBuf->fragmentStageBinds.uniformBuffers[i].slot]->activeBuffer->resourceIdentifier, 8);
             identifier[offset + 8] = '-';
             offset += 9;
         }
@@ -2534,7 +2555,7 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
         uint32_t offset = 3;
 
         for (int i = 0; i < cmdBuf->computeStageBinds.numUniformBuffers; i++) {
-            SDL_memcpy(identifier + offset, cmdBuf->computeStageBinds.uniformBuffers[i].identifier, 8);
+            SDL_memcpy(identifier + offset, cmdBuf->renderer->uniformBuffers[7 + cmdBuf->computeStageBinds.uniformBuffers[i].slot]->activeBuffer->resourceIdentifier, 8);
             identifier[offset + 8] = '-';
             offset += 9;
         }
@@ -2596,9 +2617,9 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
         entries = SDL_calloc(desc.entryCount, sizeof(*entries));
 
         for (offset = 0; offset < desc.entryCount; offset++) {
-            entries[offset].buffer = cmdBuf->vertexStageBinds.uniformBuffers[offset].uniformBuffer->buffer;
+            entries[offset].buffer = cmdBuf->renderer->uniformBuffers[cmdBuf->vertexStageBinds.uniformBuffers[offset].slot]->activeBuffer->buffer;
             entries[offset].binding = cmdBuf->vertexStageBinds.uniformBuffers[offset].slot;
-            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].size = cmdBuf->vertexStageBinds.uniformBuffers[offset].length;
         }
 
         break;
@@ -2643,9 +2664,9 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
         entries = SDL_calloc(desc.entryCount, sizeof(*entries));
 
         for (offset = 0; offset < desc.entryCount; offset++) {
-            entries[offset].buffer = cmdBuf->fragmentStageBinds.uniformBuffers[offset].uniformBuffer->buffer;
+            entries[offset].buffer = cmdBuf->renderer->uniformBuffers[3 + cmdBuf->fragmentStageBinds.uniformBuffers[offset].slot]->activeBuffer->buffer;
             entries[offset].binding = cmdBuf->fragmentStageBinds.uniformBuffers[offset].slot;
-            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].size = cmdBuf->fragmentStageBinds.uniformBuffers[offset].length;
         }
 
         break;
@@ -2711,9 +2732,9 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
         entries = SDL_calloc(desc.entryCount, sizeof(*entries));
 
         for (offset = 0; offset < desc.entryCount; offset++) {
-            entries[offset].buffer = cmdBuf->computeStageBinds.uniformBuffers[offset].uniformBuffer->buffer;
+            entries[offset].buffer = cmdBuf->renderer->uniformBuffers[7 + cmdBuf->computeStageBinds.uniformBuffers[offset].slot]->activeBuffer->buffer;
             entries[offset].binding = cmdBuf->computeStageBinds.uniformBuffers[offset].slot;
-            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].size = cmdBuf->computeStageBinds.uniformBuffers[offset].length;
         }
         break;
     }
@@ -2851,6 +2872,8 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroup(WebGPUCommandBuffer *cmdBuf
     } else {
         result = WEBGPU_INTERNAL_CreateBindGroup(cmdBuf, type, identifier);
     }
+
+    SDL_free(identifier);
 
     return result;
 }
@@ -3812,44 +3835,6 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
     return bufferContainer;
 }
 
-static WebGPUBufferContainer *WEBGPU_INTERNAL_PopUniformBufferFromPool(WebGPURenderer *renderer)
-{
-    if (renderer->uniformBufferPool.unusedCount < 1) {
-        // no free uniform buffers left, let's create a new one
-
-        WEBGPU_INTERNAL_InsertElementIntoArray(renderer->uniformBufferPool.unused, renderer->uniformBufferPool.unusedCapacity,
-                                               renderer->uniformBufferPool.unusedCount, WebGPUBufferContainer *,
-                                               WEBGPU_INTERNAL_CreateBufferContainer(renderer, 65536, 0, WEBGPU_BUFFER_TYPE_UNIFORM, false, NULL));
-        SDL_Log("Creating new uniform buffer!");
-    }
-
-    // Rename this and I delete all traces of this project from the internet
-    WebGPUBufferContainer *shinjiCrankThatSouljaBoy = renderer->uniformBufferPool.unused[renderer->uniformBufferPool.unusedCount - 1];
-
-    WEBGPU_INTERNAL_InsertElementIntoArray(renderer->uniformBufferPool.active, renderer->uniformBufferPool.activeCapacity,
-                                           renderer->uniformBufferPool.activeCount, WebGPUBufferContainer *, shinjiCrankThatSouljaBoy);
-
-    // We don't technically have to NULL this but we might as well
-    renderer->uniformBufferPool.unused[(renderer->uniformBufferPool.unusedCount--) - 1] = NULL;
-
-    return renderer->uniformBufferPool.active[renderer->uniformBufferPool.activeCount - 1];
-}
-
-static void WEBGPU_INTERNAL_ReturnAllUniformBuffersToPool(WebGPURenderer *renderer)
-{
-    // take him to detroit
-    //
-    // NO NO PLEASE ANYTHING BUT DETROIT
-
-    for (int i = 0; i < renderer->uniformBufferPool.activeCount; i++) {
-        WEBGPU_INTERNAL_InsertElementIntoArray(renderer->uniformBufferPool.unused, renderer->uniformBufferPool.unusedCapacity,
-                                               renderer->uniformBufferPool.unusedCount, WebGPUBufferContainer *, renderer->uniformBufferPool.active[i]);
-        renderer->uniformBufferPool.active[i] = NULL;
-    }
-
-    renderer->uniformBufferPool.activeCount = 0;
-}
-
 static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPURenderer *renderer, WebGPUBuffer *buffer)
 {
     for (int i = 0; i < buffer->numDependants; i++) {
@@ -3874,7 +3859,10 @@ static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTextu
         SDL_free(texture->textureViews[i]);
     }
 
+    wgpuTextureViewRelease(texture->fullTextureView->view);
     wgpuTextureRelease(texture->texture);
+
+    SDL_free(texture->fullTextureView);
     SDL_free(texture->textureViews);
     SDL_free(texture);
 }
@@ -3890,6 +3878,10 @@ static void WEBGPU_INTERNAL_ReleaseTextureContainer(WebGPURenderer *renderer, We
 
 static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPURenderer *renderer, WebGPUBufferContainer *container)
 {
+    if (container == NULL) {
+        return;
+    }
+
     for (int i = 0; i < container->bufferCount; i++) {
         WEBGPU_INTERNAL_ReleaseBuffer(renderer, container->buffers[i]);
     }
@@ -3998,23 +3990,30 @@ static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferCont
     return success;
 }
 
+static void *WEBGPU_INTERNAL_MapBufferRange(WebGPURenderer *renderer, WebGPUBufferContainer *buffer, size_t offset, size_t size)
+{
+    // If "size" is -1, then bind the entire buffer.
+    uint32_t bindSize = (size == -1) ? buffer->activeBuffer->size : size;
+
+    if (!WEBGPU_INTERNAL_MapBuffer(renderer, buffer, false)) {
+        SDL_SetError("Failed to map buffer!");
+        return NULL;
+    }
+
+    if (buffer->activeBuffer->type == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
+        return (void *)wgpuBufferGetConstMappedRange(buffer->activeBuffer->buffer, offset, bindSize);
+    } else {
+        return wgpuBufferGetMappedRange(buffer->activeBuffer->buffer, offset, bindSize);
+    }
+}
+
 static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer, bool cycle)
 {
     if (cycle) {
         // TODO: Buffer cycling!
     }
 
-    if (!WEBGPU_INTERNAL_MapBuffer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer, false)) {
-        SDL_SetError("Failed to map buffer!");
-        return NULL;
-    }
-
-    if (((WebGPUBufferContainer *)transferBuffer)->activeBuffer->type == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
-        // really gross
-        return (void *)wgpuBufferGetConstMappedRange(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer, 0, ((WebGPUBufferContainer *)transferBuffer)->activeBuffer->size);
-    } else {
-        return wgpuBufferGetMappedRange(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer, 0, ((WebGPUBufferContainer *)transferBuffer)->activeBuffer->size);
-    }
+    return WEBGPU_INTERNAL_MapBufferRange((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer, 0, -1);
 }
 
 static void WEBGPU_UnmapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer)
@@ -4218,33 +4217,32 @@ static void WEBGPU_SetViewport(SDL_GPUCommandBuffer *renderPass, const SDL_GPUVi
     wgpuRenderPassEncoderSetViewport(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder, viewport->x, viewport->y, viewport->w, viewport->h, viewport->min_depth, viewport->max_depth);
 }
 
-// FIXME: I'm not entirely sure, but I still think it's reusing buffers that shouldn't be touched.
-static WebGPUQueuedResourceBindUniformBuffer WEBGPU_INTERNAL_PushUniformData(WebGPUCommandBuffer *cmdBuf, uint32_t slotIndex, const void *data, uint32_t length, WGPUShaderStage stage)
-{
-    WebGPUBufferContainer *buf = WEBGPU_INTERNAL_PopUniformBufferFromPool(cmdBuf->renderer);
-
-    if (buf == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not get uniform buffer from pool!");
-    }
-
-    wgpuQueueWriteBuffer(cmdBuf->queue, buf->activeBuffer->buffer, 0, data, length);
-
-    return (WebGPUQueuedResourceBindUniformBuffer){
-        .uniformBuffer = buf->activeBuffer,
-        .identifier = buf->activeBuffer->resourceIdentifier,
-        .slot = slotIndex,
-        .visibleTo = stage,
-    };
-}
-
 static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, uint32_t slotIndex, const void *data, uint32_t length)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.uniformBuffers, cmdBuf->vertexStageBinds.uniformBufferArraySize,
-                                           cmdBuf->vertexStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer,
-                                           WEBGPU_INTERNAL_PushUniformData(cmdBuf, slotIndex, data, length, WGPUShaderStage_Vertex));
+    WebGPUQueuedResourceBindUniformBuffer bind = {
+        .length = (length + 255) & ~255,
+        .slot = slotIndex,
+    };
 
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(((length + 255) & ~255)),
+        .length = (length + 255) & ~255,
+        .offset = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = slotIndex,
+    };
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.uniformBuffers, cmdBuf->vertexStageBinds.uniformBufferArraySize,
+                                           cmdBuf->vertexStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer, bind);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    // jank and gross but it works
+    cmdBuf->vertexStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
     cmdBuf->hasBoundGraphicsPipelineResources = false;
 }
 
@@ -4252,10 +4250,27 @@ static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, 
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->fragmentStageBinds.uniformBuffers, cmdBuf->fragmentStageBinds.uniformBufferArraySize,
-                                           cmdBuf->fragmentStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer,
-                                           WEBGPU_INTERNAL_PushUniformData(cmdBuf, slotIndex, data, length, WGPUShaderStage_Fragment));
+    WebGPUQueuedResourceBindUniformBuffer bind = {
+        .length = (length + 255) & ~255,
+        .slot = slotIndex,
+    };
 
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(((length + 255) & ~255)),
+        .length = (length + 255) & ~255,
+        .offset = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = 3 + slotIndex,
+    };
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->fragmentStageBinds.uniformBuffers, cmdBuf->fragmentStageBinds.uniformBufferArraySize,
+                                           cmdBuf->fragmentStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer, bind);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    cmdBuf->fragmentStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
     cmdBuf->hasBoundGraphicsPipelineResources = false;
 }
 
@@ -4263,10 +4278,27 @@ static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, u
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->computeStageBinds.uniformBuffers, cmdBuf->computeStageBinds.uniformBufferArraySize,
-                                           cmdBuf->computeStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer,
-                                           WEBGPU_INTERNAL_PushUniformData(cmdBuf, slotIndex, data, length, WGPUShaderStage_Compute));
+    WebGPUQueuedResourceBindUniformBuffer bind = {
+        .length = (length + 255) & ~255,
+        .slot = slotIndex,
+    };
 
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(((length + 255) & ~255)),
+        .length = (length + 255) & ~255,
+        .offset = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = 7 + slotIndex,
+    };
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->computeStageBinds.uniformBuffers, cmdBuf->computeStageBinds.uniformBufferArraySize,
+                                           cmdBuf->computeStageBinds.numUniformBuffers, WebGPUQueuedResourceBindUniformBuffer, bind);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    cmdBuf->computeStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
     cmdBuf->hasBoundComputePipelineResources = false;
 }
 
@@ -4545,7 +4577,17 @@ static void WEBGPU_INTERNAL_BindQueuedGraphicsResources(WebGPUCommandBuffer *cmd
 
     for (int i = 0; i < 4; i++) {
         if (bindGroups[i] != NULL) {
-            wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i]->bindGroup, 0, NULL);
+            if (i == 1) {
+                // vert uniform
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i]->bindGroup,
+                                                  cmdBuf->vertexStageBinds.numUniformBuffers, cmdBuf->vertexStageBinds.currentUniformReadOffsets);
+            } else if (i == 3) {
+                // frag uniform
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i]->bindGroup,
+                                                  cmdBuf->fragmentStageBinds.numUniformBuffers, cmdBuf->fragmentStageBinds.currentUniformReadOffsets);
+            } else {
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i]->bindGroup, 0, NULL);
+            }
             bindGroups[i]->lastUsedAtSubmission = cmdBuf->renderer->numSubmissions + 1;
         }
     }
@@ -4589,7 +4631,12 @@ static void WEBGPU_INTERNAL_BindQueuedComputeResources(WebGPUCommandBuffer *cmdB
 
     for (int i = 0; i < 3; i++) {
         if (bindGroups[i] != NULL) {
-            wgpuComputePassEncoderSetBindGroup(cmdBuf->computePassEncoder, i, bindGroups[i]->bindGroup, 0, NULL);
+            if (i == 2) {
+                wgpuComputePassEncoderSetBindGroup(cmdBuf->computePassEncoder, i, bindGroups[i]->bindGroup,
+                                                   cmdBuf->computeStageBinds.numUniformBuffers, cmdBuf->computeStageBinds.currentUniformReadOffsets);
+            } else {
+                wgpuComputePassEncoderSetBindGroup(cmdBuf->computePassEncoder, i, bindGroups[i]->bindGroup, 0, NULL);
+            }
             bindGroups[i]->lastUsedAtSubmission = cmdBuf->renderer->numSubmissions + 1;
         }
     }
@@ -4897,14 +4944,25 @@ static void WEBGPU_DispatchComputeIndirect(SDL_GPUCommandBuffer *commandBuffer, 
     wgpuComputePassEncoderDispatchWorkgroupsIndirect(cmdBuf->computePassEncoder, ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer, offset);
 }
 
+static void WEBGPU_INTERNAL_UploadQueuedUniformData(WebGPUCommandBuffer *cmdBuf)
+{
+    for (int i = 0; i < cmdBuf->numQueuedUniformUploads; i++) {
+        WebGPUQueuedUniformDataUpload upload = cmdBuf->queuedUniformUploads[i];
+
+        wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->renderer->uniformBuffers[upload.slot]->activeBuffer->buffer, upload.offset, upload.data, upload.length);
+    }
+}
+
 static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 {
+    WebGPUCommandBuffer *wrapper = (WebGPUCommandBuffer *)commandBuffer;
+    WEBGPU_INTERNAL_UploadQueuedUniformData(wrapper);
+
 #ifdef _MSC_VER
     WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &(WGPUCommandBufferDescriptor)WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
 #else
     WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
 #endif
-    WebGPUCommandBuffer *wrapper = (WebGPUCommandBuffer *)commandBuffer;
     if (!cmdBuf) {
         SDL_free(commandBuffer);
         return false;
@@ -4928,15 +4986,9 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
         WebGPUTextureContainer *container = wrapper->acquiredSwapchainTextures[i];
 
         for (int j = 0; j < container->textureCount; j++) {
-            wgpuTextureRelease(container->textures[j]->texture);
-            // wgpuTextureViewRelease(container->activeTexture->fullTextureView);
-            //
-            // for (int k = 0; k < container->textures[j]->textureViewCount; k++) {
-            //     wgpuTextureViewRelease(container->textures[j]->textureViews[k]);
-            // }
-
-            SDL_free(container->textures[j]);
+            WEBGPU_INTERNAL_ReleaseTexture(wrapper->renderer, container->textures[j]);
         }
+
         SDL_free(container->textures);
         SDL_free(container);
     }
@@ -4946,7 +4998,6 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
     wrapper->renderer->numSubmissions++;
 
-    WEBGPU_INTERNAL_ReturnAllUniformBuffersToPool(wrapper->renderer);
     // We'll be freeing the "command buffer", so any usage of it will be undefined behaviour.
     // Don't. The docs tell you not to.
 
@@ -4965,17 +5016,9 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
 {
     WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
 
-    // TODO: Free all uniform buffers
-    for (int i = 0; i < renderer->uniformBufferPool.unusedCount; i++) {
-        WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, renderer->uniformBufferPool.unused[i]);
+    for (int i = 0; i < 12; i++) {
+        WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, renderer->uniformBuffers[i]);
     }
-
-    for (int i = 0; i < renderer->uniformBufferPool.activeCount; i++) {
-        WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, renderer->uniformBufferPool.active[i]);
-    }
-
-    SDL_free(renderer->uniformBufferPool.unused);
-    SDL_free(renderer->uniformBufferPool.active);
 
     SDL_DestroyProperties(renderer->props);
     SDL_free(renderer);
@@ -5384,6 +5427,11 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 #else
     renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
 #endif
+
+    for (int i = 0; i < 12; i++) {
+        // 1048576 == 1MiB == 2²⁰
+        renderer->uniformBuffers[i] = WEBGPU_INTERNAL_CreateBufferContainer(renderer, 1048576, 0, WEBGPU_BUFFER_TYPE_UNIFORM, false, NULL);
+    }
 
     WebGPU_INTERNAL_InitBlitResources(renderer);
 
