@@ -85,6 +85,12 @@ static void UpdateHDRState(void)
         }
         SDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, 1.0f);
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
+		if (((SDR_white_level * 80.0f) * HDR_headroom) == 10000.0f) {
+			// The system is advertising the PQ luminance range (10000 nits)
+			// and tone mapping into the actual display capabilities.
+			// Let's use a more reasonable range for the gradient test.
+			HDR_headroom = 5.0f;
+		}
     } else {
         SDR_white_level = 1.0f;
         HDR_headroom = 1.0f;
