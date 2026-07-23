@@ -227,6 +227,10 @@ typedef enum SDL_EventType
     SDL_EVENT_PINCH_UPDATE,                 /**< Pinch gesture updated */
     SDL_EVENT_PINCH_END,                    /**< Pinch gesture ended */
 
+    /* Hold events */
+    SDL_EVENT_HOLD_BEGIN       = 0x720,     /**< Hold gesture started */
+    SDL_EVENT_HOLD_END,                     /**< Hold gestured ended */
+
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
@@ -500,6 +504,10 @@ typedef struct SDL_MouseButtonEvent
 /**
  * Mouse wheel event structure (event.wheel.*)
  *
+ * An SDL_EVENT_MOUSE_WHEEL event with a source value of SDL_MOUSEWHEEL_SOURCE_FINGER and
+ * 0.0 for the x and y values indicates that the scroll ended due to the finger being lifted
+ * from the device.
+ *
  * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_MouseWheelEvent
@@ -516,6 +524,7 @@ typedef struct SDL_MouseWheelEvent
     float mouse_y;      /**< Y coordinate, relative to window */
     Sint32 integer_x;   /**< The amount scrolled horizontally, accumulated to whole scroll "ticks" (added in 3.2.12) */
     Sint32 integer_y;   /**< The amount scrolled vertically, accumulated to whole scroll "ticks" (added in 3.2.12) */
+    SDL_MouseWheelSource source; /**< Set to one of the SDL_MOUSEWHEEL_SOURCE_* defines (added in 3.6.0) */
 } SDL_MouseWheelEvent;
 
 /**
@@ -861,6 +870,23 @@ typedef struct SDL_PinchFingerEvent
 } SDL_PinchFingerEvent;
 
 /**
+ * Hold event structure (event.hold.*)
+ *
+ * Indicates fingers being held motionless on a device, such as a trackpad.
+ * In particular, this gesture is used to cancel kinetic scrolling.
+ *
+ * \since 3.6.0
+ */
+typedef struct SDL_HoldFingerEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_HOLD_BEGIN or ::SDL_EVENT_HOLD_END */
+    Uint32 reserved;
+    Uint64 timestamp;      /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The window underneath the finger, if any */
+    Uint32 fingers;        /**< For the BEGIN event, the number of fingers held on the device */
+} SDL_HoldFingerEvent;
+
+/**
  * Pressure-sensitive pen proximity event structure (event.pproximity.*)
  *
  * When a pen becomes visible to the system (it is close enough to a tablet,
@@ -1102,6 +1128,7 @@ typedef union SDL_Event
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
     SDL_PinchFingerEvent pinch;             /**< Pinch event data */
+    SDL_HoldFingerEvent hold;               /**< Hold event data */
     SDL_PenProximityEvent pproximity;       /**< Pen proximity event data */
     SDL_PenTouchEvent ptouch;               /**< Pen tip touching event data */
     SDL_PenMotionEvent pmotion;             /**< Pen motion event data */

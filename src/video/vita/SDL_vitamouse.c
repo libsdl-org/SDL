@@ -95,7 +95,7 @@ void VITA_PollMouse(void)
                 }
 
                 if (m_reports[i].tilt != 0 || m_reports[i].wheel != 0) {
-                    SDL_SendMouseWheel(0, Vita_Window, mouseID, m_reports[i].tilt, m_reports[i].wheel, SDL_MOUSEWHEEL_NORMAL);
+                    SDL_SendMouseWheel(0, Vita_Window, mouseID, m_reports[i].tilt, m_reports[i].wheel, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
                 }
             }
         }

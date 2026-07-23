@@ -1797,8 +1797,8 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->button.windowID);
         break;
     case SDL_EVENT_MOUSE_WHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %d) in window %" SDL_PRIu32,
-                event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %g in x and %g in y (reversed: %d, source: %d) in window %" SDL_PRIu32,
+                event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.source, event->wheel.windowID);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " (%s) attached",
@@ -1936,6 +1936,13 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         break;
     case SDL_EVENT_PINCH_END:
         SDL_Log("SDL EVENT: Pinch End");
+        break;
+
+    case SDL_EVENT_HOLD_BEGIN:
+        SDL_Log("SDL EVENT: Hold Begin (fingers=%" SDL_PRIu32 ")", event->hold.fingers);
+        break;
+    case SDL_EVENT_HOLD_END:
+        SDL_Log("SDL EVENT: Hold End");
         break;
 
     case SDL_EVENT_RENDER_TARGETS_RESET:

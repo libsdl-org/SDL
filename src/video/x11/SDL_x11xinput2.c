@@ -66,6 +66,7 @@ typedef struct
     int scroll_type;
     double prev_value;
     double increment;
+    SDL_MouseWheelSource source;
     bool prev_value_valid;
 } SDL_XInput2ScrollInfo;
 
@@ -179,8 +180,17 @@ static void xinput2_parse_scrollable_valuators(const XIDeviceEvent *xev)
                             const double x = info->scroll_type == XIScrollTypeHorizontal ? delta : 0;
                             const double y = info->scroll_type == XIScrollTypeVertical ? delta : 0;
 
+                            /* A terminating 0,0 event is sent when a scroll event with a finger source ends, so we know
+                             * that this is a finger scroll and can be used for kinetic scrolling once the event arrives.
+                             *
+                             * https://who-t.blogspot.com/2015/03/libinput-scroll-sources.html
+                             */
+                            if (x == 0 && y == 0) {
+                                sd->scroll_info[k].source = SDL_MOUSEWHEEL_SOURCE_FINGER;
+                            }
+
                             SDL_Mouse *mouse = SDL_GetMouse();
-                            SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL);
+                            SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL, sd->scroll_info[k].source);
                         }
                         info->prev_value = current_val;
                         info->prev_value_valid = true;

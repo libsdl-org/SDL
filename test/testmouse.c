@@ -55,6 +55,8 @@ static bool wheel_x_active = false;
 static bool wheel_y_active = false;
 static float wheel_x = SCREEN_WIDTH * 0.5f;
 static float wheel_y = SCREEN_HEIGHT * 0.5f;
+static float vx, vy;
+static Uint64 kinetic_deceleration_deadline;
 
 struct mouse_loop_data {
     bool done;
@@ -131,13 +133,29 @@ static void loop(void *arg)
             if (event.wheel.x != 0.0f) {
                 wheel_x_active = true;
                 /* "positive to the right and negative to the left"  */
-                wheel_x += event.wheel.x * 10.0f;
+                vx = event.wheel.x * 10.0f;
+                wheel_x += vx;
             }
             if (event.wheel.y != 0.0f) {
                 wheel_y_active = true;
                 /* "positive away from the user and negative towards the user" */
-                wheel_y -= event.wheel.y * 10.0f;
+                vy = event.wheel.y * 10.0f;
+                wheel_y -= vy;
             }
+
+            /* Start a kinetic scroll if a finger was lifted while an axis has a velocity > 2.0. */
+            if (event.wheel.source == SDL_MOUSEWHEEL_SOURCE_FINGER &&
+                event.wheel.x == 0.0f && event.wheel.y == 0.0f &&
+                (SDL_fabsf(vx) > 2.0f || SDL_fabsf(vy) > 2.0f)) {
+                kinetic_deceleration_deadline = SDL_GetTicks() + 16;
+            } else {
+                kinetic_deceleration_deadline = 0;
+            }
+            break;
+
+        case SDL_EVENT_HOLD_BEGIN:
+            /* Halt kinetic scrolling on a hold event */
+            kinetic_deceleration_deadline = 0;
             break;
 
         case SDL_EVENT_MOUSE_MOTION:
@@ -250,6 +268,25 @@ static void loop(void *arg)
 
         default:
             break;
+        }
+    }
+
+    /* Continue scrolling if a kinetic scroll is active. */
+    if (kinetic_deceleration_deadline) {
+        const Uint64 now = SDL_GetTicks();
+        while (now >= kinetic_deceleration_deadline) {
+            /* Decelerate the scroll over time. */
+            vx *= .95f;
+            vy *= .95f;
+            wheel_x += vx;
+            wheel_y -= vy;
+
+            kinetic_deceleration_deadline += 16;
+        }
+
+        /* Stop the scroll below a certain threshold. */
+        if (SDL_fabsf(vx) < 0.05f && SDL_fabsf(vy) < 0.05f) {
+            kinetic_deceleration_deadline = 0;
         }
     }
 

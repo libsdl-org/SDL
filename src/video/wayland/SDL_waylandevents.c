@@ -319,6 +319,7 @@ static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *
     SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
     if (wind) {
         SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_PINCH;
         seat->pointer.gesture_focus = wind;
 
         const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
@@ -356,13 +357,52 @@ static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener
     handle_pinch_end
 };
 
+static void handle_hold_begin(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers)
+{
+    if (!surface) {
+        return;
+    }
+
+    SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
+    if (wind) {
+        SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_HOLD;
+        seat->pointer.gesture_focus = wind;
+
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_BEGIN, timestamp, wind->sdlwindow, fingers);
+    }
+}
+
+static void handle_hold_end(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, int32_t cancelled)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0);
+
+        seat->pointer.gesture_focus = NULL;
+    }
+}
+
+static const struct zwp_pointer_gesture_hold_v1_listener gesture_hold_listener = {
+    handle_hold_begin,
+    handle_hold_end
+};
+
 static void Wayland_SeatCreatePointerGestures(SDL_WaylandSeat *seat)
 {
-    if (seat->display->zwp_pointer_gestures) {
-        if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
+    if (seat->display->zwp_pointer_gestures && seat->pointer.wl_pointer) {
+        if (!seat->pointer.gesture_pinch) {
             seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
             zwp_pointer_gesture_pinch_v1_set_user_data(seat->pointer.gesture_pinch, seat);
             zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
+        }
+        if (!seat->pointer.gesture_hold) {
+            seat->pointer.gesture_hold = zwp_pointer_gestures_v1_get_hold_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
+            zwp_pointer_gesture_hold_v1_set_user_data(seat->pointer.gesture_hold, seat);
+            zwp_pointer_gesture_hold_v1_add_listener(seat->pointer.gesture_hold, &gesture_hold_listener, seat);
         }
     }
 }
@@ -1090,7 +1130,7 @@ static void pointer_handle_axis_common_v1(SDL_WaylandSeat *seat,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
     }
 }
 
@@ -1253,8 +1293,19 @@ static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
         break;
     }
 
+    // Treat continuous sources as a finger if an axis stop event was received at any point.
+    if (seat->pointer.pending_frame.have_stop && seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_CONTINUOUS) {
+        seat->pointer.continuous_axis_stop_received = true;
+    }
+
+    SDL_MouseWheelSource source = SDL_MOUSEWHEEL_SOURCE_WHEEL;
+    if (seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_FINGER ||
+        (seat->pointer.pending_frame.axis.source == WL_POINTER_AXIS_SOURCE_CONTINUOUS && seat->pointer.continuous_axis_stop_received)) {
+        source = SDL_MOUSEWHEEL_SOURCE_FINGER;
+    }
+
     SDL_SendMouseWheel(seat->pointer.pending_frame.timestamp_ns,
-                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction, source);
 }
 
 static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
@@ -1314,16 +1365,27 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_zero(seat->pointer.pending_frame);
 }
 
-static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
-                                       uint32_t axis_source)
+static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer, uint32_t axis_source)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.axis.source = axis_source;
 }
 
-static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
-                                     uint32_t time, uint32_t axis)
+static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis)
 {
-    // unimplemented
+    SDL_WaylandSeat *seat = data;
+    seat->pointer.pending_frame.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);
+    seat->pointer.pending_frame.have_axis = true;
+    seat->pointer.pending_frame.have_stop = true;
+
+    switch (axis) {
+    case WL_POINTER_AXIS_VERTICAL_SCROLL:
+        seat->pointer.pending_frame.axis.y = 0.0f;
+        break;
+    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+        seat->pointer.pending_frame.axis.x = 0.0f;
+        break;
+    }
 }
 
 static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
@@ -2429,6 +2491,10 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat)
 
     if (seat->pointer.gesture_pinch) {
         zwp_pointer_gesture_pinch_v1_destroy(seat->pointer.gesture_pinch);
+    }
+
+    if (seat->pointer.gesture_hold) {
+        zwp_pointer_gesture_hold_v1_destroy(seat->pointer.gesture_hold);
     }
 
     if (seat->pointer.wl_pointer) {
