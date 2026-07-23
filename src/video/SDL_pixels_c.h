@@ -27,6 +27,8 @@
 
 #include "SDL_blit.h"
 
+// The value, in nits, of scRGB 1.0
+#define SCRGB_NITS  80.0f
 
 // Pixel format functions
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);

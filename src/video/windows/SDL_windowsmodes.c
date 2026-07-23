@@ -24,6 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "../../events/SDL_displayevents_c.h"
+#include "../SDL_pixels_c.h"
 
 #ifdef HAVE_DXGI1_6_H
 #define COBJMACROS
@@ -546,7 +547,7 @@ static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_
     if (WIN_GetMonitorDESC1(hMonitor, &desc)) {
         if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
             HDR->SDR_white_level = WIN_GetSDRWhitePoint(_this, hMonitor);
-            HDR->HDR_headroom = (desc.MaxLuminance / 80.0f) / HDR->SDR_white_level;
+            HDR->HDR_headroom = (desc.MaxLuminance / SCRGB_NITS) / HDR->SDR_white_level;
         }
     }
 }

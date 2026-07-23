@@ -2681,9 +2681,9 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             color.b *= cmd->data.color.color_scale;
 
             if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-                color.r = SDL_PQfromNits(color.r * 80.0f);
-                color.g = SDL_PQfromNits(color.g * 80.0f);
-                color.b = SDL_PQfromNits(color.b * 80.0f);
+                color.r = SDL_PQfromNits(color.r * SCRGB_NITS);
+                color.g = SDL_PQfromNits(color.g * SCRGB_NITS);
+                color.b = SDL_PQfromNits(color.b * SCRGB_NITS);
             }
 
             ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), &color.r);
