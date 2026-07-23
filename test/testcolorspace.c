@@ -454,10 +454,11 @@ static void RenderBlendDrawing(void)
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 }
@@ -516,10 +517,11 @@ static void RenderBlendTexture(void)
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
     } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113)) {
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 
