@@ -2093,7 +2093,11 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
         if (display) {
             display->fullscreen_active = false;
 
+            // On DOS, desktop mode restoration is unnecessary
+            // VideoQuit will finally switch to text mode
+#if !defined(SDL_PLATFORM_DOS)
             SDL_SetDisplayModeForDisplay(display, NULL);
+#endif
         }
         if (commit) {
             SDL_FullscreenResult ret = SDL_FULLSCREEN_SUCCEEDED;
