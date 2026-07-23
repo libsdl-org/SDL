@@ -1,11 +1,5 @@
 ### Incompatibilities:
 ###### Note that this is not an exhaustive list. There are certainly things I've forgotten (or, more likely, things my brain has repressed to keep me sane)
-- A buffer -> buffer copy cannot be scheduled while a pass is actively being encoded.
-    - This results in uniform buffers being immutable during a pass. 
-      Currently, this is worked around by having a PushGPUUniformData call *instantly* upload the data, before the command buffer is even submitted.
-      This makes it *look* like it's changing during the pass, however this instantly breaks if you push data multiple times in one pass.
-      I've considered making it so that SDLGPU asserts if you call PushGPUUniformData during a pass, however; I found that resulted in breaking a *gigantic* portion of SDLGPU code.
-      (Maybe we should log a warning the first time the user attempts to push GPU uniform data during a pass?)
 - Read/Write textures are a joke. WebGPU only supports single channel R32Uint/Sint/Float textures for read/write.
     - I'm honestly considering just complaining to the WebGPU designers in hopes they'll fix this.
 - Bindings in WebGPU were designed by the devil.
