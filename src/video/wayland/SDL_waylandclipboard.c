@@ -28,7 +28,6 @@
 #include "../SDL_clipboard_c.h"
 #include "../../events/SDL_events_c.h"
 
-
 bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
@@ -46,15 +45,15 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         SDL_WaylandDataDevice *data_device = seat->data_device;
 
         if (_this->clipboard_callback && _this->clipboard_mime_types) {
-            SDL_WaylandDataSource *source = Wayland_data_source_create(video_data);
-            Wayland_data_source_set_callback(source, _this->clipboard_callback, _this->clipboard_userdata, _this->clipboard_sequence);
+            SDL_WaylandDataSource *source = Wayland_DataSourceCreate(video_data);
+            Wayland_DataSourceSetCallback(source, _this->clipboard_callback, _this->clipboard_userdata, _this->clipboard_sequence);
 
-            result = Wayland_data_device_set_selection(data_device, source, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types);
+            result = Wayland_DataDeviceSetSelection(data_device, source, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types);
             if (!result) {
-                Wayland_data_source_destroy(source);
+                Wayland_DataSourceDestroy(source);
             }
         } else {
-            result = Wayland_data_device_clear_selection(data_device);
+            result = Wayland_DataDeviceClearSelection(data_device);
         }
     }
 
@@ -71,8 +70,8 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
         SDL_WaylandDataDevice *data_device = seat->data_device;
         if (data_device->selection_source) {
             buffer = SDL_GetInternalClipboardData(_this, mime_type, length);
-        } else if (Wayland_data_offer_has_mime(data_device->selection_offer, mime_type)) {
-            buffer = Wayland_data_offer_receive(data_device->selection_offer, mime_type, length, true);
+        } else if (Wayland_DataOfferHasMIME(data_device->selection_offer, mime_type)) {
+            buffer = Wayland_DataOfferReceive(data_device->selection_offer, mime_type, length, true);
         }
     }
 
@@ -90,7 +89,7 @@ bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
         if (data_device->selection_source) {
             result = SDL_HasInternalClipboardData(_this, mime_type);
         } else {
-            result = Wayland_data_offer_has_mime(data_device->selection_offer, mime_type);
+            result = Wayland_DataOfferHasMIME(data_device->selection_offer, mime_type);
         }
     }
     return result;
@@ -126,18 +125,15 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;
         if (text[0] != '\0') {
-            SDL_WaylandPrimarySelectionSource *source = Wayland_primary_selection_source_create(video_data);
-            Wayland_primary_selection_source_set_callback(source, SDL_ClipboardTextCallback, SDL_strdup(text));
+            SDL_WaylandPrimarySelectionSource *source = Wayland_PrimarySelectionSourceCreate(video_data);
+            Wayland_PrimarySelectionSourceSetCallback(source, SDL_ClipboardTextCallback, SDL_strdup(text));
 
-            result = Wayland_primary_selection_device_set_selection(primary_selection_device,
-                                                                    source,
-                                                                    text_mime_types,
-                                                                    SDL_arraysize(text_mime_types));
+            result = Wayland_PrimarySelectionDeviceSetSelection(primary_selection_device, source, text_mime_types, SDL_arraysize(text_mime_types));
             if (!result) {
-                Wayland_primary_selection_source_destroy(source);
+                Wayland_PrimarySelectionSourceDestroy(source);
             }
         } else {
-            result = Wayland_primary_selection_device_clear_selection(primary_selection_device);
+            result = Wayland_PrimarySelectionDeviceClearSelection(primary_selection_device);
         }
     } else {
         result = SDL_SetError("Primary selection not supported");
@@ -155,11 +151,11 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;
         if (primary_selection_device->selection_source) {
-            text = Wayland_primary_selection_source_get_data(primary_selection_device->selection_source, TEXT_MIME, &length);
+            text = Wayland_PrimarySelectionSourceGetData(primary_selection_device->selection_source, TEXT_MIME, &length);
         } else {
             for (size_t i = 0; i < SDL_arraysize(text_mime_types); i++) {
-                if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, text_mime_types[i])) {
-                    text = Wayland_primary_selection_offer_receive(primary_selection_device->selection_offer, text_mime_types[i], &length);
+                if (Wayland_PrimarySelectionOfferHasMIME(primary_selection_device->selection_offer, text_mime_types[i])) {
+                    text = Wayland_PrimarySelectionOfferReceive(primary_selection_device->selection_offer, text_mime_types[i], &length);
                     break;
                 }
             }
@@ -187,7 +183,7 @@ bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
             size_t mime_count = 0;
             const char *const *mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
             for (size_t i = 0; i < mime_count; i++) {
-                if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, mime_types[i])) {
+                if (Wayland_PrimarySelectionOfferHasMIME(primary_selection_device->selection_offer, mime_types[i])) {
                     result = true;
                     break;
                 }
