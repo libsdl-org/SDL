@@ -813,10 +813,10 @@ const char *SDL_GetPlatform(void)
     return "RISC OS";
 #elif defined(SDL_PLATFORM_SOLARIS)
     return "Solaris";
-#elif defined(SDL_PLATFORM_WIN32)
-    return "Windows";
 #elif defined(SDL_PLATFORM_CYGWIN)
     return "Cygwin";
+#elif defined(SDL_PLATFORM_WIN32)
+    return "Windows";
 #elif defined(SDL_PLATFORM_WINGDK)
     return "WinGDK";
 #elif defined(SDL_PLATFORM_XBOXONE)
