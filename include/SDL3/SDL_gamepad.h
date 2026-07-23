@@ -103,26 +103,39 @@ typedef struct SDL_Gamepad SDL_Gamepad;
  * Standard gamepad types.
  *
  * This type does not necessarily map to first-party controllers from
- * Microsoft/Sony/Nintendo; in many cases, third-party controllers can report
+ * Microsoft/Sony/Nintendo/etc.; in many cases, third-party controllers can report
  * as these, either because they were designed for a specific console, or they
  * simply most closely match that console's controllers (does it have A/B/X/Y
  * buttons or X/O/Square/Triangle? Does it have a touchpad? etc).
+ *
+ * Each gamepad type has a minimum set of features that they're supposed to offer, but
+ * application developers should note that the gamepad type could be misreported; SDL
+ * relies on various heuristics for gamepad type detection when it's not specified, and
+ * not all physical gamepads can be reliably distinguished.
  */
 typedef enum SDL_GamepadType
 {
-    SDL_GAMEPAD_TYPE_UNKNOWN = 0,
-    SDL_GAMEPAD_TYPE_STANDARD,
-    SDL_GAMEPAD_TYPE_XBOX360,
-    SDL_GAMEPAD_TYPE_XBOXONE,
-    SDL_GAMEPAD_TYPE_PS3,
-    SDL_GAMEPAD_TYPE_PS4,
-    SDL_GAMEPAD_TYPE_PS5,
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO,
+    SDL_GAMEPAD_TYPE_UNKNOWN = 0, /**< Not a gamepad / error / etc. */
+    SDL_GAMEPAD_TYPE_STANDARD, /**< A non-specific gamepad with no particular guarantees */
+    SDL_GAMEPAD_TYPE_XBOX360, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
+    SDL_GAMEPAD_TYPE_XBOXONE, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
+    SDL_GAMEPAD_TYPE_PS3, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
+    SDL_GAMEPAD_TYPE_PS4, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
+    SDL_GAMEPAD_TYPE_PS5, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< At least B/A/Y/X, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
-    SDL_GAMEPAD_TYPE_GAMECUBE,
+    SDL_GAMEPAD_TYPE_GAMECUBE, /**< A Nintendo GameCube or compatible third party controller. This has at least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, and start button, but may have more controls mapped. */
     SDL_GAMEPAD_TYPE_STEAM,
+    SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with B/A/Y/X face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with Nintendo GameCube style (A/X/B/Y) face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Cross/Circle/Square/Triangle face button layout */
+    SDL_GAMEPAD_TYPE_NES, /**< At least B/A, d-pad, select, start */
+    SDL_GAMEPAD_TYPE_SNES, /**< At least B/A/Y/X, two bumpers, d-pad, select, start */
+    SDL_GAMEPAD_TYPE_N64,
+    SDL_GAMEPAD_TYPE_WII,
+    SDL_GAMEPAD_TYPE_SEGA_GENESIS,
     SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 
@@ -136,14 +149,24 @@ typedef enum SDL_GamepadType
  * would be A/X/B/Y, for PlayStation controllers this would be
  * Cross/Circle/Square/Triangle.
  *
+ * Gamepads which use a Sega Genesis-style layout (3 button or 6-button both)
+ * should map the bottom (or only) row to South, East, and Right Trigger, and
+ * the top row to West, North, and Right Button. L and R, if present, should
+ * be mapped to Left Button and Left Trigger respectively.
+ *
  * For controllers that don't use a diamond pattern for the face buttons, the
  * south/east/west/north buttons indicate the buttons labeled A, B, C, D, or
  * 1, 2, 3, 4, or for controllers that aren't labeled, they are the primary,
  * secondary, etc. buttons.
  *
  * The activate action is often the south button and the cancel action is
- * often the east button, but in some regions this is reversed, so your game
- * should allow remapping actions based on user preferences.
+ * often the east button, but in some regions and on some gamepads this is reversed,
+ * so your game should allow remapping actions based on user preferences, and you should
+ * check the gamepad type and region for the default mapping.
+ *
+ * On some controllers, what would conventionally be considered buttons are instead
+ * considered axes by SDL, such as the R and C buttons on the genesis controller,
+ * or the ZL and ZR buttons on the Switch Pro controller.
  *
  * You can query the labels for the face buttons using
  * SDL_GetGamepadButtonLabel()
@@ -732,6 +755,7 @@ extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadTypeForID(SDL_Joystick
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGamepadTypeForID
+ * \sa SDL_GetGamepadStringForType
  * \sa SDL_GetGamepads
  * \sa SDL_GetRealGamepadType
  */
@@ -893,6 +917,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadPath(SDL_Gamepad *gamepad
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGamepadTypeForID
+ * \sa SDL_GetGamepadStringForType
  */
 extern SDL_DECLSPEC SDL_GamepadType SDLCALL SDL_GetGamepadType(SDL_Gamepad *gamepad);
 
@@ -1367,7 +1392,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_
  *
  * \param type the type of gamepad to check.
  * \param button a button index (one of the SDL_GamepadButton values).
- * \returns the SDL_GamepadButtonLabel enum corresponding to the button label.
+ * \returns the SDL_GamepadButtonLabel enum corresponding to the button label, or SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1380,9 +1405,10 @@ extern SDL_DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabelForT
 /**
  * Get the label of a button on a gamepad.
  *
+ *
  * \param gamepad a gamepad.
  * \param button a button index (one of the SDL_GamepadButton values).
- * \returns the SDL_GamepadButtonLabel enum corresponding to the button label.
+ * \returns the SDL_GamepadButtonLabel enum corresponding to the button label, or SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

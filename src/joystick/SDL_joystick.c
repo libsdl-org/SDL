@@ -3079,12 +3079,10 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT)) {
         if (name && SDL_strstr(name, "NES Controller") != NULL) {
-            // We don't have a type for the Nintendo Online NES Controller
-            type = SDL_GAMEPAD_TYPE_STANDARD;
+            type = SDL_GAMEPAD_TYPE_NES;
         } else {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         }
-
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_GRIP) {
         if (name && SDL_strstr(name, "(L)") != NULL) {
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
@@ -3098,10 +3096,18 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
                (product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR ||
                 product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR)) {
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
-
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_N64_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_N64;
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SNES_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_SNES;
+    } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER) {
+        type = SDL_GAMEPAD_TYPE_SEGA_GENESIS;
+    } else if (vendor == USB_VENDOR_NINTENDO &&
+               (product == USB_PRODUCT_NINTENDO_WII_REMOTE ||
+                product == USB_PRODUCT_NINTENDO_WII_REMOTE2)) {
+        type = SDL_GAMEPAD_TYPE_WII;
     } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
         type = SDL_GAMEPAD_TYPE_GAMECUBE;
-
     } else {
         switch (GuessControllerType(vendor, product)) {
         case k_eControllerType_XBox360Controller:
