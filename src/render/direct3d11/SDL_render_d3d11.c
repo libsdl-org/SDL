@@ -2286,14 +2286,9 @@ static D3D11_Shader SelectShader(SDL_Renderer *renderer, const D3D11_PixelShader
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-            float SDR_white_point;
-            if (renderer->target) {
-                SDR_white_point = renderer->target->SDR_white_point;
-            } else {
-                SDR_white_point = renderer->SDR_white_point;
-            }
             if (shader_constants->input_type == INPUTTYPE_HDR10 &&
-                shader_constants->color_scale == SDR_white_point) {
+                shader_constants->tonemap_method == 0.0f &&
+                (shader_constants->sdr_white_point / SCRGB_NITS) == shader_constants->color_scale) {
                 // Do a simple 1-1 copy
                 return SHADER_RGB_SIMPLE;
             } else {
