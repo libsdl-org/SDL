@@ -116,8 +116,8 @@ struct SDL_WaylandPrimarySelectionDevice
 };
 
 // Wayland Data Source / Primary Selection Source - (Sending)
-extern SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this);
-extern SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoDevice *_this);
+extern SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoData *video_data);
+extern SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoData *video_data);
 extern ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source,
                                         const char *mime_type, int fd);
 extern ssize_t Wayland_primary_selection_source_send(SDL_WaylandPrimarySelectionSource *source,

@@ -2664,68 +2664,32 @@ static const struct zwp_primary_selection_source_v1_listener primary_selection_s
     primary_selection_source_cancelled,
 };
 
-SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this)
+SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoData *video_data)
 {
-    SDL_WaylandDataSource *data_source = NULL;
-    SDL_VideoData *driver_data = NULL;
-    struct wl_data_source *id = NULL;
-
-    if (!_this || !_this->internal) {
-        SDL_SetError("Video driver uninitialized");
-    } else {
-        driver_data = _this->internal;
-
-        if (driver_data->data_device_manager) {
-            id = wl_data_device_manager_create_data_source(
-                driver_data->data_device_manager);
-        }
-
-        if (!id) {
-            SDL_SetError("Wayland unable to create data source");
-        } else {
-            data_source = SDL_calloc(1, sizeof(*data_source));
-            if (!data_source) {
-                wl_data_source_destroy(id);
-            } else {
-                data_source->source = id;
-                wl_data_source_set_user_data(id, data_source);
-                wl_data_source_add_listener(id, &data_source_listener,
-                                            data_source);
-            }
-        }
+    SDL_WaylandDataSource *data_source = SDL_calloc(1, sizeof(*data_source));
+    if (!data_source) {
+        return NULL;
     }
+
+    struct wl_data_source *id = wl_data_device_manager_create_data_source(video_data->data_device_manager);
+    data_source->source = id;
+    wl_data_source_set_user_data(id, data_source);
+    wl_data_source_add_listener(id, &data_source_listener, data_source);
+
     return data_source;
 }
 
-SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoDevice *_this)
+SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoData *video_data)
 {
-    SDL_WaylandPrimarySelectionSource *primary_selection_source = NULL;
-    SDL_VideoData *driver_data = NULL;
-    struct zwp_primary_selection_source_v1 *id = NULL;
-
-    if (!_this || !_this->internal) {
-        SDL_SetError("Video driver uninitialized");
-    } else {
-        driver_data = _this->internal;
-
-        if (driver_data->primary_selection_device_manager) {
-            id = zwp_primary_selection_device_manager_v1_create_source(
-                driver_data->primary_selection_device_manager);
-        }
-
-        if (!id) {
-            SDL_SetError("Wayland unable to create primary selection source");
-        } else {
-            primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
-            if (!primary_selection_source) {
-                zwp_primary_selection_source_v1_destroy(id);
-            } else {
-                primary_selection_source->source = id;
-                zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener,
-                                                             primary_selection_source);
-            }
-        }
+    SDL_WaylandPrimarySelectionSource *primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
+    if (!primary_selection_source) {
+        return NULL;
     }
+
+    struct zwp_primary_selection_source_v1 *id = zwp_primary_selection_device_manager_v1_create_source(video_data->primary_selection_device_manager);
+    primary_selection_source->source = id;
+    zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener, primary_selection_source);
+
     return primary_selection_source;
 }
 
