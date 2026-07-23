@@ -3554,13 +3554,27 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
     }
 }
 
+static bool PQShaderScalesInput(const VULKAN_PixelShaderConstants *shader_constants)
+{
+    if (shader_constants->tonemap_method != 0.0f) {
+        // Tone mapping always scales
+        return true;
+    }
+
+    // The shader normalizes the PQ input using the SDR white point and then multiplies by the color scale
+    if (SDL_fabs((shader_constants->sdr_white_point - (shader_constants->color_scale * SCRGB_NITS))) > 1.0f) {
+        return true;
+    }
+
+    return false;
+}
+
 static VULKAN_Shader SelectShader(SDL_Renderer *renderer, const VULKAN_PixelShaderConstants *shader_constants, bool yuv)
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
             if (shader_constants->input_type == INPUTTYPE_HDR10 &&
-                shader_constants->tonemap_method == 0.0f &&
-                (shader_constants->sdr_white_point / SCRGB_NITS) == shader_constants->color_scale) {
+                !PQShaderScalesInput(shader_constants)) {
                 // Do a simple 1-1 copy
                 return SHADER_RGB_SIMPLE;
             } else {
