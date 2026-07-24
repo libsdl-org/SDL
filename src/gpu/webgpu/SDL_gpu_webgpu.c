@@ -12,9 +12,6 @@
 // - A decent amount of bound resources don't get freed when the device is destroyed.
 // - Downloading from a transfer buffer is unsupported
 // - Warn the user if they're gonna use RGBA32 textures wrong.
-// - Currently, any uniform buffer ever used in a command buffer (regardless of if the pass is being encoded) is marked as "active"
-//   We could squeeze out more performance by allowing direct buffer writes while a pass is not being encoded.
-//   However, since we're using wgpuQueueWriteBuffer, we'd need to handle our own staging buffers since QueueWriteBuffer is instant and isn't tied to the command encoder.
 
 // FIXME:
 // Issues with the shader parser:
@@ -315,7 +312,7 @@ static WGPUBlendFactor SDLToWebGPU_BlendFactor[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendFactor, SDL_arraysize(SDLToWebGPU_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static WGPUBlendOperation SDLToWebGPU_BlendOp[] = {
-    WGPUBlendOperation_Add, // INVALID
+    WGPUBlendOperation_Undefined, // INVALID
     WGPUBlendOperation_Add,
     WGPUBlendOperation_Subtract,
     WGPUBlendOperation_ReverseSubtract,
@@ -325,7 +322,7 @@ static WGPUBlendOperation SDLToWebGPU_BlendOp[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendOp, SDL_arraysize(SDLToWebGPU_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static WGPUCompareFunction SDLToWebGPU_CompareFunc[] = {
-    WGPUCompareFunction_Never, // INVALID
+    WGPUCompareFunction_Undefined, // SDL_GPU_COMPAREOP_INVALID
     WGPUCompareFunction_Never,
     WGPUCompareFunction_Less,
     WGPUCompareFunction_Equal,
@@ -338,7 +335,7 @@ static WGPUCompareFunction SDLToWebGPU_CompareFunc[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_CompareFunc, SDL_arraysize(SDLToWebGPU_CompareFunc) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static WGPUStencilOperation SDLToWebGPU_StencilOp[] = {
-    WGPUStencilOperation_Keep, // INVALID
+    WGPUStencilOperation_Undefined, // INVALID
     WGPUStencilOperation_Keep,
     WGPUStencilOperation_Zero,
     WGPUStencilOperation_Replace,
@@ -2884,7 +2881,7 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
 
     WGPUTextureFormat format = wgpuTextureGetFormat(texture->texture);
     WGPUTextureUsage usages = wgpuTextureGetUsage(texture->texture);
-    WGPUTextureViewDimension dimension = WGPUTextureDimension_Undefined;
+    WGPUTextureViewDimension dimension = WGPUTextureViewDimension_Undefined;
 
     uint32_t mipLevelCount = wgpuTextureGetMipLevelCount(texture->texture);
     uint32_t arrayLayerCount = wgpuTextureGetDepthOrArrayLayers(texture->texture);
