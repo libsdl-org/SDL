@@ -1,0 +1,14 @@
+export const sdlCallbackInit: (d) => void;
+export const sdlLaunchMain: (lib: string, func: string) => number;
+export const sdlKeyEvent: (scancode: number, type: number) => number;
+export const sdlTextAppend: (str: string) => number;
+export const sdlTextEditing: (str: string, loc: number, length: number) => number;
+export const sdlDialogExecCallback: () => void;
+export const sdlDialogClearSelection: () => void;
+export const sdlDialogFileSelected: (path: string) => void;
+export const sdlSendDialogStatus: (idx: number) => void;
+export const sdlOnBackground: () => void;
+export const sdlOnForeground: () => void;
+export const sdlOnLowMemory: () => void;
+export const sdlOnTerminate: () => void;
+export const sdlOnConfigUpdate: () => void;
