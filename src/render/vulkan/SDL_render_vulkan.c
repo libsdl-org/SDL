@@ -832,6 +832,11 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         imageCreateInfo.queueFamilyIndexCount = 0;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+        // Set VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT for planar formats
+        if (VULKAN_VkFormatGetNumPlanes(format) > 1) {
+            imageCreateInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+        }
+
         result = vkCreateImage(rendererData->device, &imageCreateInfo, NULL, &imageOut->image);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyImage(rendererData, imageOut);
