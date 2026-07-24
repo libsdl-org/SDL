@@ -684,6 +684,14 @@ static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keym
         return SDLK_CALL;
     case SDL_SCANCODE_ENDCALL:
         return SDLK_ENDCALL;
+    case SDL_SCANCODE_AL_CALCULATOR:
+        return SDLK_AL_CALCULATOR;
+    case SDL_SCANCODE_AL_EMAIL_READER:
+        return SDLK_AL_EMAIL_READER;
+    case SDL_SCANCODE_AL_FILE_BROWSER:
+        return SDLK_AL_FILE_BROWSER;
+    case SDL_SCANCODE_AL_LOCAL_MACHINE_BROWSER:
+        return SDLK_AL_LOCAL_MACHINE_BROWSER;
     default:
         return SDLK_UNKNOWN;
     }
@@ -1039,6 +1047,10 @@ static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] =
     /* 288 */ "SoftRight",
     /* 289 */ "Call",
     /* 290 */ "EndCall",
+    /* 291 */ "AL Calculator",
+    /* 292 */ "AL Email Reader",
+    /* 293 */ "AL File Browser",
+    /* 294 */ "AL Local Machine Browser",
 };
 
 static const char *SDL_extended_key_names[] = {
