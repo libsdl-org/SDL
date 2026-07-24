@@ -6,12 +6,11 @@
 // TODO:
 // - Buffer cycling!
 // - Add mutexes and such to make the backend thread "safe"
-// - Stencil's broken. I think.
 // - The code's quite liberal when it comes to memory usage.
 // - Shit's about as safe as a demon core.
 // - A decent amount of bound resources don't get freed when the device is destroyed.
 // - Downloading from a transfer buffer is unsupported
-// - Warn the user if they're gonna use RGBA32 textures wrong.
+// - We should warn the user if they're gonna use RGBA32 textures wrong.
 
 // FIXME:
 // Issues with the shader parser:
@@ -5048,7 +5047,7 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
     destinationInfo.buffer = ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
     destinationInfo.layout = (WGPUTexelCopyBufferLayout){
         .bytesPerRow = paddedBPR,
-        .offset = 0,
+        .offset = destination->offset,
         .rowsPerImage = source->h,
     };
 
@@ -5217,8 +5216,15 @@ static bool WEBGPU_SupportsSampleCount(SDL_GPURenderer *driverData, SDL_GPUTextu
     return true;
 }
 
+static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBufferRegion *source, const SDL_GPUTransferBufferLocation *destination)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WEBGPU_INTERNAL_CopyBufferToBuffer(cmdBuf->encoder, (WebGPUBufferContainer *)source->buffer, source->offset,
+                                       (WebGPUBufferContainer *)destination->transfer_buffer, destination->offset,
+                                       source->size);
+}
+
 // -- UNIMPLEMENTED FUNCTIONS --
-static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBufferRegion *source, const SDL_GPUTransferBufferLocation *destination) {}
 static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture) {}
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
