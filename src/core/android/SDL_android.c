@@ -101,6 +101,7 @@ static jmethodID midManualBackButton;
 static jmethodID midShowFileDialog;
 #endif // !SDL_DIALOG_DISABLED
 static jmethodID midGetPreferredLocales;
+static jmethodID midSetBackButtonTrapEnabled;
 
 #ifndef SDL_VIDEO_DISABLED
 // Video/surface method signatures
@@ -681,6 +682,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZILjava/lang/String;I)Z");
 #endif // !SDL_DIALOG_DISABLED
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
+    midSetBackButtonTrapEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setBackButtonTrapEnabled", "(Z)V");
 
     if (!midGetContext ||
         !midGetDeviceFormFactor ||
@@ -698,7 +700,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 #ifndef SDL_DIALOG_DISABLED
         !midShowFileDialog ||
 #endif
-        !midGetPreferredLocales) {
+        !midGetPreferredLocales ||
+        !midSetBackButtonTrapEnabled) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some core Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -3713,5 +3716,13 @@ bool Android_JNI_ShowFileDialog(
     return true;
 }
 #endif // !SDL_DIALOG_DISABLED
+
+void Android_JNI_SetBackButtonTrapActive(bool enabled)
+{
+    if (!midSetBackButtonTrapEnabled) return;
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midSetBackButtonTrapEnabled, enabled);
+}
 
 #endif // SDL_PLATFORM_ANDROID

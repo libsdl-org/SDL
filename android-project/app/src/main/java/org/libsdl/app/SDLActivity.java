@@ -24,6 +24,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
@@ -50,6 +51,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -611,6 +614,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHasMultiWindow) {
             resumeNativeThread();
         }
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            // We need to enable the back button invoke callback if we're on more modern Android.
+            boolean trapBack = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_TRAP_BACK_BUTTON", false);
+            setBackButtonTrapEnabled(trapBack);        
+        }
     }
 
     public static int getNaturalOrientation() {
@@ -782,6 +791,47 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (!isFinishing()) {
             super.onBackPressed();
         }
+    }
+
+    static OnBackInvokedCallback backButtonCallback = new OnBackInvokedCallback() {
+        Handler mBackKeyHandler;
+
+        @Override
+        public void onBackInvoked() {
+            if (mBackKeyHandler == null) {
+                mBackKeyHandler = new Handler(Looper.getMainLooper());
+            }
+
+            onNativeKeyDown(KeyEvent.KEYCODE_BACK);
+            mBackKeyHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onNativeKeyUp(KeyEvent.KEYCODE_BACK);
+                }
+            }, 500);
+        }
+    };
+
+    static boolean mBackKeyTrapEnabled = false;
+    public static void setBackButtonTrapEnabled(boolean enabled) {
+
+        if ( Build.VERSION.SDK_INT < 33 ) {
+            // We're old enough that we just use the old onBackPressed behavior.
+            return;
+        }
+
+        // Check so we don't register the same callback twice.
+        if (enabled == mBackKeyTrapEnabled) {
+            return;
+        }
+
+        if (enabled) {
+            mSingleton.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backButtonCallback);
+        }
+        else {
+            mSingleton.getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backButtonCallback);
+        }
+        mBackKeyTrapEnabled = enabled;
     }
 
     // File dialog types
