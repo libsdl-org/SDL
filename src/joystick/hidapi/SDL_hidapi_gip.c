@@ -261,6 +261,9 @@ typedef enum
     GIP_TYPE_NAVIGATION_CONTROLLER = 4,
     GIP_TYPE_CHATPAD = 5,
     GIP_TYPE_HEADSET = 6,
+    GIP_TYPE_GUITAR = 7,
+    GIP_TYPE_DRUM_KIT = 8,
+    GIP_TYPE_LIVE_GUITAR = 9,
 } GIP_AttachmentType;
 
 typedef enum
@@ -304,6 +307,11 @@ MAKE_GUID(GUID_IEliteButtons, 0x37d19ff7, 0xb5c6, 0x49d1, 0xa7, 0x5e, 0x03, 0xb2
 MAKE_GUID(GUID_IGamepad, 0x082e402c, 0x07df, 0x45e1, 0xa5, 0xab, 0xa3, 0x12, 0x7a, 0xf1, 0x97, 0xb5);
 MAKE_GUID(GUID_NavigationController, 0xb8f31fe7, 0x7386, 0x40e9, 0xa9, 0xf8, 0x2f, 0x21, 0x26, 0x3a, 0xcf, 0xb7);
 MAKE_GUID(GUID_Wheel, 0x646979cf, 0x6b71, 0x4e96, 0x8d, 0xf9, 0x59, 0xe3, 0x98, 0xd7, 0x42, 0x0c);
+MAKE_GUID(GUID_PDP_Guitar, 0x1a266af6, 0x3a46, 0x45e3, 0xb9, 0xb6, 0x0f, 0x2c, 0x0b, 0x2c, 0x1e, 0xbe);
+MAKE_GUID(GUID_Madcatz_Guitar, 0x0d2ae438, 0x7f7d, 0x4933, 0x86, 0x93, 0x30, 0xfc, 0x55, 0x01, 0x8e, 0x77);
+MAKE_GUID(GUID_PDP_DrumKit, 0xa503f9b0, 0x955e, 0x47c4, 0xa2, 0xed, 0xb1, 0x33, 0x6f, 0xa7, 0x70, 0x3e);
+MAKE_GUID(GUID_Madcatz_DrumKit, 0x06182893, 0xCCE0, 0x4B85, 0x92, 0x71, 0x0A, 0x10, 0xDB, 0xAB, 0x7E, 0x07);
+MAKE_GUID(GUID_GuitarHero_Live_Guitar, 0xfd12fdd9, 0x8e73, 0x47c7, 0xa2, 0x31, 0x96, 0x26, 0x8c, 0x38, 0x00, 0x9a);
 
 /*
  * The following GUIDs are observed, but the exact meanings aren't known, so
@@ -1258,6 +1266,9 @@ static bool GIP_EnsureMetadata(GIP_Attachment *attachment)
             attachment->metadata_retries = 0;
             return GIP_SendSystemMessage(attachment, GIP_CMD_METADATA, 0, NULL, 0);
         } else {
+            if (attachment->device->reset_for_metadata) {
+                return true;
+            }
             return GIP_SetMetadataDefaults(attachment);
         }
     default:
@@ -1590,6 +1601,31 @@ static bool GIP_HandleCommandMetadataRespose(
         if (SDL_strcmp(type, "Windows.Xbox.Input.Headset") == 0) {
             attachment->attachment_type = GIP_TYPE_HEADSET;
             expected_guid = &GUID_IHeadset;
+            break;
+        }
+        if (SDL_strcmp(type, "Activision.Xbox.Input.GH7") == 0) {
+            attachment->attachment_type = GIP_TYPE_LIVE_GUITAR;
+            expected_guid = &GUID_GuitarHero_Live_Guitar;
+            break;
+        }
+        if (SDL_strcmp(type, "MadCatz.Xbox.Guitar.Stratocaster") == 0) {
+            attachment->attachment_type = GIP_TYPE_GUITAR;
+            expected_guid = &GUID_Madcatz_Guitar;
+            break;
+        }
+        if (SDL_strcmp(type, "PDP.Xbox.Guitar.Jaguar") == 0) {
+            attachment->attachment_type = GIP_TYPE_GUITAR;
+            expected_guid = &GUID_PDP_Guitar;
+            break;
+        }
+        if (SDL_strcmp(type, "MadCatz.Xbox.Drums.Glam") == 0) {
+            attachment->attachment_type = GIP_TYPE_DRUM_KIT;
+            expected_guid = &GUID_Madcatz_DrumKit;
+            break;
+        }
+        if (SDL_strcmp(type, "PDP.Xbox.Drums.Tablah") == 0) {
+            attachment->attachment_type = GIP_TYPE_DRUM_KIT;
+            expected_guid = &GUID_PDP_DrumKit;
             break;
         }
     }
@@ -2027,6 +2063,99 @@ static void GIP_HandleGamepadReport(
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
 }
 
+static void GIP_HandleGuitarReport(
+    GIP_Attachment *attachment,
+    SDL_Joystick *joystick,
+    Uint64 timestamp,
+    const Uint8 *bytes,
+    int num_bytes)
+{
+    static uint16_t s_GuitarButtons[] = {
+        0x0010,  // SDL_GAMEPAD_BUTTON_SOUTH
+        0x0020,  // SDL_GAMEPAD_BUTTON_EAST
+        0x0040,  // SDL_GAMEPAD_BUTTON_WEST
+        0x0080,  // SDL_GAMEPAD_BUTTON_NORTH
+        0x0008,  // SDL_GAMEPAD_BUTTON_BACK
+        0,       // The guide button is not available
+        0x0004,  // SDL_GAMEPAD_BUTTON_START
+        0,       // right joystick click unavailable
+        0x4000,  // SDL_GAMEPAD_BUTTON_RIGHT_STICK
+        0x1000,  // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER
+        0,       // right shoulder unavailable
+    };
+    Uint8 btnidx = 0, hat = 0;
+    uint16_t buttons = bytes[0] | bytes[1] << 8;
+    if (num_bytes >= 10) {
+        for (btnidx = 0; btnidx < SDL_arraysize(s_GuitarButtons); ++btnidx) {
+            uint16_t button_mask = s_GuitarButtons[btnidx];
+            if (!button_mask) {
+                continue;
+            }
+            bool down = ((buttons & button_mask) != 0);
+            SDL_SendJoystickButton(timestamp, joystick, btnidx, down);
+        }
+        if (buttons & 0x0100) {
+            hat |= SDL_HAT_UP;
+        }
+        if (buttons & 0x0200) {
+            hat |= SDL_HAT_DOWN;
+        }
+        if (buttons & 0x0400) {
+            hat |= SDL_HAT_LEFT;
+        }
+        if (buttons & 0x0800) {
+            hat |= SDL_HAT_RIGHT;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, (bytes[3] * 257) - 32768);
+        // PS3 RB guitars had tilt on right shoulder
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, bytes[2] >= 0xD0);
+        // PS3 RB guitars send L2 when using solo buttons
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (bytes[6]) ? 32767 : -32768);
+        // Align pickup selector mappings with PS3 instruments
+        static const Sint16 effects_mappings[] = {-26880, -13568, -1792, 11008, 24576};
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[bytes[4] >> 4]);
+    }
+}
+
+static void GIP_HandleDrumKitReport(
+    GIP_Attachment *attachment,
+    SDL_Joystick *joystick,
+    Uint64 timestamp,
+    const Uint8 *bytes,
+    int num_bytes)
+{
+    Uint8 hat = 0;
+    uint16_t buttons = bytes[0] | bytes[1] << 8;
+    if (num_bytes >= 6) {
+        if ((buttons & 0x0100) || (bytes[4] & 0xf0)) {
+            hat |= SDL_HAT_UP;
+        }
+        if ((buttons & 0x0200) || (bytes[4] & 0x0f)) {
+            hat |= SDL_HAT_DOWN;
+        }
+        if (buttons & 0x0400) {
+            hat |= SDL_HAT_LEFT;
+        }
+        if (buttons & 0x0800) {
+            hat |= SDL_HAT_RIGHT;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+        // The rest of the instruments are mapped to PS3 style inputs
+        // The PS3 used flags for dictating if a pad or a cymbal was hit, so we emulate that here
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (buttons & 0x0008));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (buttons & 0x0004));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (buttons & 0x1000));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (buttons & 0x2000));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (bytes[3] & 0x0f) || (bytes[5] & 0xf0) || (buttons & 0x0010));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (bytes[2] & 0xf0) || (buttons & 0x0020));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (bytes[3] & 0xf0) || (bytes[4] & 0x0f) || (buttons & 0x0040));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (bytes[2] & 0x0f) || (bytes[4] & 0xf0) || (buttons & 0x0080));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, bytes[2] || bytes[3]);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, bytes[4] || bytes[5]);
+    }
+}
+
 static void GIP_HandleArcadeStickReport(
     GIP_Attachment *attachment,
     SDL_Joystick *joystick,
@@ -2149,7 +2278,7 @@ static bool GIP_HandleLLInputReport(
         return true;
     }
 
-    if (num_bytes < 14) {
+    if (num_bytes < 6) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GIP: Discarding too-short input report");
         return false;
     }
@@ -2166,6 +2295,12 @@ static bool GIP_HandleLLInputReport(
         break;
     case GIP_TYPE_FLIGHT_STICK:
         GIP_HandleFlightStickReport(attachment, joystick, timestamp, bytes, num_bytes);
+        break;
+    case GIP_TYPE_GUITAR:
+        GIP_HandleGuitarReport(attachment, joystick, timestamp, bytes, num_bytes);
+        break;
+    case GIP_TYPE_DRUM_KIT:
+        GIP_HandleDrumKitReport(attachment, joystick, timestamp, bytes, num_bytes);
         break;
     }
 
@@ -2654,7 +2789,7 @@ static bool HIDAPI_DriverGIP_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
-    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, false);
+    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, true);
 
     attachment = GIP_EnsureAttachment(ctx, 0);
     GIP_HandleQuirks(attachment);
@@ -2737,6 +2872,18 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     if (attachment->attachment_type == GIP_TYPE_FLIGHT_STICK) {
         /* Flight sticks have at least 4 axes, but only 3 are signed values, so we leave RIGHTY unused */
         joystick->naxes += attachment->extra_axes - 1;
+    }
+
+    if (attachment->attachment_type == GIP_TYPE_GUITAR) {
+        device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+    }
+
+    if (attachment->attachment_type == GIP_TYPE_DRUM_KIT) {
+        device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+    }
+
+    if (attachment->attachment_type == GIP_TYPE_LIVE_GUITAR) {
+        device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
     }
 
     joystick->nhats = 1;

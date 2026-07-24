@@ -747,7 +747,46 @@ static bool GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool ena
     joystick->hwdata->report_sensors = enabled;
     return true;
 }
-
+static void GAMEINPUT_DrumUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp)
+{
+#if GAMEINPUT_API_VERSION >= 3
+    IGameInputRawDeviceReport *rawState;
+    if (reading->GetRawReport(&rawState)) {
+        uint8_t rawData[40];
+        SDL_memset(rawData, 0, sizeof(rawData));
+        size_t len = rawState->GetRawData(sizeof(rawData), rawData);
+        Uint8 hat = 0;
+        uint16_t buttons = rawData[0] | rawData[1] << 8;
+        if (len >= 6) {
+            if ((buttons & 0x0100) || (rawData[4] & 0xf0)) {
+                hat |= SDL_HAT_UP;
+            }
+            if ((buttons & 0x0200) || (rawData[4] & 0x0f)) {
+                hat |= SDL_HAT_DOWN;
+            }
+            if (buttons & 0x0400) {
+                hat |= SDL_HAT_LEFT;
+            }
+            if (buttons & 0x0800) {
+                hat |= SDL_HAT_RIGHT;
+            }
+            SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+            // The rest of the instruments are mapped to PS3 style inputs
+            // The PS3 used flags for dictating if a pad or a cymbal was hit, so we emulate that here
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, (buttons & 0x0008));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (buttons & 0x0004));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, (buttons & 0x1000));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (buttons & 0x2000));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (rawData[3] & 0x0f) || (rawData[5] & 0xf0) || (buttons & 0x0010));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, (rawData[2] & 0xf0) || (buttons & 0x0020));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, (rawData[3] & 0xf0) || (rawData[4] & 0x0f) || (buttons & 0x0040));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (rawData[2] & 0x0f) || (rawData[4] & 0xf0) || (buttons & 0x0080));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, rawData[2] || rawData[3]);
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, rawData[4] || rawData[5]);
+        }
+    }
+#endif // GAMEINPUT_API_VERSION >= 3
+}
 static void GAMEINPUT_GuitarUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp)
 {
 #if GAMEINPUT_API_VERSION >= 3
@@ -946,6 +985,8 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     timestamp = SDL_US_TO_NS(reading->GetTimestamp() + g_GameInputTimestampOffset);
     if (internal_device->raw_type == SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR) {
         GAMEINPUT_GuitarUpdate(joystick, reading, timestamp);
+    } else if (internal_device->raw_type == SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_DRUM_KIT) {
+        GAMEINPUT_DrumUpdate(joystick, reading, timestamp);
     } else if (GAMEINPUT_InternalIsGamepad(info)) {
         GAMEINPUT_GamepadUpdate(joystick, reading, timestamp);
     } else {
