@@ -94,6 +94,21 @@ bool SDL_VisionOS_PointerModeEnabled()
     return SDL_pointer_mode;
 }
 
+bool SDL_VisionOS_ShouldShowHeadroomUI()
+{
+    return SDL_GetHintBoolean(SDL_HINT_VISIONOS_HDR_HEADROOM_UI, false);
+}
+
+void SDL_VisionOS_SendHeadroom(float headroom)
+{
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
+    if (display) {
+        SDL_HDROutputProperties HDR = { 1.0f, headroom };
+
+        SDL_SetDisplayHDRProperties(display, &HDR);
+    }
+}
+
 // Called from Swift scene delegates when visionOS delivers a touch event
 void SDL_VisionOS_SendTouch(NSTimeInterval timestamp, SDL_FingerID fingerID, Uint32 eventType, float x, float y)
 {

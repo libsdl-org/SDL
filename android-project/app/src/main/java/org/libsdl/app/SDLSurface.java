@@ -396,45 +396,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public boolean onCapturedPointerEvent(MotionEvent event)
     {
-        int action = event.getActionMasked();
-        int pointerCount = event.getPointerCount();
-
-        for (int i = 0; i < pointerCount; i++) {
-            float x, y;
-            switch (action) {
-                case MotionEvent.ACTION_SCROLL:
-                    x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
-                    y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                    SDLActivity.onNativeMouse(0, action, x, y, false);
-                    return true;
-
-                case MotionEvent.ACTION_HOVER_MOVE:
-                case MotionEvent.ACTION_MOVE:
-                    x = event.getX(i);
-                    y = event.getY(i);
-                    SDLActivity.onNativeMouse(0, action, x, y, true);
-                    return true;
-
-                case MotionEvent.ACTION_BUTTON_PRESS:
-                case MotionEvent.ACTION_BUTTON_RELEASE:
-
-                    // Change our action value to what SDL's code expects.
-                    if (action == MotionEvent.ACTION_BUTTON_PRESS) {
-                        action = MotionEvent.ACTION_DOWN;
-                    } else { /* MotionEvent.ACTION_BUTTON_RELEASE */
-                        action = MotionEvent.ACTION_UP;
-                    }
-
-                    x = event.getX(i);
-                    y = event.getY(i);
-                    int button = event.getButtonState();
-
-                    SDLActivity.onNativeMouse(button, action, x, y, true);
-                    return true;
-            }
-        }
-
-        return false;
+        return SDLActivity.getMotionListener().onGenericMotion(this, event);
     }
 
     @Override
@@ -460,11 +422,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
-        float span_x = getNormalizedX(detector.getCurrentSpanX());
-        float span_y = getNormalizedY(detector.getCurrentSpanY());
-        float focus_x = getNormalizedX(detector.getFocusX());
-        float focus_y = getNormalizedY(detector.getFocusY());
-        SDLActivity.onNativePinchEnd(span_x, span_y, focus_x, focus_y);
+        SDLActivity.onNativePinchEnd();
     }
 
 }

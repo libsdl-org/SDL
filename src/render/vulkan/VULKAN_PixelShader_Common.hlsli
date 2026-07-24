@@ -54,6 +54,16 @@ static const float3x3 mat2020to709 = {
     { -0.018154, -0.100597, 1.118751 }
 };
 
+float3 scRGBtoNits( float3 v )
+{
+    return v * 80.0;
+}
+
+float3 scRGBfromNits(float3 v)
+{
+    return v / 80.0;
+}
+
 float sRGBtoLinear(float v)
 {
     if (v <= 0.04045) {
@@ -61,6 +71,14 @@ float sRGBtoLinear(float v)
     } else {
         v = pow(abs(v + 0.055) / 1.055, 2.4);
     }
+    return v;
+}
+
+float3 sRGBtoLinear(float3 v)
+{
+    v.r = sRGBtoLinear(v.r);
+    v.g = sRGBtoLinear(v.g);
+    v.b = sRGBtoLinear(v.b);
     return v;
 }
 
@@ -74,7 +92,15 @@ float sRGBfromLinear(float v)
     return v;
 }
 
-float3 PQtoLinear(float3 v)
+float3 sRGBfromLinear(float3 v)
+{
+    v.r = sRGBfromLinear(v.r);
+    v.g = sRGBfromLinear(v.g);
+    v.b = sRGBfromLinear(v.b);
+    return v;
+}
+
+float3 PQtoNits(float3 v)
 {
     const float c1 = 0.8359375;
     const float c2 = 18.8515625;
@@ -84,7 +110,26 @@ float3 PQtoLinear(float3 v)
 
     float3 num = max(pow(abs(v), oo_m2) - c1, 0.0);
     float3 den = c2 - c3 * pow(abs(v), oo_m2);
-    return (10000.0 * pow(abs(num / den), oo_m1) / sdr_white_point);
+    return 10000.0 * pow(abs(num / den), oo_m1);
+}
+
+float3 PQtoLinear(float3 v)
+{
+    return PQtoNits(v) / sdr_white_point;
+}
+
+float3 PQFromNits(float3 v)
+{
+    const float c1 = 0.8359375;
+    const float c2 = 18.8515625;
+    const float c3 = 18.6875;
+    const float m1 = 0.1593017578125;
+    const float m2 = 78.84375;
+
+    float3 y = saturate( v / 10000.0 );
+    float3 num = c1 + c2 * pow( abs( y ), m1 );
+    float3 den = 1.0 + c3 * pow( abs( y ), m1 );
+    return pow( abs( num / den ), m2 );
 }
 
 float3 ApplyTonemap(float3 v)
@@ -106,6 +151,20 @@ float3 ApplyTonemap(float3 v)
         if (input_type == INPUTTYPE_SCRGB) {
             // Convert to BT.709 colorspace after tone mapping
             v = mul(mat2020to709, v);
+        }
+    }
+    return v;
+}
+
+float3 ApplyTonemap2020(float3 v)
+{
+    if (tonemap_method == TONEMAP_LINEAR) {
+        v *= tonemap_factor1;
+    } else if (tonemap_method == TONEMAP_CHROME) {
+        float vmax = max(v.r, max(v.g, v.b));
+        if (vmax > 0.0) {
+            float scale = (1.0 + tonemap_factor1 * vmax) / (1.0 + tonemap_factor2 * vmax);
+            v *= scale;
         }
     }
     return v;
@@ -161,9 +220,12 @@ float4 GetInputColor(PixelShaderInput input)
 
     if (texture_type == TEXTURETYPE_RGB) {
         rgba = texture0.Sample(sampler0, input.tex);
+// NVIDIA drivers crash when trying to use SampleGrad() on a texture with YCbCr conversion
+#ifndef BROKEN_YCbCr_NVIDIA
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
+#endif
     } else if (texture_type == TEXTURETYPE_PALETTE_NEAREST) {
         rgba = SamplePaletteNearest(input.tex);
     } else if (texture_type == TEXTURETYPE_PALETTE_LINEAR) {
@@ -196,9 +258,7 @@ float3 GetOutputColorFromSRGB(float3 rgb)
     float3 output;
 
     if (scRGB_output) {
-        rgb.r = sRGBtoLinear(rgb.r);
-        rgb.g = sRGBtoLinear(rgb.g);
-        rgb.b = sRGBtoLinear(rgb.b);
+        rgb = sRGBtoLinear(rgb);
     }
 
     output.rgb = rgb * color_scale;
@@ -213,11 +273,55 @@ float3 GetOutputColorFromLinear(float3 rgb)
     output.rgb = rgb * color_scale;
 
     if (!scRGB_output) {
-        output.r = sRGBfromLinear(output.r);
-        output.g = sRGBfromLinear(output.g);
-        output.b = sRGBfromLinear(output.b);
-        output.rgb = saturate(output.rgb);
+        output.rgb = saturate(sRGBfromLinear(output.rgb));
     }
+
+    return output;
+}
+
+float4 PQColorPixelShader(PixelShaderInput input)
+{
+    float3 rgb = float3(1.0, 1.0, 1.0);
+    float4 output;
+
+    // Apply color scaling, which will include display SDR white level
+    rgb = rgb * input.color.rgb * color_scale;
+
+    // Convert to nits
+    rgb = scRGBtoNits(rgb);
+
+    output.rgb = PQFromNits(rgb);
+    output.a = input.color.a;
+
+    return output;
+}
+
+float4 PQTexturePixelShader(PixelShaderInput input)
+{
+    float4 rgba = GetInputColor(input);
+    float4 output;
+
+    if (input_type == INPUTTYPE_HDR10) {
+        rgba.rgb = PQtoLinear(rgba.rgb);
+    } else {
+        if (input_type == INPUTTYPE_SRGB) {
+            rgba.rgb = sRGBtoLinear(rgba.rgb);
+        }
+        rgba.rgb = mul(mat709to2020, rgba.rgb);
+    }
+
+    if (tonemap_method != TONEMAP_NONE) {
+        rgba.rgb = ApplyTonemap2020(rgba.rgb);
+    }
+
+    // Apply color scaling, which will include display SDR white level
+    rgba.rgb = rgba.rgb * input.color.rgb * color_scale;
+
+    // Convert to nits
+    rgba.rgb = scRGBtoNits(rgba.rgb);
+
+    output.rgb = PQFromNits(rgba.rgb);
+    output.a = rgba.a * input.color.a;
 
     return output;
 }

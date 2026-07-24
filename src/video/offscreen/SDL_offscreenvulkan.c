@@ -179,45 +179,35 @@ void OFFSCREEN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
                                                           Uint32 *count)
 {
+    static const char *const returnExtensions[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME };
+
+    *count = SDL_arraysize(returnExtensions);
+
 #if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
     VkExtensionProperties *enumerateExtensions = NULL;
     Uint32 enumerateExtensionCount = 0;
     bool hasHeadlessSurfaceExtension = false;
     Uint32 i;
+
+    /* In optional mode, only return VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME if it's already supported by the instance
+       There's probably a better way to cache the presence of the extension during OFFSCREEN_Vulkan_LoadLibrary().
+       But both SDL_VideoData and SDL_VideoDevice::vulkan_config seem like I'd need to touch a bunch of code to do properly.
+       And I want a smaller footprint for the first pass*/
+    if ( _this->vulkan_config.vkEnumerateInstanceExtensionProperties ) {
+        enumerateExtensions = SDL_Vulkan_CreateInstanceExtensionsList((PFN_vkEnumerateInstanceExtensionProperties) _this->vulkan_config.vkEnumerateInstanceExtensionProperties, &enumerateExtensionCount);
+        for (i = 0; i < enumerateExtensionCount; i++) {
+            if (SDL_strcmp(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME, enumerateExtensions[i].extensionName) == 0) {
+                hasHeadlessSurfaceExtension = true;
+            }
+        }
+        SDL_free(enumerateExtensions);
+    }
+
+    if (!hasHeadlessSurfaceExtension) {
+        (*count)--;  // assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last
+    }
 #endif
 
-    static const char *const returnExtensions[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME };
-    if (count) {
-#       if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
-        {
-            /* In optional mode, only return VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME if it's already supported by the instance
-                There's probably a better way to cache the presence of the extension during OFFSCREEN_Vulkan_LoadLibrary().
-                But both SDL_VideoData and SDL_VideoDevice::vulkan_config seem like I'd need to touch a bunch of code to do properly.
-                And I want a smaller footprint for the first pass*/
-            if ( _this->vulkan_config.vkEnumerateInstanceExtensionProperties ) {
-                enumerateExtensions = SDL_Vulkan_CreateInstanceExtensionsList(
-                    (PFN_vkEnumerateInstanceExtensionProperties)
-                        _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
-                    &enumerateExtensionCount);
-                for (i = 0; i < enumerateExtensionCount; i++) {
-                    if (SDL_strcmp(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME, enumerateExtensions[i].extensionName) == 0) {
-                        hasHeadlessSurfaceExtension = true;
-                    }
-                }
-                SDL_free(enumerateExtensions);
-            }
-            if ( hasHeadlessSurfaceExtension == true ) {
-                *count = SDL_arraysize(returnExtensions);
-            } else {
-                *count = SDL_arraysize(returnExtensions) - 1; // assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last
-            }
-        }
-#       else
-        {
-            *count = SDL_arraysize(returnExtensions);
-        }
-#       endif
-    }
     return returnExtensions;
 }
 

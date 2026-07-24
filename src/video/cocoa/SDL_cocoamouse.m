@@ -238,10 +238,10 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
             nscursor = [NSCursor contextualMenuCursor];
             break;
         case SDL_SYSTEM_CURSOR_HELP:
-            nscursor = LoadHiddenSystemCursor(@"help", @selector(helpCursor));
+            nscursor = LoadHiddenSystemCursor(@"help", @selector(arrowCursor));
             break;
         case SDL_SYSTEM_CURSOR_CELL:
-            nscursor = LoadHiddenSystemCursor(@"cell", @selector(cellCursor));
+            nscursor = LoadHiddenSystemCursor(@"cell", @selector(arrowCursor));
             break;
         case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
             nscursor = [NSCursor IBeamCursorForVerticalLayout];
@@ -768,7 +768,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 static NSWindow *Cocoa_MouseFocus;
 
-NSWindow *Cocoa_GetMouseFocus()
+NSWindow *Cocoa_GetMouseFocus(void)
 {
     return Cocoa_MouseFocus;
 }
@@ -918,8 +918,6 @@ void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
 
-    x = -[event scrollingDeltaX];
-    y = [event scrollingDeltaY];
     direction = SDL_MOUSEWHEEL_NORMAL;
 
     if ([event isDirectionInvertedFromDevice] == YES) {
@@ -927,8 +925,21 @@ void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     }
 
     if ([event hasPreciseScrollingDeltas]) {
-        x *= 0.1;
-        y *= 0.1;
+        x = -[event scrollingDeltaX] * 0.1f;
+        y = [event scrollingDeltaY] * 0.1f;
+    } else {
+        x = -[event deltaX];
+        y = [event deltaY];
+        if (x > 0) {
+            x = SDL_ceil(x);
+        } else if (x < 0) {
+            x = SDL_floor(x);
+        }
+        if (y > 0) {
+            y = SDL_ceil(y);
+        } else if (y < 0) {
+            y = SDL_floor(y);
+        }
     }
 
     SDL_SendMouseWheel(Cocoa_GetEventTimestamp([event timestamp]), window, mouseID, x, y, direction);

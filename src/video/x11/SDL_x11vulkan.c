@@ -166,18 +166,14 @@ char const * const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uin
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XCB_SURFACE_EXTENSION_NAME,
         };
-        if(count) {
-            *count = SDL_arraysize(extensionsForXCB);
-        }
+        *count = SDL_arraysize(extensionsForXCB);
         return extensionsForXCB;
     } else {
         static const char *const extensionsForXlib[] = {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
         };
-        if(count) {
-            *count = SDL_arraysize(extensionsForXlib);
-        }
+        *count = SDL_arraysize(extensionsForXlib);
         return extensionsForXlib;
     }
 }

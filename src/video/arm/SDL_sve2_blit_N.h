@@ -29,6 +29,8 @@
 
 void Blit8888to8888PixelSwizzleSVE2(SDL_BlitInfo *info);
 void Blit8888to565PixelSwizzleSVE2(SDL_BlitInfo *info);
+void Blit2to2KeySVE2(SDL_BlitInfo *info);
+void Blit4to4KeySVE2(SDL_BlitInfo *info);
 
 #endif /* SDL_SVE2_INTRINSICS */
 

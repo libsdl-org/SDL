@@ -27,6 +27,8 @@
 
 #include "SDL_blit.h"
 
+// The value, in nits, of scRGB 1.0
+#define SCRGB_NITS  80.0f
 
 // Pixel format functions
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);
@@ -41,6 +43,7 @@ extern float SDL_PQfromNits(float v);
 extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel);
 extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst);
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
+extern void SDL_ConvertColor709to2020(float *fR, float *fG, float *fB);
 
 // Blit mapping functions
 extern bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);

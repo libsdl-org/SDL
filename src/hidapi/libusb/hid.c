@@ -76,6 +76,11 @@ extern "C" {
 #pragma warning(disable:5287) /* operands are different enum types */
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wenum-enum-conversion"
+#endif
+
 /* Uncomment to enable the retrieval of Usage and Usage Page in
 hid_enumerate(). Warning, on platforms different from FreeBSD
 this is very invasive as it requires the detach
@@ -633,7 +638,7 @@ static void *event_thread(void *param)
 	return NULL;
 }
 
-static void start_event_thread()
+static void start_event_thread(void)
 {
 	if (libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG)) {
 		int res = libusb_hotplug_register_callback(usb_context, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED | LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, 0, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, hotplug_callback, NULL, &hotplug_callback_handle);
@@ -645,7 +650,7 @@ static void start_event_thread()
 	hidapi_thread_create(&event_thread_state, event_thread, NULL);
 }
 
-static void stop_event_thread()
+static void stop_event_thread(void)
 {
 	shutdown_event_thread = 1;
 	libusb_interrupt_event_handler(usb_context);
@@ -2273,6 +2278,10 @@ uint16_t get_usb_code_for_current_locale(void)
 	/* Found nothing. */
 	return 0x0;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #if defined(_MSC_VER)
 #pragma warning (pop)

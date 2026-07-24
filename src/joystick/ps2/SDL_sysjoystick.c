@@ -38,8 +38,10 @@
 #define MAX_CONTROLLERS   (PS2_MAX_PORT * PS2_MAX_SLOT)
 #define PS2_ANALOG_STICKS 2
 #define PS2_ANALOG_AXIS   2
-#define PS2_BUTTONS       16
+#define PS2_BUTTONS       16  // this is total physical buttons, but we steal the 4 from the dpad for a hat switch.
 #define PS2_TOTAL_AXIS    (PS2_ANALOG_STICKS * PS2_ANALOG_AXIS)
+
+#define PS2_HAT_MASK 0xF0  // mask out bits 4-7 (that's the dpad, which we treat as a hat elsewhere).
 
 struct JoyInfo
 {
@@ -269,9 +271,9 @@ static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
     }
     PS2_InitializePad(info->port, info->slot);
 
-    joystick->nbuttons = PS2_BUTTONS;
+    joystick->nbuttons = PS2_BUTTONS - 4;  // we steal 4 (the d-pad) for a hat switch.
     joystick->naxes = PS2_TOTAL_AXIS;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // treat the dpad buttons as a hat.
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
@@ -347,19 +349,48 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
         int ret = padRead(info->port, info->slot, &buttons); // port, slot, buttons
         if (ret != 0) {
             // Buttons
-            int32_t pressed_buttons = 0xffff ^ buttons.btns;
-            ;
-            if (info->btns != pressed_buttons) {
-                for (i = 0; i < PS2_BUTTONS; i++) {
-                    mask = (1 << i);
-                    previous = info->btns & mask;
-                    current = pressed_buttons & mask;
-                    if (previous != current) {
-                        SDL_SendJoystickButton(timestamp, joystick, i, (current != 0));
+            const int32_t current_buttons = (0xffff ^ buttons.btns);
+            const int32_t previous_buttons = info->btns;
+            if (previous_buttons != current_buttons) {  // did any buttons change?
+                if ((previous_buttons & ~PS2_HAT_MASK) != (current_buttons & ~PS2_HAT_MASK)) {  // did non-dpad buttons change?
+                    uint8_t buttonidx = 0;
+                    i = 0;
+                    while (i < PS2_BUTTONS-4) {
+                        if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
+                            mask = (1 << buttonidx);
+                            previous = previous_buttons & mask;
+                            current = current_buttons & mask;
+                            if (previous != current) {
+                                SDL_SendJoystickButton(timestamp, joystick, i, (current != 0));
+                            }
+                            i++;
+                        }
+                        buttonidx++;
                     }
                 }
+
+                if ((previous_buttons & PS2_HAT_MASK) != (current_buttons & PS2_HAT_MASK)) {  // did dpad buttons change?
+                    // The PS2 dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+                    // (but they should _really_ be using the gamepad API.)
+                    Uint8 hat = SDL_HAT_CENTERED;
+                    #define HATSTATE(ps2bit, sdlenum) if (current_buttons & (1 << ps2bit)) { hat |= SDL_HAT_##sdlenum; }
+                    HATSTATE(4, UP);
+                    HATSTATE(5, RIGHT);
+                    HATSTATE(6, DOWN);
+                    HATSTATE(7, LEFT);
+                    #undef HATSTATE
+                    // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+                    if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+                        hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+                    }
+                    if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+                        hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+                    }
+                    SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+                }
+
+                info->btns = current_buttons;
             }
-            info->btns = pressed_buttons;
 
             // Analog
             all_axis[0] = buttons.ljoy_h;

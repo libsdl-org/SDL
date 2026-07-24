@@ -78,6 +78,7 @@
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE3                      0x202f    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
@@ -176,7 +177,7 @@
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
 #define USB_PRODUCT_STEALTH_ULTRA_WIRED                   0x7073
-#define USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER            0x0575
+#define USB_PRODUCT_SWITCH_RETRO_CONTROLLER               0x0575
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e
 #define USB_PRODUCT_THRUSTMASTER_T_FLIGHT_HOTAS_ONE       0xb68c
 #define USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE         0x1142

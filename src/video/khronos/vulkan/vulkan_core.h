@@ -66,7 +66,7 @@ extern "C" {
 //#define VK_API_VERSION VK_MAKE_API_VERSION(0, 1, 0, 0) // Patch version should always be set to 0
 
 // Version of this file
-#define VK_HEADER_VERSION 355
+#define VK_HEADER_VERSION 356
 
 // Complete version of this file
 #define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)
@@ -1479,6 +1479,7 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_FLAGS_FEATURES_KHR = 1000668004,
     VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_2_CREATE_INFO_KHR = 1000668005,
     VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_2_KHR = 1000668006,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OCP_MICROSCALING_TYPES_FEATURES_EXT = 1000672000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MIXED_FLOAT_DOT_PRODUCT_FEATURES_VALVE = 1000673000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_THROTTLE_HINT_FEATURES_SEC = 1000674000,
     VK_STRUCTURE_TYPE_THROTTLE_HINT_SUBMIT_INFO_SEC = 1000674001,
@@ -13508,6 +13509,11 @@ typedef enum VkComponentTypeKHR {
     VK_COMPONENT_TYPE_UINT8_PACKED_NV = 1000491001,
     VK_COMPONENT_TYPE_FLOAT8_E4M3_EXT = 1000491002,
     VK_COMPONENT_TYPE_FLOAT8_E5M2_EXT = 1000491003,
+    VK_COMPONENT_TYPE_FLOAT6_E2M3_EXT = 1000672000,
+    VK_COMPONENT_TYPE_FLOAT6_E3M2_EXT = 1000672001,
+    VK_COMPONENT_TYPE_FLOAT4_E2M1_EXT = 1000672002,
+    VK_COMPONENT_TYPE_FLOAT8_UNSIGNED_E8M0_EXT = 1000672003,
+    VK_COMPONENT_TYPE_MXINT8_EXT = 1000672004,
     VK_COMPONENT_TYPE_FLOAT16_NV = VK_COMPONENT_TYPE_FLOAT16_KHR,
     VK_COMPONENT_TYPE_FLOAT32_NV = VK_COMPONENT_TYPE_FLOAT32_KHR,
     VK_COMPONENT_TYPE_FLOAT64_NV = VK_COMPONENT_TYPE_FLOAT64_KHR,
@@ -21702,6 +21708,7 @@ typedef struct VkPhysicalDeviceOpacityMicromapFeaturesEXT {
     void*              pNext;
     VkBool32           micromap;
     VkBool32           micromapCaptureReplay;
+    // micromapHostCommands is legacy, but no reason was given in the API XML
     VkBool32           micromapHostCommands;
 } VkPhysicalDeviceOpacityMicromapFeaturesEXT;
 
@@ -26323,6 +26330,21 @@ typedef struct VkPhysicalDeviceShaderSubgroupPartitionedFeaturesEXT {
 
 
 
+// VK_EXT_shader_ocp_microscaling_types is a preprocessor guard. Do not pass it to API calls.
+#define VK_EXT_shader_ocp_microscaling_types 1
+#define VK_EXT_SHADER_OCP_MICROSCALING_TYPES_SPEC_VERSION 1
+#define VK_EXT_SHADER_OCP_MICROSCALING_TYPES_EXTENSION_NAME "VK_EXT_shader_ocp_microscaling_types"
+typedef struct VkPhysicalDeviceShaderOCPMicroscalingTypesFeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           shaderFloat4;
+    VkBool32           shaderFloat6;
+    VkBool32           shaderFloat8UnsignedE8M0;
+    VkBool32           shaderMXInt8;
+} VkPhysicalDeviceShaderOCPMicroscalingTypesFeaturesEXT;
+
+
+
 // VK_VALVE_shader_mixed_float_dot_product is a preprocessor guard. Do not pass it to API calls.
 #define VK_VALVE_shader_mixed_float_dot_product 1
 #define VK_VALVE_SHADER_MIXED_FLOAT_DOT_PRODUCT_SPEC_VERSION 1
@@ -26522,6 +26544,7 @@ typedef struct VkPhysicalDeviceAccelerationStructureFeaturesKHR {
     VkBool32           accelerationStructure;
     VkBool32           accelerationStructureCaptureReplay;
     VkBool32           accelerationStructureIndirectBuild;
+    // accelerationStructureHostCommands is legacy, but no reason was given in the API XML
     VkBool32           accelerationStructureHostCommands;
     VkBool32           descriptorBindingAccelerationStructureUpdateAfterBind;
 } VkPhysicalDeviceAccelerationStructureFeaturesKHR;

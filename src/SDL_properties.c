@@ -746,6 +746,25 @@ bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
     return SDL_PrivateSetProperty(props, name, NULL);
 }
 
+int SDL_GetNumProperties(SDL_PropertiesID props)
+{
+    if (!props) {
+        return 0;
+    }
+
+    SDL_Properties *properties = NULL;
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
+    if (!properties) {
+        return 0;
+    }
+
+    SDL_LockMutex(properties->lock);
+    const int retval = SDL_GetNumHashTableItems(properties->props);
+    SDL_UnlockMutex(properties->lock);
+    return retval;
+}
+
+
 typedef struct EnumerateOnePropertyData
 {
     SDL_EnumeratePropertiesCallback callback;
@@ -825,7 +844,7 @@ void SDL_DestroyProperties(SDL_PropertiesID props)
 {
     if (props) {
         // this can't just use RemoveFromHashTable with SDL_FreeProperties as the destructor, because
-        //  other destructors under this might cause use to attempt a recursive lock on SDL_properties,
+        //  other destructors under this might cause us to attempt a recursive lock on SDL_properties,
         //  which isn't allowed with rwlocks. So manually look it up and remove/free it.
         SDL_Properties *properties = NULL;
         if (SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties)) {

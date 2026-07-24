@@ -278,7 +278,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
     default:
         for (int i = 0; i < SDL_arraysize(dxgi_format_map); i++) {
             if (dxgi_format_map[i].sdl == format) {
-                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+                    output_colorspace == SDL_COLORSPACE_HDR10) {
                     return dxgi_format_map[i].srgb;
                 } else {
                     return dxgi_format_map[i].unorm;
@@ -1943,7 +1944,7 @@ static bool D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (i = 0; i < count; i++) {
@@ -1997,7 +1998,7 @@ static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         verts->pos.y = xy_[1] * scale_y;
         verts->color = *(SDL_FColor *)((char *)color + j * color_stride);
         if (convert_color) {
-            SDL_ConvertToLinear(&verts->color);
+            SDL_ConvertToLinear(renderer, &verts->color);
         }
 
         if (texture) {
@@ -2281,19 +2282,48 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     }
 }
 
-static D3D11_Shader SelectShader(const D3D11_PixelShaderConstants *shader_constants)
+static bool PQShaderScalesInput(const D3D11_PixelShaderConstants *shader_constants)
 {
-    if (!shader_constants) {
+    if (shader_constants->tonemap_method != 0.0f) {
+        // Tone mapping always scales
+        return true;
+    }
+
+    // The shader normalizes the PQ input using the SDR white point and then multiplies by the color scale
+    if (SDL_fabs((shader_constants->sdr_white_point - (shader_constants->color_scale * SCRGB_NITS))) > 1.0f) {
+        return true;
+    }
+
+    return false;
+}
+
+static D3D11_Shader SelectShader(SDL_Renderer *renderer, const D3D11_PixelShaderConstants *shader_constants)
+{
+    if (shader_constants) {
+        if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+            if (shader_constants->input_type == INPUTTYPE_HDR10 &&
+                !PQShaderScalesInput(shader_constants)) {
+                // Do a simple 1-1 copy
+                return SHADER_RGB_SIMPLE;
+            } else {
+                return SHADER_RGB_PQ;
+            }
+        }
+
+        if (shader_constants->texture_type == TEXTURETYPE_RGB &&
+            shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
+            shader_constants->tonemap_method == TONEMAP_NONE) {
+            return SHADER_RGB;
+        }
+
+        return SHADER_ADVANCED;
+    } else {
+        if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+            return SHADER_SOLID_PQ;
+        }
+
         return SHADER_SOLID;
     }
-
-    if (shader_constants->texture_type == TEXTURETYPE_RGB &&
-        shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
-        shader_constants->tonemap_method == TONEMAP_NONE) {
-        return SHADER_RGB;
-    }
-
-    return SHADER_ADVANCED;
 }
 
 static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd,
@@ -2309,7 +2339,7 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
     bool updateSubresource = false;
-    D3D11_Shader shader = SelectShader(shader_constants);
+    D3D11_Shader shader = SelectShader(renderer, shader_constants);
     D3D11_PixelShaderState *shader_state = &rendererData->currentShaderState[shader];
     D3D11_PixelShaderConstants solid_constants;
 
@@ -2650,14 +2680,21 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
         case SDL_RENDERCMD_CLEAR:
         {
-            bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
-            if (convert_color) {
-                SDL_ConvertToLinear(&color);
+            if (SDL_RenderingLinearSpace(renderer)) {
+                SDL_ConvertToLinear(renderer, &color);
             }
+
             color.r *= cmd->data.color.color_scale;
             color.g *= cmd->data.color.color_scale;
             color.b *= cmd->data.color.color_scale;
+
+            if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+                color.r = SDL_PQfromNits(color.r * SCRGB_NITS);
+                color.g = SDL_PQfromNits(color.g * SCRGB_NITS);
+                color.b = SDL_PQfromNits(color.b * SCRGB_NITS);
+            }
+
             ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), &color.r);
             break;
         }
@@ -2869,7 +2906,7 @@ static SDL_Surface *D3D11_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
     output = SDL_DuplicatePixels(
         rect->w, rect->h,
         D3D11_DXGIFormatToSDLPixelFormat(stagingTextureDesc.Format),
-        renderer->target ? renderer->target->colorspace : renderer->output_colorspace,
+        renderer->current_colorspace,
         textureMemory.pData,
         textureMemory.RowPitch);
 
@@ -2955,8 +2992,8 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
-        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
         return SDL_SetError("Unsupported output colorspace");
     }
 

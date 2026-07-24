@@ -3205,6 +3205,11 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
            If a particular case turns out to be useful we'll add it. */
 
         if (srcfmt->bytes_per_pixel == 2 && surface->map.identity != 0) {
+#ifdef SDL_SVE2_INTRINSICS
+            if (SDL_HasSVE2()) {
+                return Blit2to2KeySVE2;
+            }
+#endif
             return Blit2to2Key;
         } else {
 #ifdef SDL_ALTIVEC_BLITTERS

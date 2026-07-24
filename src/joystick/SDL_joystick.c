@@ -3131,13 +3131,14 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
         case k_eControllerType_SwitchProController:
         case k_eControllerType_Switch2ProController:
         case k_eControllerType_SwitchInputOnlyController:
+        case k_eControllerType_Switch2InputOnlyController:
             type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             break;
         case k_eControllerType_XInputSwitchController:
             if (forUI) {
                 type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
             } else {
-                type = SDL_GAMEPAD_TYPE_STANDARD;
+                type = SDL_GAMEPAD_TYPE_XBOX360;
             }
             break;
         case k_eControllerType_SteamController:
@@ -3255,14 +3256,26 @@ bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return eType == k_eControllerType_SwitchProController ||
-           eType == k_eControllerType_Switch2ProController ||
            eType == k_eControllerType_SwitchInputOnlyController;
+}
+
+bool SDL_IsJoystickNintendoSwitch2Pro(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return eType == k_eControllerType_Switch2ProController ||
+           eType == k_eControllerType_Switch2InputOnlyController;
 }
 
 bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);
     return eType == k_eControllerType_SwitchInputOnlyController;
+}
+
+bool SDL_IsJoystickNintendoSwitch2ProInputOnly(Uint16 vendor_id, Uint16 product_id)
+{
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return eType == k_eControllerType_Switch2InputOnlyController;
 }
 
 bool SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id)

@@ -2832,7 +2832,9 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 
     p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
 
-    if (bytes_per_pixel <= sizeof(pixel) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+    if (bytes_per_pixel <= sizeof(pixel) &&
+        !SDL_ISPIXELFORMAT_FOURCC(surface->format) &&
+        SDL_COLORSPACETRANSFER(surface->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
         /* Fill the appropriate number of least-significant bytes of pixel,
          * leaving the most-significant bytes set to zero */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -2909,7 +2911,9 @@ bool SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, flo
         return SDL_InvalidParamError("y");
     }
 
-    if (SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+    if (SDL_BYTESPERPIXEL(surface->format) <= sizeof(Uint32) &&
+        !SDL_ISPIXELFORMAT_FOURCC(surface->format) &&
+        SDL_COLORSPACETRANSFER(surface->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
         Uint8 r8, g8, b8, a8;
 
         if (SDL_ReadSurfacePixel(surface, x, y, &r8, &g8, &b8, &a8)) {

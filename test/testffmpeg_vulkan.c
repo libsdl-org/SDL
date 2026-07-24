@@ -16,6 +16,24 @@
 
 #ifdef FFMPEG_VULKAN_SUPPORT
 
+#ifndef SDL_PLATFORM_WINDOWS
+#define FFMPEG_DRMPRIME_SUPPORT
+
+#include <unistd.h>
+
+#define DRM_FORMAT_R8       SDL_FOURCC('R', '8', ' ', ' ')
+#define DRM_FORMAT_RG88     SDL_FOURCC('R', 'G', '8', '8')
+#define DRM_FORMAT_GR88     SDL_FOURCC('G', 'R', '8', '8')
+#define DRM_FORMAT_R16      SDL_FOURCC('R', '1', '6', ' ')
+#define DRM_FORMAT_RG1616   SDL_FOURCC('R', 'G', '3', '2')
+#define DRM_FORMAT_GR1616   SDL_FOURCC('G', 'R', '3', '2')
+#define DRM_FORMAT_NV12     SDL_FOURCC('N', 'V', '1', '2')
+#define DRM_FORMAT_P010     SDL_FOURCC('P', '0', '1', '0')
+#define DRM_FORMAT_YUYV     SDL_FOURCC('Y', 'U', 'Y', 'V')
+#define DRM_FORMAT_UYVY     SDL_FOURCC('U', 'Y', 'V', 'Y')
+#define DRM_FORMAT_ARGB8888 SDL_FOURCC('A', 'R', '2', '4')
+#endif
+
 #define VULKAN_FUNCTIONS()                                             \
     VULKAN_GLOBAL_FUNCTION(vkCreateInstance)                           \
     VULKAN_GLOBAL_FUNCTION(vkEnumerateInstanceExtensionProperties)     \
@@ -27,21 +45,28 @@
     VULKAN_INSTANCE_FUNCTION(vkEnumeratePhysicalDevices)               \
     VULKAN_INSTANCE_FUNCTION(vkGetDeviceProcAddr)                      \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2)             \
+    VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties)      \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceQueueFamilyProperties) \
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)     \
     VULKAN_INSTANCE_FUNCTION(vkQueueWaitIdle)                          \
     VULKAN_DEVICE_FUNCTION(vkAllocateCommandBuffers)                   \
+    VULKAN_DEVICE_FUNCTION(vkAllocateMemory)                           \
     VULKAN_DEVICE_FUNCTION(vkBeginCommandBuffer)                       \
+    VULKAN_DEVICE_FUNCTION(vkBindImageMemory)                          \
     VULKAN_DEVICE_FUNCTION(vkCmdPipelineBarrier2)                      \
     VULKAN_DEVICE_FUNCTION(vkCreateCommandPool)                        \
+    VULKAN_DEVICE_FUNCTION(vkCreateImage)                              \
     VULKAN_DEVICE_FUNCTION(vkCreateSemaphore)                          \
     VULKAN_DEVICE_FUNCTION(vkDestroyCommandPool)                       \
     VULKAN_DEVICE_FUNCTION(vkDestroyDevice)                            \
+    VULKAN_DEVICE_FUNCTION(vkDestroyImage)                             \
     VULKAN_DEVICE_FUNCTION(vkDestroySemaphore)                         \
     VULKAN_DEVICE_FUNCTION(vkDeviceWaitIdle)                           \
     VULKAN_DEVICE_FUNCTION(vkEndCommandBuffer)                         \
     VULKAN_DEVICE_FUNCTION(vkFreeCommandBuffers)                       \
+    VULKAN_DEVICE_FUNCTION(vkFreeMemory)                               \
     VULKAN_DEVICE_FUNCTION(vkGetDeviceQueue)                           \
+    VULKAN_DEVICE_FUNCTION(vkGetImageMemoryRequirements)               \
     VULKAN_DEVICE_FUNCTION(vkQueueSubmit)                              \
 \
 VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceVideoFormatPropertiesKHR) \
@@ -78,10 +103,6 @@ struct VulkanVideoContext
     VkCommandBuffer *commandBuffers;
     uint32_t commandBufferCount;
     uint32_t commandBufferIndex;
-    VkSemaphore *waitSemaphores;
-    uint32_t waitSemaphoreCount;
-    VkSemaphore *signalSemaphores;
-    uint32_t signalSemaphoreCount;
 
     const char **instanceExtensions;
     int instanceExtensionsCount;
@@ -202,8 +223,10 @@ static int createInstance(VulkanVideoContext *context)
         VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME
     };
-    VkApplicationInfo appInfo = { 0 };
-    VkInstanceCreateInfo instanceCreateInfo = { 0 };
+    VkApplicationInfo appInfo;
+    SDL_zero(appInfo);
+    VkInstanceCreateInfo instanceCreateInfo;
+    SDL_zero(instanceCreateInfo);
     VkResult result;
     char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
@@ -212,7 +235,7 @@ static int createInstance(VulkanVideoContext *context)
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
 
-    const char **instanceExtensionsCopy = SDL_calloc(instanceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
+    const char **instanceExtensionsCopy = (const char **)SDL_calloc(instanceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
     for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
         instanceExtensionsCopy[i] = instanceExtensions[i];
     }
@@ -221,7 +244,7 @@ static int createInstance(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
+            VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {
@@ -261,14 +284,14 @@ static int createSurface(VulkanVideoContext *context, SDL_Window *window)
 }
 
 // Use the same queue scoring algorithm as ffmpeg to make sure we get the same device configuration
-static int selectQueueFamily(VkQueueFamilyProperties *queueFamiliesProperties, uint32_t queueFamiliesCount, VkQueueFlagBits flags, int *queueCount)
+static int selectQueueFamily(VkQueueFamilyProperties *queueFamiliesProperties, uint32_t queueFamiliesCount, VkQueueFlags flags, int *queueCount)
 {
     uint32_t queueFamilyIndex;
     uint32_t selectedQueueFamilyIndex = queueFamiliesCount;
     uint32_t min_score = ~0u;
 
     for (queueFamilyIndex = 0; queueFamilyIndex < queueFamiliesCount; ++queueFamilyIndex) {
-        VkQueueFlagBits current_flags = queueFamiliesProperties[queueFamilyIndex].queueFlags;
+        VkQueueFlags current_flags = queueFamiliesProperties[queueFamilyIndex].queueFlags;
         if (current_flags & flags) {
             uint32_t score = av_popcount(current_flags) + queueFamiliesProperties[queueFamilyIndex].timestampValidBits;
             if (score < min_score) {
@@ -408,7 +431,7 @@ static int findPhysicalDevice(VulkanVideoContext *context)
         if (deviceExtensionsAllocatedSize < deviceExtensionCount) {
             SDL_free(deviceExtensions);
             deviceExtensionsAllocatedSize = deviceExtensionCount;
-            deviceExtensions = SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
+            deviceExtensions = (VkExtensionProperties *)SDL_malloc(sizeof(VkExtensionProperties) * deviceExtensionsAllocatedSize);
             if (!deviceExtensions) {
                 SDL_free(physicalDevices);
                 SDL_free(queueFamiliesProperties);
@@ -558,12 +581,14 @@ static int createDevice(VulkanVideoContext *context)
         VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME,
         VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME,
         VK_KHR_VIDEO_DECODE_H265_EXTENSION_NAME,
-        VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME
+        VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME,
+        VK_KHR_VIDEO_MAINTENANCE_1_EXTENSION_NAME
     };
-    VkDeviceCreateInfo deviceCreateInfo = { 0 };
+    VkDeviceCreateInfo deviceCreateInfo;
     VkDeviceQueueCreateInfo *queueCreateInfos = NULL;
     uint32_t queueCreateInfoCount = 0;
     VulkanDeviceFeatures supported_features;
+    const char **deviceExtensionsCopy = NULL;
     VkResult result = VK_ERROR_UNKNOWN;
 
     if (addQueueFamily(&queueCreateInfos, &queueCreateInfoCount, context->presentQueueFamilyIndex, context->presentQueueCount) < 0 ||
@@ -579,6 +604,7 @@ static int createDevice(VulkanVideoContext *context)
     context->vkGetPhysicalDeviceFeatures2(context->physicalDevice, &supported_features.device_features);
     copyDeviceFeatures(&supported_features, &context->features);
 
+    SDL_zero(deviceCreateInfo);
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = queueCreateInfoCount;
     deviceCreateInfo.pQueueCreateInfos = queueCreateInfos;
@@ -586,7 +612,7 @@ static int createDevice(VulkanVideoContext *context)
     deviceCreateInfo.enabledExtensionCount = SDL_arraysize(deviceExtensionNames);
     deviceCreateInfo.pNext = &context->features.device_features;
 
-    const char **deviceExtensionsCopy = SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
+    deviceExtensionsCopy = (const char **)SDL_calloc(deviceCreateInfo.enabledExtensionCount + SDL_arraysize(optional_extensions), sizeof(const char *));
     for (uint32_t i = 0; i < deviceCreateInfo.enabledExtensionCount; i++) {
         deviceExtensionsCopy[i] = deviceExtensionNames[i];
     }
@@ -595,7 +621,7 @@ static int createDevice(VulkanVideoContext *context)
     {
         uint32_t extensionCount;
         if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, NULL) == VK_SUCCESS && extensionCount > 0) {
-            VkExtensionProperties *extensionProperties = SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
+            VkExtensionProperties *extensionProperties = (VkExtensionProperties *)SDL_calloc(extensionCount, sizeof(VkExtensionProperties));
             if (context->vkEnumerateDeviceExtensionProperties(context->physicalDevice, NULL, &extensionCount, extensionProperties) == VK_SUCCESS) {
                 for (uint32_t i = 0; i < SDL_arraysize(optional_extensions); ++i) {
                     for (uint32_t j = 0; j < extensionCount; ++j) {
@@ -630,7 +656,8 @@ static int createDevice(VulkanVideoContext *context)
     context->vkGetDeviceQueue(context->device, context->graphicsQueueFamilyIndex, 0, &context->graphicsQueue);
 
     // Create a command pool
-    VkCommandPoolCreateInfo commandPoolCreateInfo = { 0 };
+    VkCommandPoolCreateInfo commandPoolCreateInfo;
+    SDL_zero(commandPoolCreateInfo);
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = context->graphicsQueueFamilyIndex;
@@ -654,7 +681,7 @@ done:
 
 VulkanVideoContext *CreateVulkanVideoContext(SDL_Window *window)
 {
-    VulkanVideoContext *context = SDL_calloc(1, sizeof(*context));
+    VulkanVideoContext *context = (VulkanVideoContext *)SDL_calloc(1, sizeof(*context));
     if (!context) {
         return NULL;
     }
@@ -723,44 +750,6 @@ static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *rende
 {
     uint32_t commandBufferCount = (uint32_t)SDL_GetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VULKAN_SWAPCHAIN_IMAGE_COUNT_NUMBER, 1);
 
-    if (commandBufferCount > context->waitSemaphoreCount) {
-        VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(context->waitSemaphores, commandBufferCount * sizeof(*semaphores));
-        if (!semaphores) {
-            return -1;
-        }
-        context->waitSemaphores = semaphores;
-
-        VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        while (context->waitSemaphoreCount < commandBufferCount) {
-            VkResult result = context->vkCreateSemaphore(context->device, &semaphoreCreateInfo, NULL, &context->waitSemaphores[context->waitSemaphoreCount]);
-            if (result != VK_SUCCESS) {
-                SDL_SetError("vkCreateSemaphore(): %s", getVulkanResultString(result));
-                return -1;
-            }
-            ++context->waitSemaphoreCount;
-        }
-    }
-
-    if (commandBufferCount > context->signalSemaphoreCount) {
-        VkSemaphore *semaphores = (VkSemaphore *)SDL_realloc(context->signalSemaphores, commandBufferCount * sizeof(*semaphores));
-        if (!semaphores) {
-            return -1;
-        }
-        context->signalSemaphores = semaphores;
-
-        VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        while (context->signalSemaphoreCount < commandBufferCount) {
-            VkResult result = context->vkCreateSemaphore(context->device, &semaphoreCreateInfo, NULL, &context->signalSemaphores[context->signalSemaphoreCount]);
-            if (result != VK_SUCCESS) {
-                SDL_SetError("vkCreateSemaphore(): %s", getVulkanResultString(result));
-                return -1;
-            }
-            ++context->signalSemaphoreCount;
-        }
-    }
-
     if (commandBufferCount > context->commandBufferCount) {
         uint32_t needed = (commandBufferCount - context->commandBufferCount);
         VkCommandBuffer *commandBuffers = (VkCommandBuffer *)SDL_realloc(context->commandBuffers, commandBufferCount * sizeof(*commandBuffers));
@@ -769,7 +758,8 @@ static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *rende
         }
         context->commandBuffers = commandBuffers;
 
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo = { 0 };
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo;
+        SDL_zero(commandBufferAllocateInfo);
         commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.commandPool = context->commandPool;
         commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -797,30 +787,32 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
 
     vk->lock_frame(frames, pVkFrame);
 
-    VkTimelineSemaphoreSubmitInfo timeline = { 0 };
+    VkTimelineSemaphoreSubmitInfo timeline;
+    SDL_zero(timeline);
     timeline.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     timeline.waitSemaphoreValueCount = 1;
     timeline.pWaitSemaphoreValues = pVkFrame->sem_value;
 
     VkPipelineStageFlags pipelineStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    VkSubmitInfo submitInfo = { 0 };
+    VkSubmitInfo submitInfo;
+    SDL_zero(submitInfo);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = pVkFrame->sem;
     submitInfo.pWaitDstStageMask = &pipelineStageMask;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &context->waitSemaphores[context->commandBufferIndex];
     submitInfo.pNext = &timeline;
 
     if (pVkFrame->layout[0] != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         VkCommandBuffer commandBuffer = context->commandBuffers[context->commandBufferIndex];
 
-        VkCommandBufferBeginInfo beginInfo = { 0 };
+        VkCommandBufferBeginInfo beginInfo;
+        SDL_zero(beginInfo);
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = 0;
         context->vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
-        VkImageMemoryBarrier2 barrier = { 0 };
+        VkImageMemoryBarrier2 barrier;
+        SDL_zero(barrier);
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barrier.srcAccessMask = VK_ACCESS_2_NONE;
         barrier.dstAccessMask = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
@@ -835,7 +827,8 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
         barrier.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         barrier.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
-        VkDependencyInfo dep = { 0 };
+        VkDependencyInfo dep;
+        SDL_zero(dep);
         dep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
         dep.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
         dep.imageMemoryBarrierCount = 1;
@@ -858,8 +851,6 @@ int BeginVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_R
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION , "vkQueueSubmit(): %s", getVulkanResultString(result));
     }
 
-    SDL_AddVulkanRenderSemaphores(renderer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, (Sint64)context->waitSemaphores[context->commandBufferIndex], (Sint64)context->signalSemaphores[context->commandBufferIndex]);
-
     return 0;
 }
 
@@ -872,17 +863,15 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     // Transition the frame back to ffmpeg
     ++pVkFrame->sem_value[0];
 
-    VkTimelineSemaphoreSubmitInfo timeline = { 0 };
+    VkTimelineSemaphoreSubmitInfo timeline;
+    SDL_zero(timeline);
     timeline.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
     timeline.signalSemaphoreValueCount = 1;
     timeline.pSignalSemaphoreValues = pVkFrame->sem_value;
 
-    VkPipelineStageFlags pipelineStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    VkSubmitInfo submitInfo = { 0 };
+    VkSubmitInfo submitInfo;
+    SDL_zero(submitInfo);
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &context->signalSemaphores[context->commandBufferIndex];
-    submitInfo.pWaitDstStageMask = &pipelineStageMask;
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = pVkFrame->sem;
     submitInfo.pNext = &timeline;
@@ -900,7 +889,7 @@ int FinishVulkanFrameRendering(VulkanVideoContext *context, AVFrame *frame, SDL_
     return 0;
 }
 
-SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+static SDL_Texture *CreateVulkanVideoTexturePixFmtVulkan(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx->data);
     AVVulkanFramesContext *vk = (AVVulkanFramesContext *)(frames->hwctx);
@@ -932,6 +921,247 @@ SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *fram
     return SDL_CreateTextureWithProperties(renderer, props);
 }
 
+#ifdef FFMPEG_DRMPRIME_SUPPORT
+
+static bool FindMemoryIndex(VulkanVideoContext *context, uint32_t memoryTypeBits, uint32_t *memoryIndex)
+{
+    VkPhysicalDeviceMemoryProperties mem_properties;
+
+    context->vkGetPhysicalDeviceMemoryProperties(context->physicalDevice, &mem_properties);
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; ++i) {
+        if (memoryTypeBits & (1 << i)) {
+            *memoryIndex = i;
+            return true;
+        }
+    }
+    return SDL_SetError("Couldn't find memory index for type %u", memoryTypeBits);
+}
+
+static void SDLCALL CleanupExternalVulkanImage(void *userdata, void *value)
+{
+    VulkanVideoContext *context = (VulkanVideoContext *)userdata;
+    VkImage image = (VkImage)(uintptr_t)value;
+
+    context->vkDestroyImage(context->device, image, NULL);
+}
+
+static void SDLCALL CleanupExternalVulkanImageMemory(void *userdata, void *value)
+{
+    VulkanVideoContext *context = (VulkanVideoContext *)userdata;
+    VkDeviceMemory imageMemory = (VkDeviceMemory)(uintptr_t)value;
+
+    context->vkFreeMemory(context->device, imageMemory, NULL);
+}
+
+#endif /* FFMPEG_DRMPRIME_SUPPORT */
+
+static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+#ifdef FFMPEG_DRMPRIME_SUPPORT
+    const AVDRMFrameDescriptor *drm_desc = (const AVDRMFrameDescriptor *)frame->data[0];
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    VkResult result;
+    VkImage image = 0;
+    VkDeviceMemory imageMemory = 0;
+    uint32_t memoryTypeIndex = 0;
+    SDL_Texture *texture;
+
+    if (drm_desc->nb_objects != 1) {
+        SDL_SetError("DRM frames with %d objects are not currently supported", drm_desc->nb_objects);
+        return NULL;
+    }
+
+    switch (drm_desc->layers[0].format) {
+    case DRM_FORMAT_R8:
+        if (drm_desc->nb_layers == 2) {
+            switch (drm_desc->layers[1].format) {
+            case DRM_FORMAT_GR88:
+                format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+                break;
+            case DRM_FORMAT_RG88:
+                format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV21);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    case DRM_FORMAT_R16:
+        if (drm_desc->nb_layers == 2) {
+            switch (drm_desc->layers[1].format) {
+            case DRM_FORMAT_GR1616:
+                format = VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+                break;
+            default:
+                break;
+            }
+        }
+        break;
+    case DRM_FORMAT_NV12:
+        format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
+        break;
+    case DRM_FORMAT_P010:
+        format = VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
+        break;
+    case DRM_FORMAT_YUYV:
+        format = VK_FORMAT_G8B8G8R8_422_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_YUY2);
+        break;
+    case DRM_FORMAT_UYVY:
+        format = VK_FORMAT_B8G8R8G8_422_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_UYVY);
+        break;
+    case DRM_FORMAT_ARGB8888:
+        format = VK_FORMAT_B8G8R8A8_UNORM;
+        SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_BGRA32);
+        break;
+    default:
+        break;
+    }
+    if (format == VK_FORMAT_UNDEFINED) {
+        SDL_SetError("Unsupported DRM format %d", drm_desc->layers[0].format);
+        return NULL;
+    }
+
+    int dma_buf_fds[AV_DRM_MAX_PLANES];
+    for (int i = 0; i < drm_desc->nb_objects; i++) {
+        dma_buf_fds[i] = dup(drm_desc->objects[i].fd);
+        if (dma_buf_fds[i] < 0) {
+            while (--i >= 0) {
+                close(dma_buf_fds[i]);
+            }
+            SDL_SetError("Couldn't duplicate file descriptor");
+            return NULL;
+        }
+    }
+
+    uint32_t planes = 0;
+    VkSubresourceLayout plane_layouts[AV_DRM_MAX_PLANES];
+    SDL_zeroa(plane_layouts);
+    for (int i = 0; i < drm_desc->nb_layers; ++i) {
+        for (int j = 0; j < drm_desc->layers[i].nb_planes; ++j) {
+            const AVDRMPlaneDescriptor *plane = &drm_desc->layers[i].planes[j];
+
+            plane_layouts[planes].offset = plane->offset;
+            plane_layouts[planes].rowPitch = plane->pitch;
+            ++planes;
+        }
+    }
+
+    VkImageDrmFormatModifierExplicitCreateInfoEXT modifier_info;
+    SDL_zero(modifier_info);
+    modifier_info.sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_EXPLICIT_CREATE_INFO_EXT;
+    modifier_info.drmFormatModifier = drm_desc->objects[0].format_modifier;
+    modifier_info.drmFormatModifierPlaneCount = planes;
+    modifier_info.pPlaneLayouts = plane_layouts;
+
+    VkExternalMemoryImageCreateInfo external_info;
+    SDL_zero(external_info);
+    external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+    external_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+    external_info.pNext = &modifier_info;
+
+    VkImageCreateInfo image_info;
+    SDL_zero(image_info);
+    image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    image_info.imageType = VK_IMAGE_TYPE_2D;
+    image_info.format = format;
+    image_info.extent.width = frame->width;
+    image_info.extent.height = frame->height;
+    image_info.extent.depth = 1;
+    image_info.mipLevels = 1;
+    image_info.arrayLayers = 1;
+    image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_info.tiling = VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
+    image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    image_info.pNext = &external_info;
+
+    result = context->vkCreateImage(context->device, &image_info, NULL, &image);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkCreateImage(): %s", getVulkanResultString(result));
+        goto error;
+    }
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)image);
+
+    // Calculate total memory size from plane requirements
+    VkMemoryRequirements mem_reqs;
+    context->vkGetImageMemoryRequirements(context->device, image, &mem_reqs);
+
+    VkImportMemoryFdInfoKHR import_fd_info;
+    SDL_zero(import_fd_info);
+    import_fd_info.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR;
+    import_fd_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT;
+    import_fd_info.fd = dma_buf_fds[0];
+
+    if (!FindMemoryIndex(context, mem_reqs.memoryTypeBits, &memoryTypeIndex)) {
+        goto error;
+    }
+    VkMemoryAllocateInfo alloc_info;
+    SDL_zero(alloc_info);
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.allocationSize = mem_reqs.size;
+    alloc_info.memoryTypeIndex = memoryTypeIndex;
+    alloc_info.pNext = &import_fd_info;
+
+    result = context->vkAllocateMemory(context->device, &alloc_info, NULL, &imageMemory);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkAllocateMemory(): %s", getVulkanResultString(result));
+        goto error;
+    }
+    result = context->vkBindImageMemory(context->device, image, imageMemory, 0);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkBindImageMemory(): %s", getVulkanResultString(result));
+        goto error;
+    }
+
+    texture = SDL_CreateTextureWithProperties(renderer, props);
+    if (!texture) {
+        goto error;
+    }
+
+    // Make sure this image is freed when the texture is destroyed
+    props = SDL_GetTextureProperties(texture);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImage", (void *)(uintptr_t)image, CleanupExternalVulkanImage, context);
+    SDL_SetPointerPropertyWithCleanup(props, "CleanupVulkanImageMemory", (void *)(uintptr_t)imageMemory, CleanupExternalVulkanImageMemory, context);
+
+    return texture;
+
+error:
+    if (image) {
+        context->vkDestroyImage(context->device, image, NULL);
+    }
+    if (imageMemory) {
+        context->vkFreeMemory(context->device, imageMemory, NULL);
+    } else {
+        for (int i = 0; i < drm_desc->nb_objects; i++) {
+            close(dma_buf_fds[i]);
+        }
+    }
+    return NULL;
+#else
+    SDL_SetError("DRM prime frames not supported");
+    return NULL;
+#endif /* FFMPEG_DRMPRIME_SUPPORT */
+}
+
+SDL_Texture *CreateVulkanVideoTexture(VulkanVideoContext *context, AVFrame *frame, SDL_Renderer *renderer, SDL_PropertiesID props)
+{
+    if (frame->format == AV_PIX_FMT_VULKAN) {
+        return CreateVulkanVideoTexturePixFmtVulkan(context, frame, renderer, props);
+    } else if (frame->format == AV_PIX_FMT_DRM_PRIME) {
+        return CreateVulkanVideoTexturePixFmtDRMPrime(context, frame, renderer, props);
+    } else {
+        SDL_SetError("Unknown hardware frame format");
+        return NULL;
+    }
+}
+
 void DestroyVulkanVideoContext(VulkanVideoContext *context)
 {
     if (context) {
@@ -940,20 +1170,6 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
         }
         SDL_free(context->instanceExtensions);
         SDL_free(context->deviceExtensions);
-        if (context->waitSemaphores) {
-            for (uint32_t i = 0; i < context->waitSemaphoreCount; ++i) {
-                context->vkDestroySemaphore(context->device, context->waitSemaphores[i], NULL);
-            }
-            SDL_free(context->waitSemaphores);
-            context->waitSemaphores = NULL;
-        }
-        if (context->signalSemaphores) {
-            for (uint32_t i = 0; i < context->signalSemaphoreCount; ++i) {
-                context->vkDestroySemaphore(context->device, context->signalSemaphores[i], NULL);
-            }
-            SDL_free(context->signalSemaphores);
-            context->signalSemaphores = NULL;
-        }
         if (context->commandBuffers) {
             context->vkFreeCommandBuffers(context->device, context->commandPool, context->commandBufferCount, context->commandBuffers);
             SDL_free(context->commandBuffers);

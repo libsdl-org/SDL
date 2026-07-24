@@ -264,6 +264,11 @@ internal struct SDL_CurvedContentView: View {
                 }
             }
         }
+        .onChange(of: settings.headroom, initial: true) { oldHeadroom, headroom in
+            if settings.headroom_enabled {
+                SDL_VisionOS_SendHeadroom(headroom)
+            }
+        }
         .modifier(AnimatedCurveRadiusModifier(helper: helper, curveRadius: animatedScreenRadius))
         .onChange(of: sceneActivationOrObject(shouldPopulateCollisionShape ? helper.collisionShape : nil)) {
             guard let curvedUIEntity else { return }
@@ -285,6 +290,7 @@ internal struct SDL_CurvedContentView: View {
             helper.updateSnappedStatus(snapped: snappedStatus.isSnapped)
         }
         .preferredSurroundingsEffect(shouldEnableDimming ? .dark : nil)
+        .allowedDynamicRange(.high)
         .frame(depth: 0)
         .ignoresSafeArea()
         .persistentSystemOverlays(settings.sceneState == .cinematic ? .hidden : .automatic)

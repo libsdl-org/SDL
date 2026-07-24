@@ -251,11 +251,7 @@ bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
 #endif // !SDL_PLATFORM_TVOS
 
     // Allocate the display data
-#ifdef SDL_PLATFORM_VISIONOS
-    SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
-#else
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] initWithScreen:uiscreen];
-#endif
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
@@ -286,6 +282,11 @@ bool UIKit_AddDisplay(bool send_event)
     display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
 
     display.desktop_mode = mode;
+
+    // There isn't currently a way to query the EDR headeroom on visionOS.
+    // The range is 1 - 16, so we'll assume a current value of 2 for now.
+    display.HDR.SDR_white_level = 1.0f;
+    display.HDR.HDR_headroom = 2.0f;
 
     SDL_UIKitDisplayData *data = [[SDL_UIKitDisplayData alloc] init];
 

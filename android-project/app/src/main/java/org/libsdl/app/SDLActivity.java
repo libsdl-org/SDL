@@ -337,6 +337,20 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return new String[0];
     }
 
+    /**
+     * This method returns the SDL_INIT_* subsystems this activity should set up on the Java side.
+     * It can be overridden to skip the surface/layout creation, device listener and input event
+     * routing for unused subsystems. Manager JNI setup always follows the subsystems compiled
+     * into the native library, regardless of this mask. The native app must not SDL_Init() a
+     * subsystem excluded here: it would initialize without Java-side events (no window surface,
+     * no controller hotplug or input). Called from onCreate(); overrides must not depend on
+     * state the subclass assigns after super.onCreate().
+     * @return mask of SDL.SDL_INIT_* values.
+     */
+    protected int getInitSubsystems() {
+        return SDL.SDL_INIT_EVERYTHING;
+    }
+
     public static void initialize() {
         // The static nature of the singleton and Android quirkyness force us to initialize everything here
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
@@ -458,7 +472,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         // Set up JNI
-        SDL.setupJNI();
+        SDL.setupJNI(getInitSubsystems());
 
         // Initialize state
         SDL.initialize();
@@ -467,22 +481,30 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSingleton = this;
         SDL.setContext(this);
 
-        SDLControllerManager.initializeDeviceListener();
+        if (SDL.isControllerManagerReady()) {
+            SDLControllerManager.initializeDeviceListener();
+        }
 
-        mClipboardHandler = new SDLClipboardHandler();
+        if (SDL.isSubsystemCompiled(SDL.SDL_INIT_VIDEO)) {
+            mClipboardHandler = new SDLClipboardHandler();
+        }
 
-        mHIDDeviceManager = HIDDeviceManager.acquire(this);
+        if (nativeIsHIDAPIEnabled()) {
+            mHIDDeviceManager = HIDDeviceManager.acquire(this);
+        }
 
         // Set up the surface
-        mSurface = createSDLSurface(this);
+        if (SDL.isSubsystemInitialized(SDL.SDL_INIT_VIDEO)) {
+            mSurface = createSDLSurface(this);
 
-        mLayout = new RelativeLayout(this);
-        mLayout.addView(mSurface);
+            mLayout = new RelativeLayout(this);
+            mLayout.addView(mSurface);
 
-        // Get our current screen orientation and pass it down.
-        SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
-        mCurrentRotation = SDLActivity.getCurrentRotation();
-        SDLActivity.onNativeRotationChanged(mCurrentRotation);
+            // Get our current screen orientation and pass it down.
+            SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
+            mCurrentRotation = SDLActivity.getCurrentRotation();
+            SDLActivity.onNativeRotationChanged(mCurrentRotation);
+        }
 
         try {
             if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
@@ -502,19 +524,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             break;
         }
 
-        setContentView(mLayout);
-
-        setWindowStyle(false);
+        if (mLayout != null) {
+            setContentView(mLayout);
+            setWindowStyle(false);
+        }
 
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
         // Get filename from "Open with" of another application
-        Intent intent = getIntent();
-        if (intent != null && intent.getData() != null) {
-            String filename = intent.getData().getPath();
-            if (filename != null) {
-                Log.v(TAG, "Got filename: " + filename);
-                SDLActivity.onNativeDropFile(filename);
+        if (SDL.isSubsystemInitialized(SDL.SDL_INIT_VIDEO)) {
+            Intent intent = getIntent();
+            if (intent != null && intent.getData() != null) {
+                String filename = intent.getData().getPath();
+                if (filename != null) {
+                    Log.v(TAG, "Got filename: " + filename);
+                    SDLActivity.onNativeDropFile(filename);
+                }
             }
         }
     }
@@ -886,21 +911,27 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
-            if (mSurface.mIsSurfaceReady && (mHasFocus || mHasMultiWindow) && mIsResumedCalled) {
+            boolean readyToRun = (mSurface == null) ? mIsResumedCalled
+                    : (mSurface.mIsSurfaceReady && (mHasFocus || mHasMultiWindow) && mIsResumedCalled);
+            if (readyToRun) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
-                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    if (mSurface != null) {
+                        mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    }
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem
                 } else {
                     nativeResume();
                 }
-                mSurface.handleResume();
+                if (mSurface != null) {
+                    mSurface.handleResume();
+                }
 
                 mCurrentNativeState = mNextNativeState;
             }
@@ -981,10 +1012,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                             }
                             SDLActivity.mFullscreenModeActive = true;
                         } else {
-                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                                // The legacy setSystemUiVisibility() flags are ignored on
+                                // API 30+, so the bars hidden by the modern enter path above
+                                // would never come back. Restore them via WindowInsetsController.
+                                final WindowInsetsController controller = window.getInsetsController();
+                                if (controller != null) {
+                                    controller.setSystemBarsBehavior(
+                                            WindowInsetsController.BEHAVIOR_DEFAULT);
+                                    controller.show(WindowInsets.Type.systemBars());
+                                }
+                            } else {
+                                int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
+                                window.getDecorView().setSystemUiVisibility(flags);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            }
                             SDLActivity.mFullscreenModeActive = false;
                         }
                         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
@@ -1058,7 +1101,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 DisplayMetrics realMetrics = new DisplayMetrics();
                 display.getRealMetrics(realMetrics);
 
-                boolean bFullscreenLayout = ((realMetrics.widthPixels == mSurface.getWidth()) &&
+                boolean bFullscreenLayout = (mSurface != null) &&
+                        ((realMetrics.widthPixels == mSurface.getWidth()) &&
                         (realMetrics.heightPixels == mSurface.getHeight()));
 
                 if ((Integer) data == 1) {
@@ -1102,6 +1146,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // C functions we call
     public static native String nativeGetVersion();
     public static native void nativeSetupJNI();
+    public static native int nativeGetCompiledSubsystems();
+    public static native boolean nativeIsHIDAPIEnabled();
     public static native void nativeInitMainThread();
     public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
@@ -1144,7 +1190,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeFileDialog(int requestCode, String[] filelist, int filter);
     public static native void onNativePinchStart(float span_x, float span_y, float focus_x, float focus_y);
     public static native void onNativePinchUpdate(float scale, float span_x, float span_y, float focus_x, float focus_y);
-    public static native void onNativePinchEnd(float span_x, float span_y, float focus_x, float focus_y);
+    public static native void onNativePinchEnd();
 
     /**
      * This method is called by SDL using JNI.
@@ -1486,6 +1532,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         @Override
         public void run() {
+            if (mLayout == null) {
+                return;
+            }
+
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + HEIGHT_PADDING);
             params.leftMargin = x;
             params.topMargin = y;
@@ -1515,6 +1565,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean showTextInput(int input_type, int x, int y, int w, int h) {
+        if (mLayout == null) {
+            return false;
+        }
+
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(input_type, x, y, w, h));
     }
@@ -1553,7 +1607,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
         // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
         // So, retrieve the device itself and check all of its sources
-        if (SDLControllerManager.isDeviceSDLJoystick(device)) {
+        if (SDL.isControllerManagerReady() && SDLControllerManager.isDeviceSDLJoystick(device)) {
             // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (SDLControllerManager.onNativePadDown(deviceId, keyCode, event.getScanCode())) {

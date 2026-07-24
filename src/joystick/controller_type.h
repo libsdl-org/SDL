@@ -64,6 +64,7 @@ typedef enum
 	k_eControllerType_HoriSteamController = 49,
 	k_eControllerType_8BitDoController = 50,
 	k_eControllerType_Switch2ProController = 51,
+	k_eControllerType_Switch2InputOnlyController = 52,
 	k_eControllerType_LastController,			// Don't add game controllers below this enumeration - this enumeration can change value
 
 	// Keyboards and Mice

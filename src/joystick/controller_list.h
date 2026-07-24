@@ -92,7 +92,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller, NULL },	// Power A PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller, NULL },	// BDA Pro Ex
 	{ MAKE_CONTROLLER_ID( 0x2563, 0x0523 ), k_eControllerType_PS3Controller, NULL },	// Digiflip GP006
-	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, "Retro-bit Controller" },	// SWITCH CO., LTD. Retro-bit Controller
+	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, "Retro Controller" },	// SWITCH CO., LTD. Retro-bit, Retro Fighters Controllers
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller, NULL },	// gioteck vx2
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller, NULL },	//
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller, NULL },	// Qanba Drone
@@ -182,8 +182,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1012 ), k_eControllerType_PS5Controller, NULL },	// Razer Kitsune
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1024 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode wired)
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1026 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode with dongle)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1024 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V3 Pro (PS5 mode wired)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1026 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V3 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS
@@ -621,8 +621,12 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0186 ), k_eControllerType_SwitchProController, NULL },        // PDP Afterglow Wireless Switch Controller - working gyro. USB is for charging only. Many later "Wireless" line devices w/ gyro also use this vid/pid
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0187 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Rockcandy Wired Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0188 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wired Deluxe+ Audio Controller
-	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018b ), k_eControllerType_SwitchProController, NULL },  // PDP Afterglow Wave Wireless Controller for Switch
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018b ), k_eControllerType_SwitchInputOnlyController, NULL },  // PDP Afterglow Wave Wired/Wireless Controller for Switch
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x018c ), k_eControllerType_SwitchProController, "PDP REALMz Wireless Controller" },  // PDP REALMz Wireless Controller for Switch
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0193 ), k_eControllerType_Switch2ProController, NULL },  // Turtle Beach Afterglow Wireless RGB Gaming Controller for Nintendo Switch 2 and the Turtle Beach Rematch Wireless RGB Gaming Controller for Nintendo Switch 2
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0196 ), k_eControllerType_Switch2InputOnlyController, NULL },  // Turtle Beach Rematch Wired Controller for Nintendo Switch 2
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0197 ), k_eControllerType_Switch2InputOnlyController, NULL },  // Turtle Beach Afterglow Wave Wired Controller for Nintendo Switch 2
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0198 ), k_eControllerType_Switch2InputOnlyController, NULL },  // Turtle Beach Afterglow Wired Controller for Switch 2
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00aa ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Real Arcade Pro V Hayabusa in Switch Mode
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Wired Controller Plus/PowerA Wired Controller Nintendo GameCube Style
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xa712 ), k_eControllerType_SwitchInputOnlyController, NULL },  // PowerA Nintendo Switch Fusion Fight Pad

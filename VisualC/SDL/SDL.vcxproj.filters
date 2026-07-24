@@ -1155,10 +1155,16 @@
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced.h">
       <Filter>render\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced_YUV.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Colors.h">
       <Filter>render\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures.h">
+      <Filter>render\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures_YUV.h">
       <Filter>render\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_VertexShader.h">

@@ -411,11 +411,9 @@ static void Wayland_SeatSetKeymap(SDL_WaylandSeat *seat)
     }
 }
 
-// Returns true if a key repeat event was due
-static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
+// Synthesize key repeat events
+static void keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
 {
-    bool ret = false;
-
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->base_time_ns + repeat_info->next_repeat_ns;
@@ -425,26 +423,15 @@ static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint6
             SDL_SendKeyboardText(repeat_info->text);
         }
         repeat_info->next_repeat_ns += SDL_NS_PER_SECOND / (Uint64)repeat_info->repeat_rate;
-        ret = true;
     }
-    return ret;
-}
-
-static void keyboard_repeat_clear(SDL_WaylandKeyboardRepeat *repeat_info)
-{
-    if (!repeat_info->is_initialized) {
-        return;
-    }
-    repeat_info->is_key_down = false;
 }
 
 static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 keyboard_id, uint32_t key, Uint32 wl_press_time_ms,
-                                Uint64 base_time_ns, uint32_t scancode, bool has_text, char text[8])
+                                Uint64 base_time_ns, uint32_t scancode, const char *text)
 {
-    if (!repeat_info->is_initialized || !repeat_info->repeat_rate) {
+    if (!repeat_info->repeat_rate) {
         return;
     }
-    repeat_info->is_key_down = true;
     repeat_info->keyboard_id = keyboard_id;
     repeat_info->key = key;
     repeat_info->wl_press_time_ms = wl_press_time_ms;
@@ -452,37 +439,11 @@ static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 k
     repeat_info->sdl_press_time_ns = SDL_GetTicksNS();
     repeat_info->next_repeat_ns = SDL_MS_TO_NS(repeat_info->repeat_delay_ms);
     repeat_info->scancode = scancode;
-    if (has_text) {
-        SDL_memcpy(repeat_info->text, text, sizeof(repeat_info->text));
+    if (text) {
+        SDL_strlcpy(repeat_info->text, text, SDL_arraysize(repeat_info->text));
     } else {
         repeat_info->text[0] = '\0';
     }
-}
-
-static uint32_t keyboard_repeat_get_key(SDL_WaylandKeyboardRepeat *repeat_info)
-{
-    if (repeat_info->is_initialized && repeat_info->is_key_down) {
-        return repeat_info->key;
-    }
-
-    return 0;
-}
-
-static void keyboard_repeat_set_text(SDL_WaylandKeyboardRepeat *repeat_info, const char text[8])
-{
-    if (repeat_info->is_initialized) {
-        SDL_copyp(repeat_info->text, text);
-    }
-}
-
-static bool keyboard_repeat_is_set(SDL_WaylandKeyboardRepeat *repeat_info)
-{
-    return repeat_info->is_initialized && repeat_info->is_key_down;
-}
-
-static bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_info, uint32_t key)
-{
-    return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
 static void sync_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
@@ -527,7 +488,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 
     // If key repeat is active, we'll need to cap our maximum wait time to handle repeats
     wl_list_for_each (seat, &d->seat_list, link) {
-        if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+        if (seat->keyboard.repeat.key) {
             const Uint64 elapsed = start - seat->keyboard.repeat.sdl_press_time_ns;
             const Uint64 next_repeat_wait_time = (seat->keyboard.repeat.next_repeat_ns - elapsed) + 1;
             if (timeoutNS < 0 || next_repeat_wait_time <= timeoutNS) {
@@ -664,7 +625,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     if (ret >= 0) {
         // Synthesize key repeat events.
         wl_list_for_each (seat, &d->seat_list, link) {
-            if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+            if (seat->keyboard.repeat.key) {
                 Wayland_SeatSetKeymap(seat);
 
                 const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
@@ -679,7 +640,7 @@ connection_error:
     }
 }
 
-static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
+static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat, bool warp)
 {
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
@@ -695,7 +656,11 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
 
         sx *= window_data->pointer_scale.x;
         sy *= window_data->pointer_scale.y;
-        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        if (!warp) {
+            SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        } else {
+            SDL_SendMouseWarp(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, (float)sx, (float)sy);
+        }
 
         seat->pointer.last_motion.x = (int)SDL_floor(sx);
         seat->pointer.last_motion.y = (int)SDL_floor(sy);
@@ -802,7 +767,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
         }
     } else {
         seat->pointer.pending_frame.timestamp_ns = timestamp;
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, false);
     }
 }
 
@@ -829,7 +794,7 @@ static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
     SDL_SetMouseFocus(window->sdlwindow);
 
     // Send the initial position.
-    pointer_dispatch_absolute_motion(seat);
+    pointer_dispatch_absolute_motion(seat, false);
 
     // Update the pointer grab state.
     Wayland_SeatUpdatePointerGrab(seat);
@@ -1319,7 +1284,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     }
 
     if (seat->pointer.pending_frame.have_absolute) {
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, seat->pointer.pending_frame.have_warp);
     }
 
     if (seat->pointer.pending_frame.have_relative) {
@@ -1375,18 +1340,29 @@ static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
 }
 
+static void pointer_handle_warp(void *data, struct wl_pointer *wl_pointer, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    seat->pointer.pending_frame.have_absolute = true;
+    seat->pointer.pending_frame.have_warp = true;
+    seat->pointer.pending_frame.absolute.sx = surface_x;
+    seat->pointer.pending_frame.absolute.sy = surface_y;
+}
+
 static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_enter,
     pointer_handle_leave,
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    pointer_handle_frame,                  // Version 5
-    pointer_handle_axis_source,            // Version 5
-    pointer_handle_axis_stop,              // Version 5
-    pointer_handle_axis_discrete,          // Version 5
-    pointer_handle_axis_value120,          // Version 8
-    pointer_handle_axis_relative_direction // Version 9
+    pointer_handle_frame,                   // Version 5
+    pointer_handle_axis_source,             // Version 5
+    pointer_handle_axis_stop,               // Version 5
+    pointer_handle_axis_discrete,           // Version 5
+    pointer_handle_axis_value120,           // Version 8
+    pointer_handle_axis_relative_direction, // Version 9
+    pointer_handle_warp                     // Version 11
 };
 
 static void relative_pointer_handle_relative_motion(void *data,
@@ -2181,7 +2157,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     }
 
     // Stop key repeat before clearing keyboard focus
-    keyboard_repeat_clear(&seat->keyboard.repeat);
+    seat->keyboard.repeat.key = 0;
 
     SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
 
@@ -2304,7 +2280,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
             has_text = keyboard_input_get_text(text, seat, key, true, &handled_by_ime);
         }
     } else {
-        if (keyboard_repeat_key_is_set(&seat->keyboard.repeat, key)) {
+        if (key == seat->keyboard.repeat.key) {
             /* Send any due key repeat events before stopping the repeat and generating the key up event.
              * Compute time based on the Wayland time, as it reports when the release event happened.
              * Using SDL_GetTicks would be wrong, as it would report when the release event is processed,
@@ -2312,7 +2288,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
              */
             const Uint64 elapsed = SDL_MS_TO_NS(time - seat->keyboard.repeat.wl_press_time_ms);
             keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
-            keyboard_repeat_clear(&seat->keyboard.repeat);
+            seat->keyboard.repeat.key = 0;
         }
         keyboard_input_get_text(text, seat, key, false, &handled_by_ime);
     }
@@ -2348,7 +2324,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
             SDL_SendKeyboardText(text);
         }
         if (seat->keyboard.xkb.keymap && WAYLAND_xkb_keymap_key_repeats(seat->keyboard.xkb.keymap, key + 8)) {
-            keyboard_repeat_set(&seat->keyboard.repeat, seat->keyboard.sdl_id, key, time, timestamp_ns, scancode, has_text, text);
+            keyboard_repeat_set(&seat->keyboard.repeat, seat->keyboard.sdl_id, key, time, timestamp_ns, scancode, has_text ? text : NULL);
         }
     }
 }
@@ -2378,12 +2354,11 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
                                   0, 0, group);
 
     // If a key is repeating, update the text to apply the modifier.
-    if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+    if (seat->keyboard.repeat.key) {
         char text[8];
-        const uint32_t key = keyboard_repeat_get_key(&seat->keyboard.repeat);
 
-        if (keyboard_input_get_text(text, seat, key, true, NULL)) {
-            keyboard_repeat_set_text(&seat->keyboard.repeat, text);
+        if (keyboard_input_get_text(text, seat, seat->keyboard.repeat.key, true, NULL)) {
+            SDL_strlcpy(seat->keyboard.repeat.text, text, SDL_arraysize(seat->keyboard.repeat.text));
         }
     }
 
@@ -2401,9 +2376,12 @@ static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keybo
                                         int32_t rate, int32_t delay)
 {
     SDL_WaylandSeat *seat = data;
-    seat->keyboard.repeat.repeat_rate = SDL_clamp(rate, 0, 1000);
+    seat->keyboard.repeat.repeat_rate = rate;
     seat->keyboard.repeat.repeat_delay_ms = delay;
-    seat->keyboard.repeat.is_initialized = true;
+
+    if (!rate) {
+        seat->keyboard.repeat.key = 0; // Cancel the repeat to avoid dividing by a rate of zero.
+    }
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
@@ -3087,12 +3065,14 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In data_device_listener . data_device_handle_selection on data_offer 0x%08x",
                  (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)id) : -1));
-    if (data_device->selection_offer != offer) {
-        Wayland_data_offer_destroy(data_device->selection_offer);
-        data_device->selection_offer = offer;
-    }
 
-    Wayland_data_offer_notify_from_mimes(offer, true);
+    // Don't notify when clearing the old selection offer if doing so will inadvertently clear the selection source.
+    const bool notify = offer || (!offer && data_device->selection_offer && (!data_device->selection_offer->callback || !data_device->selection_source));
+    Wayland_data_offer_destroy(data_device->selection_offer);
+    data_device->selection_offer = offer;
+    if (notify) {
+        Wayland_data_offer_notify_from_mimes(offer, true);
+    }
 }
 
 static const struct wl_data_device_listener data_device_listener = {

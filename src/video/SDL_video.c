@@ -1522,9 +1522,6 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
 
     CHECK_DISPLAY_MAGIC(display, NULL);
 
-    // Make sure our mode list is updated
-    SDL_UpdateFullscreenDisplayModes(display);
-
     return display->current_mode;
 }
 
@@ -5839,21 +5836,21 @@ bool SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props
         _this->SetTextInputProperties(_this, window, props);
     }
 
-    // Show the on-screen keyboard, if desired
-    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
-        if (_this->ShowScreenKeyboard) {
-            _this->ShowScreenKeyboard(_this, window, props);
-        }
-    }
-
     if (!window->text_input_active) {
-        // Finally start the text input system
+        // Start the text input system
         if (_this->StartTextInput) {
             if (!_this->StartTextInput(_this, window, props)) {
                 return false;
             }
         }
         window->text_input_active = true;
+    }
+
+    // Show the on-screen keyboard, if desired
+    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
+        if (_this->ShowScreenKeyboard) {
+            _this->ShowScreenKeyboard(_this, window, props);
+        }
     }
     return true;
 }
@@ -6321,6 +6318,17 @@ void SDL_Vulkan_UnloadLibrary(void)
 
 char const * const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
+    Uint32 tmpcount = 0;
+    if (!count) {
+        count = &tmpcount;
+    }
+
+    if (!_this->Vulkan_GetInstanceExtensions) {
+        *count = 0;
+        SDL_Unsupported();
+        return NULL;
+    }
+
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 

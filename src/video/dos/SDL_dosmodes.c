@@ -219,18 +219,15 @@ static const SDL_VESAInfo *GetVESAInfo(void)
     return vesa_info;
 }
 
-// Test by writing and reading back the DAC Pixel Mask register
-// On VGA this is a read/write register, on EGA/CGA the port either
-// doesn't exist (reads 0xFF) or isn't writable.
+// Check for VGA using BIOS function GET DISPLAY COMBINATION CODE.
+// Call INT 0x10 with AX=0x1A00; function is supported if AL=0x1A.
+// Returns true for VGA-compatible hardware. 
 static bool DetectVGA(void)
 {
-    const Uint8 original = inportb(VGA_DAC_PIXEL_MASK);
-    outportb(VGA_DAC_PIXEL_MASK, 0xA5);
-    (void)inportb(0x80); // small I/O delay
-    const Uint8 readback = inportb(VGA_DAC_PIXEL_MASK);
-    outportb(VGA_DAC_PIXEL_MASK, original);
-
-    return (readback == 0xA5);
+    __dpmi_regs regs = {};
+    regs.x.ax = 0x1A00;
+    __dpmi_int(0x10, &regs);
+    return ((regs.x.ax & 0x00FF) == 0x001A);
 }
 
 bool DOSVESA_SupportsVESA(void)

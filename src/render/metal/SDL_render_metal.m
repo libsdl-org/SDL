@@ -1262,7 +1262,7 @@ static bool METAL_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (int i = 0; i < count; i++, points++) {
@@ -1293,7 +1293,7 @@ static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
     cmd->data.draw.count = count;
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     for (int i = 0; i < count; i++, points++) {
@@ -1370,7 +1370,7 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
         col_ = *(SDL_FColor *)((char *)color + j * color_stride);
 
         if (convert_color) {
-            SDL_ConvertToLinear(&col_);
+            SDL_ConvertToLinear(renderer, &col_);
         }
 
         *(verts++) = col_.r;
@@ -1606,6 +1606,9 @@ static bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     if (statecache->shader_constants_dirty ||
         SDL_memcmp(shader_constants, &statecache->shader_constants, sizeof(*shader_constants)) != 0) {
         id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:sizeof(*shader_constants) options:MTLResourceStorageModeShared];
+        if (mtlbufconstants == nil) {
+            return SDL_OutOfMemory();
+        }
         mtlbufconstants.label = @"SDL shader constants data";
         SDL_memcpy([mtlbufconstants contents], shader_constants, sizeof(*shader_constants));
         [data.mtlcmdencoder setFragmentBuffer:mtlbufconstants offset:0 atIndex:0];
@@ -1776,6 +1779,9 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
              * practices guide recommends this approach for streamed vertex data.
              */
             mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
+            if (mtlbufvertex == nil) {
+                return SDL_OutOfMemory();
+            }
             mtlbufvertex.label = @"SDL vertex data";
             SDL_memcpy([mtlbufvertex contents], vertices, vertsize);
 
@@ -1838,7 +1844,7 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                     bool convert_color = SDL_RenderingLinearSpace(renderer);
                     SDL_FColor color = cmd->data.color.color;
                     if (convert_color) {
-                        SDL_ConvertToLinear(&color);
+                        SDL_ConvertToLinear(renderer, &color);
                     }
                     color.r *= cmd->data.color.color_scale;
                     color.g *= cmd->data.color.color_scale;

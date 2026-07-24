@@ -88,7 +88,7 @@ API_AVAILABLE(macos(10.14))
 static UNUserNotificationCenter *center;
 static SDLNotificationDelegate *delegate;
 
-static bool ShouldEnableNotifications()
+static bool ShouldEnableNotifications(void)
 {
 #if defined(SDL_PLATFORM_MACOS)
     /* Notifications outside of an app bundle are unsupported, and will crash with an
@@ -354,7 +354,7 @@ bool SDL_RemoveNotification(SDL_NotificationID notification)
 }
 #endif
 
-void SDL_CleanupNotifications()
+void SDL_CleanupNotifications(void)
 {
     // TODO: Anything to do here?
 }

@@ -107,7 +107,9 @@ extern bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick is a Nintendo Switch Pro controller
 extern bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNintendoSwitch2Pro(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNintendoSwitch2ProInputOnly(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id);

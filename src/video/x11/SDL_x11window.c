@@ -1642,14 +1642,16 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Display *display = data->videodata->display;
     XEvent event;
 
-    if (X11_IsWindowMapped(_this, window)) {
-        X11_XWithdrawWindow(display, data->xwindow, screen);
-        // Blocking wait for "UnmapNotify" event
-        if (!(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
-            X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
-        }
-        X11_XFlush(display);
+    /* Some window managers will mark minimized or offscreen windows as unmapped, so we
+     * must not block while waiting for an UnmapNotify event that will never arrive.
+     */
+    const bool is_mapped = X11_IsWindowMapped(_this, window);
+    X11_XWithdrawWindow(display, data->xwindow, screen);
+    if (is_mapped && !(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
+        // Blocking wait for "UnmapNotify" event.
+        X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
     }
+    X11_XFlush(display);
 
     // Transfer keyboard focus back to the parent
     if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {

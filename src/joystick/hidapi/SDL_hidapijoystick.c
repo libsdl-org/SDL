@@ -1329,7 +1329,7 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
         // changes when that happens, we'll pretend the driver isn't available so the XInput
         // interface will always show up (but won't have any input when the controller is in
         // enhanced mode)
-        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && device->driver == &SDL_HIDAPI_DriverFlydigi) {
             continue;
         }
 

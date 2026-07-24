@@ -675,6 +675,7 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#ifndef SDL_HAPTIC_DISABLED
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
     if (!item) {
         return SDL_SetError("Rumble failed, device disconnected");
@@ -687,6 +688,9 @@ static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     float high_frequency_intensity = (float)high_frequency_rumble / SDL_MAX_UINT16;
     Android_JNI_HapticRumble(item->device_id, low_frequency_intensity, high_frequency_intensity, 5000);
     return true;
+#else
+    return SDL_Unsupported();
+#endif
 }
 
 static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)

@@ -324,168 +324,6 @@ static struct wl_buffer *Wayland_CursorStateGetFrame(SDL_WaylandCursorState *sta
     return NULL;
 }
 
-static struct CursorThreadContext
-{
-    SDL_Thread *thread;
-    struct wl_event_queue *queue;
-    struct wl_proxy *compositor_wrapper;
-    SDL_Mutex *lock;
-    bool should_exit;
-} cursor_thread_context;
-
-static void handle_cursor_thread_exit(void *data, struct wl_callback *wl_callback, uint32_t callback_data)
-{
-    wl_callback_destroy(wl_callback);
-    cursor_thread_context.should_exit = true;
-}
-
-static const struct wl_callback_listener cursor_thread_exit_listener = {
-    handle_cursor_thread_exit
-};
-
-static int SDLCALL Wayland_CursorThreadFunc(void *data)
-{
-    struct wl_display *display = data;
-    const int display_fd = WAYLAND_wl_display_get_fd(display);
-    int ret;
-
-    /* The lock must be held whenever dispatching to avoid a race condition when setting
-     * or destroying cursor frame callbacks, as adding the callback followed by setting
-     * the listener is not an atomic operation, and the callback proxy must not be
-     * destroyed while in the callback handler.
-     *
-     * Any error other than EAGAIN is fatal and causes the thread to exit.
-     */
-    while (!cursor_thread_context.should_exit) {
-        if (WAYLAND_wl_display_prepare_read_queue(display, cursor_thread_context.queue) == 0) {
-            Sint64 timeoutNS = -1;
-
-            ret = WAYLAND_wl_display_flush(display);
-
-            if (ret < 0) {
-                if (errno == EAGAIN) {
-                    // If the flush failed with EAGAIN, don't block as not to inhibit other threads from reading events.
-                    timeoutNS = SDL_MS_TO_NS(1);
-                } else {
-                    WAYLAND_wl_display_cancel_read(display);
-                    return -1;
-                }
-            }
-
-            // Wait for a read/write operation to become possible.
-            ret = SDL_IOReady(display_fd, SDL_IOR_READ, timeoutNS);
-
-            if (ret <= 0) {
-                WAYLAND_wl_display_cancel_read(display);
-                if (ret < 0) {
-                    return -1;
-                }
-
-                // Nothing to read, and woke to flush; try again.
-                continue;
-            }
-
-            ret = WAYLAND_wl_display_read_events(display);
-            if (ret == -1) {
-                return -1;
-            }
-        }
-
-        SDL_LockMutex(cursor_thread_context.lock);
-        ret = WAYLAND_wl_display_dispatch_queue_pending(display, cursor_thread_context.queue);
-        SDL_UnlockMutex(cursor_thread_context.lock);
-
-        if (ret < 0) {
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-static bool Wayland_StartCursorThread(SDL_VideoData *data)
-{
-    if (!cursor_thread_context.thread) {
-        cursor_thread_context.queue = Wayland_DisplayCreateQueue(data->display, "SDL Cursor Surface Queue");
-        if (!cursor_thread_context.queue) {
-            goto cleanup;
-        }
-
-        cursor_thread_context.compositor_wrapper = WAYLAND_wl_proxy_create_wrapper(data->compositor);
-        if (!cursor_thread_context.compositor_wrapper) {
-            goto cleanup;
-        }
-        WAYLAND_wl_proxy_set_queue(cursor_thread_context.compositor_wrapper, cursor_thread_context.queue);
-
-        cursor_thread_context.lock = SDL_CreateMutex();
-        if (!cursor_thread_context.lock) {
-            goto cleanup;
-        }
-
-        cursor_thread_context.thread = SDL_CreateThread(Wayland_CursorThreadFunc, "wl_cursor_surface", data->display);
-        if (!cursor_thread_context.thread) {
-            goto cleanup;
-        }
-
-        return true;
-    }
-
-cleanup:
-    if (cursor_thread_context.lock) {
-        SDL_DestroyMutex(cursor_thread_context.lock);
-    }
-
-    if (cursor_thread_context.compositor_wrapper) {
-        WAYLAND_wl_proxy_wrapper_destroy(cursor_thread_context.compositor_wrapper);
-    }
-
-    if (cursor_thread_context.queue) {
-        WAYLAND_wl_event_queue_destroy(cursor_thread_context.queue);
-    }
-
-    SDL_zero(cursor_thread_context);
-
-    return false;
-}
-
-static void Wayland_DestroyCursorThread(SDL_VideoData *data)
-{
-    if (cursor_thread_context.thread) {
-        // Dispatch the exit event to unblock the animation thread and signal it to exit.
-        struct wl_proxy *display_wrapper = WAYLAND_wl_proxy_create_wrapper(data->display);
-        WAYLAND_wl_proxy_set_queue(display_wrapper, cursor_thread_context.queue);
-
-        SDL_LockMutex(cursor_thread_context.lock);
-        struct wl_callback *cb = wl_display_sync((struct wl_display *)display_wrapper);
-        wl_callback_add_listener(cb, &cursor_thread_exit_listener, NULL);
-        SDL_UnlockMutex(cursor_thread_context.lock);
-
-        WAYLAND_wl_proxy_wrapper_destroy(display_wrapper);
-
-        int ret = WAYLAND_wl_display_flush(data->display);
-        while (ret == -1 && errno == EAGAIN) {
-            // Shutting down the thread requires a successful flush.
-            ret = SDL_IOReady(WAYLAND_wl_display_get_fd(data->display), SDL_IOR_WRITE, -1);
-            if (ret >= 0) {
-                ret = WAYLAND_wl_display_flush(data->display);
-            }
-        }
-
-        // Avoid a warning if the flush failed due to a broken connection.
-        if (ret < 0) {
-            wl_callback_destroy(cb);
-        }
-
-        // Wait for the thread to return; it will exit automatically on a broken connection.
-        SDL_WaitThread(cursor_thread_context.thread, NULL);
-
-        WAYLAND_wl_proxy_wrapper_destroy(cursor_thread_context.compositor_wrapper);
-        WAYLAND_wl_event_queue_destroy(cursor_thread_context.queue);
-        SDL_DestroyMutex(cursor_thread_context.lock);
-        SDL_zero(cursor_thread_context);
-    }
-}
-
 static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time);
 static const struct wl_callback_listener cursor_frame_listener = {
     cursor_frame_done
@@ -545,24 +383,26 @@ static void cursor_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 
 void Wayland_CursorStateSetFrameCallback(SDL_WaylandCursorState *state, void *userdata)
 {
-    SDL_LockMutex(cursor_thread_context.lock);
+    SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+    Wayland_LockEventThread(viddata->event_thread_context);
 
     state->frame_callback = wl_surface_frame(state->surface);
     wl_callback_add_listener(state->frame_callback, &cursor_frame_listener, userdata);
 
-    SDL_UnlockMutex(cursor_thread_context.lock);
+    Wayland_UnlockEventThread(viddata->event_thread_context);
 }
 
 void Wayland_CursorStateDestroyFrameCallback(SDL_WaylandCursorState *state)
 {
-    SDL_LockMutex(cursor_thread_context.lock);
+    SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+    Wayland_LockEventThread(viddata->event_thread_context);
 
     if (state->frame_callback) {
         wl_callback_destroy(state->frame_callback);
         state->frame_callback = NULL;
     }
 
-    SDL_UnlockMutex(cursor_thread_context.lock);
+    Wayland_UnlockEventThread(viddata->event_thread_context);
 }
 
 static void Wayland_CursorStateResetAnimationState(SDL_WaylandCursorState *state)
@@ -575,9 +415,10 @@ static void Wayland_CursorStateResetAnimationState(SDL_WaylandCursorState *state
 static void Wayland_CursorStateResetAnimation(SDL_WaylandCursorState *state, bool lock)
 {
     if (lock) {
-        SDL_LockMutex(cursor_thread_context.lock);
+        SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+        Wayland_LockEventThread(viddata->event_thread_context);
         Wayland_CursorStateResetAnimationState(state);
-        SDL_UnlockMutex(cursor_thread_context.lock);
+        Wayland_UnlockEventThread(viddata->event_thread_context);
     } else {
         Wayland_CursorStateResetAnimationState(state);
     }
@@ -720,8 +561,8 @@ static bool Wayland_GetSystemCursor(SDL_CursorData *cdata, SDL_WaylandCursorStat
 
 static int surface_sort_callback(const void *a, const void *b)
 {
-    SDL_Surface *s1 = (SDL_Surface *)a;
-    SDL_Surface *s2 = (SDL_Surface *)b;
+    const SDL_Surface *s1 = *(const SDL_Surface **)a;
+    const SDL_Surface *s2 = *(const SDL_Surface **)b;
 
     return (s1->w * s1->h) <= (s2->w * s2->h) ? -1 : 1;
 }
@@ -1175,8 +1016,10 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
         state->current_cursor = cursor_data;
 
         if (!state->surface) {
-            if (cursor_thread_context.compositor_wrapper) {
-                state->surface = wl_compositor_create_surface((struct wl_compositor *)cursor_thread_context.compositor_wrapper);
+            if (viddata->event_thread_context) {
+                struct wl_compositor *compositor_wrapper = Wayland_CreateEventThreadProxyWrapper(viddata->event_thread_context, viddata->compositor);
+                state->surface = wl_compositor_create_surface(compositor_wrapper);
+                WAYLAND_wl_proxy_wrapper_destroy(compositor_wrapper);
             } else {
                 state->surface = wl_compositor_create_surface(viddata->compositor);
             }
@@ -1355,10 +1198,9 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
             }
         }
 
-        /* NOTE: There is a pending warp event under discussion that should replace this when available.
-         * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
-         */
-        SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
+        if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_WARP_SINCE_VERSION) {
+            SDL_SendMouseWarp(0, window->sdlwindow, seat->pointer.sdl_id, x, y);
+        }
     }
 }
 
@@ -1541,9 +1383,7 @@ void Wayland_InitMouse(SDL_VideoData *data)
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
     mouse->GetGlobalMouseState = Wayland_GetGlobalMouseState;
 
-    if (!Wayland_StartCursorThread(data)) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Failed to start cursor animation event thread");
-    }
+    mouse->have_explicit_warp_event = true;
 
     SDL_HitTestResult r = SDL_HITTEST_NORMAL;
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
@@ -1604,7 +1444,6 @@ void Wayland_FiniMouse(SDL_VideoData *data)
         sys_cursors[i] = NULL;
     }
 
-    Wayland_DestroyCursorThread(data);
     Wayland_FreeCursorThemes(data);
 
 #ifdef SDL_USE_LIBDBUS

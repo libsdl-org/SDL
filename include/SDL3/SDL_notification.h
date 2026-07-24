@@ -253,10 +253,10 @@ extern SDL_DECLSPEC SDL_NotificationID SDLCALL SDL_ShowNotification(const char *
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RemoveNotification(SDL_NotificationID notification);
 
-// Ends C function definitions when using C++
+/* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
 #include <SDL3/SDL_close_code.h>
 
-#endif // SDL_notification_h_
+#endif /* SDL_notification_h_ */
