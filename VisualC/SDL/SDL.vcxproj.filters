@@ -543,6 +543,9 @@
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>core\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\core\windows\gameinput\gameinput.h">
+      <Filter>core\windows\gameinput</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\core\windows\SDL_gameinput.h">
       <Filter>core\windows</Filter>
     </ClInclude>
@@ -1446,6 +1449,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c">
       <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\gameinput\gameinput.cpp">
+      <Filter>core\windows\gameinput</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp">
       <Filter>core\windows</Filter>
