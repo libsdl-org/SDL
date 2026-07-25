@@ -512,14 +512,6 @@ if(SDL_SHARED)
   SDL_AddCommonCompilerFlags(SDL3-shared)
   target_compile_definitions(SDL3-shared PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
   set_property(TARGET SDL3-shared PROPERTY UNITY_BUILD OFF)
-  if ("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
-    target_compile_features(SDL3-shared PRIVATE c_std_99)
-  else()
-    # tcc does support the subset of C99 used by SDL
-    if (NOT USE_TCC)
-      message(WARNING "target_compile_features does not know c_std_99 for C compiler")
-    endif()
-  endif()
 endif()
 
 if(SDL_STATIC)
@@ -528,12 +520,13 @@ if(SDL_STATIC)
   SDL_AddCommonCompilerFlags(SDL3-static)
   target_compile_definitions(SDL3-static PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
   set_property(TARGET SDL3-static PROPERTY UNITY_BUILD OFF)
-  if ("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
-    target_compile_features(SDL3-static PRIVATE c_std_99)
-  else()
-    if (NOT USE_TCC)
-      message(WARNING "target_compile_features does not know c_std_99 for C compiler")
-    endif()
+endif()
+
+if("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
+  sdl_compile_features(c_std_99)
+else()
+  if(NOT USE_TCC)
+    message(WARNING "target_compile_features does not know c_std_99 for C compiler")
   endif()
 endif()
 
@@ -2353,40 +2346,22 @@ elseif(WINDOWS OR CYGWIN)
     int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
 
-  check_cxx_source_compiles("
-    #include <gameinput.h>
-    int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
-  )
-  if(HAVE_GAMEINPUT_H)
-    set(SDL_GAMEINPUT_DYNAMIC 1)
-    find_library(GAMEINPUT_LIB NAMES "gameinput.lib")
-    if(GAMEINPUT_LIB)
-      cmake_push_check_state()
-      list(APPEND CMAKE_REQUIRED_LIBRARIES "${GAMEINPUT_LIB}")
-      check_cxx_source_compiles("
-        #include <windows.h>
-        #include <gameinput.h>
-        #if defined(GAMEINPUT_API_VERSION) && GAMEINPUT_API_VERSION > 0
-        #define STR_JOIN2(A, B) A##B
-        #define STR_JOIN(A, B) STR_JOIN2(A, B)
-        using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
-        #endif
-        int main(int argc, char **argv) {
-         IGameInput *gameInput;
-         HRESULT hr = GameInputCreate(&gameInput);
-         if (SUCCEEDED(hr)) {
-          gameInput->Release();
-         }
-         (void) argc; (void) argv;
-         return 0;
-        }" HAVE_GAMEINPUT_LIB
-      )
-      cmake_pop_check_state()
-      if(HAVE_GAMEINPUT_LIB)
-        sdl_link_dependency(gameinput LIBS gameinput.lib PKG_CONFIG_LINK_OPTIONS -lgameinput)
-        set(SDL_GAMEINPUT_DYNAMIC 0)
+  set(HAVE_GAMEINPUT_H 1)
+  sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
+  if("cxx_std_11" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
+    sdl_compile_features(cxx_std_11)
+    if(USE_GCC OR USE_CLANG)
+      # Avoid a dependency on libstdc++-X.dll for `__gxx_personality_seh0`
+      check_c_compiler_flag(-fno-exceptions COMPILER_SUPPORTS_FNO_EXCEPTIONS)
+      if(COMPILER_SUPPORTS_FNO_EXCEPTIONS)
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" APPEND PROPERTY COMPILE_OPTIONS "-fno-exceptions")
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" PROPERTY SKIP_PRECOMPILE_HEADERS 1)
       endif()
     endif()
+    set(SDL_GAMEINPUT_DYNAMIC 0)
+  else()
+    set(SDL_GAMEINPUT_DYNAMIC 1)
   endif()
 
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
