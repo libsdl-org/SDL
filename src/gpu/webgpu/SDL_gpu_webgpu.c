@@ -54,6 +54,91 @@ static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
     WGPUPresentMode_Mailbox,
 };
 
+// NOTE: All of these required features are subject to change as we test it on different browsers and operating systems.
+// Also, note that while Firefox's documentation *claims* that a lot of features are unsupported,
+// I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
+
+#define WEBGPU_INTERNAL_RequiredFeaturesCount 4
+#define WEBGPU_INTERNAL_OptionalFeaturesCount 5
+
+const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[WEBGPU_INTERNAL_RequiredFeaturesCount] = {
+    // These three all have 99.7% coverage on WebGPU devices.
+    WGPUFeatureName_Depth32FloatStencil8,
+    WGPUFeatureName_RG11B10UfloatRenderable,
+    WGPUFeatureName_IndirectFirstInstance,
+
+    // This one has 98%, and only because of Samsung's weird browser.
+    WGPUFeatureName_DepthClipControl,
+};
+
+// These are features which we don't *need*, but they'd be really nice to have.
+const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[WEBGPU_INTERNAL_OptionalFeaturesCount] = {
+    // This one has 95%, blame Samsung.
+    WGPUFeatureName_BGRA8UnormStorage,
+
+    // These have 90% and 87% respectively.
+    WGPUFeatureName_Float32Filterable,
+    WGPUFeatureName_Float32Blendable,
+
+    // ASTC and ETC2 have 44%, while BC has 86%
+    // ASTC & ETC2 are NOT supported on Windows. Why? Who knows.
+    WGPUFeatureName_TextureCompressionASTC,
+    WGPUFeatureName_TextureCompressionBC,
+};
+
+static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
+{
+    switch (name) {
+    case WGPUFeatureName_CoreFeaturesAndLimits:
+        return "WGPUFeatureName_CoreFeaturesAndLimits";
+    case WGPUFeatureName_DepthClipControl:
+        return "WGPUFeatureName_DepthClipControl";
+    case WGPUFeatureName_Depth32FloatStencil8:
+        return "WGPUFeatureName_Depth32FloatStencil8";
+    case WGPUFeatureName_TextureCompressionBC:
+        return "WGPUFeatureName_TextureCompressionBC";
+    case WGPUFeatureName_TextureCompressionBCSliced3D:
+        return "WGPUFeatureName_TextureCompressionBCSliced3D";
+    case WGPUFeatureName_TextureCompressionETC2:
+        return "WGPUFeatureName_TextureCompressionETC2";
+    case WGPUFeatureName_TextureCompressionASTC:
+        return "WGPUFeatureName_TextureCompressionASTC";
+    case WGPUFeatureName_TextureCompressionASTCSliced3D:
+        return "WGPUFeatureName_TextureCompressionASTCSliced3D";
+    case WGPUFeatureName_TimestampQuery:
+        return "WGPUFeatureName_TimestampQuery";
+    case WGPUFeatureName_IndirectFirstInstance:
+        return "WGPUFeatureName_IndirectFirstInstance";
+    case WGPUFeatureName_ShaderF16:
+        return "WGPUFeatureName_ShaderF16";
+    case WGPUFeatureName_RG11B10UfloatRenderable:
+        return "WGPUFeatureName_RG11B10UfloatRenderable";
+    case WGPUFeatureName_BGRA8UnormStorage:
+        return "WGPUFeatureName_BGRA8UnormStorage";
+    case WGPUFeatureName_Float32Filterable:
+        return "WGPUFeatureName_Float32Filterable";
+    case WGPUFeatureName_Float32Blendable:
+        return "WGPUFeatureName_Float32Blendable";
+    case WGPUFeatureName_ClipDistances:
+        return "WGPUFeatureName_ClipDistances";
+    case WGPUFeatureName_DualSourceBlending:
+        return "WGPUFeatureName_DualSourceBlending";
+    case WGPUFeatureName_Subgroups:
+        return "WGPUFeatureName_Subgroups";
+    case WGPUFeatureName_TextureFormatsTier1:
+        return "WGPUFeatureName_TextureFormatsTier1";
+    case WGPUFeatureName_TextureFormatsTier2:
+        return "WGPUFeatureName_TextureFormatsTier2";
+    case WGPUFeatureName_PrimitiveIndex:
+        return "WGPUFeatureName_PrimitiveIndex";
+    case WGPUFeatureName_TextureComponentSwizzle:
+        return "WGPUFeatureName_TextureComponentSwizzle";
+    case WGPUFeatureName_SubgroupSizeControl:
+        return "WGPUFeatureName_SubgroupSizeControl";
+    case WGPUFeatureName_Force32:
+        return "WGPUFeatureName_Force32";
+    }
+}
 static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
     WGPUTextureFormat_Undefined,            // INVALID
     WGPUTextureFormat_Undefined,            // A8_UNORM, no such format in webgpu.h (i think?)
@@ -1472,18 +1557,80 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
 {
     WGPUDeviceDescriptor deviceDesc = WGPU_DEVICE_DESCRIPTOR_INIT;
 
+    bool clipDistance = SDL_GetBooleanProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
     uint32_t numFeaturesEnabled = 0;
-    uint32_t featureCapacity = 2;
-    bool float32Filterable = SDL_GetBooleanProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE, false);
-    WGPUFeatureName *features = SDL_calloc(2, sizeof(WGPUFeatureName));
+    uint32_t featureCapacity = WEBGPU_INTERNAL_RequiredFeaturesCount + WEBGPU_INTERNAL_OptionalFeaturesCount + 1;
 
-    if (float32Filterable) {
-        WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WGPUFeatureName_Float32Filterable);
-        WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WGPUFeatureName_Float32Blendable);
+    WGPUFeatureName *features = SDL_calloc(featureCapacity, sizeof(WGPUFeatureName));
+    WGPUSupportedFeatures supportedFeatures = { 0 };
+
+    wgpuAdapterGetFeatures(renderer->adapter, &supportedFeatures);
+
+    if (clipDistance) {
+        WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WGPUFeatureName_ClipDistances);
     }
 
-    deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){ .callback = WEBGPU_DeviceLostCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = NULL };
-    deviceDesc.uncapturedErrorCallbackInfo = (WGPUUncapturedErrorCallbackInfo){ .callback = WEBGPU_UncapturedErrorCallback, .nextInChain = NULL, .userdata1 = &renderer->debugMode, .userdata2 = NULL };
+    // This code is horrible.
+    for (int i = 0; i < WEBGPU_INTERNAL_RequiredFeaturesCount; i++) {
+        bool supported = false;
+        for (int j = 0; j < supportedFeatures.featureCount; j++) {
+            if (WEBGPU_INTERNAL_RequiredFeatures[i] == supportedFeatures.features[j]) {
+                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_RequiredFeatures[i]);
+                supported = true;
+                break;
+            }
+        }
+        if (!supported) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
+            SDL_assert_release(!"WebGPU adapter does not support all required features!");
+        }
+    }
+
+    for (int i = 0; i < WEBGPU_INTERNAL_RequiredFeaturesCount; i++) {
+        bool supported = false;
+        for (int j = 0; j < supportedFeatures.featureCount; j++) {
+            if (WEBGPU_INTERNAL_RequiredFeatures[i] == supportedFeatures.features[j]) {
+                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_RequiredFeatures[i]);
+                supported = true;
+                break;
+            }
+        }
+        if (!supported) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
+        }
+    }
+
+    for (int i = 0; i < WEBGPU_INTERNAL_OptionalFeaturesCount; i++) {
+        bool supported = false;
+
+        for (int j = 0; j < supportedFeatures.featureCount; j++) {
+            if (WEBGPU_INTERNAL_OptionalFeatures[i] == supportedFeatures.features[j]) {
+                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_OptionalFeatures[i]);
+                supported = true;
+                break;
+            }
+        }
+
+        if (!supported && renderer->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support optional feature \"%s\".", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_OptionalFeatures[i]));
+        }
+    }
+
+    deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){
+        .callback = WEBGPU_DeviceLostCallback,
+        .mode = WGPUCallbackMode_AllowProcessEvents,
+        .nextInChain = NULL,
+        .userdata1 = renderer,
+        .userdata2 = NULL,
+    };
+
+    deviceDesc.uncapturedErrorCallbackInfo = (WGPUUncapturedErrorCallbackInfo){
+        .callback = WEBGPU_UncapturedErrorCallback,
+        .nextInChain = NULL,
+        .userdata1 = &renderer->debugMode,
+        .userdata2 = NULL,
+    };
+
     deviceDesc.requiredFeatureCount = numFeaturesEnabled;
     deviceDesc.requiredFeatures = features;
 
@@ -1501,6 +1648,8 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
 #endif
     }
 #endif
+
+    wgpuSupportedFeaturesFreeMembers(supportedFeatures);
 }
 
 static void WEBGPU_BeginCopyPass(
@@ -2039,7 +2188,7 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
     char *ongoing;
     char *token = SDL_strtok_r(source, "\n", &ongoing);
 
-    bool float32Filterable = SDL_GetBooleanProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE, false);
+    bool float32Filterable = wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Filterable);
     bool forceFloatUnfilterable = (SDL_strstr(source, "!SDLGPU_COMPAT_F32_UNFILTERABLE") != NULL) && (float32Filterable == false);
 
     // FIXME: This will include commented out lines
@@ -3313,7 +3462,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
         const SDL_GPUColorTargetDescription *targetDesc = &createInfo->target_info.color_target_descriptions[i];
 
-        bool float32Filterable = SDL_GetBooleanProperty(((WebGPURenderer *)driverData)->props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE, false);
+        bool float32Filterable = wgpuDeviceHasFeature(((WebGPURenderer *)driverData)->device, WGPUFeatureName_Float32Filterable);
         if (WebGPUTextureFormatIsBlendable(SDLToWebGPU_TextureFormat[targetDesc->format], float32Filterable)) {
             WGPUBlendState *colorTargetBlendStates = SDL_calloc(createInfo->target_info.num_color_targets, sizeof(WGPUBlendState));
             colorTargetBlendStates[i].color = (WGPUBlendComponent){
@@ -3552,12 +3701,10 @@ static bool WEBGPU_WaitForFences(SDL_GPURenderer *device, bool waitAll, SDL_GPUF
 }
 
 // Should out to klukaszek for writing the blit code because wow I hate blitting
-static void WebGPU_INTERNAL_InitBlitResources(
+static void WEBGPU_INTERNAL_InitBlitResources(
     WebGPURenderer *renderer)
 {
     SDL_GPUShaderCreateInfo shaderCreateInfo;
-
-    SDL_Log("Initializing WebGPU blit resources");
 
     renderer->blitPipelineCapacity = 2;
     renderer->blitPipelineCount = 0;
@@ -5059,7 +5206,7 @@ static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitIn
     WebGPURenderer *renderer = ((WebGPUCommandBuffer *)commandBuffer)->renderer;
 
     // HACK: God I hate WebGPU.
-    bool float32Filterable = SDL_GetBooleanProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_FLOAT32_FILTERABLE, false);
+    bool float32Filterable = wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Filterable);
 
     if (((WebGPUTextureContainer *)info->source.texture)->header.info.format == SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT && !float32Filterable) {
         SDL_GPU_BlitCommon(
@@ -5228,10 +5375,167 @@ static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const
 static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture) {}
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
+
+// NOTE: A lot of this is guesswork at best. WebGPU really has no proper documentation.
 static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage)
 {
-    return true;
+    // this is horrible garbage code and I hate it so much
+
+    bool hasStorageUsage = usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                                    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
+    bool hasReadWriteStorageUsage = (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) || usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
+    bool hasDepthUsage = usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    bool hasColorTargetUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    // TODO: Check the type
+
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+
+    if (SDLToWebGPU_TextureFormat[format] == WGPUTextureFormat_Undefined) {
+        return false;
+    }
+
+    switch (format) {
+    case SDL_GPU_TEXTUREFORMAT_INVALID:
+    case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+        return false;
+    case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_INT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+        return !hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+        if (hasStorageUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_BGRA8UnormStorage)) {
+            return true;
+        } else if (!hasDepthUsage && !hasReadWriteStorageUsage) {
+            return true;
+        } else {
+            return false;
+        }
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
+        return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionBC);
+    case SDL_GPU_TEXTUREFORMAT_R32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32_INT:
+        return !hasDepthUsage;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Filterable)) {
+            if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Blendable)) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                                  "they're not filterable nor blendable as neither feature is supported on this device.");
+            } else {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                                  "they're not filterable as the required WebGPU feature is not supported on this device.");
+            }
+        } else if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Blendable)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                              "they're not blendable as the required WebGPU feature is not supported on this device.");
+        }
+
+        return !hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT:
+        if (hasColorTargetUsage) {
+            return wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_RG11B10UfloatRenderable) && !hasDepthUsage && !hasReadWriteStorageUsage;
+        } else {
+            return false;
+        }
+    case SDL_GPU_TEXTUREFORMAT_D16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
+        return hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
+        return hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Depth32FloatStencil8);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
+    }
 }
+
 static bool WEBGPU_SetAllowedFramesInFlight(SDL_GPURenderer *driverData, Uint32 allowedFramesInFlight) {}
 
 // -- UNSUPPORTED FUNCTIONS --
@@ -5282,82 +5586,10 @@ static XrResult WEBGPU_CreateXRSession(
 
 static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
 {
-    bool result = false;
-
-    WebGPURenderer *renderer;
-
-    if (this->WGPU_CreateSurface == NULL) {
-        return false;
-    }
-
-    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
-
-    renderer->debugMode = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
-    renderer->preferLowPower = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
-    renderer->shouldRecreateLostDevice = true;
-
-#ifdef _MSC_VER
-    renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
-#else
-    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
-#endif
-    if (!renderer->instance) {
-        result = false;
-        goto finished;
-    }
-
-    bool getAdapterSucceeded = false;
-    bool getDeviceSucceeded = false;
-
-    WEBGPU_RequestAdapter(renderer, &getAdapterSucceeded);
-    WEBGPU_RequestDevice(renderer, &getDeviceSucceeded);
-
-    renderer->queue = wgpuDeviceGetQueue(renderer->device);
-
-    if (!renderer->queue) {
-        result = false;
-        goto finished;
-    }
-
-#ifdef _MSC_VER
-    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &(WGPUCommandEncoderDescriptor)WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
-#else
-    renderer->commandEncoder = wgpuDeviceCreateCommandEncoder(renderer->device, &WGPU_COMMAND_ENCODER_DESCRIPTOR_INIT);
-#endif
-    if (!renderer->commandEncoder) {
-        result = false;
-        goto finished;
-    }
-
-    // Alright, if we've reached this logic everything went well!
-    // Let's free all resources and return a success!
-    result = true;
-    goto finished;
-
-finished:
-    // NOTE: Not entirely sure if this is safe or if it'll crash the program.
-    // This is the first time I've ever used C's memory allocation stuff. -- TheStickmahn
-    renderer->shouldRecreateLostDevice = false;
-    renderer->debugMode = false; // shut up
-
-    if (renderer->commandEncoder) {
-        wgpuCommandEncoderRelease(renderer->commandEncoder);
-    }
-    if (renderer->queue) {
-        wgpuQueueRelease(renderer->queue);
-    }
-    if (renderer->device) {
-        wgpuDeviceRelease(renderer->device);
-    }
-    if (renderer->adapter) {
-        wgpuAdapterRelease(renderer->adapter);
-    }
-    if (renderer->instance) {
-        wgpuInstanceRelease(renderer->instance);
-    }
-
-    SDL_free(renderer);
-    return result;
+    // TODO: This.
+    // There used to be code here, but it hadn't been updated in a while.
+    // (Quite frankly, I just got annoyed that it clogged the console with debug device creation information since it uses the same functions)
+    return true;
 }
 
 static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
@@ -5365,11 +5597,11 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     WebGPURenderer *renderer;
     SDL_GPUDevice *result;
 
-    SDL_Log("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "NOTE: This backend is EXPERIMENTAL. \e[4mDon't be surprised if it breaks, be surprised if it doesn't.\e[0m");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "An (albeit outdated) Emscripten web demo is available at https://thestickmahn.gitlab.io/ihatenamingthings/");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Please report any issues to the Github repo.");
-    SDL_Log("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 
     Sint64 bindGroupsExpireAfter = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS, DEFAULT_BINDGROUP_EXPIRY);
 
@@ -5436,7 +5668,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
         renderer->uniformBuffers[i] = WEBGPU_INTERNAL_CreateBufferContainer(renderer, 1048576, 0, WEBGPU_BUFFER_TYPE_UNIFORM, false, NULL);
     }
 
-    WebGPU_INTERNAL_InitBlitResources(renderer);
+    WEBGPU_INTERNAL_InitBlitResources(renderer);
 
     result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
 
