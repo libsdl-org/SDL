@@ -376,7 +376,7 @@ jobs:
       - name: 'Build (Android.mk)'
         if: ${{ matrix.platform.android-mk }}
         run: |
-          ./build-scripts/androidbuildlibs.sh
+          ./build-scripts/androidbuildlibs.sh -j$(nproc)
       - name: 'Create Gradle project (Android)'
         if: ${{ matrix.platform.android-gradle }}
         run: |
