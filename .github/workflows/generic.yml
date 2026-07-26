@@ -53,6 +53,9 @@ jobs:
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
           version: 3.1.35
+      - name: 'Set up Harmony toolchain'
+        if: ${{ matrix.platform.platform == 'harmony' }}
+        uses: ./.github/actions/setup-harmony-toolchain
       - uses: browser-actions/setup-chrome@v2
         id: setup-chrome
         if: ${{ matrix.platform.platform == 'emscripten' && matrix.platform.run-tests }}

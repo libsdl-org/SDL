@@ -530,6 +530,9 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32 *dst, const U
 }
 #endif
 
+#ifndef SDL_PLATFORM_OHOS
+#undef SDL_NEON_INTRINSICS
+#endif
 #ifdef SDL_NEON_INTRINSICS
 
 // C99 requires that all code modifying floating point environment should
