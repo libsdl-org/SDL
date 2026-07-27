@@ -39,9 +39,26 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
 
-    video_data->last_incoming_data_offer_seat = seat;
+    video_data->current_data_offer_seat = seat;
 
     if (seat && seat->data_device) {
+        /* Clear references to the clipboard held by other seats, as they are about to become invalid.
+         * For the target seat, the new source data is set before clearing the old source, as some
+         * clipboard managers prefer this behavior.
+         */
+        SDL_WaylandSeat *s;
+        wl_list_for_each (s, &video_data->seat_list, link) {
+            if (s->data_device) {
+                if (s != seat) {
+                    Wayland_DataSourceDestroy(s->data_device->selection_source);
+                    s->data_device->selection_source = NULL;
+                }
+
+                Wayland_DataOfferDestroy(s->data_device->selection_offer);
+                s->data_device->selection_offer = NULL;
+            }
+        }
+
         SDL_WaylandDataDevice *data_device = seat->data_device;
 
         if (_this->clipboard_callback && _this->clipboard_mime_types) {
@@ -65,7 +82,7 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_incoming_data_offer_seat;
+    SDL_WaylandSeat *seat = video_data->current_data_offer_seat;
     void *buffer = NULL;
 
     if (seat && seat->data_device) {
@@ -83,7 +100,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
 bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_incoming_data_offer_seat;
+    SDL_WaylandSeat *seat = video_data->current_data_offer_seat;
     bool result = false;
 
     if (seat && seat->data_device) {
@@ -122,7 +139,7 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
 
-    video_data->last_incoming_primary_selection_seat = seat;
+    video_data->current_primary_selection_seat = seat;
 
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;
@@ -148,7 +165,7 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_incoming_primary_selection_seat;
+    SDL_WaylandSeat *seat = video_data->current_primary_selection_seat;
     char *text = NULL;
     size_t length = 0;
 
@@ -176,7 +193,7 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_incoming_primary_selection_seat;
+    SDL_WaylandSeat *seat = video_data->current_primary_selection_seat;
     bool result = false;
 
     if (seat && seat->primary_selection_device) {
