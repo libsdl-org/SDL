@@ -620,35 +620,6 @@ void Wayland_PrimarySelectionOfferDestroy(SDL_WaylandPrimarySelectionOffer *offe
     }
 }
 
-bool Wayland_DataDeviceClearSelection(SDL_WaylandDataDevice *data_device)
-{
-    if (!data_device || !data_device->data_device) {
-        return SDL_SetError("Invalid Data Device");
-    }
-
-    if (data_device->selection_source) {
-        wl_data_device_set_selection(data_device->data_device, NULL, data_device->seat->last_implicit_grab_serial);
-        Wayland_DataSourceDestroy(data_device->selection_source);
-        data_device->selection_source = NULL;
-    }
-    return true;
-}
-
-bool Wayland_PrimarySelectionDeviceClearSelection(SDL_WaylandPrimarySelectionDevice *primary_selection_device)
-{
-    if (!primary_selection_device || !primary_selection_device->primary_selection_device) {
-        return SDL_SetError("Invalid Primary Selection Device");
-    }
-
-    if (primary_selection_device->selection_source) {
-        zwp_primary_selection_device_v1_set_selection(primary_selection_device->primary_selection_device,
-                                                      NULL, primary_selection_device->seat->last_implicit_grab_serial);
-        Wayland_PrimarySelectionSourceDestroy(primary_selection_device->selection_source);
-        primary_selection_device->selection_source = NULL;
-    }
-    return true;
-}
-
 bool Wayland_DataDeviceSetSelection(SDL_WaylandDataDevice *data_device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count)
 {
     if (!data_device) {
@@ -678,7 +649,8 @@ bool Wayland_DataDeviceSetSelection(SDL_WaylandDataDevice *data_device, SDL_Wayl
         source->data_device = data_device;
 
     } else {
-        Wayland_DataDeviceClearSelection(data_device);
+        Wayland_DataSourceDestroy(data_device->selection_source);
+        data_device->selection_source = NULL;
         return SDL_SetError("No mime data");
     }
 
@@ -714,7 +686,8 @@ bool Wayland_PrimarySelectionDeviceSetSelection(SDL_WaylandPrimarySelectionDevic
         primary_selection_device->selection_source = source;
         source->primary_selection_device = primary_selection_device;
     } else {
-        Wayland_PrimarySelectionDeviceClearSelection(primary_selection_device);
+        Wayland_PrimarySelectionSourceDestroy(primary_selection_device->selection_source);
+        primary_selection_device->selection_source = NULL;
         return SDL_SetError("No mime data");
     }
 
