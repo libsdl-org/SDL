@@ -137,6 +137,15 @@ static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
         return "WGPUFeatureName_Force32";
     }
 }
+
+static inline void WEBGPU_INTERNAL_WebGPUProcessEvents(WGPUInstance instance)
+{
+    wgpuInstanceProcessEvents(instance);
+#ifdef __EMSCRIPTEN__
+    emscripten_sleep(1);
+#endif
+}
+
 static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
     WGPUTextureFormat_Undefined,            // INVALID
     WGPUTextureFormat_Undefined,            // A8_UNORM, no such format in webgpu.h (i think?)
@@ -1472,7 +1481,7 @@ static void WEBGPU_DeviceLostCallback(WGPUDevice const *device, WGPUDeviceLostRe
     bool debugMode = ((WebGPURenderer *)renderer)->debugMode;
 
     if (debugMode) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Device has been lost.");
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Device has been lost.");
     }
 
     if (((WebGPURenderer *)renderer)->shouldRecreateLostDevice) {
@@ -1540,19 +1549,11 @@ static void WEBGPU_RequestAdapter(WebGPURenderer *renderer, bool *success)
 
     adapterReqOptions.powerPreference = renderer->preferLowPower ? WGPUPowerPreference_LowPower : WGPUPowerPreference_HighPerformance;
 
-    WGPUFuture future = wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
-#ifdef WGPU_DAWN
-    WGPUFutureWaitInfo waitInfo = { future, false };
+    wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
 
     while (*success == false) {
-#ifdef __EMSCRIPTEN__
-        emscripten_sleep(1);
-        wgpuInstanceProcessEvents(renderer->instance);
-#else
-        wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
-#endif
+        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
     }
-#endif
 }
 
 static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
@@ -1636,20 +1637,11 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
     deviceDesc.requiredFeatureCount = numFeaturesEnabled;
     deviceDesc.requiredFeatures = features;
 
-    WGPUFuture future = wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
-
-#ifdef WGPU_DAWN
-    WGPUFutureWaitInfo waitInfo = { future, false };
+    wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
 
     while (*success == false) {
-#ifdef __EMSCRIPTEN__
-        emscripten_sleep(1);
-        wgpuInstanceProcessEvents(renderer->instance);
-#else
-        wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
-#endif
+        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
     }
-#endif
 
     wgpuSupportedFeaturesFreeMembers(supportedFeatures);
 }
@@ -1818,10 +1810,8 @@ static void WEBGPU_INTERNAL_ReregisterFence(WGPUQueue queue, WebGPUFence *fence)
 
 static bool WEBGPU_QueryFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
 {
-#ifdef __EMSCRIPTEN__
-    emscripten_sleep(1);
-#endif
-    wgpuInstanceProcessEvents(((WebGPURenderer *)device)->instance);
+    WEBGPU_INTERNAL_WebGPUProcessEvents(((WebGPURenderer *)device)->instance);
+
     if (fence != NULL) {
         return SDL_GetAtomicInt(&((WebGPUFence *)fence)->status) != 0;
     } else {
@@ -2553,7 +2543,7 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
 
     // HACK: Dear god in heaven above what have I done
     // I have NO idea how this works, and I'm too scared to touch it.
-    identifier = SDL_calloc((size_t)3 + numResources * 8 + (numResources - 5), sizeof(char));
+    identifier = SDL_calloc(256, sizeof(char));
 
     switch (desiredGroup) {
     case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
@@ -3677,7 +3667,7 @@ static void WEBGPU_ReleaseFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
         } else {
             // Fence hasn't been called yet, we can't free it.
 
-            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Attempted to free non-called fence! This would cause a use-after-free!");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempted to free non-called fence! This would cause a use-after-free!");
         }
     }
 }
@@ -4118,24 +4108,19 @@ static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferCont
         return false;
     }
 
-    WGPUFuture future = wgpuBufferMapAsync(buffer->activeBuffer->buffer,
-                                           mapMode, 0,
-                                           buffer->activeBuffer->size,
-                                           (WGPUBufferMapCallbackInfo){
-                                               .callback = WEBGPU_INTERNAL_MapBufferCallback,
-                                               .mode = WGPUCallbackMode_AllowProcessEvents,
-                                               .nextInChain = NULL,
-                                               .userdata1 = &success,
-                                               .userdata2 = &callbackRan,
-                                           });
+    wgpuBufferMapAsync(buffer->activeBuffer->buffer,
+                       mapMode, 0,
+                       buffer->activeBuffer->size,
+                       (WGPUBufferMapCallbackInfo){
+                           .callback = WEBGPU_INTERNAL_MapBufferCallback,
+                           .mode = WGPUCallbackMode_AllowProcessEvents,
+                           .nextInChain = NULL,
+                           .userdata1 = &success,
+                           .userdata2 = &callbackRan,
+                       });
 
     while (!callbackRan) {
-        // I love WebGPU
-#if defined(__EMSCRIPTEN__)
-        emscripten_sleep(1);
-        wgpuInstanceProcessEvents(renderer->instance);
-#endif
-        wgpuInstanceWaitAny(renderer->instance, 1, &(WGPUFutureWaitInfo){ .future = future }, 0);
+        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
     }
     return success;
 }
@@ -4185,15 +4170,6 @@ static void WEBGPU_CopyBufferToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_
     }
 
     WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->buffer, source->offset, (WebGPUBufferContainer *)dest->buffer, dest->offset, size);
-
-#if defined(__EMSCRIPTEN__)
-    emscripten_sleep(1);
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_NATIVE)
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_DAWN)
-    // i hate my life
-#endif
 }
 
 static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureLocation *source, const SDL_GPUTextureLocation *destination, Uint32 w, Uint32 h, Uint32 d, bool cycle)
@@ -4215,14 +4191,6 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
     destInfo.mipLevel = destination->mip_level;
 
     wgpuCommandEncoderCopyTextureToTexture(((WebGPUCommandBuffer *)copyPass)->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ w, h, d });
-#if defined(__EMSCRIPTEN__)
-    emscripten_sleep(1);
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_NATIVE)
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_DAWN)
-    // i hate my life
-#endif
 }
 
 static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTransferBufferLocation *source, const SDL_GPUBufferRegion *destination, bool cycle)
@@ -4232,14 +4200,6 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
     }
 
     WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->transfer_buffer, source->offset, (WebGPUBufferContainer *)destination->buffer, destination->offset, destination->size);
-#if defined(__EMSCRIPTEN__)
-    emscripten_sleep(1);
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_NATIVE)
-    wgpuInstanceProcessEvents(((WebGPUCommandBuffer *)copyPass)->instance);
-#elif defined(WGPU_DAWN)
-    // i hate my life
-#endif
 }
 
 static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureTransferInfo *source, const SDL_GPUTextureRegion *destination, bool cycle)
@@ -5322,7 +5282,7 @@ static bool WEBGPU_SupportsSwapchainComposition(SDL_GPURenderer *driverData, SDL
 static bool WEBGPU_SupportsPresentMode(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUPresentMode presentMode)
 {
     WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
-    WGPUSurfaceCapabilities caps;
+    WGPUSurfaceCapabilities caps = { 0 };
     bool supportsPresentMode = false;
 
     if (windowData == NULL) {
@@ -5629,7 +5589,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "NOTE: This backend is EXPERIMENTAL. \e[4mDon't be surprised if it breaks, be surprised if it doesn't.\e[0m");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "An (albeit outdated) Emscripten web demo is available at https://thestickmahn.gitlab.io/ihatenamingthings/");
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "An Emscripten web demo is available at https://thestickmahn.gitlab.io/ihatenamingthings/");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Please report any issues to the Github repo.");
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 
