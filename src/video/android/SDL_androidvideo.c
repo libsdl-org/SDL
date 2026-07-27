@@ -82,6 +82,16 @@ static void Android_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
+// Input is part of video for Android, so this goes here.
+static void SDLCALL Android_Video_InternalHintCallback(
+    void *userdata,
+    const char *name,
+    const char *oldvalue,
+    const char *newvalue)
+{
+    Android_JNI_SetBackButtonTrapActive(SDL_GetStringBoolean(newvalue, false));
+}
+
 static SDL_VideoDevice *Android_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -161,27 +171,6 @@ VideoBootStrap Android_bootstrap = {
     false
 };
 
-// Input is part of video for Android, so this goes here.
-static void SDLCALL Android_Video_InternalHintCallback(
-    void *userdata,
-    const char *name,
-    const char *oldvalue,
-    const char *newvalue)
-{
-    if (SDL_strcmp(name, SDL_HINT_ANDROID_TRAP_BACK_BUTTON) != 0) {
-        return;
-    }
-
-    bool oldbool = SDL_GetStringBoolean(oldvalue, false);
-    bool newbool = SDL_GetStringBoolean(newvalue, false);
-
-    if (oldbool == newbool) {
-        return;
-    }
-
-    Android_JNI_SetBackButtonTrapActive(newbool);
-}
-
 bool Android_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
@@ -207,11 +196,13 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
 
+    if (!SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0)) {
+        SDL_Log("Error: could not add SDL_HINT_ANDROID_TRAP_BACK_BUTTON callback! Back button behavior will be handled by the system.");
+    }
+
     Android_InitTouch();
 
     Android_InitMouse();
-
-    SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
 
     // We're done!
     return true;
@@ -219,6 +210,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
 
 void Android_VideoQuit(SDL_VideoDevice *_this)
 {
+    SDL_RemoveHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
     Android_QuitMouse();
     Android_QuitTouch();
 }

@@ -614,12 +614,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHasMultiWindow) {
             resumeNativeThread();
         }
-
-        if (Build.VERSION.SDK_INT >= 33) {
-            // We need to enable the back button invoke callback if we're on more modern Android.
-            boolean trapBack = SDLActivity.nativeGetHintBoolean("SDL_ANDROID_TRAP_BACK_BUTTON", false);
-            setBackButtonTrapEnabled(trapBack);        
-        }
     }
 
     public static int getNaturalOrientation() {
