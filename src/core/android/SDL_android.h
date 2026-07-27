@@ -60,6 +60,7 @@ void Android_LockActivityMutex(void);
 void Android_UnlockActivityMutex(void);
 
 void Android_SetAllowRecreateActivity(bool enabled);
+void Android_JNI_SetBackButtonTrapActive(bool enabled);
 
 #ifndef SDL_VIDEO_DISABLED
 #include <EGL/eglplatform.h>
