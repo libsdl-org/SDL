@@ -53,7 +53,9 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
                 Wayland_DataSourceDestroy(source);
             }
         } else {
-            result = Wayland_DataDeviceClearSelection(data_device);
+            Wayland_DataSourceDestroy(data_device->selection_source);
+            data_device->selection_source = NULL;
+            result = true;
         }
     }
 
@@ -133,7 +135,9 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
                 Wayland_PrimarySelectionSourceDestroy(source);
             }
         } else {
-            result = Wayland_PrimarySelectionDeviceClearSelection(primary_selection_device);
+            Wayland_PrimarySelectionSourceDestroy(seat->primary_selection_device->selection_source);
+            seat->primary_selection_device->selection_source = NULL;
+            result = true;
         }
     } else {
         result = SDL_SetError("Primary selection not supported");

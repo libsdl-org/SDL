@@ -3698,9 +3698,11 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down)
     SDL_free(seat->name);
 
     if (seat->data_device) {
-        Wayland_DataDeviceClearSelection(seat->data_device);
         if (seat->data_device->selection_offer) {
             Wayland_DataOfferDestroy(seat->data_device->selection_offer);
+        }
+        if (seat->data_device->selection_source) {
+            Wayland_DataSourceDestroy(seat->data_device->selection_source);
         }
         if (seat->data_device->drag_offer) {
             Wayland_DataOfferDestroy(seat->data_device->drag_offer);
