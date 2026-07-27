@@ -3719,7 +3719,9 @@ bool Android_JNI_ShowFileDialog(
 
 void Android_JNI_SetBackButtonTrapActive(bool enabled)
 {
-    if (!midSetBackButtonTrapEnabled) return;
+    if (!midSetBackButtonTrapEnabled) {
+        return;
+    }
 
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midSetBackButtonTrapEnabled, enabled);
