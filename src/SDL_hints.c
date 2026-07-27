@@ -241,7 +241,7 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
         } else {
             Android_SetAllowRecreateActivity(false);
         }
-    } 
+    }
 #endif // SDL_PLATFORM_ANDROID
 }
 

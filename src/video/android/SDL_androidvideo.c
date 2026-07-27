@@ -196,9 +196,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
 
-    if (!SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0)) {
-        SDL_Log("Error: could not add SDL_HINT_ANDROID_TRAP_BACK_BUTTON callback! Back button behavior will be handled by the system.");
-    }
+    SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
 
     Android_InitTouch();
 
