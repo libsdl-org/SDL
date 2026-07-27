@@ -155,6 +155,8 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
     if (SDL_strcmp(name, SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY) == 0) {
         // Special handling for this hint, which needs to persist outside the normal application flow
         Android_SetAllowRecreateActivity(SDL_GetStringBoolean(value, false));
+    } else if (SDL_strcmp(name, SDL_HINT_ANDROID_TRAP_BACK_BUTTON) == 0) {
+        Android_JNI_SetBackButtonTrapActive(SDL_GetStringBoolean(value, false));
     }
 #endif // SDL_PLATFORM_ANDROID
 
@@ -240,6 +242,13 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
             Android_SetAllowRecreateActivity(SDL_GetStringBoolean(env, false));
         } else {
             Android_SetAllowRecreateActivity(false);
+        }
+    } else if (SDL_strcmp(name, SDL_HINT_ANDROID_TRAP_BACK_BUTTON) == 0) {
+        // Special handling for this.
+        if (env) {
+            Android_JNI_SetBackButtonTrapActive(SDL_GetStringBoolean(env, false));
+        } else {
+            Android_JNI_SetBackButtonTrapActive(false);        
         }
     }
 #endif // SDL_PLATFORM_ANDROID
