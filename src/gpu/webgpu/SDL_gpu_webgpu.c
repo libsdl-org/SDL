@@ -45,9 +45,6 @@
 #define WINDOW_PROPERTY_DATA     "SDL.internal.gpu.webgpu.data"
 #define DEFAULT_BINDGROUP_EXPIRY 10000
 
-// FIXME: WebGPU supports more modes than SDL_GPU does.
-// More specifically, it supports "FifoRelaxed" on AMD cards.
-// We won't be using that.
 static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
     WGPUPresentMode_Fifo,
     WGPUPresentMode_Immediate,
@@ -62,7 +59,7 @@ static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
 #define WEBGPU_INTERNAL_OptionalFeaturesCount 6
 
 const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[WEBGPU_INTERNAL_RequiredFeaturesCount] = {
-    // These three all have 99.7% coverage on WebGPU devices.
+    // These three all have 99.98% coverage on WebGPU devices.
     WGPUFeatureName_Depth32FloatStencil8,
     WGPUFeatureName_RG11B10UfloatRenderable,
     WGPUFeatureName_IndirectFirstInstance,
@@ -355,7 +352,6 @@ static WGPUIndexFormat SDLToWebGPU_IndexFormat[] = {
     WGPUIndexFormat_Uint32,
 };
 
-// NOTE: Line and Point requires some features I'm pretty sure.
 static WGPUPrimitiveTopology SDLToWebGPU_PrimitiveType[] = {
     WGPUPrimitiveTopology_TriangleList,
     WGPUPrimitiveTopology_TriangleStrip,
@@ -989,6 +985,7 @@ typedef struct WebGPURenderer
     WebGPUFence *queueDoneFence;
 
     bool debugMode;
+    bool destroyingSelf;
     bool preferLowPower;
     bool shouldRecreateLostDevice;
 } WebGPURenderer;
@@ -1015,6 +1012,10 @@ typedef enum WebGPUBufferType
     WEBGPU_BUFFER_TYPE_UNIFORM,
     WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD,
     WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD,
+    // A transfer buffer which can only be accessed on the GPU.
+    // This is used for texture copies where the user has not properly padded the data.
+    // The GPUOnly transfer buffer acts as an intermediate.
+    WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY,
 } WebGPUBufferType;
 
 // FIXME: This has a really shit name.
@@ -1782,6 +1783,7 @@ static void WEBGPU_INTERNAL_FreeCommandBuffer(WebGPUCommandBuffer *cmdBuf)
 
     SDL_free(cmdBuf->surfaces);
     SDL_free(cmdBuf->acquiredSwapchainTextures);
+    SDL_free(cmdBuf->queuedUniformUploads);
     SDL_free(cmdBuf);
 }
 
@@ -2142,6 +2144,8 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
         }
     }
 
+    SDL_free(source);
+
     return result;
 }
 
@@ -2486,24 +2490,24 @@ static void WEBGPU_INTERNAL_InvalidateBindGroup(WebGPURenderer *renderer, char *
     }
 }
 
-static void WEBGPU_INTERNAL_EnumeratePropertiesCallback(void *userdata, SDL_PropertiesID props, const char *name)
+static void WEBGPU_INTERNAL_EnumerateBindGroupsCallback(void *userdata, SDL_PropertiesID props, const char *name)
 {
     // we'll check each bind group to see if it's expired or not
     WebGPURenderer *renderer = (WebGPURenderer *)userdata;
 
     WebGPUBindGroup *bindGroup = SDL_GetPointerProperty(props, name, NULL);
     if (bindGroup != NULL) {
-        if ((renderer->numSubmissions + 1) - bindGroup->lastUsedAtSubmission > renderer->bindGroupsExpireAfter) {
-            WEBGPU_INTERNAL_DEBUG_PrintIdentifier(bindGroup->stringIdentifier);
+        if ((renderer->numSubmissions + 1) - bindGroup->lastUsedAtSubmission > renderer->bindGroupsExpireAfter || renderer->destroyingSelf) {
             WEBGPU_INTERNAL_InvalidateBindGroup(renderer, SDL_strdup(name));
         }
     }
 }
 
+// This function will automatically invalidate all bind groups if destroyingSelf is TRUE.
 static void WEBGPU_INTERNAL_ReleaseInvalidBindGroups(WebGPURenderer *renderer)
 {
     if (renderer->bindGroupsExpireAfter >= 0) {
-        SDL_EnumerateProperties(renderer->bindGroups, WEBGPU_INTERNAL_EnumeratePropertiesCallback, renderer);
+        SDL_EnumerateProperties(renderer->bindGroups, WEBGPU_INTERNAL_EnumerateBindGroupsCallback, renderer);
     }
 
     for (int i = 0; i < renderer->numBindGroupsQueuedForRelease; i++) {
@@ -3014,6 +3018,7 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroup(WebGPUCommandBuffer *cmdBuf
 
     if (result != NULL) {
         // Validity checking's already done in WEBGPU_INTERNAL_GetBindGroupFromIdentifier, so we can just return the result.
+        SDL_free(identifier);
         return result;
     } else {
         result = WEBGPU_INTERNAL_CreateBindGroup(cmdBuf, type, identifier);
@@ -3226,7 +3231,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
     desc.addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u];
     desc.addressModeV = SDLToWebGPU_AddressMode[createInfo->address_mode_v];
     desc.addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w];
-    desc.compare = WGPUCompareFunction_Undefined; // SDLToWebGPU_CompareFunc[createInfo->compare_op];
+    desc.compare = SDLToWebGPU_CompareFunc[createInfo->compare_op];
 
     desc.lodMaxClamp = createInfo->max_lod;
     desc.lodMinClamp = createInfo->min_lod;
@@ -3653,13 +3658,6 @@ static void WEBGPU_ReleaseGraphicsPipeline(SDL_GPURenderer *device, SDL_GPUGraph
 {
     WebGPUGraphicsPipeline *pipeline = (WebGPUGraphicsPipeline *)_pipeline;
 
-    // FIXME: For some fucking reason, calling this segfaults the entire program.
-    // It's probably still referenced somewhere.
-    // wgpuBindGroupLayoutRelease(pipeline->vertexBindGroupLayouts->samplerStorageBindGroupLayout);
-    // wgpuBindGroupLayoutRelease(pipeline->vertexBindGroupLayouts->uniformBindGroupLayout);
-    // wgpuBindGroupLayoutRelease(pipeline->fragmentBindGroupLayouts->samplerStorageBindGroupLayout);
-    // wgpuBindGroupLayoutRelease(pipeline->fragmentBindGroupLayouts->uniformBindGroupLayout);
-
     wgpuRenderPipelineRelease(pipeline->pipeline);
     SDL_free(pipeline->vertexBindGroupLayouts->samplerStorageEntries);
     SDL_free(pipeline->vertexBindGroupLayouts->uniformEntries);
@@ -3912,6 +3910,9 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, uint
     } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
         usages |= WGPUBufferUsage_MapRead;
         usages |= WGPUBufferUsage_CopyDst;
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY) {
+        usages |= WGPUBufferUsage_CopyDst;
+        usages |= WGPUBufferUsage_CopySrc;
     } else if (bufferType == WEBGPU_BUFFER_TYPE_UNIFORM) {
         usages |= WGPUBufferUsage_Uniform;
         usages |= WGPUBufferUsage_CopyDst;
@@ -3991,22 +3992,27 @@ static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPURenderer *renderer, WebGPUBuffer
     SDL_free(buffer);
 }
 
+static void WEBGPU_INTERNAL_ReleaseTextureView(WebGPURenderer *renderer, WebGPUTextureView *view)
+{
+    for (int j = 0; j < view->numDependants; j++) {
+        WEBGPU_INTERNAL_InvalidateBindGroup(renderer, view->dependants[j]);
+    }
+
+    wgpuTextureViewRelease(view->view);
+    SDL_free(view->dependants);
+    SDL_free(view->resourceIdentifier);
+    SDL_free(view);
+}
+
 static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTexture *texture)
 {
     for (int i = 0; i < texture->textureViewCount; i++) {
-        for (int j = 0; j < texture->textureViews[i]->numDependants; j++) {
-            WEBGPU_INTERNAL_InvalidateBindGroup(renderer, texture->textureViews[i]->dependants[j]);
-        }
-
-        wgpuTextureViewRelease(texture->textureViews[i]->view);
-        SDL_free(texture->textureViews[i]->dependants);
-        SDL_free(texture->textureViews[i]);
+        WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->textureViews[i]);
     }
 
-    wgpuTextureViewRelease(texture->fullTextureView->view);
-    wgpuTextureRelease(texture->texture);
+    WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->fullTextureView);
 
-    SDL_free(texture->fullTextureView);
+    wgpuTextureRelease(texture->texture);
     SDL_free(texture->textureViews);
     SDL_free(texture);
 }
@@ -4137,7 +4143,7 @@ static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferCont
 static void *WEBGPU_INTERNAL_MapBufferRange(WebGPURenderer *renderer, WebGPUBufferContainer *buffer, size_t offset, size_t size)
 {
     // If "size" is -1, then bind the entire buffer.
-    uint32_t bindSize = (size == -1) ? buffer->activeBuffer->size : size;
+    size_t bindSize = (size == -1) ? buffer->activeBuffer->size : size;
 
     if (!WEBGPU_INTERNAL_MapBuffer(renderer, buffer, false)) {
         SDL_SetError("Failed to map buffer!");
@@ -4170,23 +4176,6 @@ static void WEBGPU_INTERNAL_CopyBufferToBuffer(WGPUCommandEncoder encoder, WebGP
                                                uint32_t destBufOffset, uint32_t size)
 {
     wgpuCommandEncoderCopyBufferToBuffer(encoder, sourceBuf->activeBuffer->buffer, sourceBufOffset, destBuf->activeBuffer->buffer, destBufOffset, size);
-}
-
-static void WEBGPU_INTERNAL_CopyBufferToTexture(WGPUCommandEncoder encoder, WebGPUBufferContainer *sourceBuf, uint32_t sourceBufOffset, WebGPUTextureContainer *destTexture,
-                                                uint32_t bytesPerRow, uint32_t rowsPerLayer, uint32_t mipLevel, uint32_t layer, uint32_t x, uint32_t y, uint32_t z, uint32_t w, uint32_t h, uint32_t d)
-{
-    WGPUTexelCopyBufferInfo sourceInfo;
-    WGPUTexelCopyTextureInfo destInfo;
-
-    sourceInfo.buffer = sourceBuf->activeBuffer->buffer;
-    sourceInfo.layout = (WGPUTexelCopyBufferLayout){ .bytesPerRow = bytesPerRow, .rowsPerImage = rowsPerLayer, .offset = sourceBufOffset };
-
-    destInfo.aspect = destTexture->activeTexture->aspect;
-    destInfo.texture = destTexture->activeTexture->texture;
-    destInfo.mipLevel = mipLevel;
-    destInfo.origin = (WGPUOrigin3D){ x, y, layer };
-
-    wgpuCommandEncoderCopyBufferToTexture(encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ w, h, 1 });
 }
 
 static void WEBGPU_CopyBufferToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUBufferLocation *dest, uint32_t size, bool cycle)
@@ -4259,20 +4248,49 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
         // TODO: Buffer cycling!
     }
 
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+
     uint32_t pixelsPerRow = source->pixels_per_row != 0 ? source->pixels_per_row : destination->w;
     uint32_t rowsPerLayer = source->rows_per_layer != 0 ? source->rows_per_layer : destination->h;
 
-    uint64_t bytesPerRow = BytesPerRow(pixelsPerRow, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
-    int padding = (256 - bytesPerRow % 256) % 256;
+    size_t bytesPerRow = BytesPerRow(pixelsPerRow, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    size_t paddedBytesPerRow = (bytesPerRow + 255) & ~255;
 
-    if ((bytesPerRow + padding) * rowsPerLayer > ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer->size) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Transfer buffer too small for texture! WebGPU requires bytesPerRow to be a multiple of 256, you likely undersized the buffer.");
-        return;
+    WebGPUBuffer *userSourceBuffer = ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer;
+    WebGPUBuffer *finalSourceBuffer = userSourceBuffer;
+
+    bool hadToPad = false;
+
+    if (paddedBytesPerRow != bytesPerRow) {
+        // FIXME: Why are we creating a whole new buffer just for a single upload? We need to create a buffer pool.
+        WebGPUBuffer *babysittingSourceBuffer = WEBGPU_INTERNAL_CreateBuffer(cmdBuf->renderer, paddedBytesPerRow * rowsPerLayer, 0,
+                                                                             WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, "Autopadded Texture Transfer Buffer");
+
+        for (int i = 0; i < rowsPerLayer; i++) {
+            wgpuCommandEncoderCopyBufferToBuffer(cmdBuf->encoder, userSourceBuffer->buffer, source->offset + i * bytesPerRow, babysittingSourceBuffer->buffer, i * paddedBytesPerRow, bytesPerRow);
+        }
+
+        finalSourceBuffer = babysittingSourceBuffer;
+        hadToPad = true;
     }
 
-    WEBGPU_INTERNAL_CopyBufferToTexture(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->transfer_buffer, source->offset,
-                                        (WebGPUTextureContainer *)destination->texture, bytesPerRow + padding, rowsPerLayer, destination->mip_level,
-                                        destination->layer, destination->x, destination->y, destination->z, destination->w, destination->h, destination->d);
+    WGPUTexelCopyBufferInfo sourceInfo = {
+        .buffer = finalSourceBuffer->buffer,
+        .layout = (WGPUTexelCopyBufferLayout){
+            .bytesPerRow = paddedBytesPerRow,
+            .rowsPerImage = rowsPerLayer,
+            .offset = hadToPad ? 0 : source->offset,
+        },
+    };
+
+    WGPUTexelCopyTextureInfo destInfo = {
+        .aspect = WGPUTextureAspect_All,
+        .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
+        .mipLevel = destination->mip_level,
+        .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->layer },
+    };
+
+    wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ destination->w, destination->h, destination->d });
 }
 
 static void WEBGPU_PushDebugGroup(SDL_GPUCommandBuffer *commandBuffer, const char *name)
@@ -4352,6 +4370,7 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
     wrapper->boundGraphicsPipeline = NULL;
     wrapper->hasBoundGraphicsPipeline = false;
     wrapper->hasBoundGraphicsPipelineResources = false;
+
     SDL_free(colorAttachments);
     SDL_free(depthStencilAttachment);
 }
@@ -5094,6 +5113,7 @@ static void WEBGPU_INTERNAL_UploadQueuedUniformData(WebGPUCommandBuffer *cmdBuf)
         WebGPUQueuedUniformDataUpload upload = cmdBuf->queuedUniformUploads[i];
 
         wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->renderer->uniformBuffers[upload.slot]->activeBuffer->buffer, upload.offset, upload.data, upload.length);
+        SDL_free(upload.data);
     }
 }
 
@@ -5164,8 +5184,14 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
         WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, renderer->uniformBuffers[i]);
     }
 
+    renderer->destroyingSelf = true;
+
+    WEBGPU_INTERNAL_ReleaseInvalidBindGroups(renderer);
+
     SDL_DestroyProperties(renderer->props);
+    SDL_DestroyProperties(renderer->bindGroups);
     SDL_free(renderer);
+    SDL_free(device);
 }
 
 static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window)
@@ -5373,7 +5399,10 @@ static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
-static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture) {}
+static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture)
+{
+    SDL_assert_release(!"GenerateMipmaps is unimplemented!");
+}
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
 
