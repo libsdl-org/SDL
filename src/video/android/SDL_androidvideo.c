@@ -28,6 +28,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../../SDL_hints_c.h"
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidgl.h"
@@ -160,6 +161,27 @@ VideoBootStrap Android_bootstrap = {
     false
 };
 
+// Input is part of video for Android, so this goes here.
+static void SDLCALL Android_Video_InternalHintCallback(
+    void *userdata,
+    const char *name,
+    const char *oldvalue,
+    const char *newvalue)
+{
+    if (SDL_strcmp(name, SDL_HINT_ANDROID_TRAP_BACK_BUTTON) != 0) {
+        return;
+    }
+
+    bool oldbool = SDL_GetStringBoolean(oldvalue, false);
+    bool newbool = SDL_GetStringBoolean(newvalue, false);
+
+    if (oldbool == newbool) {
+        return;
+    }
+
+    Android_JNI_SetBackButtonTrapActive(newbool);
+}
+
 bool Android_VideoInit(SDL_VideoDevice *_this)
 {
     SDL_VideoData *videodata = _this->internal;
@@ -188,6 +210,8 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     Android_InitTouch();
 
     Android_InitMouse();
+
+    SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
 
     // We're done!
     return true;
