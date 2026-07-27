@@ -2749,7 +2749,6 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
     SDL_WaylandDataOffer *data_offer = SDL_calloc(1, sizeof(*data_offer));
     if (data_offer) {
         SDL_WaylandDataDevice *data_device = (SDL_WaylandDataDevice *)data;
-        data_device->seat->display->last_incoming_data_offer_seat = data_device->seat;
         data_offer->offer = id;
         data_offer->data_device = data_device;
         data_offer->read_fd = -1;
@@ -3054,7 +3053,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
     SDL_WaylandPrimarySelectionOffer *primary_selection_offer = SDL_calloc(1, sizeof(*primary_selection_offer));
     if (primary_selection_offer) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = (SDL_WaylandPrimarySelectionDevice *)data;
-        primary_selection_device->seat->display->last_incoming_primary_selection_seat = primary_selection_device->seat;
+        primary_selection_device->seat->display->current_primary_selection_seat = primary_selection_device->seat;
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
         WAYLAND_wl_list_init(&(primary_selection_offer->mimes));

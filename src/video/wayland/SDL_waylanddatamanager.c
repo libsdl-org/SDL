@@ -446,6 +446,29 @@ static void DataOfferCheckSource(SDL_WaylandDataOffer *offer, const char *mime_t
     }
 }
 
+static void SetCurrentClipboardOffer(SDL_WaylandDataOffer *offer)
+{
+    SDL_WaylandSeat *offer_seat = offer->data_device->seat;
+    SDL_VideoData *video_data = offer_seat->display;
+
+    // Clear any existing references to the existing clipboard data before replacing the current offer.
+    SDL_WaylandSeat *s;
+    wl_list_for_each (s, &video_data->seat_list, link) {
+        if (s->data_device) {
+            Wayland_DataSourceDestroy(s->data_device->selection_source);
+            s->data_device->selection_source = NULL;
+
+            // Don't clear the offer that is about to be set.
+            if (s != offer_seat) {
+                Wayland_DataOfferDestroy(s->data_device->selection_offer);
+                s->data_device->selection_offer = NULL;
+            }
+        }
+    }
+
+    video_data->current_data_offer_seat = offer_seat;
+}
+
 void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_origin)
 {
     int nformats = 0;
@@ -494,6 +517,7 @@ void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_or
         new_mime_types[nformats] = NULL;
     }
 
+    SetCurrentClipboardOffer(offer);
     SDL_SendClipboardUpdate(false, new_mime_types, nformats);
 }
 
@@ -697,26 +721,26 @@ bool Wayland_PrimarySelectionDeviceSetSelection(SDL_WaylandPrimarySelectionDevic
 void Wayland_DataDeviceSetSerial(SDL_WaylandDataDevice *data_device, uint32_t serial)
 {
     if (data_device) {
-        data_device->selection_serial = serial;
-
-        // If there was no serial and there is a pending selection set it now.
+        // If there was no serial and there is a pending selection, set it now.
         if (data_device->selection_serial == 0 && data_device->selection_source) {
-            wl_data_device_set_selection(data_device->data_device, data_device->selection_source->source, data_device->selection_serial);
+            wl_data_device_set_selection(data_device->data_device, data_device->selection_source->source, serial);
         }
+
+        data_device->selection_serial = serial;
     }
 }
 
 void Wayland_PrimarySelectionDeviceSetSerial(SDL_WaylandPrimarySelectionDevice *primary_selection_device, uint32_t serial)
 {
     if (primary_selection_device) {
-        primary_selection_device->selection_serial = serial;
-
-        // If there was no serial and there is a pending selection set it now.
+        // If there was no serial and there is a pending selection, set it now.
         if (primary_selection_device->selection_serial == 0 && primary_selection_device->selection_source) {
             zwp_primary_selection_device_v1_set_selection(primary_selection_device->primary_selection_device,
                                                           primary_selection_device->selection_source->source,
-                                                          primary_selection_device->selection_serial);
+                                                          serial);
         }
+
+        primary_selection_device->selection_serial = serial;
     }
 }
 
