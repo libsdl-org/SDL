@@ -24,8 +24,8 @@
 
 #include "SDL_systhread_c.h"
 
-#include <psp2/kernel/threadmgr.h>
 #include <psp2/kernel/error.h>
+#include <psp2/kernel/threadmgr.h>
 
 struct SDL_Mutex
 {
@@ -37,11 +37,11 @@ SDL_Mutex *SDL_CreateMutex(void)
     SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
     if (mutex) {
         const SceInt32 res = sceKernelCreateLwMutex(
-                                &mutex->lock,
-                                "SDL mutex",
-                                SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
-                                0,
-                                NULL);
+            &mutex->lock,
+            "SDL mutex",
+            SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
+            0,
+            NULL);
 
         if (res < 0) {
             SDL_free(mutex);
@@ -60,11 +60,11 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (mutex) {
         const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-        SDL_assert(res == SCE_KERNEL_OK);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == SCE_KERNEL_OK); // assume we're in a lot of trouble if this assert fails.
     }
 }
 
@@ -86,11 +86,11 @@ bool SDL_TryLockMutex(SDL_Mutex *mutex)
     return result;
 }
 
-void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (mutex) {
         const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
-        SDL_assert(res == SCE_KERNEL_OK);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == SCE_KERNEL_OK); // assume we're in a lot of trouble if this assert fails.
     }
 }
 

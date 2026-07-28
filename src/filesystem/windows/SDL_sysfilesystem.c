@@ -28,8 +28,8 @@
 #include "../SDL_sysfilesystem.h"
 
 #include "../../core/windows/SDL_windows.h"
-#include <shlobj.h>
 #include <initguid.h>
+#include <shlobj.h>
 
 // These aren't all defined in older SDKs, so define them here
 DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
@@ -45,32 +45,32 @@ DEFINE_GUID(SDL_FOLDERID_Videos, 0x18989B1D, 0x99B5, 0x455B, 0x84, 0x1C, 0xAB, 0
 
 char *SDL_SYS_GetBasePath(void)
 {
-    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    char *path = WIN_GetModulePath(NULL); // look up full path of the current process's EXE file.
     if (!path) {
-        return NULL;  // error message was already set.
+        return NULL; // error message was already set.
     }
 
     char *ptr = SDL_strrchr(path, '\\');
-    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+    SDL_assert(ptr != NULL); // Should have been an absolute path.
 
     ptr[1] = '\0'; // chop off filename, leave '\\'.
 
-    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    ptr = (char *)SDL_realloc(path, ((size_t)(ptr - path)) + 2); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;                                     // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetExeName(void)
 {
-    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    char *path = WIN_GetModulePath(NULL); // look up full path of the current process's EXE file.
     if (!path) {
-        return NULL;  // error message was already set.
+        return NULL; // error message was already set.
     }
 
     char *ptr = SDL_strrchr(path, '\\');
-    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
-    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
-    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    const size_t slen = SDL_strlen(ptr);   // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);      // move filename string to start of SDL_realloc'd region.
+    ptr = (char *)SDL_realloc(path, slen); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;               // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
@@ -153,7 +153,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
-    typedef HRESULT (WINAPI *pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR*);
+    typedef HRESULT(WINAPI * pfnSHGetKnownFolderPath)(REFGUID /* REFKNOWNFOLDERID */, DWORD, HANDLE, PWSTR *);
     HMODULE lib = LoadLibraryW(L"Shell32.dll");
     pfnSHGetKnownFolderPath pSHGetKnownFolderPath = NULL;
     char *result = NULL;
@@ -300,7 +300,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     }
 
     if (result) {
-        char *newresult = (char *) SDL_realloc(result, SDL_strlen(result) + 2);
+        char *newresult = (char *)SDL_realloc(result, SDL_strlen(result) + 2);
 
         if (!newresult) {
             SDL_free(result);
@@ -328,22 +328,22 @@ char *SDL_SYS_GetCurrentDirectory(void)
         if (bw == 0) {
             WIN_SetError("GetCurrentDirectoryW failed");
             return NULL;
-        } else if (bw < buflen) {  // we got it!
+        } else if (bw < buflen) { // we got it!
             // make sure there's a path separator at the end.
             SDL_assert(bw < (buflen + 2));
-            if ((bw == 0) || (wstr[bw-1] != '\\')) {
+            if ((bw == 0) || (wstr[bw - 1] != '\\')) {
                 wstr[bw] = '\\';
                 wstr[bw + 1] = '\0';
             }
             break;
         }
 
-        void *ptr = SDL_realloc(wstr, (bw + 1) * sizeof (WCHAR));
+        void *ptr = SDL_realloc(wstr, (bw + 1) * sizeof(WCHAR));
         if (!ptr) {
             SDL_free(wstr);
             return NULL;
         }
-        wstr = (WCHAR *) ptr;
+        wstr = (WCHAR *)ptr;
         buflen = bw;
     }
 

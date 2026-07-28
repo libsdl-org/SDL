@@ -22,9 +22,9 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 
-#include "SDL_windowsvideo.h"
-#include "SDL_windowsopengles.h"
 #include "../../SDL_hints_c.h"
+#include "SDL_windowsopengles.h"
+#include "SDL_windowsvideo.h"
 
 // WGL implementation of SDL OpenGL support
 
@@ -501,11 +501,11 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     _this->gl_data->HAS_WGL_EXT_swap_control_tear = false;
     if (HasExtension("WGL_EXT_swap_control", extensions)) {
         _this->gl_data->wglSwapIntervalEXT =
-            (BOOL (WINAPI *)(int))
-            WIN_GL_GetProcAddress(_this, "wglSwapIntervalEXT");
+            (BOOL(WINAPI *)(int))
+                WIN_GL_GetProcAddress(_this, "wglSwapIntervalEXT");
         _this->gl_data->wglGetSwapIntervalEXT =
-            (int (WINAPI *)(void))
-            WIN_GL_GetProcAddress(_this, "wglGetSwapIntervalEXT");
+            (int(WINAPI *)(void))
+                WIN_GL_GetProcAddress(_this, "wglGetSwapIntervalEXT");
         if (HasExtension("WGL_EXT_swap_control_tear", extensions)) {
             _this->gl_data->HAS_WGL_EXT_swap_control_tear = true;
         }
@@ -541,7 +541,7 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     // Check for WGL_ARB_framebuffer_sRGB
     if (HasExtension("WGL_ARB_framebuffer_sRGB", extensions)) {
         _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
-    } else if (HasExtension("WGL_EXT_framebuffer_sRGB", extensions)) {  // same thing.
+    } else if (HasExtension("WGL_EXT_framebuffer_sRGB", extensions)) { // same thing.
         _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
     }
 
@@ -694,7 +694,7 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
                 *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
                 *iAttr++ = SDL_GetStringBoolean(srgbhint, false) ? GL_TRUE : GL_FALSE;
             }
-        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
+        } else if (_this->gl_config.framebuffer_srgb_capable) { // default behavior without the hint.
             *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
             *iAttr++ = GL_TRUE;
         }

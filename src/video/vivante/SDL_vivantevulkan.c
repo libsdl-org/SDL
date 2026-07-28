@@ -117,7 +117,7 @@ void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const * const *VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const *const *VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
@@ -129,10 +129,10 @@ char const * const *VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 }
 
 bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                 SDL_Window *window,
-                                 VkInstance instance,
-                                 const struct VkAllocationCallbacks *allocator,
-                                 VkSurfaceKHR *surface)
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
+                                  VkSurfaceKHR *surface)
 {
     if (!_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan is not loaded");

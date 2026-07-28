@@ -26,8 +26,8 @@
 #include <SDL3/SDL_opengl.h>
 
 #include <ApplicationServices/ApplicationServices.h>
-#include <IOKit/pwr_mgt/IOPMLib.h>
 #include <Cocoa/Cocoa.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
 
 #include "../SDL_sysvideo.h"
 
@@ -37,8 +37,8 @@
 #include "SDL_cocoamodes.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
-#include "SDL_cocoawindow.h"
 #include "SDL_cocoapen.h"
+#include "SDL_cocoawindow.h"
 
 // Private display data
 

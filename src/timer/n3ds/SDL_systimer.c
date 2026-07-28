@@ -24,7 +24,6 @@
 
 #include <3ds.h>
 
-
 Uint64 SDL_GetPerformanceCounter(void)
 {
     return svcGetSystemTick();

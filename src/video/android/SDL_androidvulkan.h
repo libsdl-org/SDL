@@ -29,14 +29,14 @@
 #ifndef SDL_androidvulkan_h_
 #define SDL_androidvulkan_h_
 
-#include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_vulkan_internal.h"
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_ANDROID)
 
 extern bool Android_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void Android_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-extern char const * const *Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern char const *const *Android_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
 extern bool Android_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                          SDL_Window *window,
                                          VkInstance instance,

@@ -27,8 +27,8 @@
 
 #include <kernel.h>
 
-#include <gsKit.h>
 #include <dmaKit.h>
+#include <gsKit.h>
 
 #include <gsToolkit.h>
 

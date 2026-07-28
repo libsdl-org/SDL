@@ -29,11 +29,11 @@
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../SDL_sysvideo.h"
 
-#import "SDL_uikitwindow.h"
 #import "SDL_uikitmetalview.h"
+#import "SDL_uikitwindow.h"
 
 @implementation SDL_uikitmetalview
 

@@ -47,17 +47,17 @@ static char *GetExePath(void)
        https://stackoverflow.com/questions/60928997/how-to-get-environment-variables-in-a-dos-assembly-program
      */
     __dpmi_regs regs;
-    regs.x.ax = 0x6200;  /* get PSP address */
+    regs.x.ax = 0x6200; /* get PSP address */
     regs.x.bx = 0x0000;
     __dpmi_int(0x21, &regs);
 
-    const Uint32 pspseg = (Uint32) regs.x.bx;
-    const Uint32 envsel = (Uint32) DOS_PeekUint16((pspseg << 16) | 0x2C);
+    const Uint32 pspseg = (Uint32)regs.x.bx;
+    const Uint32 envsel = (Uint32)DOS_PeekUint16((pspseg << 16) | 0x2C);
 
     int zero_count = 0;
     int offset;
     for (offset = 0; (offset < 0xFFFF) && (zero_count < 2); offset++) {
-        const char ch = (char) _farpeekb(envsel, offset);
+        const char ch = (char)_farpeekb(envsel, offset);
         if (ch == 0) {
             zero_count++;
         } else {
@@ -66,25 +66,25 @@ static char *GetExePath(void)
     }
 
     if (zero_count != 2) {
-        return NULL;  // uhoh
-    } else if (_farpeekw(envsel, offset) < 1) {  // there's a Uint16 here that represents number of extension strings. In practice it's always 1 and that one string is the path we need.
-        return NULL;  // uhoh
+        return NULL;                            // uhoh
+    } else if (_farpeekw(envsel, offset) < 1) { // there's a Uint16 here that represents number of extension strings. In practice it's always 1 and that one string is the path we need.
+        return NULL;                            // uhoh
     }
 
     offset += 2;
 
     int slen = 0;
-    for (unsigned long i = (unsigned long) offset; _farpeekb(envsel, i) != 0; i++) {
+    for (unsigned long i = (unsigned long)offset; _farpeekb(envsel, i) != 0; i++) {
         slen++;
     }
 
-    slen++;  /* count the null terminator. */
+    slen++; /* count the null terminator. */
 
-    char *retval = (char *) SDL_malloc(slen);
+    char *retval = (char *)SDL_malloc(slen);
     if (retval) {
         for (int i = 0; i < slen; i++) {
-            const char ch = (char) _farpeekb(envsel, offset + i);
-            retval[i] = (ch == '\\') ? '/' : ch;     // I don't know if this is a good idea. Drop DOS path separators, use Unix style instead.
+            const char ch = (char)_farpeekb(envsel, offset + i);
+            retval[i] = (ch == '\\') ? '/' : ch; // I don't know if this is a good idea. Drop DOS path separators, use Unix style instead.
         }
     }
 
@@ -93,32 +93,32 @@ static char *GetExePath(void)
 
 char *SDL_SYS_GetBasePath(void)
 {
-    char *path = GetExePath();  // look up full path of the current process's EXE file.
+    char *path = GetExePath(); // look up full path of the current process's EXE file.
     if (!path) {
-        return NULL;  // error message was already set.
+        return NULL; // error message was already set.
     }
 
     char *ptr = SDL_strrchr(path, '/');
-    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+    SDL_assert(ptr != NULL); // Should have been an absolute path.
 
     ptr[1] = '\0'; // chop off filename, leave '/'.
 
-    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    ptr = (char *)SDL_realloc(path, ((size_t)(ptr - path)) + 2); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;                                     // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetExeName(void)
 {
-    char *path = GetExePath();  // look up full path of the current process's EXE file.
+    char *path = GetExePath(); // look up full path of the current process's EXE file.
     if (!path) {
-        return NULL;  // error message was already set.
+        return NULL; // error message was already set.
     }
 
     char *ptr = SDL_strrchr(path, '/');
-    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
-    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
-    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    const size_t slen = SDL_strlen(ptr);   // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);      // move filename string to start of SDL_realloc'd region.
+    ptr = (char *)SDL_realloc(path, slen); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;               // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

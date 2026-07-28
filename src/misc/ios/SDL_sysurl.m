@@ -34,7 +34,10 @@ bool SDL_SYS_OpenURL(const char *url)
         if (![[UIApplication sharedApplication] canOpenURL:nsurl]) {
             return SDL_SetError("No handler registered for this type of URL");
         }
-        [[UIApplication sharedApplication] openURL:nsurl options:@{} completionHandler:^(BOOL success) {}];
+        [[UIApplication sharedApplication] openURL:nsurl
+                                           options:@{}
+                                 completionHandler:^(BOOL success){
+                                 }];
         return true;
     }
 }

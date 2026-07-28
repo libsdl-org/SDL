@@ -26,12 +26,12 @@
 
 #include "../../core/windows/SDL_gameinput.h"
 extern "C" {
-#include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 #include "../../events/scancodes_windows.h"
 }
 
-#define MAX_GAMEINPUT_BUTTONS   7   // GameInputMouseWheelTiltRight is the highest button
+#define MAX_GAMEINPUT_BUTTONS 7 // GameInputMouseWheelTiltRight is the highest button
 
 static const Uint8 GAMEINPUT_button_map[MAX_GAMEINPUT_BUTTONS] = {
     SDL_BUTTON_LEFT,
@@ -534,7 +534,7 @@ bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
     SDL_LockMutex(data->lock);
     {
         data->enabled_input = (raw_mouse_enabled ? GameInputKindMouse : GameInputKindUnknown) |
-                             (raw_keyboard_enabled ? GameInputKindKeyboard : GameInputKindUnknown);
+                              (raw_keyboard_enabled ? GameInputKindKeyboard : GameInputKindUnknown);
 
         // Reset input if not enabled
         for (int i = 0; i < data->num_devices; ++i) {

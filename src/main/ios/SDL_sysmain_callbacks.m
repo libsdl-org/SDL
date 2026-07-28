@@ -19,15 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "../SDL_main_callbacks.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_PLATFORM_IOS
 
 #import <UIKit/UIKit.h>
 
-#include "../../video/uikit/SDL_uikitevents.h"  // For SDL_UpdateLifecycleObserver()
-
+#include "../../video/uikit/SDL_uikitevents.h" // For SDL_UpdateLifecycleObserver()
 
 @interface SDLIosMainCallbacksDisplayLink : NSObject
 @property(nonatomic, retain) CADisplayLink *displayLink;
@@ -83,7 +82,7 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
         if (globalDisplayLink == nil) {
             rc = SDL_APP_FAILURE;
         } else {
-            return 0;  // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
+            return 0; // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
         }
     }
 
@@ -91,9 +90,7 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
     SDL_QuitMainCallbacks(rc);
     exit((rc == SDL_APP_FAILURE) ? 1 : 0);
 
-    return 1;  // just in case.
+    return 1; // just in case.
 }
 
 #endif
-
-

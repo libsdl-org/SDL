@@ -24,22 +24,23 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
 
-#define GYRO_SCALE   (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
-#define ACCEL_SCALE  (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
-#define FILTER_SIZE 11  // Must be an odd number
-#define MAX_RETRY_COUNT 10 // zuiki device initialization retry count
+#define GYRO_SCALE      (1024.0f / 32768.0f * SDL_PI_F / 180.0f) // Calculate scaling factor based on gyroscope data range and radians
+#define ACCEL_SCALE     (8.0f / 32768.0f * SDL_STANDARD_GRAVITY) // Calculate acceleration scaling factor based on gyroscope data range and standard gravity
+#define FILTER_SIZE     11                                       // Must be an odd number
+#define MAX_RETRY_COUNT 10                                       // zuiki device initialization retry count
 
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_ZUIKI_PROTOCOL
 #endif
 
-typedef struct {
+typedef struct
+{
     float buffer[FILTER_SIZE];
     uint8_t index;
     uint8_t count;
@@ -56,10 +57,12 @@ typedef struct
     MedianFilter_t filter_gyro_z;
 } SDL_DriverZUIKI_Context;
 
-static float median_filter_update(MedianFilter_t* mf, float input) {
+static float median_filter_update(MedianFilter_t *mf, float input)
+{
     mf->buffer[mf->index] = input;
     mf->index = (mf->index + 1) % FILTER_SIZE;
-    if (mf->count < FILTER_SIZE) mf->count++;
+    if (mf->count < FILTER_SIZE)
+        mf->count++;
     float temp[FILTER_SIZE];
     SDL_memcpy(temp, mf->buffer, sizeof(temp));
     for (uint8_t i = 0; i < mf->count - 1; i++) {
@@ -73,7 +76,6 @@ static float median_filter_update(MedianFilter_t* mf, float input) {
     }
     return temp[mf->count / 2];
 }
-
 
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -131,26 +133,26 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     switch (device->product_id) {
-        case USB_PRODUCT_ZUIKI_MASCON_PRO:
-            HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
-            break;
-        case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
+    case USB_PRODUCT_ZUIKI_MASCON_PRO:
+        HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
+        break;
+    case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
+        ctx->sensors_supported = true;
+        ctx->sensor_rate = 200.0f;
+        break;
+    case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
+        ctx->sensors_supported = true;
+        ctx->sensor_rate = 100.0f;
+        break;
+    case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
+        if (size > 0 && data[16] != 0) {
             ctx->sensors_supported = true;
-            ctx->sensor_rate = 200.0f;
-            break;
-        case USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT:
-            ctx->sensors_supported = true;
-            ctx->sensor_rate = 100.0f;
-            break;
-        case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
-            if (size > 0 && data[16] != 0) {
-                ctx->sensors_supported = true;
-                ctx->sensor_rate = 50.0f;
-            }
-            HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
-            break;
-        default:
-            break;
+            ctx->sensor_rate = 50.0f;
+        }
+        HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
+        break;
+    default:
+        break;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -451,9 +453,7 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_BT) {
             HIDAPI_DriverZUIKI_Handle_EVOTOP_PCBT_StatePacket(joystick, ctx, data, size);
-        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT
-            || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO
-            || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
+        } else if (device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT || device->product_id == USB_PRODUCT_ZUIKI_MASCON_PRO || device->product_id == USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT) {
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }

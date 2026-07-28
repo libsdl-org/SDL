@@ -27,15 +27,15 @@
 
 #include "../SDL_sysfilesystem.h"
 
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #if defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_OPENBSD)
@@ -221,7 +221,7 @@ static char *GetExePath(void)
 #endif
     }
 
-#ifdef SDL_PLATFORM_SOLARIS  // try this as a fallback if /proc didn't pan out
+#ifdef SDL_PLATFORM_SOLARIS // try this as a fallback if /proc didn't pan out
     if (!result) {
         const char *path = getexecname();
         if ((path) && (path[0] == '/')) { // must be absolute path...
@@ -246,14 +246,13 @@ char *SDL_SYS_GetBasePath(void)
     }
 
     char *ptr = SDL_strrchr(path, '/');
-    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+    SDL_assert(ptr != NULL); // Should have been an absolute path.
 
     ptr[1] = '\0'; // chop off filename, leave '/'.
 
-    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    ptr = (char *)SDL_realloc(path, ((size_t)(ptr - path)) + 2); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;                                     // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
-
 
 char *SDL_SYS_GetExeName(void)
 {
@@ -263,13 +262,12 @@ char *SDL_SYS_GetExeName(void)
     }
 
     char *ptr = SDL_strrchr(path, '/');
-    SDL_assert(ptr != NULL);  // Should have been an absolute path.
-    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
-    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
-    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
-    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+    SDL_assert(ptr != NULL);               // Should have been an absolute path.
+    const size_t slen = SDL_strlen(ptr);   // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);      // move filename string to start of SDL_realloc'd region.
+    ptr = (char *)SDL_realloc(path, slen); // try to shrink this allocation down a little.
+    return ptr ? ptr : path;               // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
-
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
@@ -362,137 +360,127 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
   CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
-static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fallback)
+static char *xdg_user_dir_lookup_with_fallback(const char *type, const char *fallback)
 {
-  FILE *file;
-  const char *home_dir, *config_home;
-  char *config_file;
-  char buffer[512];
-  char *user_dir;
-  char *p, *d;
-  int len;
-  int relative;
-  size_t l;
+    FILE *file;
+    const char *home_dir, *config_home;
+    char *config_file;
+    char buffer[512];
+    char *user_dir;
+    char *p, *d;
+    int len;
+    int relative;
+    size_t l;
 
-  home_dir = SDL_getenv("HOME");
+    home_dir = SDL_getenv("HOME");
 
-  if (!home_dir)
-    goto error;
-
-  config_home = SDL_getenv("XDG_CONFIG_HOME");
-  if (!config_home || config_home[0] == 0)
-    {
-      l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;
-      config_file = (char *)SDL_malloc (l);
-      if (!config_file)
+    if (!home_dir)
         goto error;
 
-      SDL_strlcpy (config_file, home_dir, l);
-      SDL_strlcat (config_file, "/.config/user-dirs.dirs", l);
+    config_home = SDL_getenv("XDG_CONFIG_HOME");
+    if (!config_home || config_home[0] == 0) {
+        l = SDL_strlen(home_dir) + SDL_strlen("/.config/user-dirs.dirs") + 1;
+        config_file = (char *)SDL_malloc(l);
+        if (!config_file)
+            goto error;
+
+        SDL_strlcpy(config_file, home_dir, l);
+        SDL_strlcat(config_file, "/.config/user-dirs.dirs", l);
+    } else {
+        l = SDL_strlen(config_home) + SDL_strlen("/user-dirs.dirs") + 1;
+        config_file = (char *)SDL_malloc(l);
+        if (!config_file)
+            goto error;
+
+        SDL_strlcpy(config_file, config_home, l);
+        SDL_strlcat(config_file, "/user-dirs.dirs", l);
     }
-  else
-    {
-      l = SDL_strlen (config_home) + SDL_strlen ("/user-dirs.dirs") + 1;
-      config_file = (char *)SDL_malloc (l);
-      if (!config_file)
+
+    file = fopen(config_file, "r");
+    SDL_free(config_file);
+    if (!file)
         goto error;
 
-      SDL_strlcpy (config_file, config_home, l);
-      SDL_strlcat (config_file, "/user-dirs.dirs", l);
-    }
+    user_dir = NULL;
+    while (fgets(buffer, sizeof(buffer), file)) {
+        // Remove newline at end
+        len = SDL_strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n')
+            buffer[len - 1] = 0;
 
-  file = fopen (config_file, "r");
-  SDL_free (config_file);
-  if (!file)
-    goto error;
-
-  user_dir = NULL;
-  while (fgets (buffer, sizeof (buffer), file))
-    {
-      // Remove newline at end
-      len = SDL_strlen (buffer);
-      if (len > 0 && buffer[len-1] == '\n')
-        buffer[len-1] = 0;
-
-      p = buffer;
-      while (*p == ' ' || *p == '\t')
-        p++;
-
-      if (SDL_strncmp (p, "XDG_", 4) != 0)
-        continue;
-      p += 4;
-      if (SDL_strncmp (p, type, SDL_strlen (type)) != 0)
-        continue;
-      p += SDL_strlen (type);
-      if (SDL_strncmp (p, "_DIR", 4) != 0)
-        continue;
-      p += 4;
-
-      while (*p == ' ' || *p == '\t')
-        p++;
-
-      if (*p != '=')
-        continue;
-      p++;
-
-      while (*p == ' ' || *p == '\t')
-        p++;
-
-      if (*p != '"')
-        continue;
-      p++;
-
-      relative = 0;
-      if (SDL_strncmp (p, "$HOME/", 6) == 0)
-        {
-          p += 6;
-          relative = 1;
-        }
-      else if (*p != '/')
-        continue;
-
-      SDL_free (user_dir);
-      if (relative)
-        {
-          l = SDL_strlen (home_dir) + 1 + SDL_strlen (p) + 1;
-          user_dir = (char *)SDL_malloc (l);
-          if (!user_dir)
-            goto error2;
-
-          SDL_strlcpy (user_dir, home_dir, l);
-          SDL_strlcat (user_dir, "/", l);
-        }
-      else
-        {
-          user_dir = (char *)SDL_malloc (SDL_strlen (p) + 1);
-          if (!user_dir)
-            goto error2;
-
-          *user_dir = 0;
-        }
-
-      d = user_dir + SDL_strlen (user_dir);
-      while (*p && *p != '"')
-        {
-          if ((*p == '\\') && (*(p+1) != 0))
+        p = buffer;
+        while (*p == ' ' || *p == '\t')
             p++;
-          *d++ = *p++;
+
+        if (SDL_strncmp(p, "XDG_", 4) != 0)
+            continue;
+        p += 4;
+        if (SDL_strncmp(p, type, SDL_strlen(type)) != 0)
+            continue;
+        p += SDL_strlen(type);
+        if (SDL_strncmp(p, "_DIR", 4) != 0)
+            continue;
+        p += 4;
+
+        while (*p == ' ' || *p == '\t')
+            p++;
+
+        if (*p != '=')
+            continue;
+        p++;
+
+        while (*p == ' ' || *p == '\t')
+            p++;
+
+        if (*p != '"')
+            continue;
+        p++;
+
+        relative = 0;
+        if (SDL_strncmp(p, "$HOME/", 6) == 0) {
+            p += 6;
+            relative = 1;
+        } else if (*p != '/')
+            continue;
+
+        SDL_free(user_dir);
+        if (relative) {
+            l = SDL_strlen(home_dir) + 1 + SDL_strlen(p) + 1;
+            user_dir = (char *)SDL_malloc(l);
+            if (!user_dir)
+                goto error2;
+
+            SDL_strlcpy(user_dir, home_dir, l);
+            SDL_strlcat(user_dir, "/", l);
+        } else {
+            user_dir = (char *)SDL_malloc(SDL_strlen(p) + 1);
+            if (!user_dir)
+                goto error2;
+
+            *user_dir = 0;
         }
-      *d = 0;
+
+        d = user_dir + SDL_strlen(user_dir);
+        while (*p && *p != '"') {
+            if ((*p == '\\') && (*(p + 1) != 0))
+                p++;
+            *d++ = *p++;
+        }
+        *d = 0;
     }
 error2:
-  fclose (file);
+    fclose(file);
 
-  if (user_dir)
-    return user_dir;
+    if (user_dir)
+        return user_dir;
 
- error:
-  if (fallback)
-    return SDL_strdup (fallback);
-  return NULL;
+error:
+    if (fallback)
+        return SDL_strdup(fallback);
+    return NULL;
 }
 
-static char *xdg_user_dir_lookup (const char *type)
+static char *xdg_user_dir_lookup(const char *type)
 {
     const char *home_dir;
     char *dir, *user_dir;
@@ -537,7 +525,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         PICTURES
         VIDEOS
     */
-    switch(folder) {
+    switch (folder) {
     case SDL_FOLDER_HOME:
         param = SDL_getenv("HOME");
 
@@ -590,7 +578,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         break;
 
     default:
-        SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
+        SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
         return NULL;
     }
 
@@ -608,7 +596,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
     }
 
 append_slash:
-    newresult = (char *) SDL_realloc(result, SDL_strlen(result) + 2);
+    newresult = (char *)SDL_realloc(result, SDL_strlen(result) + 2);
 
     if (!newresult) {
         SDL_free(result);

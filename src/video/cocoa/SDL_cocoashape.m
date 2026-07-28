@@ -22,9 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-#include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
-
+#include "SDL_cocoavideo.h"
 
 bool Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {

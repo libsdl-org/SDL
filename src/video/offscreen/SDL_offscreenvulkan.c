@@ -22,9 +22,8 @@
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_OFFSCREEN)
 
-#include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
-
+#include "../SDL_vulkan_internal.h"
 
 static const char *s_defaultPaths[] = {
 #if defined(SDL_PLATFORM_WINDOWS)
@@ -46,10 +45,9 @@ SDL_ELF_NOTE_DLOPEN(
     "offscreen-vulkan",
     "Support for offscreen Vulkan",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    "libvulkan.so.1"
-)
+    "libvulkan.so.1")
 
-#if defined( SDL_PLATFORM_APPLE )
+#if defined(SDL_PLATFORM_APPLE)
 #include <dlfcn.h>
 
 // Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
@@ -61,7 +59,6 @@ SDL_ELF_NOTE_DLOPEN(
     And account for the inability to create a surface on the consumer side.
     So for now I'm targeting my specific use case -Dave Kircher*/
 #define HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD 0
-
 
 bool OFFSCREEN_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -188,13 +185,13 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
 
     static const char *const returnExtensions[] = { VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME };
     if (count) {
-#       if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
+#if (HEADLESS_SURFACE_EXTENSION_REQUIRED_TO_LOAD == 0)
         {
             /* In optional mode, only return VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME if it's already supported by the instance
                 There's probably a better way to cache the presence of the extension during OFFSCREEN_Vulkan_LoadLibrary().
                 But both SDL_VideoData and SDL_VideoDevice::vulkan_config seem like I'd need to touch a bunch of code to do properly.
                 And I want a smaller footprint for the first pass*/
-            if ( _this->vulkan_config.vkEnumerateInstanceExtensionProperties ) {
+            if (_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
                 enumerateExtensions = SDL_Vulkan_CreateInstanceExtensionsList(
                     (PFN_vkEnumerateInstanceExtensionProperties)
                         _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
@@ -206,26 +203,26 @@ char const *const *OFFSCREEN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this
                 }
                 SDL_free(enumerateExtensions);
             }
-            if ( hasHeadlessSurfaceExtension == true ) {
+            if (hasHeadlessSurfaceExtension == true) {
                 *count = SDL_arraysize(returnExtensions);
             } else {
                 *count = SDL_arraysize(returnExtensions) - 1; // assumes VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME is last
             }
         }
-#       else
+#else
         {
             *count = SDL_arraysize(returnExtensions);
         }
-#       endif
+#endif
     }
     return returnExtensions;
 }
 
 bool OFFSCREEN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                   SDL_Window *window,
-                                   VkInstance instance,
-                                   const struct VkAllocationCallbacks *allocator,
-                                   VkSurfaceKHR *surface)
+                                    SDL_Window *window,
+                                    VkInstance instance,
+                                    const struct VkAllocationCallbacks *allocator,
+                                    VkSurfaceKHR *surface)
 {
     *surface = VK_NULL_HANDLE;
 

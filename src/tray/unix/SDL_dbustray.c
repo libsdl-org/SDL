@@ -27,8 +27,8 @@
 
 #ifdef SDL_USE_LIBDBUS
 
-#include "../../video/SDL_surface_c.h"
 #include "../../core/unix/SDL_appid.h"
+#include "../../video/SDL_surface_c.h"
 #include "../SDL_tray_utils.h"
 #include "SDL_unixtray.h"
 #include <unistd.h>

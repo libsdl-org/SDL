@@ -34,7 +34,6 @@ HidP_GetData_t SDL_HidP_GetData;
 static HMODULE s_pHIDDLL = 0;
 static int s_HIDDLLRefCount = 0;
 
-
 bool WIN_LoadHIDDLL(void)
 {
     if (s_pHIDDLL) {
@@ -97,7 +96,8 @@ typedef enum _CM_NOTIFY_FILTER_TYPE
     CM_NOTIFY_FILTER_TYPE_DEVICEHANDLE,
     CM_NOTIFY_FILTER_TYPE_DEVICEINSTANCE,
     CM_NOTIFY_FILTER_TYPE_MAX
-} CM_NOTIFY_FILTER_TYPE, *PCM_NOTIFY_FILTER_TYPE;
+} CM_NOTIFY_FILTER_TYPE,
+    *PCM_NOTIFY_FILTER_TYPE;
 
 typedef struct _CM_NOTIFY_FILTER
 {
@@ -135,7 +135,8 @@ typedef enum _CM_NOTIFY_ACTION
     CM_NOTIFY_ACTION_DEVICEINSTANCESTARTED,
     CM_NOTIFY_ACTION_DEVICEINSTANCEREMOVED,
     CM_NOTIFY_ACTION_MAX
-} CM_NOTIFY_ACTION, *PCM_NOTIFY_ACTION;
+} CM_NOTIFY_ACTION,
+    *PCM_NOTIFY_ACTION;
 
 typedef struct _CM_NOTIFY_EVENT_DATA
 {
@@ -162,10 +163,10 @@ typedef struct _CM_NOTIFY_EVENT_DATA
     } u;
 } CM_NOTIFY_EVENT_DATA, *PCM_NOTIFY_EVENT_DATA;
 
-typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action, PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
+typedef DWORD(CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Context, CM_NOTIFY_ACTION Action, PCM_NOTIFY_EVENT_DATA EventData, DWORD EventDataSize);
 
-typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
-typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
+typedef DWORD(WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
+typedef DWORD(WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
 
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
@@ -280,7 +281,7 @@ void WIN_InitDeviceNotification(void)
 {
 }
 
-Uint64 WIN_GetLastDeviceNotification( void )
+Uint64 WIN_GetLastDeviceNotification(void)
 {
     return 0;
 }

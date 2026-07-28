@@ -20,10 +20,10 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_RENDER_D3D) || \
+#if defined(SDL_VIDEO_RENDER_D3D) ||   \
     defined(SDL_VIDEO_RENDER_D3D11) || \
     defined(SDL_VIDEO_RENDER_D3D12) || \
-    defined(SDL_VIDEO_RENDER_GPU) || \
+    defined(SDL_VIDEO_RENDER_GPU) ||   \
     defined(SDL_VIDEO_RENDER_VULKAN)
 
 // Set up for C function definitions, even when using C++

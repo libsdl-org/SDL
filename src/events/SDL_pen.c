@@ -26,7 +26,7 @@
 #include "SDL_events_c.h"
 #include "SDL_pen_c.h"
 
-static SDL_PenID pen_touching = 0;  // used for synthetic mouse/touch events.
+static SDL_PenID pen_touching = 0; // used for synthetic mouse/touch events.
 
 typedef struct SDL_Pen
 {
@@ -120,7 +120,6 @@ static void SDLCALL SDL_PenTouchEventsChanged(void *userdata, const char *name, 
 
     UpdateTouchEmulationDevicePresence();
 }
-
 
 // public API ...
 
@@ -217,10 +216,10 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
     if (pen) {
         result = pen->input_state;
         if (axes && num_axes) {
-            SDL_memcpy(axes, pen->axes, SDL_min(num_axes, SDL_PEN_AXIS_COUNT) * sizeof (*axes));
+            SDL_memcpy(axes, pen->axes, SDL_min(num_axes, SDL_PEN_AXIS_COUNT) * sizeof(*axes));
             // zero out axes we don't know about, in case the caller built with newer SDL headers that support more of them.
             if (num_axes > SDL_PEN_AXIS_COUNT) {
-                SDL_memset(&axes[SDL_PEN_AXIS_COUNT], '\0', (num_axes - SDL_PEN_AXIS_COUNT) * sizeof (*axes));
+                SDL_memset(&axes[SDL_PEN_AXIS_COUNT], '\0', (num_axes - SDL_PEN_AXIS_COUNT) * sizeof(*axes));
             }
         }
     }
@@ -242,16 +241,16 @@ SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis)
     // the initial capability bits happen to match up, but as
     // more features show up later, the bits may no longer be contiguous!
     if ((axis >= SDL_PEN_AXIS_PRESSURE) && (axis <= SDL_PEN_AXIS_SLIDER)) {
-        return ((SDL_PenCapabilityFlags) 1u) << ((SDL_PenCapabilityFlags) axis);
+        return ((SDL_PenCapabilityFlags)1u) << ((SDL_PenCapabilityFlags)axis);
     }
-    return 0;  // oh well.
+    return 0; // oh well.
 }
 
 SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *window, const SDL_PenInfo *info, void *handle, bool in_proximity)
 {
-    SDL_assert(handle != NULL);  // just allocate a Uint8 so you have a unique pointer if not needed!
-    SDL_assert(SDL_FindPenByHandle(handle) == 0);  // Backends shouldn't double-add pens!
-    SDL_assert(pen_device_rwlock != NULL);   // subsystem should be initialized by now!
+    SDL_assert(handle != NULL);                   // just allocate a Uint8 so you have a unique pointer if not needed!
+    SDL_assert(SDL_FindPenByHandle(handle) == 0); // Backends shouldn't double-add pens!
+    SDL_assert(pen_device_rwlock != NULL);        // subsystem should be initialized by now!
 
     char *namecpy = SDL_strdup(name ? name : "Unnamed pen");
     if (!namecpy) {
@@ -263,10 +262,10 @@ SDL_PenID SDL_AddPenDevice(Uint64 timestamp, const char *name, SDL_Window *windo
     SDL_LockRWLockForWriting(pen_device_rwlock);
 
     SDL_Pen *pen = NULL;
-    void *ptr = SDL_realloc(pen_devices, (pen_device_count + 1) * sizeof (*pen));
+    void *ptr = SDL_realloc(pen_devices, (pen_device_count + 1) * sizeof(*pen));
     if (ptr) {
-        result = (SDL_PenID) SDL_GetNextObjectID();
-        pen_devices = (SDL_Pen *) ptr;
+        result = (SDL_PenID)SDL_GetNextObjectID();
+        pen_devices = (SDL_Pen *)ptr;
         pen = &pen_devices[pen_device_count];
         pen_device_count++;
 
@@ -300,26 +299,26 @@ void SDL_RemovePenDevice(Uint64 timestamp, SDL_Window *window, SDL_PenID instanc
         return;
     }
 
-    SDL_SendPenProximity(timestamp, instance_id, window, false, true);  // bye bye
+    SDL_SendPenProximity(timestamp, instance_id, window, false, true); // bye bye
 
     SDL_LockRWLockForWriting(pen_device_rwlock);
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
         SDL_free(pen->name);
         // we don't free `pen`, it's just part of simple array. Shuffle it out.
-        const int idx = ((int) (pen - pen_devices));
+        const int idx = ((int)(pen - pen_devices));
         SDL_assert((idx >= 0) && (idx < pen_device_count));
-        if ( idx < (pen_device_count - 1) ) {
-            SDL_memmove(&pen_devices[idx], &pen_devices[idx + 1], sizeof (*pen) * ((pen_device_count - idx) - 1));
+        if (idx < (pen_device_count - 1)) {
+            SDL_memmove(&pen_devices[idx], &pen_devices[idx + 1], sizeof(*pen) * ((pen_device_count - idx) - 1));
         }
 
         SDL_assert(pen_device_count > 0);
         pen_device_count--;
 
         if (pen_device_count) {
-            void *ptr = SDL_realloc(pen_devices, sizeof (*pen) * pen_device_count);  // shrink it down.
+            void *ptr = SDL_realloc(pen_devices, sizeof(*pen) * pen_device_count); // shrink it down.
             if (ptr) {
-                pen_devices = (SDL_Pen *) ptr;
+                pen_devices = (SDL_Pen *)ptr;
             }
         } else {
             SDL_free(pen_devices);
@@ -385,7 +384,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *windo
             send_event = true;
         }
 
-        pen->input_state = input_state;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+        pen->input_state = input_state; // we could do an SDL_SetAtomicInt here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
@@ -445,7 +444,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *windo
 
 void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, SDL_PenAxis axis, float value)
 {
-    SDL_assert((axis >= 0) && (axis < SDL_PEN_AXIS_COUNT));  // fix the backend if this triggers.
+    SDL_assert((axis >= 0) && (axis < SDL_PEN_AXIS_COUNT)); // fix the backend if this triggers.
 
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -460,7 +459,7 @@ void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window
     SDL_Pen *pen = FindPenByInstanceId(instance_id);
     if (pen) {
         if (pen->axes[axis] != value) {
-            pen->axes[axis] = value;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+            pen->axes[axis] = value; // we could do an SDL_SetAtomicInt here if we run into trouble...
             input_state = pen->input_state;
             x = pen->x;
             y = pen->y;
@@ -518,8 +517,8 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
         EnsurePenProximity(timestamp, pen, window);
 
         if ((pen->x != x) || (pen->y != y)) {
-            pen->x = x;  // we could do an SDL_SetAtomicInt here if we run into trouble...
-            pen->y = y;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+            pen->x = x; // we could do an SDL_SetAtomicInt here if we run into trouble...
+            pen->y = y; // we could do an SDL_SetAtomicInt here if we run into trouble...
             input_state = pen->input_state;
             send_event = true;
         }
@@ -551,7 +550,7 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
                         const float normalized_y = y / (float)window->h;
                         SDL_SendTouchMotion(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, normalized_x, normalized_y, pen->axes[SDL_PEN_AXIS_PRESSURE]);
                     }
-                } else if (pen_touching == 0) {  // send mouse motion (without a pressed button) for pens that aren't touching.
+                } else if (pen_touching == 0) { // send mouse motion (without a pressed button) for pens that aren't touching.
                     // this might cause a little chaos if you have multiple pens hovering at the same time, but this seems unlikely in the real world, and also something you did to yourself.  :)
                     if (mouse->pen_mouse_events) {
                         SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
@@ -583,7 +582,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
         EnsurePenProximity(timestamp, pen, window);
 
         input_state = pen->input_state;
-        const Uint32 flag = (Uint32) (1u << button);
+        const Uint32 flag = (Uint32)(1u << button);
         const bool current = ((input_state & flag) != 0);
         x = pen->x;
         y = pen->y;
@@ -594,7 +593,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
             input_state &= ~flag;
             send_event = true;
         }
-        pen->input_state = input_state;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+        pen->input_state = input_state; // we could do an SDL_SetAtomicInt here if we run into trouble...
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
@@ -655,7 +654,7 @@ void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *w
                     input_state &= ~SDL_PEN_INPUT_IN_PROXIMITY;
                 }
                 send_event = true;
-                pen->input_state = input_state;  // we could do an SDL_SetAtomicInt here if we run into trouble...
+                pen->input_state = input_state; // we could do an SDL_SetAtomicInt here if we run into trouble...
             }
             pen->pending_proximity_out = false;
         } else {
@@ -701,4 +700,3 @@ void SDL_SendPendingPenProximity(void)
         SDL_UnlockRWLock(pen_device_rwlock);
     }
 }
-

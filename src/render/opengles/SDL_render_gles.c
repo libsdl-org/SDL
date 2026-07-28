@@ -21,11 +21,11 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_RENDER_OGL_ES
-#include <SDL3/SDL_hints.h>
-#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
-#include <SDL3/SDL_opengles.h>
-#include "../SDL_sysrender.h"
 #include "../../SDL_utils_c.h"
+#include "../../video/SDL_sysvideo.h" /* For SDL_GL_SwapWindowWithResult */
+#include "../SDL_sysrender.h"
+#include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_opengles.h>
 
 #define RENDERER_CONTEXT_MAJOR 1
 #define RENDERER_CONTEXT_MINOR 1
@@ -65,7 +65,7 @@ typedef struct
 {
     SDL_GLContext context;
 
-#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
 #define SDL_PROC_OES                SDL_PROC
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
@@ -81,7 +81,7 @@ typedef struct
 
     GLES_DrawStateCache drawstate;
 
-    GLenum textype;  // Probably GL_TEXTURE_2D, but might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
+    GLenum textype; // Probably GL_TEXTURE_2D, but might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
 
     bool pixelart_supported;
 
@@ -158,14 +158,14 @@ static bool GLES_LoadFunctions(GLES_RenderData *data)
 #else
 #define SDL_PROC(ret, func, params)                                                           \
     do {                                                                                      \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                            \
+        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                    \
         if (!data->func) {                                                                    \
             return SDL_SetError("Couldn't load GLES function %s: %s", #func, SDL_GetError()); \
         }                                                                                     \
     } while (0);
-#define SDL_PROC_OES(ret, func, params)            \
-    do {                                           \
-        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func); \
+#define SDL_PROC_OES(ret, func, params)                                    \
+    do {                                                                   \
+        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func); \
     } while (0);
 #endif /* __SDL_NOGETPROCADDR__ */
 
@@ -303,7 +303,6 @@ static bool GLES_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMo
     return true;
 }
 
-
 static bool SetTextureScaleMode(GLES_RenderData *data, GLenum textype, SDL_PixelFormat format, SDL_ScaleMode scaleMode)
 {
     switch (scaleMode) {
@@ -435,7 +434,7 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 }
 
 static bool GLES_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                              const SDL_Rect *rect, const void *pixels, int pitch)
+                               const SDL_Rect *rect, const void *pixels, int pitch)
 {
     GLES_RenderData *renderdata = (GLES_RenderData *)renderer->internal;
     GLES_TextureData *data = (GLES_TextureData *)texture->internal;
@@ -495,7 +494,7 @@ static bool GLES_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool GLES_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                            const SDL_Rect *rect, void **pixels, int *pitch)
+                             const SDL_Rect *rect, void **pixels, int *pitch)
 {
     GLES_TextureData *data = (GLES_TextureData *)texture->internal;
 
@@ -612,9 +611,9 @@ static bool GLES_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 }
 
 static bool GLES_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                              const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                              int num_vertices, const void *indices, int num_indices, int size_indices,
-                              float scale_x, float scale_y)
+                               const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                               int num_vertices, const void *indices, int num_indices, int size_indices,
+                               float scale_x, float scale_y)
 {
     GLES_TextureData *texturedata = NULL;
     int i;
@@ -759,7 +758,6 @@ static void SetCopyState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
         data->glBindTexture(GL_TEXTURE_2D, texturedata->texture);
         data->drawstate.texture = texture;
     }
-
 
     if (cmd->data.draw.texture_scale_mode != texturedata->texture_scale_mode) {
         SetTextureScaleMode(data, textype, texture->format, cmd->data.draw.texture_scale_mode);
@@ -1158,7 +1156,7 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         data->GL_EXT_blend_minmax_supported = true;
     }
 
-    data->textype = GL_TEXTURE_2D;  // this might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
+    data->textype = GL_TEXTURE_2D; // this might be other things, like TEXTURE_RECTANGLE, maybe if there's any extension...?
 
     /* Set up parameters for rendering */
     data->glDisable(GL_DEPTH_TEST);
@@ -1191,4 +1189,3 @@ SDL_RenderDriver GLES_RenderDriver = {
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES */
-

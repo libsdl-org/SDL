@@ -34,7 +34,7 @@ extern bool Android_OnJoy(int device_id, int axisnum, float value);
 extern bool Android_OnHat(int device_id, int hat_id, int x, int y);
 extern void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp, float x, float y, float z);
 extern void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
-   bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope);
+                                bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope);
 extern void Android_RemoveJoystick(int device_id);
 
 // A linked list of available joysticks
@@ -44,7 +44,7 @@ typedef struct SDL_joylist_item
     int device_id; // Android's device id
     Uint16 vendor_id;
     Uint16 product_id;
-    char *name;    // "SideWinder 3D Pro" or whatever
+    char *name; // "SideWinder 3D Pro" or whatever
     SDL_GUID guid;
     SDL_Joystick *joystick;
     int nbuttons, naxes, nhats;

@@ -234,7 +234,7 @@ static void OPENSLES_DestroyPCMRecorder(SDL_AudioDevice *device)
 // !!! FIXME: make this non-blocking!
 static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
+    SDL_SetAtomicInt((SDL_AtomicInt *)userdata, granted ? 1 : -1);
 }
 
 static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
@@ -271,7 +271,7 @@ static bool OPENSLES_CreatePCMRecorder(SDL_AudioDevice *device)
     // Just go with signed 16-bit audio as it's the most compatible
     device->spec.format = SDL_AUDIO_S16;
     device->spec.channels = 1;
-    //device->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
+    // device->spec.freq = SL_SAMPLINGRATE_16 / 1000;*/
 
     // Update the fragment size as size in bytes
     SDL_UpdatedAudioDeviceFormat(device);
@@ -661,7 +661,7 @@ static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
         if (SDL_WaitSemaphoreTimeout(audiodata->playsem, 100)) {
-            return true;  // semaphore was signaled, let's go!
+            return true; // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }

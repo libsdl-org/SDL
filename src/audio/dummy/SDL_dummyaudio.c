@@ -37,13 +37,13 @@ static bool DUMMYAUDIO_WaitDevice(SDL_AudioDevice *device)
 
 static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     }
 
     if (!device->recording) {
-        device->hidden->mixbuf = (Uint8 *) SDL_malloc(device->buffer_size);
+        device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
         if (!device->hidden->mixbuf) {
             return false;
         }
@@ -59,14 +59,13 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
         }
     }
 
-    // on Emscripten, we just fire a repeating timer to consume audio.
-    #if defined(SDL_PLATFORM_EMSCRIPTEN)
+// on Emscripten, we just fire a repeating timer to consume audio.
+#if defined(SDL_PLATFORM_EMSCRIPTEN)
     MAIN_THREAD_EM_ASM({
         var a = Module['SDL3'].dummy_audio;
         if (a.timers[$0] !== undefined) { clearInterval(a.timers[$0]); }
-        a.timers[$0] = setInterval(function() { dynCall('vi', $3, [$4]); }, ($1 / $2) * 1000);
-    }, device->recording ? 1 : 0, device->sample_frames, device->spec.freq, device->recording ? SDL_RecordingAudioThreadIterate : SDL_PlaybackAudioThreadIterate, device);
-    #endif
+        a.timers[$0] = setInterval(function() { dynCall('vi', $3, [$4]); }, ($1 / $2) * 1000); }, device->recording ? 1 : 0, device->sample_frames, device->spec.freq, device->recording ? SDL_RecordingAudioThreadIterate : SDL_PlaybackAudioThreadIterate, device);
+#endif
 
     return true; // we're good; don't change reported device format.
 }
@@ -74,14 +73,13 @@ static bool DUMMYAUDIO_OpenDevice(SDL_AudioDevice *device)
 static void DUMMYAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     if (device->hidden) {
-        // on Emscripten, we just fire a repeating timer to consume audio.
-        #if defined(SDL_PLATFORM_EMSCRIPTEN)
+// on Emscripten, we just fire a repeating timer to consume audio.
+#if defined(SDL_PLATFORM_EMSCRIPTEN)
         MAIN_THREAD_EM_ASM({
             var a = Module['SDL3'].dummy_audio;
             if (a.timers[$0] !== undefined) { clearInterval(a.timers[$0]); }
-            a.timers[$0] = undefined;
-        }, device->recording ? 1 : 0);
-        #endif
+            a.timers[$0] = undefined; }, device->recording ? 1 : 0);
+#endif
         SDL_free(device->hidden->mixbuf);
         SDL_free(device->hidden);
         device->hidden = NULL;
@@ -113,8 +111,8 @@ static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->OnlyHasDefaultRecordingDevice = true;
     impl->HasRecordingSupport = true;
 
-    // on Emscripten, we just fire a repeating timer to consume audio.
-    #if defined(SDL_PLATFORM_EMSCRIPTEN)
+// on Emscripten, we just fire a repeating timer to consume audio.
+#if defined(SDL_PLATFORM_EMSCRIPTEN)
     MAIN_THREAD_EM_ASM({
         Module['SDL3'].dummy_audio = {};
         Module['SDL3'].dummy_audio.timers = [];
@@ -122,7 +120,7 @@ static bool DUMMYAUDIO_Init(SDL_AudioDriverImpl *impl)
         Module['SDL3'].dummy_audio.timers[1] = undefined;
     });
     impl->ProvidesOwnCallbackThread = true;
-    #endif
+#endif
 
     return true;
 }

@@ -25,8 +25,8 @@
 #if defined(SDL_AUDIO_DRIVER_NETBSD) || defined(SDL_AUDIO_DRIVER_OSS)
 
 #include <fcntl.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h> // For close()
 
 #include "SDL_audiodev_c.h"

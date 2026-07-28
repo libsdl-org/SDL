@@ -25,8 +25,8 @@
 
 // Pressure-sensitive pen support for X11.
 
-#include "SDL_x11video.h"
 #include "../../events/SDL_pen_c.h"
+#include "SDL_x11video.h"
 
 // Prep pen support (never fails; pens simply won't be added if there's a problem).
 extern void X11_InitPen(SDL_VideoDevice *_this);
@@ -47,8 +47,8 @@ typedef struct X11_PenHandle
     bool is_eraser;
     int x11_deviceid;
     int valuator_for_axis[SDL_PEN_AXIS_COUNT];
-    float slider_bias;      // shift value to add to PEN_AXIS_SLIDER (before normalisation)
-    float rotation_bias;    // rotation to add to PEN_AXIS_ROTATION  (after normalisation)
+    float slider_bias;   // shift value to add to PEN_AXIS_SLIDER (before normalisation)
+    float rotation_bias; // rotation to add to PEN_AXIS_ROTATION  (after normalisation)
     float axis_min[SDL_PEN_AXIS_COUNT];
     float axis_max[SDL_PEN_AXIS_COUNT];
 } X11_PenHandle;

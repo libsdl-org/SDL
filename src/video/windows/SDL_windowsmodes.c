@@ -22,8 +22,8 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "SDL_windowsvideo.h"
 #include "../../events/SDL_displayevents_c.h"
+#include "SDL_windowsvideo.h"
 
 #ifdef HAVE_DXGI1_6_H
 #define COBJMACROS
@@ -394,7 +394,7 @@ WIN_GetDisplayNameVista_failed:
 #ifdef HAVE_DXGI1_6_H
 static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 {
-    typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID riid, void **ppFactory);
+    typedef HRESULT(WINAPI * pfnCreateDXGIFactory1)(REFIID riid, void **ppFactory);
     pfnCreateDXGIFactory1 pCreateDXGIFactory1 = NULL;
     SDL_SharedObject *hDXGIMod = NULL;
     bool found = false;
@@ -517,11 +517,12 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
 
     if (WIN_GetMonitorPathInfo(videodata, hMonitor, &path_info)) {
         /* workarounds for https://github.com/libsdl-org/SDL/issues/11193 */
-        struct SDL_DISPLAYCONFIG_SDR_WHITE_LEVEL {
-          DISPLAYCONFIG_DEVICE_INFO_HEADER header;
-          ULONG SDRWhiteLevel;
+        struct SDL_DISPLAYCONFIG_SDR_WHITE_LEVEL
+        {
+            DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+            ULONG SDRWhiteLevel;
         } white_level;
-        #define DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL 11
+#define DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL 11
 
         SDL_zero(white_level);
         white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
@@ -791,7 +792,7 @@ bool WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
     dxgi_output = WIN_GetDXGIOutput(_this, data->DeviceName);
 
     // Make sure we add the current mode to the list in case it's a custom mode that doesn't enumerate
-    for (i = ENUM_CURRENT_SETTINGS; ; ++i) {
+    for (i = ENUM_CURRENT_SETTINGS;; ++i) {
         if (!WIN_GetDisplayMode(_this, dxgi_output, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
             break;
         }

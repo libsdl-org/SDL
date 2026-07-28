@@ -20,9 +20,9 @@
 */
 #include "SDL_internal.h"
 
-#include "../SDL_sysjoystick.h"
-#include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_directx.h"
+#include "../../core/windows/SDL_windows.h"
+#include "../SDL_sysjoystick.h"
 
 #define MAX_INPUTS 256 // each joystick can have up to 256 inputs
 
@@ -90,7 +90,7 @@ struct joystick_hwdata
 #ifdef SDL_JOYSTICK_XINPUT
     bool bXInputDevice; // true if this device supports using the xinput API rather than DirectInput
     bool bXInputHaptic; // Supports force feedback via XInput.
-    Uint8 userid;           // XInput userid index for this joystick
+    Uint8 userid;       // XInput userid index for this joystick
     DWORD dwPacketNumber;
 #endif
 };

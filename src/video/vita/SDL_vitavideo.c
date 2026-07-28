@@ -24,25 +24,25 @@
 #ifdef SDL_VIDEO_DRIVER_VITA
 
 // SDL internals
-#include "../SDL_sysvideo.h"
-#include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
+#include "../SDL_sysvideo.h"
 
 // VITA declarations
-#include <psp2/kernel/processmgr.h>
-#include "SDL_vitavideo.h"
-#include "SDL_vitatouch.h"
-#include "SDL_vitakeyboard.h"
-#include "SDL_vitamouse_c.h"
 #include "SDL_vitaframebuffer.h"
+#include "SDL_vitakeyboard.h"
 #include "SDL_vitamessagebox.h"
+#include "SDL_vitamouse_c.h"
+#include "SDL_vitatouch.h"
+#include "SDL_vitavideo.h"
+#include <psp2/kernel/processmgr.h>
 
 #if defined(SDL_VIDEO_VITA_PVR)
 #define VITA_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define VITA_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define VITA_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define VITA_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define VITA_GLES_DestroyContext   SDL_EGL_DestroyContext
+#define VITA_GLES_DestroyContext  SDL_EGL_DestroyContext
 #endif
 
 SDL_Window *Vita_Window;

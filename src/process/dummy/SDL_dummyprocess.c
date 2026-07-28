@@ -24,7 +24,6 @@
 
 #include "../SDL_sysprocess.h"
 
-
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     return SDL_Unsupported();

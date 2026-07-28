@@ -237,7 +237,7 @@
 // gets included, so internal SDL_CreateThread calls will not try to reference
 // the (unavailable and unneeded) _beginthreadex/_endthreadex functions.
 #define SDL_BeginThreadFunction NULL
-#define SDL_EndThreadFunction NULL
+#define SDL_EndThreadFunction   NULL
 #endif
 
 #ifdef SDL_NOLONGLONG
@@ -258,9 +258,8 @@
 extern "C" {
 #endif
 
-#include "SDL_utils_c.h"
 #include "SDL_hashtable.h"
-
+#include "SDL_utils_c.h"
 
 /* SDL_ExitProcess is not declared in any public header, although
    it is shared between some parts of SDL, because we don't want
@@ -275,22 +274,25 @@ extern const char *SDL_GetExeName(void);
 #ifdef HAVE_LIBC
 #define SDL_abort() abort()
 #else
-#define SDL_abort() do {                                        \
-        SDL_TriggerBreakpoint();                                \
-        SDL_ExitProcess(42);                                    \
+#define SDL_abort()              \
+    do {                         \
+        SDL_TriggerBreakpoint(); \
+        SDL_ExitProcess(42);     \
     } while (0)
 #endif
 
 // Macros to save and restore error values
-#define SDL_PushError() do { \
+#define SDL_PushError() \
+    do {                \
     char *saved_error = SDL_strdup(SDL_GetError())
 
-#define SDL_PopError()                          \
-    if (saved_error) {                      \
-        SDL_SetError("%s", saved_error);    \
-        SDL_free(saved_error);              \
-    }                                       \
-} while (0)
+#define SDL_PopError()                   \
+    if (saved_error) {                   \
+        SDL_SetError("%s", saved_error); \
+        SDL_free(saved_error);           \
+    }                                    \
+    }                                    \
+    while (0)
 
 #if defined(SDL_DISABLE_INVALID_PARAMS)
 #ifdef DEBUG
@@ -298,13 +300,17 @@ extern const char *SDL_GetExeName(void);
 // never pass an invalid parameter to SDL, since it may crash or lead to
 // hard to diagnose bugs. Let's assert that this is true in debug builds.
 #define OBJECT_VALIDATION_REQUIRED
-#define CHECK_PARAM(invalid) SDL_assert_always(!(invalid)); if (false)
+#define CHECK_PARAM(invalid)       \
+    SDL_assert_always(!(invalid)); \
+    if (false)
 #else
 #define CHECK_PARAM(invalid) if (false)
 #endif
 #elif defined(SDL_ASSERT_INVALID_PARAMS)
 #define OBJECT_VALIDATION_REQUIRED
-#define CHECK_PARAM(invalid) SDL_assert_always(!(invalid)); if (invalid)
+#define CHECK_PARAM(invalid)       \
+    SDL_assert_always(!(invalid)); \
+    if (invalid)
 #else
 #define CHECK_PARAM(invalid) if (invalid)
 #endif

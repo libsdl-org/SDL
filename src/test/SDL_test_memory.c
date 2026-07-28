@@ -30,18 +30,19 @@ static bool s_unwind_symbol_names = true;
 #endif
 
 #ifdef SDL_PLATFORM_WIN32
-#include <windows.h>
 #include <dbghelp.h>
+#include <windows.h>
 
-static struct {
+static struct
+{
     SDL_SharedObject *module;
-    BOOL (WINAPI *pSymInitialize)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
-    BOOL (WINAPI *pSymFromAddr)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
-    BOOL (WINAPI *pSymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
+    BOOL(WINAPI *pSymInitialize)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
+    BOOL(WINAPI *pSymFromAddr)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
+    BOOL(WINAPI *pSymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
 } dyn_dbghelp;
 
 /* older SDKs might not have this: */
-__declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID* BackTrace, PULONG BackTraceHash);
+__declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip, ULONG FramesToCapture, PVOID *BackTrace, PULONG BackTraceHash);
 #define CaptureStackBackTrace RtlCaptureStackBackTrace
 
 #endif
@@ -84,7 +85,10 @@ static SDL_AtomicInt s_lock;
         }                                                 \
         SDL_CPUPauseInstruction();                        \
     } while (true)
-#define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
+#define UNLOCK_ALLOCATOR()            \
+    do {                              \
+        SDL_SetAtomicInt(&s_lock, 0); \
+    } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -230,7 +234,7 @@ static void rand_fill_memory(void *ptr, size_t start, size_t end)
     }
 }
 
-static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
+static void *SDLCALL SDLTest_TrackedMalloc(size_t size)
 {
     void *mem;
 
@@ -242,7 +246,7 @@ static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
     return mem;
 }
 
-static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
+static void *SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
 {
     void *mem;
 
@@ -253,13 +257,13 @@ static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
     return mem;
 }
 
-static void * SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
+static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 {
     void *mem;
     size_t old_size = 0;
     if (ptr) {
-         old_size = SDL_GetTrackedAllocationSize(ptr);
-         SDL_assert(old_size != SIZE_MAX);
+        old_size = SDL_GetTrackedAllocationSize(ptr);
+        SDL_assert(old_size != SIZE_MAX);
     }
     mem = SDL_realloc_orig(ptr, size);
     if (ptr) {
@@ -325,7 +329,7 @@ void SDLTest_TrackAllocations(void)
             goto dbghelp_failed;
         }
         break;
-dbghelp_failed:
+    dbghelp_failed:
         if (dyn_dbghelp.module) {
             SDL_UnloadObject(dyn_dbghelp.module);
             dyn_dbghelp.module = NULL;

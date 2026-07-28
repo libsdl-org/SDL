@@ -22,8 +22,8 @@
 
 // General touch handling code for SDL
 
-#include "SDL_events_c.h"
 #include "../video/SDL_sysvideo.h"
+#include "SDL_events_c.h"
 
 static SDL_Mutex *SDL_touch_lock = NULL; // This needs to support recursive locks
 static int SDL_touch_locked = 0;
@@ -94,7 +94,7 @@ SDL_TouchID *SDL_GetTouchDevices(int *count)
     SDL_LockTouch();
     {
         const int total = SDL_num_touch;
-        result = (SDL_TouchID *)SDL_malloc(sizeof (SDL_TouchID) * (total + 1));
+        result = (SDL_TouchID *)SDL_malloc(sizeof(SDL_TouchID) * (total + 1));
         if (result) {
             for (int i = 0; i < total; i++) {
                 result[i] = SDL_touchDevices[i]->id;
@@ -134,7 +134,7 @@ SDL_Touch *SDL_GetTouch(SDL_TouchID id)
     if (index < 0 || index >= SDL_num_touch) {
         if ((id == SDL_MOUSE_TOUCHID) || (id == SDL_PEN_TOUCHID)) {
             // this is a virtual touch device, but for some reason they aren't added to the system. Just ignore it.
-        } else if ( SDL_GetVideoDevice()->ResetTouch) {
+        } else if (SDL_GetVideoDevice()->ResetTouch) {
             SDL_SetError("Unknown touch id %d, resetting", (int)id);
             SDL_GetVideoDevice()->ResetTouch(SDL_GetVideoDevice());
         } else {
@@ -359,11 +359,11 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
         {
             // FIXME: maybe we should only restrict to a few SDL_TouchDeviceType
             if ((id != SDL_MOUSE_TOUCHID) && (id != SDL_PEN_TOUCHID)) {
-    #ifdef SDL_PLATFORM_VITA
+#ifdef SDL_PLATFORM_VITA
                 if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 3))) {
-    #else
+#else
                 if (mouse->touch_mouse_events) {
-    #endif
+#endif
                     if (window) {
                         if (down) {
                             if (finger_touching == false) {
@@ -471,7 +471,7 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
 }
 
 void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
-                        float x, float y, float pressure)
+                         float x, float y, float pressure)
 {
     SDL_Touch *touch;
     SDL_Finger *finger;
@@ -535,9 +535,9 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
 
         // Drop events that don't change state
         if (xrel == 0.0f && yrel == 0.0f && prel == 0.0f) {
-    #if 0
+#if 0
             printf("Touch event didn't change state - dropped!\n");
-    #endif
+#endif
             SDL_UnlockTouch();
             return;
         }
@@ -633,4 +633,3 @@ int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, floa
     }
     return posted;
 }
-

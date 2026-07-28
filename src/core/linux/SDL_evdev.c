@@ -34,15 +34,15 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <linux/input.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
-#include <linux/input.h>
+#include <unistd.h>
 
-#include "../../events/SDL_events_c.h"
-#include "../../events/SDL_scancode_tables_c.h"
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
+#include "../../events/SDL_events_c.h"
+#include "../../events/SDL_scancode_tables_c.h"
 
 // These are not defined in older Linux kernel headers
 #ifndef SYN_DROPPED
@@ -510,8 +510,8 @@ void SDL_EVDEV_Poll(void)
                                 screen_h = mode->h;
                             }
                             SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse,
-                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
-                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
+                                                (float)(item->mouse_x - item->min_x) * screen_w / item->range_x,
+                                                (float)(item->mouse_y - item->min_y) * screen_h / item->range_y);
                         }
 
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {

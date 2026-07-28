@@ -29,23 +29,23 @@
 #ifndef SDL_uikitvulkan_h_
 #define SDL_uikitvulkan_h_
 
-#include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_vulkan_internal.h"
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_UIKIT)
 
 extern bool UIKit_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-extern char const * const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern char const *const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
 extern bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                               SDL_Window *window,
-                               VkInstance instance,
-                               const struct VkAllocationCallbacks *allocator,
-                               VkSurfaceKHR *surface);
+                                       SDL_Window *window,
+                                       VkInstance instance,
+                                       const struct VkAllocationCallbacks *allocator,
+                                       VkSurfaceKHR *surface);
 extern void UIKit_Vulkan_DestroySurface(SDL_VideoDevice *_this,
-                                 VkInstance instance,
-                                 VkSurfaceKHR surface,
-                                 const struct VkAllocationCallbacks *allocator);
+                                        VkInstance instance,
+                                        VkSurfaceKHR surface,
+                                        const struct VkAllocationCallbacks *allocator);
 
 #endif
 

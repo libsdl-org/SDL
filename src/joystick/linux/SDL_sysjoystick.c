@@ -28,26 +28,26 @@
 
 // This is the Linux implementation of the SDL joystick API
 
-#include <sys/stat.h>
 #include <errno.h> // errno, strerror
 #include <fcntl.h>
 #include <limits.h> // For the definition of PATH_MAX
+#include <sys/stat.h>
 #ifdef HAVE_INOTIFY
-#include <sys/inotify.h>
 #include <string.h> // strerror
+#include <sys/inotify.h>
 #endif
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include <dirent.h>
 #include <linux/joystick.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
-#include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_evdev.h"
-#include "../SDL_sysjoystick.h"
+#include "../../events/SDL_events_c.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
 #include "SDL_sysjoystick_c.h"
-#include "../hidapi/SDL_hidapijoystick_c.h"
 
 // This isn't defined in older Linux kernel headers
 #ifndef MSC_TIMESTAMP
@@ -89,49 +89,48 @@
 #endif
 
 #ifndef BTN_TRIGGER_HAPPY
-#define BTN_TRIGGER_HAPPY       0x2c0
-#define BTN_TRIGGER_HAPPY1      0x2c0
-#define BTN_TRIGGER_HAPPY2      0x2c1
-#define BTN_TRIGGER_HAPPY3      0x2c2
-#define BTN_TRIGGER_HAPPY4      0x2c3
-#define BTN_TRIGGER_HAPPY5      0x2c4
-#define BTN_TRIGGER_HAPPY6      0x2c5
-#define BTN_TRIGGER_HAPPY7      0x2c6
-#define BTN_TRIGGER_HAPPY8      0x2c7
-#define BTN_TRIGGER_HAPPY9      0x2c8
-#define BTN_TRIGGER_HAPPY10     0x2c9
-#define BTN_TRIGGER_HAPPY11     0x2ca
-#define BTN_TRIGGER_HAPPY12     0x2cb
-#define BTN_TRIGGER_HAPPY13     0x2cc
-#define BTN_TRIGGER_HAPPY14     0x2cd
-#define BTN_TRIGGER_HAPPY15     0x2ce
-#define BTN_TRIGGER_HAPPY16     0x2cf
-#define BTN_TRIGGER_HAPPY17     0x2d0
-#define BTN_TRIGGER_HAPPY18     0x2d1
-#define BTN_TRIGGER_HAPPY19     0x2d2
-#define BTN_TRIGGER_HAPPY20     0x2d3
-#define BTN_TRIGGER_HAPPY21     0x2d4
-#define BTN_TRIGGER_HAPPY22     0x2d5
-#define BTN_TRIGGER_HAPPY23     0x2d6
-#define BTN_TRIGGER_HAPPY24     0x2d7
-#define BTN_TRIGGER_HAPPY25     0x2d8
-#define BTN_TRIGGER_HAPPY26     0x2d9
-#define BTN_TRIGGER_HAPPY27     0x2da
-#define BTN_TRIGGER_HAPPY28     0x2db
-#define BTN_TRIGGER_HAPPY29     0x2dc
-#define BTN_TRIGGER_HAPPY30     0x2dd
-#define BTN_TRIGGER_HAPPY31     0x2de
-#define BTN_TRIGGER_HAPPY32     0x2df
-#define BTN_TRIGGER_HAPPY33     0x2e0
-#define BTN_TRIGGER_HAPPY34     0x2e1
-#define BTN_TRIGGER_HAPPY35     0x2e2
-#define BTN_TRIGGER_HAPPY36     0x2e3
-#define BTN_TRIGGER_HAPPY37     0x2e4
-#define BTN_TRIGGER_HAPPY38     0x2e5
-#define BTN_TRIGGER_HAPPY39     0x2e6
-#define BTN_TRIGGER_HAPPY40     0x2e7
+#define BTN_TRIGGER_HAPPY   0x2c0
+#define BTN_TRIGGER_HAPPY1  0x2c0
+#define BTN_TRIGGER_HAPPY2  0x2c1
+#define BTN_TRIGGER_HAPPY3  0x2c2
+#define BTN_TRIGGER_HAPPY4  0x2c3
+#define BTN_TRIGGER_HAPPY5  0x2c4
+#define BTN_TRIGGER_HAPPY6  0x2c5
+#define BTN_TRIGGER_HAPPY7  0x2c6
+#define BTN_TRIGGER_HAPPY8  0x2c7
+#define BTN_TRIGGER_HAPPY9  0x2c8
+#define BTN_TRIGGER_HAPPY10 0x2c9
+#define BTN_TRIGGER_HAPPY11 0x2ca
+#define BTN_TRIGGER_HAPPY12 0x2cb
+#define BTN_TRIGGER_HAPPY13 0x2cc
+#define BTN_TRIGGER_HAPPY14 0x2cd
+#define BTN_TRIGGER_HAPPY15 0x2ce
+#define BTN_TRIGGER_HAPPY16 0x2cf
+#define BTN_TRIGGER_HAPPY17 0x2d0
+#define BTN_TRIGGER_HAPPY18 0x2d1
+#define BTN_TRIGGER_HAPPY19 0x2d2
+#define BTN_TRIGGER_HAPPY20 0x2d3
+#define BTN_TRIGGER_HAPPY21 0x2d4
+#define BTN_TRIGGER_HAPPY22 0x2d5
+#define BTN_TRIGGER_HAPPY23 0x2d6
+#define BTN_TRIGGER_HAPPY24 0x2d7
+#define BTN_TRIGGER_HAPPY25 0x2d8
+#define BTN_TRIGGER_HAPPY26 0x2d9
+#define BTN_TRIGGER_HAPPY27 0x2da
+#define BTN_TRIGGER_HAPPY28 0x2db
+#define BTN_TRIGGER_HAPPY29 0x2dc
+#define BTN_TRIGGER_HAPPY30 0x2dd
+#define BTN_TRIGGER_HAPPY31 0x2de
+#define BTN_TRIGGER_HAPPY32 0x2df
+#define BTN_TRIGGER_HAPPY33 0x2e0
+#define BTN_TRIGGER_HAPPY34 0x2e1
+#define BTN_TRIGGER_HAPPY35 0x2e2
+#define BTN_TRIGGER_HAPPY36 0x2e3
+#define BTN_TRIGGER_HAPPY37 0x2e4
+#define BTN_TRIGGER_HAPPY38 0x2e5
+#define BTN_TRIGGER_HAPPY39 0x2e6
+#define BTN_TRIGGER_HAPPY40 0x2e7
 #endif
-
 
 #include "../../core/linux/SDL_evdev_capabilities.h"
 #include "../../core/linux/SDL_udev.h"
@@ -164,7 +163,7 @@ typedef struct SDL_joylist_item
     char *path; // "/dev/input/event2" or whatever
     Uint16 vendor;
     Uint16 product;
-    char *name; // "SideWinder 3D Pro" or whatever
+    char *name;   // "SideWinder 3D Pro" or whatever
     char *driver; // "xpad" or whatever
     SDL_GUID guid;
     dev_t devnum;
@@ -268,7 +267,7 @@ static int GuessDeviceClass(int fd)
 
     /* This is a newer feature, so it's allowed to fail - if so, then the
      * device just doesn't have any properties. */
-    (void) ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
+    (void)ioctl(fd, EVIOCGPROP(sizeof(propbit)), propbit);
 
     return SDL_EVDEV_GuessDeviceClass(propbit, evbit, absbit, keybit, relbit);
 }
@@ -977,7 +976,7 @@ static void LINUX_JoystickDetect(void)
     } else
 #endif
 #ifdef HAVE_INOTIFY
-    if (inotify_fd >= 0 && last_joy_detect_time != 0) {
+        if (inotify_fd >= 0 && last_joy_detect_time != 0) {
         LINUX_InotifyJoystickDetect();
     } else
 #endif
@@ -1772,7 +1771,7 @@ static void HandleHat(Uint64 timestamp, SDL_Joystick *stick, int hatidx, int axi
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
         SDL_SendJoystickHat(timestamp, stick, hatnum,
-                               position_map[the_hat->axis[1]][the_hat->axis[0]]);
+                            position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
 
@@ -1838,8 +1837,8 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
                         joystick->hwdata->abs_map[i], i, absinfo.value);
 #endif
                 SDL_SendJoystickAxis(timestamp, joystick,
-                                        joystick->hwdata->abs_map[i],
-                                        absinfo.value);
+                                     joystick->hwdata->abs_map[i],
+                                     absinfo.value);
             }
         }
     }
@@ -1869,7 +1868,7 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
                         joystick->hwdata->key_map[i], i, down);
 #endif
                 SDL_SendJoystickButton(timestamp, joystick,
-                                          joystick->hwdata->key_map[i], down);
+                                       joystick->hwdata->key_map[i], down);
             }
         }
     }
@@ -1901,7 +1900,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
     SDL_assert(joystick->hwdata->fd_sensor >= 0);
 
     if (joystick->hwdata->has_gyro) {
-        float values[3] = {0.0f, 0.0f, 0.0f};
+        float values[3] = { 0.0f, 0.0f, 0.0f };
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
@@ -1915,7 +1914,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, SDL_US_TO_NS(joystick->hwdata->sensor_tick), data, 3);
     }
     if (joystick->hwdata->has_accelerometer) {
-        float values[3] = {0.0f, 0.0f, 0.0f};
+        float values[3] = { 0.0f, 0.0f, 0.0f };
         for (i = 0; i < 3; i++) {
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
@@ -1968,8 +1967,8 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 SDL_Log("Key 0x%.2x %s", code, event->value ? "PRESSED" : "RELEASED");
 #endif
                 SDL_SendJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
-                                          joystick->hwdata->key_map[code],
-                                          (event->value != 0));
+                                       joystick->hwdata->key_map[code],
+                                       (event->value != 0));
                 break;
             case EV_ABS:
                 switch (code) {
@@ -1996,8 +1995,8 @@ static void HandleInputEvents(SDL_Joystick *joystick)
 #endif
                     event->value = AxisCorrect(joystick, code, event->value);
                     SDL_SendJoystickAxis(SDL_EVDEV_GetEventTimestamp(event), joystick,
-                                            joystick->hwdata->abs_map[code],
-                                            event->value);
+                                         joystick->hwdata->abs_map[code],
+                                         event->value);
                     break;
                 }
                 break;
@@ -2070,15 +2069,13 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                     case ABS_Y:
                     case ABS_Z:
                         j = code - ABS_X;
-                        joystick->hwdata->accel_data[j] = event->value * SDL_STANDARD_GRAVITY
-                                                        / joystick->hwdata->accelerometer_scale[j];
+                        joystick->hwdata->accel_data[j] = event->value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[j];
                         break;
                     case ABS_RX:
                     case ABS_RY:
                     case ABS_RZ:
                         j = code - ABS_RX;
-                        joystick->hwdata->gyro_data[j] = event->value * (SDL_PI_F / 180.f)
-                                                       / joystick->hwdata->gyro_scale[j];
+                        joystick->hwdata->gyro_data[j] = event->value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[j];
                         break;
                     }
                     break;
@@ -2098,9 +2095,9 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 case EV_SYN:
                     switch (code) {
                     case SYN_DROPPED:
-    #ifdef DEBUG_INPUT_EVENTS
+#ifdef DEBUG_INPUT_EVENTS
                         SDL_Log("Event SYN_DROPPED detected");
-    #endif
+#endif
                         joystick->hwdata->recovering_from_dropped_sensor = true;
                         break;
                     case SYN_REPORT:
@@ -2175,8 +2172,8 @@ static void HandleClassicEvents(SDL_Joystick *joystick)
                     SDL_FALLTHROUGH;
                 default:
                     SDL_SendJoystickAxis(timestamp, joystick,
-                                            joystick->hwdata->abs_map[code],
-                                            events[i].value);
+                                         joystick->hwdata->abs_map[code],
+                                         events[i].value);
                     break;
                 }
             }
@@ -2288,7 +2285,8 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
 {
     SDL_Joystick *joystick;
     SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
-    enum {
+    enum
+    {
         MAPPED_TRIGGER_LEFT = 0x1,
         MAPPED_TRIGGER_RIGHT = 0x2,
         MAPPED_TRIGGER_BOTH = 0x3,

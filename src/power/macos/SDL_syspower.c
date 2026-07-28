@@ -24,8 +24,8 @@
 #ifdef SDL_POWER_MACOSX
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
+#include <IOKit/ps/IOPowerSources.h>
 
 // CoreFoundation is so verbose...
 #define STRMATCH(a, b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)

@@ -29,8 +29,8 @@
 
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
-#include <psp2/types.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/types.h>
 
 #define VITA_THREAD_STACK_SIZE_MIN     0x1000    // 4KiB
 #define VITA_THREAD_STACK_SIZE_MAX     0x2000000 // 32MiB
@@ -86,7 +86,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("sceKernelCreateThread() failed");
     }
 
-    thread->threadid = (SDL_ThreadID) thread->handle;
+    thread->threadid = (SDL_ThreadID)thread->handle;
 
     sceKernelStartThread(thread->handle, 4, &thread);
     return true;

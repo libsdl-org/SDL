@@ -22,9 +22,9 @@
 
 #ifdef SDL_AUDIO_DRIVER_JACK
 
+#include "../../thread/SDL_systhread.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_jackaudio.h"
-#include "../../thread/SDL_systhread.h"
 
 static jack_client_t *(*JACK_jack_client_open)(const char *, jack_options_t, jack_status_t *, ...);
 static int (*JACK_jack_client_close)(jack_client_t *);
@@ -54,8 +54,7 @@ SDL_ELF_NOTE_DLOPEN(
     "audio-libjack",
     "Support for audio through libjack",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_AUDIO_DRIVER_JACK_DYNAMIC
-)
+    SDL_AUDIO_DRIVER_JACK_DYNAMIC)
 
 static const char *jack_library = SDL_AUDIO_DRIVER_JACK_DYNAMIC;
 static SDL_SharedObject *jack_handle = NULL;
@@ -75,7 +74,7 @@ static bool load_jack_sym(const char *fn, void **addr)
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_JACK_SYM(x)                                 \
     if (!load_jack_sym(#x, (void **)(char *)&JACK_##x)) \
-        return false
+    return false
 
 static void UnloadJackLibrary(void)
 {
@@ -151,11 +150,11 @@ static void jackShutdownCallback(void *arg) // JACK went away; device is lost.
 
 static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
 {
-    //SDL_Log("JACK Sample Rate Callback! %d", (int) nframes);
-    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    // SDL_Log("JACK Sample Rate Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *)arg;
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
-    newspec.freq = (int) nframes;
+    newspec.freq = (int)nframes;
     if (!SDL_AudioDeviceFormatChanged(device, &newspec, device->sample_frames)) {
         SDL_AudioDeviceDisconnected(device);
     }
@@ -164,11 +163,11 @@ static int jackSampleRateCallback(jack_nframes_t nframes, void *arg)
 
 static int jackBufferSizeCallback(jack_nframes_t nframes, void *arg)
 {
-    //SDL_Log("JACK Buffer Size Callback! %d", (int) nframes);
-    SDL_AudioDevice *device = (SDL_AudioDevice *) arg;
+    // SDL_Log("JACK Buffer Size Callback! %d", (int) nframes);
+    SDL_AudioDevice *device = (SDL_AudioDevice *)arg;
     SDL_AudioSpec newspec;
     SDL_copyp(&newspec, &device->spec);
-    if (!SDL_AudioDeviceFormatChanged(device, &newspec, (int) nframes)) {
+    if (!SDL_AudioDeviceFormatChanged(device, &newspec, (int)nframes)) {
         SDL_AudioDeviceDisconnected(device);
     }
     return 0;
@@ -183,11 +182,11 @@ static int jackProcessPlaybackCallback(jack_nframes_t nframes, void *arg)
 
 static bool JACK_PlayDevice(SDL_AudioDevice *device, const Uint8 *ui8buffer, int buflen)
 {
-    const float *buffer = (float *) ui8buffer;
+    const float *buffer = (float *)ui8buffer;
     jack_port_t **ports = device->hidden->sdlports;
     const int total_channels = device->spec.channels;
     const int total_frames = device->sample_frames;
-    const jack_nframes_t nframes = (jack_nframes_t) device->sample_frames;
+    const jack_nframes_t nframes = (jack_nframes_t)device->sample_frames;
 
     for (int channelsi = 0; channelsi < total_channels; channelsi++) {
         float *dst = (float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);
@@ -217,11 +216,11 @@ static int jackProcessRecordingCallback(jack_nframes_t nframes, void *arg)
 
 static int JACK_RecordDevice(SDL_AudioDevice *device, void *vbuffer, int buflen)
 {
-    float *buffer = (float *) vbuffer;
+    float *buffer = (float *)vbuffer;
     jack_port_t **ports = device->hidden->sdlports;
     const int total_channels = device->spec.channels;
     const int total_frames = device->sample_frames;
-    const jack_nframes_t nframes = (jack_nframes_t) device->sample_frames;
+    const jack_nframes_t nframes = (jack_nframes_t)device->sample_frames;
 
     for (int channelsi = 0; channelsi < total_channels; channelsi++) {
         const float *src = (const float *)JACK_jack_port_get_buffer(ports[channelsi], nframes);

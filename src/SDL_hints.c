@@ -42,7 +42,6 @@ typedef struct SDL_Hint
 
 static SDL_AtomicU32 SDL_hint_props;
 
-
 void SDL_InitHints(void)
 {
 }
@@ -75,7 +74,7 @@ static SDL_PropertiesID GetHintProperties(bool create)
 
 static void SDLCALL CleanupHintProperty(void *userdata, void *value)
 {
-    SDL_Hint *hint = (SDL_Hint *) value;
+    SDL_Hint *hint = (SDL_Hint *)value;
     SDL_free(hint->value);
 
     SDL_HintWatch *entry = hint->callbacks;
@@ -104,7 +103,7 @@ static const char *GetHintEnvironmentVariable(const char *name)
 
 bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
-    CHECK_PARAM(!name || !*name) {
+    CHECK_PARAM (!name || !*name) {
         return SDL_InvalidParamError("name");
     }
 
@@ -141,7 +140,7 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
             hint->priority = priority;
             result = true;
         }
-    } else {  // Couldn't find the hint? Add a new one.
+    } else { // Couldn't find the hint? Add a new one.
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (hint) {
             hint->value = value ? SDL_strdup(value) : NULL;
@@ -165,7 +164,7 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
 
 bool SDL_ResetHint(const char *name)
 {
-    CHECK_PARAM(!name || !*name) {
+    CHECK_PARAM (!name || !*name) {
         return SDL_InvalidParamError("name");
     }
 
@@ -216,7 +215,7 @@ static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, c
 {
     SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (!hint) {
-        return;  // uh...okay.
+        return; // uh...okay.
     }
 
     const char *env = GetHintEnvironmentVariable(name);
@@ -316,10 +315,10 @@ bool SDL_GetHintBoolean(const char *name, bool default_value)
 
 bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
-    CHECK_PARAM(!name || !*name) {
+    CHECK_PARAM (!name || !*name) {
         return SDL_InvalidParamError("name");
     }
-    CHECK_PARAM(!callback) {
+    CHECK_PARAM (!callback) {
         return SDL_InvalidParamError("callback");
     }
 
@@ -344,7 +343,7 @@ bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
     SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
         result = true;
-    } else {  // Need to add a hint entry for this watcher
+    } else { // Need to add a hint entry for this watcher
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (!hint) {
             SDL_free(entry);
@@ -401,4 +400,3 @@ void SDL_RemoveHintCallback(const char *name, SDL_HintCallback callback, void *u
     }
     SDL_UnlockProperties(hints);
 }
-

@@ -39,10 +39,10 @@ SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
  * Implementation based on Slim Reader/Writer (SRW) Locks for Win 7 and newer.
  */
 
-typedef VOID (WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
-typedef VOID (WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
-typedef VOID (WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
-typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
+typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
+typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
+typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
+typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
@@ -63,7 +63,7 @@ static void SDL_DestroyMutex_srw(SDL_Mutex *mutex)
     SDL_free(mutex);
 }
 
-static void SDL_LockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_LockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
     const DWORD this_thread = GetCurrentThreadId();
@@ -102,7 +102,7 @@ static bool SDL_TryLockMutex_srw(SDL_Mutex *_mutex)
     return retval;
 }
 
-static void SDL_UnlockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_UnlockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     SDL_mutex_srw *mutex = (SDL_mutex_srw *)_mutex;
 
@@ -112,7 +112,7 @@ static void SDL_UnlockMutex_srw(SDL_Mutex *_mutex) SDL_NO_THREAD_SAFETY_ANALYSIS
             pReleaseSRWLockExclusive(&mutex->srw);
         }
     } else {
-        SDL_assert(!"mutex not owned by this thread");  // undefined behavior...!
+        SDL_assert(!"mutex not owned by this thread"); // undefined behavior...!
     }
 }
 
@@ -148,7 +148,7 @@ static void SDL_DestroyMutex_cs(SDL_Mutex *mutex_)
     SDL_free(mutex);
 }
 
-static void SDL_LockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_LockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     EnterCriticalSection(&mutex->cs);
@@ -160,7 +160,7 @@ static bool SDL_TryLockMutex_cs(SDL_Mutex *mutex_)
     return (TryEnterCriticalSection(&mutex->cs) == TRUE);
 }
 
-static void SDL_UnlockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_UnlockMutex_cs(SDL_Mutex *mutex_) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     SDL_mutex_cs *mutex = (SDL_mutex_cs *)mutex_;
     LeaveCriticalSection(&mutex->cs);

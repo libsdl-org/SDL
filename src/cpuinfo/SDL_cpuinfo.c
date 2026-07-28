@@ -37,28 +37,28 @@
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYSCTLBYNAME
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 #endif
 #if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> // For AltiVec check
 #elif defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__) && !defined(HAVE_ELF_AUX_INFO)
-#include <sys/types.h>
-#include <sys/sysctl.h> // For AltiVec check
 #include <machine/cpu.h>
+#include <sys/sysctl.h> // For AltiVec check
+#include <sys/types.h>
 #elif defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__) && defined(HAVE_ELF_AUX_INFO)
 #include <machine/cpu.h>
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
-#include <signal.h>
 #include <setjmp.h>
+#include <signal.h>
 #endif
 
 #if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(__arm__)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <elf.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 // #include <asm/hwcap.h>
 #ifndef AT_HWCAP
@@ -72,7 +72,7 @@
 #endif
 #endif
 
-#if defined (SDL_PLATFORM_FREEBSD)
+#if defined(SDL_PLATFORM_FREEBSD)
 #include <sys/param.h>
 #endif
 
@@ -115,10 +115,10 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if !defined(SDL_CPUINFO_DISABLED) && \
+#if !defined(SDL_CPUINFO_DISABLED) &&                                                                                                          \
     !((defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))) && \
-    !(defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)) && \
-    !(defined(SDL_PLATFORM_LINUX) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)) && \
+    !(defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)) &&                                                                                \
+    !(defined(SDL_PLATFORM_LINUX) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)) &&                                                       \
     defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
@@ -529,8 +529,7 @@ static int CPU_haveSVE2(void)
 {
 #if defined(__aarch64__) && \
     ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID))
-    return ((getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2)
-        && ((getauxval(AT_HWCAP) & HWCAP_SVE) == HWCAP_SVE);
+    return ((getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2) && ((getauxval(AT_HWCAP) & HWCAP_SVE) == HWCAP_SVE);
 #else
     return 0;
 #endif
@@ -922,7 +921,8 @@ int SDL_GetCPUCacheLineSize(void)
 static Uint32 SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
-static bool ref_string_equals(const char *ref, const char *test, const char *end_test) {
+static bool ref_string_equals(const char *ref, const char *test, const char *end_test)
+{
     size_t len_test = end_test - test;
     return SDL_strncmp(ref, test, len_test) == 0 && ref[len_test] == '\0' && (test[len_test] == '\0' || test[len_test] == ',');
 }
@@ -955,7 +955,7 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
             if (ref_string_equals("all", spot, end)) {
                 spot_mask = SDL_CPUFEATURES_RESET_VALUE;
             } else if (ref_string_equals("altivec", spot, end)) {
-                spot_mask= CPU_HAS_ALTIVEC;
+                spot_mask = CPU_HAS_ALTIVEC;
             } else if (ref_string_equals("mmx", spot, end)) {
                 spot_mask = CPU_HAS_MMX;
             } else if (ref_string_equals("sse", spot, end)) {
@@ -1069,7 +1069,8 @@ static Uint32 SDL_GetCPUFeatures(void)
     return SDL_CPUFeatures;
 }
 
-void SDL_QuitCPUInfo(void) {
+void SDL_QuitCPUInfo(void)
+{
     SDL_CPUFeatures = SDL_CPUFEATURES_RESET_VALUE;
 }
 
@@ -1234,31 +1235,30 @@ int SDL_GetSystemRAM(void)
     return SDL_SystemRAM;
 }
 
-
 static int SDL_SystemPageSize = -1;
 
 int SDL_GetSystemPageSize(void)
 {
     if (SDL_SystemPageSize == -1) {
-#ifdef SDL_PLATFORM_SYSTEM_PAGE_SIZE_PRIVATE  // consoles will define this in a platform-specific internal header.
+#ifdef SDL_PLATFORM_SYSTEM_PAGE_SIZE_PRIVATE // consoles will define this in a platform-specific internal header.
         SDL_SystemPageSize = SDL_PLATFORM_SYSTEM_PAGE_SIZE_PRIVATE;
 #endif
 #ifdef SDL_PLATFORM_3DS
-        SDL_SystemPageSize = 4096;  // It's an ARM11 CPU; I assume this is 4K.
+        SDL_SystemPageSize = 4096; // It's an ARM11 CPU; I assume this is 4K.
 #endif
 #ifdef SDL_PLATFORM_VITA
-        SDL_SystemPageSize = 4096;  // It's an ARMv7 CPU; I assume this is 4K.
+        SDL_SystemPageSize = 4096; // It's an ARMv7 CPU; I assume this is 4K.
 #endif
 #ifdef SDL_PLATFORM_PS2
-        SDL_SystemPageSize = 4096;  // It's a MIPS R5900 CPU; I assume this is 4K.
+        SDL_SystemPageSize = 4096; // It's a MIPS R5900 CPU; I assume this is 4K.
 #endif
 #if defined(HAVE_SYSCONF) && (defined(_SC_PAGESIZE) || defined(_SC_PAGE_SIZE))
         if (SDL_SystemPageSize <= 0) {
-            #if defined(_SC_PAGE_SIZE)
+#if defined(_SC_PAGE_SIZE)
             SDL_SystemPageSize = (int)sysconf(_SC_PAGE_SIZE);
-            #else
+#else
             SDL_SystemPageSize = (int)sysconf(_SC_PAGESIZE);
-            #endif
+#endif
         }
 #endif
 #if defined(HAVE_SYSCTLBYNAME) && defined(HW_PAGESIZE)
@@ -1282,16 +1282,15 @@ int SDL_GetSystemPageSize(void)
         if (SDL_SystemPageSize <= 0) {
             SYSTEM_INFO sysinfo;
             GetSystemInfo(&sysinfo);
-            SDL_SystemPageSize = (int) sysinfo.dwPageSize;
+            SDL_SystemPageSize = (int)sysinfo.dwPageSize;
         }
 #endif
-        if (SDL_SystemPageSize < 0) {  // in case we got a weird result somewhere, or no better information, force it to 0.
-            SDL_SystemPageSize = 0;  // unknown page size, sorry.
+        if (SDL_SystemPageSize < 0) { // in case we got a weird result somewhere, or no better information, force it to 0.
+            SDL_SystemPageSize = 0;   // unknown page size, sorry.
         }
     }
     return SDL_SystemPageSize;
 }
-
 
 size_t SDL_GetSIMDAlignment(void)
 {

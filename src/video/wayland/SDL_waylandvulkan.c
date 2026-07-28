@@ -45,8 +45,7 @@ SDL_ELF_NOTE_DLOPEN(
     "wayland-vulkan",
     "Support for Vulkan on wayland backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_VULKAN
-)
+    DEFAULT_VULKAN)
 
 bool Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -122,7 +121,7 @@ void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const * const *Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const *const *Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
@@ -136,10 +135,10 @@ char const * const *Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
 }
 
 bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                 SDL_Window *window,
-                                 VkInstance instance,
-                                 const struct VkAllocationCallbacks *allocator,
-                                 VkSurfaceKHR *surface)
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  const struct VkAllocationCallbacks *allocator,
+                                  VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -183,9 +182,9 @@ void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 }
 
 bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
-                                               VkInstance instance,
-                                               VkPhysicalDevice physicalDevice,
-                                               Uint32 queueFamilyIndex)
+                                           VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;

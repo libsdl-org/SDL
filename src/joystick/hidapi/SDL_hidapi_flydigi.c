@@ -23,9 +23,9 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
-#include "SDL_hidapi_rumble.h"
 #include "SDL_hidapi_flydigi.h"
+#include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_FLYDIGI
 
@@ -49,36 +49,36 @@ enum
 
 /* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 1000hz */
 #define SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ 1000
-#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ)
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ)
 /* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 500hz */
-#define SENSOR_INTERVAL_VADER4_PRO_WIRED_RATE_HZ  500
+#define SENSOR_INTERVAL_VADER4_PRO_WIRED_RATE_HZ 500
 #define SENSOR_INTERVAL_VADER4_PRO_WIRED_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_WIRED_RATE_HZ)
 /* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 500hz */
-#define SENSOR_INTERVAL_VADER5_PRO_RATE_HZ        500
-#define SENSOR_INTERVAL_VADER5_PRO_NS            (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER5_PRO_RATE_HZ)
+#define SENSOR_INTERVAL_VADER5_PRO_RATE_HZ 500
+#define SENSOR_INTERVAL_VADER5_PRO_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER5_PRO_RATE_HZ)
 
 /* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 295hz */
-#define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     295
-#define SENSOR_INTERVAL_APEX5_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
+#define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ 295
+#define SENSOR_INTERVAL_APEX5_DONGLE_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
 /* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 970hz */
-#define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      970
-#define SENSOR_INTERVAL_APEX5_WIRED_NS          (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ)
+#define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ 970
+#define SENSOR_INTERVAL_APEX5_WIRED_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ)
 
-#define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME  1000 * 30
+#define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME 1000 * 30
 
-#define FLYDIGI_V1_CMD_REPORT_ID        0x05
-#define FLYDIGI_V1_HAPTIC_COMMAND       0x0F
-#define FLYDIGI_V1_GET_INFO_COMMAND     0xEC
+#define FLYDIGI_V1_CMD_REPORT_ID    0x05
+#define FLYDIGI_V1_HAPTIC_COMMAND   0x0F
+#define FLYDIGI_V1_GET_INFO_COMMAND 0xEC
 
-#define FLYDIGI_V2_CMD_REPORT_ID        0x03
-#define FLYDIGI_V2_MAGIC1               0x5A
-#define FLYDIGI_V2_MAGIC2               0xA5
-#define FLYDIGI_V2_GET_INFO_COMMAND     0x01
-#define FLYDIGI_V2_GET_STATUS_COMMAND   0x10
-#define FLYDIGI_V2_SET_STATUS_COMMAND   0x11
-#define FLYDIGI_V2_HAPTIC_COMMAND       0x12
+#define FLYDIGI_V2_CMD_REPORT_ID              0x03
+#define FLYDIGI_V2_MAGIC1                     0x5A
+#define FLYDIGI_V2_MAGIC2                     0xA5
+#define FLYDIGI_V2_GET_INFO_COMMAND           0x01
+#define FLYDIGI_V2_GET_STATUS_COMMAND         0x10
+#define FLYDIGI_V2_SET_STATUS_COMMAND         0x11
+#define FLYDIGI_V2_HAPTIC_COMMAND             0x12
 #define FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND 0x1C
-#define FLYDIGI_V2_INPUT_REPORT         0xEF
+#define FLYDIGI_V2_INPUT_REPORT               0xEF
 
 typedef struct
 {
@@ -92,7 +92,7 @@ typedef struct
     bool sensors_supported;
     bool sensors_enabled;
     Uint16 firmware_version;
-    Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds.
+    Uint64 sensor_timestamp_ns;      // Simulate onboard clock. Advance by known time step. Nanoseconds.
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     float gyroScale;
@@ -100,7 +100,6 @@ typedef struct
     Uint64 last_packet;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
-
 
 static void HIDAPI_DriverFlydigi_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -312,7 +311,6 @@ static int HIDAPI_DriverFlydigi_WritePacket(SDL_HIDAPI_Device *device, const Uin
     return SDL_hid_write(device->dev, data, size);
 }
 
-
 static bool HIDAPI_DriverFlydigi_InitControllerV1(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
@@ -376,7 +374,7 @@ static bool HIDAPI_DriverFlydigi_InitControllerV1(SDL_HIDAPI_Device *device)
     return true;
 }
 
-static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size_t length)
+static bool GetReply(SDL_HIDAPI_Device *device, Uint8 command, Uint8 *data, size_t length)
 {
     for (int i = 0; i < 100; ++i) {
         SDL_Delay(1);
@@ -1042,7 +1040,7 @@ static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 {
     // Don't unacquire the controller, someone else might be using it too.
     // The controller will automatically unacquire itself after a little while
-    //SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
+    // SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
 }
 
 static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)

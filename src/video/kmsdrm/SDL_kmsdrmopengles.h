@@ -28,7 +28,7 @@
 // OpenGLES functions
 #define KMSDRM_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define KMSDRM_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
-#define KMSDRM_GLES_DestroyContext   SDL_EGL_DestroyContext
+#define KMSDRM_GLES_DestroyContext  SDL_EGL_DestroyContext
 #define KMSDRM_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 
 extern void KMSDRM_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this);

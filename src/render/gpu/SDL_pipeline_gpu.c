@@ -29,21 +29,21 @@
 
 static Uint32 SDLCALL HashPipelineCacheKey(void *userdata, const void *key)
 {
-    const GPU_PipelineParameters *params = (const GPU_PipelineParameters *) key;
+    const GPU_PipelineParameters *params = (const GPU_PipelineParameters *)key;
     return SDL_murmur3_32(params, sizeof(*params), 0);
 }
 
 static bool SDLCALL MatchPipelineCacheKey(void *userdata, const void *a, const void *b)
 {
-    return (SDL_memcmp(a, b, sizeof (GPU_PipelineParameters)) == 0);
+    return (SDL_memcmp(a, b, sizeof(GPU_PipelineParameters)) == 0);
 }
 
 static void SDLCALL DestroyPipelineCacheHashItem(void *userdata, const void *key, const void *value)
 {
-    SDL_GPUGraphicsPipeline *pipeline = (SDL_GPUGraphicsPipeline *) value;
-    SDL_GPUDevice *device = (SDL_GPUDevice *) userdata;
+    SDL_GPUGraphicsPipeline *pipeline = (SDL_GPUGraphicsPipeline *)value;
+    SDL_GPUDevice *device = (SDL_GPUDevice *)userdata;
     SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-    SDL_free((GPU_PipelineParameters *) key);
+    SDL_free((GPU_PipelineParameters *)key);
 }
 
 bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device)
@@ -143,10 +143,10 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
 SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GPUDevice *device, const GPU_PipelineParameters *params)
 {
     SDL_GPUGraphicsPipeline *pipeline = NULL;
-    if (!SDL_FindInHashTable(cache->table, params, (const void **) &pipeline)) {
+    if (!SDL_FindInHashTable(cache->table, params, (const void **)&pipeline)) {
         bool inserted = false;
         // !!! FIXME: why don't we have an SDL_alloc_copy function/macro?
-        GPU_PipelineParameters *paramscpy = (GPU_PipelineParameters *) SDL_malloc(sizeof (*paramscpy));
+        GPU_PipelineParameters *paramscpy = (GPU_PipelineParameters *)SDL_malloc(sizeof(*paramscpy));
         if (paramscpy) {
             SDL_copyp(paramscpy, params);
             pipeline = MakePipeline(device, shaders, params);

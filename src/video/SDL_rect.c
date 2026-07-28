@@ -25,29 +25,29 @@
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
 bool SDL_GetSpanEnclosingRect(int width, int height,
-                         int numrects, const SDL_Rect *rects, SDL_Rect *span)
+                              int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;
     int span_y1, span_y2;
     int rect_y1, rect_y2;
 
-    CHECK_PARAM(width < 1) {
+    CHECK_PARAM (width < 1) {
         SDL_InvalidParamError("width");
         return false;
     }
-    CHECK_PARAM(height < 1) {
+    CHECK_PARAM (height < 1) {
         SDL_InvalidParamError("height");
         return false;
     }
-    CHECK_PARAM(!rects) {
+    CHECK_PARAM (!rects) {
         SDL_InvalidParamError("rects");
         return false;
     }
-    CHECK_PARAM(!span) {
+    CHECK_PARAM (!span) {
         SDL_InvalidParamError("span");
         return false;
     }
-    CHECK_PARAM(numrects < 1) {
+    CHECK_PARAM (numrects < 1) {
         SDL_InvalidParamError("numrects");
         return false;
     }

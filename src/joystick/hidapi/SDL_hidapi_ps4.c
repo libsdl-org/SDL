@@ -27,8 +27,8 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
 
@@ -585,7 +585,7 @@ static bool HIDAPI_DriverPS4_LoadOfficialCalibrationData(SDL_HIDAPI_Device *devi
 
         sRange2g = sAccXPlus - sAccXMinus;
         ctx->calibration[3].bias = sAccXPlus - sRange2g / 2;
-        ctx->calibration[3].scale = (2.0f * ctx->accel_denominator  / ctx->accel_numerator) / sRange2g;
+        ctx->calibration[3].scale = (2.0f * ctx->accel_denominator / ctx->accel_numerator) / sRange2g;
 
         sRange2g = sAccYPlus - sAccYMinus;
         ctx->calibration[4].bias = sAccYPlus - sRange2g / 2;
@@ -635,11 +635,11 @@ static void HIDAPI_DriverPS4_LoadCalibrationData(SDL_HIDAPI_Device *device)
         if (i < 3) {
             scale *= ((double)ctx->gyro_numerator / ctx->gyro_denominator) * SDL_PI_D / 180.0;
 
-             if (device->vendor_id == USB_VENDOR_SONY &&
-                 device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
-                 // The Armor-X Pro seems to only deliver half the rotation it should
-                 scale *= 2.0;
-             }
+            if (device->vendor_id == USB_VENDOR_SONY &&
+                device->product_id == USB_PRODUCT_SONY_DS4_STRIKEPAD) {
+                // The Armor-X Pro seems to only deliver half the rotation it should
+                scale *= 2.0;
+            }
         } else {
             scale *= ((double)ctx->accel_numerator / ctx->accel_denominator) * SDL_STANDARD_GRAVITY;
 
@@ -702,8 +702,8 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
             SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
         }
     } else {
-#if 0 /* The 8BitDo Zero 2 has perfect emulation of a PS4 controller, except it
-       * only sends reports when the state changes, so we can't disconnect here.
+#if 0 /* The 8BitDo Zero 2 has perfect emulation of a PS4 controller, except it  \
+       * only sends reports when the state changes, so we can't disconnect here. \
        */
         // We can't even send an invalid effects packet, or it will put the controller in enhanced mode
         if (device->num_joysticks > 0) {
@@ -959,7 +959,7 @@ static bool HIDAPI_DriverPS4_InternalSendJoystickEffect(SDL_DriverPS4_Context *c
     if (ctx->device->is_bluetooth && ctx->official_controller) {
         data[0] = k_EPS4ReportIdBluetoothEffects;
         data[1] = 0xC0 | ctx->report_interval; // Magic value HID + CRC, also sets update interval
-        data[3] = 0x03;        // 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval
+        data[3] = 0x03;                        // 0x1 is rumble, 0x2 is lightbar, 0x4 is the blink interval
 
         report_size = 78;
         offset = 6;
@@ -1179,7 +1179,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
 
     if (ctx->guitar_effects_selector_supported) {
         // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
+        static const Sint16 effects_mappings[] = { 24576, 11008, -1792, -13568, -26880 };
         if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
         }
@@ -1384,9 +1384,9 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
-                        SDL_PS4ReportIntervalHintChanged, ctx);
+                           SDL_PS4ReportIntervalHintChanged, ctx);
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
-                        SDL_PS4EnhancedReportsChanged, ctx);
+                           SDL_PS4EnhancedReportsChanged, ctx);
 
     ctx->joystick = NULL;
 

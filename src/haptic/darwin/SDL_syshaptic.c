@@ -22,16 +22,16 @@
 
 #ifdef SDL_HAPTIC_IOKIT
 
-#include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"            // For the real SDL_Joystick
 #include "../../joystick/darwin/SDL_iokitjoystick_c.h" // For joystick hwdata
+#include "../SDL_syshaptic.h"
 #include "SDL_syshaptic_c.h"
 
+#include <ForceFeedback/ForceFeedback.h>
+#include <ForceFeedback/ForceFeedbackConstants.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <IOKit/hid/IOHIDUsageTables.h>
-#include <ForceFeedback/ForceFeedback.h>
-#include <ForceFeedback/ForceFeedbackConstants.h>
 
 #ifndef IO_OBJECT_NULL
 #define IO_OBJECT_NULL ((io_service_t)0)
@@ -497,7 +497,7 @@ static bool SDL_SYS_HapticOpenFromService(SDL_Haptic *haptic, io_service_t servi
     HRESULT ret;
 
     // Allocate the hwdata
-    haptic->hwdata = (struct haptic_hwdata *) SDL_calloc(1, sizeof(*haptic->hwdata));
+    haptic->hwdata = (struct haptic_hwdata *)SDL_calloc(1, sizeof(*haptic->hwdata));
     if (!haptic->hwdata) {
         goto creat_err;
     }
@@ -762,9 +762,9 @@ static bool SDL_SYS_SetDirection(FFEFFECT *effect, const SDL_HapticDirection *di
 }
 
 // Clamps and converts.
-#define CCONVERT(x) (((x) > 0x7FFF) ? 10000 : ((x)*10000) / 0x7FFF)
+#define CCONVERT(x) (((x) > 0x7FFF) ? 10000 : ((x) * 10000) / 0x7FFF)
 // Just converts.
-#define CONVERT(x) (((x)*10000) / 0x7FFF)
+#define CONVERT(x) (((x) * 10000) / 0x7FFF)
 /*
  * Creates the FFEFFECT from a SDL_HapticEffect.
  */
@@ -1112,7 +1112,7 @@ SDL_SYS_HapticEffectType(Uint16 type)
  * Creates a new haptic effect.
  */
 bool SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            const SDL_HapticEffect *base)
+                             const SDL_HapticEffect *base)
 {
     HRESULT ret;
     CFUUIDRef type;
@@ -1158,8 +1158,8 @@ err_hweffect:
  * Updates an effect.
  */
 bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
-                               struct haptic_effect *effect,
-                               const SDL_HapticEffect *data)
+                                struct haptic_effect *effect,
+                                const SDL_HapticEffect *data)
 {
     HRESULT ret;
     FFEffectParameterFlag flags;
@@ -1202,7 +1202,7 @@ err_update:
  * Runs an effect.
  */
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            Uint32 iterations)
+                             Uint32 iterations)
 {
     HRESULT ret;
     Uint32 iter;

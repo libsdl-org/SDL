@@ -48,7 +48,7 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    return NULL;  // no EXE name on this system.
+    return NULL; // no EXE name on this system.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

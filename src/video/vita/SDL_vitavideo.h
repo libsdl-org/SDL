@@ -22,23 +22,23 @@
 #ifndef SDL_vitavideo_h
 #define SDL_vitavideo_h
 
-#include "SDL_internal.h"
-#include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
+#include "../SDL_sysvideo.h"
+#include "SDL_internal.h"
 
-#include <psp2/types.h>
 #include <psp2/display.h>
 #include <psp2/ime_dialog.h>
 #include <psp2/sysmodule.h>
+#include <psp2/types.h>
 
 #ifdef SDL_VIDEO_VITA_PIB
-#include <psp2/gxm.h>
-#include <psp2/display.h>
-#include <pib.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <pib.h>
+#include <psp2/display.h>
+#include <psp2/gxm.h>
 typedef struct SDL_GLDriverData
 {
     EGLDisplay display;
@@ -50,8 +50,8 @@ typedef struct SDL_GLDriverData
 
 struct SDL_VideoData
 {
-    bool egl_initialized; // OpenGL device initialization status
-    uint32_t egl_refcount;    // OpenGL reference count
+    bool egl_initialized;  // OpenGL device initialization status
+    uint32_t egl_refcount; // OpenGL reference count
 
     SceWChar16 ime_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
     bool ime_active;

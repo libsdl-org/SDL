@@ -40,17 +40,17 @@ struct haptic_effect
  */
 struct SDL_Haptic
 {
-    SDL_HapticID instance_id;       // Device instance, monotonically increasing from 0
-    char *name;                     // Device name - system dependent
+    SDL_HapticID instance_id; // Device instance, monotonically increasing from 0
+    char *name;               // Device name - system dependent
 
-    struct haptic_effect *effects;  // Allocated effects
-    int neffects;                   // Maximum amount of effects
-    int nplaying;                   // Maximum amount of effects to play at the same time
-    Uint32 supported;               // Supported effects and features
-    int naxes;                      // Number of axes on the device.
+    struct haptic_effect *effects; // Allocated effects
+    int neffects;                  // Maximum amount of effects
+    int nplaying;                  // Maximum amount of effects to play at the same time
+    Uint32 supported;              // Supported effects and features
+    int naxes;                     // Number of axes on the device.
 
-    struct haptic_hwdata *hwdata;   // Driver dependent
-    int ref_count;                  // Count for multiple opens
+    struct haptic_hwdata *hwdata; // Driver dependent
+    int ref_count;                // Count for multiple opens
 
     SDL_HapticEffectID rumble_id;   // ID of rumble effect for simple rumble API.
     SDL_HapticEffect rumble_effect; // Rumble effect.
@@ -98,14 +98,14 @@ extern bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick);
  * the joystick.
  */
 extern bool SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic,
-                                          SDL_Joystick *joystick);
+                                           SDL_Joystick *joystick);
 /*
  * Checks to see if haptic device and joystick device are the same.
  *
  * Returns true if they are the same, false if they aren't.
  */
 extern bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic,
-                                      SDL_Joystick *joystick);
+                                       SDL_Joystick *joystick);
 
 /*
  * Closes a haptic device after usage.

@@ -32,10 +32,10 @@
 #endif
 
 #if SDL_FORK_MESSAGEBOX
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <errno.h>
 #endif
 
 typedef struct SDL_MessageBoxX11
@@ -57,7 +57,8 @@ static void X11_MessageBoxButtonCallback(SDL_ToolkitControlX11 *control, void *d
     X11Toolkit_SignalWindowClose(cbdata->window);
 }
 
-static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp) {
+static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp)
+{
     int first_line_width;
     int first_line_height;
     int second_line_width;
@@ -68,11 +69,11 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
     int window_height;
     int i;
     bool rtl;
-    
+
     /* window size */
     window_width = 1;
     window_height = 1;
-    
+
     /* rtl */
     if (controls->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
         rtl = true;
@@ -81,46 +82,46 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
     } else {
         rtl = controls->window->flip_interface;
     }
-    
+
     /* first line */
     first_line_width = first_line_height = 0;
     if (controls->icon && controls->message) {
         controls->icon->rect.y = 0;
-        
-        first_line_width = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale + controls->message->rect.w;  
-        
+
+        first_line_width = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale + controls->message->rect.w;
+
         if (!controls->window->flip_interface) {
-            controls->message->rect.x = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;
+            controls->message->rect.x = controls->icon->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
             controls->icon->rect.x = 0;
         } else {
-            controls->message->rect.x = 0;    
-            controls->icon->rect.x = controls->message->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2  * controls->window->iscale;
+            controls->message->rect.x = 0;
+            controls->icon->rect.x = controls->message->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale;
         }
-        
+
         if (controls->message->rect.h > controls->icon->rect.h) {
-            controls->message->rect.y = (controls->icon->rect.h - X11Toolkit_GetLabelControlFirstLineHeight(controls->message))/2;
+            controls->message->rect.y = (controls->icon->rect.h - X11Toolkit_GetLabelControlFirstLineHeight(controls->message)) / 2;
             first_line_height = controls->message->rect.y + controls->message->rect.h;
         } else {
-            controls->message->rect.y = (controls->icon->rect.h - controls->message->rect.h)/2;
+            controls->message->rect.y = (controls->icon->rect.h - controls->message->rect.h) / 2;
             first_line_height = controls->icon->rect.h;
-        }        
+        }
     } else if (!controls->icon && controls->message) {
-        first_line_width = controls->message->rect.w;  
+        first_line_width = controls->message->rect.w;
         first_line_height = controls->message->rect.h;
         controls->message->rect.x = 0;
         controls->message->rect.y = 0;
     } else if (controls->icon && !controls->message) {
-        first_line_width = controls->icon->rect.w;  
+        first_line_width = controls->icon->rect.w;
         first_line_height = controls->icon->rect.h;
         controls->icon->rect.x = 0;
-        controls->icon->rect.y = 0;        
+        controls->icon->rect.y = 0;
     }
-    
+
     /* second line */
     max_button_width = 50;
     max_button_height = 0;
     second_line_width = second_line_height = 0;
-    
+
     for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
         max_button_width = SDL_max(max_button_width, controls->buttons[i]->rect.w);
         max_button_height = SDL_max(max_button_height, controls->buttons[i]->rect.h);
@@ -140,11 +141,11 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
             } else {
                 second_line_height = max_button_height;
             }
-            
+
             if ((i + 1) < controls->messageboxdata->numbuttons) {
                 controls->buttons[i]->rect.x = controls->buttons[i + 1]->rect.x + controls->buttons[i + 1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
             }
-        }    
+        }
     } else {
         for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
             controls->buttons[i]->rect.w = max_button_width;
@@ -157,26 +158,26 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
             } else {
                 second_line_height = max_button_height;
             }
-            
+
             if (i) {
-                controls->buttons[i]->rect.x = controls->buttons[i-1]->rect.x + controls->buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
+                controls->buttons[i]->rect.x = controls->buttons[i - 1]->rect.x + controls->buttons[i - 1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
             }
         }
     }
-    
+
     if (controls->messageboxdata->numbuttons) {
         if (rtl) {
             second_line_width = controls->buttons[0]->rect.x + controls->buttons[0]->rect.w;
         } else {
-            second_line_width = controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.x + controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.w;            
+            second_line_width = controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.x + controls->buttons[controls->messageboxdata->numbuttons - 1]->rect.w;
         }
     }
 
     /* center lines */
     if (second_line_width > first_line_width) {
         int pad;
-        
-        pad = (second_line_width - first_line_width)/2;
+
+        pad = (second_line_width - first_line_width) / 2;
         if (controls->message) {
             controls->message->rect.x += pad;
         }
@@ -185,13 +186,13 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
         }
     } else {
         int pad;
-        
-        pad = (first_line_width - second_line_width)/2;
+
+        pad = (first_line_width - second_line_width) / 2;
         for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
             controls->buttons[i]->rect.x += pad;
         }
     }
-     
+
     /* window size and final padding */
     window_width = SDL_max(first_line_width, second_line_width) + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 2 * controls->window->iscale;
     window_height = first_line_height + second_line_height + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 2 * controls->window->iscale;
@@ -211,7 +212,8 @@ static void X11_PositionMessageBox(SDL_MessageBoxX11 *controls, int *wp, int *hp
     }
 }
 
-static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data) {
+static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data)
+{
     SDL_MessageBoxX11 *controls;
     int w;
     int h;
@@ -247,7 +249,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     }
 #if SDL_FORK_MESSAGEBOX
     controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, true);
-#else 
+#else
     controls.window = X11Toolkit_CreateWindowStruct(parent_window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, false);
 #endif
     if (!controls.window) {

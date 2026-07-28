@@ -23,7 +23,8 @@
 #define SDL_evdev_kbd_h_
 
 #ifdef SDL_INPUT_FBSDKBIO
-enum {
+enum
+{
     VT_OURS,
     VT_THEIRS,
 };

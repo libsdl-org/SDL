@@ -22,12 +22,11 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
+#include "../../events/SDL_events_c.h"
+#include "../SDL_clipboard_c.h"
+#include "SDL_waylandclipboard.h"
 #include "SDL_waylanddatamanager.h"
 #include "SDL_waylandevents_c.h"
-#include "SDL_waylandclipboard.h"
-#include "../SDL_clipboard_c.h"
-#include "../../events/SDL_events_c.h"
-
 
 bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 {

@@ -81,7 +81,7 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
 #define COPY_PIXEL(x)                \
     spot = &bits[ofs++];             \
     if (spot >= start && spot < end) \
-        *spot = (x)
+    *spot = (x)
 
     for (;;) {
         if (!SDL_ReadU8(src, &ch)) {
@@ -114,9 +114,9 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 ofs = 0;
                 bits -= pitch; // go to previous
                 break;
-            case 1:               // end of bitmap
+            case 1:          // end of bitmap
                 return true; // success!
-            case 2:               // delta
+            case 2:          // delta
                 if (!SDL_ReadU8(src, &ch)) {
                     return false;
                 }
@@ -236,7 +236,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 
     // Make sure we are passed a valid data source
     surface = NULL;
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         SDL_InvalidParamError("src");
         goto done;
     }
@@ -591,7 +591,8 @@ done:
     return surface;
 }
 
-typedef struct {
+typedef struct
+{
     SDL_Surface *surface;
     SDL_Surface *intermediate_surface;
     bool save32bit;
@@ -612,7 +613,7 @@ static bool InitBMPSaveState(BMPSaveState *state, SDL_Surface *surface)
     state->save32bit = false;
     state->saveLegacyBMP = false;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -907,7 +908,7 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     if (!InitBMPSaveState(&state, surface)) {
         return false;
     }
-    CHECK_PARAM(!dst) {
+    CHECK_PARAM (!dst) {
         result = SDL_InvalidParamError("dst");
         goto done;
     }

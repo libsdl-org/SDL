@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-#include "SDL_androidmessagebox.h"
 #include "../../core/android/SDL_android.h"
+#include "SDL_androidmessagebox.h"
 
 bool Android_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {

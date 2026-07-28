@@ -31,7 +31,7 @@
 
 EMSCRIPTEN_KEEPALIVE void Emscripten_force_free(void *ptr)
 {
-    free(ptr);  // This should NOT be SDL_free()
+    free(ptr); // This should NOT be SDL_free()
 }
 #endif
 
@@ -222,16 +222,15 @@ typedef struct GetOneObjectData
 
 static bool SDLCALL GetOneObject(void *userdata, const SDL_HashTable *table, const void *object, const void *object_type)
 {
-    GetOneObjectData *data = (GetOneObjectData *) userdata;
+    GetOneObjectData *data = (GetOneObjectData *)userdata;
     if ((SDL_ObjectType)(uintptr_t)object_type == data->type) {
         if (data->num_objects < data->count) {
             data->objects[data->num_objects] = (void *)object;
         }
         ++data->num_objects;
     }
-    return true;  // keep iterating.
+    return true; // keep iterating.
 }
-
 
 int SDL_GetObjects(SDL_ObjectType type, void **objects, int count)
 {
@@ -244,7 +243,10 @@ static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *tabl
 {
     const char *type = "unknown object";
     switch ((SDL_ObjectType)(uintptr_t)object_type) {
-        #define SDLOBJTYPECASE(typ, name) case SDL_OBJECT_TYPE_##typ: type = name; break
+#define SDLOBJTYPECASE(typ, name) \
+    case SDL_OBJECT_TYPE_##typ:   \
+        type = name;              \
+        break
         SDLOBJTYPECASE(WINDOW, "SDL_Window");
         SDLOBJTYPECASE(RENDERER, "SDL_Renderer");
         SDLOBJTYPECASE(TEXTURE, "SDL_Texture");
@@ -256,11 +258,12 @@ static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *tabl
         SDLOBJTYPECASE(HIDAPI_JOYSTICK, "hidapi joystick");
         SDLOBJTYPECASE(THREAD, "thread");
         SDLOBJTYPECASE(TRAY, "SDL_Tray");
-        #undef SDLOBJTYPECASE
-        default: break;
+#undef SDLOBJTYPECASE
+    default:
+        break;
     }
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Leaked %s (%p)", type, object);
-    return true;  // keep iterating.
+    return true; // keep iterating.
 }
 
 void SDL_SetObjectsInvalid(void)
@@ -424,7 +427,7 @@ bool SDL_IsURI(const char *uri)
 
 static SDL_TLSID SDL_string_storage;
 
-static void SDL_FreePersistentStrings( void *value )
+static void SDL_FreePersistentStrings(void *value)
 {
     SDL_HashTable *strings = (SDL_HashTable *)value;
     SDL_DestroyHashTable(strings);
@@ -619,7 +622,6 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
 
     return name;
 }
-
 
 void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {

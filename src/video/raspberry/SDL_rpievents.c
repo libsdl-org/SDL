@@ -26,8 +26,8 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../SDL_sysvideo.h"
-#include "SDL_rpivideo.h"
 #include "SDL_rpievents_c.h"
+#include "SDL_rpivideo.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"

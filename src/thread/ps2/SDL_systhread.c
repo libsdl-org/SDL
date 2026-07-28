@@ -96,7 +96,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("StartThread() failed");
     }
 
-    thread->threadid = (SDL_ThreadID) thread->handle;
+    thread->threadid = (SDL_ThreadID)thread->handle;
 
     return true;
 }

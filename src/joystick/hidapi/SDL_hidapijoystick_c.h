@@ -61,8 +61,8 @@
 
 // Whether HIDAPI is enabled by default
 #if defined(SDL_PLATFORM_ANDROID) || \
-    defined(SDL_PLATFORM_IOS) || \
-    defined(SDL_PLATFORM_TVOS) || \
+    defined(SDL_PLATFORM_IOS) ||     \
+    defined(SDL_PLATFORM_TVOS) ||    \
     defined(SDL_PLATFORM_VISIONOS)
 // On Android, HIDAPI prompts for permissions and acquires exclusive access to the device, and on Apple mobile platforms it doesn't do anything except for handling Bluetooth Steam Controllers, so we'll leave it off by default.
 #define SDL_HIDAPI_DEFAULT false

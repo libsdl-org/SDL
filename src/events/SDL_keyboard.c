@@ -22,9 +22,9 @@
 
 // General keyboard handling code for SDL
 
+#include "../video/SDL_sysvideo.h"
 #include "SDL_events_c.h"
 #include "SDL_keymap_c.h"
-#include "../video/SDL_sysvideo.h"
 
 #if 0
 #define DEBUG_KEYBOARD
@@ -39,10 +39,10 @@
 
 #define KEYBOARD_SOURCE_MASK (KEYBOARD_HARDWARE | KEYBOARD_AUTORELEASE)
 
-#define KEYCODE_OPTION_HIDE_NUMPAD      0x01
-#define KEYCODE_OPTION_FRENCH_NUMBERS   0x02
-#define KEYCODE_OPTION_LATIN_LETTERS    0x04
-#define DEFAULT_KEYCODE_OPTIONS         (KEYCODE_OPTION_FRENCH_NUMBERS | KEYCODE_OPTION_LATIN_LETTERS)
+#define KEYCODE_OPTION_HIDE_NUMPAD    0x01
+#define KEYCODE_OPTION_FRENCH_NUMBERS 0x02
+#define KEYCODE_OPTION_LATIN_LETTERS  0x04
+#define DEFAULT_KEYCODE_OPTIONS       (KEYCODE_OPTION_FRENCH_NUMBERS | KEYCODE_OPTION_LATIN_LETTERS)
 
 typedef struct SDL_Keyboard
 {
@@ -821,7 +821,7 @@ void SDL_SendEditingText(const char *text, int start, int length)
     }
 }
 
-static const char * const *CreateCandidatesForEvent(char **candidates, int num_candidates)
+static const char *const *CreateCandidatesForEvent(char **candidates, int num_candidates)
 {
     const char **event_candidates;
     int i;
@@ -868,7 +868,7 @@ void SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int se
         event.common.timestamp = 0;
         event.edit.windowID = keyboard->focus ? keyboard->focus->id : 0;
         if (num_candidates > 0) {
-            const char * const *event_candidates = CreateCandidatesForEvent(candidates, num_candidates);
+            const char *const *event_candidates = CreateCandidatesForEvent(candidates, num_candidates);
             if (!event_candidates) {
                 return;
             }
@@ -905,7 +905,7 @@ void SDL_QuitKeyboard(void)
     }
 
     SDL_RemoveHintCallback(SDL_HINT_KEYCODE_OPTIONS,
-                        SDL_KeycodeOptionsChanged, &SDL_keyboard);
+                           SDL_KeycodeOptionsChanged, &SDL_keyboard);
 
     SDL_keyboard_quitting = false;
 }
@@ -944,4 +944,3 @@ void SDL_ToggleModState(SDL_Keymod modstate, bool toggle)
         keyboard->modstate &= ~modstate;
     }
 }
-

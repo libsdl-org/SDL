@@ -21,11 +21,11 @@
 #include "SDL_internal.h"
 
 // This is the iOS implementation of the SDL joystick API
-#include "../SDL_sysjoystick.h"
+#include "../../events/SDL_events_c.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
-#include "../../events/SDL_events_c.h"
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
@@ -33,14 +33,13 @@
 
 #include "SDL_mfijoystick_c.h"
 
-
 #if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
 #import <CoreMotion/CoreMotion.h>
 #endif
 
 #ifdef SDL_PLATFORM_MACOS
-#include <IOKit/hid/IOHIDManager.h>
 #include <AppKit/NSApplication.h>
+#include <IOKit/hid/IOHIDManager.h>
 #ifndef NSAppKitVersionNumber10_15
 #define NSAppKitVersionNumber10_15 1894
 #endif
@@ -380,10 +379,10 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         (device->is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
         (device->is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, "")) ||
         (SDL_strstr(name, "GameCube Controller Adapter") &&
-            (HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
+         (HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
+          HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
+          HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
+          HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
         (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
         (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
         (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, ""))) {
@@ -492,32 +491,32 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 
         // Provide both axes and analog buttons as SDL axes
         NSArray *axes = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
-                                         filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
-            if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
-                return false;
-            }
+            filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+              if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
+                  return false;
+              }
 
-            GCControllerElement *element = elements[object];
-            if (element.analog) {
-                if ([element isKindOfClass:[GCControllerAxisInput class]] ||
-                    [element isKindOfClass:[GCControllerButtonInput class]]) {
-                    return true;
-                }
-            }
-            return false;
-        }]];
+              GCControllerElement *element = elements[object];
+              if (element.analog) {
+                  if ([element isKindOfClass:[GCControllerAxisInput class]] ||
+                      [element isKindOfClass:[GCControllerButtonInput class]]) {
+                      return true;
+                  }
+              }
+              return false;
+            }]];
         NSArray *buttons = [[[elements allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)]
-                                            filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
-            if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
-                return false;
-            }
+            filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+              if (ElementAlreadyHandled(device, (NSString *)object, elements)) {
+                  return false;
+              }
 
-            GCControllerElement *element = elements[object];
-            if ([element isKindOfClass:[GCControllerButtonInput class]]) {
-                return true;
-            }
-            return false;
-        }]];
+              GCControllerElement *element = elements[object];
+              if ([element isKindOfClass:[GCControllerButtonInput class]]) {
+                  return true;
+              }
+              return false;
+            }]];
         /* Explicitly retain the arrays because SDL_JoystickDeviceItem is a
          * struct, and ARC doesn't work with structs. */
         device->naxes = (int)axes.count;
@@ -616,7 +615,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
         // We don't know how to get input events from this device
         return false;
     }
-    
+
     device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
     Uint16 signature;
@@ -1037,10 +1036,10 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                     GCControllerDirectionPad *dpad = controller.physicalInputProfile.dpads[key];
                     if (dpad.up.isPressed || dpad.down.isPressed || dpad.left.isPressed || dpad.right.isPressed) {
                         NSLog(@"Hat %@ =%s%s%s%s\n", key,
-                            dpad.up.isPressed ? " UP" : "",
-                            dpad.down.isPressed ? " DOWN" : "",
-                            dpad.left.isPressed ? " LEFT" : "",
-                            dpad.right.isPressed ? " RIGHT" : "");
+                              dpad.up.isPressed ? " UP" : "",
+                              dpad.down.isPressed ? " DOWN" : "",
+                              dpad.left.isPressed ? " LEFT" : "",
+                              dpad.right.isPressed ? " RIGHT" : "");
                     }
                 }
             }
@@ -1423,9 +1422,9 @@ static SDL3_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
             SDL3_RumbleMotor *right_trigger_motor = [[SDL3_RumbleMotor alloc] initWithController:controller locality:GCHapticsLocalityRightTrigger];
             if (low_frequency_motor && high_frequency_motor) {
                 return [[SDL3_RumbleContext alloc] initWithLowFrequencyMotor:low_frequency_motor
-                                                         HighFrequencyMotor:high_frequency_motor
-                                                           LeftTriggerMotor:left_trigger_motor
-                                                          RightTriggerMotor:right_trigger_motor];
+                                                          HighFrequencyMotor:high_frequency_motor
+                                                            LeftTriggerMotor:left_trigger_motor
+                                                           RightTriggerMotor:right_trigger_motor];
             }
         }
     }
@@ -1612,7 +1611,7 @@ static void IOS_JoystickQuit(void)
 
 #ifdef SDL_PLATFORM_TVOS
         SDL_RemoveHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
-                            SDL_AppleTVRemoteRotationHintChanged, NULL);
+                               SDL_AppleTVRemoteRotationHintChanged, NULL);
 #endif // SDL_PLATFORM_TVOS
 #endif // SDL_JOYSTICK_MFI
 

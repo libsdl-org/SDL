@@ -24,8 +24,8 @@
 #define SDL_x11opengl_h_
 
 #ifdef SDL_VIDEO_OPENGL_GLX
-#include <SDL3/SDL_opengl.h>
 #include <GL/glx.h>
+#include <SDL3/SDL_opengl.h>
 
 typedef void (*__GLXextFuncPtr)(void);
 
@@ -86,7 +86,7 @@ extern bool X11_GL_UseEGL(SDL_VideoDevice *_this);
 extern XVisualInfo *X11_GL_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent);
 extern SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
-                              SDL_GLContext context);
+                               SDL_GLContext context);
 extern bool X11_GL_SetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern bool X11_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval);
 extern bool X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);

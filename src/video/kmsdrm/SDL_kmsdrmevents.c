@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
-#include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmevents.h"
+#include "SDL_kmsdrmvideo.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"

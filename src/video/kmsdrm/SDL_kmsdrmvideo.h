@@ -28,32 +28,32 @@
 
 #include "../SDL_sysvideo.h"
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <fcntl.h>
+#include <gbm.h>
 #include <unistd.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <gbm.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 
 #ifndef DRM_FORMAT_MOD_INVALID
 #define DRM_FORMAT_MOD_INVALID 0x00ffffffffffffffULL
 #endif
 
 #ifndef DRM_MODE_FB_MODIFIERS
-#define DRM_MODE_FB_MODIFIERS	2
+#define DRM_MODE_FB_MODIFIERS 2
 #endif
 
 #ifndef DRM_MODE_PAGE_FLIP_ASYNC
-#define DRM_MODE_PAGE_FLIP_ASYNC    2
+#define DRM_MODE_PAGE_FLIP_ASYNC 2
 #endif
 
 #ifndef DRM_MODE_OBJECT_CONNECTOR
-#define DRM_MODE_OBJECT_CONNECTOR   0xc0c0c0c0
+#define DRM_MODE_OBJECT_CONNECTOR 0xc0c0c0c0
 #endif
 
 #ifndef DRM_MODE_OBJECT_CRTC
-#define DRM_MODE_OBJECT_CRTC        0xcccccccc
+#define DRM_MODE_OBJECT_CRTC 0xcccccccc
 #endif
 
 #ifndef DRM_CAP_ASYNC_PAGE_FLIP
@@ -61,15 +61,15 @@
 #endif
 
 #ifndef DRM_CAP_CURSOR_WIDTH
-#define DRM_CAP_CURSOR_WIDTH    8
+#define DRM_CAP_CURSOR_WIDTH 8
 #endif
 
 #ifndef DRM_CAP_CURSOR_HEIGHT
-#define DRM_CAP_CURSOR_HEIGHT   9
+#define DRM_CAP_CURSOR_HEIGHT 9
 #endif
 
 #ifndef GBM_FORMAT_ARGB8888
-#define GBM_FORMAT_ARGB8888  ((uint32_t)('A') | ((uint32_t)('R') << 8) | ((uint32_t)('2') << 16) | ((uint32_t)('4') << 24))
+#define GBM_FORMAT_ARGB8888 ((uint32_t)('A') | ((uint32_t)('R') << 8) | ((uint32_t)('2') << 16) | ((uint32_t)('4') << 24))
 #define GBM_BO_USE_CURSOR   (1 << 1)
 #define GBM_BO_USE_WRITE    (1 << 3)
 #define GBM_BO_USE_LINEAR   (1 << 4)
@@ -81,7 +81,7 @@ typedef struct KMSDRM_plane
     drmModeObjectProperties *props;
     drmModePropertyRes **props_info;
 } KMSDRM_plane;
- 
+
 typedef struct KMSDRM_crtc
 {
     drmModeCrtc *crtc;
@@ -116,7 +116,7 @@ struct SDL_VideoData
        open 1 FD and create 1 gbm device. */
     bool gbm_init;
 
-    bool is_atomic;  // true if atomic interfaces are supported.
+    bool is_atomic; // true if atomic interfaces are supported.
 };
 
 struct SDL_DisplayModeData

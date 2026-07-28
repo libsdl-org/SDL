@@ -32,19 +32,19 @@
  * with polled devices, and it's fine to call IDirectInputDevice8_GetDeviceData and
  * let it return 0 events. */
 
-#include "../SDL_sysjoystick.h"
-#include "../../thread/SDL_systhread.h"
-#include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
+#include "../../core/windows/SDL_windows.h"
+#include "../../thread/SDL_systhread.h"
+#include "../SDL_sysjoystick.h"
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <dbt.h>
 #endif
 
 #define INITGUID // Only set here, if set twice will cause mingw32 to break.
-#include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
-#include "SDL_xinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
+#include "SDL_windowsjoystick_c.h"
+#include "SDL_xinputjoystick_c.h"
 
 #include "../../haptic/windows/SDL_dinputhaptic_c.h" // For haptic hot plugging
 
@@ -62,7 +62,6 @@ static Uint64 s_lastDeviceChange = 0;
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
 JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
-
 
 static bool WindowsDeviceChanged(void)
 {

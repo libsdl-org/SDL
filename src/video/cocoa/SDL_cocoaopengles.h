@@ -25,8 +25,8 @@
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 
-#include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
+#include "../SDL_sysvideo.h"
 
 // OpenGLES functions
 #define Cocoa_GLES_GetAttribute    SDL_EGL_GetAttribute

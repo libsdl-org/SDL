@@ -22,8 +22,8 @@
   Screen keyboard and text input backend
   for GDK platforms.
 */
-#include "SDL_internal.h"
 #include "SDL_gdktextinput.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_GDK_TEXTINPUT
 
@@ -291,12 +291,12 @@ void GDK_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
     g_TextBlock->context = _this;
     g_TextBlock->callback = GDK_InternalTextEntryCallback;
     if (SUCCEEDED(hR = XGameUiShowTextEntryAsync(
-                   g_TextBlock,
-                   g_TitleText,
-                   g_DescriptionText,
-                   g_DefaultText,
-                   scope,
-                   (uint32_t)g_MaxTextLength))) {
+                      g_TextBlock,
+                      g_TitleText,
+                      g_DescriptionText,
+                      g_DefaultText,
+                      scope,
+                      (uint32_t)g_MaxTextLength))) {
         SDL_SendScreenKeyboardShown();
     } else {
         SDL_free(g_TextBlock);

@@ -27,8 +27,8 @@
 
 #include "../../events/SDL_events_c.h"
 
-#include "SDL_nullvideo.h"
 #include "SDL_nullevents_c.h"
+#include "SDL_nullvideo.h"
 
 void DUMMY_PumpEvents(SDL_VideoDevice *_this)
 {

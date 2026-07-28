@@ -22,12 +22,12 @@
 #ifndef SDL_RENDER_VITA_GXM_MEMORY_H
 #define SDL_RENDER_VITA_GXM_MEMORY_H
 
-#include <psp2/gxm.h>
-#include <psp2/types.h>
-#include <psp2/kernel/sysmem.h>
 #include "SDL_render_vita_gxm_types.h"
+#include <psp2/gxm.h>
+#include <psp2/kernel/sysmem.h>
+#include <psp2/types.h>
 
-#define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
+#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
 void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid);
 void vita_mem_free(SceUID uid);

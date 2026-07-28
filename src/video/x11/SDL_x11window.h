@@ -106,7 +106,7 @@ struct SDL_WindowData
 
     enum
     {
-        X11_SIZE_MOVE_EVENTS_DISABLE = 0x01, // Events are completely disabled.
+        X11_SIZE_MOVE_EVENTS_DISABLE = 0x01,          // Events are completely disabled.
         X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS = 0x02, // Events are disabled until a _NET_FRAME_EXTENTS event arrives.
     } size_move_event_flags;
 

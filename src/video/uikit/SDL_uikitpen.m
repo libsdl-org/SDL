@@ -33,21 +33,21 @@
 
 @interface UITouch (SDL)
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 170500)
-@property (nonatomic, readonly) CGFloat rollAngle;
+@property(nonatomic, readonly) CGFloat rollAngle;
 #endif
 @end
 
 @interface UIHoverGestureRecognizer (SDL)
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160100)
-@property (nonatomic, readonly) CGFloat zOffset;
+@property(nonatomic, readonly) CGFloat zOffset;
 #endif
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160400)
-- (CGFloat) azimuthAngleInView:(UIView *) view;
+- (CGFloat)azimuthAngleInView:(UIView *)view;
 
-@property (nonatomic, readonly) CGFloat altitudeAngle;
+@property(nonatomic, readonly) CGFloat altitudeAngle;
 #endif
 #if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 170500)
-@property (nonatomic, readonly) CGFloat rollAngle;
+@property(nonatomic, readonly) CGFloat rollAngle;
 #endif
 @end
 
@@ -72,13 +72,13 @@ static SDL_PenID UIKit_AddPenIfNecesary(SDL_Window *window)
         info.max_tilt = 90.0f;
         info.num_buttons = 0;
         info.subtype = SDL_PEN_TYPE_PENCIL;
-        info.device_type = SDL_PEN_DEVICE_TYPE_DIRECT;  // Apple Pencil on iOS is always a direct device; it works on the tablet's screen.
+        info.device_type = SDL_PEN_DEVICE_TYPE_DIRECT; // Apple Pencil on iOS is always a direct device; it works on the tablet's screen.
 
-        if (@available(iOS 17.5, *)) {  // need rollAngle method.
+        if (@available(iOS 17.5, *)) { // need rollAngle method.
             info.capabilities |= SDL_PEN_CAPABILITY_ROTATION;
         }
 
-        if (@available(ios 16.1, *)) {  // need zOffset method.
+        if (@available(ios 16.1, *)) { // need zOffset method.
             info.capabilities |= SDL_PEN_CAPABILITY_DISTANCE;
         }
 
@@ -86,7 +86,7 @@ static SDL_PenID UIKit_AddPenIfNecesary(SDL_Window *window)
         // so we can't use it for tangential pressure.
 
         // There's only ever one Apple Pencil at most, so we just pass a non-zero value for the handle.
-        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", window, &info, (void *) (size_t) 0x1, true);
+        apple_pencil_id = SDL_AddPenDevice(0, "Apple Pencil", window, &info, (void *)(size_t)0x1, true);
     }
 
     return apple_pencil_id;
@@ -122,7 +122,7 @@ static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, 
         const float ytilt = (azimuth_angle < 0.0f) ? -(90.0f - altitude_angle) : (90.0f - altitude_angle);
 
         // rotation is in radians, and only available on a later iOS.
-        const float rotation = rollAngle * radians_to_degrees;  // !!! FIXME: this might need adjustment, I don't have a pencil that supports it.
+        const float rotation = rollAngle * radians_to_degrees; // !!! FIXME: this might need adjustment, I don't have a pencil that supports it.
 
         if (force == 0.0f && (SDL_GetPenStatus(penId, NULL, 0) & SDL_PEN_INPUT_DOWN)) {
             // The first hover as the pen is being released has a stale position, so ignore it
@@ -143,22 +143,22 @@ void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recogni
 {
     float zOffset = 0.0f;
     if (@available(iOS 16.1, *)) {
-        zOffset = (float) [recognizer zOffset];
+        zOffset = (float)[recognizer zOffset];
     }
 
     float azimuthAngleInView = 0.0f;
     if (@available(iOS 16.4, *)) {
-        azimuthAngleInView = (float) [recognizer azimuthAngleInView:view];
+        azimuthAngleInView = (float)[recognizer azimuthAngleInView:view];
     }
 
     float altitudeAngle = 0.0f;
     if (@available(iOS 16.4, *)) {
-        altitudeAngle = (float) [recognizer altitudeAngle];
+        altitudeAngle = (float)[recognizer altitudeAngle];
     }
 
     float rollAngle = 0.0f;
     if (@available(iOS 17.5, *)) {
-        rollAngle = (float) [recognizer rollAngle];
+        rollAngle = (float)[recognizer rollAngle];
     }
 
     SDL_Window *window = [view getSDLWindow];
@@ -175,7 +175,7 @@ static void UIKit_HandlePenAxesFromUITouch(SDL_uikitview *view, UITouch *pencil)
     float rollAngle = 0.0f;
 #if !defined(SDL_PLATFORM_TVOS)
     if (@available(iOS 17.5, *)) {
-        rollAngle = (float) [pencil rollAngle];
+        rollAngle = (float)[pencil rollAngle];
     }
 #endif
 

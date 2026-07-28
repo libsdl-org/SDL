@@ -22,10 +22,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
-#include "SDL_hidapi_rumble.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
+#include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM_HORI
 
@@ -256,7 +256,6 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[5] & 0x20) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_HORI_QAM, ((data[5] & 0x40) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[5] & 0x80) != 0));
-
     }
 
     if (ctx->last_state[6] != data[6]) {
@@ -284,7 +283,7 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
     if (!ctx->wireless && ctx->serial_needs_init) {
         char serial[18];
         (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                                data[38], data[39], data[40], data[41], data[42], data[43]);
+                           data[38], data[39], data[40], data[41], data[42], data[43]);
 
         SDL_AssertJoysticksLocked();
         joystick->serial = SDL_strdup(serial);
@@ -334,7 +333,7 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
 
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, imu_data, 3);
 
-      //  SDL_Log("%u %f, %f, %f ", data[0], imu_data[0], imu_data[1], imu_data[2] );
+        //  SDL_Log("%u %f, %f, %f ", data[0], imu_data[0], imu_data[1], imu_data[2] );
         imu_data[2] = LOAD16(data[18], data[19]) * accelScale;
         imu_data[1] = -1 * LOAD16(data[20], data[21]) * accelScale;
         imu_data[0] = LOAD16(data[22], data[23]) * accelScale;
@@ -349,7 +348,7 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         if (bCharging) {
             state = SDL_POWERSTATE_CHARGING;
         } else if (ctx->wireless) {
-             state = SDL_POWERSTATE_ON_BATTERY;
+            state = SDL_POWERSTATE_ON_BATTERY;
         } else {
             state = SDL_POWERSTATE_CHARGED;
         }

@@ -19,25 +19,25 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../SDL_sysvideo.h"
+#include "SDL_internal.h"
 #include "SDL_qnx.h"
 
 #include <errno.h>
 
 static screen_context_t context;
-static screen_event_t   event;
+static screen_event_t event;
 static bool video_initialized = false;
 
-screen_context_t * getContext()
+screen_context_t *getContext()
 {
     return &context;
 }
 
-screen_event_t * getEvent()
+screen_event_t *getEvent()
 {
     return &event;
 }
@@ -51,10 +51,10 @@ screen_event_t * getEvent()
  */
 static bool videoInit(SDL_VideoDevice *_this)
 {
-    SDL_VideoDisplay     display;
-    SDL_DisplayData      *display_data;
-    SDL_DisplayMode      display_mode;
-    SDL_DisplayModeData  *display_mode_data;
+    SDL_VideoDisplay display;
+    SDL_DisplayData *display_data;
+    SDL_DisplayMode display_mode;
+    SDL_DisplayModeData *display_mode_data;
 
     int size[2];
     int index;
@@ -181,17 +181,17 @@ static void videoQuit(SDL_VideoDevice *_this)
  */
 static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_WindowData       *impl;
-    SDL_VideoDisplay     *display = NULL;
-    SDL_DisplayData      *display_data = NULL;
-    SDL_DisplayModeData  *display_mode_data = NULL;
+    SDL_WindowData *impl;
+    SDL_VideoDisplay *display = NULL;
+    SDL_DisplayData *display_data = NULL;
+    SDL_DisplayModeData *display_mode_data = NULL;
 
-    int             size[2];
-    int             position[2];
-    int             numbufs;
-    int             format;
-    int             usage;
-    int             has_focus_i;
+    int size[2];
+    int position[2];
+    int numbufs;
+    int format;
+    int usage;
+    int has_focus_i;
 
     impl = SDL_calloc(1, sizeof(*impl));
     if (!impl) {
@@ -267,12 +267,12 @@ static bool createWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     }
 
     // Create buffer(s).
-    if (screen_create_window_buffers(impl->window, numbufs>0?numbufs:1) < 0) {
+    if (screen_create_window_buffers(impl->window, numbufs > 0 ? numbufs : 1) < 0) {
         goto fail;
     }
 
     // Get initial focus state. Fallback to true.
-    if(screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_FOCUS, &has_focus_i) < 0){
+    if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_FOCUS, &has_focus_i) < 0) {
         impl->has_focus = true;
     } else {
         impl->has_focus = (bool)has_focus_i;
@@ -306,12 +306,12 @@ fail:
  * @param[out]  pitch   Holds the number of bytes per line
  * @return  true if successful, false on error
  */
-static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window, SDL_PixelFormat * format,
-                        void ** pixels, int *pitch)
+static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format,
+                                    void **pixels, int *pitch)
 {
-    int              buffer_count;
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
-    screen_buffer_t  *buffer;
+    int buffer_count;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
+    screen_buffer_t *buffer;
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
 
     if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_BUFFER_COUNT,
@@ -350,10 +350,10 @@ static bool createWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window * window,
  * @return  true if successful, false on error
  */
 static bool updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
-                        int numrects)
+                                    int numrects)
 {
     int buffer_count, *rects_int;
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
     screen_buffer_t *buffer;
 
     if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_BUFFER_COUNT,
@@ -367,20 +367,20 @@ static bool updateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
         return false;
     }
 
-    if(numrects>0){
-        rects_int = SDL_calloc(4*numrects, sizeof(int));
+    if (numrects > 0) {
+        rects_int = SDL_calloc(4 * numrects, sizeof(int));
 
-        for(int i = 0; i < numrects; i++){
-            rects_int[4*i]   = rects[i].x;
-            rects_int[4*i+1] = rects[i].y;
-            rects_int[4*i+2] = rects[i].w;
-            rects_int[4*i+3] = rects[i].h;
+        for (int i = 0; i < numrects; i++) {
+            rects_int[4 * i] = rects[i].x;
+            rects_int[4 * i + 1] = rects[i].y;
+            rects_int[4 * i + 2] = rects[i].w;
+            rects_int[4 * i + 3] = rects[i].h;
         }
 
-        if(screen_post_window(impl->window, buffer[0], numrects, rects_int, 0)) {
+        if (screen_post_window(impl->window, buffer[0], numrects, rects_int, 0)) {
             return false;
         }
-        if(screen_flush_context(context, 0)) {
+        if (screen_flush_context(context, 0)) {
             return false;
         }
     }
@@ -439,7 +439,7 @@ static SDL_DisplayID getDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *win
 {
     // We need this, otherwise SDL will fallback to the primary display, meaning
     // any data we store about the display will be inconveniently overwritten.
-    SDL_WindowData  *impl = (SDL_WindowData *)window->internal;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
     SDL_DisplayData *display_data;
 
     screen_display_t screen_display;
@@ -469,16 +469,16 @@ static SDL_DisplayID getDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *win
  */
 static void pumpEvents(SDL_VideoDevice *_this)
 {
-    SDL_Window      *window;
-    SDL_WindowData   *impl;
-    int             type;
-    int             has_focus_i;
-    bool            has_focus;
+    SDL_Window *window;
+    SDL_WindowData *impl;
+    int type;
+    int has_focus_i;
+    bool has_focus;
 
     // Let apps know the state of focus.
     for (window = _this->windows; window; window = window->next) {
         impl = (SDL_WindowData *)window->internal;
-        if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_FOCUS, &has_focus_i) < 0){
+        if (screen_get_window_property_iv(impl->window, SCREEN_PROPERTY_FOCUS, &has_focus_i) < 0) {
             continue;
         }
         has_focus = (bool)has_focus_i;
@@ -497,8 +497,7 @@ static void pumpEvents(SDL_VideoDevice *_this)
             break;
         }
 
-        if (screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type)
-            < 0) {
+        if (screen_get_event_property_iv(event, SCREEN_PROPERTY_TYPE, &type) < 0) {
             break;
         }
 
@@ -528,8 +527,8 @@ static void pumpEvents(SDL_VideoDevice *_this)
  */
 static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
-    int             size[2];
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
+    int size[2];
 
     size[0] = window->pending.w;
     size[1] = window->pending.h;
@@ -556,8 +555,8 @@ static void setWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
  */
 static void showWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
-    const int       visible = 1;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
+    const int visible = 1;
 
     screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_VISIBLE,
                                   &visible);
@@ -570,11 +569,11 @@ static void showWindow(SDL_VideoDevice *_this, SDL_Window *window)
  */
 static void hideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
-    const int       visible = 0;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
+    const int visible = 0;
 
     screen_set_window_property_iv(impl->window, SCREEN_PROPERTY_VISIBLE,
-        &visible);
+                                  &visible);
 }
 
 /**
@@ -584,7 +583,7 @@ static void hideWindow(SDL_VideoDevice *_this, SDL_Window *window)
  */
 static void destroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
+    SDL_WindowData *impl = (SDL_WindowData *)window->internal;
 
     if (impl) {
         screen_destroy_window(impl->window);

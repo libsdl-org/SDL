@@ -31,9 +31,9 @@
 
 #ifdef SDL_HAVE_STB
 ////////////////////////////////////////////////////////////////////////////
-#define malloc SDL_malloc
+#define malloc  SDL_malloc
 #define realloc SDL_realloc
-#define free SDL_free
+#define free    SDL_free
 #undef memcpy
 #define memcpy SDL_memcpy
 #undef memset
@@ -42,10 +42,10 @@
 #define strcmp SDL_strcmp
 #undef strncmp
 #define strncmp SDL_strncmp
-#define strtol SDL_strtol
+#define strtol  SDL_strtol
 
-#define abs SDL_abs
-#define pow SDL_pow
+#define abs   SDL_abs
+#define pow   SDL_pow
 #define ldexp SDL_scalbn
 
 #define STB_IMAGE_STATIC
@@ -66,10 +66,10 @@
 
 ////////////////////////////////////////////////////////////////////////////
 #define MZ_ASSERT(x) SDL_assert(x)
-//#undef memcpy
-//#define memcpy SDL_memcpy
-//#undef memset
-//#define memset SDL_memset
+// #undef memcpy
+// #define memcpy SDL_memcpy
+// #undef memset
+// #define memset SDL_memset
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define MINIZ_LITTLE_ENDIAN 1
 #else
@@ -125,8 +125,7 @@ bool SDL_ConvertPixels_STB(int width, int height,
             dst_format == SDL_PIXELFORMAT_UYVY ||
             dst_format == SDL_PIXELFORMAT_YVYU ||
             dst_format == SDL_PIXELFORMAT_NV21 ||
-            dst_format == SDL_PIXELFORMAT_P010
-        ) {
+            dst_format == SDL_PIXELFORMAT_P010) {
             size_t temp_size = 0;
             size_t temp_pitch = 0;
             if (!SDL_CalculateYUVSize(dst_format, width, height, &temp_size, &temp_pitch)) {
@@ -172,18 +171,18 @@ bool SDL_ConvertPixels_STB(int width, int height,
 #ifdef SDL_HAVE_STB
 static int IMG_LoadSTB_IO_read(void *user, char *data, int size)
 {
-    size_t amount = SDL_ReadIO((SDL_IOStream*)user, data, size);
+    size_t amount = SDL_ReadIO((SDL_IOStream *)user, data, size);
     return (int)amount;
 }
 
 static void IMG_LoadSTB_IO_skip(void *user, int n)
 {
-    SDL_SeekIO((SDL_IOStream*)user, n, SDL_IO_SEEK_CUR);
+    SDL_SeekIO((SDL_IOStream *)user, n, SDL_IO_SEEK_CUR);
 }
 
 static int IMG_LoadSTB_IO_eof(void *user)
 {
-    SDL_IOStream *src = (SDL_IOStream*)user;
+    SDL_IOStream *src = (SDL_IOStream *)user;
     return SDL_GetIOStatus(src) == SDL_IO_STATUS_EOF;
 }
 
@@ -232,8 +231,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
             &w,
             &h,
             palette_colors,
-            SDL_arraysize(palette_colors)
-        );
+            SDL_arraysize(palette_colors));
     } else {
         pixels = stbi_load_from_callbacks(
             &rw_callbacks,
@@ -241,8 +239,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
             &w,
             &h,
             &format,
-            STBI_default
-        );
+            STBI_default);
     }
     if (!pixels) {
         SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
@@ -255,8 +252,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
             h,
             SDL_PIXELFORMAT_INDEX8,
             pixels,
-            w
-        );
+            w);
         if (surface) {
             bool has_colorkey = false;
             int colorkey_index = -1;
@@ -300,12 +296,10 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
         surface = SDL_CreateSurfaceFrom(
             w,
             h,
-            (format == STBI_rgb_alpha) ? SDL_PIXELFORMAT_RGBA32 :
-            (format == STBI_rgb) ? SDL_PIXELFORMAT_RGB24 :
-            SDL_PIXELFORMAT_INDEX8,
+            (format == STBI_rgb_alpha) ? SDL_PIXELFORMAT_RGBA32 : (format == STBI_rgb) ? SDL_PIXELFORMAT_RGB24
+                                                                                       : SDL_PIXELFORMAT_INDEX8,
             pixels,
-            w * format
-        );
+            w * format);
         if (surface) {
             /* Set a grayscale palette for gray images */
             if (surface->format == SDL_PIXELFORMAT_INDEX8) {
@@ -387,25 +381,25 @@ bool SDL_IsJPG(SDL_IOStream *src)
     is_JPG = false;
     in_scan = false;
     if (SDL_ReadIO(src, magic, 2) == 2) {
-        if ( (magic[0] == 0xFF) && (magic[1] == 0xD8) ) {
+        if ((magic[0] == 0xFF) && (magic[1] == 0xD8)) {
             is_JPG = true;
             while (is_JPG) {
                 if (SDL_ReadIO(src, magic, 2) != 2) {
                     is_JPG = false;
-                } else if ( (magic[0] != 0xFF) && !in_scan ) {
+                } else if ((magic[0] != 0xFF) && !in_scan) {
                     is_JPG = false;
-                } else if ( (magic[0] != 0xFF) || (magic[1] == 0xFF) ) {
+                } else if ((magic[0] != 0xFF) || (magic[1] == 0xFF)) {
                     /* Extra padding in JPEG (legal) */
                     /* or this is data and we are scanning */
                     SDL_SeekIO(src, -1, SDL_IO_SEEK_CUR);
                 } else if (magic[1] == 0xD9) {
                     /* Got to end of good JPEG */
                     break;
-                } else if ( in_scan && (magic[1] == 0x00) ) {
+                } else if (in_scan && (magic[1] == 0x00)) {
                     /* This is an encoded 0xFF within the data */
-                } else if ( (magic[1] >= 0xD0) && (magic[1] < 0xD9) ) {
+                } else if ((magic[1] >= 0xD0) && (magic[1] < 0xD9)) {
                     /* These have nothing else */
-                } else if (SDL_ReadIO(src, magic+2, 2) != 2) {
+                } else if (SDL_ReadIO(src, magic + 2, 2) != 2) {
                     is_JPG = false;
                 } else {
                     /* Yes, it's big-endian */
@@ -414,13 +408,13 @@ bool SDL_IsJPG(SDL_IOStream *src)
                     Sint64 end;
                     innerStart = SDL_TellIO(src);
                     size = (magic[2] << 8) + magic[3];
-                    end = SDL_SeekIO(src, size-2, SDL_IO_SEEK_CUR);
-                    if ( end != innerStart + size - 2 ) {
+                    end = SDL_SeekIO(src, size - 2, SDL_IO_SEEK_CUR);
+                    if (end != innerStart + size - 2) {
                         is_JPG = false;
                     }
-                    if ( magic[1] == 0xDA ) {
+                    if (magic[1] == 0xDA) {
                         /* Now comes the actual JPEG meat */
-#ifdef  FAST_IS_JPEG
+#ifdef FAST_IS_JPEG
                         /* Ok, I'm convinced.  It is a JPEG. */
                         break;
 #else
@@ -440,7 +434,7 @@ SDL_Surface *SDL_LoadJPG_IO(SDL_IOStream *src, bool closeio)
 {
     SDL_Surface *surface = NULL;
 
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         SDL_InvalidParamError("src");
         goto done;
     }
@@ -500,7 +494,7 @@ SDL_Surface *SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio)
 {
     SDL_Surface *surface = NULL;
 
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         SDL_InvalidParamError("src");
         goto done;
     }
@@ -541,11 +535,11 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     bool free_surface = false;
 
     // Make sure we have something to save
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         goto done;
     }
-    CHECK_PARAM(!dst) {
+    CHECK_PARAM (!dst) {
         SDL_InvalidParamError("dst");
         goto done;
     }
@@ -624,7 +618,7 @@ bool SDL_SavePNG(SDL_Surface *surface, const char *file)
 {
 #ifdef SDL_HAVE_STB
     // Make sure we have something to save
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 

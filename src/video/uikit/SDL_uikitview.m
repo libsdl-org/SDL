@@ -24,9 +24,9 @@
 
 #include "SDL_uikitview.h"
 
+#include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
-#include "../../events/SDL_events_c.h"
 #include "../../joystick/SDL_joystick_c.h"
 
 #include "SDL_uikitappdelegate.h"
@@ -97,7 +97,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
         if (@available(iOS 13.0, *)) {
             UIHoverGestureRecognizer *pencilRecognizer = [[UIHoverGestureRecognizer alloc] initWithTarget:self action:@selector(pencilHovering:)];
-            pencilRecognizer.allowedTouchTypes = @[@(UITouchTypePencil)];
+            pencilRecognizer.allowedTouchTypes = @[ @(UITouchTypePencil) ];
             [self addGestureRecognizer:pencilRecognizer];
         }
 
@@ -106,7 +106,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             [self addInteraction:indirectPointerInteraction];
 
             UIHoverGestureRecognizer *indirectPointerRecognizer = [[UIHoverGestureRecognizer alloc] initWithTarget:self action:@selector(indirectPointerHovering:)];
-            indirectPointerRecognizer.allowedTouchTypes = @[@(UITouchTypeIndirectPointer)];
+            indirectPointerRecognizer.allowedTouchTypes = @[ @(UITouchTypeIndirectPointer) ];
             [self addGestureRecognizer:indirectPointerRecognizer];
         }
 #endif // !defined(SDL_PLATFORM_TVOS)
@@ -195,16 +195,16 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)indirectPointerHovering:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(13.4))
 {
     switch (recognizer.state) {
-        case UIGestureRecognizerStateBegan:
-        case UIGestureRecognizerStateChanged:
-        {
-            CGPoint point = [recognizer locationInView:self];
-            SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, false, point.x, point.y);
-            break;
-        }
+    case UIGestureRecognizerStateBegan:
+    case UIGestureRecognizerStateChanged:
+    {
+        CGPoint point = [recognizer locationInView:self];
+        SDL_SendMouseMotion(0, sdlwindow, SDL_GLOBAL_MOUSE_ID, false, point.x, point.y);
+        break;
+    }
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -260,18 +260,18 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)pencilHovering:(UIHoverGestureRecognizer *)recognizer API_AVAILABLE(ios(13.0))
 {
     switch (recognizer.state) {
-        case UIGestureRecognizerStateBegan:
-        case UIGestureRecognizerStateChanged:
-            UIKit_HandlePenHover(self, recognizer);
-            break;
+    case UIGestureRecognizerStateBegan:
+    case UIGestureRecognizerStateChanged:
+        UIKit_HandlePenHover(self, recognizer);
+        break;
 
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled:
-            // we track touches elsewhere, so if a hover "ends" we'll deal with that there.
-            break;
+    case UIGestureRecognizerStateEnded:
+    case UIGestureRecognizerStateCancelled:
+        // we track touches elsewhere, so if a hover "ends" we'll deal with that there.
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 }
 
@@ -452,7 +452,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                 continue;
             }
         }
-#endif  // !defined(SDL_PLATFORM_TVOS)
+#endif // !defined(SDL_PLATFORM_TVOS)
 
         SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
         SDL_TouchID touchId = [self touchIdForType:touchType];
@@ -487,28 +487,27 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     switch (state) {
 
-        case UIGestureRecognizerStateBegan:
-            pinch_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
-            break;
+    case UIGestureRecognizerStateBegan:
+        pinch_scale = 1.0f;
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
+        break;
 
-        case UIGestureRecognizerStateChanged:
-            if (pinch_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
-            }
-            pinch_scale = scale;
-            break;
+    case UIGestureRecognizerStateChanged:
+        if (pinch_scale > 0.0f) {
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
+        }
+        pinch_scale = scale;
+        break;
 
-        case UIGestureRecognizerStateFailed:
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
-            break;
+    case UIGestureRecognizerStateFailed:
+    case UIGestureRecognizerStateEnded:
+    case UIGestureRecognizerStateCancelled:
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
-
 }
 #endif
 

@@ -19,16 +19,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "SDL_asyncio_c.h"
 #include "SDL_internal.h"
 #include "SDL_sysasyncio.h"
-#include "SDL_asyncio_c.h"
 
 static const char *AsyncFileModeValid(const char *mode, bool *readonly)
 {
-    static const struct { const char *valid; const char *with_binary; bool readonly; } mode_map[] = {
+    static const struct
+    {
+        const char *valid;
+        const char *with_binary;
+        bool readonly;
+    } mode_map[] = {
         { "r", "rb", true },
         { "w", "wb", false },
-        { "r+","r+b", false },
+        { "r+", "r+b", false },
         { "w+", "w+b", false }
     };
 
@@ -45,11 +50,11 @@ static const char *AsyncFileModeValid(const char *mode, bool *readonly)
 
 SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
 {
-    CHECK_PARAM(!file) {
+    CHECK_PARAM (!file) {
         SDL_InvalidParamError("file");
         return NULL;
     }
-    CHECK_PARAM(!mode) {
+    CHECK_PARAM (!mode) {
         SDL_InvalidParamError("mode");
         return NULL;
     }
@@ -85,7 +90,7 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
 
 Sint64 SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio)
 {
-    CHECK_PARAM(!asyncio) {
+    CHECK_PARAM (!asyncio) {
         SDL_InvalidParamError("asyncio");
         return -1;
     }
@@ -94,17 +99,17 @@ Sint64 SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio)
 
 static bool RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    CHECK_PARAM(!asyncio) {
+    CHECK_PARAM (!asyncio) {
         return SDL_InvalidParamError("asyncio");
     }
-    CHECK_PARAM(!ptr) {
+    CHECK_PARAM (!ptr) {
         return SDL_InvalidParamError("ptr");
     }
-    CHECK_PARAM(!queue) {
+    CHECK_PARAM (!queue) {
         return SDL_InvalidParamError("queue");
     }
 
-    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) SDL_calloc(1, sizeof (*task));
+    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *)SDL_calloc(1, sizeof(*task));
     if (!task) {
         return false;
     }
@@ -152,10 +157,10 @@ bool SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 siz
 
 bool SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    CHECK_PARAM(!asyncio) {
+    CHECK_PARAM (!asyncio) {
         return SDL_InvalidParamError("asyncio");
     }
-    CHECK_PARAM(!queue) {
+    CHECK_PARAM (!queue) {
         return SDL_InvalidParamError("queue");
     }
 
@@ -165,7 +170,7 @@ bool SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue,
         return SDL_SetError("Already closing");
     }
 
-    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) SDL_calloc(1, sizeof (*task));
+    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *)SDL_calloc(1, sizeof(*task));
     if (task) {
         task->asyncio = asyncio;
         task->type = SDL_ASYNCIO_TASK_CLOSE;
@@ -195,7 +200,7 @@ bool SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue,
 
 SDL_AsyncIOQueue *SDL_CreateAsyncIOQueue(void)
 {
-    SDL_AsyncIOQueue *queue = SDL_calloc(1, sizeof (*queue));
+    SDL_AsyncIOQueue *queue = SDL_calloc(1, sizeof(*queue));
     if (queue) {
         SDL_SetAtomicInt(&queue->tasks_inflight, 0);
         if (!SDL_SYS_CreateAsyncIOQueue(queue)) {
@@ -234,7 +239,7 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
         LINKED_LIST_PREPEND(closing, asyncio->tasks, asyncio);
         SDL_AddAtomicInt(&closing->queue->tasks_inflight, 1);
         const bool async_close_task_was_queued = asyncio->iface.close(asyncio->userdata, closing);
-        SDL_assert(async_close_task_was_queued);  // !!! FIXME: if this fails to queue the task, we're leaking resources!
+        SDL_assert(async_close_task_was_queued); // !!! FIXME: if this fails to queue the task, we're leaking resources!
         if (!async_close_task_was_queued) {
             SDL_AddAtomicInt(&closing->queue->tasks_inflight, -1);
         }
@@ -245,7 +250,7 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
     bool retval = true;
     if (closing && (task == closing)) {
         if (asyncio->oneshot) {
-            retval = false;  // don't send the close task results on to the app, just the read task for these.
+            retval = false; // don't send the close task results on to the app, just the read task for these.
         }
         asyncio->iface.destroy(asyncio->userdata);
         SDL_DestroyMutex(asyncio->lock);
@@ -289,11 +294,11 @@ void SDL_DestroyAsyncIOQueue(SDL_AsyncIOQueue *queue)
             SDL_AsyncIOTask *task = queue->iface.wait_results(queue->userdata, -1);
             if (task) {
                 if (task->asyncio->oneshot) {
-                    SDL_free(task->buffer);  // throw away the buffer from SDL_LoadFileAsync that will never be consumed/freed by app.
+                    SDL_free(task->buffer); // throw away the buffer from SDL_LoadFileAsync that will never be consumed/freed by app.
                     task->buffer = NULL;
                 }
                 SDL_AsyncIOOutcome outcome;
-                GetAsyncIOTaskOutcome(task, &outcome);  // this frees the task, and does other upkeep.
+                GetAsyncIOTaskOutcome(task, &outcome); // this frees the task, and does other upkeep.
             }
         }
 
@@ -309,10 +314,10 @@ void SDL_QuitAsyncIO(void)
 
 bool SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    CHECK_PARAM(!file) {
+    CHECK_PARAM (!file) {
         return SDL_InvalidParamError("file");
     }
-    CHECK_PARAM(!queue) {
+    CHECK_PARAM (!queue) {
         return SDL_InvalidParamError("queue");
     }
 
@@ -325,19 +330,18 @@ bool SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata
         const Sint64 flen = SDL_GetAsyncIOSize(asyncio);
         if (flen >= 0) {
             // !!! FIXME: check if flen > address space, since it'll truncate and we'll just end up with an incomplete buffer or a crash.
-            ptr = (Uint8 *) SDL_malloc((size_t) (flen + 1));  // over-allocate by one so we can add a null-terminator.
+            ptr = (Uint8 *)SDL_malloc((size_t)(flen + 1)); // over-allocate by one so we can add a null-terminator.
             if (ptr) {
                 ptr[flen] = '\0';
-                retval = SDL_ReadAsyncIO(asyncio, ptr, 0, (Uint64) flen, queue, userdata);
+                retval = SDL_ReadAsyncIO(asyncio, ptr, 0, (Uint64)flen, queue, userdata);
                 if (!retval) {
                     SDL_free(ptr);
                 }
             }
         }
 
-        SDL_CloseAsyncIO(asyncio, false, queue, userdata);  // if this fails, we'll have a resource leak, but this would already be a dramatic system failure.
+        SDL_CloseAsyncIO(asyncio, false, queue, userdata); // if this fails, we'll have a resource leak, but this would already be a dramatic system failure.
     }
 
     return retval;
 }
-

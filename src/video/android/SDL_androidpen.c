@@ -22,13 +22,13 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-#include "SDL_androidpen.h"
-#include "../../events/SDL_pen_c.h"
 #include "../../core/android/SDL_android.h"
+#include "../../events/SDL_pen_c.h"
+#include "SDL_androidpen.h"
 
-#define ACTION_DOWN   0
-#define ACTION_UP     1
-#define ACTION_CANCEL 3
+#define ACTION_DOWN         0
+#define ACTION_UP           1
+#define ACTION_CANCEL       3
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP   6
 #define ACTION_HOVER_ENTER  9
@@ -43,7 +43,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
     // pointer index starts from zero.
     pen_id_in++;
 
-    SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) pen_id_in);
+    SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)pen_id_in);
     if (!pen) {
         // TODO: Query JNI for pen device info
         SDL_PenInfo peninfo;
@@ -52,7 +52,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         peninfo.num_buttons = 2;
         peninfo.subtype = SDL_PEN_TYPE_PEN;
         peninfo.device_type = device_type;
-        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *) (size_t) pen_id_in, true);
+        pen = SDL_AddPenDevice(0, NULL, window, &peninfo, (void *)(size_t)pen_id_in, true);
         if (!pen) {
             SDL_Log("error: can't add a pen device %d", pen_id_in);
             return;
@@ -82,7 +82,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         break;
 
     case ACTION_CANCEL:
-    case ACTION_HOVER_EXIT:  // strictly speaking, this can mean both "proximity out" and "left the View" but close enough.
+    case ACTION_HOVER_EXIT: // strictly speaking, this can mean both "proximity out" and "left the View" but close enough.
         SDL_SendPenProximity(0, pen, window, false, false);
         break;
 

@@ -20,7 +20,6 @@
 */
 #include "SDL_internal.h"
 
-
 #ifdef SDL_memset
 #undef SDL_memset
 #endif
@@ -136,4 +135,3 @@ void *memset(void *dst, int c, size_t len)
     return SDL_memset(dst, c, len);
 }
 #endif // !HAVE_LIBC
-

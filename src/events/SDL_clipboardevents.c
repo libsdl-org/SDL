@@ -22,9 +22,9 @@
 
 // Clipboard event handling code for SDL
 
-#include "SDL_events_c.h"
-#include "SDL_clipboardevents_c.h"
 #include "../video/SDL_clipboard_c.h"
+#include "SDL_clipboardevents_c.h"
+#include "SDL_events_c.h"
 
 void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types)
 {

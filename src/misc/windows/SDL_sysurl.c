@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#include "../SDL_sysurl.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../SDL_sysurl.h"
 
 #include <shellapi.h>
 

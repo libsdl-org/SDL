@@ -194,7 +194,7 @@ static void SDL_TARGETING("lsx") SDL_FillSurfaceRect##bpp##LSX(Uint8 *pixels, in
 DEFINE_LSX_FILLRECT(4, Uint32)
 
 /* *INDENT-ON* */ // clang-format on
-#endif // SDL_LSX_INTRINSICS
+#endif            // SDL_LSX_INTRINSICS
 
 static void SDL_FillSurfaceRect1(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
@@ -301,7 +301,7 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
  */
 bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
@@ -322,14 +322,14 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
     SDL_Rect clipped;
     Uint8 *pixels;
     const SDL_Rect *rect;
-    void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
+    void (*fill_function)(Uint8 *pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
-    CHECK_PARAM(!rects) {
+    CHECK_PARAM (!rects) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
     }
 

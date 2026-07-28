@@ -24,7 +24,7 @@
 #ifndef SDL_sysaudio_h_
 #define SDL_sysaudio_h_
 
-#define DEBUG_AUDIOSTREAM 0
+#define DEBUG_AUDIOSTREAM   0
 #define DEBUG_AUDIO_CONVERT 0
 
 #if DEBUG_AUDIO_CONVERT
@@ -34,19 +34,19 @@
 #endif
 
 // !!! FIXME: These are wordy and unlocalized...
-#define DEFAULT_PLAYBACK_DEVNAME "System audio playback device"
-#define DEFAULT_RECORDING_DEVNAME  "System audio recording device"
+#define DEFAULT_PLAYBACK_DEVNAME  "System audio playback device"
+#define DEFAULT_RECORDING_DEVNAME "System audio recording device"
 
 // these are used when no better specifics are known. We default to CD audio quality.
-#define DEFAULT_AUDIO_PLAYBACK_FORMAT SDL_AUDIO_S16
-#define DEFAULT_AUDIO_PLAYBACK_CHANNELS 2
+#define DEFAULT_AUDIO_PLAYBACK_FORMAT    SDL_AUDIO_S16
+#define DEFAULT_AUDIO_PLAYBACK_CHANNELS  2
 #define DEFAULT_AUDIO_PLAYBACK_FREQUENCY 44100
 
-#define DEFAULT_AUDIO_RECORDING_FORMAT SDL_AUDIO_S16
-#define DEFAULT_AUDIO_RECORDING_CHANNELS 1
+#define DEFAULT_AUDIO_RECORDING_FORMAT    SDL_AUDIO_S16
+#define DEFAULT_AUDIO_RECORDING_CHANNELS  1
 #define DEFAULT_AUDIO_RECORDING_FREQUENCY 44100
 
-#define SDL_MAX_CHANNELMAP_CHANNELS 8  // !!! FIXME: if SDL ever supports more channels, clean this out and make those parts dynamic.
+#define SDL_MAX_CHANNELMAP_CHANNELS 8 // !!! FIXME: if SDL ever supports more channels, clean this out and make those parts dynamic.
 
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
@@ -145,7 +145,6 @@ extern int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidb
 // This is the bulk of `SDL_SetAudioStream*putChannelMap`'s work, but it lets you skip the check about changing the device end of a stream if isinput==-1.
 extern bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput);
 
-
 typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
@@ -160,16 +159,15 @@ typedef struct SDL_AudioDriverImpl
     void (*FlushRecording)(SDL_AudioDevice *device);
     void (*CloseDevice)(SDL_AudioDevice *device);
     void (*FreeDeviceHandle)(SDL_AudioDevice *device); // SDL is done with this device; free the handle from SDL_AddAudioDevice()
-    void (*DeinitializeStart)(void); // SDL calls this, then starts destroying objects, then calls Deinitialize. This is a good place to stop hotplug detection.
+    void (*DeinitializeStart)(void);                   // SDL calls this, then starts destroying objects, then calls Deinitialize. This is a good place to stop hotplug detection.
     void (*Deinitialize)(void);
 
     // Some flags to push duplicate code into the core and reduce #ifdefs.
-    bool ProvidesOwnCallbackThread;  // !!! FIXME: rename this, it's not a callback thread anymore.
+    bool ProvidesOwnCallbackThread; // !!! FIXME: rename this, it's not a callback thread anymore.
     bool HasRecordingSupport;
     bool OnlyHasDefaultPlaybackDevice;
-    bool OnlyHasDefaultRecordingDevice;   // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
+    bool OnlyHasDefaultRecordingDevice; // !!! FIXME: is there ever a time where you'd have a default playback and not a default recording (or vice versa)?
 } SDL_AudioDriverImpl;
-
 
 typedef struct SDL_PendingAudioDeviceEvent
 {
@@ -180,13 +178,13 @@ typedef struct SDL_PendingAudioDeviceEvent
 
 typedef struct SDL_AudioDriver
 {
-    const char *name;  // The name of this audio driver
-    const char *desc;  // The description of this audio driver
-    SDL_AudioDriverImpl impl; // the backend's interface
-    SDL_RWLock *subsystem_rwlock;  // A rwlock that protects several things in the audio subsystem (device hashtables, etc).
-    SDL_HashTable *device_hash_physical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
+    const char *name;                    // The name of this audio driver
+    const char *desc;                    // The description of this audio driver
+    SDL_AudioDriverImpl impl;            // the backend's interface
+    SDL_RWLock *subsystem_rwlock;        // A rwlock that protects several things in the audio subsystem (device hashtables, etc).
+    SDL_HashTable *device_hash_physical; // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
     SDL_HashTable *device_hash_logical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_LogicalAudioDevice*.
-    SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
+    SDL_AudioStream *existing_streams;   // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_playback_device_id;
     SDL_AudioDeviceID default_recording_device_id;
     SDL_PendingAudioDeviceEvent pending_events;
@@ -195,7 +193,7 @@ typedef struct SDL_AudioDriver
     // !!! FIXME: most (all?) of these don't have to be atomic.
     SDL_AtomicInt playback_device_count;
     SDL_AtomicInt recording_device_count;
-    SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
+    SDL_AtomicInt shutting_down; // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_AudioDriver;
 
 struct SDL_AudioQueue; // forward decl.
@@ -222,20 +220,20 @@ struct SDL_AudioStream
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     int *input_chmap;
-    int input_chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS];  // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
+    int input_chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS]; // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
     Sint64 resample_offset;
 
-    Uint8 *work_buffer;    // used for scratch space during data conversion/resampling.
+    Uint8 *work_buffer; // used for scratch space during data conversion/resampling.
     size_t work_buffer_allocation;
 
-    bool simplified;  // true if created via SDL_OpenAudioDeviceStream
+    bool simplified; // true if created via SDL_OpenAudioDeviceStream
 
     SDL_LogicalAudioDevice *bound_device;
     SDL_AudioStream *next_binding;
     SDL_AudioStream *prev_binding;
 
-    SDL_AudioStream *prev;  // linked list of all existing streams (so we can free them on shutdown).
-    SDL_AudioStream *next;  // linked list of all existing streams (so we can free them on shutdown).
+    SDL_AudioStream *prev; // linked list of all existing streams (so we can free them on shutdown).
+    SDL_AudioStream *next; // linked list of all existing streams (so we can free them on shutdown).
 };
 
 /* Logical devices are an abstraction in SDL3; you can open the same physical

@@ -23,15 +23,15 @@
 
 #ifdef SDL_GPU_D3D12
 
-#include "../../events/SDL_windowevents_c.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../../events/SDL_windowevents_c.h"
 #include "../../video/directx/SDL_d3d12.h"
 
 #ifdef HAVE_GPU_OPENXR
 #define XR_USE_GRAPHICS_API_D3D12 1
+#include "../xr/SDL_gpu_openxr.h"
 #include "../xr/SDL_openxr_internal.h"
 #include "../xr/SDL_openxrdyn.h"
-#include "../xr/SDL_gpu_openxr.h"
 #endif
 
 #include "../SDL_sysgpu.h"
@@ -123,13 +123,13 @@
 #define WINDOW_PROPERTY_DATA                "SDL.internal.gpu.d3d12.data"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
-#define MAX_ROOT_SIGNATURE_PARAMETERS         64
-#define D3D12_FENCE_UNSIGNALED_VALUE          0
-#define D3D12_FENCE_SIGNAL_VALUE              1
+#define MAX_ROOT_SIGNATURE_PARAMETERS       64
+#define D3D12_FENCE_UNSIGNALED_VALUE        0
+#define D3D12_FENCE_SIGNAL_VALUE            1
 // TODO: do these need to be tuned?
-#define VIEW_GPU_DESCRIPTOR_COUNT             65536
-#define SAMPLER_GPU_DESCRIPTOR_COUNT          2048
-#define STAGING_HEAP_DESCRIPTOR_COUNT         1024
+#define VIEW_GPU_DESCRIPTOR_COUNT     65536
+#define SAMPLER_GPU_DESCRIPTOR_COUNT  2048
+#define STAGING_HEAP_DESCRIPTOR_COUNT 1024
 
 #define SDL_GPU_SHADERSTAGE_COMPUTE (SDL_GPUShaderStage)2
 
@@ -142,16 +142,16 @@
 #endif
 
 // Function Pointer Signatures
-typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(const GUID *riid, void **ppFactory);
-typedef HRESULT (WINAPI *pfnDXGIGetDebugInterface)(const GUID *riid, void **ppDebug);
+typedef HRESULT(WINAPI *pfnCreateDXGIFactory1)(const GUID *riid, void **ppFactory);
+typedef HRESULT(WINAPI *pfnDXGIGetDebugInterface)(const GUID *riid, void **ppDebug);
 
 #ifdef USE_PIX_RUNTIME
 #define PIX_BEGIN_EVENT_ON_COMMAND_LIST_FUNC "PIXBeginEventOnCommandList"
-#define PIX_END_EVENT_ON_COMMAND_LIST_FUNC "PIXEndEventOnCommandList"
-#define PIX_SET_MARKER_ON_COMMAND_LIST_FUNC "PIXSetMarkerOnCommandList"
-typedef void(WINAPI* pfnBeginEventOnCommandList)(ID3D12GraphicsCommandList* commandList, UINT64 color, _In_ PCSTR formatString);
-typedef void(WINAPI* pfnEndEventOnCommandList)(ID3D12GraphicsCommandList* commandList);
-typedef void(WINAPI* pfnSetMarkerOnCommandList)(ID3D12GraphicsCommandList* commandList, UINT64 color, _In_ PCSTR formatString);
+#define PIX_END_EVENT_ON_COMMAND_LIST_FUNC   "PIXEndEventOnCommandList"
+#define PIX_SET_MARKER_ON_COMMAND_LIST_FUNC  "PIXSetMarkerOnCommandList"
+typedef void(WINAPI *pfnBeginEventOnCommandList)(ID3D12GraphicsCommandList *commandList, UINT64 color, _In_ PCSTR formatString);
+typedef void(WINAPI *pfnEndEventOnCommandList)(ID3D12GraphicsCommandList *commandList);
+typedef void(WINAPI *pfnSetMarkerOnCommandList)(ID3D12GraphicsCommandList *commandList, UINT64 color, _In_ PCSTR formatString);
 #endif
 
 // IIDs (from https://www.magnumdb.com/)
@@ -275,111 +275,111 @@ SDL_COMPILE_TIME_ASSERT(SDLToD3D12_BlendOp, SDL_arraysize(SDLToD3D12_BlendOp) ==
 // These are actually color formats.
 // For some genius reason, D3D12 splits format capabilities for depth-stencil views.
 static DXGI_FORMAT SDLToD3D12_TextureFormat[] = {
-    DXGI_FORMAT_UNKNOWN,              // INVALID
-    DXGI_FORMAT_A8_UNORM,             // A8_UNORM
-    DXGI_FORMAT_R8_UNORM,             // R8_UNORM
-    DXGI_FORMAT_R8G8_UNORM,           // R8G8_UNORM
-    DXGI_FORMAT_R8G8B8A8_UNORM,       // R8G8B8A8_UNORM
-    DXGI_FORMAT_R16_UNORM,            // R16_UNORM
-    DXGI_FORMAT_R16G16_UNORM,         // R16G16_UNORM
-    DXGI_FORMAT_R16G16B16A16_UNORM,   // R16G16B16A16_UNORM
-    DXGI_FORMAT_R10G10B10A2_UNORM,    // R10G10B10A2_UNORM
-    DXGI_FORMAT_B5G6R5_UNORM,         // B5G6R5_UNORM
-    DXGI_FORMAT_B5G5R5A1_UNORM,       // B5G5R5A1_UNORM
-    DXGI_FORMAT_B4G4R4A4_UNORM,       // B4G4R4A4_UNORM
-    DXGI_FORMAT_B8G8R8A8_UNORM,       // B8G8R8A8_UNORM
-    DXGI_FORMAT_BC1_UNORM,            // BC1_UNORM
-    DXGI_FORMAT_BC2_UNORM,            // BC2_UNORM
-    DXGI_FORMAT_BC3_UNORM,            // BC3_UNORM
-    DXGI_FORMAT_BC4_UNORM,            // BC4_UNORM
-    DXGI_FORMAT_BC5_UNORM,            // BC5_UNORM
-    DXGI_FORMAT_BC7_UNORM,            // BC7_UNORM
-    DXGI_FORMAT_BC6H_SF16,            // BC6H_FLOAT
-    DXGI_FORMAT_BC6H_UF16,            // BC6H_UFLOAT
-    DXGI_FORMAT_R8_SNORM,             // R8_SNORM
-    DXGI_FORMAT_R8G8_SNORM,           // R8G8_SNORM
-    DXGI_FORMAT_R8G8B8A8_SNORM,       // R8G8B8A8_SNORM
-    DXGI_FORMAT_R16_SNORM,            // R16_SNORM
-    DXGI_FORMAT_R16G16_SNORM,         // R16G16_SNORM
-    DXGI_FORMAT_R16G16B16A16_SNORM,   // R16G16B16A16_SNORM
-    DXGI_FORMAT_R16_FLOAT,            // R16_FLOAT
-    DXGI_FORMAT_R16G16_FLOAT,         // R16G16_FLOAT
-    DXGI_FORMAT_R16G16B16A16_FLOAT,   // R16G16B16A16_FLOAT
-    DXGI_FORMAT_R32_FLOAT,            // R32_FLOAT
-    DXGI_FORMAT_R32G32_FLOAT,         // R32G32_FLOAT
-    DXGI_FORMAT_R32G32B32A32_FLOAT,   // R32G32B32A32_FLOAT
-    DXGI_FORMAT_R11G11B10_FLOAT,      // R11G11B10_UFLOAT
-    DXGI_FORMAT_R8_UINT,              // R8_UINT
-    DXGI_FORMAT_R8G8_UINT,            // R8G8_UINT
-    DXGI_FORMAT_R8G8B8A8_UINT,        // R8G8B8A8_UINT
-    DXGI_FORMAT_R16_UINT,             // R16_UINT
-    DXGI_FORMAT_R16G16_UINT,          // R16G16_UINT
-    DXGI_FORMAT_R16G16B16A16_UINT,    // R16G16B16A16_UINT
-    DXGI_FORMAT_R32_UINT,             // R32_UINT
-    DXGI_FORMAT_R32G32_UINT,          // R32G32_UINT
-    DXGI_FORMAT_R32G32B32A32_UINT,    // R32G32B32A32_UINT
-    DXGI_FORMAT_R8_SINT,              // R8_INT
-    DXGI_FORMAT_R8G8_SINT,            // R8G8_INT
-    DXGI_FORMAT_R8G8B8A8_SINT,        // R8G8B8A8_INT
-    DXGI_FORMAT_R16_SINT,             // R16_INT
-    DXGI_FORMAT_R16G16_SINT,          // R16G16_INT
-    DXGI_FORMAT_R16G16B16A16_SINT,    // R16G16B16A16_INT
-    DXGI_FORMAT_R32_SINT,             // R32_INT
-    DXGI_FORMAT_R32G32_SINT,          // R32G32_INT
-    DXGI_FORMAT_R32G32B32A32_SINT,    // R32G32B32A32_INT
-    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,  // R8G8B8A8_UNORM_SRGB
-    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,  // B8G8R8A8_UNORM_SRGB
-    DXGI_FORMAT_BC1_UNORM_SRGB,       // BC1_UNORM_SRGB
-    DXGI_FORMAT_BC2_UNORM_SRGB,       // BC2_UNORM_SRGB
-    DXGI_FORMAT_BC3_UNORM_SRGB,       // BC3_UNORM_SRGB
-    DXGI_FORMAT_BC7_UNORM_SRGB,       // BC7_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // INVALID
+    DXGI_FORMAT_A8_UNORM,                 // A8_UNORM
+    DXGI_FORMAT_R8_UNORM,                 // R8_UNORM
+    DXGI_FORMAT_R8G8_UNORM,               // R8G8_UNORM
+    DXGI_FORMAT_R8G8B8A8_UNORM,           // R8G8B8A8_UNORM
+    DXGI_FORMAT_R16_UNORM,                // R16_UNORM
+    DXGI_FORMAT_R16G16_UNORM,             // R16G16_UNORM
+    DXGI_FORMAT_R16G16B16A16_UNORM,       // R16G16B16A16_UNORM
+    DXGI_FORMAT_R10G10B10A2_UNORM,        // R10G10B10A2_UNORM
+    DXGI_FORMAT_B5G6R5_UNORM,             // B5G6R5_UNORM
+    DXGI_FORMAT_B5G5R5A1_UNORM,           // B5G5R5A1_UNORM
+    DXGI_FORMAT_B4G4R4A4_UNORM,           // B4G4R4A4_UNORM
+    DXGI_FORMAT_B8G8R8A8_UNORM,           // B8G8R8A8_UNORM
+    DXGI_FORMAT_BC1_UNORM,                // BC1_UNORM
+    DXGI_FORMAT_BC2_UNORM,                // BC2_UNORM
+    DXGI_FORMAT_BC3_UNORM,                // BC3_UNORM
+    DXGI_FORMAT_BC4_UNORM,                // BC4_UNORM
+    DXGI_FORMAT_BC5_UNORM,                // BC5_UNORM
+    DXGI_FORMAT_BC7_UNORM,                // BC7_UNORM
+    DXGI_FORMAT_BC6H_SF16,                // BC6H_FLOAT
+    DXGI_FORMAT_BC6H_UF16,                // BC6H_UFLOAT
+    DXGI_FORMAT_R8_SNORM,                 // R8_SNORM
+    DXGI_FORMAT_R8G8_SNORM,               // R8G8_SNORM
+    DXGI_FORMAT_R8G8B8A8_SNORM,           // R8G8B8A8_SNORM
+    DXGI_FORMAT_R16_SNORM,                // R16_SNORM
+    DXGI_FORMAT_R16G16_SNORM,             // R16G16_SNORM
+    DXGI_FORMAT_R16G16B16A16_SNORM,       // R16G16B16A16_SNORM
+    DXGI_FORMAT_R16_FLOAT,                // R16_FLOAT
+    DXGI_FORMAT_R16G16_FLOAT,             // R16G16_FLOAT
+    DXGI_FORMAT_R16G16B16A16_FLOAT,       // R16G16B16A16_FLOAT
+    DXGI_FORMAT_R32_FLOAT,                // R32_FLOAT
+    DXGI_FORMAT_R32G32_FLOAT,             // R32G32_FLOAT
+    DXGI_FORMAT_R32G32B32A32_FLOAT,       // R32G32B32A32_FLOAT
+    DXGI_FORMAT_R11G11B10_FLOAT,          // R11G11B10_UFLOAT
+    DXGI_FORMAT_R8_UINT,                  // R8_UINT
+    DXGI_FORMAT_R8G8_UINT,                // R8G8_UINT
+    DXGI_FORMAT_R8G8B8A8_UINT,            // R8G8B8A8_UINT
+    DXGI_FORMAT_R16_UINT,                 // R16_UINT
+    DXGI_FORMAT_R16G16_UINT,              // R16G16_UINT
+    DXGI_FORMAT_R16G16B16A16_UINT,        // R16G16B16A16_UINT
+    DXGI_FORMAT_R32_UINT,                 // R32_UINT
+    DXGI_FORMAT_R32G32_UINT,              // R32G32_UINT
+    DXGI_FORMAT_R32G32B32A32_UINT,        // R32G32B32A32_UINT
+    DXGI_FORMAT_R8_SINT,                  // R8_INT
+    DXGI_FORMAT_R8G8_SINT,                // R8G8_INT
+    DXGI_FORMAT_R8G8B8A8_SINT,            // R8G8B8A8_INT
+    DXGI_FORMAT_R16_SINT,                 // R16_INT
+    DXGI_FORMAT_R16G16_SINT,              // R16G16_INT
+    DXGI_FORMAT_R16G16B16A16_SINT,        // R16G16B16A16_INT
+    DXGI_FORMAT_R32_SINT,                 // R32_INT
+    DXGI_FORMAT_R32G32_SINT,              // R32G32_INT
+    DXGI_FORMAT_R32G32B32A32_SINT,        // R32G32B32A32_INT
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,      // R8G8B8A8_UNORM_SRGB
+    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,      // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_BC1_UNORM_SRGB,           // BC1_UNORM_SRGB
+    DXGI_FORMAT_BC2_UNORM_SRGB,           // BC2_UNORM_SRGB
+    DXGI_FORMAT_BC3_UNORM_SRGB,           // BC3_UNORM_SRGB
+    DXGI_FORMAT_BC7_UNORM_SRGB,           // BC7_UNORM_SRGB
     DXGI_FORMAT_R16_UNORM,                // D16_UNORM
     DXGI_FORMAT_R24_UNORM_X8_TYPELESS,    // D24_UNORM
     DXGI_FORMAT_R32_FLOAT,                // D32_FLOAT
     DXGI_FORMAT_R24_UNORM_X8_TYPELESS,    // D24_UNORM_S8_UINT
     DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS, // D32_FLOAT_S8_UINT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_4x4_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x4_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x5_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x5_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x6_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x5_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x6_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x8_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x5_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x6_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x8_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x10_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x10_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x12_UNORM
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_4x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x12_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_4x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_5x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_6x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_8x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_10x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,                  // ASTC_12x12_FLOAT
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TextureFormat, SDL_arraysize(SDLToD3D12_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
@@ -493,111 +493,111 @@ static DXGI_FORMAT SDLToD3D12_DepthFormat[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_DepthFormat, SDL_arraysize(SDLToD3D12_DepthFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static DXGI_FORMAT SDLToD3D12_TypelessFormat[] = {
-    DXGI_FORMAT_UNKNOWN,              // INVALID
-    DXGI_FORMAT_UNKNOWN,              // A8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R8G8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R16_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R16G16_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UNORM
-    DXGI_FORMAT_UNKNOWN,              // R10G10B10A2_UNORM
-    DXGI_FORMAT_UNKNOWN,              // B5G6R5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // B5G5R5A1_UNORM
-    DXGI_FORMAT_UNKNOWN,              // B4G4R4A4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM
-    DXGI_FORMAT_UNKNOWN,              // BC6H_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // BC6H_UFLOAT
-    DXGI_FORMAT_UNKNOWN,              // R8_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R8G8_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R16_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R16G16_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_SNORM
-    DXGI_FORMAT_UNKNOWN,              // R16_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R16G16_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R32_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R32G32_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // R11G11B10_UFLOAT
-    DXGI_FORMAT_UNKNOWN,              // R8_UINT
-    DXGI_FORMAT_UNKNOWN,              // R8G8_UINT
-    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UINT
-    DXGI_FORMAT_UNKNOWN,              // R16_UINT
-    DXGI_FORMAT_UNKNOWN,              // R16G16_UINT
-    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UINT
-    DXGI_FORMAT_UNKNOWN,              // R32_UINT
-    DXGI_FORMAT_UNKNOWN,              // R32G32_UINT
-    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_UINT
-    DXGI_FORMAT_UNKNOWN,              // R8_INT
-    DXGI_FORMAT_UNKNOWN,              // R8G8_INT
-    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_INT
-    DXGI_FORMAT_UNKNOWN,              // R16_INT
-    DXGI_FORMAT_UNKNOWN,              // R16G16_INT
-    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_INT
-    DXGI_FORMAT_UNKNOWN,              // R32_INT
-    DXGI_FORMAT_UNKNOWN,              // R32G32_INT
-    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_INT
-    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM_SRGB
-    DXGI_FORMAT_R16_TYPELESS,         // D16_UNORM
-    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM
-    DXGI_FORMAT_R32_TYPELESS,         // D32_FLOAT
-    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM_S8_UINT
-    DXGI_FORMAT_R32G8X24_TYPELESS,    // D32_FLOAT_S8_UINT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM_SRGB
-    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_FLOAT
-    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // INVALID
+    DXGI_FORMAT_UNKNOWN,           // A8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R8G8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R8G8B8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R16_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R16G16_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R16G16B16A16_UNORM
+    DXGI_FORMAT_UNKNOWN,           // R10G10B10A2_UNORM
+    DXGI_FORMAT_UNKNOWN,           // B5G6R5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // B5G5R5A1_UNORM
+    DXGI_FORMAT_UNKNOWN,           // B4G4R4A4_UNORM
+    DXGI_FORMAT_UNKNOWN,           // B8G8R8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC1_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC2_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC3_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC4_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC7_UNORM
+    DXGI_FORMAT_UNKNOWN,           // BC6H_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // BC6H_UFLOAT
+    DXGI_FORMAT_UNKNOWN,           // R8_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R8G8_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R8G8B8A8_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R16_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R16G16_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R16G16B16A16_SNORM
+    DXGI_FORMAT_UNKNOWN,           // R16_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R16G16_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R16G16B16A16_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R32_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R32G32_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R32G32B32A32_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // R11G11B10_UFLOAT
+    DXGI_FORMAT_UNKNOWN,           // R8_UINT
+    DXGI_FORMAT_UNKNOWN,           // R8G8_UINT
+    DXGI_FORMAT_UNKNOWN,           // R8G8B8A8_UINT
+    DXGI_FORMAT_UNKNOWN,           // R16_UINT
+    DXGI_FORMAT_UNKNOWN,           // R16G16_UINT
+    DXGI_FORMAT_UNKNOWN,           // R16G16B16A16_UINT
+    DXGI_FORMAT_UNKNOWN,           // R32_UINT
+    DXGI_FORMAT_UNKNOWN,           // R32G32_UINT
+    DXGI_FORMAT_UNKNOWN,           // R32G32B32A32_UINT
+    DXGI_FORMAT_UNKNOWN,           // R8_INT
+    DXGI_FORMAT_UNKNOWN,           // R8G8_INT
+    DXGI_FORMAT_UNKNOWN,           // R8G8B8A8_INT
+    DXGI_FORMAT_UNKNOWN,           // R16_INT
+    DXGI_FORMAT_UNKNOWN,           // R16G16_INT
+    DXGI_FORMAT_UNKNOWN,           // R16G16B16A16_INT
+    DXGI_FORMAT_UNKNOWN,           // R32_INT
+    DXGI_FORMAT_UNKNOWN,           // R32G32_INT
+    DXGI_FORMAT_UNKNOWN,           // R32G32B32A32_INT
+    DXGI_FORMAT_UNKNOWN,           // R8G8B8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // BC1_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // BC2_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // BC3_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // BC7_UNORM_SRGB
+    DXGI_FORMAT_R16_TYPELESS,      // D16_UNORM
+    DXGI_FORMAT_R24G8_TYPELESS,    // D24_UNORM
+    DXGI_FORMAT_R32_TYPELESS,      // D32_FLOAT
+    DXGI_FORMAT_R24G8_TYPELESS,    // D24_UNORM_S8_UINT
+    DXGI_FORMAT_R32G8X24_TYPELESS, // D32_FLOAT_S8_UINT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_4x4_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x4_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x6_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x6_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x5_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x6_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x8_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x10_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x10_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x12_UNORM
+    DXGI_FORMAT_UNKNOWN,           // ASTC_4x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x12_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,           // ASTC_4x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_5x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_6x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_8x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_10x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,           // ASTC_12x12_FLOAT
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TypelessFormat, SDL_arraysize(SDLToD3D12_TypelessFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
@@ -906,7 +906,8 @@ typedef struct D3D12PresentData
 } D3D12PresentData;
 
 #ifdef USE_PIX_RUNTIME
-typedef struct WinPixEventRuntimeFns {
+typedef struct WinPixEventRuntimeFns
+{
     pfnBeginEventOnCommandList pBeginEventOnCommandList;
     pfnEndEventOnCommandList pEndEventOnCommandList;
     pfnSetMarkerOnCommandList pSetMarkerOnCommandList;
@@ -1294,7 +1295,7 @@ static ID3D12CommandQueue *s_CommandQueue;
 
 #if defined(SDL_PLATFORM_XBOXONE)
 // These are not defined in d3d12_x.h.
-typedef HRESULT (D3DAPI* PFN_D3D12_XBOX_CREATE_DEVICE)(_In_opt_ IGraphicsUnknown *, _In_ const D3D12XBOX_CREATE_DEVICE_PARAMETERS*, _In_ REFIID, _Outptr_opt_ void **);
+typedef HRESULT(D3DAPI *PFN_D3D12_XBOX_CREATE_DEVICE)(_In_opt_ IGraphicsUnknown *, _In_ const D3D12XBOX_CREATE_DEVICE_PARAMETERS *, _In_ REFIID, _Outptr_opt_ void **);
 #define D3D12_STANDARD_MULTISAMPLE_PATTERN DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN
 #endif
 
@@ -1305,7 +1306,7 @@ static void D3D12_INTERNAL_SetError(
     const char *msg,
     HRESULT res)
 {
-    #define MAX_ERROR_LEN 1024 // FIXME: Arbitrary!
+#define MAX_ERROR_LEN 1024 // FIXME: Arbitrary!
 
     // Buffer for text, ensure space for \0 terminator after buffer
     char wszMsgBuff[MAX_ERROR_LEN + 1];
@@ -1916,8 +1917,7 @@ static void D3D12_INTERNAL_TextureSubresourceBarrier(
             textureSubresource->layer,
             1,
             textureSubresource->parent->container->header.info.num_levels,
-            textureSubresource->parent->container->header.info.layer_count_or_depth
-        );
+            textureSubresource->parent->container->header.info.layer_count_or_depth);
 
         D3D12_INTERNAL_ResourceBarrier(
             commandBuffer,
@@ -2154,8 +2154,8 @@ static void D3D12_INTERNAL_TrackComputePipeline(
 static void D3D12_INTERNAL_SetPipelineStateName(
     D3D12Renderer *renderer,
     ID3D12PipelineState *pipelineState,
-    const char *text
-) {
+    const char *text)
+{
     if (renderer->debug_mode && text != NULL) {
         WCHAR *wchar_text = WIN_UTF8ToStringW(text);
         ID3D12PipelineState_SetName(
@@ -2168,8 +2168,8 @@ static void D3D12_INTERNAL_SetPipelineStateName(
 static void D3D12_INTERNAL_SetResourceName(
     D3D12Renderer *renderer,
     ID3D12Resource *resource,
-    const char *text
-) {
+    const char *text)
+{
     if (renderer->debug_mode && text != NULL) {
         WCHAR *wchar_text = WIN_UTF8ToStringW(text);
         ID3D12Resource_SetName(
@@ -2342,8 +2342,8 @@ static D3D12DescriptorHeap *D3D12_INTERNAL_CreateDescriptorHeap(
 
 static D3D12StagingDescriptorPool *D3D12_INTERNAL_CreateStagingDescriptorPool(
     D3D12Renderer *renderer,
-    D3D12_DESCRIPTOR_HEAP_TYPE heapType
-) {
+    D3D12_DESCRIPTOR_HEAP_TYPE heapType)
+{
     D3D12DescriptorHeap *heap = D3D12_INTERNAL_CreateDescriptorHeap(
         renderer,
         heapType,
@@ -2379,8 +2379,8 @@ static D3D12StagingDescriptorPool *D3D12_INTERNAL_CreateStagingDescriptorPool(
 /* If the pool is empty, we need to refill it! */
 static bool D3D12_INTERNAL_ExpandStagingDescriptorPool(
     D3D12Renderer *renderer,
-    D3D12StagingDescriptorPool *pool
-) {
+    D3D12StagingDescriptorPool *pool)
+{
     D3D12DescriptorHeap *heap = D3D12_INTERNAL_CreateDescriptorHeap(
         renderer,
         pool->heaps[0]->heapType,
@@ -3128,9 +3128,7 @@ static bool D3D12_INTERNAL_ConvertBlendState(
         // If target_info has more blend states, you can set IndependentBlendEnable to TRUE and assign different blend states to each render target slot
         if (i < pipelineInfo->target_info.num_color_targets) {
             SDL_GPUColorTargetBlendState sdlBlendState = pipelineInfo->target_info.color_target_descriptions[i].blend_state;
-            SDL_GPUColorComponentFlags colorWriteMask = sdlBlendState.enable_color_write_mask ?
-                sdlBlendState.color_write_mask :
-                0xF;
+            SDL_GPUColorComponentFlags colorWriteMask = sdlBlendState.enable_color_write_mask ? sdlBlendState.color_write_mask : 0xF;
 
             rtBlendDesc.BlendEnable = sdlBlendState.enable_blend;
             rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.src_color_blendfactor];
@@ -3194,8 +3192,8 @@ static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState verte
         desc[i].AlignedByteOffset = attribute.offset;
         desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate];
         desc[i].InstanceDataStepRate = (vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
-            ? 1
-            : 0;
+                                           ? 1
+                                           : 0;
     }
 
     return true;
@@ -3212,8 +3210,7 @@ static bool D3D12_INTERNAL_AssignStagingDescriptorHandle(
     SDL_LockMutex(pool->lock);
 
     if (pool->freeDescriptorCount == 0) {
-        if (!D3D12_INTERNAL_ExpandStagingDescriptorPool(renderer, pool))
-        {
+        if (!D3D12_INTERNAL_ExpandStagingDescriptorPool(renderer, pool)) {
             SDL_UnlockMutex(pool->lock);
             return false;
         }
@@ -3505,7 +3502,8 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
     if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
         desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+        desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT
+                                                                : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = createinfo->width;
         desc.Height = createinfo->height;
         desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
@@ -4260,8 +4258,8 @@ static void D3D12_SetBlendConstants(
 
 static void D3D12_SetStencilReference(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint8 reference
-) {
+    Uint8 reference)
+{
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     ID3D12GraphicsCommandList_OMSetStencilRef(d3d12CommandBuffer->graphicsCommandList, reference);
 }
@@ -5085,8 +5083,7 @@ static void D3D12_INTERNAL_WriteGPUDescriptors(
 
     for (Uint32 i = 0; i < resourceHandleCount; i += 1) {
         // This will crash the driver if it gets a null handle! Cool!
-        if (resourceDescriptorHandles[i].ptr != 0)
-        {
+        if (resourceDescriptorHandles[i].ptr != 0) {
             ID3D12Device_CopyDescriptorsSimple(
                 commandBuffer->renderer->device,
                 1,
@@ -5411,8 +5408,7 @@ static void D3D12_EndRenderPass(
                     d3d12CommandBuffer,
                     D3D12_RESOURCE_STATE_RENDER_TARGET,
                     D3D12_RESOURCE_STATE_RESOLVE_SOURCE,
-                    d3d12CommandBuffer->colorTargetSubresources[i]
-                );
+                    d3d12CommandBuffer->colorTargetSubresources[i]);
 
                 ID3D12GraphicsCommandList_ResolveSubresource(
                     d3d12CommandBuffer->graphicsCommandList,
@@ -6103,7 +6099,6 @@ static void D3D12_UploadToTexture(
                     temporaryBuffer->mapPointer + (sliceIndex * alignedBytesPerSlice) + (rowIndex * alignedRowPitch),
                     transferBufferContainer->activeBuffer->mapPointer + source->offset + (sliceIndex * bytesPerSlice) + (rowIndex * rowPitch),
                     rowPitch);
-
             }
 
             sourceLocation.PlacedFootprint.Footprint.Width = destination->w;
@@ -6960,9 +6955,9 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     // Resize the swapchain
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
-        0, // Keep buffer count the same
-        0, // use client window width
-        0, // use client window height
+        0,                   // Keep buffer count the same
+        0,                   // use client window width
+        0,                   // use client window height
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
@@ -7332,10 +7327,10 @@ static bool D3D12_SetAllowedFramesInFlight(
         D3D12WindowData *windowData = renderer->claimedWindows[i];
 
         if (!D3D12_INTERNAL_CreateSwapchain(
-            renderer,
-            windowData,
-            windowData->swapchainComposition,
-            windowData->present_mode)) {
+                renderer,
+                windowData,
+                windowData->swapchainComposition,
+                windowData->present_mode)) {
             return false;
         }
     }
@@ -7606,10 +7601,10 @@ static bool D3D12_WaitForSwapchain(
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
         if (!D3D12_WaitForFences(
-            driverData,
-            true,
-            &windowData->inFlightFences[windowData->frameCounter],
-            1)) {
+                driverData,
+                true,
+                &windowData->inFlightFences[windowData->frameCounter],
+                1)) {
             return false;
         }
     }
@@ -7661,10 +7656,10 @@ static bool D3D12_INTERNAL_AcquireSwapchainTexture(
         if (block) {
             // In VSYNC mode, block until the least recent presented frame is done
             if (!D3D12_WaitForFences(
-                (SDL_GPURenderer *)renderer,
-                true,
-                &windowData->inFlightFences[windowData->frameCounter],
-                1)) {
+                    (SDL_GPURenderer *)renderer,
+                    true,
+                    &windowData->inFlightFences[windowData->frameCounter],
+                    1)) {
                 return false;
             }
         } else {
@@ -7735,8 +7730,8 @@ static bool D3D12_AcquireSwapchainTexture(
     SDL_Window *window,
     SDL_GPUTexture **swapchain_texture,
     Uint32 *swapchain_texture_width,
-    Uint32 *swapchain_texture_height
-) {
+    Uint32 *swapchain_texture_height)
+{
     return D3D12_INTERNAL_AcquireSwapchainTexture(
         false,
         command_buffer,
@@ -7751,8 +7746,8 @@ static bool D3D12_WaitAndAcquireSwapchainTexture(
     SDL_Window *window,
     SDL_GPUTexture **swapchain_texture,
     Uint32 *swapchain_texture_width,
-    Uint32 *swapchain_texture_height
-) {
+    Uint32 *swapchain_texture_height)
+{
     return D3D12_INTERNAL_AcquireSwapchainTexture(
         true,
         command_buffer,
@@ -8787,9 +8782,11 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 
 static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-    , ID3D12DeviceFactory * factory
+                                                   ,
+                                                   ID3D12DeviceFactory *factory
 #endif
-) {
+)
+{
     PFN_D3D12_GET_DEBUG_INTERFACE pD3D12GetDebugInterface;
     HRESULT res;
 
@@ -9120,7 +9117,7 @@ static XrResult D3D12_DestroyXRSwapchain(
 #endif
 }
 
-static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
+static SDL_GPUTextureFormat *D3D12_GetXRSwapchainFormats(
     SDL_GPURenderer *driverData,
     XrSession session,
     int *num_formats)
@@ -9171,7 +9168,7 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
         return NULL;
     }
 
-    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat *)SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
     retval[0] = sdlFormat;
     retval[1] = SDL_GPU_TEXTUREFORMAT_INVALID;
     *num_formats = 1;
@@ -9427,9 +9424,9 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             PIX_SET_MARKER_ON_COMMAND_LIST_FUNC);
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
-            "WinPixEventRuntime.dll is not available. "
-            "It is required for SDL_Push/PopGPUDebugGroup and SDL_InsertGPUDebugLabel to function correctly. "
-            "See here for instructions on how to obtain it: https://devblogs.microsoft.com/pix/winpixeventruntime/");
+                    "WinPixEventRuntime.dll is not available. "
+                    "It is required for SDL_Push/PopGPUDebugGroup and SDL_InsertGPUDebugLabel to function correctly. "
+                    "See here for instructions on how to obtain it: https://devblogs.microsoft.com/pix/winpixeventruntime/");
         fns->pBeginEventOnCommandList = NULL;
         fns->pEndEventOnCommandList = NULL;
         fns->pSetMarkerOnCommandList = NULL;
@@ -9673,10 +9670,10 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             D3D12_GET_INTERFACE_FUNC);
         if (pD3D12GetInterface == NULL) {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load D3D12GetInterface, custom D3D12 SDK will not load.");
-        } else if (SUCCEEDED(pD3D12GetInterface(D3D_GUID(D3D_CLSID_ID3D12SDKConfiguration), D3D_GUID(D3D_IID_ID3D12SDKConfiguration), (void**) &sdk_config))) {
+        } else if (SUCCEEDED(pD3D12GetInterface(D3D_GUID(D3D_CLSID_ID3D12SDKConfiguration), D3D_GUID(D3D_IID_ID3D12SDKConfiguration), (void **)&sdk_config))) {
             ID3D12SDKConfiguration1 *sdk_config1 = NULL;
-            if (SUCCEEDED(IUnknown_QueryInterface(sdk_config, &D3D_IID_ID3D12SDKConfiguration1, (void**) &sdk_config1))) {
-                if (SUCCEEDED(ID3D12SDKConfiguration1_CreateDeviceFactory(sdk_config1, d3d12SDKVersion, d3d12SDKPath, &D3D_IID_ID3D12DeviceFactory, (void**) &factory))) {
+            if (SUCCEEDED(IUnknown_QueryInterface(sdk_config, &D3D_IID_ID3D12SDKConfiguration1, (void **)&sdk_config1))) {
+                if (SUCCEEDED(ID3D12SDKConfiguration1_CreateDeviceFactory(sdk_config1, d3d12SDKVersion, d3d12SDKPath, &D3D_IID_ID3D12DeviceFactory, (void **)&factory))) {
                     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Loaded vendored D3D12Core.dll");
                 } else {
                     SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to load vendored D3D12Core.dll");
@@ -9696,7 +9693,8 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     if (debugMode) {
         bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-            , factory
+                                                                    ,
+                                                                    factory
 #endif
         );
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
@@ -9760,7 +9758,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             (IUnknown *)renderer->adapter,
             D3D_FEATURE_LEVEL_CHOICE,
             D3D_GUID(D3D_IID_ID3D12Device),
-            (void**)&renderer->device);
+            (void **)&renderer->device);
 
         ID3D12DeviceFactory_Release(factory);
 
@@ -9830,9 +9828,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     if (SUCCEEDED(res)) {
         renderer->UnrestrictedBufferTextureCopyPitchSupported = options13.UnrestrictedBufferTextureCopyPitchSupported;
-    }
-    else
-    {
+    } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "CheckFeatureSupport for UnrestrictedBufferTextureCopyPitchSupported failed. You may need to provide a vendored D3D12Core.dll through the Agility SDK on older platforms.");
     }
 

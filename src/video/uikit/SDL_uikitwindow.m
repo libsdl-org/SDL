@@ -22,18 +22,18 @@
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 
-#include "SDL_uikitvideo.h"
+#include "SDL_UIKitBridge-objc.h"
+#include "SDL_uikitappdelegate.h"
 #include "SDL_uikitevents.h"
 #include "SDL_uikitmodes.h"
-#include "SDL_uikitwindow.h"
-#include "SDL_uikitappdelegate.h"
-#include "SDL_uikitview.h"
 #include "SDL_uikitopenglview.h"
-#include "SDL_UIKitBridge-objc.h"
+#include "SDL_uikitvideo.h"
+#include "SDL_uikitview.h"
+#include "SDL_uikitwindow.h"
 
 #include <Foundation/Foundation.h>
 
@@ -208,11 +208,12 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
                 UIWindowSceneGeometryPreferences *preferences =
                     [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:desiredSize];
-                [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
-                    SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
-                                "Initial geometry request failed: %s",
-                                [[error localizedDescription] UTF8String]);
-                }];
+                [scene requestGeometryUpdateWithPreferences:preferences
+                                               errorHandler:^(NSError *_Nonnull error) {
+                                                 SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+                                                             "Initial geometry request failed: %s",
+                                                             [[error localizedDescription] UTF8String]);
+                                               }];
 #endif
             }
         }
@@ -263,9 +264,10 @@ void UIKit_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         UIWindowScene *scene = data.uiwindow.windowScene;
         CGSize size = { window->pending.w, window->pending.h };
         UIWindowSceneGeometryPreferences *preferences = [[UIWindowSceneGeometryPreferencesVision alloc] initWithSize:size];
-        [scene requestGeometryUpdateWithPreferences:preferences errorHandler:^(NSError * _Nonnull error) {
-            // Request failed, no worries
-        }];
+        [scene requestGeometryUpdateWithPreferences:preferences
+                                       errorHandler:^(NSError *_Nonnull error){
+                                           // Request failed, no worries
+                                       }];
     }
 #endif
 }
@@ -419,7 +421,6 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
         CGSize size = view.bounds.size;
         CGFloat scale = 1.0;
 
-
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
 #ifndef SDL_PLATFORM_VISIONOS
             scale = windata.uiwindow.screen.nativeScale;
@@ -427,7 +428,6 @@ void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int
             scale = 2.0;
 #endif
         }
-
 
         /* Integer truncation of fractional values matches SDL_uikitmetalview and
          * SDL_uikitopenglview. */

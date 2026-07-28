@@ -33,7 +33,7 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
     callback(userdata, NULL, -1);
 #else
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
-    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, -1);
+    int nfilters = (int)SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, -1);
 
     if (filters && nfilters == -1) {
         SDL_SetError("Set filter pointers, but didn't set number of filters (SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER)");
@@ -57,7 +57,7 @@ void SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCal
         break;
 
     default:
-        SDL_SetError("Unsupported file dialog type: %d", (int) type);
+        SDL_SetError("Unsupported file dialog type: %d", (int)type);
         callback(userdata, NULL, -1);
         break;
     }
@@ -75,7 +75,7 @@ void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
 #else
     SDL_PropertiesID props = SDL_CreateProperties();
 
-    SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *) filters);
+    SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *)filters);
     SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, nfilters);
     SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, default_location);
@@ -98,7 +98,7 @@ void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL
 #else
     SDL_PropertiesID props = SDL_CreateProperties();
 
-    SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *) filters);
+    SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *)filters);
     SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, nfilters);
     SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, default_location);

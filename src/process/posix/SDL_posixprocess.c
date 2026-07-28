@@ -23,19 +23,18 @@
 #ifdef SDL_PROCESS_POSIX
 
 #include <dirent.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-#include "../SDL_sysprocess.h"
 #include "../../io/SDL_iostream_c.h"
-
+#include "../SDL_sysprocess.h"
 
 #if defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP) && \
     !defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR)
@@ -43,10 +42,11 @@
 #define posix_spawn_file_actions_addchdir posix_spawn_file_actions_addchdir_np
 #endif
 
-#define READ_END 0
+#define READ_END  0
 #define WRITE_END 1
 
-struct SDL_ProcessData {
+struct SDL_ProcessData
+{
     pid_t pid;
 };
 
@@ -159,7 +159,7 @@ static bool AddFileDescriptorCloseActions(posix_spawn_file_actions_t *fa)
 
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
-    char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
+    char *const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
     const char *working_directory = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, NULL);
@@ -340,13 +340,13 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     // Spawn the new process
     if (process->background) {
         int status = -1;
-        #ifdef SDL_PLATFORM_APPLE  // Apple has vfork marked as deprecated and (as of macOS 10.12) is almost identical to calling fork() anyhow.
+#ifdef SDL_PLATFORM_APPLE // Apple has vfork marked as deprecated and (as of macOS 10.12) is almost identical to calling fork() anyhow.
         const pid_t pid = fork();
         const char *forkname = "fork";
-        #else
+#else
         const pid_t pid = vfork();
         const char *forkname = "vfork";
-        #endif
+#endif
         switch (pid) {
         case -1:
             SDL_SetError("%s() failed: %s", forkname, strerror(errno));

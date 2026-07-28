@@ -50,26 +50,25 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     const char *folder_path = NULL;
-    switch (folder)
-    {
-        case SDL_FOLDER_HOME:
-            folder_path = "C:/";
-            break;
-        case SDL_FOLDER_PICTURES:
-            folder_path = "C:/Nokia/Pictures/";
-            break;
-        case SDL_FOLDER_SAVEDGAMES:
-            folder_path = "C:/";
-            break;
-        case SDL_FOLDER_SCREENSHOTS:
-            folder_path = "C:/Nokia/Pictures/";
-            break;
-        case SDL_FOLDER_VIDEOS:
-            folder_path = "C:/Nokia/Videos/";
-            break;
-        default:
-            folder_path = "C:/Nokia/Others/";
-            break;
+    switch (folder) {
+    case SDL_FOLDER_HOME:
+        folder_path = "C:/";
+        break;
+    case SDL_FOLDER_PICTURES:
+        folder_path = "C:/Nokia/Pictures/";
+        break;
+    case SDL_FOLDER_SAVEDGAMES:
+        folder_path = "C:/";
+        break;
+    case SDL_FOLDER_SCREENSHOTS:
+        folder_path = "C:/Nokia/Pictures/";
+        break;
+    case SDL_FOLDER_VIDEOS:
+        folder_path = "C:/Nokia/Videos/";
+        break;
+    default:
+        folder_path = "C:/Nokia/Others/";
+        break;
     }
     return SDL_strdup(folder_path);
 }

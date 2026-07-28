@@ -24,8 +24,8 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_PS5
 
@@ -1515,7 +1515,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
 
     if (ctx->guitar_effects_selector_supported) {
         // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
+        static const Sint16 effects_mappings[] = { 24576, 11008, -1792, -13568, -26880 };
         if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
         }
@@ -1689,10 +1689,10 @@ static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
-                        SDL_PS5EnhancedReportsChanged, ctx);
+                           SDL_PS5EnhancedReportsChanged, ctx);
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
-                        SDL_PS5PlayerLEDHintChanged, ctx);
+                           SDL_PS5PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
 

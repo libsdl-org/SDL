@@ -37,22 +37,21 @@ SDL_ELF_NOTE_DLOPEN(
     "storage-steam",
     "Support for Steam user storage",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_DRIVER_STEAMAPI_DYNAMIC
-)
+    SDL_DRIVER_STEAMAPI_DYNAMIC)
 
 // !!! FIXME: Async API can use SteamRemoteStorage_ReadFileAsync
 // !!! FIXME: Async API can use SteamRemoteStorage_WriteFileAsync
 
 #define STEAM_PROC(ret, func, parms) \
-    typedef ret (*steamfntype_##func) parms;
+    typedef ret(*steamfntype_##func) parms;
 #include "SDL_steamstorage_proc.h"
 
 typedef struct STEAM_RemoteStorage
 {
     SDL_SharedObject *libsteam_api;
-    #define STEAM_PROC(ret, func, parms) \
-        steamfntype_##func func;
-    #include "SDL_steamstorage_proc.h"
+#define STEAM_PROC(ret, func, parms) \
+    steamfntype_##func func;
+#include "SDL_steamstorage_proc.h"
 } STEAM_RemoteStorage;
 
 static SDL_AtomicInt SDL_steam_storage_refcount;
@@ -123,7 +122,7 @@ static bool STEAM_EnumerateStorageDirectory(void *userdata, const char *path, SD
 
     bool done = false;
     Sint32 count = steam->SteamAPI_ISteamRemoteStorage_GetFileCount(steamremotestorage);
-    for (Sint32 i = count; i-- && !done; ) {
+    for (Sint32 i = count; i-- && !done;) {
         const char *file = steam->SteamAPI_ISteamRemoteStorage_GetFileNameAndSize(steamremotestorage, i, NULL);
         if (!file) {
             continue;
@@ -195,7 +194,7 @@ static bool STEAM_ReadStorageFile(void *userdata, const char *path, void *destin
     if (length > SDL_MAX_SINT32) {
         return SDL_SetError("SteamRemoteStorage only supports INT32_MAX read size");
     }
-    if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32) length) == length) {
+    if (steam->SteamAPI_ISteamRemoteStorage_FileRead(steamremotestorage, path, destination, (Sint32)length) == length) {
         result = true;
     } else {
         SDL_SetError("SteamRemoteStorage()->FileRead() failed");
@@ -259,10 +258,10 @@ static const SDL_StorageInterface STEAM_user_iface = {
     STEAM_GetStoragePathInfo,
     STEAM_ReadStorageFile,
     STEAM_WriteStorageFile,
-    NULL,   // mkdir
+    NULL, // mkdir
     STEAM_RemoveStoragePath,
-    NULL,   // rename
-    NULL,   // copy
+    NULL, // rename
+    NULL, // copy
     STEAM_GetStorageSpaceRemaining
 };
 
@@ -283,13 +282,13 @@ static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_Prop
         return NULL;
     }
 
-    #define STEAM_PROC(ret, func, parms) \
-        steam->func = (steamfntype_##func) SDL_LoadFunction(steam->libsteam_api, #func); \
-        if (steam->func == NULL) { \
-            SDL_SetError("Could not load function " #func); \
-            goto steamfail; \
-        }
-    #include "SDL_steamstorage_proc.h"
+#define STEAM_PROC(ret, func, parms)                                                \
+    steam->func = (steamfntype_##func)SDL_LoadFunction(steam->libsteam_api, #func); \
+    if (steam->func == NULL) {                                                      \
+        SDL_SetError("Could not load function " #func);                             \
+        goto steamfail;                                                             \
+    }
+#include "SDL_steamstorage_proc.h"
 
     steamremotestorage = steam->SteamAPI_SteamRemoteStorage_v016();
     if (steamremotestorage == NULL) {

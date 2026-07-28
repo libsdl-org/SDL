@@ -30,8 +30,8 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 */
 #include "SDL_internal.h"
 
-#include "SDL_surface_c.h"
 #include "SDL_rotate.h"
+#include "SDL_surface_c.h"
 
 // ---- Internally used structures
 
@@ -479,7 +479,7 @@ When using the NONE and MOD modes, color and alpha modulation must be applied be
 */
 
 SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, int flipx, int flipy,
-                     const SDL_Rect *rect_dest, double cangle, double sangle, const SDL_FPoint *center)
+                                  const SDL_Rect *rect_dest, double cangle, double sangle, const SDL_FPoint *center)
 {
     SDL_Surface *rz_dst;
     int is8bit, angle90;
@@ -602,4 +602,3 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     // Return rotated surface
     return rz_dst;
 }
-

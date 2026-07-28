@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
-#include "../../core/windows/SDL_windows.h"
 #include "../SDL_syslocale.h"
+#include "../../core/windows/SDL_windows.h"
+#include "SDL_internal.h"
 
-typedef BOOL (WINAPI *pfnGetUserPreferredUILanguages)(DWORD, PULONG, WCHAR *, PULONG);
+typedef BOOL(WINAPI *pfnGetUserPreferredUILanguages)(DWORD, PULONG, WCHAR *, PULONG);
 #ifndef MUI_LANGUAGE_NAME
 #define MUI_LANGUAGE_NAME 0x8
 #endif

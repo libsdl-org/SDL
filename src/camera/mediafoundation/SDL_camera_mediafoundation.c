@@ -35,8 +35,8 @@
 #include <mfidl.h>
 #include <mfreadwrite.h>
 
-#include "../SDL_syscamera.h"
 #include "../SDL_camera_c.h"
+#include "../SDL_syscamera.h"
 
 static const IID SDL_IID_IMFMediaSource = { 0x279a808d, 0xaec7, 0x40c8, { 0x9c, 0x6b, 0xa6, 0xb4, 0x92, 0xc7, 0x8a, 0x66 } };
 static const IID SDL_IID_IMF2DBuffer = { 0x7dc9d5f9, 0x9ed9, 0x44ec, { 0x9b, 0xbf, 0x06, 0x00, 0xbb, 0x58, 0x9f, 0xbb } };
@@ -99,7 +99,7 @@ static const struct
     { &SDL_MFVideoFormat_A2R10G10B10, SDL_PIXELFORMAT_ARGB2101010, SDL_COLORSPACE_SRGB },
     { &SDL_MFVideoFormat_YV12, SDL_PIXELFORMAT_YV12, SDL_COLORSPACE_BT709_LIMITED },
     { &SDL_MFVideoFormat_IYUV, SDL_PIXELFORMAT_IYUV, SDL_COLORSPACE_BT709_LIMITED },
-    { &SDL_MFVideoFormat_YUY2,  SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED },
+    { &SDL_MFVideoFormat_YUY2, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED },
     { &SDL_MFVideoFormat_UYVY, SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED },
     { &SDL_MFVideoFormat_YVYU, SDL_PIXELFORMAT_YVYU, SDL_COLORSPACE_BT709_LIMITED },
     { &SDL_MFVideoFormat_NV12, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED },
@@ -300,8 +300,8 @@ static void MediaTypeToSDLFmt(IMFMediaType *mediatype, SDL_PixelFormat *format, 
     }
 #if DEBUG_CAMERA
     SDL_Log("Unknown media type: 0x%x (%c%c%c%c)", type.Data1,
-            (char)(Uint8)(type.Data1 >>  0),
-            (char)(Uint8)(type.Data1 >>  8),
+            (char)(Uint8)(type.Data1 >> 0),
+            (char)(Uint8)(type.Data1 >> 8),
             (char)(Uint8)(type.Data1 >> 16),
             (char)(Uint8)(type.Data1 >> 24));
 #endif
@@ -319,23 +319,22 @@ static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormat format)
     return NULL;
 }
 
-
 // handle to Media Foundation libs--Vista and later!--for access to the Media Foundation API.
 
 // mf.dll ...
 static HMODULE libmf = NULL;
-typedef HRESULT (WINAPI *pfnMFEnumDeviceSources)(IMFAttributes *,IMFActivate ***,UINT32 *);
-typedef HRESULT (WINAPI *pfnMFCreateDeviceSource)(IMFAttributes  *, IMFMediaSource **);
+typedef HRESULT(WINAPI *pfnMFEnumDeviceSources)(IMFAttributes *, IMFActivate ***, UINT32 *);
+typedef HRESULT(WINAPI *pfnMFCreateDeviceSource)(IMFAttributes *, IMFMediaSource **);
 static pfnMFEnumDeviceSources pMFEnumDeviceSources = NULL;
 static pfnMFCreateDeviceSource pMFCreateDeviceSource = NULL;
 
 // mfplat.dll ...
 static HMODULE libmfplat = NULL;
-typedef HRESULT (WINAPI *pfnMFStartup)(ULONG, DWORD);
-typedef HRESULT (WINAPI *pfnMFShutdown)(void);
-typedef HRESULT (WINAPI *pfnMFCreateAttributes)(IMFAttributes **, UINT32);
-typedef HRESULT (WINAPI *pfnMFCreateMediaType)(IMFMediaType **);
-typedef HRESULT (WINAPI *pfnMFGetStrideForBitmapInfoHeader)(DWORD, DWORD, LONG *);
+typedef HRESULT(WINAPI *pfnMFStartup)(ULONG, DWORD);
+typedef HRESULT(WINAPI *pfnMFShutdown)(void);
+typedef HRESULT(WINAPI *pfnMFCreateAttributes)(IMFAttributes **, UINT32);
+typedef HRESULT(WINAPI *pfnMFCreateMediaType)(IMFMediaType **);
+typedef HRESULT(WINAPI *pfnMFGetStrideForBitmapInfoHeader)(DWORD, DWORD, LONG *);
 
 static pfnMFStartup pMFStartup = NULL;
 static pfnMFShutdown pMFShutdown = NULL;
@@ -345,9 +344,8 @@ static pfnMFGetStrideForBitmapInfoHeader pMFGetStrideForBitmapInfoHeader = NULL;
 
 // mfreadwrite.dll ...
 static HMODULE libmfreadwrite = NULL;
-typedef HRESULT (WINAPI *pfnMFCreateSourceReaderFromMediaSource)(IMFMediaSource *, IMFAttributes *, IMFSourceReader **);
+typedef HRESULT(WINAPI *pfnMFCreateSourceReaderFromMediaSource)(IMFMediaSource *, IMFAttributes *, IMFSourceReader **);
 static pfnMFCreateSourceReaderFromMediaSource pMFCreateSourceReaderFromMediaSource = NULL;
-
 
 typedef struct SDL_PrivateCameraData
 {
@@ -367,7 +365,7 @@ static bool MEDIAFOUNDATION_WaitDevice(SDL_Camera *device)
         DWORD stream_flags = 0;
         const HRESULT ret = IMFSourceReader_ReadSample(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, NULL, &stream_flags, NULL, &sample);
         if (FAILED(ret)) {
-            return false;   // ruh roh.
+            return false; // ruh roh.
         }
 
         // we currently ignore stream_flags format changes, but my _hope_ is that IMFSourceReader is handling this and
@@ -377,7 +375,7 @@ static bool MEDIAFOUNDATION_WaitDevice(SDL_Camera *device)
         if (sample != NULL) {
             break;
         } else if (stream_flags & (MF_SOURCE_READERF_ERROR | MF_SOURCE_READERF_ENDOFSTREAM)) {
-            return false;  // apparently this camera has gone down.  :/
+            return false; // apparently this camera has gone down.  :/
         }
 
         // otherwise, there was some minor burp, probably; just try again.
@@ -387,7 +385,6 @@ static bool MEDIAFOUNDATION_WaitDevice(SDL_Camera *device)
 
     return true;
 }
-
 
 #ifdef KEEP_ACQUIRED_BUFFERS_LOCKED
 
@@ -437,7 +434,7 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     HRESULT ret;
     LONGLONG timestamp100NS = 0;
-    SDL_IMFObjects *objs = (SDL_IMFObjects *) SDL_calloc(1, sizeof (SDL_IMFObjects));
+    SDL_IMFObjects *objs = (SDL_IMFObjects *)SDL_calloc(1, sizeof(SDL_IMFObjects));
 
     if (objs == NULL) {
         return SDL_CAMERA_FRAME_ERROR;
@@ -455,7 +452,7 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
             result = SDL_CAMERA_FRAME_ERROR;
         }
 
-        *timestampNS = timestamp100NS * 100;  // the timestamps are in 100-nanosecond increments; move to full nanoseconds.
+        *timestampNS = timestamp100NS * 100; // the timestamps are in 100-nanosecond increments; move to full nanoseconds.
     }
 
     ret = (result == SDL_CAMERA_FRAME_ERROR) ? E_FAIL : IMFSample_ConvertToContiguousBuffer(objs->sample, &objs->buffer); // IMFSample_GetBufferByIndex(objs->sample, 0, &objs->buffer);
@@ -695,7 +692,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
             goto done;
         }
 
-        width = (UINT32) (val >> 32);
+        width = (UINT32)(val >> 32);
         // height = (UINT32) val;
 
         ret = pMFGetStrideForBitmapInfoHeader(subtype.Data1, width, &lStride);
@@ -704,7 +701,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
         }
 
         // Set the attribute for later reference.
-        IMFMediaType_SetUINT32(pType, &SDL_MF_MT_DEFAULT_STRIDE, (UINT32) lStride);
+        IMFMediaType_SetUINT32(pType, &SDL_MF_MT_DEFAULT_STRIDE, (UINT32)lStride);
     }
 
     if (SUCCEEDED(ret)) {
@@ -715,10 +712,9 @@ done:
     return ret;
 }
 
-
 static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
-    const char *utf8symlink = (const char *) device->handle;
+    const char *utf8symlink = (const char *)device->handle;
     IMFAttributes *attrs = NULL;
     LPWSTR wstrsymlink = NULL;
     IMFMediaSource *source = NULL;
@@ -728,25 +724,29 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
     DWORD num_streams = 0;
 #endif
     LONG lstride = 0;
-    //PROPVARIANT var;
+    // PROPVARIANT var;
     HRESULT ret;
 
-    #if 0
+#if 0
     IMFStreamDescriptor *streamdesc = NULL;
     IMFPresentationDescriptor *presentdesc = NULL;
     IMFMediaTypeHandler *handler = NULL;
-    #endif
+#endif
 
-    #if DEBUG_CAMERA
+#if DEBUG_CAMERA
     SDL_Log("CAMERA: opening device with symlink of '%s'", utf8symlink);
-    #endif
+#endif
 
     wstrsymlink = WIN_UTF8ToStringW(utf8symlink);
     if (!wstrsymlink) {
         goto failed;
     }
 
-    #define CHECK_HRESULT(what, r) if (FAILED(r)) { WIN_SetErrorFromHRESULT(what " failed", r); goto failed; }
+#define CHECK_HRESULT(what, r)                      \
+    if (FAILED(r)) {                                \
+        WIN_SetErrorFromHRESULT(what " failed", r); \
+        goto failed;                                \
+    }
 
     ret = pMFCreateAttributes(&attrs, 1);
     CHECK_HRESULT("MFCreateAttributes", ret);
@@ -792,7 +792,7 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
     ret = IMFSourceReader_SetCurrentMediaType(srcreader, (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, mediatype);
     CHECK_HRESULT("IMFSourceReader_SetCurrentMediaType", ret);
 
-    #if 0  // this (untested thing) is what we would do to get started with a IMFMediaSource that _doesn't_ use IMFSourceReader...
+#if 0 // this (untested thing) is what we would do to get started with a IMFMediaSource that _doesn't_ use IMFSourceReader...
     ret = IMFMediaSource_CreatePresentationDescriptor(source, &presentdesc);
     CHECK_HRESULT("IMFMediaSource_CreatePresentationDescriptor", ret);
 
@@ -824,7 +824,7 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
 
     IMFPresentationDescriptor_Release(presentdesc);
     presentdesc = NULL;
-    #endif
+#endif
 
     ret = GetDefaultStride(mediatype, &lstride);
     CHECK_HRESULT("GetDefaultStride", ret);
@@ -832,19 +832,19 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
     IMFMediaType_Release(mediatype);
     mediatype = NULL;
 
-    device->hidden = (SDL_PrivateCameraData *) SDL_calloc(1, sizeof (SDL_PrivateCameraData));
+    device->hidden = (SDL_PrivateCameraData *)SDL_calloc(1, sizeof(SDL_PrivateCameraData));
     if (!device->hidden) {
         goto failed;
     }
 
-    device->hidden->pitch = (int) lstride;
+    device->hidden->pitch = (int)lstride;
     device->hidden->srcreader = srcreader;
-    IMFMediaSource_Release(source);  // srcreader is holding a reference to this.
+    IMFMediaSource_Release(source); // srcreader is holding a reference to this.
 
     // There is no user permission prompt for camera access (I think?)
     SDL_CameraPermissionOutcome(device, true);
 
-    #undef CHECK_HRESULT
+#undef CHECK_HRESULT
 
     return true;
 
@@ -854,7 +854,7 @@ failed:
         IMFSourceReader_Release(srcreader);
     }
 
-    #if 0
+#if 0
     if (handler) {
         IMFMediaTypeHandler_Release(handler);
     }
@@ -866,7 +866,7 @@ failed:
     if (presentdesc) {
         IMFPresentationDescriptor_Release(presentdesc);
     }
-    #endif
+#endif
 
     if (source) {
         IMFMediaSource_Shutdown(source);
@@ -888,7 +888,7 @@ failed:
 static void MEDIAFOUNDATION_FreeDeviceHandle(SDL_Camera *device)
 {
     if (device) {
-        SDL_free(device->handle);  // the device's symlink string.
+        SDL_free(device->handle); // the device's symlink string.
     }
 }
 
@@ -966,7 +966,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
                                     framerate_numerator = (UINT32)(val >> 32);
                                     framerate_denominator = (UINT32)val;
                                     if (SUCCEEDED(ret) && framerate_numerator && framerate_denominator) {
-                                        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, (int) w, (int) h, (int)framerate_numerator, (int)framerate_denominator);
+                                        SDL_AddCameraFormat(add_data, sdlfmt, colorspace, (int)w, (int)h, (int)framerate_numerator, (int)framerate_denominator);
                                     }
                                 }
                             }
@@ -985,7 +985,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
 
 static bool FindMediaFoundationCameraBySymlink(SDL_Camera *device, void *userdata)
 {
-    return (SDL_strcmp((const char *) device->handle, (const char *) userdata) == 0);
+    return (SDL_strcmp((const char *)device->handle, (const char *)userdata) == 0);
 }
 
 static void MaybeAddDevice(IMFActivate *activation)
@@ -994,7 +994,7 @@ static void MaybeAddDevice(IMFActivate *activation)
 
     if (SDL_FindPhysicalCameraByCallback(FindMediaFoundationCameraBySymlink, symlink)) {
         SDL_free(symlink);
-        return;  // already have this one.
+        return; // already have this one.
     }
 
     char *name = QueryActivationObjectString(activation, &SDL_MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME);
@@ -1026,13 +1026,13 @@ static void MEDIAFOUNDATION_DetectDevices(void)
     IMFAttributes *attrs = NULL;
     ret = pMFCreateAttributes(&attrs, 1);
     if (FAILED(ret)) {
-        return;  // oh well, no cameras for you.
+        return; // oh well, no cameras for you.
     }
 
     ret = IMFAttributes_SetGUID(attrs, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &SDL_MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
     if (FAILED(ret)) {
         IMFAttributes_Release(attrs);
-        return;  // oh well, no cameras for you.
+        return; // oh well, no cameras for you.
     }
 
     IMFActivate **activations = NULL;
@@ -1040,7 +1040,7 @@ static void MEDIAFOUNDATION_DetectDevices(void)
     ret = pMFEnumDeviceSources(attrs, &activations, &total);
     IMFAttributes_Release(attrs);
     if (FAILED(ret)) {
-        return;  // oh well, no cameras for you.
+        return; // oh well, no cameras for you.
     }
 
     for (UINT32 i = 0; i < total; i++) {
@@ -1094,7 +1094,13 @@ static bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     }
 
     bool okay = true;
-    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) GetProcAddress(lib, #fn); if (!p##fn) { okay = false; } }
+#define LOADSYM(lib, fn)                           \
+    if (okay) {                                    \
+        p##fn = (pfn##fn)GetProcAddress(lib, #fn); \
+        if (!p##fn) {                              \
+            okay = false;                          \
+        }                                          \
+    }
     LOADSYM(mf, MFEnumDeviceSources);
     LOADSYM(mf, MFCreateDeviceSource);
     LOADSYM(mfplat, MFStartup);
@@ -1103,7 +1109,7 @@ static bool MEDIAFOUNDATION_Init(SDL_CameraDriverImpl *impl)
     LOADSYM(mfplat, MFCreateMediaType);
     LOADSYM(mfplat, MFGetStrideForBitmapInfoHeader);
     LOADSYM(mfreadwrite, MFCreateSourceReaderFromMediaSource);
-    #undef LOADSYM
+#undef LOADSYM
 
     if (okay) {
         const HRESULT ret = pMFStartup(MF_VERSION, MFSTARTUP_LITE);
@@ -1140,4 +1146,3 @@ CameraBootStrap MEDIAFOUNDATION_bootstrap = {
 };
 
 #endif // SDL_CAMERA_DRIVER_MEDIAFOUNDATION
-

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "../SDL_thread_c.h"
+#include "SDL_internal.h"
 
 void SDL_SYS_InitTLSData(void)
 {
@@ -41,4 +41,3 @@ void SDL_SYS_QuitTLSData(void)
 {
     SDL_Generic_QuitTLSData();
 }
-

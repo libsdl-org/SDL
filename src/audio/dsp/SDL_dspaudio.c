@@ -24,15 +24,15 @@
 
 #ifdef SDL_AUDIO_DRIVER_OSS
 
-#include <stdio.h>  // For perror()
-#include <string.h> // For strerror()
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/time.h>
+#include <stdio.h>  // For perror()
+#include <string.h> // For strerror()
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #include <sys/soundcard.h>
 
@@ -68,7 +68,7 @@ static bool DSP_OpenDevice(SDL_AudioDevice *device)
     }
 
     // Initialize all variables that we clean on shutdown
-    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     }
@@ -196,7 +196,7 @@ static bool DSP_OpenDevice(SDL_AudioDevice *device)
         SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
     }
 
-    return true;  // We're ready to rock and roll. :-)
+    return true; // We're ready to rock and roll. :-)
 }
 
 static bool DSP_WaitDevice(SDL_AudioDevice *device)

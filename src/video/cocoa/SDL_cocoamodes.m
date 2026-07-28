@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-#include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
+#include "SDL_cocoavideo.h"
 
 // We need this for IODisplayCreateInfoDictionary and kIODisplayOnlyPreferredName
 #include <IOKit/graphics/IOGraphicsLib.h>
@@ -388,9 +388,12 @@ bool Cocoa_AddDisplay(CGDirectDisplayID display, bool send_event)
 
 static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CGDisplayChangeSummaryFlags flags, void *userInfo)
 {
-    #if 0
+#if 0
     SDL_Log("COCOA DISPLAY RECONFIG CALLBACK! display=%u", (unsigned int) displayid);
-    #define CHECK_DISPLAY_RECONFIG_FLAG(x) if (flags & x) { SDL_Log(" - " #x); }
+#define CHECK_DISPLAY_RECONFIG_FLAG(x) \
+    if (flags & x) {                   \
+        SDL_Log(" - " #x);             \
+    }
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplayBeginConfigurationFlag);
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplayMovedFlag);
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplaySetMainFlag);
@@ -402,26 +405,26 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplayMirrorFlag);
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplayUnMirrorFlag);
     CHECK_DISPLAY_RECONFIG_FLAG(kCGDisplayDesktopShapeChangedFlag);
-    #undef CHECK_DISPLAY_RECONFIG_FLAG
-    #endif
+#undef CHECK_DISPLAY_RECONFIG_FLAG
+#endif
 
-    SDL_VideoDevice *_this = (SDL_VideoDevice *) userInfo;
-    SDL_VideoDisplay *display = Cocoa_FindSDLDisplayByCGDirectDisplayID(_this, displayid);  // will be NULL for newly-added (or newly-unmirrored) displays!
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userInfo;
+    SDL_VideoDisplay *display = Cocoa_FindSDLDisplayByCGDirectDisplayID(_this, displayid); // will be NULL for newly-added (or newly-unmirrored) displays!
 
     if (flags & kCGDisplayDisabledFlag) {
-        flags |= kCGDisplayRemoveFlag;  // treat this like a display leaving, even though it's still plugged in.
+        flags |= kCGDisplayRemoveFlag; // treat this like a display leaving, even though it's still plugged in.
     }
 
     if (flags & kCGDisplayEnabledFlag) {
-        flags |= kCGDisplayAddFlag;  // treat this like a display leaving, even though it's still plugged in.
+        flags |= kCGDisplayAddFlag; // treat this like a display leaving, even though it's still plugged in.
     }
 
     if (flags & kCGDisplayMirrorFlag) {
-        flags |= kCGDisplayRemoveFlag;  // treat this like a display leaving, even though it's still actually here.
+        flags |= kCGDisplayRemoveFlag; // treat this like a display leaving, even though it's still actually here.
     }
 
     if (flags & kCGDisplayUnMirrorFlag) {
-        flags |= kCGDisplayAddFlag;  // treat this like a new display arriving, even though it was here all along.
+        flags |= kCGDisplayAddFlag; // treat this like a new display arriving, even though it was here all along.
     }
 
     if ((flags & kCGDisplayAddFlag) && (flags & kCGDisplayRemoveFlag)) {
@@ -439,7 +442,7 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
     if (flags & kCGDisplayAddFlag) {
         if (!display) {
             if (!Cocoa_AddDisplay(displayid, true)) {
-                return;  // oh well.
+                return; // oh well.
             }
             display = Cocoa_FindSDLDisplayByCGDirectDisplayID(_this, displayid);
             SDL_assert(display != NULL);
@@ -477,10 +480,10 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
                 if (_this->displays[i] == display) {
                     if (i > 0) {
                         // move this display to the front of _this->displays so it's treated as primary.
-                        SDL_memmove(&_this->displays[1], &_this->displays[0], sizeof (*_this->displays) * i);
+                        SDL_memmove(&_this->displays[1], &_this->displays[0], sizeof(*_this->displays) * i);
                         _this->displays[0] = display;
                     }
-                    flags |= kCGDisplayMovedFlag;  // we don't have an SDL event atm for "this display became primary," so at least let everyone know it "moved".
+                    flags |= kCGDisplayMovedFlag; // we don't have an SDL event atm for "this display became primary," so at least let everyone know it "moved".
                     break;
                 }
             }

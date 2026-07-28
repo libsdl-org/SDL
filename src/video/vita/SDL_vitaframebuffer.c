@@ -28,7 +28,7 @@
 
 #define SCREEN_W             960
 #define SCREEN_H             544
-#define ALIGN(x, a)          (((x) + ((a)-1)) & ~((a)-1))
+#define ALIGN(x, a)          (((x) + ((a) - 1)) & ~((a) - 1))
 #define DISPLAY_PIXEL_FORMAT SCE_DISPLAY_PIXELFORMAT_A8B8G8R8
 
 void *vita_gpu_alloc(unsigned int type, unsigned int size, SceUID *uid)

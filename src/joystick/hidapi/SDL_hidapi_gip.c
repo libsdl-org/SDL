@@ -24,8 +24,8 @@
 
 #include "../../events/SDL_keyboard_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_GIP
 
@@ -39,69 +39,69 @@
 #endif
 
 #define MAX_MESSAGE_LENGTH 0x4000
-#define MAX_ATTACHMENTS 8
+#define MAX_ATTACHMENTS    8
 
-#define GIP_DATA_CLASS_COMMAND (0u << 5)
-#define GIP_DATA_CLASS_LOW_LATENCY (1u << 5)
+#define GIP_DATA_CLASS_COMMAND          (0u << 5)
+#define GIP_DATA_CLASS_LOW_LATENCY      (1u << 5)
 #define GIP_DATA_CLASS_STANDARD_LATENCY (2u << 5)
-#define GIP_DATA_CLASS_AUDIO (3u << 5)
+#define GIP_DATA_CLASS_AUDIO            (3u << 5)
 
 #define GIP_DATA_CLASS_SHIFT 5
-#define GIP_DATA_CLASS_MASK (7u << 5)
+#define GIP_DATA_CLASS_MASK  (7u << 5)
 
 /* System messages */
-#define GIP_CMD_PROTO_CONTROL 0x01
-#define GIP_CMD_HELLO_DEVICE 0x02
-#define GIP_CMD_STATUS_DEVICE 0x03
-#define GIP_CMD_METADATA 0x04
+#define GIP_CMD_PROTO_CONTROL    0x01
+#define GIP_CMD_HELLO_DEVICE     0x02
+#define GIP_CMD_STATUS_DEVICE    0x03
+#define GIP_CMD_METADATA         0x04
 #define GIP_CMD_SET_DEVICE_STATE 0x05
-#define GIP_CMD_SECURITY 0x06
-#define GIP_CMD_GUIDE_BUTTON 0x07
-#define GIP_CMD_AUDIO_CONTROL 0x08
-#define GIP_CMD_LED 0x0a
-#define GIP_CMD_HID_REPORT 0x0b
-#define GIP_CMD_FIRMWARE 0x0c
-#define GIP_CMD_EXTENDED 0x1e
-#define GIP_CMD_DEBUG 0x1f
-#define GIP_AUDIO_DATA 0x60
+#define GIP_CMD_SECURITY         0x06
+#define GIP_CMD_GUIDE_BUTTON     0x07
+#define GIP_CMD_AUDIO_CONTROL    0x08
+#define GIP_CMD_LED              0x0a
+#define GIP_CMD_HID_REPORT       0x0b
+#define GIP_CMD_FIRMWARE         0x0c
+#define GIP_CMD_EXTENDED         0x1e
+#define GIP_CMD_DEBUG            0x1f
+#define GIP_AUDIO_DATA           0x60
 
 /* Navigation vendor messages */
-#define GIP_CMD_DIRECT_MOTOR 0x09
-#define GIP_LL_INPUT_REPORT 0x20
+#define GIP_CMD_DIRECT_MOTOR         0x09
+#define GIP_LL_INPUT_REPORT          0x20
 #define GIP_LL_OVERFLOW_INPUT_REPORT 0x26
 
 /* Wheel and ArcadeStick vendor messages */
 #define GIP_CMD_INITIAL_REPORTS_REQUEST 0x0a
-#define GIP_LL_STATIC_CONFIGURATION 0x21
-#define GIP_LL_BUTTON_INFO_REPORT 0x22
+#define GIP_LL_STATIC_CONFIGURATION     0x21
+#define GIP_LL_BUTTON_INFO_REPORT       0x22
 
 /* Wheel vendor messages */
 #define GIP_CMD_SET_APPLICATION_MEMORY 0x0b
-#define GIP_CMD_SET_EQUATIONS_STATES 0x0c
-#define GIP_CMD_SET_EQUATION 0x0d
+#define GIP_CMD_SET_EQUATIONS_STATES   0x0c
+#define GIP_CMD_SET_EQUATION           0x0d
 
 /* FlightStick vendor messages */
 #define GIP_CMD_DEVICE_CAPABILITIES 0x00
-#define GIP_CMD_LED_CAPABILITIES 0x01
-#define GIP_CMD_SET_LED_STATE 0x02
+#define GIP_CMD_LED_CAPABILITIES    0x01
+#define GIP_CMD_SET_LED_STATE       0x02
 
 /* Undocumented Elite 2 vendor messages */
-#define GIP_CMD_RAW_REPORT 0x0c
+#define GIP_CMD_RAW_REPORT  0x0c
 #define GIP_CMD_GUIDE_COLOR 0x0e
 #define GIP_SL_ELITE_CONFIG 0x4d
 
 #define GIP_BTN_OFFSET_XBE1 28
 #define GIP_BTN_OFFSET_XBE2 14
 
-#define GIP_FLAG_FRAGMENT (1u << 7)
-#define GIP_FLAG_INIT_FRAG (1u << 6)
-#define GIP_FLAG_SYSTEM (1u << 5)
-#define GIP_FLAG_ACME (1u << 4)
+#define GIP_FLAG_FRAGMENT        (1u << 7)
+#define GIP_FLAG_INIT_FRAG       (1u << 6)
+#define GIP_FLAG_SYSTEM          (1u << 5)
+#define GIP_FLAG_ACME            (1u << 4)
 #define GIP_FLAG_ATTACHMENT_MASK 0x7
 
-#define GIP_AUDIO_FORMAT_NULL 0
-#define GIP_AUDIO_FORMAT_8000HZ_1CH 1
-#define GIP_AUDIO_FORMAT_8000HZ_2CH 2
+#define GIP_AUDIO_FORMAT_NULL        0
+#define GIP_AUDIO_FORMAT_8000HZ_1CH  1
+#define GIP_AUDIO_FORMAT_8000HZ_2CH  2
 #define GIP_AUDIO_FORMAT_12000HZ_1CH 3
 #define GIP_AUDIO_FORMAT_12000HZ_2CH 4
 #define GIP_AUDIO_FORMAT_16000HZ_1CH 5
@@ -120,123 +120,123 @@
 #define GIP_AUDIO_FORMAT_48000HZ_8CH 33
 
 /* Protocol Control constants */
-#define GIP_CONTROL_CODE_ACK 0
-#define GIP_CONTROL_CODE_NACK 1  /* obsolete */
-#define GIP_CONTROL_CODE_UNK 2  /* obsolete */
-#define GIP_CONTROL_CODE_AB 3  /* obsolete */
-#define GIP_CONTROL_CODE_MPER 4  /* obsolete */
-#define GIP_CONTROL_CODE_STOP 5  /* obsolete */
-#define GIP_CONTROL_CODE_START 6  /* obsolete */
-#define GIP_CONTROL_CODE_ERR 7  /* obsolete */
+#define GIP_CONTROL_CODE_ACK   0
+#define GIP_CONTROL_CODE_NACK  1 /* obsolete */
+#define GIP_CONTROL_CODE_UNK   2 /* obsolete */
+#define GIP_CONTROL_CODE_AB    3 /* obsolete */
+#define GIP_CONTROL_CODE_MPER  4 /* obsolete */
+#define GIP_CONTROL_CODE_STOP  5 /* obsolete */
+#define GIP_CONTROL_CODE_START 6 /* obsolete */
+#define GIP_CONTROL_CODE_ERR   7 /* obsolete */
 
 /* Status Device constants */
-#define GIP_POWER_LEVEL_OFF 0
-#define GIP_POWER_LEVEL_STANDBY 1  /* obsolete */
-#define GIP_POWER_LEVEL_FULL 2
+#define GIP_POWER_LEVEL_OFF     0
+#define GIP_POWER_LEVEL_STANDBY 1 /* obsolete */
+#define GIP_POWER_LEVEL_FULL    2
 
 #define GIP_NOT_CHARGING 0
-#define GIP_CHARGING 1
+#define GIP_CHARGING     1
 #define GIP_CHARGE_ERROR 2
 
-#define GIP_BATTERY_ABSENT 0
-#define GIP_BATTERY_STANDARD 1
+#define GIP_BATTERY_ABSENT       0
+#define GIP_BATTERY_STANDARD     1
 #define GIP_BATTERY_RECHARGEABLE 2
 
 #define GIP_BATTERY_CRITICAL 0
-#define GIP_BATTERY_LOW 1
-#define GIP_BATTERY_MEDIUM 2
-#define GIP_BATTERY_FULL 3
+#define GIP_BATTERY_LOW      1
+#define GIP_BATTERY_MEDIUM   2
+#define GIP_BATTERY_FULL     3
 
 #define GIP_EVENT_FAULT 0x0002
 
-#define GIP_FAULT_UNKNOWN 0
-#define GIP_FAULT_HARD 1
-#define GIP_FAULT_NMI 2
-#define GIP_FAULT_SVC 3
-#define GIP_FAULT_PEND_SV 4
-#define GIP_FAULT_SMART_PTR 5
-#define GIP_FAULT_MCU 6
-#define GIP_FAULT_BUS 7
-#define GIP_FAULT_USAGE 8
+#define GIP_FAULT_UNKNOWN    0
+#define GIP_FAULT_HARD       1
+#define GIP_FAULT_NMI        2
+#define GIP_FAULT_SVC        3
+#define GIP_FAULT_PEND_SV    4
+#define GIP_FAULT_SMART_PTR  5
+#define GIP_FAULT_MCU        6
+#define GIP_FAULT_BUS        7
+#define GIP_FAULT_USAGE      8
 #define GIP_FAULT_RADIO_HANG 9
-#define GIP_FAULT_WATCHDOG 10
+#define GIP_FAULT_WATCHDOG   10
 #define GIP_FAULT_LINK_STALL 11
-#define GIP_FAULT_ASSERTION 12
+#define GIP_FAULT_ASSERTION  12
 
 /* Metadata constants */
-#define GIP_MESSAGE_FLAG_BIG_ENDIAN (1u << 0)
-#define GIP_MESSAGE_FLAG_RELIABLE (1u << 1)
-#define GIP_MESSAGE_FLAG_SEQUENCED (1u << 2)
-#define GIP_MESSAGE_FLAG_DOWNSTREAM (1u << 3)
-#define GIP_MESSAGE_FLAG_UPSTREAM (1u << 4)
+#define GIP_MESSAGE_FLAG_BIG_ENDIAN          (1u << 0)
+#define GIP_MESSAGE_FLAG_RELIABLE            (1u << 1)
+#define GIP_MESSAGE_FLAG_SEQUENCED           (1u << 2)
+#define GIP_MESSAGE_FLAG_DOWNSTREAM          (1u << 3)
+#define GIP_MESSAGE_FLAG_UPSTREAM            (1u << 4)
 #define GIP_MESSAGE_FLAG_DS_REQUEST_RESPONSE (1u << 5)
 
-#define GIP_DATA_TYPE_CUSTOM 1
-#define GIP_DATA_TYPE_AUDIO 2
+#define GIP_DATA_TYPE_CUSTOM   1
+#define GIP_DATA_TYPE_AUDIO    2
 #define GIP_DATA_TYPE_SECURITY 3
-#define GIP_DATA_TYPE_GIP 4
+#define GIP_DATA_TYPE_GIP      4
 
 /* Set Device State constants */
-#define GIP_STATE_START 0
-#define GIP_STATE_STOP 1
-#define GIP_STATE_STANDBY 2  /* obsolete */
+#define GIP_STATE_START      0
+#define GIP_STATE_STOP       1
+#define GIP_STATE_STANDBY    2 /* obsolete */
 #define GIP_STATE_FULL_POWER 3
-#define GIP_STATE_OFF 4
-#define GIP_STATE_QUIESCE 5
-#define GIP_STATE_UNK6 6
-#define GIP_STATE_RESET 7
+#define GIP_STATE_OFF        4
+#define GIP_STATE_QUIESCE    5
+#define GIP_STATE_UNK6       6
+#define GIP_STATE_RESET      7
 
 /* Guide Button Status constants */
 #define GIP_LED_GUIDE 0
-#define GIP_LID_IR 1  /* deprecated */
+#define GIP_LID_IR    1 /* deprecated */
 
-#define GIP_LED_GUIDE_OFF 0
-#define GIP_LED_GUIDE_ON 1
-#define GIP_LED_GUIDE_FAST_BLINK 2
-#define GIP_LED_GUIDE_SLOW_BLINK 3
+#define GIP_LED_GUIDE_OFF            0
+#define GIP_LED_GUIDE_ON             1
+#define GIP_LED_GUIDE_FAST_BLINK     2
+#define GIP_LED_GUIDE_SLOW_BLINK     3
 #define GIP_LED_GUIDE_CHARGING_BLINK 4
-#define GIP_LED_GUIDE_RAMP_TO_LEVEL 0xd
+#define GIP_LED_GUIDE_RAMP_TO_LEVEL  0xd
 
-#define GIP_LED_IR_OFF 0
+#define GIP_LED_IR_OFF      0
 #define GIP_LED_IR_ON_100MS 1
-#define GIP_LED_IR_PATTERN 4
+#define GIP_LED_IR_PATTERN  4
 
 /* Direct Motor Command constants */
 #define GIP_MOTOR_RIGHT_VIBRATION (1u << 0)
-#define GIP_MOTOR_LEFT_VIBRATION (1u << 1)
-#define GIP_MOTOR_RIGHT_IMPULSE (1u << 2)
-#define GIP_MOTOR_LEFT_IMPULSE (1u << 3)
-#define GIP_MOTOR_ALL 0xF
+#define GIP_MOTOR_LEFT_VIBRATION  (1u << 1)
+#define GIP_MOTOR_RIGHT_IMPULSE   (1u << 2)
+#define GIP_MOTOR_LEFT_IMPULSE    (1u << 3)
+#define GIP_MOTOR_ALL             0xF
 
 /* Extended Command constants */
-#define GIP_EXTCMD_GET_CAPABILITIES 0x00
+#define GIP_EXTCMD_GET_CAPABILITIES   0x00
 #define GIP_EXTCMD_GET_TELEMETRY_DATA 0x01
-#define GIP_EXTCMD_GET_SERIAL_NUMBER 0x04
+#define GIP_EXTCMD_GET_SERIAL_NUMBER  0x04
 
-#define GIP_EXTENDED_STATUS_OK 0
+#define GIP_EXTENDED_STATUS_OK            0
 #define GIP_EXTENDED_STATUS_NOT_SUPPORTED 1
-#define GIP_EXTENDED_STATUS_NOT_READY 2
+#define GIP_EXTENDED_STATUS_NOT_READY     2
 #define GIP_EXTENDED_STATUS_ACCESS_DENIED 3
-#define GIP_EXTENDED_STATUS_FAILED 4
+#define GIP_EXTENDED_STATUS_FAILED        4
 
 /* Internal constants, not part of protocol */
 #define GIP_HELLO_TIMEOUT 2000
-#define GIP_ACME_TIMEOUT 10
+#define GIP_ACME_TIMEOUT  10
 
-#define GIP_DEFAULT_IN_SYSTEM_MESSAGES 0x5e
+#define GIP_DEFAULT_IN_SYSTEM_MESSAGES  0x5e
 #define GIP_DEFAULT_OUT_SYSTEM_MESSAGES 0x472
 
-#define GIP_FEATURE_CONSOLE_FUNCTION_MAP (1u << 0)
+#define GIP_FEATURE_CONSOLE_FUNCTION_MAP          (1u << 0)
 #define GIP_FEATURE_CONSOLE_FUNCTION_MAP_OVERFLOW (1u << 1)
-#define GIP_FEATURE_ELITE_BUTTONS (1u << 2)
-#define GIP_FEATURE_DYNAMIC_LATENCY_INPUT (1u << 3)
-#define GIP_FEATURE_SECURITY_OPT_OUT (1u << 4)
-#define GIP_FEATURE_MOTOR_CONTROL (1u << 5)
-#define GIP_FEATURE_GUIDE_COLOR (1u << 6)
-#define GIP_FEATURE_EXTENDED_SET_DEVICE_STATE (1u << 7)
+#define GIP_FEATURE_ELITE_BUTTONS                 (1u << 2)
+#define GIP_FEATURE_DYNAMIC_LATENCY_INPUT         (1u << 3)
+#define GIP_FEATURE_SECURITY_OPT_OUT              (1u << 4)
+#define GIP_FEATURE_MOTOR_CONTROL                 (1u << 5)
+#define GIP_FEATURE_GUIDE_COLOR                   (1u << 6)
+#define GIP_FEATURE_EXTENDED_SET_DEVICE_STATE     (1u << 7)
 
-#define GIP_QUIRK_NO_HELLO (1u << 0)
-#define GIP_QUIRK_BROKEN_METADATA (1u << 1)
+#define GIP_QUIRK_NO_HELLO             (1u << 0)
+#define GIP_QUIRK_BROKEN_METADATA      (1u << 1)
 #define GIP_QUIRK_NO_IMPULSE_VIBRATION (1u << 2)
 
 typedef enum
@@ -379,7 +379,7 @@ static const GIP_Quirks quirks[] = {
       .extra_buttons = 5,
       .extra_axes = 3 },
 
-    {0},
+    { 0 },
 };
 
 typedef struct GIP_Header
@@ -728,7 +728,7 @@ static bool GIP_SendRawMessage(
 
     if (num_bytes > GIP_DataClassMtu[message_type >> GIP_DATA_CLASS_SHIFT]) {
         SDL_LogError(SDL_LOG_CATEGORY_INPUT,
-            "Attempted to send a message that requires fragmenting, which is not yet supported.");
+                     "Attempted to send a message that requires fragmenting, which is not yet supported.");
         return false;
     }
 
@@ -761,14 +761,14 @@ static bool GIP_SendSystemMessage(
     int num_bytes)
 {
     return GIP_SendRawMessage(attachment->device,
-        message_type,
-        GIP_FLAG_SYSTEM | attachment->attachment_index | flags,
-        GIP_SequenceNext(attachment, message_type, true),
-        bytes,
-        num_bytes,
-        false,
-        NULL,
-        NULL);
+                              message_type,
+                              GIP_FLAG_SYSTEM | attachment->attachment_index | flags,
+                              GIP_SequenceNext(attachment, message_type, true),
+                              bytes,
+                              num_bytes,
+                              false,
+                              NULL,
+                              NULL);
 }
 
 static bool GIP_SendVendorMessage(
@@ -779,20 +779,20 @@ static bool GIP_SendVendorMessage(
     int num_bytes)
 {
     return GIP_SendRawMessage(attachment->device,
-        message_type,
-        flags,
-        GIP_SequenceNext(attachment, message_type, false),
-        bytes,
-        num_bytes,
-        true,
-        NULL,
-        NULL);
+                              message_type,
+                              flags,
+                              GIP_SequenceNext(attachment, message_type, false),
+                              bytes,
+                              num_bytes,
+                              true,
+                              NULL,
+                              NULL);
 }
 
 static bool GIP_AttachmentIsController(GIP_Attachment *attachment)
 {
     return attachment->attachment_type != GIP_TYPE_CHATPAD &&
-        attachment->attachment_type != GIP_TYPE_HEADSET;
+           attachment->attachment_type != GIP_TYPE_HEADSET;
 }
 
 static void GIP_MetadataFree(GIP_Metadata *metadata)
@@ -863,8 +863,8 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
             Uint8 message = bytes[buffer_offset + 1 + i];
 #ifdef DEBUG_XBOX_PROTOCOL
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                "GIP: Supported upstream system message %02x",
-                message);
+                         "GIP: Supported upstream system message %02x",
+                         message);
 #endif
             device->in_system_messages[message >> 5] |= 1u << (message & 0x1F);
         }
@@ -885,8 +885,8 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
             Uint8 message = bytes[buffer_offset + 1 + i];
 #ifdef DEBUG_XBOX_PROTOCOL
             SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                "GIP: Supported downstream system message %02x",
-                message);
+                         "GIP: Supported downstream system message %02x",
+                         message);
 #endif
             device->out_system_messages[message >> 5] |= 1u << (message & 0x1F);
         }
@@ -926,13 +926,13 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
     }
     if (buffer_offset > 0) {
         device->num_supported_interfaces = bytes[buffer_offset];
-        if (buffer_offset + 1 + (Sint32) (device->num_supported_interfaces * sizeof(GUID)) > length) {
+        if (buffer_offset + 1 + (Sint32)(device->num_supported_interfaces * sizeof(GUID)) > length) {
             return false;
         }
         device->supported_interfaces = SDL_calloc(device->num_supported_interfaces, sizeof(GUID));
         SDL_memcpy(device->supported_interfaces,
-            &bytes[buffer_offset + 1],
-            sizeof(GUID) * device->num_supported_interfaces);
+                   &bytes[buffer_offset + 1],
+                   sizeof(GUID) * device->num_supported_interfaces);
     }
 
     if (metadata->version_major > 1 || metadata->version_minor >= 1) {
@@ -995,16 +995,14 @@ static bool GIP_ParseMessageMetadata(GIP_MessageMetadata *metadata, const Uint8 
 
 #ifdef DEBUG_XBOX_PROTOCOL
     SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-        "GIP: Supported vendor message type %02x of length %d, %s, %s, %s",
-        metadata->type,
-        metadata->length,
-        metadata->flags & GIP_MESSAGE_FLAG_UPSTREAM ?
-            (metadata->flags & GIP_MESSAGE_FLAG_DOWNSTREAM ? "bidirectional" : "upstream") :
-            metadata->flags & GIP_MESSAGE_FLAG_DOWNSTREAM ? "downstream" :
-            metadata->flags & GIP_MESSAGE_FLAG_DS_REQUEST_RESPONSE ? "downstream request response" :
-            "unknown direction",
-        metadata->flags & GIP_MESSAGE_FLAG_SEQUENCED ? "sequenced" : "not sequenced",
-        metadata->flags & GIP_MESSAGE_FLAG_RELIABLE ? "reliable" : "unreliable");
+                 "GIP: Supported vendor message type %02x of length %d, %s, %s, %s",
+                 metadata->type,
+                 metadata->length,
+                 metadata->flags & GIP_MESSAGE_FLAG_UPSTREAM ? (metadata->flags & GIP_MESSAGE_FLAG_DOWNSTREAM ? "bidirectional" : "upstream") : metadata->flags & GIP_MESSAGE_FLAG_DOWNSTREAM        ? "downstream"
+                                                                                                                                            : metadata->flags & GIP_MESSAGE_FLAG_DS_REQUEST_RESPONSE ? "downstream request response"
+                                                                                                                                                                                                     : "unknown direction",
+                 metadata->flags & GIP_MESSAGE_FLAG_SEQUENCED ? "sequenced" : "not sequenced",
+                 metadata->flags & GIP_MESSAGE_FLAG_RELIABLE ? "reliable" : "unreliable");
 #endif
 
     *offset += length;
@@ -1079,23 +1077,23 @@ static bool GIP_Acknowledge(
         GIP_CONTROL_CODE_ACK,
         header->message_type,
         header->flags & GIP_FLAG_SYSTEM,
-        (Uint8) fragment_offset,
-        (Uint8) (fragment_offset >> 8),
-        (Uint8) (fragment_offset >> 16),
+        (Uint8)fragment_offset,
+        (Uint8)(fragment_offset >> 8),
+        (Uint8)(fragment_offset >> 16),
         fragment_offset >> 24,
-        (Uint8) bytes_remaining,
+        (Uint8)bytes_remaining,
         bytes_remaining >> 8,
     };
 
     return GIP_SendRawMessage(device,
-        GIP_CMD_PROTO_CONTROL,
-        GIP_FLAG_SYSTEM | (header->flags & GIP_FLAG_ATTACHMENT_MASK),
-        header->sequence_id,
-        buffer,
-        sizeof(buffer),
-        false,
-        NULL,
-        NULL);
+                              GIP_CMD_PROTO_CONTROL,
+                              GIP_FLAG_SYSTEM | (header->flags & GIP_FLAG_ATTACHMENT_MASK),
+                              header->sequence_id,
+                              buffer,
+                              sizeof(buffer),
+                              false,
+                              NULL,
+                              NULL);
 }
 
 static bool GIP_FragmentFailed(GIP_Attachment *attachment, const GIP_Header *header)
@@ -1109,12 +1107,13 @@ static bool GIP_FragmentFailed(GIP_Attachment *attachment, const GIP_Header *hea
         attachment->fragment_message = 0;
     }
     return GIP_Acknowledge(attachment->device,
-        header,
-        attachment->fragment_offset,
-        (Uint16) (attachment->total_length - attachment->fragment_offset));
+                           header,
+                           attachment->fragment_offset,
+                           (Uint16)(attachment->total_length - attachment->fragment_offset));
 }
 
-static bool GIP_EnableEliteButtons(GIP_Attachment *attachment) {
+static bool GIP_EnableEliteButtons(GIP_Attachment *attachment)
+{
     if (attachment->device->device->vendor_id == USB_VENDOR_MICROSOFT) {
         if (attachment->device->device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1) {
             attachment->xbe_format = GIP_BTN_FMT_XBE1;
@@ -1129,8 +1128,7 @@ static bool GIP_EnableEliteButtons(GIP_Attachment *attachment) {
                  * a loose upper limit is fine.
                  */
                 if (attachment->firmware_minor_version >= 11 &&
-                    attachment->firmware_minor_version < 17)
-                {
+                    attachment->firmware_minor_version < 17) {
                     attachment->xbe_format = GIP_BTN_FMT_XBE2_RAW;
                 } else {
                     attachment->xbe_format = GIP_BTN_FMT_XBE2_5;
@@ -1146,10 +1144,10 @@ static bool GIP_EnableEliteButtons(GIP_Attachment *attachment) {
         static const Uint8 enable_raw_report[] = { 7, 0 };
 
         return GIP_SendVendorMessage(attachment,
-            GIP_SL_ELITE_CONFIG,
-            0,
-            enable_raw_report,
-            sizeof(enable_raw_report));
+                                     GIP_SL_ELITE_CONFIG,
+                                     0,
+                                     enable_raw_report,
+                                     sizeof(enable_raw_report));
     }
 
     return true;
@@ -1181,10 +1179,10 @@ static bool GIP_SendSetDeviceState(GIP_Attachment *attachment, Uint8 state)
 {
     Uint8 buffer[] = { state };
     return GIP_SendSystemMessage(attachment,
-        GIP_CMD_SET_DEVICE_STATE,
-        attachment->attachment_index,
-        buffer,
-        sizeof(buffer));
+                                 GIP_CMD_SET_DEVICE_STATE,
+                                 attachment->attachment_index,
+                                 buffer,
+                                 sizeof(buffer));
 }
 
 static bool GIP_SendInitSequence(GIP_Attachment *attachment)
@@ -1197,11 +1195,10 @@ static bool GIP_SendInitSequence(GIP_Attachment *attachment)
         static const Uint8 set_device_state[] = { GIP_STATE_UNK6, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x55, 0x53, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 
         if (!GIP_SendSystemMessage(attachment,
-            GIP_CMD_SET_DEVICE_STATE,
-            0,
-            set_device_state,
-            sizeof(set_device_state)))
-        {
+                                   GIP_CMD_SET_DEVICE_STATE,
+                                   0,
+                                   set_device_state,
+                                   sizeof(set_device_state))) {
             return false;
         }
     }
@@ -1218,8 +1215,7 @@ static bool GIP_SendInitSequence(GIP_Attachment *attachment)
     }
 
     if (GIP_SupportsSystemMessage(attachment, GIP_CMD_SECURITY, false) &&
-        !(attachment->features & GIP_FEATURE_SECURITY_OPT_OUT))
-    {
+        !(attachment->features & GIP_FEATURE_SECURITY_OPT_OUT)) {
         /* TODO: Implement Security command property */
         Uint8 buffer[] = { 0x1, 0x0 };
         GIP_SendSystemMessage(attachment, GIP_CMD_SECURITY, 0, buffer, sizeof(buffer));
@@ -1238,7 +1234,7 @@ static bool GIP_SendInitSequence(GIP_Attachment *attachment)
         return HIDAPI_JoystickConnected(attachment->device->device, &attachment->joystick);
     }
     if (attachment->attachment_type == GIP_TYPE_CHATPAD && !attachment->keyboard) {
-        attachment->keyboard = (SDL_KeyboardID)(uintptr_t) attachment;
+        attachment->keyboard = (SDL_KeyboardID)(uintptr_t)attachment;
         SDL_AddKeyboard(attachment->keyboard, "Xbox One Chatpad");
     }
     return true;
@@ -1309,20 +1305,20 @@ static bool GIP_HandleCommandHelloDevice(
     const Uint8 *bytes,
     int num_bytes)
 {
-    GIP_HelloDevice message = {0};
+    GIP_HelloDevice message = { 0 };
 
     if (num_bytes != 28) {
         return false;
     }
 
-    message.device_id = (Uint64) bytes[0];
-    message.device_id |= (Uint64) bytes[1] << 8;
-    message.device_id |= (Uint64) bytes[2] << 16;
-    message.device_id |= (Uint64) bytes[3] << 24;
-    message.device_id |= (Uint64) bytes[4] << 32;
-    message.device_id |= (Uint64) bytes[5] << 40;
-    message.device_id |= (Uint64) bytes[6] << 48;
-    message.device_id |= (Uint64) bytes[7] << 56;
+    message.device_id = (Uint64)bytes[0];
+    message.device_id |= (Uint64)bytes[1] << 8;
+    message.device_id |= (Uint64)bytes[2] << 16;
+    message.device_id |= (Uint64)bytes[3] << 24;
+    message.device_id |= (Uint64)bytes[4] << 32;
+    message.device_id |= (Uint64)bytes[5] << 40;
+    message.device_id |= (Uint64)bytes[6] << 48;
+    message.device_id |= (Uint64)bytes[7] << 56;
 
     message.vendor_id = bytes[8];
     message.vendor_id |= bytes[9] << 8;
@@ -1355,14 +1351,14 @@ static bool GIP_HandleCommandHelloDevice(
     message.gip_minor_version = bytes[27];
 
     SDL_LogInfo(SDL_LOG_CATEGORY_INPUT,
-        "GIP: Device hello from %" SDL_PRIx64 " (%04x:%04x)",
-        message.device_id, message.vendor_id, message.product_id);
+                "GIP: Device hello from %" SDL_PRIx64 " (%04x:%04x)",
+                message.device_id, message.vendor_id, message.product_id);
     SDL_LogInfo(SDL_LOG_CATEGORY_INPUT,
-        "GIP: Firmware version %d.%d.%d rev %d",
-        message.firmware_major_version,
-        message.firmware_minor_version,
-        message.firmware_build_version,
-        message.firmware_revision);
+                "GIP: Firmware version %d.%d.%d rev %d",
+                message.firmware_major_version,
+                message.firmware_minor_version,
+                message.firmware_build_version,
+                message.firmware_revision);
 
     /*
      * The GIP spec specifies that the host should reject the device if any of these are wrong.
@@ -1370,20 +1366,20 @@ static bool GIP_HandleCommandHelloDevice(
      */
     if (message.rf_proto_major_version != 1 && message.rf_proto_minor_version != 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Invalid RF protocol version %d.%d, expected 1.0",
-            message.rf_proto_major_version, message.rf_proto_minor_version);
+                    "GIP: Invalid RF protocol version %d.%d, expected 1.0",
+                    message.rf_proto_major_version, message.rf_proto_minor_version);
     }
 
     if (message.security_major_version != 1 && message.security_minor_version != 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Invalid security protocol version %d.%d, expected 1.0",
-            message.security_major_version, message.security_minor_version);
+                    "GIP: Invalid security protocol version %d.%d, expected 1.0",
+                    message.security_major_version, message.security_minor_version);
     }
 
     if (message.gip_major_version != 1 && message.gip_minor_version != 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Invalid GIP version %d.%d, expected 1.0",
-            message.gip_major_version, message.gip_minor_version);
+                    "GIP: Invalid GIP version %d.%d, expected 1.0",
+                    message.gip_major_version, message.gip_minor_version);
     }
 
     if (header->flags & GIP_FLAG_ATTACHMENT_MASK) {
@@ -1485,8 +1481,8 @@ static bool GIP_HandleCommandStatusDevice(
             status.num_events = bytes[4];
             if (status.num_events > 5) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Device reported too many events, %d > 5",
-                    status.num_events);
+                            "GIP: Device reported too many events, %d > 5",
+                            status.num_events);
                 return false;
             }
             if (5 + status.num_events * 10 > num_bytes) {
@@ -1517,7 +1513,7 @@ static bool GIP_HandleCommandMetadataRespose(
     const Uint8 *bytes,
     int num_bytes)
 {
-    GIP_Metadata metadata = {0};
+    GIP_Metadata metadata = { 0 };
     const GUID *expected_guid = NULL;
     bool found_expected_guid;
     bool found_controller_guid = false;
@@ -1596,12 +1592,12 @@ static bool GIP_HandleCommandMetadataRespose(
 
     found_expected_guid = !expected_guid;
     for (i = 0; i < metadata.device.num_supported_interfaces; i++) {
-        const GUID* guid = &metadata.device.supported_interfaces[i];
+        const GUID *guid = &metadata.device.supported_interfaces[i];
 #ifdef DEBUG_XBOX_PROTOCOL
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Supported interface: %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-            guid->a, guid->b, guid->c, guid->d[0], guid->d[1],
-            guid->d[2], guid->d[3], guid->d[4], guid->d[5], guid->d[6], guid->d[7]);
+                     "GIP: Supported interface: %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                     guid->a, guid->b, guid->c, guid->d[0], guid->d[1],
+                     guid->d[2], guid->d[3], guid->d[4], guid->d[5], guid->d[6], guid->d[7]);
 #endif
         if (expected_guid && SDL_memcmp(expected_guid, guid, sizeof(GUID)) == 0) {
             found_expected_guid = true;
@@ -1642,12 +1638,11 @@ static bool GIP_HandleCommandMetadataRespose(
 
     if (!found_expected_guid || (GIP_AttachmentIsController(attachment) && !found_controller_guid)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Controller was missing expected GUID. This controller probably won't work on an actual Xbox.");
+                     "GIP: Controller was missing expected GUID. This controller probably won't work on an actual Xbox.");
     }
 
     if ((attachment->features & GIP_FEATURE_GUIDE_COLOR) &&
-        !GIP_SupportsVendorMessage(attachment, GIP_CMD_GUIDE_COLOR, false))
-    {
+        !GIP_SupportsVendorMessage(attachment, GIP_CMD_GUIDE_COLOR, false)) {
         attachment->features &= ~GIP_FEATURE_GUIDE_COLOR;
     }
 
@@ -1734,8 +1729,7 @@ static bool GIP_HandleCommandFirmware(
         attachment->firmware_minor_version = minor;
 
         if (attachment->device->device->vendor_id == USB_VENDOR_MICROSOFT &&
-            attachment->device->device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2)
-        {
+            attachment->device->device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
             return GIP_EnableEliteButtons(attachment);
         }
         return true;
@@ -1772,38 +1766,38 @@ static bool GIP_HandleCommandRawReport(
     if ((attachment->features & GIP_FEATURE_ELITE_BUTTONS) && attachment->xbe_format == GIP_BTN_FMT_XBE2_RAW) {
         if (bytes[15] & 3) {
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 1,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 1,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 2,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 2,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 3,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 3,
+                                   0);
         } else {
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx,
-                (bytes[GIP_BTN_OFFSET_XBE2] & 0x01) != 0);
+                                   joystick,
+                                   attachment->paddle_idx,
+                                   (bytes[GIP_BTN_OFFSET_XBE2] & 0x01) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 1,
-                (bytes[GIP_BTN_OFFSET_XBE2] & 0x02) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 1,
+                                   (bytes[GIP_BTN_OFFSET_XBE2] & 0x02) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 2,
-                (bytes[GIP_BTN_OFFSET_XBE2] & 0x04) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 2,
+                                   (bytes[GIP_BTN_OFFSET_XBE2] & 0x04) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 3,
-                (bytes[GIP_BTN_OFFSET_XBE2] & 0x08) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 3,
+                                   (bytes[GIP_BTN_OFFSET_XBE2] & 0x08) != 0);
         }
     }
     return true;
@@ -1839,7 +1833,7 @@ static bool GIP_HandleCommandHidReport(
             attachment->altcode = 0;
         } else {
             if (attachment->altcode_digit == 4) {
-                char utf8[4] = {0};
+                char utf8[4] = { 0 };
                 // Some Alt codes don't match their Unicode codepoint for some reason
                 switch (attachment->altcode) {
                 case 128:
@@ -1876,8 +1870,8 @@ static bool GIP_HandleCommandHidReport(
         SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, attachment->last_key, false);
         if (!(attachment->last_modifiers & 0xfd)) {
             SDL_Keycode keycode = SDL_GetKeymapKeycode(NULL,
-                attachment->last_key,
-                ((attachment->last_modifiers & 0x02) || attachment->capslock) ? SDL_KMOD_SHIFT : 0);
+                                                       attachment->last_key,
+                                                       ((attachment->last_modifiers & 0x02) || attachment->capslock) ? SDL_KMOD_SHIFT : 0);
             if (keycode && keycode < 0x80) {
                 char text[2] = { (char)keycode };
                 SDL_SendKeyboardText(text);
@@ -1912,7 +1906,7 @@ static bool GIP_HandleCommandExtended(
     const Uint8 *bytes,
     int num_bytes)
 {
-    char serial[33] = {0};
+    char serial[33] = { 0 };
 
     if (num_bytes < 2) {
         return false;
@@ -2084,9 +2078,9 @@ static void GIP_HandleFlightStickReport(
         if (attachment->last_input[i / 8 + 3] != bytes[i / 8 + 3]) {
             for (; i < attachment->extra_buttons; i++) {
                 SDL_SendJoystickButton(timestamp,
-                    joystick,
-                    (Uint8) (attachment->extra_button_idx + i),
-                    ((bytes[i / 8 + 3] & (1u << i)) != 0));
+                                       joystick,
+                                       (Uint8)(attachment->extra_button_idx + i),
+                                       ((bytes[i / 8 + 3] & (1u << i)) != 0));
             }
         } else {
             i += 8;
@@ -2118,7 +2112,7 @@ static void GIP_HandleFlightStickReport(
         }
         axis = (bytes[20 + i * 2] << 8) - 0x8000;
         axis |= bytes[19 + i * 2];
-        SDL_SendJoystickAxis(timestamp, joystick, (Uint8) (SDL_GAMEPAD_AXIS_RIGHT_TRIGGER + i), axis);
+        SDL_SendJoystickAxis(timestamp, joystick, (Uint8)(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER + i), axis);
     }
 }
 
@@ -2174,51 +2168,48 @@ static bool GIP_HandleLLInputReport(
         if (attachment->xbe_format == GIP_BTN_FMT_XBE1 &&
             num_bytes > GIP_BTN_OFFSET_XBE1 &&
             attachment->last_input[GIP_BTN_OFFSET_XBE1] != bytes[GIP_BTN_OFFSET_XBE1] &&
-            (bytes[GIP_BTN_OFFSET_XBE1] & 0x10))
-        {
+            (bytes[GIP_BTN_OFFSET_XBE1] & 0x10)) {
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx,
-                (bytes[GIP_BTN_OFFSET_XBE1] & 0x02) != 0);
+                                   joystick,
+                                   attachment->paddle_idx,
+                                   (bytes[GIP_BTN_OFFSET_XBE1] & 0x02) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 1,
-                (bytes[GIP_BTN_OFFSET_XBE1] & 0x08) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 1,
+                                   (bytes[GIP_BTN_OFFSET_XBE1] & 0x08) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 2,
-                (bytes[GIP_BTN_OFFSET_XBE1] & 0x01) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 2,
+                                   (bytes[GIP_BTN_OFFSET_XBE1] & 0x01) != 0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 3,
-                (bytes[GIP_BTN_OFFSET_XBE1] & 0x04) != 0);
+                                   joystick,
+                                   attachment->paddle_idx + 3,
+                                   (bytes[GIP_BTN_OFFSET_XBE1] & 0x04) != 0);
         } else if ((attachment->xbe_format == GIP_BTN_FMT_XBE2_4 ||
-            attachment->xbe_format == GIP_BTN_FMT_XBE2_5) &&
-            num_bytes > GIP_BTN_OFFSET_XBE2)
-        {
+                    attachment->xbe_format == GIP_BTN_FMT_XBE2_5) &&
+                   num_bytes > GIP_BTN_OFFSET_XBE2) {
             int profile_offset = attachment->xbe_format == GIP_BTN_FMT_XBE2_4 ? 15 : 20;
             if (attachment->last_input[GIP_BTN_OFFSET_XBE2] != bytes[GIP_BTN_OFFSET_XBE2] ||
-                attachment->last_input[profile_offset] != bytes[profile_offset])
-            {
+                attachment->last_input[profile_offset] != bytes[profile_offset]) {
                 if (bytes[profile_offset] & 3) {
                     clear = true;
                 } else {
                     SDL_SendJoystickButton(timestamp,
-                        joystick,
-                        attachment->paddle_idx,
-                        (bytes[GIP_BTN_OFFSET_XBE2] & 0x01) != 0);
+                                           joystick,
+                                           attachment->paddle_idx,
+                                           (bytes[GIP_BTN_OFFSET_XBE2] & 0x01) != 0);
                     SDL_SendJoystickButton(timestamp,
-                        joystick,
-                        attachment->paddle_idx + 1,
-                        (bytes[GIP_BTN_OFFSET_XBE2] & 0x02) != 0);
+                                           joystick,
+                                           attachment->paddle_idx + 1,
+                                           (bytes[GIP_BTN_OFFSET_XBE2] & 0x02) != 0);
                     SDL_SendJoystickButton(timestamp,
-                        joystick,
-                        attachment->paddle_idx + 2,
-                        (bytes[GIP_BTN_OFFSET_XBE2] & 0x04) != 0);
+                                           joystick,
+                                           attachment->paddle_idx + 2,
+                                           (bytes[GIP_BTN_OFFSET_XBE2] & 0x04) != 0);
                     SDL_SendJoystickButton(timestamp,
-                        joystick,
-                        attachment->paddle_idx + 3,
-                        (bytes[GIP_BTN_OFFSET_XBE2] & 0x08) != 0);
+                                           joystick,
+                                           attachment->paddle_idx + 3,
+                                           (bytes[GIP_BTN_OFFSET_XBE2] & 0x08) != 0);
                 }
             }
         } else {
@@ -2226,21 +2217,21 @@ static bool GIP_HandleLLInputReport(
         }
         if (clear) {
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 1,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 1,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 2,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 2,
+                                   0);
             SDL_SendJoystickButton(timestamp,
-                joystick,
-                attachment->paddle_idx + 3,
-                0);
+                                   joystick,
+                                   attachment->paddle_idx + 3,
+                                   0);
         }
     }
 
@@ -2257,9 +2248,9 @@ static bool GIP_HandleLLInputReport(
         if (function_map_offset >= 14) {
             if (attachment->last_input[function_map_offset] != bytes[function_map_offset]) {
                 SDL_SendJoystickButton(timestamp,
-                    joystick,
-                    attachment->share_button_idx,
-                    (bytes[function_map_offset] & 0x01) != 0);
+                                       joystick,
+                                       attachment->share_button_idx,
+                                       (bytes[function_map_offset] & 0x01) != 0);
             }
         }
     }
@@ -2324,7 +2315,7 @@ static bool GIP_HandleSystemMessage(
         // attachments we don't know about. Try to figure out what this one is.
         if (header->message_type == GIP_CMD_HID_REPORT && num_bytes == 8) {
             if (!attachment->keyboard) {
-                attachment->keyboard = (SDL_KeyboardID)(uintptr_t) attachment;
+                attachment->keyboard = (SDL_KeyboardID)(uintptr_t)attachment;
                 SDL_AddKeyboard(attachment->keyboard, "Xbox One Chatpad");
             }
             attachment->attachment_type = GIP_TYPE_CHATPAD;
@@ -2333,8 +2324,8 @@ static bool GIP_HandleSystemMessage(
     }
     if (!GIP_SupportsSystemMessage(attachment, header->message_type, true)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Received claimed-unsupported system message type %02x",
-            header->message_type);
+                    "GIP: Received claimed-unsupported system message type %02x",
+                    header->message_type);
         return false;
     }
     switch (header->message_type) {
@@ -2362,8 +2353,8 @@ static bool GIP_HandleSystemMessage(
         return GIP_HandleAudioData(attachment, header, bytes, num_bytes);
     default:
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Received unknown system message type %02x",
-            header->message_type);
+                    "GIP: Received unknown system message type %02x",
+                    header->message_type);
         return false;
     }
 }
@@ -2411,8 +2402,8 @@ static bool GIP_HandleMessage(
         }
     }
     SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-        "GIP: Received unknown vendor message type %02x",
-        header->message_type);
+                "GIP: Received unknown vendor message type %02x",
+                header->message_type);
     return false;
 }
 
@@ -2463,30 +2454,30 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
             if (total_length > MAX_MESSAGE_LENGTH) {
                 return;
             }
-            attachment->total_length = (Uint16) total_length;
+            attachment->total_length = (Uint16)total_length;
             attachment->fragment_message = header.message_type;
             if (header.length > num_bytes - offset) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received fragment that claims to be %" SDL_PRIu64 " bytes, expected %i",
-                    header.length, num_bytes - offset);
+                            "GIP: Received fragment that claims to be %" SDL_PRIu64 " bytes, expected %i",
+                            header.length, num_bytes - offset);
                 return;
             }
             if (header.length > total_length) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received too long fragment, %" SDL_PRIu64 " bytes, exceeds %d",
-                    header.length, attachment->total_length);
+                            "GIP: Received too long fragment, %" SDL_PRIu64 " bytes, exceeds %d",
+                            header.length, attachment->total_length);
                 return;
             }
             attachment->fragment_data = SDL_malloc(attachment->total_length);
-            SDL_memcpy(attachment->fragment_data, &bytes[offset], (size_t) header.length);
+            SDL_memcpy(attachment->fragment_data, &bytes[offset], (size_t)header.length);
             fragment_offset = header.length;
-            attachment->fragment_offset = (Uint32) fragment_offset;
-            bytes_remaining = (Uint16) (attachment->total_length - fragment_offset);
+            attachment->fragment_offset = (Uint32)fragment_offset;
+            bytes_remaining = (Uint16)(attachment->total_length - fragment_offset);
         } else {
             if (header.message_type != attachment->fragment_message) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received out of sequence message type %02x, expected %02x",
-                    header.message_type, attachment->fragment_message);
+                            "GIP: Received out of sequence message type %02x, expected %02x",
+                            header.message_type, attachment->fragment_message);
                 GIP_FragmentFailed(attachment, &header);
                 return;
             }
@@ -2494,24 +2485,24 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
             offset += GIP_DecodeLength(&fragment_offset, &bytes[offset], num_bytes - offset);
             if (fragment_offset != attachment->fragment_offset) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received out of sequence fragment, (claimed %" SDL_PRIu64 ", expected %d)",
-                    fragment_offset, attachment->fragment_offset);
+                            "GIP: Received out of sequence fragment, (claimed %" SDL_PRIu64 ", expected %d)",
+                            fragment_offset, attachment->fragment_offset);
                 GIP_Acknowledge(device,
-                    &header,
-                    attachment->fragment_offset,
-                    (Uint16) (attachment->total_length - attachment->fragment_offset));
+                                &header,
+                                attachment->fragment_offset,
+                                (Uint16)(attachment->total_length - attachment->fragment_offset));
                 return;
             } else if (fragment_offset + header.length > attachment->total_length) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-                    "GIP: Received too long fragment, %" SDL_PRIu64 " exceeds %d",
-                    fragment_offset + header.length, attachment->total_length);
+                            "GIP: Received too long fragment, %" SDL_PRIu64 " exceeds %d",
+                            fragment_offset + header.length, attachment->total_length);
                 GIP_FragmentFailed(attachment, &header);
                 return;
             }
 
-            bytes_remaining = attachment->total_length - (Uint16) (fragment_offset + header.length);
+            bytes_remaining = attachment->total_length - (Uint16)(fragment_offset + header.length);
             if (header.length != 0) {
-                SDL_memcpy(&attachment->fragment_data[fragment_offset], &bytes[offset], (size_t) header.length);
+                SDL_memcpy(&attachment->fragment_data[fragment_offset], &bytes[offset], (size_t)header.length);
             } else {
                 ok = GIP_HandleMessage(attachment, &header, attachment->fragment_data, attachment->total_length);
                 if (attachment->fragment_data) {
@@ -2521,13 +2512,13 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
                 attachment->fragment_message = 0;
             }
             fragment_offset += header.length;
-            attachment->fragment_offset = (Uint16) fragment_offset;
+            attachment->fragment_offset = (Uint16)fragment_offset;
         }
         attachment->fragment_timer = SDL_GetTicks();
     } else if (header.length + offset > num_bytes) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
-            "GIP: Received message with erroneous length (claimed %" SDL_PRIu64 ", actual %d), discarding",
-            header.length + offset, num_bytes);
+                    "GIP: Received message with erroneous length (claimed %" SDL_PRIu64 ", actual %d), discarding",
+                    header.length + offset, num_bytes);
         return;
     } else {
         num_bytes -= offset;
@@ -2537,7 +2528,7 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
     }
 
     if (ok && (header.flags & GIP_FLAG_ACME)) {
-        GIP_Acknowledge(device, &header, (Uint32) fragment_offset, bytes_remaining);
+        GIP_Acknowledge(device, &header, (Uint32)fragment_offset, bytes_remaining);
     }
 }
 
@@ -2587,18 +2578,17 @@ static bool HIDAPI_DriverGIP_UpdateRumble(GIP_Attachment *attachment)
     motor.delay = 0;
     motor.repeat = 0;
 
-    Uint8 message[9] = {0};
+    Uint8 message[9] = { 0 };
     SDL_memcpy(&message[1], &motor, sizeof(motor));
     if (!GIP_SendRawMessage(attachment->device,
-        GIP_CMD_DIRECT_MOTOR,
-        attachment->attachment_index,
-        GIP_SequenceNext(attachment, GIP_CMD_DIRECT_MOTOR, false),
-        message,
-        sizeof(message),
-        true,
-        HIDAPI_DriverGIP_RumbleSent,
-        attachment))
-    {
+                            GIP_CMD_DIRECT_MOTOR,
+                            attachment->attachment_index,
+                            GIP_SequenceNext(attachment, GIP_CMD_DIRECT_MOTOR, false),
+                            message,
+                            sizeof(message),
+                            true,
+                            HIDAPI_DriverGIP_RumbleSent,
+                            attachment)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
 
@@ -2622,9 +2612,9 @@ static void HIDAPI_DriverGIP_UnregisterHints(SDL_HintCallback callback, void *us
 static bool HIDAPI_DriverGIP_IsEnabled(void)
 {
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP,
-        SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
-            SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
-                SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT))));
+                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
+                                                 SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_XBOX,
+                                                                    SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT))));
 }
 
 static bool HIDAPI_DriverGIP_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -2681,7 +2671,7 @@ static void HIDAPI_DriverGIP_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
 {
 }
 
-static GIP_Attachment * HIDAPI_DriverGIP_FindAttachment(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+static GIP_Attachment *HIDAPI_DriverGIP_FindAttachment(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     GIP_Device *ctx = (GIP_Device *)device->context;
     int i;
@@ -2719,17 +2709,16 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     GIP_EnableEliteButtons(attachment);
     if (attachment->xbe_format != GIP_BTN_FMT_UNKNOWN ||
         (device->vendor_id == USB_VENDOR_MICROSOFT &&
-        device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2))
-    {
-        attachment->paddle_idx = (Uint8) joystick->nbuttons;
+         device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2)) {
+        attachment->paddle_idx = (Uint8)joystick->nbuttons;
         joystick->nbuttons += 4;
     }
     if (attachment->features & GIP_FEATURE_CONSOLE_FUNCTION_MAP) {
-        attachment->share_button_idx = (Uint8) joystick->nbuttons;
+        attachment->share_button_idx = (Uint8)joystick->nbuttons;
         joystick->nbuttons++;
     }
     if (attachment->extra_buttons > 0) {
-        attachment->extra_button_idx = (Uint8) joystick->nbuttons;
+        attachment->extra_button_idx = (Uint8)joystick->nbuttons;
         joystick->nbuttons += attachment->extra_buttons;
     }
 
@@ -2833,7 +2822,6 @@ static bool HIDAPI_DriverGIP_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_J
     return SDL_Unsupported();
 }
 
-
 static bool HIDAPI_DriverGIP_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
@@ -2870,8 +2858,7 @@ static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
         if (!perform_reset &&
             attachment->got_metadata == GIP_METADATA_PENDING &&
             timestamp >= attachment->metadata_next &&
-            attachment->fragment_message != GIP_CMD_METADATA)
-        {
+            attachment->fragment_message != GIP_CMD_METADATA) {
             if (attachment->metadata_retries < 3) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "GIP: Retrying metadata request");
                 attachment->metadata_retries++;

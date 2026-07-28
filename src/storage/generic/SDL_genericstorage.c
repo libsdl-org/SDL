@@ -23,7 +23,6 @@
 
 #include "../SDL_sysstorage.h"
 
-
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
     const char *rel = relative;
@@ -62,9 +61,9 @@ static SDL_EnumerationResult SDLCALL GENERIC_EnumerateDirectory(void *userdata, 
     // effectively trimming the root without having to strdup anything.
     const GenericEnumerateData *wrap_data = (GenericEnumerateData *)userdata;
 
-    dirname += wrap_data->base_len;  // skip the base, just return the part inside of the Storage.
+    dirname += wrap_data->base_len; // skip the base, just return the part inside of the Storage.
 
-    #ifdef SDL_PLATFORM_WINDOWS
+#ifdef SDL_PLATFORM_WINDOWS
     char *dirnamecpy = NULL;
     const size_t slen = SDL_strlen(dirname);
     if (slen && (dirname[slen - 1] == '\\')) {
@@ -72,15 +71,15 @@ static SDL_EnumerationResult SDLCALL GENERIC_EnumerateDirectory(void *userdata, 
         if (!dirnamecpy) {
             return SDL_ENUM_FAILURE;
         }
-        dirnamecpy[slen - 1] = '/';  // storage layer always uses '/' path separators.
+        dirnamecpy[slen - 1] = '/'; // storage layer always uses '/' path separators.
         dirname = dirnamecpy;
     }
     const SDL_EnumerationResult retval = wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
     SDL_free(dirnamecpy);
     return retval;
-    #else
+#else
     return wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
-    #endif
+#endif
 }
 
 static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
@@ -232,16 +231,16 @@ static Uint64 GENERIC_GetStorageSpaceRemaining(void *userdata)
 static const SDL_StorageInterface GENERIC_title_iface = {
     sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   // ready
+    NULL, // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
-    NULL,   // write_file
-    NULL,   // mkdir
-    NULL,   // remove
-    NULL,   // rename
-    NULL,   // copy
-    NULL    // space_remaining
+    NULL, // write_file
+    NULL, // mkdir
+    NULL, // remove
+    NULL, // rename
+    NULL, // copy
+    NULL  // space_remaining
 };
 
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
@@ -269,7 +268,7 @@ static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID 
     if (basepath != NULL) {
         result = SDL_OpenStorage(&GENERIC_title_iface, basepath);
         if (result == NULL) {
-            SDL_free(basepath);  // otherwise CloseStorage will free it.
+            SDL_free(basepath); // otherwise CloseStorage will free it.
         }
     }
 
@@ -285,7 +284,7 @@ TitleStorageBootStrap GENERIC_titlebootstrap = {
 static const SDL_StorageInterface GENERIC_user_iface = {
     sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   // ready
+    NULL, // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
@@ -307,7 +306,7 @@ static SDL_Storage *GENERIC_User_Create(const char *org, const char *app, SDL_Pr
 
     result = SDL_OpenStorage(&GENERIC_user_iface, prefpath);
     if (result == NULL) {
-        SDL_free(prefpath);  // otherwise CloseStorage will free it.
+        SDL_free(prefpath); // otherwise CloseStorage will free it.
     }
     return result;
 }
@@ -321,7 +320,7 @@ UserStorageBootStrap GENERIC_userbootstrap = {
 static const SDL_StorageInterface GENERIC_file_iface = {
     sizeof(SDL_StorageInterface),
     GENERIC_CloseStorage,
-    NULL,   // ready
+    NULL, // ready
     GENERIC_EnumerateStorageDirectory,
     GENERIC_GetStoragePathInfo,
     GENERIC_ReadStorageFile,
@@ -355,12 +354,12 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
 
     bool is_absolute = false;
 #ifdef SDL_PLATFORM_WINDOWS
-    const char ch = (char) SDL_toupper(path[0]);
-    is_absolute = (ch == '/') ||   // some sort of absolute Unix-style path.
-                  (ch == '\\') ||  // some sort of absolute Windows-style path.
-                  (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/')));  // an absolute path with a drive letter.
+    const char ch = (char)SDL_toupper(path[0]);
+    is_absolute = (ch == '/') ||                                                                                 // some sort of absolute Unix-style path.
+                  (ch == '\\') ||                                                                                // some sort of absolute Windows-style path.
+                  (((ch >= 'A') && (ch <= 'Z')) && (path[1] == ':') && ((path[2] == '\\') || (path[2] == '/'))); // an absolute path with a drive letter.
 #else
-    is_absolute = (path[0] == '/');   // some sort of absolute Unix-style path.
+    is_absolute = (path[0] == '/'); // some sort of absolute Unix-style path.
 #endif
     if (!is_absolute) {
         prepend = SDL_GetCurrentDirectory();
@@ -373,11 +372,11 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
     const size_t len = SDL_strlen(path);
     const char *appended_separator = "";
 #ifdef SDL_PLATFORM_WINDOWS
-    if ((path[len-1] != '/') && (path[len-1] != '\\')) {
+    if ((path[len - 1] != '/') && (path[len - 1] != '\\')) {
         appended_separator = "/";
     }
 #else
-    if (path[len-1] != '/') {
+    if (path[len - 1] != '/') {
         appended_separator = "/";
     }
 #endif

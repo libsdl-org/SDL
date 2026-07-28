@@ -29,10 +29,10 @@
 
 #include "../SDL_sysasyncio.h"
 
-#include <liburing.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>  // for strerror()
+#include <liburing.h>
+#include <string.h> // for strerror()
 
 static SDL_InitState liburing_init;
 
@@ -52,45 +52,42 @@ SDL_ELF_NOTE_DLOPEN(
     "io-io_uring",
     "Support for async IO through liburing",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_DRIVER_LIBURING_DYNAMIC
-)
+    SDL_DRIVER_LIBURING_DYNAMIC)
 
-#define SDL_LIBURING_FUNCS \
-    SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \
-    SDL_LIBURING_FUNC(struct io_uring_probe *,io_uring_get_probe,(void)) \
-    SDL_LIBURING_FUNC(void, io_uring_free_probe, (struct io_uring_probe *probe)) \
-    SDL_LIBURING_FUNC(int, io_uring_opcode_supported, (const struct io_uring_probe *p, int op)) \
-    SDL_LIBURING_FUNC(struct io_uring_sqe *, io_uring_get_sqe, (struct io_uring *ring)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_read,(struct io_uring_sqe *sqe, int fd, void *buf, unsigned nbytes, __u64 offset)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_write,(struct io_uring_sqe *sqe, int fd, const void *buf, unsigned nbytes, __u64 offset)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_close, (struct io_uring_sqe *sqe, int fd)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_fsync, (struct io_uring_sqe *sqe, int fd, unsigned fsync_flags)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_cancel, (struct io_uring_sqe *sqe, void *user_data, int flags)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_timeout, (struct io_uring_sqe *sqe, struct __kernel_timespec *ts, unsigned count, unsigned flags)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_nop, (struct io_uring_sqe *sqe)) \
-    SDL_LIBURING_FUNC(void, io_uring_sqe_set_data, (struct io_uring_sqe *sqe, void *data)) \
-    SDL_LIBURING_FUNC(void, io_uring_sqe_set_flags, (struct io_uring_sqe *sqe, unsigned flags)) \
-    SDL_LIBURING_FUNC(int, io_uring_submit, (struct io_uring *ring)) \
-    SDL_LIBURING_FUNC(int, io_uring_peek_cqe, (struct io_uring *ring, struct io_uring_cqe **cqe_ptr)) \
-    SDL_LIBURING_FUNC(int, io_uring_wait_cqe, (struct io_uring *ring, struct io_uring_cqe **cqe_ptr)) \
-    SDL_LIBURING_FUNC(int, io_uring_wait_cqe_timeout, (struct io_uring *ring, struct io_uring_cqe **cqe_ptr, struct __kernel_timespec *ts)) \
-    SDL_LIBURING_FUNC(void, io_uring_cqe_seen, (struct io_uring *ring, struct io_uring_cqe *cqe)) \
-    SDL_LIBURING_FUNC(void, io_uring_queue_exit, (struct io_uring *ring)) \
+#define SDL_LIBURING_FUNCS                                                                                                                     \
+    SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags))                                     \
+    SDL_LIBURING_FUNC(struct io_uring_probe *, io_uring_get_probe, (void))                                                                     \
+    SDL_LIBURING_FUNC(void, io_uring_free_probe, (struct io_uring_probe * probe))                                                              \
+    SDL_LIBURING_FUNC(int, io_uring_opcode_supported, (const struct io_uring_probe *p, int op))                                                \
+    SDL_LIBURING_FUNC(struct io_uring_sqe *, io_uring_get_sqe, (struct io_uring * ring))                                                       \
+    SDL_LIBURING_FUNC(void, io_uring_prep_read, (struct io_uring_sqe * sqe, int fd, void *buf, unsigned nbytes, __u64 offset))                 \
+    SDL_LIBURING_FUNC(void, io_uring_prep_write, (struct io_uring_sqe * sqe, int fd, const void *buf, unsigned nbytes, __u64 offset))          \
+    SDL_LIBURING_FUNC(void, io_uring_prep_close, (struct io_uring_sqe * sqe, int fd))                                                          \
+    SDL_LIBURING_FUNC(void, io_uring_prep_fsync, (struct io_uring_sqe * sqe, int fd, unsigned fsync_flags))                                    \
+    SDL_LIBURING_FUNC(void, io_uring_prep_cancel, (struct io_uring_sqe * sqe, void *user_data, int flags))                                     \
+    SDL_LIBURING_FUNC(void, io_uring_prep_timeout, (struct io_uring_sqe * sqe, struct __kernel_timespec * ts, unsigned count, unsigned flags)) \
+    SDL_LIBURING_FUNC(void, io_uring_prep_nop, (struct io_uring_sqe * sqe))                                                                    \
+    SDL_LIBURING_FUNC(void, io_uring_sqe_set_data, (struct io_uring_sqe * sqe, void *data))                                                    \
+    SDL_LIBURING_FUNC(void, io_uring_sqe_set_flags, (struct io_uring_sqe * sqe, unsigned flags))                                               \
+    SDL_LIBURING_FUNC(int, io_uring_submit, (struct io_uring * ring))                                                                          \
+    SDL_LIBURING_FUNC(int, io_uring_peek_cqe, (struct io_uring * ring, struct io_uring_cqe * *cqe_ptr))                                        \
+    SDL_LIBURING_FUNC(int, io_uring_wait_cqe, (struct io_uring * ring, struct io_uring_cqe * *cqe_ptr))                                        \
+    SDL_LIBURING_FUNC(int, io_uring_wait_cqe_timeout, (struct io_uring * ring, struct io_uring_cqe * *cqe_ptr, struct __kernel_timespec * ts)) \
+    SDL_LIBURING_FUNC(void, io_uring_cqe_seen, (struct io_uring * ring, struct io_uring_cqe * cqe))                                            \
+    SDL_LIBURING_FUNC(void, io_uring_queue_exit, (struct io_uring * ring))
 
-
-#define SDL_LIBURING_FUNC(ret, fn, args) typedef ret (*SDL_fntype_##fn) args;
+#define SDL_LIBURING_FUNC(ret, fn, args) typedef ret(*SDL_fntype_##fn) args;
 SDL_LIBURING_FUNCS
 #undef SDL_LIBURING_FUNC
 
 typedef struct SDL_LibUringFunctions
 {
-    #define SDL_LIBURING_FUNC(ret, fn, args) SDL_fntype_##fn fn;
+#define SDL_LIBURING_FUNC(ret, fn, args) SDL_fntype_##fn fn;
     SDL_LIBURING_FUNCS
-    #undef SDL_LIBURING_FUNC
+#undef SDL_LIBURING_FUNC
 } SDL_LibUringFunctions;
 
 static SDL_LibUringFunctions liburing;
-
 
 typedef struct LibUringAsyncIOQueueData
 {
@@ -99,7 +96,6 @@ typedef struct LibUringAsyncIOQueueData
     struct io_uring ring;
     SDL_AtomicInt num_waiting;
 } LibUringAsyncIOQueueData;
-
 
 static void UnloadLibUringLibrary(void)
 {
@@ -112,14 +108,15 @@ static void UnloadLibUringLibrary(void)
 
 static bool LoadLibUringSyms(void)
 {
-    #define SDL_LIBURING_FUNC(ret, fn, args) { \
-        liburing.fn = (SDL_fntype_##fn) SDL_LoadFunction(liburing_handle, #fn); \
-        if (!liburing.fn) { \
-            return false; \
-        } \
+#define SDL_LIBURING_FUNC(ret, fn, args)                                       \
+    {                                                                          \
+        liburing.fn = (SDL_fntype_##fn)SDL_LoadFunction(liburing_handle, #fn); \
+        if (!liburing.fn) {                                                    \
+            return false;                                                      \
+        }                                                                      \
     }
     SDL_LIBURING_FUNCS
-    #undef SDL_LIBURING_FUNC
+#undef SDL_LIBURING_FUNC
     return true;
 }
 
@@ -178,38 +175,38 @@ static bool liburing_SetError(const char *what, int err)
 
 static Sint64 liburing_asyncio_size(void *userdata)
 {
-    const int fd = (int) (intptr_t) userdata;
+    const int fd = (int)(intptr_t)userdata;
     struct stat statbuf;
     if (fstat(fd, &statbuf) < 0) {
         SDL_SetError("fstat failed: %s", strerror(errno));
         return -1;
     }
-    return ((Sint64) statbuf.st_size);
+    return ((Sint64)statbuf.st_size);
 }
 
 // you must hold sqe_lock when calling this!
 static bool liburing_asyncioqueue_queue_task(void *userdata, SDL_AsyncIOTask *task)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
     const int rc = liburing.io_uring_submit(&queuedata->ring);
     return (rc < 0) ? liburing_SetError("io_uring_submit", rc) : true;
 }
 
 static void liburing_asyncioqueue_cancel_task(void *userdata, SDL_AsyncIOTask *task)
 {
-    SDL_AsyncIOTask *cancel_task = (SDL_AsyncIOTask *) SDL_calloc(1, sizeof (*cancel_task));
+    SDL_AsyncIOTask *cancel_task = (SDL_AsyncIOTask *)SDL_calloc(1, sizeof(*cancel_task));
     if (!cancel_task) {
-        return;  // oh well, the task can just finish on its own.
+        return; // oh well, the task can just finish on its own.
     }
 
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
     struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
     if (!sqe) {
         SDL_UnlockMutex(queuedata->sqe_lock);
-        SDL_free(cancel_task);  // oh well, the task can just finish on its own.
+        SDL_free(cancel_task); // oh well, the task can just finish on its own.
         return;
     }
 
@@ -226,13 +223,13 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
         return NULL;
     }
 
-    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) io_uring_cqe_get_data(cqe);
-    if (task) {  // can be NULL if this was just a wakeup message, a NOP, etc.
-        if (!task->queue) {  // We leave `queue` blank to signify this was a task cancellation.
+    SDL_AsyncIOTask *task = (SDL_AsyncIOTask *)io_uring_cqe_get_data(cqe);
+    if (task) {             // can be NULL if this was just a wakeup message, a NOP, etc.
+        if (!task->queue) { // We leave `queue` blank to signify this was a task cancellation.
             SDL_AsyncIOTask *cancel_task = task;
-            task = (SDL_AsyncIOTask *) cancel_task->app_userdata;
+            task = (SDL_AsyncIOTask *)cancel_task->app_userdata;
             SDL_free(cancel_task);
-            if (cqe->res >= 0) {  // cancel was successful?
+            if (cqe->res >= 0) { // cancel was successful?
                 task->result = SDL_ASYNCIO_CANCELED;
             } else {
                 task = NULL; // it already finished or was too far along to cancel, so we'll pick up the actual results later.
@@ -241,20 +238,20 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
             task->result = SDL_ASYNCIO_FAILURE;
             // !!! FIXME: fill in task->error.
         } else {
-            if ((task->type == SDL_ASYNCIO_TASK_WRITE) && (((Uint64) cqe->res) < task->requested_size)) {
-                task->result = SDL_ASYNCIO_FAILURE;  // it's always a failure on short writes.
+            if ((task->type == SDL_ASYNCIO_TASK_WRITE) && (((Uint64)cqe->res) < task->requested_size)) {
+                task->result = SDL_ASYNCIO_FAILURE; // it's always a failure on short writes.
             }
 
             // don't explicitly mark it as COMPLETE; that's the default value and a linked task might have failed in an earlier operation and this would overwrite it.
 
             if ((task->type == SDL_ASYNCIO_TASK_READ) || (task->type == SDL_ASYNCIO_TASK_WRITE)) {
-                task->result_size = (Uint64) cqe->res;
+                task->result_size = (Uint64)cqe->res;
             }
         }
 
         if (task && (task->type == SDL_ASYNCIO_TASK_CLOSE) && task->flush) {
             task->flush = false;
-            task = NULL;  // don't return this one, it's a linked task, so it'll arrive in a later CQE.
+            task = NULL; // don't return this one, it's a linked task, so it'll arrive in a later CQE.
         }
     }
 
@@ -263,21 +260,21 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
 
 static SDL_AsyncIOTask *liburing_asyncioqueue_get_results(void *userdata)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
 
     // have to hold a lock because otherwise two threads will get the same cqe until we mark it "seen". Copy and mark it right away, then process further.
     SDL_LockMutex(queuedata->cqe_lock);
     struct io_uring_cqe *cqe = NULL;
     const int rc = liburing.io_uring_peek_cqe(&queuedata->ring, &cqe);
     if (rc != 0) {
-        SDL_assert(rc == -EAGAIN);  // should only fail because nothing is available at the moment.
+        SDL_assert(rc == -EAGAIN); // should only fail because nothing is available at the moment.
         SDL_UnlockMutex(queuedata->cqe_lock);
         return NULL;
     }
 
     struct io_uring_cqe cqe_copy;
-    SDL_copyp(&cqe_copy, cqe);  // this is only a few bytes.
-    liburing.io_uring_cqe_seen(&queuedata->ring, cqe);  // let io_uring use this slot again.
+    SDL_copyp(&cqe_copy, cqe);                         // this is only a few bytes.
+    liburing.io_uring_cqe_seen(&queuedata->ring, cqe); // let io_uring use this slot again.
     SDL_UnlockMutex(queuedata->cqe_lock);
 
     return ProcessCQE(queuedata, &cqe_copy);
@@ -285,14 +282,14 @@ static SDL_AsyncIOTask *liburing_asyncioqueue_get_results(void *userdata)
 
 static SDL_AsyncIOTask *liburing_asyncioqueue_wait_results(void *userdata, Sint32 timeoutMS)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
     struct io_uring_cqe *cqe = NULL;
 
     SDL_AddAtomicInt(&queuedata->num_waiting, 1);
     if (timeoutMS < 0) {
         liburing.io_uring_wait_cqe(&queuedata->ring, &cqe);
     } else {
-        struct __kernel_timespec ts = { (Sint64) timeoutMS / SDL_MS_PER_SECOND, (Sint64) SDL_MS_TO_NS(timeoutMS % SDL_MS_PER_SECOND) };
+        struct __kernel_timespec ts = { (Sint64)timeoutMS / SDL_MS_PER_SECOND, (Sint64)SDL_MS_TO_NS(timeoutMS % SDL_MS_PER_SECOND) };
         liburing.io_uring_wait_cqe_timeout(&queuedata->ring, &cqe, &ts);
     }
     SDL_AddAtomicInt(&queuedata->num_waiting, -1);
@@ -301,19 +298,19 @@ static SDL_AsyncIOTask *liburing_asyncioqueue_wait_results(void *userdata, Sint3
 
     // each thing that peeks or waits for a completion _gets the same cqe_ until we mark it as seen. So when we wake up from the wait, lock the mutex and
     // then use peek to make sure we have a unique cqe, and other competing threads either get their own or nothing.
-    return liburing_asyncioqueue_get_results(userdata);  // this just happens to do all those things.
+    return liburing_asyncioqueue_get_results(userdata); // this just happens to do all those things.
 }
 
 static void liburing_asyncioqueue_signal(void *userdata)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
     const int num_waiting = SDL_GetAtomicInt(&queuedata->num_waiting);
 
     SDL_LockMutex(queuedata->sqe_lock);
-    for (int i = 0; i < num_waiting; i++) {  // !!! FIXME: is there a better way to do this than pushing a zero-timeout request for everything waiting?
+    for (int i = 0; i < num_waiting; i++) { // !!! FIXME: is there a better way to do this than pushing a zero-timeout request for everything waiting?
         struct io_uring_sqe *sqe = liburing.io_uring_get_sqe(&queuedata->ring);
         if (sqe) {
-            static struct __kernel_timespec ts;   // no wait, just wake a thread as fast as this can land in the completion queue.
+            static struct __kernel_timespec ts; // no wait, just wake a thread as fast as this can land in the completion queue.
             liburing.io_uring_prep_timeout(sqe, &ts, 0, 0);
             liburing.io_uring_sqe_set_data(sqe, NULL);
         }
@@ -325,7 +322,7 @@ static void liburing_asyncioqueue_signal(void *userdata)
 
 static void liburing_asyncioqueue_destroy(void *userdata)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)userdata;
     liburing.io_uring_queue_exit(&queuedata->ring);
     SDL_DestroyMutex(queuedata->sqe_lock);
     SDL_DestroyMutex(queuedata->cqe_lock);
@@ -334,7 +331,7 @@ static void liburing_asyncioqueue_destroy(void *userdata)
 
 static bool SDL_SYS_CreateAsyncIOQueue_liburing(SDL_AsyncIOQueue *queue)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) SDL_calloc(1, sizeof (*queuedata));
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)SDL_calloc(1, sizeof(*queuedata));
     if (!queuedata) {
         return false;
     }
@@ -377,15 +374,14 @@ static bool SDL_SYS_CreateAsyncIOQueue_liburing(SDL_AsyncIOQueue *queue)
     return true;
 }
 
-
 static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (intptr_t) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)task->queue->userdata;
+    const int fd = (int)(intptr_t)userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
-    if (task->requested_size > ((Uint64) ~((unsigned) 0))) {
+    if (task->requested_size > ((Uint64) ~((unsigned)0))) {
         return SDL_SetError("io_uring: i/o task is too large");
     }
 
@@ -396,7 +392,7 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
     if (!sqe) {
         retval = SDL_SetError("io_uring: submission queue is full");
     } else {
-        liburing.io_uring_prep_read(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
+        liburing.io_uring_prep_read(sqe, fd, task->buffer, (unsigned)task->requested_size, task->offset);
         liburing.io_uring_sqe_set_data(sqe, task);
         retval = task->queue->iface.queue_task(task->queue->userdata, task);
     }
@@ -406,12 +402,12 @@ static bool liburing_asyncio_read(void *userdata, SDL_AsyncIOTask *task)
 
 static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (intptr_t) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)task->queue->userdata;
+    const int fd = (int)(intptr_t)userdata;
 
     // !!! FIXME: `unsigned` is likely smaller than requested_size's Uint64. If we overflow it, we could try submitting multiple SQEs
     // !!! FIXME:  and make a note in the task that there are several in sequence.
-    if (task->requested_size > ((Uint64) ~((unsigned) 0))) {
+    if (task->requested_size > ((Uint64) ~((unsigned)0))) {
         return SDL_SetError("io_uring: i/o task is too large");
     }
 
@@ -422,7 +418,7 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
     if (!sqe) {
         retval = SDL_SetError("io_uring: submission queue is full");
     } else {
-        liburing.io_uring_prep_write(sqe, fd, task->buffer, (unsigned) task->requested_size, task->offset);
+        liburing.io_uring_prep_write(sqe, fd, task->buffer, (unsigned)task->requested_size, task->offset);
         liburing.io_uring_sqe_set_data(sqe, task);
         retval = task->queue->iface.queue_task(task->queue->userdata, task);
     }
@@ -432,8 +428,8 @@ static bool liburing_asyncio_write(void *userdata, SDL_AsyncIOTask *task)
 
 static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
 {
-    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) task->queue->userdata;
-    const int fd = (int) (intptr_t) userdata;
+    LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *)task->queue->userdata;
+    const int fd = (int)(intptr_t)userdata;
 
     // have to hold a lock because otherwise two threads could get_sqe and submit while one request isn't fully set up.
     SDL_LockMutex(queuedata->sqe_lock);
@@ -444,9 +440,9 @@ static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
     } else {
         if (task->flush) {
             struct io_uring_sqe *flush_sqe = sqe;
-            sqe = liburing.io_uring_get_sqe(&queuedata->ring);  // this will be our actual close task.
+            sqe = liburing.io_uring_get_sqe(&queuedata->ring); // this will be our actual close task.
             if (!sqe) {
-                liburing.io_uring_prep_nop(flush_sqe);  // we already have the first sqe, just make it a NOP.
+                liburing.io_uring_prep_nop(flush_sqe); // we already have the first sqe, just make it a NOP.
                 liburing.io_uring_sqe_set_data(flush_sqe, NULL);
                 task->queue->iface.queue_task(task->queue->userdata, task);
                 SDL_UnlockMutex(queuedata->sqe_lock);
@@ -454,7 +450,7 @@ static bool liburing_asyncio_close(void *userdata, SDL_AsyncIOTask *task)
             }
             liburing.io_uring_prep_fsync(flush_sqe, fd, IORING_FSYNC_DATASYNC);
             liburing.io_uring_sqe_set_data(flush_sqe, task);
-            liburing.io_uring_sqe_set_flags(flush_sqe, IOSQE_IO_HARDLINK);  // must complete before next sqe starts, and next sqe should run even if this fails.
+            liburing.io_uring_sqe_set_flags(flush_sqe, IOSQE_IO_HARDLINK); // must complete before next sqe starts, and next sqe should run even if this fails.
         }
 
         liburing.io_uring_prep_close(sqe, fd);
@@ -474,7 +470,11 @@ static void liburing_asyncio_destroy(void *userdata)
 static int PosixOpenModeFromString(const char *mode)
 {
     // this is exactly the set of strings that SDL_AsyncIOFromFile promises will work.
-    static const struct { const char *str; int flags; } mappings[] = {
+    static const struct
+    {
+        const char *str;
+        int flags;
+    } mappings[] = {
         { "rb", O_RDONLY },
         { "wb", O_WRONLY | O_CREAT | O_TRUNC },
         { "r+b", O_RDWR },
@@ -507,7 +507,7 @@ static bool SDL_SYS_AsyncIOFromFile_liburing(const char *file, const char *mode,
     };
 
     SDL_copyp(&asyncio->iface, &SDL_AsyncIOFile_liburing);
-    asyncio->userdata = (void *) (intptr_t) fd;
+    asyncio->userdata = (void *)(intptr_t)fd;
     return true;
 }
 
@@ -524,7 +524,7 @@ static void MaybeInitializeLibUring(void)
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_liburing;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_liburing;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_liburing;
-        } else {  // can't use liburing? Use the "generic" threadpool implementation instead.
+        } else { // can't use liburing? Use the "generic" threadpool implementation instead.
             SDL_DebugLogBackend("asyncio", "generic");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_Generic;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_Generic;
@@ -557,5 +557,4 @@ void SDL_SYS_QuitAsyncIO(void)
     }
 }
 
-#endif  // defined HAVE_LIBURING_H
-
+#endif // defined HAVE_LIBURING_H

@@ -42,7 +42,7 @@ static bool xsync_version_atleast(const int version, const int wantmajor, const 
 
 void X11_InitXsync(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data =  _this->internal;
+    SDL_VideoData *data = _this->internal;
 
     int version = 0;
     int event, error;
@@ -76,17 +76,17 @@ bool X11_InitResizeSync(SDL_Window *window)
     XSyncCounter counter;
     CARD32 counter_id;
 
-    if (!X11_XsyncIsInitialized()){
+    if (!X11_XsyncIsInitialized()) {
         return SDL_Unsupported();
     }
 
-    counter = X11_XSyncCreateCounter(display, (XSyncValue){0, 0});
+    counter = X11_XSyncCreateCounter(display, (XSyncValue){ 0, 0 });
     data->resize_counter = counter;
     data->resize_id.lo = 0;
     data->resize_id.hi = 0;
     data->resize_in_progress = false;
 
-    if (counter == None){
+    if (counter == None) {
         return SDL_Unsupported();
     }
 

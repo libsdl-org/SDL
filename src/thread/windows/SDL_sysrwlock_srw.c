@@ -27,18 +27,18 @@
 // This header makes sure SRWLOCK is actually declared, even on ancient WinSDKs.
 #include "SDL_sysmutex_c.h"
 
-typedef VOID (WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
-typedef VOID (WINAPI *pfnReleaseSRWLockShared)(PSRWLOCK);
-typedef VOID (WINAPI *pfnAcquireSRWLockShared)(PSRWLOCK);
-typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockShared)(PSRWLOCK);
-typedef VOID (WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
-typedef VOID (WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
-typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
+typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
+typedef VOID(WINAPI *pfnReleaseSRWLockShared)(PSRWLOCK);
+typedef VOID(WINAPI *pfnAcquireSRWLockShared)(PSRWLOCK);
+typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockShared)(PSRWLOCK);
+typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
+typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
+typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 
 static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockShared pReleaseSRWLockShared = NULL;
 static pfnAcquireSRWLockShared pAcquireSRWLockShared = NULL;
-static pfnTryAcquireSRWLockShared  pTryAcquireSRWLockShared = NULL;
+static pfnTryAcquireSRWLockShared pTryAcquireSRWLockShared = NULL;
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;
 static pfnTryAcquireSRWLockExclusive pTryAcquireSRWLockExclusive = NULL;
@@ -84,33 +84,33 @@ static SDL_RWLock *SDL_CreateRWLock_srw(void)
 
 static void SDL_DestroyRWLock_srw(SDL_RWLock *_rwlock)
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     // There are no kernel allocated resources
     SDL_free(rwlock);
 }
 
-static void SDL_LockRWLockForReading_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_LockRWLockForReading_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     pAcquireSRWLockShared(&rwlock->srw);
 }
 
-static void SDL_LockRWLockForWriting_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_LockRWLockForWriting_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     pAcquireSRWLockExclusive(&rwlock->srw);
     rwlock->write_owner = SDL_GetCurrentThreadID();
 }
 
 static bool SDL_TryLockRWLockForReading_srw(SDL_RWLock *_rwlock)
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     return pTryAcquireSRWLockShared(&rwlock->srw);
 }
 
 static bool SDL_TryLockRWLockForWriting_srw(SDL_RWLock *_rwlock)
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     if (pTryAcquireSRWLockExclusive(&rwlock->srw)) {
         rwlock->write_owner = SDL_GetCurrentThreadID();
         return true;
@@ -119,9 +119,9 @@ static bool SDL_TryLockRWLockForWriting_srw(SDL_RWLock *_rwlock)
     }
 }
 
-static void SDL_UnlockRWLock_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+static void SDL_UnlockRWLock_srw(SDL_RWLock *_rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
-    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *) _rwlock;
+    SDL_rwlock_srw *rwlock = (SDL_rwlock_srw *)_rwlock;
     if (rwlock->write_owner == SDL_GetCurrentThreadID()) {
         rwlock->write_owner = 0;
         pReleaseSRWLockExclusive(&rwlock->srw);
@@ -139,7 +139,6 @@ static const SDL_rwlock_impl_t SDL_rwlock_impl_srw = {
     &SDL_TryLockRWLockForWriting_srw,
     &SDL_UnlockRWLock_srw
 };
-
 
 #include "../generic/SDL_sysrwlock_c.h"
 
@@ -163,7 +162,12 @@ SDL_RWLock *SDL_CreateRWLock(void)
             HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
             if (kernel32) {
                 bool okay = true;
-                #define LOOKUP_SRW_SYM(sym) if (okay) { if ((p##sym = (pfn##sym)GetProcAddress(kernel32, #sym)) == NULL) { okay = false; } }
+#define LOOKUP_SRW_SYM(sym)                                                \
+    if (okay) {                                                            \
+        if ((p##sym = (pfn##sym)GetProcAddress(kernel32, #sym)) == NULL) { \
+            okay = false;                                                  \
+        }                                                                  \
+    }
                 LOOKUP_SRW_SYM(InitializeSRWLock);
                 LOOKUP_SRW_SYM(ReleaseSRWLockShared);
                 LOOKUP_SRW_SYM(AcquireSRWLockShared);
@@ -171,9 +175,9 @@ SDL_RWLock *SDL_CreateRWLock(void)
                 LOOKUP_SRW_SYM(ReleaseSRWLockExclusive);
                 LOOKUP_SRW_SYM(AcquireSRWLockExclusive);
                 LOOKUP_SRW_SYM(TryAcquireSRWLockExclusive);
-                #undef LOOKUP_SRW_SYM
+#undef LOOKUP_SRW_SYM
                 if (okay) {
-                    impl = &SDL_rwlock_impl_srw;  // Use the Windows provided API instead of generic fallback
+                    impl = &SDL_rwlock_impl_srw; // Use the Windows provided API instead of generic fallback
                 }
             }
         }
@@ -190,14 +194,14 @@ void SDL_DestroyRWLock(SDL_RWLock *rwlock)
     }
 }
 
-void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockRWLockForReading(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         SDL_rwlock_impl_active.LockForReading(rwlock);
     }
 }
 
-void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockRWLockForWriting(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         SDL_rwlock_impl_active.LockForWriting(rwlock);
@@ -222,10 +226,9 @@ bool SDL_TryLockRWLockForWriting(SDL_RWLock *rwlock)
     return result;
 }
 
-void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_UnlockRWLock(SDL_RWLock *rwlock) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (rwlock) {
         SDL_rwlock_impl_active.Unlock(rwlock);
     }
 }
-

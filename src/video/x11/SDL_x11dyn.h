@@ -23,10 +23,10 @@
 #ifndef SDL_x11dyn_h_
 #define SDL_x11dyn_h_
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <X11/Xresource.h>
+#include <X11/Xutil.h>
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
 #include <X11/XKBlib.h>
@@ -42,9 +42,9 @@
 #include <X11/extensions/Xext.h>
 
 #ifndef NO_SHARED_MEMORY
+#include <X11/extensions/XShm.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <X11/extensions/XShm.h>
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
@@ -88,8 +88,8 @@ extern bool SDL_X11_LoadSymbols(void);
 extern void SDL_X11_UnloadSymbols(void);
 
 // Declare all the function pointers and wrappers...
-#define SDL_X11_SYM(rc, fn, params) \
-    typedef rc(*SDL_DYNX11FN_##fn) params;     \
+#define SDL_X11_SYM(rc, fn, params)        \
+    typedef rc(*SDL_DYNX11FN_##fn) params; \
     extern SDL_DYNX11FN_##fn X11_##fn;
 #include "SDL_x11sym.h"
 

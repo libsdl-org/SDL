@@ -40,7 +40,6 @@ struct SDL_CursorData
     uint32_t *buffer;
     size_t buffer_size;
     size_t buffer_pitch;
-
 };
 
 extern void KMSDRM_InitMouse(SDL_VideoDevice *_this, SDL_VideoDisplay *display);

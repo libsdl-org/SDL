@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-#include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
+#include "SDL_cocoavideo.h"
 
 static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 {
@@ -321,7 +321,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
        (13.6 still needs it, presumably 13.7 does, too.) */
     bool background_app_default = false;
     if (@available(macOS 14.0, *)) {
-        background_app_default = true;  /* by default, don't explicitly activate the dock and then us again to force to foreground */
+        background_app_default = true; /* by default, don't explicitly activate the dock and then us again to force to foreground */
     }
 
     if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, background_app_default)) {

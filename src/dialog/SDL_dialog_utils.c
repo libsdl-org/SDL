@@ -61,8 +61,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
         }
 
         terminator = ((i + 1) < nfilters) ? separator : suffix;
-        new_length = SDL_strlen(combined) + SDL_strlen(converted)
-                   + SDL_strlen(terminator) + 1;
+        new_length = SDL_strlen(combined) + SDL_strlen(converted) + SDL_strlen(terminator) + 1;
 
         new_combined = (char *)SDL_realloc(combined, new_length);
 
@@ -125,11 +124,9 @@ char *convert_filter(SDL_DialogFileFilter filter, NameTransform ntf,
         return NULL;
     }
 
-    total_length = SDL_strlen(prefix) + SDL_strlen(name_filtered)
-                 + SDL_strlen(separator) + SDL_strlen(list)
-                 + SDL_strlen(suffix) + 1;
+    total_length = SDL_strlen(prefix) + SDL_strlen(name_filtered) + SDL_strlen(separator) + SDL_strlen(list) + SDL_strlen(suffix) + 1;
 
-    converted = (char *) SDL_malloc(total_length);
+    converted = (char *)SDL_malloc(total_length);
 
     if (!converted) {
         SDL_free(list);
@@ -160,12 +157,12 @@ char *convert_ext_list(const char *list, const char *prefix,
     }
 
     total_length =
-        (SDL_strlen(list) - semicolons) * 4 // length of list contents (including "a" -> "[aA]")
-      + semicolons * SDL_strlen(separator) // length of separators
-      + SDL_strlen(prefix) + SDL_strlen(suffix) // length of prefix/suffix
-      + 1; // terminating null byte
+        (SDL_strlen(list) - semicolons) * 4       // length of list contents (including "a" -> "[aA]")
+        + semicolons * SDL_strlen(separator)      // length of separators
+        + SDL_strlen(prefix) + SDL_strlen(suffix) // length of prefix/suffix
+        + 1;                                      // terminating null byte
 
-    converted = (char *) SDL_malloc(total_length);
+    converted = (char *)SDL_malloc(total_length);
 
     if (!converted) {
         return NULL;
@@ -189,9 +186,7 @@ char *convert_ext_list(const char *list, const char *prefix,
                 str[3] = ']';
                 str[4] = '\0';
                 SDL_strlcat(converted, str, total_length);
-            } else if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')
-                    || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_'
-                    || *c == '.') {
+            } else if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_' || *c == '.') {
                 char str[2];
                 str[0] = *c;
                 str[1] = '\0';
@@ -227,11 +222,11 @@ const char *validate_filters(const SDL_DialogFileFilter *filters, int nfilters)
 {
     if (filters) {
         for (int i = 0; i < nfilters; i++) {
-             const char *msg = validate_list(filters[i].pattern);
+            const char *msg = validate_list(filters[i].pattern);
 
-             if (msg) {
-                 return msg;
-             }
+            if (msg) {
+                return msg;
+            }
         }
     }
 
@@ -244,9 +239,7 @@ const char *validate_list(const char *list)
         return NULL;
     } else {
         for (const char *c = list; *c; c++) {
-            if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')
-             || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_'
-             || *c == '.') {
+            if ((*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z') || (*c >= '0' && *c <= '9') || *c == '-' || *c == '_' || *c == '.') {
                 continue;
             } else if (*c == ';') {
                 if (c == list || c[-1] == ';') {

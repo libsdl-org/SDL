@@ -58,43 +58,43 @@ enum
 typedef enum
 {
 
-    TRITON_LBUTTON_A            = 0x00000001,
-    TRITON_LBUTTON_B            = 0x00000002,
-    TRITON_LBUTTON_X            = 0x00000004,
-    TRITON_LBUTTON_Y            = 0x00000008,
+    TRITON_LBUTTON_A = 0x00000001,
+    TRITON_LBUTTON_B = 0x00000002,
+    TRITON_LBUTTON_X = 0x00000004,
+    TRITON_LBUTTON_Y = 0x00000008,
 
-    TRITON_HBUTTON_QAM          = 0x00000010,
-    TRITON_LBUTTON_R3           = 0x00000020,
-    TRITON_LBUTTON_VIEW         = 0x00000040,
-    TRITON_HBUTTON_R4           = 0x00000080,
+    TRITON_HBUTTON_QAM = 0x00000010,
+    TRITON_LBUTTON_R3 = 0x00000020,
+    TRITON_LBUTTON_VIEW = 0x00000040,
+    TRITON_HBUTTON_R4 = 0x00000080,
 
-    TRITON_LBUTTON_R5           = 0x00000100,
-    TRITON_LBUTTON_R            = 0x00000200,
-    TRITON_LBUTTON_DPAD_DOWN    = 0x00000400,
-    TRITON_LBUTTON_DPAD_RIGHT   = 0x00000800,
+    TRITON_LBUTTON_R5 = 0x00000100,
+    TRITON_LBUTTON_R = 0x00000200,
+    TRITON_LBUTTON_DPAD_DOWN = 0x00000400,
+    TRITON_LBUTTON_DPAD_RIGHT = 0x00000800,
 
-    TRITON_LBUTTON_DPAD_LEFT    = 0x00001000,
-    TRITON_LBUTTON_DPAD_UP      = 0x00002000,
-    TRITON_LBUTTON_MENU         = 0x00004000,
-    TRITON_LBUTTON_L3           = 0x00008000,
+    TRITON_LBUTTON_DPAD_LEFT = 0x00001000,
+    TRITON_LBUTTON_DPAD_UP = 0x00002000,
+    TRITON_LBUTTON_MENU = 0x00004000,
+    TRITON_LBUTTON_L3 = 0x00008000,
 
-    TRITON_LBUTTON_STEAM        = 0x00010000,
-    TRITON_HBUTTON_L4           = 0x00020000,
-    TRITON_LBUTTON_L5           = 0x00040000,
-    TRITON_LBUTTON_L            = 0x00080000,
+    TRITON_LBUTTON_STEAM = 0x00010000,
+    TRITON_HBUTTON_L4 = 0x00020000,
+    TRITON_LBUTTON_L5 = 0x00040000,
+    TRITON_LBUTTON_L = 0x00080000,
 
     TRITON_RIGHT_JOYSTICK_TOUCH = 0x00100000,
     TRITON_RIGHT_TOUCHPAD_TOUCH = 0x00200000,
     TRITON_RIGHT_TOUCHPAD_CLICK = 0x00400000,
-    TRITON_RIGHT_TRIGGER_CLICK  = 0x00800000,
+    TRITON_RIGHT_TRIGGER_CLICK = 0x00800000,
 
-    TRITON_LEFT_JOYSTICK_TOUCH  = 0x01000000,
-    TRITON_LEFT_TOUCHPAD_TOUCH  = 0x02000000,
-    TRITON_LEFT_TOUCHPAD_CLICK  = 0x04000000,
-    TRITON_LEFT_TRIGGER_CLICK   = 0x08000000,
+    TRITON_LEFT_JOYSTICK_TOUCH = 0x01000000,
+    TRITON_LEFT_TOUCHPAD_TOUCH = 0x02000000,
+    TRITON_LEFT_TOUCHPAD_CLICK = 0x04000000,
+    TRITON_LEFT_TRIGGER_CLICK = 0x08000000,
 
-    TRITON_RIGHT_GRIP_TOUCH     = 0x10000000,
-    TRITON_LEFT_GRIP_TOUCH      = 0x20000000,
+    TRITON_RIGHT_GRIP_TOUCH = 0x10000000,
+    TRITON_LEFT_GRIP_TOUCH = 0x20000000,
 } TritonButtons;
 
 typedef struct
@@ -245,17 +245,17 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
 
     bool left_touch_down = (pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_TOUCH) ? true : false;
     bool right_touch_down = (pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH) ? true : false;
- 
+
     if (left_touch_down || ctx->left_touch_down) {
         if (left_touch_down) {
             ctx->left_touch_x = pTritonReport->sLeftPadX / 65536.0f + 0.5f;
             ctx->left_touch_y = -(float)pTritonReport->sLeftPadY / 65536.0f + 0.5f;
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
-                                    left_touch_down,
-                                    ctx->left_touch_x,
-                                    ctx->left_touch_y,
-                                    pTritonReport->unPressureLeft / 32768.0f);
+                                 left_touch_down,
+                                 ctx->left_touch_x,
+                                 ctx->left_touch_y,
+                                 pTritonReport->unPressureLeft / 32768.0f);
         ctx->left_touch_down = left_touch_down;
     }
     if (right_touch_down || ctx->right_touch_down) {
@@ -264,10 +264,10 @@ static void HIDAPI_DriverSteamTriton_HandleState(SDL_HIDAPI_Device *device,
             ctx->right_touch_y = -(float)pTritonReport->sRightPadY / 65536.0f + 0.5f;
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
-                                    right_touch_down,
-                                    ctx->right_touch_x,
-                                    ctx->right_touch_y,
-                                    pTritonReport->unPressureRight / 32768.0f);
+                                 right_touch_down,
+                                 ctx->right_touch_x,
+                                 ctx->right_touch_y,
+                                 pTritonReport->unPressureRight / 32768.0f);
         ctx->right_touch_down = right_touch_down;
     }
 
@@ -298,7 +298,7 @@ static void HIDAPI_DriverSteamTriton_HandleState_Timestamp(SDL_HIDAPI_Device *de
     SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    HIDAPI_DriverSteamTriton_HandleGenericState(ctx, joystick, timestamp, (TritonMTUNoQuat_t *) pTritonReport);
+    HIDAPI_DriverSteamTriton_HandleGenericState(ctx, joystick, timestamp, (TritonMTUNoQuat_t *)pTritonReport);
 
     bool left_touch_down = (pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_TOUCH) ? true : false;
     bool right_touch_down = (pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_TOUCH) ? true : false;
@@ -614,9 +614,9 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
 
     rc = SDL_hid_write(device->dev, buffer, sizeof(buffer));
     if (rc < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_INPUT, 
-            "Steam Controller HID Write FAILED! rc: %d. SDL_Error: %s", 
-            rc, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT,
+                     "Steam Controller HID Write FAILED! rc: %d. SDL_Error: %s",
+                     rc, SDL_GetError());
 
         return false;
     }

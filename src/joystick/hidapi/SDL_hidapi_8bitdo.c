@@ -23,8 +23,8 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_8BITDO
 
@@ -42,21 +42,19 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
-#define SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID         0x06
-#define SDL_8BITDO_REPORTID_SDL_REPORTID                        0x04
-#define SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID          0x03
-#define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
+#define SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID 0x06
+#define SDL_8BITDO_REPORTID_SDL_REPORTID                0x04
+#define SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID  0x03
+#define SDL_8BITDO_BT_REPORTID_SDL_REPORTID             0x01
 
-#define SDL_8BITDO_SENSOR_TIMESTAMP_ENABLE                      0xAA
-#define ABITDO_ACCEL_SCALE 4096.f
+#define SDL_8BITDO_SENSOR_TIMESTAMP_ENABLE 0xAA
+#define ABITDO_ACCEL_SCALE                 4096.f
 #define ABITDO_GYRO_MAX_DEGREES_PER_SECOND 2000.f
-
 
 #define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
                             (((Uint32)(B)) << 8) |  \
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
-
 
 typedef struct
 {
@@ -81,7 +79,7 @@ typedef struct
     Uint32 last_tick;
 } SDL_Driver8BitDo_Context;
 
-#pragma pack(push,1)
+#pragma pack(push, 1)
 typedef struct
 {
     bool sensors_supported;
@@ -111,7 +109,6 @@ typedef struct
 } ABITDO_SENSORS;
 
 #pragma pack(pop)
-
 
 static void HIDAPI_Driver8BitDo_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -462,9 +459,9 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     Uint64 timestamp = SDL_GetTicksNS();
 
     switch (data[0]) {
-    case SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID:    // Firmware without enhanced mode
-    case SDL_8BITDO_REPORTID_SDL_REPORTID:                  // Enhanced mode USB report
-    case SDL_8BITDO_BT_REPORTID_SDL_REPORTID:               // Enhanced mode Bluetooth report
+    case SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID: // Firmware without enhanced mode
+    case SDL_8BITDO_REPORTID_SDL_REPORTID:               // Enhanced mode USB report
+    case SDL_8BITDO_BT_REPORTID_SDL_REPORTID:            // Enhanced mode Bluetooth report
         break;
     default:
         // We don't know how to handle this report
@@ -505,7 +502,6 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         }
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
-
 
     if (ctx->last_state[8] != data[8]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[8] & 0x01) != 0));
@@ -590,7 +586,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         float values[3];
         ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
 
-         if (ctx->sensor_timestamp_supported) {
+        if (ctx->sensor_timestamp_supported) {
             Uint32 delta;
             Uint32 tick = LOAD32(data[27], data[28], data[29], data[30]);
 
@@ -622,9 +618,9 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // Hardware x is reporting roll (rotation about the power jack's axis)
         // Hardware y is reporting pitch (rotation about the horizontal axis)
         // Hardware z is reporting yaw (rotation about the joysticks' center axis)
-        values[0] = -sensors->sGyroY * ctx->gyroScale;  // Rotation around pitch axis
-        values[1] = sensors->sGyroZ * ctx->gyroScale;   // Rotation around yaw axis
-        values[2] = -sensors->sGyroX * ctx->gyroScale;  // Rotation around roll axis
+        values[0] = -sensors->sGyroY * ctx->gyroScale; // Rotation around pitch axis
+        values[1] = sensors->sGyroZ * ctx->gyroScale;  // Rotation around yaw axis
+        values[2] = -sensors->sGyroX * ctx->gyroScale; // Rotation around roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         // By observation of this device:

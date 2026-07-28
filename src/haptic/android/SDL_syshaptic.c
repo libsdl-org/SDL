@@ -22,9 +22,9 @@
 
 #ifdef SDL_HAPTIC_ANDROID
 
-#include "SDL_syshaptic_c.h"
-#include "../SDL_syshaptic.h"
 #include "../../core/android/SDL_android.h"
+#include "../SDL_syshaptic.h"
+#include "SDL_syshaptic_c.h"
 
 typedef struct SDL_hapticlist_item
 {
@@ -180,20 +180,20 @@ void SDL_SYS_HapticQuit(void)
 }
 
 bool SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
-                            struct haptic_effect *effect, const SDL_HapticEffect *base)
+                             struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     return true;
 }
 
 bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
-                               struct haptic_effect *effect,
-                               const SDL_HapticEffect *data)
+                                struct haptic_effect *effect,
+                                const SDL_HapticEffect *data)
 {
     return true;
 }
 
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                            Uint32 iterations)
+                             Uint32 iterations)
 {
     float large = effect->effect.leftright.large_magnitude / 32767.0f;
     float small = effect->effect.leftright.small_magnitude / 32767.0f;

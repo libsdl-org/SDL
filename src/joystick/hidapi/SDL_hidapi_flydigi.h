@@ -35,4 +35,3 @@ typedef enum
     SDL_FLYDIGI_VADER4_PRO,
     SDL_FLYDIGI_VADER5_PRO,
 } SDL_FlyDigiControllerType;
-

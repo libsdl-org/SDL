@@ -24,9 +24,9 @@
 
 // This is the virtual implementation of the SDL joystick API
 
-#include "SDL_virtualjoystick_c.h"
-#include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
+#include "SDL_virtualjoystick_c.h"
 
 static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
@@ -138,11 +138,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
     SDL_AssertJoysticksLocked();
 
-    CHECK_PARAM(!desc) {
+    CHECK_PARAM (!desc) {
         SDL_InvalidParamError("desc");
         return 0;
     }
-    CHECK_PARAM(desc->version < sizeof(*desc)) {
+    CHECK_PARAM (desc->version < sizeof(*desc)) {
         // Update this to handle older versions of this interface
         SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
         return 0;

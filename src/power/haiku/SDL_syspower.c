@@ -26,12 +26,12 @@
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HAIKU
 
+#include <ctype.h>
+#include <drivers/Drivers.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <drivers/Drivers.h>
 
 // These values are from apm.h ...
 #define APM_DEVICE_PATH           "/dev/misc/apm"

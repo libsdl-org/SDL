@@ -22,10 +22,10 @@
 
 #ifdef SDL_CAMERA_DRIVER_EMSCRIPTEN
 
-#include "../SDL_syscamera.h"
-#include "../SDL_camera_c.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_surface_c.h"
+#include "../SDL_camera_c.h"
+#include "../SDL_syscamera.h"
 
 #include <emscripten/emscripten.h>
 
@@ -271,4 +271,3 @@ CameraBootStrap EMSCRIPTENCAMERA_bootstrap = {
 /* *INDENT-ON* */ // clang-format on
 
 #endif // SDL_CAMERA_DRIVER_EMSCRIPTEN
-

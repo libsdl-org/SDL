@@ -103,14 +103,14 @@ found_date:
 
 bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
-    CHECK_PARAM(!ticks) {
+    CHECK_PARAM (!ticks) {
         return SDL_InvalidParamError("ticks");
     }
 #ifdef HAVE_CLOCK_GETTIME
     struct timespec tp;
 
     if (clock_gettime(CLOCK_REALTIME, &tp) == 0) {
-        //tp.tv_sec = SDL_min(tp.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
+        // tp.tv_sec = SDL_min(tp.tv_sec, SDL_NS_TO_SECONDS(SDL_MAX_TIME) - 1);
         *ticks = SDL_SECONDS_TO_NS(tp.tv_sec) + tp.tv_nsec;
         return true;
     }
@@ -155,12 +155,12 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
 
 bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
-#if defined (HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
+#if defined(HAVE_GMTIME_R) || defined(HAVE_LOCALTIME_R)
     struct tm tm_storage;
 #endif
     struct tm *tm = NULL;
 
-    CHECK_PARAM(!dt) {
+    CHECK_PARAM (!dt) {
         return SDL_InvalidParamError("dt");
     }
 

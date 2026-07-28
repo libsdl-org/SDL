@@ -29,9 +29,10 @@
 
 typedef size_t (*SDL_LibThaiMakeCells)(const thchar_t *s, size_t, struct thcell_t cells[], size_t *, int);
 
-typedef struct SDL_LibThai {
+typedef struct SDL_LibThai
+{
     SDL_SharedObject *lib;
- 
+
     SDL_LibThaiMakeCells make_cells;
 } SDL_LibThai;
 

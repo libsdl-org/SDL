@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
-#include "../SDL_sysvideo.h"
 #include "../../SDL_properties_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_n3dsframebuffer_c.h"
 #include "SDL_n3dsvideo.h"
 
@@ -35,12 +35,11 @@ typedef struct
 } Dimensions;
 
 static void CopyFramebuffertoN3DS_16(u16 *dest, const Dimensions dest_dim, const u16 *source, const Dimensions source_dim);
-static void CopyFramebuffertoN3DS_24(u8  *dest, const Dimensions dest_dim, const u8  *source, const Dimensions source_dim);
+static void CopyFramebuffertoN3DS_24(u8 *dest, const Dimensions dest_dim, const u8 *source, const Dimensions source_dim);
 static void CopyFramebuffertoN3DS_32(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim);
 static int GetDestOffset(int x, int y, int dest_width);
 static int GetSourceOffset(int x, int y, int source_width);
 static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
-
 
 bool SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {

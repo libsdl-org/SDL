@@ -42,10 +42,10 @@ typedef struct SDL_joylist_item
     int nbuttons;
     int naxes;
     double timestamp;
-    double axis[64];            // !!! FIXME: don't hardcode 64 on all of these.
+    double axis[64]; // !!! FIXME: don't hardcode 64 on all of these.
     double analogButton[64];
     EM_BOOL digitalButton[64];
-    Uint8 hat;  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    Uint8 hat; // there is (currently) only ever one of these, faked from the d-pad buttons.
     bool rumble_available;
     bool trigger_rumble_available;
     Uint16 weak_magnitude_rumble;

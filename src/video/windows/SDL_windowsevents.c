@@ -22,12 +22,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 
-#include "SDL_windowsvideo.h"
+#include "../../core/windows/SDL_hid.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
 #include "../../main/SDL_main_callbacks.h"
-#include "../../core/windows/SDL_hid.h"
+#include "SDL_windowsvideo.h"
 
 // Dropfile support
 #include <shellapi.h>
@@ -47,8 +47,8 @@
 #define WMMSG_DEBUG
 #endif
 #ifdef WMMSG_DEBUG
-#include <stdio.h>
 #include "wmmsg.h"
+#include <stdio.h>
 #endif
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
@@ -169,17 +169,17 @@ static Uint64 WIN_GetEventTimestamp(void)
     timestamp += timestamp_offset;
     if (!timestamp_offset) {
         // Initializing timestamp offset
-        //SDL_Log("Initializing timestamp offset");
+        // SDL_Log("Initializing timestamp offset");
         timestamp_offset = (now - timestamp);
         timestamp = now;
     } else if ((Sint64)(now - timestamp - TIMESTAMP_WRAP_OFFSET) >= 0) {
         // The windows message tick wrapped
-        //SDL_Log("Adjusting timestamp offset for wrapping tick");
+        // SDL_Log("Adjusting timestamp offset for wrapping tick");
         timestamp_offset += TIMESTAMP_WRAP_OFFSET;
         timestamp += TIMESTAMP_WRAP_OFFSET;
     } else if (timestamp > now) {
         // We got a newer timestamp, but it can't be newer than now, so adjust our offset
-        //SDL_Log("Adjusting timestamp offset, %.2f ms newer", (double)(timestamp - now) / SDL_NS_PER_MS);
+        // SDL_Log("Adjusting timestamp offset, %.2f ms newer", (double)(timestamp - now) / SDL_NS_PER_MS);
         timestamp_offset -= (timestamp - now);
         timestamp = now;
     }
@@ -426,7 +426,7 @@ static bool ShouldClearWindowOnEraseBackground(SDL_WindowData *data)
 // We want to generate mouse events from mouse and pen, and touch events from touchscreens
 #define MI_WP_SIGNATURE      0xFF515700
 #define MI_WP_SIGNATURE_MASK 0xFFFFFF00
-#define IsTouchEvent(dw)     ((dw)&MI_WP_SIGNATURE_MASK) == MI_WP_SIGNATURE
+#define IsTouchEvent(dw)     ((dw) & MI_WP_SIGNATURE_MASK) == MI_WP_SIGNATURE
 
 typedef enum
 {
@@ -555,7 +555,8 @@ static bool WIN_SwapButtons(HANDLE hDevice)
 
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
-    static struct {
+    static struct
+    {
         USHORT usButtonFlags;
         Uint8 button;
         bool down;
@@ -819,7 +820,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
         poll_finish = SDL_GetTicksNS();
         if (count == 0 || count == (UINT)-1) {
             if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
-                const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
+                const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96; // 2 64-bit raw mouse packets
                 BYTE *rawinput = (BYTE *)SDL_realloc(data->rawinput, data->rawinput_size + RAWINPUT_BUFFER_SIZE_INCREMENT);
                 if (!rawinput) {
                     break;
@@ -1187,7 +1188,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 #endif // WMMSG_DEBUG
 
-
     if (g_WindowsMessageHook && data->in_modal_loop) {
         // Synthesize a message for window hooks so they can modify the message if desired
         if (!DispatchModalLoopMessageHook(&hwnd, &msg, &wParam, &lParam)) {
@@ -1285,11 +1285,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
         POINTER_INPUT_TYPE pointer_type = PT_POINTER;
         if (!data->videodata->GetPointerType) {
-            break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
+            break; // Not on Windows8 or later? We shouldn't get this event, but just in case...
         } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
-            break;  // oh well.
+            break; // oh well.
         } else if (pointer_type != PT_PEN) {
-            break;  // we only care about pens here.
+            break; // we only care about pens here.
         }
 
         void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
@@ -1320,17 +1320,17 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
         POINTER_INPUT_TYPE pointer_type = PT_POINTER;
         if (!data->videodata->GetPointerType) {
-            break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
+            break; // Not on Windows8 or later? We shouldn't get this event, but just in case...
         } else if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
-            break;  // oh well.
+            break; // oh well.
         } else if (pointer_type != PT_PEN) {
-            break;  // we only care about pens here.
+            break; // we only care about pens here.
         }
 
         void *hpointer = (void *)(size_t)1; // just something > 0. We're using this one ID any possible pen.
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         if (pen == 0) {
-            break;  // not a pen, or not a pen we already knew about.
+            break; // not a pen, or not a pen we already knew about.
         }
 
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
@@ -1343,12 +1343,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_POINTERDOWN:
     case WM_POINTERUP:
-    case WM_POINTERUPDATE: {
+    case WM_POINTERUPDATE:
+    {
         // NOTE: GET_POINTERID_WPARAM(wParam) is not a tool ID! It changes for each new WM_POINTERENTER, like a finger ID on a touch display. We can't identify a specific pen through these events.
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
         POINTER_INPUT_TYPE pointer_type = PT_POINTER;
         if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(pointerid, &pointer_type)) {
-            break;  // oh well.
+            break; // oh well.
         } else if ((msg == WM_POINTERUPDATE) && (pointer_type == PT_MOUSE)) {
             data->last_pointer_update = lParam;
             returnCode = 0;
@@ -1361,9 +1362,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
         POINTER_PEN_INFO pen_info;
         if (pen == 0) {
-            break;  // not a pen, or not a pen we already knew about.
+            break; // not a pen, or not a pen we already knew about.
         } else if (!data->videodata->GetPointerPenInfo || !data->videodata->GetPointerPenInfo(pointerid, &pen_info)) {
-            break;  // oh well.
+            break; // oh well.
         }
 
         const Uint64 timestamp = WIN_GetEventTimestamp();
@@ -1383,23 +1384,23 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // try to get a more-precise position than is stored in lParam...GetPointerDeviceRects is available starting in Windows 8.
         // we might need to cache this somewhere (and if we cache it, we will need to update it if the display changes)...for now we'll see if GetPointerDeviceRect is fast enough.
         if (!data->videodata->GetPointerDeviceRects || !data->videodata->GetPointerDeviceRects(pointer_info->sourceDevice, &tablet_bounds, &tablet_mapping)) {
-            POINT position = { (LONG) GET_X_LPARAM(lParam), (LONG) GET_Y_LPARAM(lParam) };
+            POINT position = { (LONG)GET_X_LPARAM(lParam), (LONG)GET_Y_LPARAM(lParam) };
             ScreenToClient(data->hwnd, &position);
-            fx = (float) position.x;
-            fy = (float) position.y;
+            fx = (float)position.x;
+            fy = (float)position.y;
         } else {
             int ix, iy;
             SDL_GetWindowPosition(window, &ix, &iy);
-            const SDL_FPoint window_pos = { (float) ix, (float) iy };
+            const SDL_FPoint window_pos = { (float)ix, (float)iy };
 
-            const float facX = pointer_info->ptHimetricLocationRaw.x / (float) (tablet_bounds.right );
-            const float facY = pointer_info->ptHimetricLocationRaw.y / (float) (tablet_bounds.bottom);
+            const float facX = pointer_info->ptHimetricLocationRaw.x / (float)(tablet_bounds.right);
+            const float facY = pointer_info->ptHimetricLocationRaw.y / (float)(tablet_bounds.bottom);
 
-            const float w = tablet_mapping.right  - tablet_mapping.left;
+            const float w = tablet_mapping.right - tablet_mapping.left;
             const float h = tablet_mapping.bottom - tablet_mapping.top;
 
             fx = (tablet_mapping.left + (facX * w)) - window_pos.x;
-            fy = (tablet_mapping.top  + (facY * h)) - window_pos.y;
+            fy = (tablet_mapping.top + (facY * h)) - window_pos.y;
         }
 
         SDL_SendPenMotion(timestamp, pen, window, fx, fy);
@@ -1407,19 +1408,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_SendPenButton(timestamp, pen, window, 2, (pen_info.penFlags & PEN_FLAG_ERASER) != 0);
 
         if (pen_info.penMask & PEN_MASK_PRESSURE) {
-            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, ((float) pen_info.pressure) / 1024.0f);  // pen_info.pressure is in the range 0..1024.
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, ((float)pen_info.pressure) / 1024.0f); // pen_info.pressure is in the range 0..1024.
         }
 
         if (pen_info.penMask & PEN_MASK_ROTATION) {
-            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, ((float) pen_info.rotation));  // it's already in the range of 0 to 359.
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, ((float)pen_info.rotation)); // it's already in the range of 0 to 359.
         }
 
         if (pen_info.penMask & PEN_MASK_TILT_X) {
-            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float) pen_info.tiltX));  // it's already in the range of -90 to 90..
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float)pen_info.tiltX)); // it's already in the range of -90 to 90..
         }
 
         if (pen_info.penMask & PEN_MASK_TILT_Y) {
-            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_YTILT, ((float) pen_info.tiltY));  // it's already in the range of -90 to 90..
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_YTILT, ((float)pen_info.tiltY)); // it's already in the range of -90 to 90..
         }
 
         // if setting down, do it last, so the pen is positioned correctly from the first contact.
@@ -1435,10 +1436,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_Window *window = data->window;
 
         if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-            bool wish_clip_cursor = (
-                window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
-                (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
-            );
+            bool wish_clip_cursor = (window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
+                                     (window->mouse_rect.w > 0 && window->mouse_rect.h > 0));
             if (wish_clip_cursor) { // queue clipcursor refresh on pump finish
                 data->clipcursor_queued = true;
             }
@@ -1490,7 +1489,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
     } break;
 
-#if 0   // We handle raw input all at once instead of using a syscall for each mouse event
+#if 0 // We handle raw input all at once instead of using a syscall for each mouse event
     case WM_INPUT:
     {
         HRAWINPUT hRawInput = (HRAWINPUT)lParam;
@@ -1537,9 +1536,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { // we're not a touch handler causing a mouse leave?
                     SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)cursorPos.x, (float)cursorPos.y);
-                } else {                                       // touch handling?
+                } else {                                   // touch handling?
                     mouse->was_touch_mouse_events = false; // not anymore
-                    if (mouse->touch_mouse_events) {           // convert touch to mouse events
+                    if (mouse->touch_mouse_events) {       // convert touch to mouse events
                         SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_TOUCH_MOUSEID, false, (float)cursorPos.x, (float)cursorPos.y);
                     } else { // normal handling
                         SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)cursorPos.x, (float)cursorPos.y);
@@ -1846,8 +1845,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if (!data->disable_move_size_events) {
             if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
-                ClientToScreen(hwnd, (LPPOINT) &rect);
-                ClientToScreen(hwnd, (LPPOINT) &rect + 1);
+                ClientToScreen(hwnd, (LPPOINT)&rect);
+                ClientToScreen(hwnd, (LPPOINT)&rect + 1);
 
                 x = rect.left;
                 y = rect.top;
@@ -1919,7 +1918,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #if 0 // This locks up the Windows compositor when called by Steam; disabling until we understand why
-            // Make sure graphics operations are complete for smooth refresh
+      // Make sure graphics operations are complete for smooth refresh
             if (data->videodata->DwmFlush) {
                 data->videodata->DwmFlush();
             }
@@ -1939,132 +1938,131 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } break;
 
     case WM_SIZING:
-        {
-            WPARAM edge = wParam;
-            RECT* dragRect = (RECT*)lParam;
-            RECT clientDragRect = *dragRect;
-            bool lock_aspect_ratio = (data->window->max_aspect == data->window->min_aspect) ? true : false;
-            RECT rc;
-            LONG w, h;
-            float new_aspect;
+    {
+        WPARAM edge = wParam;
+        RECT *dragRect = (RECT *)lParam;
+        RECT clientDragRect = *dragRect;
+        bool lock_aspect_ratio = (data->window->max_aspect == data->window->min_aspect) ? true : false;
+        RECT rc;
+        LONG w, h;
+        float new_aspect;
 
-            // if aspect ratio constraints are not enabled then skip this message
-            if (data->window->min_aspect <= 0 && data->window->max_aspect <= 0) {
-                break;
-            }
+        // if aspect ratio constraints are not enabled then skip this message
+        if (data->window->min_aspect <= 0 && data->window->max_aspect <= 0) {
+            break;
+        }
 
-            // unadjust the dragRect from the window rect to the client rect
-            SetRectEmpty(&rc);
-            if (!AdjustWindowRectEx(&rc, GetWindowStyle(hwnd), GetMenu(hwnd) != NULL, GetWindowExStyle(hwnd))) {
-                break;
-            }
+        // unadjust the dragRect from the window rect to the client rect
+        SetRectEmpty(&rc);
+        if (!AdjustWindowRectEx(&rc, GetWindowStyle(hwnd), GetMenu(hwnd) != NULL, GetWindowExStyle(hwnd))) {
+            break;
+        }
 
-            clientDragRect.left -= rc.left;
-            clientDragRect.top -= rc.top;
-            clientDragRect.right -= rc.right;
-            clientDragRect.bottom -= rc.bottom;
+        clientDragRect.left -= rc.left;
+        clientDragRect.top -= rc.top;
+        clientDragRect.right -= rc.right;
+        clientDragRect.bottom -= rc.bottom;
 
-            w = clientDragRect.right - clientDragRect.left;
-            h = clientDragRect.bottom - clientDragRect.top;
-            new_aspect = w / (float)h;
+        w = clientDragRect.right - clientDragRect.left;
+        h = clientDragRect.bottom - clientDragRect.top;
+        new_aspect = w / (float)h;
 
-            // handle the special case in which the min ar and max ar are the same so the window can size symmetrically
-            if (lock_aspect_ratio) {
-                switch (edge) {
-                case WMSZ_LEFT:
-                case WMSZ_RIGHT:
-                    h = (int)SDL_roundf(w / data->window->max_aspect);
-                    break;
-                default:
-                    // resizing via corners or top or bottom
-                    w = (int)SDL_roundf(h * data->window->max_aspect);
-                    break;
-                }
-            } else {
-                switch (edge) {
-                case WMSZ_LEFT:
-                case WMSZ_RIGHT:
-                    if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
-                        w = (int)SDL_roundf(h * data->window->max_aspect);
-                    } else if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
-                        w = (int)SDL_roundf(h * data->window->min_aspect);
-                    }
-                    break;
-                case WMSZ_TOP:
-                case WMSZ_BOTTOM:
-                    if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
-                        h = (int)SDL_roundf(w / data->window->min_aspect);
-                    } else if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
-                        h = (int)SDL_roundf(w / data->window->max_aspect);
-                    }
-                    break;
-
-                default:
-                    // resizing via corners
-                    if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
-                        w = (int)SDL_roundf(h * data->window->max_aspect);
-                    } else if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
-                        h = (int)SDL_roundf(w / data->window->min_aspect);
-                    }
-                    break;
-                }
-            }
-
+        // handle the special case in which the min ar and max ar are the same so the window can size symmetrically
+        if (lock_aspect_ratio) {
             switch (edge) {
             case WMSZ_LEFT:
-                clientDragRect.left = clientDragRect.right - w;
-                if (lock_aspect_ratio) {
-                    clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
-                }
-                clientDragRect.bottom = h + clientDragRect.top;
-                break;
-            case WMSZ_BOTTOMLEFT:
-                clientDragRect.left = clientDragRect.right - w;
-                clientDragRect.bottom = h + clientDragRect.top;
-                break;
             case WMSZ_RIGHT:
-                clientDragRect.right = w + clientDragRect.left;
-                if (lock_aspect_ratio) {
-                    clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
-                }
-                clientDragRect.bottom = h + clientDragRect.top;
+                h = (int)SDL_roundf(w / data->window->max_aspect);
                 break;
-            case WMSZ_TOPRIGHT:
-                clientDragRect.right = w + clientDragRect.left;
-                clientDragRect.top = clientDragRect.bottom - h;
+            default:
+                // resizing via corners or top or bottom
+                w = (int)SDL_roundf(h * data->window->max_aspect);
+                break;
+            }
+        } else {
+            switch (edge) {
+            case WMSZ_LEFT:
+            case WMSZ_RIGHT:
+                if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
+                    w = (int)SDL_roundf(h * data->window->max_aspect);
+                } else if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
+                    w = (int)SDL_roundf(h * data->window->min_aspect);
+                }
                 break;
             case WMSZ_TOP:
-                if (lock_aspect_ratio) {
-                    clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
-                }
-                clientDragRect.right = w + clientDragRect.left;
-                clientDragRect.top = clientDragRect.bottom - h;
-                break;
-            case WMSZ_TOPLEFT:
-                clientDragRect.left = clientDragRect.right - w;
-                clientDragRect.top = clientDragRect.bottom - h;
-                break;
             case WMSZ_BOTTOM:
-                if (lock_aspect_ratio) {
-                    clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
+                if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
+                    h = (int)SDL_roundf(w / data->window->min_aspect);
+                } else if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
+                    h = (int)SDL_roundf(w / data->window->max_aspect);
                 }
-                clientDragRect.right = w + clientDragRect.left;
-                clientDragRect.bottom = h + clientDragRect.top;
                 break;
-            case WMSZ_BOTTOMRIGHT:
-                clientDragRect.right = w + clientDragRect.left;
-                clientDragRect.bottom = h + clientDragRect.top;
+
+            default:
+                // resizing via corners
+                if (data->window->max_aspect > 0.0f && new_aspect > data->window->max_aspect) {
+                    w = (int)SDL_roundf(h * data->window->max_aspect);
+                } else if (data->window->min_aspect > 0.0f && new_aspect < data->window->min_aspect) {
+                    h = (int)SDL_roundf(w / data->window->min_aspect);
+                }
                 break;
             }
-
-            // convert the client rect to a window rect
-            if (!AdjustWindowRectEx(&clientDragRect, GetWindowStyle(hwnd), GetMenu(hwnd) != NULL, GetWindowExStyle(hwnd))) {
-                break;
-            }
-
-            *dragRect = clientDragRect;
         }
-        break;
+
+        switch (edge) {
+        case WMSZ_LEFT:
+            clientDragRect.left = clientDragRect.right - w;
+            if (lock_aspect_ratio) {
+                clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
+            }
+            clientDragRect.bottom = h + clientDragRect.top;
+            break;
+        case WMSZ_BOTTOMLEFT:
+            clientDragRect.left = clientDragRect.right - w;
+            clientDragRect.bottom = h + clientDragRect.top;
+            break;
+        case WMSZ_RIGHT:
+            clientDragRect.right = w + clientDragRect.left;
+            if (lock_aspect_ratio) {
+                clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
+            }
+            clientDragRect.bottom = h + clientDragRect.top;
+            break;
+        case WMSZ_TOPRIGHT:
+            clientDragRect.right = w + clientDragRect.left;
+            clientDragRect.top = clientDragRect.bottom - h;
+            break;
+        case WMSZ_TOP:
+            if (lock_aspect_ratio) {
+                clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
+            }
+            clientDragRect.right = w + clientDragRect.left;
+            clientDragRect.top = clientDragRect.bottom - h;
+            break;
+        case WMSZ_TOPLEFT:
+            clientDragRect.left = clientDragRect.right - w;
+            clientDragRect.top = clientDragRect.bottom - h;
+            break;
+        case WMSZ_BOTTOM:
+            if (lock_aspect_ratio) {
+                clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
+            }
+            clientDragRect.right = w + clientDragRect.left;
+            clientDragRect.bottom = h + clientDragRect.top;
+            break;
+        case WMSZ_BOTTOMRIGHT:
+            clientDragRect.right = w + clientDragRect.left;
+            clientDragRect.bottom = h + clientDragRect.top;
+            break;
+        }
+
+        // convert the client rect to a window rect
+        if (!AdjustWindowRectEx(&clientDragRect, GetWindowStyle(hwnd), GetMenu(hwnd) != NULL, GetWindowExStyle(hwnd))) {
+            break;
+        }
+
+        *dragRect = clientDragRect;
+    } break;
 
     case WM_SETCURSOR:
     {
@@ -2309,10 +2307,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 point.y = winpoint.y;
                 rc = window->hit_test(window, &point, window->hit_test_data);
                 switch (rc) {
-#define POST_HIT_TEST(ret)                                                 \
-    {                                                                      \
+#define POST_HIT_TEST(ret)                                                  \
+    {                                                                       \
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0); \
-        return ret;                                                        \
+        return ret;                                                         \
     }
                 case SDL_HITTEST_DRAGGABLE:
                 {
@@ -2683,17 +2681,17 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
             SDL_WindowData *data = window->internal;
             if (data) {
                 refresh_clipcursor = data->clipcursor_queued;
-                data->clipcursor_queued = false;    // Must be cleared unconditionally.
-                data->postpone_clipcursor = false;  // Must be cleared unconditionally.
-                                                    // Must happen before UpdateClipCursor.
-                                                    // Although its occurrence currently
-                                                    // always coincides with the queuing of
-                                                    // clipcursor, it is logically distinct
-                                                    // and this coincidence might no longer
-                                                    // be true in the future.
-                                                    // Ergo this placement concordantly
-                                                    // conveys its unconditionality
-                                                    // vis-a-vis the queuing of clipcursor.
+                data->clipcursor_queued = false;   // Must be cleared unconditionally.
+                data->postpone_clipcursor = false; // Must be cleared unconditionally.
+                                                   // Must happen before UpdateClipCursor.
+                                                   // Although its occurrence currently
+                                                   // always coincides with the queuing of
+                                                   // clipcursor, it is logically distinct
+                                                   // and this coincidence might no longer
+                                                   // be true in the future.
+                                                   // Ergo this placement concordantly
+                                                   // conveys its unconditionality
+                                                   // vis-a-vis the queuing of clipcursor.
             }
             if (refresh_clipcursor) {
                 WIN_UpdateClipCursor(window);

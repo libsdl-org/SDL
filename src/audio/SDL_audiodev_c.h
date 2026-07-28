@@ -26,7 +26,7 @@
 #include "SDL_sysaudio.h"
 
 // Open the audio device for playback, and don't block if busy
-//#define USE_BLOCKING_WRITES
+// #define USE_BLOCKING_WRITES
 
 #ifdef USE_BLOCKING_WRITES
 #define OPEN_FLAGS_OUTPUT O_WRONLY

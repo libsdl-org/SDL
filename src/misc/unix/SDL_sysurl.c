@@ -22,12 +22,12 @@
 
 #include "../SDL_sysurl.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
-#include <errno.h>
+#include <unistd.h>
 #ifdef USE_POSIX_SPAWN
 #include <spawn.h>
 extern char **environ;

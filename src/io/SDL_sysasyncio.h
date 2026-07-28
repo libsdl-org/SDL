@@ -42,29 +42,31 @@
 
 // this entire thing is just juggling doubly-linked lists, so make some helper macros.
 #define LINKED_LIST_DECLARE_FIELDS(type, prefix) \
-    type *prefix##prev; \
+    type *prefix##prev;                          \
     type *prefix##next
 
-#define LINKED_LIST_PREPEND(item, list, prefix) do { \
-    item->prefix##prev = &list; \
-    item->prefix##next = list.prefix##next; \
-    if (item->prefix##next) { \
-        item->prefix##next->prefix##prev = item; \
-    } \
-    list.prefix##next = item; \
-} while (false)
+#define LINKED_LIST_PREPEND(item, list, prefix)      \
+    do {                                             \
+        item->prefix##prev = &list;                  \
+        item->prefix##next = list.prefix##next;      \
+        if (item->prefix##next) {                    \
+            item->prefix##next->prefix##prev = item; \
+        }                                            \
+        list.prefix##next = item;                    \
+    } while (false)
 
-#define LINKED_LIST_UNLINK(item, prefix) do { \
-    if (item->prefix##next) { \
-        item->prefix##next->prefix##prev = item->prefix##prev; \
-    } \
-    item->prefix##prev->prefix##next = task->prefix##next; \
-    item->prefix##prev = item->prefix##next = NULL; \
-} while (false)
+#define LINKED_LIST_UNLINK(item, prefix)                           \
+    do {                                                           \
+        if (item->prefix##next) {                                  \
+            item->prefix##next->prefix##prev = item->prefix##prev; \
+        }                                                          \
+        item->prefix##prev->prefix##next = task->prefix##next;     \
+        item->prefix##prev = item->prefix##next = NULL;            \
+    } while (false)
 
 #define LINKED_LIST_START(list, prefix) (list.prefix##next)
-#define LINKED_LIST_NEXT(item, prefix) (item->prefix##next)
-#define LINKED_LIST_PREV(item, prefix) (item->prefix##prev)
+#define LINKED_LIST_NEXT(item, prefix)  (item->prefix##next)
+#define LINKED_LIST_PREV(item, prefix)  (item->prefix##prev)
 
 typedef struct SDL_AsyncIOTask SDL_AsyncIOTask;
 
@@ -90,8 +92,8 @@ typedef struct SDL_AsyncIOQueueInterface
 {
     bool (*queue_task)(void *userdata, SDL_AsyncIOTask *task);
     void (*cancel_task)(void *userdata, SDL_AsyncIOTask *task);
-    SDL_AsyncIOTask * (*get_results)(void *userdata);
-    SDL_AsyncIOTask * (*wait_results)(void *userdata, Sint32 timeoutMS);
+    SDL_AsyncIOTask *(*get_results)(void *userdata);
+    SDL_AsyncIOTask *(*wait_results)(void *userdata, Sint32 timeoutMS);
     void (*signal)(void *userdata);
     void (*destroy)(void *userdata);
 } SDL_AsyncIOQueueInterface;
@@ -122,9 +124,9 @@ struct SDL_AsyncIO
     void *userdata;
     SDL_Mutex *lock;
     SDL_AsyncIOTask tasks;
-    SDL_AsyncIOTask *closing;  // The close task, which isn't queued until all pending work for this file is done.
-    bool oneshot;  // true if this is a SDL_LoadFileAsync open.
-    bool readonly;  // true if this file is opened read-only.
+    SDL_AsyncIOTask *closing; // The close task, which isn't queued until all pending work for this file is done.
+    bool oneshot;             // true if this is a SDL_LoadFileAsync open.
+    bool readonly;            // true if this file is opened read-only.
 };
 
 // This is implemented for various platforms; param validation is done before calling this. Open file, fill in iface and userdata.
@@ -142,4 +144,3 @@ extern bool SDL_SYS_CreateAsyncIOQueue_Generic(SDL_AsyncIOQueue *queue);
 extern void SDL_SYS_QuitAsyncIO_Generic(void);
 
 #endif
-

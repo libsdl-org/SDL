@@ -22,15 +22,14 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
-#include "SDL_hidapi_rumble.h"
 #include "../../SDL_hints_c.h"
+#include "../SDL_sysjoystick.h"
+#include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../windows/SDL_rawinputjoystick_c.h"
 #endif
-
 
 struct joystick_hwdata
 {
@@ -980,8 +979,8 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
     }
 
     SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, bluetooth %d, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)", device->name, device->vendor_id, device->product_id, device->is_bluetooth, device->version,
-            device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
-            device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+                 device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
+                 device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 
     return device;
 }
@@ -994,8 +993,8 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
     SDL_AssertJoysticksLocked();
 
     SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, bluetooth %d, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)", device->name, device->vendor_id, device->product_id, device->is_bluetooth, device->version,
-            device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
-            device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+                 device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage,
+                 device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 
     for (curr = SDL_HIDAPI_devices, last = NULL; curr; last = curr, curr = curr->next) {
         if (curr == device) {
@@ -1149,7 +1148,7 @@ static void HIDAPI_UpdateDeviceList(void)
                     device->seen = true;
 
                     // Check to see if the serial number is available now
-                    if(HIDAPI_SerialIsEmpty(device)) {
+                    if (HIDAPI_SerialIsEmpty(device)) {
                         HIDAPI_SetDeviceSerialW(device, info->serial_number);
                     }
                 } else {
@@ -1728,9 +1727,9 @@ static void HIDAPI_JoystickQuit(void)
         driver->UnregisterHints(SDL_HIDAPIDriverHintChanged, driver);
     }
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS,
-                        SDL_HIDAPIDriverHintChanged, NULL);
+                           SDL_HIDAPIDriverHintChanged, NULL);
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
-                        SDL_HIDAPIDriverHintChanged, NULL);
+                           SDL_HIDAPIDriverHintChanged, NULL);
 
     SDL_hid_exit();
 

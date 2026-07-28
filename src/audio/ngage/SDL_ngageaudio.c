@@ -44,8 +44,7 @@ static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     phdata->buffer[0] = SDL_calloc(1, device->buffer_size);
     phdata->buffer[1] = SDL_calloc(1, device->buffer_size);
-    if (!phdata->buffer[0] || !phdata->buffer[1])
-    {
+    if (!phdata->buffer[0] || !phdata->buffer[1]) {
         SDL_Log("Error: Failed to allocate audio buffers");
         SDL_free(phdata->buffer[0]);
         SDL_free(phdata->buffer[1]);
@@ -80,13 +79,11 @@ static Uint8 *NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
         *buffer_size = 0;
         return 0;
     }
-     
+
     *buffer_size = device->buffer_size;
-    
+
     return phdata->buffer[phdata->fill_index];
 }
-
-
 
 static void NGAGEAUDIO_CloseDevice(SDL_AudioDevice *device)
 {

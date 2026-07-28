@@ -87,126 +87,233 @@ static void METAL_INTERNAL_DestroyBlitResources(SDL_GPURenderer *driverData);
 // Conversions
 
 #define RETURN_FORMAT(availability, format) \
-    if (availability) { return format; } else { return MTLPixelFormatInvalid; }
+    if (availability) {                     \
+        return format;                      \
+    } else {                                \
+        return MTLPixelFormatInvalid;       \
+    }
 
 static MTLPixelFormat SDLToMetal_TextureFormat(SDL_GPUTextureFormat format)
 {
     switch (format) {
-        case SDL_GPU_TEXTUREFORMAT_INVALID: return MTLPixelFormatInvalid;
-        case SDL_GPU_TEXTUREFORMAT_A8_UNORM: return MTLPixelFormatA8Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R8_UNORM: return MTLPixelFormatR8Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM: return MTLPixelFormatRG8Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM: return MTLPixelFormatRGBA8Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R16_UNORM: return MTLPixelFormatR16Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM: return MTLPixelFormatRG16Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM: return MTLPixelFormatRGBA16Unorm;
-        case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM: return MTLPixelFormatRGB10A2Unorm;
-        case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatB5G6R5Unorm);
-        case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatBGR5A1Unorm);
-        case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatABGR4Unorm);
-        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM: return MTLPixelFormatBGRA8Unorm;
-        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC1_RGBA);
-        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC2_RGBA);
-        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC3_RGBA);
-        case SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC4_RUnorm);
-        case SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC5_RGUnorm);
-        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC7_RGBAUnorm);
-        case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC6H_RGBFloat);
-        case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC6H_RGBUfloat);
-        case SDL_GPU_TEXTUREFORMAT_R8_SNORM: return MTLPixelFormatR8Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM: return MTLPixelFormatRG8Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM: return MTLPixelFormatRGBA8Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R16_SNORM: return MTLPixelFormatR16Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R16G16_SNORM: return MTLPixelFormatRG16Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM: return MTLPixelFormatRGBA16Snorm;
-        case SDL_GPU_TEXTUREFORMAT_R16_FLOAT: return MTLPixelFormatR16Float;
-        case SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT: return MTLPixelFormatRG16Float;
-        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT: return MTLPixelFormatRGBA16Float;
-        case SDL_GPU_TEXTUREFORMAT_R32_FLOAT: return MTLPixelFormatR32Float;
-        case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT: return MTLPixelFormatRG32Float;
-        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT: return MTLPixelFormatRGBA32Float;
-        case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT: return MTLPixelFormatRG11B10Float;
-        case SDL_GPU_TEXTUREFORMAT_R8_UINT: return MTLPixelFormatR8Uint;
-        case SDL_GPU_TEXTUREFORMAT_R8G8_UINT: return MTLPixelFormatRG8Uint;
-        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT: return MTLPixelFormatRGBA8Uint;
-        case SDL_GPU_TEXTUREFORMAT_R16_UINT: return MTLPixelFormatR16Uint;
-        case SDL_GPU_TEXTUREFORMAT_R16G16_UINT: return MTLPixelFormatRG16Uint;
-        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT: return MTLPixelFormatRGBA16Uint;
-        case SDL_GPU_TEXTUREFORMAT_R32_UINT: return MTLPixelFormatR32Uint;
-        case SDL_GPU_TEXTUREFORMAT_R32G32_UINT: return MTLPixelFormatRG32Uint;
-        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT: return MTLPixelFormatRGBA32Uint;
-        case SDL_GPU_TEXTUREFORMAT_R8_INT: return MTLPixelFormatR8Sint;
-        case SDL_GPU_TEXTUREFORMAT_R8G8_INT: return MTLPixelFormatRG8Sint;
-        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT: return MTLPixelFormatRGBA8Sint;
-        case SDL_GPU_TEXTUREFORMAT_R16_INT: return MTLPixelFormatR16Sint;
-        case SDL_GPU_TEXTUREFORMAT_R16G16_INT: return MTLPixelFormatRG16Sint;
-        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT: return MTLPixelFormatRGBA16Sint;
-        case SDL_GPU_TEXTUREFORMAT_R32_INT: return MTLPixelFormatR32Sint;
-        case SDL_GPU_TEXTUREFORMAT_R32G32_INT: return MTLPixelFormatRG32Sint;
-        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT: return MTLPixelFormatRGBA32Sint;
-        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB: return MTLPixelFormatRGBA8Unorm_sRGB;
-        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB: return MTLPixelFormatBGRA8Unorm_sRGB;
-        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC1_RGBA_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC2_RGBA_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC3_RGBA_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB: RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC7_RGBAUnorm_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_D16_UNORM: RETURN_FORMAT(@available(iOS 13.0, tvOS 13.0, *), MTLPixelFormatDepth16Unorm);
-        case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_INVALID:
+        return MTLPixelFormatInvalid;
+    case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
+        return MTLPixelFormatA8Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+        return MTLPixelFormatR8Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+        return MTLPixelFormatRG8Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+        return MTLPixelFormatRGBA8Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
+        return MTLPixelFormatR16Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
+        return MTLPixelFormatRG16Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+        return MTLPixelFormatRGBA16Unorm;
+    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        return MTLPixelFormatRGB10A2Unorm;
+    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatB5G6R5Unorm);
+    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatBGR5A1Unorm);
+    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatABGR4Unorm);
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+        return MTLPixelFormatBGRA8Unorm;
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC1_RGBA);
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC2_RGBA);
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC3_RGBA);
+    case SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC4_RUnorm);
+    case SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC5_RGUnorm);
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC7_RGBAUnorm);
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC6H_RGBFloat);
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC6H_RGBUfloat);
+    case SDL_GPU_TEXTUREFORMAT_R8_SNORM:
+        return MTLPixelFormatR8Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
+        return MTLPixelFormatRG8Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+        return MTLPixelFormatRGBA8Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R16_SNORM:
+        return MTLPixelFormatR16Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R16G16_SNORM:
+        return MTLPixelFormatRG16Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
+        return MTLPixelFormatRGBA16Snorm;
+    case SDL_GPU_TEXTUREFORMAT_R16_FLOAT:
+        return MTLPixelFormatR16Float;
+    case SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT:
+        return MTLPixelFormatRG16Float;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+        return MTLPixelFormatRGBA16Float;
+    case SDL_GPU_TEXTUREFORMAT_R32_FLOAT:
+        return MTLPixelFormatR32Float;
+    case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT:
+        return MTLPixelFormatRG32Float;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        return MTLPixelFormatRGBA32Float;
+    case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT:
+        return MTLPixelFormatRG11B10Float;
+    case SDL_GPU_TEXTUREFORMAT_R8_UINT:
+        return MTLPixelFormatR8Uint;
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UINT:
+        return MTLPixelFormatRG8Uint;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+        return MTLPixelFormatRGBA8Uint;
+    case SDL_GPU_TEXTUREFORMAT_R16_UINT:
+        return MTLPixelFormatR16Uint;
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UINT:
+        return MTLPixelFormatRG16Uint;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+        return MTLPixelFormatRGBA16Uint;
+    case SDL_GPU_TEXTUREFORMAT_R32_UINT:
+        return MTLPixelFormatR32Uint;
+    case SDL_GPU_TEXTUREFORMAT_R32G32_UINT:
+        return MTLPixelFormatRG32Uint;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+        return MTLPixelFormatRGBA32Uint;
+    case SDL_GPU_TEXTUREFORMAT_R8_INT:
+        return MTLPixelFormatR8Sint;
+    case SDL_GPU_TEXTUREFORMAT_R8G8_INT:
+        return MTLPixelFormatRG8Sint;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
+        return MTLPixelFormatRGBA8Sint;
+    case SDL_GPU_TEXTUREFORMAT_R16_INT:
+        return MTLPixelFormatR16Sint;
+    case SDL_GPU_TEXTUREFORMAT_R16G16_INT:
+        return MTLPixelFormatRG16Sint;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+        return MTLPixelFormatRGBA16Sint;
+    case SDL_GPU_TEXTUREFORMAT_R32_INT:
+        return MTLPixelFormatR32Sint;
+    case SDL_GPU_TEXTUREFORMAT_R32G32_INT:
+        return MTLPixelFormatRG32Sint;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+        return MTLPixelFormatRGBA32Sint;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+        return MTLPixelFormatRGBA8Unorm_sRGB;
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+        return MTLPixelFormatBGRA8Unorm_sRGB;
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC1_RGBA_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC2_RGBA_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC3_RGBA_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
+        RETURN_FORMAT(@available(iOS 16.4, tvOS 16.4, *), MTLPixelFormatBC7_RGBAUnorm_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_D16_UNORM:
+        RETURN_FORMAT(@available(iOS 13.0, tvOS 13.0, *), MTLPixelFormatDepth16Unorm);
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
 #ifdef SDL_PLATFORM_MACOS
-            return MTLPixelFormatDepth24Unorm_Stencil8;
+        return MTLPixelFormatDepth24Unorm_Stencil8;
 #else
-            return MTLPixelFormatInvalid;
+        return MTLPixelFormatInvalid;
 #endif
-        case SDL_GPU_TEXTUREFORMAT_D32_FLOAT: return MTLPixelFormatDepth32Float;
-        case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT:
+        return MTLPixelFormatDepth32Float;
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
 #ifdef SDL_PLATFORM_MACOS
-            return MTLPixelFormatDepth24Unorm_Stencil8;
+        return MTLPixelFormatDepth24Unorm_Stencil8;
 #else
-            return MTLPixelFormatInvalid;
+        return MTLPixelFormatInvalid;
 #endif
-        case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT: return MTLPixelFormatDepth32Float_Stencil8;
-        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_4x4_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x4_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x5_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x5_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x6_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x5_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x6_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x8_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x5_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x6_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x8_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x10_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x10_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x12_LDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_4x4_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x4_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x5_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x5_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x6_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x5_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x6_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x8_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x5_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x6_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x8_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x10_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x10_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB: RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x12_sRGB);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_4x4_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_5x4_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_5x5_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_6x5_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_6x6_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x5_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x6_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x8_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x5_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x6_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x8_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x10_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_12x10_HDR);
-        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT: RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_12x12_HDR);
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
+        return MTLPixelFormatDepth32Float_Stencil8;
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_4x4_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x4_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x5_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x5_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x6_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x5_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x6_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x8_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x5_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x6_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x8_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x10_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x10_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x12_LDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_4x4_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x4_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_5x5_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x5_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_6x6_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x5_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x6_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_8x8_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x5_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x6_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x8_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_10x10_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x10_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+        RETURN_FORMAT(@available(macOS 11.0, *), MTLPixelFormatASTC_12x12_sRGB);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_4x4_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_5x4_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_5x5_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_6x5_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_6x6_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x5_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x6_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_8x8_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x5_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x6_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x8_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_10x10_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_12x10_HDR);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        RETURN_FORMAT(@available(macOS 11.0, iOS 13.0, tvOS 16.0, *), MTLPixelFormatASTC_12x12_HDR);
     }
 }
 
@@ -418,8 +525,8 @@ static MTLColorWriteMask SDLToMetal_ColorWriteMask(
 }
 
 static MTLDepthClipMode SDLToMetal_DepthClipMode(
-    bool enableDepthClip
-) {
+    bool enableDepthClip)
+{
     if (enableDepthClip) {
         return MTLDepthClipModeClip;
     } else {
@@ -1075,7 +1182,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
             descriptor.label = @(name);
         }
 
-        handle = [renderer->device newComputePipelineStateWithDescriptor:descriptor options:MTLPipelineOptionNone reflection: nil error:&error];
+        handle = [renderer->device newComputePipelineStateWithDescriptor:descriptor options:MTLPipelineOptionNone reflection:nil error:&error];
         if (error != NULL) {
             SET_ERROR_AND_RETURN("Creating compute pipeline failed: %s", [[error description] UTF8String], NULL);
         }
@@ -1137,9 +1244,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         for (Uint32 i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
             blendState = &createinfo->target_info.color_target_descriptions[i].blend_state;
-            SDL_GPUColorComponentFlags colorWriteMask = blendState->enable_color_write_mask ?
-                blendState->color_write_mask :
-                0xF;
+            SDL_GPUColorComponentFlags colorWriteMask = blendState->enable_color_write_mask ? blendState->color_write_mask : 0xF;
 
             pipelineDescriptor.colorAttachments[i].pixelFormat = SDLToMetal_TextureFormat(createinfo->target_info.color_target_descriptions[i].format);
             pipelineDescriptor.colorAttachments[i].writeMask = SDLToMetal_ColorWriteMask(colorWriteMask);
@@ -2527,7 +2632,7 @@ static void METAL_BindVertexSamplers(
 
         if (metalCommandBuffer->vertexSamplers[firstSlot + i] != sampler->handle) {
             metalCommandBuffer->vertexSamplers[firstSlot + i] = sampler->handle;
-            metalCommandBuffer->needVertexSamplerBind  = true;
+            metalCommandBuffer->needVertexSamplerBind = true;
         }
 
         if (metalCommandBuffer->vertexTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
@@ -2538,7 +2643,7 @@ static void METAL_BindVertexSamplers(
             metalCommandBuffer->vertexTextures[firstSlot + i] =
                 textureContainer->activeTexture->handle;
 
-            metalCommandBuffer->needVertexSamplerBind  = true;
+            metalCommandBuffer->needVertexSamplerBind = true;
         }
     }
 }
@@ -2609,7 +2714,7 @@ static void METAL_BindFragmentSamplers(
 
         if (metalCommandBuffer->fragmentSamplers[firstSlot + i] != sampler->handle) {
             metalCommandBuffer->fragmentSamplers[firstSlot + i] = sampler->handle;
-            metalCommandBuffer->needFragmentSamplerBind  = true;
+            metalCommandBuffer->needFragmentSamplerBind = true;
         }
 
         if (metalCommandBuffer->fragmentTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
@@ -2620,7 +2725,7 @@ static void METAL_BindFragmentSamplers(
             metalCommandBuffer->fragmentTextures[firstSlot + i] =
                 textureContainer->activeTexture->handle;
 
-            metalCommandBuffer->needFragmentSamplerBind  = true;
+            metalCommandBuffer->needFragmentSamplerBind = true;
         }
     }
 }
@@ -2786,8 +2891,8 @@ static void METAL_INTERNAL_BindGraphicsResources(
             if (graphicsPipeline->header.num_fragment_uniform_buffers > i) {
                 [commandBuffer->renderEncoder
                     setFragmentBuffer:commandBuffer->fragmentUniformBuffers[i]->handle
-                            offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
-                            atIndex:i];
+                               offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
+                              atIndex:i];
             }
             commandBuffer->needFragmentUniformBufferBind[i] = false;
         }
@@ -2836,8 +2941,8 @@ static void METAL_INTERNAL_BindComputeResources(
             if (computePipeline->header.numUniformBuffers > i) {
                 [commandBuffer->computeEncoder
                     setBuffer:commandBuffer->computeUniformBuffers[i]->handle
-                    offset:commandBuffer->computeUniformBuffers[i]->drawOffset
-                    atIndex:i];
+                       offset:commandBuffer->computeUniformBuffers[i]->drawOffset
+                      atIndex:i];
             }
         }
         commandBuffer->needComputeUniformBufferBind[i] = false;
@@ -3192,9 +3297,9 @@ static void METAL_BindComputePipeline(
         if (pipeline->header.numReadWriteStorageTextures > 0) {
             [metalCommandBuffer->computeEncoder setTextures:metalCommandBuffer->computeReadWriteTextures
                                                   withRange:NSMakeRange(
-                                                        pipeline->header.numSamplers +
-                                                            pipeline->header.numReadonlyStorageTextures,
-                                                        pipeline->header.numReadWriteStorageTextures)];
+                                                                pipeline->header.numSamplers +
+                                                                    pipeline->header.numReadonlyStorageTextures,
+                                                                pipeline->header.numReadWriteStorageTextures)];
         }
 
         NSUInteger offsets[MAX_COMPUTE_WRITE_BUFFERS] = { 0 };
@@ -3202,9 +3307,9 @@ static void METAL_BindComputePipeline(
             [metalCommandBuffer->computeEncoder setBuffers:metalCommandBuffer->computeReadWriteBuffers
                                                    offsets:offsets
                                                  withRange:NSMakeRange(
-                                                        pipeline->header.numUniformBuffers +
-                                                            pipeline->header.numReadonlyStorageBuffers,
-                                                        pipeline->header.numReadWriteStorageBuffers)];
+                                                               pipeline->header.numUniformBuffers +
+                                                                   pipeline->header.numReadonlyStorageBuffers,
+                                                               pipeline->header.numReadWriteStorageBuffers)];
         }
     }
 }
@@ -3852,10 +3957,10 @@ static bool METAL_WaitForSwapchain(
 
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
             if (!METAL_WaitForFences(
-                driverData,
-                true,
-                &windowData->inFlightFences[windowData->frameCounter],
-                1)) {
+                    driverData,
+                    true,
+                    &windowData->inFlightFences[windowData->frameCounter],
+                    1)) {
                 return false;
             }
         }
@@ -3906,10 +4011,10 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
             if (block) {
                 // If we are blocking, just wait for the fence!
                 if (!METAL_WaitForFences(
-                    (SDL_GPURenderer *)renderer,
-                    true,
-                    &windowData->inFlightFences[windowData->frameCounter],
-                    1)) {
+                        (SDL_GPURenderer *)renderer,
+                        true,
+                        &windowData->inFlightFences[windowData->frameCounter],
+                        1)) {
                     return false;
                 }
             } else {
@@ -3954,8 +4059,8 @@ static bool METAL_AcquireSwapchainTexture(
     SDL_Window *window,
     SDL_GPUTexture **swapchain_texture,
     Uint32 *swapchain_texture_width,
-    Uint32 *swapchain_texture_height
-) {
+    Uint32 *swapchain_texture_height)
+{
     return METAL_INTERNAL_AcquireSwapchainTexture(
         false,
         command_buffer,
@@ -3970,8 +4075,8 @@ static bool METAL_WaitAndAcquireSwapchainTexture(
     SDL_Window *window,
     SDL_GPUTexture **swapchain_texture,
     Uint32 *swapchain_texture_width,
-    Uint32 *swapchain_texture_height
-) {
+    Uint32 *swapchain_texture_height)
+{
     return METAL_INTERNAL_AcquireSwapchainTexture(
         true,
         command_buffer,
@@ -4522,7 +4627,7 @@ static XrResult METAL_DestroyXRSwapchain(
     return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
-static SDL_GPUTextureFormat* METAL_GetXRSwapchainFormats(
+static SDL_GPUTextureFormat *METAL_GetXRSwapchainFormats(
     SDL_GPURenderer *driverData,
     XrSession session,
     int *num_formats)
@@ -4600,13 +4705,9 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
             SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN,
             false);
         if (@available(macOS 10.15, *)) {
-            hasHardwareSupport = allowMacFamily1 ?
-                [device supportsFamily:MTLGPUFamilyMac1] :
-                [device supportsFamily:MTLGPUFamilyMac2];
+            hasHardwareSupport = allowMacFamily1 ? [device supportsFamily:MTLGPUFamilyMac1] : [device supportsFamily:MTLGPUFamilyMac2];
         } else if (@available(macOS 10.14, *)) {
-            hasHardwareSupport = allowMacFamily1 ?
-                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v4] :
-                [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
+            hasHardwareSupport = allowMacFamily1 ? [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v4] : [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
         }
 #elif defined(SDL_PLATFORM_VISIONOS)
         hasHardwareSupport = true;

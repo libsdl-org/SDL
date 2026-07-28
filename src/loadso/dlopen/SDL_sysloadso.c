@@ -25,8 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 // System dependent library loading routines
 
-#include <stdio.h>
 #include <dlfcn.h>
+#include <stdio.h>
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #include "../../video/uikit/SDL_uikitvideo.h"
@@ -49,7 +49,7 @@ SDL_SharedObject *SDL_LoadObject(const char *sofile)
     if (!handle) {
         SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
-    return (SDL_SharedObject *) handle;
+    return (SDL_SharedObject *)handle;
 }
 
 SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)

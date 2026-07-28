@@ -34,7 +34,7 @@ static bool parse_zenity_version(const char *version, int *major, int *minor)
      */
     const char *version_ptr = version;
     char *end_ptr = NULL;
-    int tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+    int tmp = (int)SDL_strtol(version_ptr, &end_ptr, 10);
     if (tmp == 0 && end_ptr == version_ptr) {
         return SDL_SetError("failed to get zenity major version number");
     }
@@ -42,7 +42,7 @@ static bool parse_zenity_version(const char *version, int *major, int *minor)
 
     if (*end_ptr == '.') {
         version_ptr = end_ptr + 1; // skip the dot
-        tmp = (int) SDL_strtol(version_ptr, &end_ptr, 10);
+        tmp = (int)SDL_strtol(version_ptr, &end_ptr, 10);
         if (tmp == 0 && end_ptr == version_ptr) {
             return SDL_SetError("failed to get zenity minor version number");
         }

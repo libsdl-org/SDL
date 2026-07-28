@@ -20,8 +20,8 @@
 */
 
 /* Ported from original test/common.c file. */
-#include <SDL3/SDL_test.h>
 #include "SDL_test_internal.h"
+#include <SDL3/SDL_test.h>
 
 #define SDL_MAIN_NOIMPL
 #define SDL_MAIN_USE_CALLBACKS
@@ -136,13 +136,13 @@ static void SDLCALL SDLTest_CommonArgParserFinalize(void *data)
     }
 }
 
-#define SEARCHARG(dim)                  \
-    while (*(dim) && *(dim) != ',') {   \
-        ++(dim);                        \
-    }                                   \
-    if (!*(dim)) {                      \
-        return -1;                      \
-    }                                   \
+#define SEARCHARG(dim)                \
+    while (*(dim) && *(dim) != ',') { \
+        ++(dim);                      \
+    }                                 \
+    if (!*(dim)) {                    \
+        return -1;                    \
+    }                                 \
     *(dim)++ = '\0';
 
 static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **argv, int index)
@@ -278,7 +278,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         return 1;
     } else if (SDL_strcasecmp(argv[index], "--windows") == 0) {
         ++index;
-        if (!argv[index] || !SDL_isdigit((unsigned char) *argv[index])) {
+        if (!argv[index] || !SDL_isdigit((unsigned char)*argv[index])) {
             return -1;
         } else if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
             state->num_windows = SDL_atoi(argv[index]);
@@ -473,7 +473,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         if (!argv[index]) {
             return -1;
         }
-        state->scale = (float) SDL_atof(argv[index]);
+        state->scale = (float)SDL_atof(argv[index]);
         return 2;
     } else if (SDL_strcasecmp(argv[index], "--depth") == 0) {
         ++index;
@@ -487,7 +487,7 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
         if (!argv[index]) {
             return -1;
         }
-        state->refresh_rate = (float) SDL_atof(argv[index]);
+        state->refresh_rate = (float)SDL_atof(argv[index]);
         return 2;
     } else if (SDL_strcasecmp(argv[index], "--vsync") == 0) {
         state->render_vsync = 1;
@@ -621,7 +621,7 @@ static int SDLCALL SDLTest_CommonStateParseAudioArguments(void *data, char **arg
         if (!argv[index]) {
             return -1;
         }
-        state->audio_channels = (Uint8) SDL_atoi(argv[index]);
+        state->audio_channels = (Uint8)SDL_atoi(argv[index]);
         return 2;
     }
     return 0;
@@ -705,7 +705,8 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
     return state;
 }
 
-void SDLTest_CommonDestroyState(SDLTest_CommonState *state) {
+void SDLTest_CommonDestroyState(SDLTest_CommonState *state)
+{
     SDL_free(state);
     SDLTest_LogAllocations();
 }
@@ -961,7 +962,7 @@ static void SDLTest_PrintModStateFlag(char *text, size_t maxlen, SDL_Keymod flag
         SDL_snprintfcat(text, maxlen, "SCROLL");
         break;
     default:
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", (unsigned int) flag);
+        SDL_snprintfcat(text, maxlen, "0x%8.8x", (unsigned int)flag);
         break;
     }
 }
@@ -1495,7 +1496,6 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
 
     SDL_InitSubSystem(state->flags);
 
-
     if (state->quit_after_ms_interval) {
         state->quit_after_ms_timer = SDL_AddTimer(state->quit_after_ms_interval, quit_after_ms_cb, NULL);
     }
@@ -1506,7 +1506,7 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
 static const char *SystemThemeName(void)
 {
     switch (SDL_GetSystemTheme()) {
-#define CASE(X)               \
+#define CASE(X)                \
     case SDL_SYSTEM_THEME_##X: \
         return #X
         CASE(UNKNOWN);
@@ -1538,7 +1538,7 @@ static const char *DisplayOrientationName(int orientation)
 static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 {
     switch (axis) {
-#define AXIS_CASE(ax)              \
+#define AXIS_CASE(ax)           \
     case SDL_GAMEPAD_AXIS_##ax: \
         return #ax
         AXIS_CASE(INVALID);
@@ -1557,7 +1557,7 @@ static const char *GamepadAxisName(const SDL_GamepadAxis axis)
 static const char *GamepadButtonName(const SDL_GamepadButton button)
 {
     switch (button) {
-#define BUTTON_CASE(btn)              \
+#define BUTTON_CASE(btn)           \
     case SDL_GAMEPAD_BUTTON_##btn: \
         return #btn
         BUTTON_CASE(INVALID);
@@ -1610,20 +1610,18 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->display.displayID);
         break;
     case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-        {
-            float scale = SDL_GetDisplayContentScale(event->display.displayID);
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
-                    event->display.displayID, (int)(scale * 100.0f));
-        }
-        break;
+    {
+        float scale = SDL_GetDisplayContentScale(event->display.displayID);
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed content scale to %d%%",
+                event->display.displayID, (int)(scale * 100.0f));
+    } break;
     case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
-        {
-            SDL_Rect bounds;
-            SDL_GetDisplayUsableBounds(event->display.displayID, &bounds);
-            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed usable bounds to %dx%d at %d,%d",
-                    event->display.displayID, bounds.w, bounds.h, bounds.x, bounds.y);
-        }
-        break;
+    {
+        SDL_Rect bounds;
+        SDL_GetDisplayUsableBounds(event->display.displayID, &bounds);
+        SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed usable bounds to %dx%d at %d,%d",
+                event->display.displayID, bounds.w, bounds.h, bounds.x, bounds.y);
+    } break;
     case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " desktop mode changed to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->display.displayID, event->display.data1, event->display.data2);
@@ -1669,7 +1667,8 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " changed metal view size",
                 event->window.windowID);
         break;
-    case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED: {
+    case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:
+    {
         SDL_Rect rect;
 
         SDL_GetWindowSafeArea(SDL_GetWindowFromEvent(event), &rect);
@@ -1739,13 +1738,14 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->kdevice.which, SDL_GetKeyboardNameForID(event->kdevice.which));
         break;
     case SDL_EVENT_KEY_DOWN:
-    case SDL_EVENT_KEY_UP: {
+    case SDL_EVENT_KEY_UP:
+    {
         char modstr[64];
         if (event->key.mod) {
             modstr[0] = '\0';
-            SDLTest_PrintModState(modstr, sizeof (modstr), event->key.mod);
+            SDLTest_PrintModState(modstr, sizeof(modstr), event->key.mod);
         } else {
-            SDL_strlcpy(modstr, "NONE", sizeof (modstr));
+            SDL_strlcpy(modstr, "NONE", sizeof(modstr));
         }
 
         SDL_Log("SDL EVENT: Keyboard: key %s in window %" SDL_PRIu32 ": scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s, mods = %s",
@@ -1920,8 +1920,8 @@ void SDLTest_PrintEvent(const SDL_Event *event)
     case SDL_EVENT_FINGER_UP:
     case SDL_EVENT_FINGER_CANCELED:
         SDL_Log("SDL EVENT: Finger: %s touch=%" SDL_PRIu64 ", finger=%" SDL_PRIu64 ", x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
-                (event->type == SDL_EVENT_FINGER_DOWN) ? "down" :
-                (event->type == SDL_EVENT_FINGER_UP) ? "up" : "cancel",
+                (event->type == SDL_EVENT_FINGER_DOWN) ? "down" : (event->type == SDL_EVENT_FINGER_UP) ? "up"
+                                                                                                       : "cancel",
                 event->tfinger.touchID,
                 event->tfinger.fingerID,
                 event->tfinger.x, event->tfinger.y,
@@ -2081,7 +2081,7 @@ static void SDLCALL SDLTest_ScreenShotClipboardCleanup(void *context)
     SDL_free(data);
 }
 
-static const void * SDLCALL SDLTest_ScreenShotClipboardProvider(void *context, const char *mime_type, size_t *size)
+static const void *SDLCALL SDLTest_ScreenShotClipboardProvider(void *context, const char *mime_type, size_t *size)
 {
     SDLTest_ClipboardData *data = (SDLTest_ClipboardData *)context;
 
@@ -2515,9 +2515,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                     SDL_Log("Setting progress state to %s", name);
                     SDL_SetWindowProgressState(window, progress_state);
                 }
-            }
-            else if (withControl)
-            {
+            } else if (withControl) {
                 /* Ctrl-P increase progress value */
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {

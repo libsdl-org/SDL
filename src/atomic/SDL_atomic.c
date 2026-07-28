@@ -35,7 +35,7 @@
 
 // The __atomic intrinsics showed up in different times for different compilers.
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) || (defined(__clang__) && defined(HAVE_GCC_ATOMICS))
-#define HAVE_ATOMIC_LOAD_N 1
+#define HAVE_ATOMIC_LOAD_N     1
 #define HAVE_ATOMIC_EXCHANGE_N 1
 #else
 #if SDL_HAS_BUILTIN(__atomic_load_n)
@@ -359,7 +359,7 @@ void *SDL_GetAtomicPointer(void **a)
     return (void *)__ldar64((unsigned __int64 *)a);
 #elif defined(HAVE_MSC_ATOMICS) && (defined(_M_X64) || defined(_M_IX86))
     SDL_CompilerBarrier();
-    void *value = *(void * volatile *)a;
+    void *value = *(void *volatile *)a;
     SDL_CompilerBarrier();
     return value;
 #elif defined(HAVE_GCC_ATOMICS)

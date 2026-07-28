@@ -22,11 +22,10 @@
 
 // Window event handling code for SDL
 
+#include "../tray/SDL_tray_utils.h"
 #include "SDL_events_c.h"
 #include "SDL_eventwatch_c.h"
 #include "SDL_mouse_c.h"
-#include "../tray/SDL_tray_utils.h"
-
 
 #define NUM_WINDOW_EVENT_WATCH_PRIORITIES (SDL_WINDOW_EVENT_WATCH_NORMAL + 1)
 

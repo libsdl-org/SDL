@@ -23,9 +23,9 @@
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
-#include "SDL_kmsdrmvideo.h"
-#include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmdyn.h"
+#include "SDL_kmsdrmopengles.h"
+#include "SDL_kmsdrmvideo.h"
 #include <errno.h>
 
 #define VOID2U64(x) ((uint64_t)(size_t)(x))
@@ -35,17 +35,16 @@
 #endif
 
 #ifndef EGL_SYNC_NATIVE_FENCE_ANDROID
-#define EGL_SYNC_NATIVE_FENCE_ANDROID     0x3144
+#define EGL_SYNC_NATIVE_FENCE_ANDROID 0x3144
 #endif
 
 #ifndef EGL_SYNC_NATIVE_FENCE_FD_ANDROID
-#define EGL_SYNC_NATIVE_FENCE_FD_ANDROID  0x3145
+#define EGL_SYNC_NATIVE_FENCE_FD_ANDROID 0x3145
 #endif
 
 #ifndef EGL_NO_NATIVE_FENCE_FD_ANDROID
-#define EGL_NO_NATIVE_FENCE_FD_ANDROID    -1
+#define EGL_NO_NATIVE_FENCE_FD_ANDROID -1
 #endif
-
 
 // EGL implementation of SDL OpenGL support
 
@@ -85,7 +84,7 @@ void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this)
 
 SDL_EGL_CreateContext_impl(KMSDRM)
 
-bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
+    bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
@@ -103,7 +102,8 @@ bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 static EGLSyncKHR create_fence(SDL_VideoDevice *_this, int fd)
 {
     EGLint attrib_list[] = {
-        EGL_SYNC_NATIVE_FENCE_FD_ANDROID, fd,
+        EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
+        fd,
         EGL_NONE,
     };
 
@@ -119,9 +119,9 @@ static EGLSyncKHR create_fence(SDL_VideoDevice *_this, int fd)
 /* program exits immediately, or we could leave KMS waiting for a failed/missing   */
 /* fence forever.                                                                  */
 /***********************************************************************************/
-static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * window)
+static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windata = ((SDL_WindowData *) window->internal);
+    SDL_WindowData *windata = ((SDL_WindowData *)window->internal);
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
@@ -144,7 +144,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     /* the new front buffer. (Remember that won't really happen until */
     /* we request a pageflip at the KMS level and it completes.       */
     /******************************************************************/
-    if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
+    if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
         return SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
     }
 
@@ -160,7 +160,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     /* in the CMDSTREAM to be lifted when the CMDSTREAM to this point */
     /* is completed).                                                 */
     /******************************************************************/
-    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID (_this->egl_data->egl_display, dispdata->gpu_fence);
+    dispdata->kms_in_fence_fd = _this->egl_data->eglDupNativeFenceFDANDROID(_this->egl_data->egl_display, dispdata->gpu_fence);
 
     _this->egl_data->eglDestroySyncKHR(_this->egl_data->egl_display, dispdata->gpu_fence);
     SDL_assert(dispdata->kms_in_fence_fd != -1);
@@ -185,8 +185,8 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
            the current connector and mode with drmModeSetCrtc */
         SDL_VideoData *viddata = _this->internal;
         const int ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
-                                    dispdata->crtc.crtc->crtc_id, fb->fb_id, 0, 0,
-                                    &dispdata->connector.connector->connector_id, 1, &dispdata->mode);
+                                              dispdata->crtc.crtc->crtc_id, fb->fb_id, 0, 0,
+                                              &dispdata->connector.connector->connector_id, 1, &dispdata->mode);
 
         if (ret) {
             return SDL_SetError("Could not set videomode on CRTC.");
@@ -197,11 +197,11 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     info.plane = dispdata->display_plane;
     info.crtc_id = dispdata->crtc.crtc->crtc_id;
     info.fb_id = fb->fb_id;
-    info.src_w = window->w;  // !!! FIXME: was windata->src_w in the original atomic patch
-    info.src_h = window->h;  // !!! FIXME: was windata->src_h in the original atomic patch
-    info.crtc_w = dispdata->mode.hdisplay;  // !!! FIXME: was windata->output_w in the original atomic patch
-    info.crtc_h = dispdata->mode.vdisplay;  // !!! FIXME: was windata->output_h in the original atomic patch
-    info.crtc_x = 0;  // !!! FIXME: was windata->output_x in the original atomic patch
+    info.src_w = window->w;                // !!! FIXME: was windata->src_w in the original atomic patch
+    info.src_h = window->h;                // !!! FIXME: was windata->src_h in the original atomic patch
+    info.crtc_w = dispdata->mode.hdisplay; // !!! FIXME: was windata->output_w in the original atomic patch
+    info.crtc_h = dispdata->mode.vdisplay; // !!! FIXME: was windata->output_h in the original atomic patch
+    info.crtc_x = 0;                       // !!! FIXME: was windata->output_x in the original atomic patch
 
     drm_atomic_set_plane_props(dispdata, &info);
 
@@ -222,14 +222,13 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     /* used to tell the GPU to wait for KMS to complete the changes  */
     /* requested in atomic_commit (the pageflip in this case).       */
     /*****************************************************************/
-    if (dispdata->kms_in_fence_fd != -1)
-    {
+    if (dispdata->kms_in_fence_fd != -1) {
         add_plane_property(dispdata->atomic_req, dispdata->display_plane,
-            "IN_FENCE_FD", dispdata->kms_in_fence_fd);
+                           "IN_FENCE_FD", dispdata->kms_in_fence_fd);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc,
-            "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd));
+                          "OUT_FENCE_PTR", VOID2U64(&dispdata->kms_out_fence_fd));
     }
- 
+
     /* Do we have a pending modesetting? If so, set the necessary
        props so it's included in the incoming atomic commit. */
     if (windata->egl_surface_dirty) {
@@ -288,9 +287,9 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     return true;
 }
 
-static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Window * window)
+static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windata = ((SDL_WindowData *) window->internal);
+    SDL_WindowData *windata = ((SDL_WindowData *)window->internal);
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
@@ -309,7 +308,7 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
     /* Mark, at EGL level, the buffer that we want to become the new front buffer.
        It won't really happen until we request a pageflip at the KMS level and it
        completes. */
-    if (! _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
+    if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, windata->egl_surface)) {
         return SDL_EGL_SetError("Failed to swap EGL buffers", "eglSwapBuffers");
     }
     /* Lock the buffer that is marked by eglSwapBuffers() to become the next front buffer
@@ -318,7 +317,7 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
     windata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(windata->gs);
     if (!windata->next_bo) {
         return SDL_SetError("Failed to lock frontbuffer");
-     }
+    }
     fb = KMSDRM_FBFromBO(_this, windata->next_bo);
     if (!fb) {
         return SDL_SetError("Failed to get a new framebuffer BO");
@@ -330,8 +329,8 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
            the current connector and mode with drmModeSetCrtc */
         SDL_VideoData *viddata = _this->internal;
         const int ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd,
-                                    dispdata->crtc.crtc->crtc_id, fb->fb_id, 0, 0,
-                                    &dispdata->connector.connector->connector_id, 1, &dispdata->mode);
+                                              dispdata->crtc.crtc->crtc_id, fb->fb_id, 0, 0,
+                                              &dispdata->connector.connector->connector_id, 1, &dispdata->mode);
 
         if (ret) {
             return SDL_SetError("Could not set videomode on CRTC.");
@@ -342,11 +341,11 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
     info.plane = dispdata->display_plane;
     info.crtc_id = dispdata->crtc.crtc->crtc_id;
     info.fb_id = fb->fb_id;
-    info.src_w = window->w;  // !!! FIXME: was windata->src_w in the original atomic patch
-    info.src_h = window->h;  // !!! FIXME: was windata->src_h in the original atomic patch
-    info.crtc_w = dispdata->mode.hdisplay;  // !!! FIXME: was windata->output_w in the original atomic patch
-    info.crtc_h = dispdata->mode.vdisplay;  // !!! FIXME: was windata->output_h in the original atomic patch
-    info.crtc_x = 0;  // !!! FIXME: was windata->output_x in the original atomic patch
+    info.src_w = window->w;                // !!! FIXME: was windata->src_w in the original atomic patch
+    info.src_h = window->h;                // !!! FIXME: was windata->src_h in the original atomic patch
+    info.crtc_w = dispdata->mode.hdisplay; // !!! FIXME: was windata->output_w in the original atomic patch
+    info.crtc_h = dispdata->mode.vdisplay; // !!! FIXME: was windata->output_h in the original atomic patch
+    info.crtc_x = 0;                       // !!! FIXME: was windata->output_x in the original atomic patch
 
     drm_atomic_set_plane_props(dispdata, &info);
 
@@ -366,7 +365,7 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "active", 1);
         modesetting = true;
     }
- 
+
     /* Issue the one and only atomic commit where all changes will be requested!
        Blocking for double buffering: won't return until completed. */
     if (drm_atomic_commit(_this, dispdata, true, modesetting)) {
@@ -498,15 +497,15 @@ static bool KMSDRM_GLES_SwapWindowLegacy(SDL_VideoDevice *_this, SDL_Window *win
     return true;
 }
 
-bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window * window)
+bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windata = (SDL_WindowData *) window->internal;
+    SDL_WindowData *windata = (SDL_WindowData *)window->internal;
 
     if (windata->swap_window == NULL) {
         SDL_VideoData *viddata = _this->internal;
         if (viddata->is_atomic) {
             // We want the fenced version by default, but it needs extensions.
-            if ( (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) || (!SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_ANDROID_native_fence_sync")) ) {
+            if ((SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, false)) || (!SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_ANDROID_native_fence_sync"))) {
                 windata->swap_window = KMSDRM_GLES_SwapWindowDoubleBuffered;
             } else {
                 windata->swap_window = KMSDRM_GLES_SwapWindowFenced;

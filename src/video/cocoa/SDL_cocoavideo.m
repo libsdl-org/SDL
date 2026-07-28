@@ -26,12 +26,12 @@
 #error SDL must be built with Objective-C ARC (automatic reference counting) enabled
 #endif
 
-#include "SDL_cocoavideo.h"
-#include "SDL_cocoavulkan.h"
+#include "SDL_cocoamessagebox.h"
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
-#include "SDL_cocoamessagebox.h"
 #include "SDL_cocoashape.h"
+#include "SDL_cocoavideo.h"
+#include "SDL_cocoavulkan.h"
 
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -61,7 +61,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_CocoaVideoData *data;
 
         if (![NSThread isMainThread]) {
-            return NULL;  // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
+            return NULL; // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
         }
 
         Cocoa_RegisterApp();
@@ -251,7 +251,7 @@ SDL_SystemTheme Cocoa_GetSystemTheme(void)
     if (@available(macOS 10.14, *)) {
         NSAppearance *appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
-        if ([appearance.name containsString: @"Dark"]) {
+        if ([appearance.name containsString:@"Dark"]) {
             return SDL_SYSTEM_THEME_DARK;
         }
     }

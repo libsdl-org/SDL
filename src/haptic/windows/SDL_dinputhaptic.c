@@ -24,9 +24,9 @@
 
 #ifdef SDL_HAPTIC_DINPUT
 
-#include "SDL_windowshaptic_c.h"
-#include "SDL_dinputhaptic_c.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
+#include "SDL_dinputhaptic_c.h"
+#include "SDL_windowshaptic_c.h"
 
 /*
  * External stuff.
@@ -575,14 +575,14 @@ static bool SDL_SYS_SetDirection(DIEFFECT *effect, const SDL_HapticDirection *di
 }
 
 // Clamps and converts.
-#define CCONVERT(x) (((x) > 0x7FFF) ? 10000 : ((x)*10000) / 0x7FFF)
+#define CCONVERT(x) (((x) > 0x7FFF) ? 10000 : ((x) * 10000) / 0x7FFF)
 // Just converts.
-#define CONVERT(x) (((x)*10000) / 0x7FFF)
+#define CONVERT(x) (((x) * 10000) / 0x7FFF)
 /*
  * Creates the DIEFFECT from a SDL_HapticEffect.
  */
 static bool SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
-                              const SDL_HapticEffect *src)
+                               const SDL_HapticEffect *src)
 {
     int i;
     DICONSTANTFORCE *constant;
@@ -961,7 +961,7 @@ BOOL DIGetDirectionUpdateFlag(DIEFFECT *before, DIEFFECT *after)
     return SDL_memcmp(before->rglDirection, after->rglDirection, sizeof(LONG) * before->cAxes) != 0;
 }
 
-BOOL DIGetEnvelopeUpdateFlag(DIEFFECT* before, DIEFFECT* after)
+BOOL DIGetEnvelopeUpdateFlag(DIEFFECT *before, DIEFFECT *after)
 {
     if (before->lpEnvelope == NULL && after->lpEnvelope == NULL) {
         return false;

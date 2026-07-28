@@ -21,8 +21,8 @@
 
 #include "SDL_internal.h"
 
-#include "SDL_sysstorage.h"
 #include "../filesystem/SDL_sysfilesystem.h"
+#include "SDL_sysstorage.h"
 
 // Available title storage drivers
 static TitleStorageBootStrap *titlebootstrap[] = {
@@ -49,12 +49,12 @@ struct SDL_Storage
 };
 
 #define CHECK_STORAGE_MAGIC()                             \
-    CHECK_PARAM(!storage) {                               \
+    CHECK_PARAM (!storage) {                              \
         return SDL_SetError("Invalid storage container"); \
     }
 
 #define CHECK_STORAGE_MAGIC_RET(result)            \
-    CHECK_PARAM(!storage) {                        \
+    CHECK_PARAM (!storage) {                       \
         SDL_SetError("Invalid storage container"); \
         return result;                             \
     }
@@ -98,7 +98,7 @@ SDL_Storage *SDL_OpenTitleStorage(const char *override, SDL_PropertiesID props)
         while (driver_attempt && *driver_attempt != 0 && !storage) {
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end) ? (driver_attempt_end - driver_attempt)
-                                                                     : SDL_strlen(driver_attempt);
+                                                             : SDL_strlen(driver_attempt);
 
             for (i = 0; titlebootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(titlebootstrap[i]->name)) &&
@@ -142,7 +142,7 @@ SDL_Storage *SDL_OpenUserStorage(const char *org, const char *app, SDL_Propertie
         while (driver_attempt && *driver_attempt != 0 && !storage) {
             const char *driver_attempt_end = SDL_strchr(driver_attempt, ',');
             size_t driver_attempt_len = (driver_attempt_end) ? (driver_attempt_end - driver_attempt)
-                                                                     : SDL_strlen(driver_attempt);
+                                                             : SDL_strlen(driver_attempt);
 
             for (i = 0; userbootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(userbootstrap[i]->name)) &&
@@ -183,11 +183,11 @@ SDL_Storage *SDL_OpenStorage(const SDL_StorageInterface *iface, void *userdata)
 {
     SDL_Storage *storage;
 
-    CHECK_PARAM(!iface) {
+    CHECK_PARAM (!iface) {
         SDL_InvalidParamError("iface");
         return NULL;
     }
-    CHECK_PARAM(iface->version < sizeof(*iface)) {
+    CHECK_PARAM (iface->version < sizeof(*iface)) {
         // Update this to handle older versions of this interface
         SDL_SetError("Invalid interface, should be initialized with SDL_INIT_INTERFACE()");
         return NULL;
@@ -245,13 +245,13 @@ bool SDL_ReadStorageFile(SDL_Storage *storage, const char *path, void *destinati
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!path) {
+    CHECK_PARAM (!path) {
         return SDL_InvalidParamError("path");
     }
-    CHECK_PARAM(!ValidateStoragePath(path)) {
+    CHECK_PARAM (!ValidateStoragePath(path)) {
         return false;
     }
-    CHECK_PARAM(length > 0 && !destination) {
+    CHECK_PARAM (length > 0 && !destination) {
         return SDL_InvalidParamError("destination");
     }
 
@@ -266,13 +266,13 @@ bool SDL_WriteStorageFile(SDL_Storage *storage, const char *path, const void *so
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!path) {
+    CHECK_PARAM (!path) {
         return SDL_InvalidParamError("path");
     }
-    CHECK_PARAM(!ValidateStoragePath(path)) {
+    CHECK_PARAM (!ValidateStoragePath(path)) {
         return false;
     }
-    CHECK_PARAM(length > 0 && !source) {
+    CHECK_PARAM (length > 0 && !source) {
         return SDL_InvalidParamError("source");
     }
 
@@ -287,10 +287,10 @@ bool SDL_CreateStorageDirectory(SDL_Storage *storage, const char *path)
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!path) {
+    CHECK_PARAM (!path) {
         return SDL_InvalidParamError("path");
     }
-    CHECK_PARAM(!ValidateStoragePath(path)) {
+    CHECK_PARAM (!ValidateStoragePath(path)) {
         return false;
     }
 
@@ -306,7 +306,7 @@ bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_E
     CHECK_STORAGE_MAGIC()
 
     if (!path) {
-        path = "";  // we allow NULL to mean "root of the storage tree".
+        path = ""; // we allow NULL to mean "root of the storage tree".
     }
 
     if (!ValidateStoragePath(path)) {
@@ -322,10 +322,10 @@ bool SDL_RemoveStoragePath(SDL_Storage *storage, const char *path)
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!path) {
+    CHECK_PARAM (!path) {
         return SDL_InvalidParamError("path");
     }
-    CHECK_PARAM(!ValidateStoragePath(path)) {
+    CHECK_PARAM (!ValidateStoragePath(path)) {
         return false;
     }
 
@@ -340,10 +340,10 @@ bool SDL_RenameStoragePath(SDL_Storage *storage, const char *oldpath, const char
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!oldpath) {
+    CHECK_PARAM (!oldpath) {
         return SDL_InvalidParamError("oldpath");
     }
-    CHECK_PARAM(!newpath) {
+    CHECK_PARAM (!newpath) {
         return SDL_InvalidParamError("newpath");
     }
 
@@ -364,10 +364,10 @@ bool SDL_CopyStorageFile(SDL_Storage *storage, const char *oldpath, const char *
 {
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!oldpath) {
+    CHECK_PARAM (!oldpath) {
         return SDL_InvalidParamError("oldpath");
     }
-    CHECK_PARAM(!newpath) {
+    CHECK_PARAM (!newpath) {
         return SDL_InvalidParamError("newpath");
     }
 
@@ -395,10 +395,10 @@ bool SDL_GetStoragePathInfo(SDL_Storage *storage, const char *path, SDL_PathInfo
 
     CHECK_STORAGE_MAGIC()
 
-    CHECK_PARAM(!path) {
+    CHECK_PARAM (!path) {
         return SDL_InvalidParamError("path");
     }
-    CHECK_PARAM(!ValidateStoragePath(path)) {
+    CHECK_PARAM (!ValidateStoragePath(path)) {
         return false;
     }
 
@@ -423,12 +423,12 @@ Uint64 SDL_GetStorageSpaceRemaining(SDL_Storage *storage)
 
 static bool GlobStorageDirectoryGetPathInfo(const char *path, SDL_PathInfo *info, void *userdata)
 {
-    return SDL_GetStoragePathInfo((SDL_Storage *) userdata, path, info);
+    return SDL_GetStoragePathInfo((SDL_Storage *)userdata, path, info);
 }
 
 static bool GlobStorageDirectoryEnumerator(const char *path, SDL_EnumerateDirectoryCallback cb, void *cbuserdata, void *userdata)
 {
-    return SDL_EnumerateStorageDirectory((SDL_Storage *) userdata, path, cb, cbuserdata);
+    return SDL_EnumerateStorageDirectory((SDL_Storage *)userdata, path, cb, cbuserdata);
 }
 
 char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const char *pattern, SDL_GlobFlags flags, int *count)
@@ -436,7 +436,7 @@ char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const ch
     CHECK_STORAGE_MAGIC_RET(NULL)
 
     if (!path) {
-        path = "";  // we allow NULL to mean "root of the storage tree".
+        path = ""; // we allow NULL to mean "root of the storage tree".
     }
 
     if (!ValidateStoragePath(path)) {
@@ -445,4 +445,3 @@ char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const ch
 
     return SDL_InternalGlobDirectory(path, pattern, flags, count, GlobStorageDirectoryEnumerator, GlobStorageDirectoryGetPathInfo, storage);
 }
-

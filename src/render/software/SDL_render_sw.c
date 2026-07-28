@@ -25,16 +25,16 @@
 #include "../SDL_sysrender.h"
 #include "SDL_render_sw_c.h"
 
-#include "SDL_draw.h"
-#include "SDL_blendfillrect.h"
-#include "SDL_blendline.h"
-#include "SDL_blendpoint.h"
-#include "SDL_drawline.h"
-#include "SDL_drawpoint.h"
-#include "SDL_triangle.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_rotate.h"
 #include "../../video/SDL_sysvideo.h"
+#include "SDL_blendfillrect.h"
+#include "SDL_blendline.h"
+#include "SDL_blendpoint.h"
+#include "SDL_draw.h"
+#include "SDL_drawline.h"
+#include "SDL_drawpoint.h"
+#include "SDL_triangle.h"
 
 // SDL surface based renderer implementation
 
@@ -164,7 +164,7 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 }
 
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                            const SDL_Rect *rect, const void *pixels, int pitch)
+                             const SDL_Rect *rect, const void *pixels, int pitch)
 {
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
     Uint8 *src, *dst;
@@ -193,7 +193,7 @@ static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool SW_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                          const SDL_Rect *rect, void **pixels, int *pitch)
+                           const SDL_Rect *rect, void **pixels, int *pitch)
 {
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
 
@@ -274,7 +274,7 @@ static bool SW_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 }
 
 static bool SW_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                        const SDL_FRect *srcrect, const SDL_FRect *dstrect)
+                         const SDL_FRect *srcrect, const SDL_FRect *dstrect)
 {
     SDL_Rect *verts = (SDL_Rect *)SDL_AllocateRenderVertices(renderer, 2 * sizeof(SDL_Rect), 0, &cmd->data.draw.first);
 
@@ -310,8 +310,8 @@ typedef struct CopyExData
 } CopyExData;
 
 static bool SW_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                          const SDL_FRect *srcrect, const SDL_FRect *dstrect,
-                          const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
+                           const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+                           const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y)
 {
     CopyExData *verts = (CopyExData *)SDL_AllocateRenderVertices(renderer, sizeof(CopyExData), 0, &cmd->data.draw.first);
 
@@ -339,7 +339,7 @@ static bool SW_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_T
 }
 
 static bool Blit_to_Screen(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *surface, SDL_Rect *dstrect,
-                          float scale_x, float scale_y, SDL_ScaleMode scaleMode)
+                           float scale_x, float scale_y, SDL_ScaleMode scaleMode)
 {
     bool result;
     // Renderer scaling, if needed
@@ -575,9 +575,9 @@ typedef struct GeometryCopyData
 } GeometryCopyData;
 
 static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                            const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                            int num_vertices, const void *indices, int num_indices, int size_indices,
-                            float scale_x, float scale_y)
+                             const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                             int num_vertices, const void *indices, int num_indices, int size_indices,
+                             float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;
@@ -706,7 +706,6 @@ static void SW_InvalidateCachedState(SDL_Renderer *renderer)
 {
     // SW_DrawStateCache only lives during SW_RunCommandQueue, so nothing to do here!
 }
-
 
 static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
@@ -1155,12 +1154,12 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
 {
     SW_RenderData *data;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(SDL_BITSPERPIXEL(surface->format) < 8 ||
-                SDL_BITSPERPIXEL(surface->format) > 32) {
+    CHECK_PARAM (SDL_BITSPERPIXEL(surface->format) < 8 ||
+                 SDL_BITSPERPIXEL(surface->format) > 32) {
         return SDL_SetError("Unsupported surface format");
     }
 

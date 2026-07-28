@@ -22,7 +22,6 @@
 
 #include "SDL_eventwatch_c.h"
 
-
 bool SDL_InitEventWatchList(SDL_EventWatchList *list)
 {
     if (list->lock == NULL) {

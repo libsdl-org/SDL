@@ -25,10 +25,10 @@
 #include <psp2/kernel/processmgr.h>
 #include <psp2/touch.h>
 
-#include "SDL_vitavideo.h"
-#include "SDL_vitatouch.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
+#include "SDL_vitatouch.h"
+#include "SDL_vitavideo.h"
 
 SceTouchData touch_old[SCE_TOUCH_PORT_MAX_NUM];
 SceTouchData touch[SCE_TOUCH_PORT_MAX_NUM];

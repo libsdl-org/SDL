@@ -20,17 +20,17 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_sysvideo.h"
-#include "SDL_surface_c.h"
+#include "SDL_RLEaccel_c.h"
 #include "SDL_blit_auto.h"
 #include "SDL_blit_copy.h"
 #include "SDL_blit_slow.h"
-#include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
+#include "SDL_surface_c.h"
+#include "SDL_sysvideo.h"
 
 // The general purpose software blit routine
 static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
-                                SDL_Surface *dst, const SDL_Rect *dstrect)
+                                 SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     bool okay;
     int src_locked;
@@ -73,8 +73,8 @@ static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
                         srcrect->y * src->pitch +
                         (srcrect->x * info->src_fmt->bits_per_pixel) / 8;
             info->leading_skip =
-                        ((srcrect->x * info->src_fmt->bits_per_pixel) % 8) /
-                        info->src_fmt->bits_per_pixel;
+                ((srcrect->x * info->src_fmt->bits_per_pixel) % 8) /
+                info->src_fmt->bits_per_pixel;
         }
         info->src_w = srcrect->w;
         info->src_h = srcrect->h;

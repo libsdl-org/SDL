@@ -21,12 +21,12 @@
 #include "SDL_internal.h"
 
 extern "C" {
-#include "../windows/SDL_windows.h"
 #include "../../events/SDL_events_c.h"
+#include "../windows/SDL_windows.h"
 }
 #include <XGameRuntime.h>
-#include <xsapi-c/services_c.h>
 #include <appnotify.h>
+#include <xsapi-c/services_c.h>
 
 static XTaskQueueHandle GDK_GlobalTaskQueue;
 
@@ -34,8 +34,7 @@ PAPPSTATE_REGISTRATION hPLM = {};
 PAPPCONSTRAIN_REGISTRATION hCPLM = {};
 HANDLE plmSuspendComplete = nullptr;
 
-extern "C"
-bool SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
+extern "C" bool SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
 {
     // If this is the first call, first create the global task queue.
     if (!GDK_GlobalTaskQueue) {
@@ -60,8 +59,7 @@ bool SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQueue)
     return true;
 }
 
-extern "C"
-void GDK_DispatchTaskQueue(void)
+extern "C" void GDK_DispatchTaskQueue(void)
 {
     /* If there is no global task queue, don't do anything.
      * This gives the option to opt-out for those who want to handle everything themselves.
@@ -73,8 +71,7 @@ void GDK_DispatchTaskQueue(void)
     }
 }
 
-extern "C"
-bool GDK_RegisterChangeNotifications(void)
+extern "C" bool GDK_RegisterChangeNotifications(void)
 {
     // Register suspend/resume handling
     plmSuspendComplete = CreateEventEx(nullptr, nullptr, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
@@ -119,8 +116,7 @@ bool GDK_RegisterChangeNotifications(void)
     return true;
 }
 
-extern "C"
-void GDK_UnregisterChangeNotifications(void)
+extern "C" void GDK_UnregisterChangeNotifications(void)
 {
     // Unregister suspend/resume handling
     UnregisterAppStateChangeNotification(hPLM);
@@ -130,16 +126,14 @@ void GDK_UnregisterChangeNotifications(void)
     UnregisterAppConstrainedChangeNotification(hCPLM);
 }
 
-extern "C"
-void SDL_GDKSuspendComplete()
+extern "C" void SDL_GDKSuspendComplete()
 {
     if (plmSuspendComplete) {
         SetEvent(plmSuspendComplete);
     }
 }
 
-extern "C"
-bool SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
+extern "C" bool SDL_GetGDKDefaultUser(XUserHandle *outUserHandle)
 {
     XAsyncBlock block = { 0 };
     HRESULT result;

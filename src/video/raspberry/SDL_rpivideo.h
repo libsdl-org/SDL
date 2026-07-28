@@ -22,11 +22,11 @@
 #ifndef SDL_rpivideo_h
 #define SDL_rpivideo_h
 
-#include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
+#include "SDL_internal.h"
 
-#include <bcm_host.h>
 #include <SDL3/SDL_egl.h>
+#include <bcm_host.h>
 
 struct SDL_VideoData
 {

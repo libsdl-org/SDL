@@ -32,9 +32,9 @@
 #include <errno.h>
 
 #ifdef SDL_PLATFORM_LINUX
-#include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include "../../core/linux/SDL_dbus.h"
@@ -47,8 +47,8 @@
 #endif
 #endif
 
-#include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
+#include "../SDL_thread_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "../../core/android/SDL_android.h"
 #endif
@@ -98,7 +98,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
 #endif
         checked_setname = true;
     }
-    #endif
+#endif
 
     // Set the thread attributes
     if (pthread_attr_init(&type) != 0) {
@@ -116,7 +116,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         return SDL_SetError("Not enough resources to create thread");
     }
 
-    thread->threadid = (SDL_ThreadID) thread->handle;  // the SDL thread ID is just the pthread_t.
+    thread->threadid = (SDL_ThreadID)thread->handle; // the SDL thread ID is just the pthread_t.
 
     return true;
 }

@@ -24,12 +24,12 @@
 #ifndef SDL_waylandvideo_h_
 #define SDL_waylandvideo_h_
 
-#include <EGL/egl.h>
 #include "wayland-util.h"
+#include <EGL/egl.h>
 
-#include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
+#include "../SDL_sysvideo.h"
 
 struct xkb_context;
 struct SDL_WaylandSeat;

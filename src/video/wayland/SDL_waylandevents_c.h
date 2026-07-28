@@ -28,9 +28,9 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_pen_c.h"
 
+#include "SDL_waylanddatamanager.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
-#include "SDL_waylanddatamanager.h"
 
 enum SDL_WaylandAxisEvent
 {
@@ -80,7 +80,7 @@ typedef struct SDL_WaylandCursorState
     SDL_HitTestResult hit_test_result;
 } SDL_WaylandCursorState;
 
-typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
+typedef struct SDL_WaylandPenTool // a stylus, etc, on a tablet.
 {
     SDL_PenID instance_id;
     SDL_PenInfo info;
@@ -270,7 +270,6 @@ typedef struct SDL_WaylandSeat
         struct wl_list tool_list;
     } tablet;
 } SDL_WaylandSeat;
-
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms);
 

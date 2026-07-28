@@ -43,7 +43,6 @@
 #include "D3D12_PixelShader_Advanced_One.h"
 #undef g_main
 
-
 #define g_mainColor D3D12_VertexShader_Colors
 #include "D3D12_VertexShader_Color_One.h"
 #undef g_mainColor
@@ -56,7 +55,6 @@
 #include "D3D12_VertexShader_Advanced_One.h"
 #undef g_mainAdvanced
 
-
 #define g_ColorRS D3D12_RootSig_Color
 #include "D3D12_RootSig_Color_One.h"
 #undef g_ColorRS
@@ -68,7 +66,6 @@
 #define g_AdvancedRS D3D12_RootSig_Advanced
 #include "D3D12_RootSig_Advanced_One.h"
 #undef g_AdvancedRS
-
 
 static struct
 {
@@ -99,32 +96,27 @@ static struct
     { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
 
-extern "C"
-void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C" void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_shaders[shader].vs_shader_data;
     outBytecode->BytecodeLength = D3D12_shaders[shader].vs_shader_size;
 }
 
-extern "C"
-void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C" void D3D12_GetPixelShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_shaders[shader].ps_shader_data;
     outBytecode->BytecodeLength = D3D12_shaders[shader].ps_shader_size;
 }
 
-extern "C"
-D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader)
+extern "C" D3D12_RootSignature D3D12_GetRootSignatureType(D3D12_Shader shader)
 {
     return D3D12_shaders[shader].root_sig;
 }
 
-extern "C"
-void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode)
+extern "C" void D3D12_GetRootSignatureData(D3D12_RootSignature rootSig, D3D12_SHADER_BYTECODE *outBytecode)
 {
     outBytecode->pShaderBytecode = D3D12_rootsigs[rootSig].rs_shader_data;
     outBytecode->BytecodeLength = D3D12_rootsigs[rootSig].rs_shader_size;
 }
 
-#endif  // SDL_VIDEO_RENDER_D3D12 && SDL_PLATFORM_XBOXONE
-
+#endif // SDL_VIDEO_RENDER_D3D12 && SDL_PLATFORM_XBOXONE

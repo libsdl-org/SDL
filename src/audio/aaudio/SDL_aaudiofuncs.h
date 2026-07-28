@@ -37,9 +37,9 @@ SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSharingMode, (AAudioStreamBuilder *
 SDL_PROC(void, AAudioStreamBuilder_setDirection, (AAudioStreamBuilder * builder, aaudio_direction_t direction))
 SDL_PROC(void, AAudioStreamBuilder_setBufferCapacityInFrames, (AAudioStreamBuilder * builder, int32_t numFrames))
 SDL_PROC(void, AAudioStreamBuilder_setPerformanceMode, (AAudioStreamBuilder * builder, aaudio_performance_mode_t mode))
-SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         // API 28
+SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                       // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setContentType, (AAudioStreamBuilder * builder, aaudio_content_type_t contentType))                      // API 28
-SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset))                      // API 28
+SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset))                    // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setAllowedCapturePolicy, (AAudioStreamBuilder * builder, aaudio_allowed_capture_policy_t capturePolicy)) // API 29
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSessionId, (AAudioStreamBuilder * builder, aaudio_session_id_t sessionId))                            // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setPrivacySensitive, (AAudioStreamBuilder * builder, bool privacySensitive))                             // API 30

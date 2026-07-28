@@ -24,17 +24,17 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <limits.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../SDL_clipboard_c.h"
 
-#include "SDL_waylandvideo.h"
-#include "SDL_waylandevents_c.h"
 #include "SDL_waylanddatamanager.h"
+#include "SDL_waylandevents_c.h"
+#include "SDL_waylandvideo.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 
 /* This is arbitrary, but reading while polling should block for less than a frame, to
@@ -43,7 +43,7 @@
  * When querying the clipboard data directly, a larger value is needed to avoid timing
  * out if the source needs to process or transfer a large amount of data.
  */
-#define DEFAULT_PIPE_TIMEOUT_NS SDL_MS_TO_NS(14)
+#define DEFAULT_PIPE_TIMEOUT_NS  SDL_MS_TO_NS(14)
 #define EXTENDED_PIPE_TIMEOUT_NS SDL_MS_TO_NS(5000)
 
 /* sigtimedwait() is an optional part of POSIX.1-2001, and OpenBSD doesn't implement it.
@@ -324,7 +324,7 @@ static void *Wayland_clone_data_buffer(const void *buffer, const size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer) {
-        clone = SDL_malloc((*len)+sizeof(Uint32));
+        clone = SDL_malloc((*len) + sizeof(Uint32));
         if (clone) {
             SDL_memcpy(clone, buffer, *len);
             SDL_memset((Uint8 *)clone + *len, 0, sizeof(Uint32));
@@ -473,7 +473,7 @@ void Wayland_data_offer_notify_from_mimes(SDL_WaylandDataOffer *offer, bool chec
 
         // Do a first pass to compute allocation size.
         SDL_MimeDataList *item = NULL;
-        wl_list_for_each(item, &offer->mimes, link) {
+        wl_list_for_each (item, &offer->mimes, link) {
             if (!item->mime_type) {
                 continue;
             }
@@ -500,7 +500,7 @@ void Wayland_data_offer_notify_from_mimes(SDL_WaylandDataOffer *offer, bool chec
         char *strPtr = (char *)(new_mime_types + nformats + 1);
         item = NULL;
         int i = 0;
-        wl_list_for_each(item, &offer->mimes, link) {
+        wl_list_for_each (item, &offer->mimes, link) {
             if (!item->mime_type) {
                 continue;
             }
@@ -584,13 +584,13 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
 }
 
 bool Wayland_data_offer_add_mime(SDL_WaylandDataOffer *offer,
-                                const char *mime_type)
+                                 const char *mime_type)
 {
     return mime_data_list_add(&offer->mimes, mime_type, NULL, 0);
 }
 
 bool Wayland_primary_selection_offer_add_mime(SDL_WaylandPrimarySelectionOffer *offer,
-                                             const char *mime_type)
+                                              const char *mime_type)
 {
     return mime_data_list_add(&offer->mimes, mime_type, NULL, 0);
 }
@@ -716,9 +716,9 @@ bool Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
 }
 
 bool Wayland_primary_selection_device_set_selection(SDL_WaylandPrimarySelectionDevice *primary_selection_device,
-                                                   SDL_WaylandPrimarySelectionSource *source,
-                                                   const char *const *mime_types,
-                                                   size_t mime_count)
+                                                    SDL_WaylandPrimarySelectionSource *source,
+                                                    const char *const *mime_types,
+                                                    size_t mime_count)
 {
     bool result = true;
 

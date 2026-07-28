@@ -2328,4 +2328,3 @@ static const Uint8 SDL_RenderDebugTextFontData[] = {
 SDL_COMPILE_TIME_ASSERT(SDL_RenderDebugTextFontDataSize, SDL_arraysize(SDL_RenderDebugTextFontData) == SDL_DEBUG_FONT_NUM_GLYPHS * 8);
 
 #endif
-

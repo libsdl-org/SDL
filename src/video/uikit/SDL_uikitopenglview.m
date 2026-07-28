@@ -22,10 +22,10 @@
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2))
 
-#include <OpenGLES/EAGLDrawable.h>
-#include <OpenGLES/ES2/glext.h>
 #import "SDL_uikitopenglview.h"
 #include "SDL_uikitwindow.h"
+#include <OpenGLES/EAGLDrawable.h>
+#include <OpenGLES/ES2/glext.h>
 
 @implementation SDL_uikitopenglview
 {

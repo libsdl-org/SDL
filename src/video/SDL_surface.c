@@ -20,17 +20,16 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_sysvideo.h"
-#include "SDL_video_c.h"
+#include "../render/SDL_sysrender.h"
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
 #include "SDL_rotate.h"
 #include "SDL_stb_c.h"
+#include "SDL_sysvideo.h"
+#include "SDL_video_c.h"
 #include "SDL_yuv_c.h"
-#include "../render/SDL_sysrender.h"
 
 #include "SDL_surface_c.h"
-
 
 // Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t
 SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
@@ -197,17 +196,17 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
     size_t pitch, size;
     SDL_Surface *surface;
 
-    CHECK_PARAM(width < 0) {
+    CHECK_PARAM (width < 0) {
         SDL_InvalidParamError("width");
         return NULL;
     }
 
-    CHECK_PARAM(height < 0) {
+    CHECK_PARAM (height < 0) {
         SDL_InvalidParamError("height");
         return NULL;
     }
 
-    CHECK_PARAM(format == SDL_PIXELFORMAT_UNKNOWN) {
+    CHECK_PARAM (format == SDL_PIXELFORMAT_UNKNOWN) {
         SDL_InvalidParamError("format");
         return NULL;
     }
@@ -252,17 +251,17 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
  */
 SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch)
 {
-    CHECK_PARAM(width < 0) {
+    CHECK_PARAM (width < 0) {
         SDL_InvalidParamError("width");
         return NULL;
     }
 
-    CHECK_PARAM(height < 0) {
+    CHECK_PARAM (height < 0) {
         SDL_InvalidParamError("height");
         return NULL;
     }
 
-    CHECK_PARAM(format == SDL_PIXELFORMAT_UNKNOWN) {
+    CHECK_PARAM (format == SDL_PIXELFORMAT_UNKNOWN) {
         SDL_InvalidParamError("format");
         return NULL;
     }
@@ -277,7 +276,7 @@ SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format
             return NULL;
         }
 
-        CHECK_PARAM(pitch < 0 || (size_t)pitch < minimalPitch) {
+        CHECK_PARAM (pitch < 0 || (size_t)pitch < minimalPitch) {
             SDL_InvalidParamError("pitch");
             return NULL;
         }
@@ -294,7 +293,7 @@ SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format
 
 SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return 0;
     }
@@ -307,7 +306,7 @@ SDL_PropertiesID SDL_GetSurfaceProperties(SDL_Surface *surface)
 
 bool SDL_SetSurfaceColorspace(SDL_Surface *surface, SDL_Colorspace colorspace)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -385,12 +384,12 @@ SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
 {
     SDL_Palette *palette;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
 
-    CHECK_PARAM(!SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+    CHECK_PARAM (!SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
         SDL_SetError("The surface is not indexed format");
         return NULL;
     }
@@ -423,15 +422,15 @@ SDL_Palette *SDL_CreateSurfacePalette(SDL_Surface *surface)
 
 bool SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(palette && !SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+    CHECK_PARAM (palette && !SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
         return SDL_SetError("Surface doesn't use a palette");
     }
 
-    CHECK_PARAM(palette && palette->ncolors > (1 << SDL_BITSPERPIXEL(surface->format))) {
+    CHECK_PARAM (palette && palette->ncolors > (1 << SDL_BITSPERPIXEL(surface->format))) {
         return SDL_SetError("Palette doesn't match surface format");
     }
 
@@ -463,11 +462,11 @@ SDL_Palette *SDL_GetSurfacePalette(SDL_Surface *surface)
 
 bool SDL_AddSurfaceAlternateImage(SDL_Surface *surface, SDL_Surface *image)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(image)) {
+    CHECK_PARAM (!SDL_SurfaceValid(image)) {
         return SDL_InvalidParamError("image");
     }
 
@@ -497,7 +496,7 @@ SDL_Surface **SDL_GetSurfaceImages(SDL_Surface *surface, int *count)
         *count = 0;
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -521,7 +520,7 @@ SDL_Surface **SDL_GetSurfaceImages(SDL_Surface *surface, int *count)
 
 SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -561,7 +560,7 @@ SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale)
         }
     }
     SDL_free(images);
-    SDL_assert(closest != NULL);    // We should always have at least one surface
+    SDL_assert(closest != NULL); // We should always have at least one surface
 
     if (closest->w == desired_w && closest->h == desired_h) {
         ++closest->refcount;
@@ -609,7 +608,7 @@ bool SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
 {
     int flags;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface) || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface) || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -642,11 +641,11 @@ bool SDL_SetSurfaceColorKey(SDL_Surface *surface, bool enabled, Uint32 key)
 {
     int flags;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(surface->palette && key >= ((Uint32)surface->palette->ncolors)) {
+    CHECK_PARAM (surface->palette && key >= ((Uint32)surface->palette->ncolors)) {
         return SDL_InvalidParamError("key");
     }
 
@@ -683,11 +682,11 @@ bool SDL_GetSurfaceColorKey(SDL_Surface *surface, Uint32 *key)
         *key = 0;
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(!(surface->map.info.flags & SDL_COPY_COLORKEY)) {
+    CHECK_PARAM (!(surface->map.info.flags & SDL_COPY_COLORKEY)) {
         return SDL_SetError("Surface doesn't have a colorkey");
     }
 
@@ -792,7 +791,7 @@ bool SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 {
     int flags;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -814,7 +813,7 @@ bool SDL_SetSurfaceColorMod(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 
 bool SDL_GetSurfaceColorMod(SDL_Surface *surface, Uint8 *r, Uint8 *g, Uint8 *b)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         if (r) {
             *r = 255;
         }
@@ -843,7 +842,7 @@ bool SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 {
     int flags;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -863,7 +862,7 @@ bool SDL_SetSurfaceAlphaMod(SDL_Surface *surface, Uint8 alpha)
 
 bool SDL_GetSurfaceAlphaMod(SDL_Surface *surface, Uint8 *alpha)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         if (alpha) {
             *alpha = 255;
         }
@@ -881,11 +880,11 @@ bool SDL_SetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode blendMode)
     int flags;
     bool result = true;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(blendMode == SDL_BLENDMODE_INVALID) {
+    CHECK_PARAM (blendMode == SDL_BLENDMODE_INVALID) {
         return SDL_InvalidParamError("blendMode");
     }
 
@@ -930,7 +929,7 @@ bool SDL_GetSurfaceBlendMode(SDL_Surface *surface, SDL_BlendMode *blendMode)
         *blendMode = SDL_BLENDMODE_INVALID;
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -989,13 +988,13 @@ bool SDL_SetSurfaceClipRect(SDL_Surface *surface, const SDL_Rect *rect)
 
 bool SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         if (rect) {
             SDL_zerop(rect);
         }
         return SDL_InvalidParamError("surface");
     }
-    CHECK_PARAM(!rect) {
+    CHECK_PARAM (!rect) {
         return SDL_InvalidParamError("rect");
     }
     *rect = surface->clip_rect;
@@ -1014,7 +1013,7 @@ bool SDL_GetSurfaceClipRect(SDL_Surface *surface, SDL_Rect *rect)
  * by calling the one(s) you need.
  */
 bool SDL_BlitSurfaceUnchecked(SDL_Surface *src, const SDL_Rect *srcrect,
-                             SDL_Surface *dst, const SDL_Rect *dstrect)
+                              SDL_Surface *dst, const SDL_Rect *dstrect)
 {
     // Check to make sure the blit mapping is valid
     if (!SDL_ValidateMap(src, dst)) {
@@ -1028,13 +1027,13 @@ bool SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
     SDL_Rect r_src, r_dst;
 
     // Make sure the surfaces aren't locked
-    CHECK_PARAM(!SDL_SurfaceValid(src) || (!src->pixels && !SDL_MUSTLOCK(src))) {
+    CHECK_PARAM (!SDL_SurfaceValid(src) || (!src->pixels && !SDL_MUSTLOCK(src))) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!SDL_SurfaceValid(dst) || (!dst->pixels && !SDL_MUSTLOCK(dst))) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst) || (!dst->pixels && !SDL_MUSTLOCK(dst))) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
+    CHECK_PARAM ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
@@ -1131,13 +1130,13 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
     bool result;
 
     // Make sure the surfaces aren't locked
-    CHECK_PARAM(!SDL_SurfaceValid(src) || (!src->pixels && !SDL_MUSTLOCK(src))) {
+    CHECK_PARAM (!SDL_SurfaceValid(src) || (!src->pixels && !SDL_MUSTLOCK(src))) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!SDL_SurfaceValid(dst) || (!dst->pixels && !SDL_MUSTLOCK(dst))) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst) || (!dst->pixels && !SDL_MUSTLOCK(dst))) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
+    CHECK_PARAM ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
@@ -1364,13 +1363,13 @@ bool SDL_BlitSurfaceTiled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface
     SDL_Rect r_src, r_dst;
 
     // Make sure the surfaces aren't locked
-    CHECK_PARAM(!SDL_SurfaceValid(src)) {
+    CHECK_PARAM (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
+    CHECK_PARAM ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
 
@@ -1471,16 +1470,16 @@ bool SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, fl
     SDL_Rect r_src, r_dst;
 
     // Make sure the surfaces aren't locked
-    CHECK_PARAM(!SDL_SurfaceValid(src)) {
+    CHECK_PARAM (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
+    CHECK_PARAM ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
-    CHECK_PARAM(scale < 0.0f) {
+    CHECK_PARAM (scale < 0.0f) {
         return SDL_InvalidParamError("scale");
     }
 
@@ -1594,10 +1593,10 @@ bool SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_wi
     int dst_bottom_height;
 
     // Make sure the surfaces aren't locked
-    CHECK_PARAM(!SDL_SurfaceValid(src)) {
+    CHECK_PARAM (!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -1728,7 +1727,7 @@ bool SDL_BlitSurface9Grid(SDL_Surface *src, const SDL_Rect *srcrect, int left_wi
  */
 bool SDL_LockSurface(SDL_Surface *surface)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -1793,10 +1792,10 @@ static bool SDL_FlipSurfaceHorizontal(SDL_Surface *surface)
     if (!tmp) {
         return false;
     }
-    for (i = surface->h; i--; ) {
+    for (i = surface->h; i--;) {
         a = row;
         b = a + (surface->w - 1) * bpp;
-        for (j = surface->w / 2; j--; ) {
+        for (j = surface->w / 2; j--;) {
             SDL_memcpy(tmp, a, bpp);
             SDL_memcpy(a, b, bpp);
             SDL_memcpy(b, tmp, bpp);
@@ -1825,7 +1824,7 @@ static bool SDL_FlipSurfaceVertical(SDL_Surface *surface)
     if (!tmp) {
         return false;
     }
-    for (i = surface->h / 2; i--; ) {
+    for (i = surface->h / 2; i--;) {
         SDL_memcpy(tmp, a, surface->pitch);
         SDL_memcpy(a, b, surface->pitch);
         SDL_memcpy(b, tmp, surface->pitch);
@@ -1838,7 +1837,7 @@ static bool SDL_FlipSurfaceVertical(SDL_Surface *surface)
 
 bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
     if (!surface->pixels) {
@@ -1879,12 +1878,12 @@ static SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, co
     Uint8 *palette_saved_alpha = NULL;
     int palette_saved_alpha_ncolors = 0;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         goto error;
     }
 
-    CHECK_PARAM(format == SDL_PIXELFORMAT_UNKNOWN) {
+    CHECK_PARAM (format == SDL_PIXELFORMAT_UNKNOWN) {
         SDL_InvalidParamError("format");
         goto error;
     }
@@ -2182,7 +2181,7 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
 {
     SDL_Surface *rotated = NULL;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -2220,7 +2219,7 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
 
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -2235,7 +2234,7 @@ SDL_Surface *SDL_ScaleSurface(SDL_Surface *surface, int width, int height, SDL_S
     SDL_Color copy_color;
     bool rc;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         goto error;
     }
@@ -2325,7 +2324,7 @@ error:
 
 SDL_Surface *SDL_ConvertSurfaceRect(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -2366,8 +2365,8 @@ SDL_Surface *SDL_DuplicatePixels(int width, int height, SDL_PixelFormat format, 
 }
 
 bool SDL_ConvertPixelsAndColorspace(int width, int height,
-                      SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
-                      SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
+                                    SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
+                                    SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
     SDL_Surface src_surface;
     SDL_Surface dst_surface;
@@ -2375,16 +2374,16 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
     void *nonconst_src = (void *)src;
     bool result;
 
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!src_pitch) {
+    CHECK_PARAM (!src_pitch) {
         return SDL_InvalidParamError("src_pitch");
     }
-    CHECK_PARAM(!dst) {
+    CHECK_PARAM (!dst) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM(!dst_pitch) {
+    CHECK_PARAM (!dst_pitch) {
         return SDL_InvalidParamError("dst_pitch");
     }
 
@@ -2455,8 +2454,8 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
 bool SDL_ConvertPixels(int width, int height, SDL_PixelFormat src_format, const void *src, int src_pitch, SDL_PixelFormat dst_format, void *dst, int dst_pitch)
 {
     return SDL_ConvertPixelsAndColorspace(width, height,
-                      src_format, SDL_COLORSPACE_UNKNOWN, 0, src, src_pitch,
-                      dst_format, SDL_COLORSPACE_UNKNOWN, 0, dst, dst_pitch);
+                                          src_format, SDL_COLORSPACE_UNKNOWN, 0, src, src_pitch,
+                                          dst_format, SDL_COLORSPACE_UNKNOWN, 0, dst, dst_pitch);
 }
 
 /*
@@ -2567,16 +2566,16 @@ static bool SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_P
     SDL_Colorspace colorspace;
     bool result = false;
 
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!src_pitch) {
+    CHECK_PARAM (!src_pitch) {
         return SDL_InvalidParamError("src_pitch");
     }
-    CHECK_PARAM(!dst) {
+    CHECK_PARAM (!dst) {
         return SDL_InvalidParamError("dst");
     }
-    CHECK_PARAM(!dst_pitch) {
+    CHECK_PARAM (!dst_pitch) {
         return SDL_InvalidParamError("dst_pitch");
     }
 
@@ -2662,8 +2661,8 @@ done:
 }
 
 bool SDL_PremultiplyAlpha(int width, int height,
-                         SDL_PixelFormat src_format, const void *src, int src_pitch,
-                         SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear)
+                          SDL_PixelFormat src_format, const void *src, int src_pitch,
+                          SDL_PixelFormat dst_format, void *dst, int dst_pitch, bool linear)
 {
     SDL_Colorspace src_colorspace = SDL_GetDefaultColorspaceForFormat(src_format);
     SDL_Colorspace dst_colorspace = SDL_GetDefaultColorspaceForFormat(dst_format);
@@ -2675,7 +2674,7 @@ bool SDL_PremultiplySurfaceAlpha(SDL_Surface *surface, bool linear)
 {
     SDL_Colorspace colorspace;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -2689,7 +2688,7 @@ bool SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
     SDL_Rect clip_rect;
     bool result = false;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -2701,10 +2700,10 @@ bool SDL_ClearSurface(SDL_Surface *surface, float r, float g, float b, float a)
         Uint32 color;
 
         color = SDL_MapSurfaceRGBA(surface,
-                    (Uint8)SDL_roundf(SDL_clamp(r, 0.0f, 1.0f) * 255.0f),
-                    (Uint8)SDL_roundf(SDL_clamp(g, 0.0f, 1.0f) * 255.0f),
-                    (Uint8)SDL_roundf(SDL_clamp(b, 0.0f, 1.0f) * 255.0f),
-                    (Uint8)SDL_roundf(SDL_clamp(a, 0.0f, 1.0f) * 255.0f));
+                                   (Uint8)SDL_roundf(SDL_clamp(r, 0.0f, 1.0f) * 255.0f),
+                                   (Uint8)SDL_roundf(SDL_clamp(g, 0.0f, 1.0f) * 255.0f),
+                                   (Uint8)SDL_roundf(SDL_clamp(b, 0.0f, 1.0f) * 255.0f),
+                                   (Uint8)SDL_roundf(SDL_clamp(a, 0.0f, 1.0f) * 255.0f));
         result = SDL_FillSurfaceRect(surface, NULL, color);
     } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         // We can't directly set an RGB value on a YUV surface
@@ -2749,7 +2748,7 @@ Uint32 SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b)
 
 Uint32 SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
         return true;
     }
@@ -2789,15 +2788,15 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
         a = &unused;
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(x < 0 || x >= surface->w) {
+    CHECK_PARAM (x < 0 || x >= surface->w) {
         return SDL_InvalidParamError("x");
     }
 
-    CHECK_PARAM(y < 0 || y >= surface->h) {
+    CHECK_PARAM (y < 0 || y >= surface->h) {
         return SDL_InvalidParamError("y");
     }
 
@@ -2876,15 +2875,15 @@ bool SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, flo
         a = &unused;
     }
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(x < 0 || x >= surface->w) {
+    CHECK_PARAM (x < 0 || x >= surface->w) {
         return SDL_InvalidParamError("x");
     }
 
-    CHECK_PARAM(y < 0 || y >= surface->h) {
+    CHECK_PARAM (y < 0 || y >= surface->h) {
         return SDL_InvalidParamError("y");
     }
 
@@ -2951,15 +2950,15 @@ bool SDL_WriteSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g,
     Uint8 *p;
     bool result = false;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(x < 0 || x >= surface->w) {
+    CHECK_PARAM (x < 0 || x >= surface->w) {
         return SDL_InvalidParamError("x");
     }
 
-    CHECK_PARAM(y < 0 || y >= surface->h) {
+    CHECK_PARAM (y < 0 || y >= surface->h) {
         return SDL_InvalidParamError("y");
     }
 
@@ -3004,15 +3003,15 @@ bool SDL_WriteSurfacePixelFloat(SDL_Surface *surface, int x, int y, float r, flo
 {
     bool result = false;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
+    CHECK_PARAM (!SDL_SurfaceValid(surface) || !surface->format || !surface->pixels) {
         return SDL_InvalidParamError("surface");
     }
 
-    CHECK_PARAM(x < 0 || x >= surface->w) {
+    CHECK_PARAM (x < 0 || x >= surface->w) {
         return SDL_InvalidParamError("x");
     }
 
-    CHECK_PARAM(y < 0 || y >= surface->h) {
+    CHECK_PARAM (y < 0 || y >= surface->h) {
         return SDL_InvalidParamError("y");
     }
 
@@ -3113,7 +3112,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
 
 SDL_Surface *SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio)
 {
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         SDL_InvalidParamError("src");
         return NULL;
     }

@@ -29,16 +29,16 @@
 #include "SDL_emscriptenmouse.h"
 #include "SDL_emscriptenvideo.h"
 
-#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
+#include "../SDL_video_c.h"
 
 // older Emscriptens don't have this, but we need to for wasm64 compatibility.
 #ifndef MAIN_THREAD_EM_ASM_PTR
-    #ifdef __wasm64__
-        #error You need to upgrade your Emscripten compiler to support wasm64
-    #else
-        #define MAIN_THREAD_EM_ASM_PTR MAIN_THREAD_EM_ASM_INT
-    #endif
+#ifdef __wasm64__
+#error You need to upgrade your Emscripten compiler to support wasm64
+#else
+#define MAIN_THREAD_EM_ASM_PTR MAIN_THREAD_EM_ASM_INT
+#endif
 #endif
 
 static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, bool is_custom)
@@ -206,9 +206,7 @@ static SDL_MouseButtonFlags Emscripten_GetGlobalMouseState(float *x, float *y)
     });
     SDL_MouseButtonFlags flags = 0;
     for (int i = 0; i < 5; ++i) {
-        const bool button_down = MAIN_THREAD_EM_ASM_INT({
-            return Module['SDL3']['mouse_buttons'][$0];
-        }, i);
+        const bool button_down = MAIN_THREAD_EM_ASM_INT({ return Module['SDL3']['mouse_buttons'][$0]; }, i);
         if (button_down) {
             flags |= 1 << i;
         }
@@ -244,22 +242,19 @@ void Emscripten_InitMouse(void)
             // Reacquire from object in case it changed for some reason
             var SDL3 = Module['SDL3'];
             SDL3['mouse_x'] = e.clientX;
-            SDL3['mouse_y'] = e.clientY;
-        });
+            SDL3['mouse_y'] = e.clientY; });
         document.addEventListener('mousedown', function(e) {
             // Reacquire from object in case it changed for some reason
             var SDL3 = Module['SDL3'];
             if (0 <= e.button && e.button < SDL3['mouse_buttons'].length) {
                 SDL3['mouse_buttons'][e.button] = true;
-            }
-        });
+            } });
         document.addEventListener('mouseup', function(e) {
             // Reacquire from object in case it changed for some reason
             var SDL3 = Module['SDL3'];
             if (0 <= e.button && e.button < SDL3['mouse_buttons'].length) {
                 SDL3['mouse_buttons'][e.button] = false;
-            }
-        });
+            } });
     });
     mouse->GetGlobalMouseState = Emscripten_GetGlobalMouseState;
 

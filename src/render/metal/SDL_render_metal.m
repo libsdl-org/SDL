@@ -22,16 +22,16 @@
 
 #ifdef SDL_VIDEO_RENDER_METAL
 
-#include "../SDL_sysrender.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../SDL_sysrender.h"
 
 #import <CoreVideo/CoreVideo.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
-#import <AppKit/NSWindow.h>
 #import <AppKit/NSView.h>
+#import <AppKit/NSWindow.h>
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>
@@ -874,8 +874,8 @@ static MTLStorageMode METAL_GetStorageMode(id<MTLResource> resource)
 }
 
 static bool METAL_UpdateTextureInternal(SDL_Renderer *renderer, BOOL hasdata,
-                                       id<MTLTexture> texture, SDL_Rect rect, int slice,
-                                       const void *pixels, int pitch)
+                                        id<MTLTexture> texture, SDL_Rect rect, int slice,
+                                        const void *pixels, int pitch)
 {
     SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
     SDL_Rect stagingrect = { 0, 0, rect.w, rect.h };
@@ -942,7 +942,7 @@ static bool METAL_UpdateTextureInternal(SDL_Renderer *renderer, BOOL hasdata,
 }
 
 static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                               const SDL_Rect *rect, const void *pixels, int pitch)
+                                const SDL_Rect *rect, const void *pixels, int pitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
@@ -989,10 +989,10 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #ifdef SDL_HAVE_YUV
 static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                  const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *Uplane, int Upitch,
-                                  const Uint8 *Vplane, int Vpitch)
+                                   const SDL_Rect *rect,
+                                   const Uint8 *Yplane, int Ypitch,
+                                   const Uint8 *Uplane, int Upitch,
+                                   const Uint8 *Vplane, int Vpitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
@@ -1022,9 +1022,9 @@ static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                 const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *UVplane, int UVpitch)
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *UVplane, int UVpitch)
 {
     @autoreleasepool {
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
@@ -1051,7 +1051,7 @@ static bool METAL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 #endif
 
 static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                             const SDL_Rect *rect, void **pixels, int *pitch)
+                              const SDL_Rect *rect, void **pixels, int *pitch)
 {
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
@@ -1308,9 +1308,9 @@ static bool METAL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 }
 
 static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                               const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                               int num_vertices, const void *indices, int num_indices, int size_indices,
-                               float scale_x, float scale_y)
+                                const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                                int num_vertices, const void *indices, int num_indices, int size_indices,
+                                float scale_x, float scale_y)
 {
     bool convert_color = SDL_RenderingLinearSpace(renderer);
     int count = indices ? num_indices : num_vertices;
@@ -1364,11 +1364,11 @@ static bool METAL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 }
 
 // These should mirror the definitions in SDL_shaders_metal.metal
-//static const float TONEMAP_NONE = 0;
-//static const float TONEMAP_LINEAR = 1;
+// static const float TONEMAP_NONE = 0;
+// static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
 
-//static const float TEXTURETYPE_NONE = 0;
+// static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_PALETTE_NEAREST = 3;
@@ -1378,7 +1378,7 @@ static const float TEXTURETYPE_NV12 = 6;
 static const float TEXTURETYPE_NV21 = 7;
 static const float TEXTURETYPE_YUV = 8;
 
-//static const float INPUTTYPE_UNSPECIFIED = 0;
+// static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
@@ -1615,7 +1615,7 @@ static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_PixelForma
             samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
             samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
             break;
-        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
+        case SDL_SCALEMODE_PIXELART: // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
             samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
             samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
@@ -1657,7 +1657,7 @@ static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_PixelForma
 }
 
 static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const size_t constants_offset,
-                             id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
+                         id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
     SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -2110,8 +2110,7 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
                 [blitcmd endEncoding];
 
                 data.mtlrealitykittexture = nil;
-            }
-            else
+            } else
 #endif
             {
                 SDL_assert(data.mtlbackbuffer != nil);

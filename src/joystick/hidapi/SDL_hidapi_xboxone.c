@@ -24,8 +24,8 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapijoystick_c.h"
 #include "SDL_report_descriptor.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOXONE
@@ -39,9 +39,9 @@
 #endif
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-#define XBOX_ONE_DRIVER_ACTIVE  1
+#define XBOX_ONE_DRIVER_ACTIVE 1
 #else
-#define XBOX_ONE_DRIVER_ACTIVE  0
+#define XBOX_ONE_DRIVER_ACTIVE 0
 #endif
 
 #define CONTROLLER_IDENTIFY_TIMEOUT_MS      100
@@ -434,7 +434,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
 
                     int next_field = i + button_count;
                     int fields_left = (field_count - next_field);
-                    SDL_memmove(&fields[i+1], &fields[next_field], (fields_left * sizeof(fields[0])));
+                    SDL_memmove(&fields[i + 1], &fields[next_field], (fields_left * sizeof(fields[0])));
                     ctx->descriptor->field_count -= (button_count - 1);
                     break;
                 }
@@ -1525,34 +1525,35 @@ static bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_DriverXboxOne_Context *ctx)
 #define GIP_HEADER_MIN_LENGTH 3
 
 // Internal commands
-#define GIP_CMD_ACKNOWLEDGE     0x01
-#define GIP_CMD_ANNOUNCE        0x02
-#define GIP_CMD_STATUS          0x03
-#define GIP_CMD_IDENTIFY        0x04
-#define GIP_CMD_POWER           0x05
-#define GIP_CMD_AUTHENTICATE    0x06
-#define GIP_CMD_VIRTUAL_KEY     0x07
-#define GIP_CMD_AUDIO_CONTROL   0x08
-#define GIP_CMD_LED             0x0A
-#define GIP_CMD_HID_REPORT      0x0B
-#define GIP_CMD_FIRMWARE        0x0C
-#define GIP_CMD_SERIAL_NUMBER   0x1E
-#define GIP_CMD_AUDIO_SAMPLES   0x60
+#define GIP_CMD_ACKNOWLEDGE   0x01
+#define GIP_CMD_ANNOUNCE      0x02
+#define GIP_CMD_STATUS        0x03
+#define GIP_CMD_IDENTIFY      0x04
+#define GIP_CMD_POWER         0x05
+#define GIP_CMD_AUTHENTICATE  0x06
+#define GIP_CMD_VIRTUAL_KEY   0x07
+#define GIP_CMD_AUDIO_CONTROL 0x08
+#define GIP_CMD_LED           0x0A
+#define GIP_CMD_HID_REPORT    0x0B
+#define GIP_CMD_FIRMWARE      0x0C
+#define GIP_CMD_SERIAL_NUMBER 0x1E
+#define GIP_CMD_AUDIO_SAMPLES 0x60
 
 // External commands
-#define GIP_CMD_RUMBLE          0x09
-#define GIP_CMD_UNMAPPED_STATE  0x0C
-#define GIP_CMD_INPUT           0x20
+#define GIP_CMD_RUMBLE         0x09
+#define GIP_CMD_UNMAPPED_STATE 0x0C
+#define GIP_CMD_INPUT          0x20
 
 // Header option flags
-#define GIP_OPT_ACKNOWLEDGE     0x10
-#define GIP_OPT_INTERNAL        0x20
-#define GIP_OPT_CHUNK_START     0x40
-#define GIP_OPT_CHUNK           0x80
+#define GIP_OPT_ACKNOWLEDGE 0x10
+#define GIP_OPT_INTERNAL    0x20
+#define GIP_OPT_CHUNK_START 0x40
+#define GIP_OPT_CHUNK       0x80
 
 #pragma pack(push, 1)
 
-struct gip_header {
+struct gip_header
+{
     Uint8 command;
     Uint8 options;
     Uint8 sequence;
@@ -1560,7 +1561,8 @@ struct gip_header {
     Uint32 chunk_offset;
 };
 
-struct gip_pkt_acknowledge {
+struct gip_pkt_acknowledge
+{
     Uint8 unknown;
     Uint8 command;
     Uint8 options;
@@ -2001,7 +2003,7 @@ static void HIDAPI_DriverXboxOne_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED,
-                        SDL_HomeLEDHintChanged, ctx);
+                           SDL_HomeLEDHintChanged, ctx);
 }
 
 static void HIDAPI_DriverXboxOne_FreeDevice(SDL_HIDAPI_Device *device)

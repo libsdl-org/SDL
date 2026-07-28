@@ -23,8 +23,8 @@
 
 #if defined(SDL_VIDEO_DRIVER_X11)
 
-#include "SDL_x11video.h"
 #include "SDL_x11settings.h"
+#include "SDL_x11video.h"
 
 static void UpdateContentScale(SDL_VideoDevice *_this)
 {
@@ -53,7 +53,7 @@ void X11_InitXsettings(SDL_VideoDevice *_this)
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
 
     xsettings_data->xsettings = xsettings_client_new(data->display,
-        DefaultScreen(data->display), X11_XsettingsNotify, NULL, _this);
+                                                     DefaultScreen(data->display), X11_XsettingsNotify, NULL, _this);
 }
 
 void X11_QuitXsettings(SDL_VideoDevice *_this)
@@ -77,7 +77,8 @@ void X11_HandleXsettingsEvent(SDL_VideoDevice *_this, const XEvent *xevent)
     }
 }
 
-int X11_GetXsettingsClientIntKey(XSettingsClient *client, const char *key, int fallback_value) {
+int X11_GetXsettingsClientIntKey(XSettingsClient *client, const char *key, int fallback_value)
+{
     XSettingsSetting *setting = NULL;
     int res = fallback_value;
 
@@ -101,7 +102,8 @@ no_key:
     return res;
 }
 
-int X11_GetXsettingsIntKey(SDL_VideoDevice *_this, const char *key, int fallback_value) {
+int X11_GetXsettingsIntKey(SDL_VideoDevice *_this, const char *key, int fallback_value)
+{
     return X11_GetXsettingsClientIntKey(_this->internal->xsettings_data.xsettings, key, fallback_value);
 }
 

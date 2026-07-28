@@ -78,4 +78,4 @@ CameraBootStrap DUMMYCAMERA_bootstrap = {
     "dummy", "SDL dummy camera driver", DUMMYCAMERA_Init, true
 };
 
-#endif  // SDL_CAMERA_DRIVER_DUMMY
+#endif // SDL_CAMERA_DRIVER_DUMMY

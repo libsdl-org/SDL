@@ -28,10 +28,10 @@
 
 #include "../SDL_sysfilesystem.h"
 
+#include <dirent.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -39,16 +39,15 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
-
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    char *apath = NULL;  // absolute path (for Android, iOS, etc). Overrides `path`.
+    char *apath = NULL; // absolute path (for Android, iOS, etc). Overrides `path`.
 
 #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
     if (*path == '\0') {
         return SDL_SetError("No such file or directory");
     } else if (*path != '/') {
-        #ifdef SDL_PLATFORM_ANDROID
+#ifdef SDL_PLATFORM_ANDROID
         if (SDL_strncmp(path, "assets://", 9) == 0) {
             char *pathwithsep = NULL;
             SDL_asprintf(&pathwithsep, "%s%s", path, (path[SDL_strlen(path) - 1] != '/') ? "/" : "");
@@ -57,7 +56,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
             return retval;
         }
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
-        #elif defined(SDL_PLATFORM_IOS)
+#elif defined(SDL_PLATFORM_IOS)
         char *base = SDL_GetPrefPath("", "");
         if (!base) {
             return false;
@@ -65,13 +64,13 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
         SDL_asprintf(&apath, "%s%s", base, path);
         SDL_free(base);
-        #endif
+#endif
 
         if (!apath) {
             return false;
         }
     }
-#elif 0  // this is just for testing that `apath` works when you aren't on iOS or Android.
+#elif 0 // this is just for testing that `apath` works when you aren't on iOS or Android.
     if (*path != '/') {
         char *c = SDL_SYS_GetCurrentDirectory();
         SDL_asprintf(&apath, "%s%s", c, path);
@@ -98,8 +97,8 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     DIR *dir = opendir(pathwithsep);
     if (!dir) {
-#ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset... that didn't use an "assets://" URL?
-        if (*pathwithsep != '/') {  // don't fall back to asset tree for absolute paths, in case opendir() failed for other reasons, like opendir("/") returning EACCES.
+#ifdef SDL_PLATFORM_ANDROID        // Maybe it's an asset... that didn't use an "assets://" URL?
+        if (*pathwithsep != '/') { // don't fall back to asset tree for absolute paths, in case opendir() failed for other reasons, like opendir("/") returning EACCES.
             const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep + extralen, cb, userdata);
             SDL_free(pathwithsep);
             return retval;
@@ -280,7 +279,7 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
     }
 
     result = SDL_CloseIO(output);
-    output = NULL;  // it's gone, even if it failed.
+    output = NULL; // it's gone, even if it failed.
 
 done:
     if (output) {
@@ -336,7 +335,7 @@ bool SDL_SYS_CreateDirectory(const char *path)
         if (origerrno == EEXIST) {
             struct stat statbuf;
             if ((stat(path, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
-                return true;  // it already exists and it's a directory, consider it success.
+                return true; // it already exists and it's a directory, consider it success.
             }
         }
         return SDL_SetError("Can't create directory: %s", strerror(origerrno));
@@ -365,7 +364,7 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         rc = stat(apath, &statbuf);
         SDL_free(apath);
     }
-    if (rc < 0) {  // Maybe it's an asset... that didn't use an "assets://" URL?
+    if (rc < 0) { // Maybe it's an asset... that didn't use an "assets://" URL?
         return Android_JNI_GetAssetPathInfo(path, info);
     }
 #elif defined(SDL_PLATFORM_IOS)
@@ -397,13 +396,13 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         return SDL_SetError("Can't stat: %s", strerror(errno));
     } else if (S_ISREG(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_FILE;
-        info->size = (Uint64) statbuf.st_size;
+        info->size = (Uint64)statbuf.st_size;
     } else if (S_ISDIR(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_DIRECTORY;
         info->size = 0;
     } else {
         info->type = SDL_PATHTYPE_OTHER;
-        info->size = (Uint64) statbuf.st_size;
+        info->size = (Uint64)statbuf.st_size;
     }
 
 #if defined(HAVE_ST_MTIM)
@@ -436,14 +435,14 @@ char *SDL_SYS_GetCurrentDirectory(void)
             SDL_free(buf);
             return NULL;
         }
-        buf = (char *) ptr;
+        buf = (char *)ptr;
 
-        if (getcwd(buf, buflen-1) != NULL) {
-            break;  // we got it!
+        if (getcwd(buf, buflen - 1) != NULL) {
+            break; // we got it!
         }
 
         if (errno == ERANGE) {
-            buflen *= 2;  // try again with a bigger buffer.
+            buflen *= 2; // try again with a bigger buffer.
             continue;
         }
 
@@ -455,7 +454,7 @@ char *SDL_SYS_GetCurrentDirectory(void)
     // make sure there's a path separator at the end.
     SDL_assert(SDL_strlen(buf) < (buflen + 2));
     buflen = SDL_strlen(buf);
-    if ((buflen == 0) || (buf[buflen-1] != '/')) {
+    if ((buflen == 0) || (buf[buflen - 1] != '/')) {
         buf[buflen] = '/';
         buf[buflen + 1] = '\0';
     }

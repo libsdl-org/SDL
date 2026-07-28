@@ -296,9 +296,9 @@
                 }
             }
         } else if ([desiredType isEqualToString:NSPasteboardTypeString]) {
-            char *buffer  = SDL_strdup([[pboardString description] UTF8String]);
+            char *buffer = SDL_strdup([[pboardString description] UTF8String]);
             char *saveptr = NULL;
-            char *token   = SDL_strtok_r(buffer, "\r\n", &saveptr);
+            char *token = SDL_strtok_r(buffer, "\r\n", &saveptr);
             while (token) {
                 SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                              ". [SDL] In performDragOperation, desiredType '%s', "
@@ -1144,10 +1144,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     const NSTimeInterval interval = 1.0 / 60.0;
     liveResizeTimer = [NSTimer scheduledTimerWithTimeInterval:interval
                                                       repeats:TRUE
-                                                        block:^(NSTimer *unusedTimer)
-    {
-        SDL_OnWindowLiveResizeUpdate(_data.window);
-    }];
+                                                        block:^(NSTimer *unusedTimer) {
+                                                          SDL_OnWindowLiveResizeUpdate(_data.window);
+                                                        }];
 
     [[NSRunLoop currentRunLoop] addTimer:liveResizeTimer forMode:NSRunLoopCommonModes];
 }
@@ -1254,8 +1253,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     /* The OS can resize the window automatically if the display density
      *  changes while the window is miniaturized or hidden.
      */
-    if ([nswindow isVisible])
-    {
+    if ([nswindow isVisible]) {
         /* isZoomed always returns true if the window is not resizable
          * and fullscreen windows are considered zoomed.
          */
@@ -1722,7 +1720,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     }
 
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
-    //const int clicks = (int)[theEvent clickCount];
+    // const int clicks = (int)[theEvent clickCount];
     SDL_Window *focus = SDL_GetKeyboardFocus();
 
     // macOS will send non-left clicks to background windows without raising them, so we need to
@@ -1731,7 +1729,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     //  event for the background window, this just makes sure the button is reported at the
     //  correct position in its own event.
     if (focus && ([theEvent window] == ((__bridge SDL_CocoaWindowData *)focus->internal).nswindow)) {
-        //SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
+        // SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
         SDL_SendMouseButton(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down);
     } else {
         const float orig_x = mouse->x;
@@ -1739,7 +1737,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         const NSPoint point = [theEvent locationInWindow];
         mouse->x = (int)point.x;
         mouse->y = (int)(window->h - point.y);
-        //SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
+        // SDL_SendMouseButtonClicks(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down, clicks);
         SDL_SendMouseButton(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, button, down);
         mouse->x = orig_x;
         mouse->y = orig_y;
@@ -1749,7 +1747,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 - (void)mouseDown:(NSEvent *)theEvent
 {
     if (Cocoa_HandlePenEvent(_data, theEvent)) {
-        return;  // pen code handled it.
+        return; // pen code handled it.
     }
 
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1810,7 +1808,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 - (void)mouseUp:(NSEvent *)theEvent
 {
     if (Cocoa_HandlePenEvent(_data, theEvent)) {
-        return;  // pen code handled it.
+        return; // pen code handled it.
     }
 
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1861,7 +1859,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     if (Cocoa_HandlePenEvent(_data, theEvent)) {
-        return;  // pen code handled it.
+        return; // pen code handled it.
     }
 
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
@@ -2045,11 +2043,10 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
         break;
     case NSEventPhaseChanged:
-        {
-            CGFloat scale = 1.0f + [theEvent magnification];
-            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale);
-        }
-        break;
+    {
+        CGFloat scale = 1.0f + [theEvent magnification];
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale);
+    } break;
     case NSEventPhaseEnded:
     case NSEventPhaseCancelled:
         SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
@@ -2132,7 +2129,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 @interface SDL3View : NSView
 {
     SDL_Window *_sdlWindow;
-    NSTrackingArea *_trackingArea;   // only used on macOS <= 11.0
+    NSTrackingArea *_trackingArea; // only used on macOS <= 11.0
 }
 
 - (void)setSDLWindow:(SDL_Window *)window;
@@ -2236,7 +2233,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     if (_trackingArea) {
         [self removeTrackingArea:_trackingArea];
     }
-    _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseEnteredAndExited|NSTrackingActiveAlways owner:windata.listener userInfo:nil];
+    _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways owner:windata.listener userInfo:nil];
     [self addTrackingArea:_trackingArea];
 }
 @end
@@ -2378,7 +2375,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
                 [nswindow setAcceptsMouseMovedEvents:NO];
             } else if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_HIDDEN)) {
                 if (!(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
-                	Cocoa_SetKeyboardFocus(window, true);
+                    Cocoa_SetKeyboardFocus(window, true);
                 }
                 Cocoa_UpdateMouseFocus();
             }
@@ -2761,7 +2758,7 @@ void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 }
             } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
                 if (!(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
-                	Cocoa_SetKeyboardFocus(window, true);
+                    Cocoa_SetKeyboardFocus(window, true);
                 }
                 Cocoa_UpdateMouseFocus();
             }
@@ -2901,7 +2898,8 @@ void Cocoa_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
         NSWindow *nswindow = data.nswindow;
 
         if (([data.listener windowOperationIsPending:(PENDING_OPERATION_ENTER_FULLSCREEN | PENDING_OPERATION_LEAVE_FULLSCREEN)] &&
-            ![data.nswindow isMiniaturized]) || [data.listener isInFullscreenSpaceTransition]) {
+             ![data.nswindow isMiniaturized]) ||
+            [data.listener isInFullscreenSpaceTransition]) {
             Cocoa_SyncWindow(_this, window);
         }
 
@@ -3413,8 +3411,8 @@ bool Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool f
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
             if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
                 SDL_Window *new_focus;
-            	const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
-            	Cocoa_SetKeyboardFocus(new_focus, set_focus);
+                const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
+                Cocoa_SetKeyboardFocus(new_focus, set_focus);
             } else if (focusable) {
                 if (SDL_ShouldFocusPopup(window)) {
                     Cocoa_SetKeyboardFocus(window, true);

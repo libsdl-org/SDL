@@ -23,12 +23,12 @@
 #if defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(SDL_VIDEO_OPENGL_EGL)
 
 #include "../../core/unix/SDL_poll.h"
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
-#include "SDL_waylandvideo.h"
-#include "SDL_waylandopengles.h"
-#include "SDL_waylandwindow.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_waylandevents_c.h"
+#include "SDL_waylandopengles.h"
+#include "SDL_waylandvideo.h"
+#include "SDL_waylandwindow.h"
 
 #include "xdg-shell-client-protocol.h"
 
@@ -106,7 +106,7 @@ bool Wayland_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
         return SDL_SetError("EGL not initialized");
     }
 
-    *interval =_this->egl_data->egl_swapinterval;
+    *interval = _this->egl_data->egl_swapinterval;
     return true;
 }
 

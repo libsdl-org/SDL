@@ -54,17 +54,17 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_Mutex *SDL_sensor_lock = NULL; // This needs to support recursive locks
+    SDL_Mutex *SDL_sensor_lock = NULL; // This needs to support recursive locks
 static SDL_AtomicInt SDL_sensor_lock_pending;
 static int SDL_sensors_locked;
 static bool SDL_sensors_initialized;
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
 
-#define CHECK_SENSOR_MAGIC(sensor, result)                          \
-    CHECK_PARAM(!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
-        SDL_InvalidParamError("sensor");                            \
-        SDL_UnlockSensors();                                        \
-        return result;                                              \
+#define CHECK_SENSOR_MAGIC(sensor, result)                           \
+    CHECK_PARAM (!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
+        SDL_InvalidParamError("sensor");                             \
+        SDL_UnlockSensors();                                         \
+        return result;                                               \
     }
 
 bool SDL_SensorsInitialized(void)
@@ -499,7 +499,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
 
     SDL_LockSensors();
     {
-        CHECK_SENSOR_MAGIC(sensor,);
+        CHECK_SENSOR_MAGIC(sensor, );
 
         // First decrement ref count
         if (--sensor->ref_count > 0) {
@@ -592,7 +592,7 @@ void SDL_UpdateSensor(SDL_Sensor *sensor)
 {
     SDL_LockSensors();
     {
-        CHECK_SENSOR_MAGIC(sensor,);
+        CHECK_SENSOR_MAGIC(sensor, );
 
         sensor->driver->Update(sensor);
     }

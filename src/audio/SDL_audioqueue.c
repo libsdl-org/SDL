@@ -48,7 +48,7 @@ struct SDL_AudioTrack
     size_t tail;
     size_t capacity;
 
-    int chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS];  // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
+    int chmap_storage[SDL_MAX_CHANNELMAP_CHANNELS]; // !!! FIXME: this needs to grow if SDL ever supports more channels. But if it grows, we should probably be more clever about allocations.
 };
 
 struct SDL_AudioQueue
@@ -243,7 +243,7 @@ SDL_AudioTrack *SDL_CreateAudioTrack(
 
     if (chmap) {
         SDL_assert(SDL_arraysize(track->chmap_storage) >= spec->channels);
-        SDL_memcpy(track->chmap_storage, chmap, sizeof (*chmap) * spec->channels);
+        SDL_memcpy(track->chmap_storage, chmap, sizeof(*chmap) * spec->channels);
         track->chmap = track->chmap_storage;
     }
 

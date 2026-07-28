@@ -26,8 +26,8 @@
 
 #include "SDL_systhread_c.h"
 
-#include <pspthreadman.h>
 #include <pspkerror.h>
+#include <pspthreadman.h>
 
 #define SCE_KERNEL_MUTEX_ATTR_RECURSIVE 0x0200U
 
@@ -64,11 +64,11 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     }
 }
 
-void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (mutex) {
         const SceInt32 res = sceKernelLockLwMutex(&mutex->lock, 1, NULL);
-        SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == SCE_KERNEL_ERROR_OK); // assume we're in a lot of trouble if this assert fails.
     }
 }
 
@@ -82,18 +82,18 @@ bool SDL_TryLockMutex(SDL_Mutex *mutex)
         } else if (res == SCE_KERNEL_ERROR_WAIT_TIMEOUT) {
             result = false;
         } else {
-            SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
+            SDL_assert(res == SCE_KERNEL_ERROR_OK); // assume we're in a lot of trouble if this assert fails.
             result = false;
         }
     }
     return result;
 }
 
-void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
+void SDL_UnlockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
 {
     if (mutex) {
         const SceInt32 res = sceKernelUnlockLwMutex(&mutex->lock, 1);
-        SDL_assert(res == SCE_KERNEL_ERROR_OK);  // assume we're in a lot of trouble if this assert fails.
+        SDL_assert(res == SCE_KERNEL_ERROR_OK); // assume we're in a lot of trouble if this assert fails.
     }
 }
 

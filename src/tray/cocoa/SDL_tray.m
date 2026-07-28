@@ -25,22 +25,23 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "../SDL_tray_utils.h"
 #include "../../video/SDL_surface_c.h"
+#include "../SDL_tray_utils.h"
 
 /* Forward declaration */
 struct SDL_Tray;
 
 /* Objective-C helper class to handle status item button clicks */
 @interface SDLTrayClickHandler : NSObject
-@property (nonatomic, assign) struct SDL_Tray *tray;
-@property (nonatomic, strong) id middleClickMonitor;
+@property(nonatomic, assign) struct SDL_Tray *tray;
+@property(nonatomic, strong) id middleClickMonitor;
 - (void)handleClick:(id)sender;
 - (void)startMonitoringMiddleClicks;
 - (void)stopMonitoringMiddleClicks;
 @end
 
-struct SDL_TrayMenu {
+struct SDL_TrayMenu
+{
     NSMenu *nsmenu;
 
     int nEntries;
@@ -50,7 +51,8 @@ struct SDL_TrayMenu {
     SDL_TrayEntry *parent_entry;
 };
 
-struct SDL_TrayEntry {
+struct SDL_TrayEntry
+{
     NSMenuItem *nsitem;
 
     SDL_TrayEntryFlags flags;
@@ -61,7 +63,8 @@ struct SDL_TrayEntry {
     SDL_TrayMenu *parent;
 };
 
-struct SDL_Tray {
+struct SDL_Tray
+{
     NSStatusBar *statusBar;
     NSStatusItem *statusItem;
 
@@ -120,27 +123,28 @@ struct SDL_Tray {
     }
 
     __weak SDLTrayClickHandler *weakSelf = self;
-    self.middleClickMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskOtherMouseUp handler:^NSEvent *(NSEvent *event) {
-        SDLTrayClickHandler *strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf.tray || [event buttonNumber] != 2) {
-            return event;
-        }
+    self.middleClickMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskOtherMouseUp
+                                                                    handler:^NSEvent *(NSEvent *event) {
+                                                                      SDLTrayClickHandler *strongSelf = weakSelf;
+                                                                      if (!strongSelf || !strongSelf.tray || [event buttonNumber] != 2) {
+                                                                          return event;
+                                                                      }
 
-        /* Check if the click is within the status item's button bounds */
-        NSPoint clickLocation = [event locationInWindow];
-        NSWindow *statusItemWindow = strongSelf.tray->statusItem.button.window;
+                                                                      /* Check if the click is within the status item's button bounds */
+                                                                      NSPoint clickLocation = [event locationInWindow];
+                                                                      NSWindow *statusItemWindow = strongSelf.tray->statusItem.button.window;
 
-        if (statusItemWindow && event.window == statusItemWindow) {
-            NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
-            if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
-                if (strongSelf.tray->middle_click_callback) {
-                    strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray);
-                }
-            }
-        }
+                                                                      if (statusItemWindow && event.window == statusItemWindow) {
+                                                                          NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
+                                                                          if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
+                                                                              if (strongSelf.tray->middle_click_callback) {
+                                                                                  strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray);
+                                                                              }
+                                                                          }
+                                                                      }
 
-        return event;
-    }];
+                                                                      return event;
+                                                                    }];
 }
 
 - (void)stopMonitoringMiddleClicks
@@ -335,7 +339,7 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         SDL_InvalidParamError("tray");
         return NULL;
     }
@@ -362,7 +366,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 {
-    CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         SDL_InvalidParamError("tray");
         return NULL;
     }
@@ -372,7 +376,7 @@ SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -409,7 +413,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -419,7 +423,7 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
@@ -469,12 +473,12 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
 
-    CHECK_PARAM(pos < -1 || pos > menu->nEntries) {
+    CHECK_PARAM (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
     }
@@ -537,7 +541,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 
 const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -593,22 +597,22 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 {
-	if (!entry) {
-		return;
-	}
+    if (!entry) {
+        return;
+    }
 
-	if (entry->flags & SDL_TRAYENTRY_CHECKBOX) {
-		SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
-	}
+    if (entry->flags & SDL_TRAYENTRY_CHECKBOX) {
+        SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
+    }
 
-	if (entry->callback) {
-		entry->callback(entry->userdata, entry);
-	}
+    if (entry->callback) {
+        entry->callback(entry->userdata, entry);
+    }
 }
 
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -618,7 +622,7 @@ SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
@@ -628,7 +632,7 @@ SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }

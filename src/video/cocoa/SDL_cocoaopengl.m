@@ -23,16 +23,16 @@
 // NSOpenGL implementation of SDL OpenGL support
 
 #ifdef SDL_VIDEO_OPENGL_CGL
-#include "SDL_cocoavideo.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
+#include "SDL_cocoavideo.h"
 
+#include <OpenGL/CGLRenderers.h>
 #include <OpenGL/CGLTypes.h>
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/CGLRenderers.h>
 
-#include <SDL3/SDL_opengl.h>
 #include "../../SDL_hints_c.h"
+#include <SDL3/SDL_opengl.h>
 
 #define DEFAULT_OPENGL "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
@@ -177,7 +177,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
         if ([NSThread isMainThread]) {
             [self setView:nil];
         } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{ [self setView:nil]; });
+            dispatch_sync(dispatch_get_main_queue(), ^{
+              [self setView:nil];
+            });
         }
     }
 }

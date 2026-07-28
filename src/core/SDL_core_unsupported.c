@@ -122,7 +122,6 @@ const char *SDL_GetAndroidCachePath(void)
     return NULL;
 }
 
-
 const char *SDL_GetAndroidExternalStoragePath(void)
 {
     SDL_Unsupported();

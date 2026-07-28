@@ -21,8 +21,8 @@
 #ifndef SDL_uikitvisionosscene_h_
 #define SDL_uikitvisionosscene_h_
 
-#import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
+#import <UIKit/UIKit.h>
 
 /**
  * Return true if the curved content pointer mode is enabled

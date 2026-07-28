@@ -31,7 +31,7 @@ static bool xtest_initialized = false;
 void X11_InitXTest(SDL_VideoDevice *_this)
 {
 // This is currently disabled since it doesn't appear to work on XWayland
-#if 0//def SDL_VIDEO_DRIVER_X11_XTEST
+#if 0 // def SDL_VIDEO_DRIVER_X11_XTEST
     Display *display = _this->internal->display;
     int event, error;
     int opcode;

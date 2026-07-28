@@ -24,8 +24,8 @@
 
 // This is the dummy implementation of the SDL joystick API
 
-#include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
 
 static bool DUMMY_JoystickInit(void)
 {

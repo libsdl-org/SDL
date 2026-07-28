@@ -24,14 +24,15 @@
 #ifndef SDL_x11settings_h_
 #define SDL_x11settings_h_
 
-#include <X11/Xlib.h>
 #include "xsettings-client.h"
+#include <X11/Xlib.h>
 
 #define SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR "Gdk/WindowScalingFactor"
-#define SDL_XSETTINGS_GDK_UNSCALED_DPI "Gdk/UnscaledDPI"
-#define SDL_XSETTINGS_XFT_DPI "Xft/DPI"
+#define SDL_XSETTINGS_GDK_UNSCALED_DPI          "Gdk/UnscaledDPI"
+#define SDL_XSETTINGS_XFT_DPI                   "Xft/DPI"
 
-typedef struct X11_SettingsData {
+typedef struct X11_SettingsData
+{
     XSettingsClient *xsettings;
 } SDLX11_SettingsData;
 

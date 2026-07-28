@@ -22,23 +22,23 @@
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
-#import <UIKit/UIKit.h>
 #import <GameController/GameController.h>
+#import <UIKit/UIKit.h>
 
-#include "../SDL_sysvideo.h"
-#include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_pixels_c.h"
+#include "../SDL_sysvideo.h"
 
-#include "SDL_uikitvideo.h"
-#include "SDL_uikitevents.h"
-#include "SDL_uikitmodes.h"
-#include "SDL_uikitwindow.h"
-#include "SDL_uikitopengles.h"
 #include "SDL_uikitclipboard.h"
-#include "SDL_uikitvulkan.h"
-#include "SDL_uikitmetalview.h"
+#include "SDL_uikitevents.h"
 #include "SDL_uikitmessagebox.h"
+#include "SDL_uikitmetalview.h"
+#include "SDL_uikitmodes.h"
+#include "SDL_uikitopengles.h"
 #include "SDL_uikitpen.h"
+#include "SDL_uikitvideo.h"
+#include "SDL_uikitvulkan.h"
+#include "SDL_uikitwindow.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -55,7 +55,7 @@ static void UIKit_VideoQuit(SDL_VideoDevice *_this);
 static void UIKit_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        if (device->internal){
+        if (device->internal) {
             CFRelease(device->internal);
         }
         SDL_free(device);
@@ -244,7 +244,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
 #pragma clang diagnostic pop
     BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
-                    !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
+                     !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
     BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
     /* The orientation flip doesn't make sense when the window is smaller
@@ -316,7 +316,7 @@ void UIKit_SetGameControllerInteraction(bool enabled)
 void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled)
 {
 #if defined(SDL_PLATFORM_VISIONOS) || \
-       (defined(SDL_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000)
+    (defined(SDL_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000)
     if (@available(iOS 18.0, visionOS 2.0, *)) {
         if (enabled) {
             GCEventInteraction *interaction = [[GCEventInteraction alloc] init];

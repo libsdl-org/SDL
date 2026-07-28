@@ -48,7 +48,7 @@ static bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *d
 // Heuristically determines if device is an eraser
 static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
 {
-    #define PEN_ERASER_NAME_TAG  "eraser" // String constant to identify erasers
+#define PEN_ERASER_NAME_TAG "eraser" // String constant to identify erasers
     SDL_VideoData *data = _this->internal;
 
     if (data->atoms.pen_atom_wacom_tool_type != None) {
@@ -179,7 +179,6 @@ static bool X11_XInput2PenIsInProximity(SDL_VideoDevice *_this, int deviceid, bo
     return false;
 }
 
-
 typedef struct FindPenByDeviceIDData
 {
     int x11_deviceid;
@@ -188,8 +187,8 @@ typedef struct FindPenByDeviceIDData
 
 static bool FindPenByDeviceID(void *handle, void *userdata)
 {
-    const X11_PenHandle *x11_handle = (const X11_PenHandle *) handle;
-    FindPenByDeviceIDData *data = (FindPenByDeviceIDData *) userdata;
+    const X11_PenHandle *x11_handle = (const X11_PenHandle *)handle;
+    FindPenByDeviceIDData *data = (FindPenByDeviceIDData *)userdata;
     if (x11_handle->x11_deviceid != data->x11_deviceid) {
         return false;
     }
@@ -203,7 +202,7 @@ X11_PenHandle *X11_FindPenByDeviceID(int deviceid)
     data.x11_deviceid = deviceid;
     data.handle = NULL;
     SDL_FindPenByCallback(FindPenByDeviceID, &data);
-    return (X11_PenHandle *) data.handle;
+    return (X11_PenHandle *)data.handle;
 }
 
 static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
@@ -213,15 +212,15 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
     X11_PenHandle *handle = NULL;
 
     if ((dev->use != XISlavePointer && (dev->use != XIFloatingSlave)) || dev->enabled == 0 || !X11_XInput2DeviceIsPen(_this, dev)) {
-        return NULL;  // Only track physical devices that are enabled and look like pens
+        return NULL; // Only track physical devices that are enabled and look like pens
     } else if ((handle = X11_FindPenByDeviceID(dev->deviceid)) != NULL) {
-        return handle;  // already have this pen, skip it.
+        return handle; // already have this pen, skip it.
     } else if ((handle = SDL_calloc(1, sizeof(*handle))) == NULL) {
-        return NULL;  // oh well.
+        return NULL; // oh well.
     }
 
     for (int i = 0; i < SDL_arraysize(handle->valuator_for_axis); i++) {
-        handle->valuator_for_axis[i] = SDL_X11_PEN_AXIS_VALUATOR_MISSING;  // until proven otherwise
+        handle->valuator_for_axis[i] = SDL_X11_PEN_AXIS_VALUATOR_MISSING; // until proven otherwise
     }
 
     int total_buttons = 0;
@@ -286,7 +285,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
 
     bool in_proximity = false;
     if (!X11_XInput2PenIsInProximity(_this, dev->deviceid, &in_proximity)) {
-        in_proximity = true;  // just say it's in proximity if we can't detect this state.
+        in_proximity = true; // just say it's in proximity if we can't detect this state.
     }
 
     handle->pen = SDL_AddPenDevice(0, dev->name, NULL, &peninfo, handle, in_proximity);
@@ -335,19 +334,19 @@ void X11_NotifyPenProximityChange(SDL_VideoDevice *_this, SDL_Window *window, in
 void X11_InitPen(SDL_VideoDevice *_this)
 {
     if (!X11_Xinput2IsInitialized()) {
-        return;  // we need XIQueryDevice() for this.
+        return; // we need XIQueryDevice() for this.
     }
 
     SDL_VideoData *data = _this->internal;
 
-    #define LOOKUP_PEN_ATOM(X) X11_XInternAtom(data->display, X, False)
+#define LOOKUP_PEN_ATOM(X) X11_XInternAtom(data->display, X, False)
     data->atoms.pen_atom_device_product_id = LOOKUP_PEN_ATOM("Device Product ID");
     data->atoms.pen_atom_wacom_serial_ids = LOOKUP_PEN_ATOM("Wacom Serial IDs");
     data->atoms.pen_atom_wacom_tool_type = LOOKUP_PEN_ATOM("Wacom Tool Type");
     data->atoms.pen_atom_abs_pressure = LOOKUP_PEN_ATOM("Abs Pressure");
     data->atoms.pen_atom_abs_tilt_x = LOOKUP_PEN_ATOM("Abs Tilt X");
     data->atoms.pen_atom_abs_tilt_y = LOOKUP_PEN_ATOM("Abs Tilt Y");
-    #undef LOOKUP_PEN_ATOM
+#undef LOOKUP_PEN_ATOM
 
     // Do an initial check on devices. After this, we'll add/remove individual pens when XI_HierarchyChanged events alert us.
     int num_device_info = 0;
@@ -410,28 +409,28 @@ static void X11_XInput2NormalizePenAxes(const X11_PenHandle *pen, float *coords)
         }
 
         switch (axis) {
-            case SDL_PEN_AXIS_XTILT:
-            case SDL_PEN_AXIS_YTILT:
-                //if (peninfo->info.max_tilt > 0.0f) {
-                //    value *= peninfo->info.max_tilt; // normalize to physical max
-                //}
-                break;
+        case SDL_PEN_AXIS_XTILT:
+        case SDL_PEN_AXIS_YTILT:
+            // if (peninfo->info.max_tilt > 0.0f) {
+            //     value *= peninfo->info.max_tilt; // normalize to physical max
+            // }
+            break;
 
-            case SDL_PEN_AXIS_ROTATION:
-                // normalised to -1..1, so let's convert to degrees
-                value *= 180.0f;
-                value += pen->rotation_bias;
+        case SDL_PEN_AXIS_ROTATION:
+            // normalised to -1..1, so let's convert to degrees
+            value *= 180.0f;
+            value += pen->rotation_bias;
 
-                // handle simple over/underflow
-                if (value >= 180.0f) {
-                    value -= 360.0f;
-                } else if (value < -180.0f) {
-                    value += 360.0f;
-                }
-                break;
+            // handle simple over/underflow
+            if (value >= 180.0f) {
+                value -= 360.0f;
+            } else if (value < -180.0f) {
+                value += 360.0f;
+            }
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         coords[axis] = value;
@@ -457,13 +456,12 @@ void X11_PenAxesFromValuators(const X11_PenHandle *pen,
 
 void X11_InitPen(SDL_VideoDevice *_this)
 {
-    (void) _this;
+    (void)_this;
 }
 
 void X11_QuitPen(SDL_VideoDevice *_this)
 {
-    (void) _this;
+    (void)_this;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
-

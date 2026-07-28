@@ -33,7 +33,7 @@ EMSCRIPTEN_KEEPALIVE int CallSDLEmscriptenMainFunction(int argc, char *argv[], S
     return SDL_CallMainFunction(argc, argv, mainFunction);
 }
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
     (void)reserved;
 
@@ -54,10 +54,9 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
                 _Emscripten_force_free(ckey);  // these must use free(), not SDL_free()!
                 _Emscripten_force_free(cvalue);
             }
-        }
-    }, SDL_setenv_unsafe);
+        } }, SDL_setenv_unsafe);
 
-    #ifdef SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING
+#ifdef SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING
     MAIN_THREAD_EM_ASM({
         const persistent_path = UTF8ToString($0);
         const argc = $1;
@@ -71,16 +70,15 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
                 console.error(`WARNING: Failed to populate persistent store at '${persistent_path}' (${err.name}: ${err.message}). Save games likely lost?`);
             }
             _CallSDLEmscriptenMainFunction(argc, argv, mainFunction);   // error or not, start the actual SDL_main().
-        });
-    }, SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING, argc, argv, mainFunction);
+        }); }, SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING, argc, argv, mainFunction);
 
     // we need to stop running code until FS.syncfs() finishes, but we need the runtime to not clean up.
     // The actual SDL_main/SDL_AppInit() will be called when the sync is done and things will pick back up where they were.
     emscripten_exit_with_live_runtime();
     return 0;
-    #else
+#else
     return CallSDLEmscriptenMainFunction(argc, argv, mainFunction);
-    #endif
+#endif
 }
 
 #endif

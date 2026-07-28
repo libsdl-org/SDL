@@ -22,9 +22,9 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(SDL_VIDEO_OPENGL_EGL) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "SDL_windowsvideo.h"
-#include "SDL_windowsopengles.h"
 #include "SDL_windowsopengl.h"
+#include "SDL_windowsopengles.h"
+#include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 
 // EGL implementation of SDL OpenGL support
@@ -103,7 +103,7 @@ SDL_EGL_SwapWindow_impl(WIN)
 SDL_EGL_MakeCurrent_impl(WIN)
 /* *INDENT-ON* */ // clang-format on
 
-bool WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
+    bool WIN_GLES_SetupWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     // The current context is lost in here; save it and reset it.
     SDL_WindowData *windowdata = window->internal;

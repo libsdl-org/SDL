@@ -23,9 +23,9 @@
 #ifndef SDL_JOYSTICK_IOKIT_H
 #define SDL_JOYSTICK_IOKIT_H
 
-#include <IOKit/hid/IOHIDLib.h>
 #include <ForceFeedback/ForceFeedback.h>
 #include <ForceFeedback/ForceFeedbackConstants.h>
+#include <IOKit/hid/IOHIDLib.h>
 
 struct recElement
 {

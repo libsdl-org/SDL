@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_RENDER_OGL
 
-#include <SDL3/SDL_opengl.h>
 #include "SDL_shaders_gl.h"
+#include <SDL3/SDL_opengl.h>
 
 // OpenGL shader implementation
 
@@ -640,7 +640,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         SDL_GL_ExtensionSupported("GL_ARB_shading_language_100") &&
         SDL_GL_ExtensionSupported("GL_ARB_vertex_shader") &&
         SDL_GL_ExtensionSupported("GL_ARB_fragment_shader")) {
-        ctx->glGetError = (GLenum(*)(void))SDL_GL_GetProcAddress("glGetError");
+        ctx->glGetError = (GLenum (*)(void))SDL_GL_GetProcAddress("glGetError");
         ctx->glAttachObjectARB = (PFNGLATTACHOBJECTARBPROC)SDL_GL_GetProcAddress("glAttachObjectARB");
         ctx->glCompileShaderARB = (PFNGLCOMPILESHADERARBPROC)SDL_GL_GetProcAddress("glCompileShaderARB");
         ctx->glCreateProgramObjectARB = (PFNGLCREATEPROGRAMOBJECTARBPROC)SDL_GL_GetProcAddress("glCreateProgramObjectARB");

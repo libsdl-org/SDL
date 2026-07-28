@@ -21,11 +21,11 @@
 
 #include "SDL_internal.h"
 
-#include "../SDL_tray_utils.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../SDL_tray_utils.h"
 
-#include <windowsx.h>
 #include <shellapi.h>
+#include <windowsx.h>
 
 #ifndef NOTIFYICON_VERSION_4
 #define NOTIFYICON_VERSION_4 4
@@ -36,7 +36,8 @@
 
 #define WM_TRAYICON (WM_USER + 1)
 
-struct SDL_TrayMenu {
+struct SDL_TrayMenu
+{
     HMENU hMenu;
 
     int nEntries;
@@ -46,7 +47,8 @@ struct SDL_TrayMenu {
     SDL_TrayEntry *parent_entry;
 };
 
-struct SDL_TrayEntry {
+struct SDL_TrayEntry
+{
     SDL_TrayMenu *parent;
     UINT_PTR id;
 
@@ -57,7 +59,8 @@ struct SDL_TrayEntry {
     SDL_TrayMenu *submenu;
 };
 
-struct SDL_Tray {
+struct SDL_Tray
+{
     NOTIFYICONDATAW nid;
     HWND hwnd;
     HICON icon;
@@ -105,8 +108,9 @@ static SDL_TrayEntry *find_entry_with_id(SDL_Tray *tray, UINT_PTR id)
     return find_entry_in_menu(tray->menu, id);
 }
 
-LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    SDL_Tray *tray = (SDL_Tray *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    SDL_Tray *tray = (SDL_Tray *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     SDL_TrayEntry *entry = NULL;
 
     if (!tray) {
@@ -123,61 +127,60 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     }
 
     switch (uMsg) {
-        case WM_TRAYICON:
-            {
-                bool show_menu = false;
+    case WM_TRAYICON:
+    {
+        bool show_menu = false;
 
-                switch (LOWORD(lParam)) {
-                    case WM_LBUTTONUP:
-                        if (tray->left_click_callback) {
-                            show_menu = tray->left_click_callback(tray->userdata, tray);
-                        } else {
-                            show_menu = true;
-                        }
-                        break;
-
-                    case WM_CONTEXTMENU:
-                        if (tray->right_click_callback) {
-                            show_menu = tray->right_click_callback(tray->userdata, tray);
-                        } else {
-                            show_menu = true;
-                        }
-                        break;
-
-                    case WM_MBUTTONUP:
-                        if (tray->middle_click_callback) {
-                            tray->middle_click_callback(tray->userdata, tray);
-                        }
-                        break;
-                }
-
-                if (show_menu && tray->menu) {
-                    SetForegroundWindow(hwnd);
-                    TrackPopupMenu(tray->menu->hMenu, TPM_BOTTOMALIGN | TPM_RIGHTALIGN, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, hwnd, NULL);
-                }
+        switch (LOWORD(lParam)) {
+        case WM_LBUTTONUP:
+            if (tray->left_click_callback) {
+                show_menu = tray->left_click_callback(tray->userdata, tray);
+            } else {
+                show_menu = true;
             }
             break;
 
-        case WM_COMMAND:
-            entry = find_entry_with_id(tray, LOWORD(wParam));
-
-            if (entry && (entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-                SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
-            }
-
-            if (entry && entry->callback) {
-                entry->callback(entry->userdata, entry);
+        case WM_CONTEXTMENU:
+            if (tray->right_click_callback) {
+                show_menu = tray->right_click_callback(tray->userdata, tray);
+            } else {
+                show_menu = true;
             }
             break;
 
-        case WM_SETTINGCHANGE:
-            if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
-                WIN_UpdateDarkModeForHWND(hwnd);
+        case WM_MBUTTONUP:
+            if (tray->middle_click_callback) {
+                tray->middle_click_callback(tray->userdata, tray);
             }
             break;
+        }
 
-        default:
-            return DefWindowProc(hwnd, uMsg, wParam, lParam);
+        if (show_menu && tray->menu) {
+            SetForegroundWindow(hwnd);
+            TrackPopupMenu(tray->menu->hMenu, TPM_BOTTOMALIGN | TPM_RIGHTALIGN, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, hwnd, NULL);
+        }
+    } break;
+
+    case WM_COMMAND:
+        entry = find_entry_with_id(tray, LOWORD(wParam));
+
+        if (entry && (entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
+            SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
+        }
+
+        if (entry && entry->callback) {
+            entry->callback(entry->userdata, entry);
+        }
+        break;
+
+    case WM_SETTINGCHANGE:
+        if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
+            WIN_UpdateDarkModeForHWND(hwnd);
+        }
+        break;
+
+    default:
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
     return 0;
 }
@@ -332,13 +335,13 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     SDL_zero(tray->nid);
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);
     tray->nid.hWnd = tray->hwnd;
-    tray->nid.uID = (UINT) get_next_id();
+    tray->nid.uID = (UINT)get_next_id();
     tray->nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
     tray->nid.uCallbackMessage = WM_TRAYICON;
     tray->nid.uVersion = NOTIFYICON_VERSION_4;
     if (tooltip) {
         wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
-        if(tooltipw) {
+        if (tooltipw) {
             SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
             SDL_free(tooltipw);
         }
@@ -360,7 +363,7 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     Shell_NotifyIconW(NIM_ADD, &tray->nid);
     Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
 
-    SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR) tray);
+    SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR)tray);
 
     SDL_RegisterTray(tray);
 
@@ -430,7 +433,7 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         SDL_InvalidParamError("tray");
         return NULL;
     }
@@ -450,7 +453,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 {
-    CHECK_PARAM(!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         SDL_InvalidParamError("tray");
         return NULL;
     }
@@ -460,7 +463,7 @@ SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -475,7 +478,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -485,7 +488,7 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
@@ -528,7 +531,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
         menu->entries[menu->nEntries] = NULL;
     }
 
-    if (!DeleteMenu(menu->hMenu, (UINT) entry->id, MF_BYCOMMAND)) {
+    if (!DeleteMenu(menu->hMenu, (UINT)entry->id, MF_BYCOMMAND)) {
         /* This is somewhat useless since we don't return anything, but might help with eventual bugs */
         SDL_SetError("Couldn't destroy tray entry");
     }
@@ -538,12 +541,12 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
 
-    CHECK_PARAM(pos < -1 || pos > menu->nEntries) {
+    CHECK_PARAM (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
     }
@@ -589,7 +592,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         entry->submenu->parent_entry = entry;
         entry->submenu->parent_tray = NULL;
 
-        entry->id = (UINT_PTR) entry->submenu->hMenu;
+        entry->id = (UINT_PTR)entry->submenu->hMenu;
     } else {
         entry->id = get_next_id();
     }
@@ -658,9 +661,9 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
     mii.fMask = MIIM_STRING;
 
     mii.dwTypeData = label_w;
-    mii.cch = (UINT) SDL_wcslen(label_w);
+    mii.cch = (UINT)SDL_wcslen(label_w);
 
-    if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii)) {
+    if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT)entry->id, FALSE, &mii)) {
         SDL_SetError("Couldn't update tray entry label");
     }
 
@@ -669,7 +672,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 
 const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -683,7 +686,7 @@ void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
         return;
     }
 
-    CheckMenuItem(entry->parent->hMenu, (UINT) entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
+    CheckMenuItem(entry->parent->hMenu, (UINT)entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
 }
 
 bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
@@ -696,7 +699,7 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
 
-    GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
+    GetMenuItemInfoW(entry->parent->hMenu, (UINT)entry->id, FALSE, &mii);
 
     return ((mii.fState & MFS_CHECKED) != 0);
 }
@@ -707,7 +710,7 @@ void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
         return;
     }
 
-    EnableMenuItem(entry->parent->hMenu, (UINT) entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
+    EnableMenuItem(entry->parent->hMenu, (UINT)entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
 }
 
 bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
@@ -720,7 +723,7 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
 
-    GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
+    GetMenuItemInfoW(entry->parent->hMenu, (UINT)entry->id, FALSE, &mii);
 
     return ((mii.fState & MFS_ENABLED) != 0);
 }
@@ -737,22 +740,22 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 {
-	if (!entry) {
-		return;
-	}
+    if (!entry) {
+        return;
+    }
 
-	if (entry->flags & SDL_TRAYENTRY_CHECKBOX) {
-		SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
-	}
+    if (entry->flags & SDL_TRAYENTRY_CHECKBOX) {
+        SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
+    }
 
-	if (entry->callback) {
-		entry->callback(entry->userdata, entry);
-	}
+    if (entry->callback) {
+        entry->callback(entry->userdata, entry);
+    }
 }
 
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
-    CHECK_PARAM(!entry) {
+    CHECK_PARAM (!entry) {
         SDL_InvalidParamError("entry");
         return NULL;
     }
@@ -762,7 +765,7 @@ SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
@@ -772,7 +775,7 @@ SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
 {
-    CHECK_PARAM(!menu) {
+    CHECK_PARAM (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }

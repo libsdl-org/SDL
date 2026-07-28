@@ -25,9 +25,9 @@
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 
-#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 #include "SDL_hidapi_sinput.h"
+#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SINPUT
 
@@ -45,80 +45,80 @@
 #define DEBUG_SINPUT_INIT
 #endif
 
-#define SINPUT_DEVICE_REPORT_SIZE           64 // Size of input reports (And CMD Input reports)
-#define SINPUT_DEVICE_REPORT_COMMAND_SIZE   48 // Size of command OUTPUT reports
+#define SINPUT_DEVICE_REPORT_SIZE         64 // Size of input reports (And CMD Input reports)
+#define SINPUT_DEVICE_REPORT_COMMAND_SIZE 48 // Size of command OUTPUT reports
 
-#define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT  0x01
-#define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT    0x02
-#define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT   0x03
+#define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT 0x01
+#define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT   0x02
+#define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT  0x03
 
-#define SINPUT_DEVICE_COMMAND_HAPTIC        0x01
-#define SINPUT_DEVICE_COMMAND_FEATURES      0x02
-#define SINPUT_DEVICE_COMMAND_PLAYERLED     0x03
-#define SINPUT_DEVICE_COMMAND_JOYSTICKRGB   0x04
+#define SINPUT_DEVICE_COMMAND_HAPTIC      0x01
+#define SINPUT_DEVICE_COMMAND_FEATURES    0x02
+#define SINPUT_DEVICE_COMMAND_PLAYERLED   0x03
+#define SINPUT_DEVICE_COMMAND_JOYSTICKRGB 0x04
 
-#define SINPUT_HAPTIC_TYPE_PRECISE          0x01
-#define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
+#define SINPUT_HAPTIC_TYPE_PRECISE       0x01
+#define SINPUT_HAPTIC_TYPE_ERMSIMULATION 0x02
 
 #define SINPUT_DEFAULT_GYRO_SENS  2000
 #define SINPUT_DEFAULT_ACCEL_SENS 8
 
-#define SINPUT_REPORT_IDX_BUTTONS_0         3
-#define SINPUT_REPORT_IDX_BUTTONS_1         4
-#define SINPUT_REPORT_IDX_BUTTONS_2         5
-#define SINPUT_REPORT_IDX_BUTTONS_3         6
-#define SINPUT_REPORT_IDX_LEFT_X            7
-#define SINPUT_REPORT_IDX_LEFT_Y            9
-#define SINPUT_REPORT_IDX_RIGHT_X           11
-#define SINPUT_REPORT_IDX_RIGHT_Y           13
-#define SINPUT_REPORT_IDX_LEFT_TRIGGER      15
-#define SINPUT_REPORT_IDX_RIGHT_TRIGGER     17
-#define SINPUT_REPORT_IDX_IMU_TIMESTAMP     19
-#define SINPUT_REPORT_IDX_IMU_ACCEL_X       23
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Y       25
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Z       27
-#define SINPUT_REPORT_IDX_IMU_GYRO_X        29
-#define SINPUT_REPORT_IDX_IMU_GYRO_Y        31
-#define SINPUT_REPORT_IDX_IMU_GYRO_Z        33
-#define SINPUT_REPORT_IDX_TOUCH1_X          35
-#define SINPUT_REPORT_IDX_TOUCH1_Y          37
-#define SINPUT_REPORT_IDX_TOUCH1_P          39
-#define SINPUT_REPORT_IDX_TOUCH2_X          41
-#define SINPUT_REPORT_IDX_TOUCH2_Y          43
-#define SINPUT_REPORT_IDX_TOUCH2_P          45
+#define SINPUT_REPORT_IDX_BUTTONS_0     3
+#define SINPUT_REPORT_IDX_BUTTONS_1     4
+#define SINPUT_REPORT_IDX_BUTTONS_2     5
+#define SINPUT_REPORT_IDX_BUTTONS_3     6
+#define SINPUT_REPORT_IDX_LEFT_X        7
+#define SINPUT_REPORT_IDX_LEFT_Y        9
+#define SINPUT_REPORT_IDX_RIGHT_X       11
+#define SINPUT_REPORT_IDX_RIGHT_Y       13
+#define SINPUT_REPORT_IDX_LEFT_TRIGGER  15
+#define SINPUT_REPORT_IDX_RIGHT_TRIGGER 17
+#define SINPUT_REPORT_IDX_IMU_TIMESTAMP 19
+#define SINPUT_REPORT_IDX_IMU_ACCEL_X   23
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Y   25
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Z   27
+#define SINPUT_REPORT_IDX_IMU_GYRO_X    29
+#define SINPUT_REPORT_IDX_IMU_GYRO_Y    31
+#define SINPUT_REPORT_IDX_IMU_GYRO_Z    33
+#define SINPUT_REPORT_IDX_TOUCH1_X      35
+#define SINPUT_REPORT_IDX_TOUCH1_Y      37
+#define SINPUT_REPORT_IDX_TOUCH1_P      39
+#define SINPUT_REPORT_IDX_TOUCH2_X      41
+#define SINPUT_REPORT_IDX_TOUCH2_Y      43
+#define SINPUT_REPORT_IDX_TOUCH2_P      45
 
-#define SINPUT_BUTTON_IDX_EAST              0
-#define SINPUT_BUTTON_IDX_SOUTH             1
-#define SINPUT_BUTTON_IDX_NORTH             2
-#define SINPUT_BUTTON_IDX_WEST              3
-#define SINPUT_BUTTON_IDX_DPAD_UP           4
-#define SINPUT_BUTTON_IDX_DPAD_DOWN         5
-#define SINPUT_BUTTON_IDX_DPAD_LEFT         6
-#define SINPUT_BUTTON_IDX_DPAD_RIGHT        7
-#define SINPUT_BUTTON_IDX_LEFT_STICK        8
-#define SINPUT_BUTTON_IDX_RIGHT_STICK       9
-#define SINPUT_BUTTON_IDX_LEFT_BUMPER       10
-#define SINPUT_BUTTON_IDX_RIGHT_BUMPER      11
-#define SINPUT_BUTTON_IDX_LEFT_TRIGGER      12
-#define SINPUT_BUTTON_IDX_RIGHT_TRIGGER     13
-#define SINPUT_BUTTON_IDX_LEFT_PADDLE1      14
-#define SINPUT_BUTTON_IDX_RIGHT_PADDLE1     15
-#define SINPUT_BUTTON_IDX_START             16
-#define SINPUT_BUTTON_IDX_BACK              17
-#define SINPUT_BUTTON_IDX_GUIDE             18
-#define SINPUT_BUTTON_IDX_CAPTURE           19
-#define SINPUT_BUTTON_IDX_LEFT_PADDLE2      20
-#define SINPUT_BUTTON_IDX_RIGHT_PADDLE2     21
-#define SINPUT_BUTTON_IDX_TOUCHPAD1         22
-#define SINPUT_BUTTON_IDX_TOUCHPAD2         23
-#define SINPUT_BUTTON_IDX_POWER             24
-#define SINPUT_BUTTON_IDX_MISC4             25
-#define SINPUT_BUTTON_IDX_MISC5             26
-#define SINPUT_BUTTON_IDX_MISC6             27
-#define SINPUT_BUTTON_IDX_MISC7             28
-#define SINPUT_BUTTON_IDX_MISC8             29
-#define SINPUT_BUTTON_IDX_MISC9             30
-#define SINPUT_BUTTON_IDX_MISC10            31
+#define SINPUT_BUTTON_IDX_EAST          0
+#define SINPUT_BUTTON_IDX_SOUTH         1
+#define SINPUT_BUTTON_IDX_NORTH         2
+#define SINPUT_BUTTON_IDX_WEST          3
+#define SINPUT_BUTTON_IDX_DPAD_UP       4
+#define SINPUT_BUTTON_IDX_DPAD_DOWN     5
+#define SINPUT_BUTTON_IDX_DPAD_LEFT     6
+#define SINPUT_BUTTON_IDX_DPAD_RIGHT    7
+#define SINPUT_BUTTON_IDX_LEFT_STICK    8
+#define SINPUT_BUTTON_IDX_RIGHT_STICK   9
+#define SINPUT_BUTTON_IDX_LEFT_BUMPER   10
+#define SINPUT_BUTTON_IDX_RIGHT_BUMPER  11
+#define SINPUT_BUTTON_IDX_LEFT_TRIGGER  12
+#define SINPUT_BUTTON_IDX_RIGHT_TRIGGER 13
+#define SINPUT_BUTTON_IDX_LEFT_PADDLE1  14
+#define SINPUT_BUTTON_IDX_RIGHT_PADDLE1 15
+#define SINPUT_BUTTON_IDX_START         16
+#define SINPUT_BUTTON_IDX_BACK          17
+#define SINPUT_BUTTON_IDX_GUIDE         18
+#define SINPUT_BUTTON_IDX_CAPTURE       19
+#define SINPUT_BUTTON_IDX_LEFT_PADDLE2  20
+#define SINPUT_BUTTON_IDX_RIGHT_PADDLE2 21
+#define SINPUT_BUTTON_IDX_TOUCHPAD1     22
+#define SINPUT_BUTTON_IDX_TOUCHPAD2     23
+#define SINPUT_BUTTON_IDX_POWER         24
+#define SINPUT_BUTTON_IDX_MISC4         25
+#define SINPUT_BUTTON_IDX_MISC5         26
+#define SINPUT_BUTTON_IDX_MISC6         27
+#define SINPUT_BUTTON_IDX_MISC7         28
+#define SINPUT_BUTTON_IDX_MISC8         29
+#define SINPUT_BUTTON_IDX_MISC9         30
+#define SINPUT_BUTTON_IDX_MISC10        31
 
 #define SINPUT_BUTTONMASK_EAST          0x01
 #define SINPUT_BUTTONMASK_SOUTH         0x02
@@ -156,8 +156,8 @@
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
 
-#define SINPUT_REPORT_IDX_PLUG_STATUS     1
-#define SINPUT_REPORT_IDX_CHARGE_LEVEL    2
+#define SINPUT_REPORT_IDX_PLUG_STATUS  1
+#define SINPUT_REPORT_IDX_CHARGE_LEVEL 2
 
 #define SINPUT_MAX_ALLOWED_TOUCHPADS 2
 
@@ -177,17 +177,21 @@ typedef struct
 {
     uint8_t type;
 
-    union {
+    union
+    {
         // Frequency Amplitude pairs
-        struct {
-            struct {
+        struct
+        {
+            struct
+            {
                 uint16_t frequency_1;
                 uint16_t amplitude_1;
                 uint16_t frequency_2;
                 uint16_t amplitude_2;
             } left;
 
-            struct {
+            struct
+            {
                 uint16_t frequency_1;
                 uint16_t amplitude_1;
                 uint16_t frequency_2;
@@ -197,13 +201,16 @@ typedef struct
         } type_1;
 
         // Basic ERM simulation model
-        struct {
-            struct {
+        struct
+        {
+            struct
+            {
                 uint8_t amplitude;
                 bool brake;
             } left;
 
-            struct {
+            struct
+            {
                 uint8_t amplitude;
                 bool brake;
             } right;
@@ -238,7 +245,7 @@ typedef struct
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
     Uint16 polling_rate_us;
-    Uint8 sub_product;    // Subtype of the device, 0 in most cases
+    Uint8 sub_product; // Subtype of the device, 0 in most cases
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
     Uint16 gyroRange;  // Example would be 1000,2000,4000 +/- (degrees per second)
@@ -291,7 +298,7 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
     // Start button
     mask[2] |= SINPUT_BUTTONMASK_START;
 
-    // Bumpers 
+    // Bumpers
     bool left_bumper = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_LEFT_BUMPER) != 0;
     bool right_bumper = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_RIGHT_BUMPER) != 0;
 
@@ -357,7 +364,6 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
         paddleStyle = SINPUT_PADDLESTYLE_TWO;
         mask[1] |= (SINPUT_BUTTONMASK_LEFT_PADDLE1 | SINPUT_BUTTONMASK_RIGHT_PADDLE1);
     }
-
 
     // Meta Buttons (Back, Guide, Share)
     bool back = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_BACK) != 0;
@@ -432,7 +438,6 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
     device->guid.data[12] = (Uint8)(version & 0xFF);
     device->guid.data[13] = (Uint8)(version >> 8);
 }
-
 
 static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 {
@@ -714,7 +719,6 @@ static void HIDAPI_DriverSInput_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 #define DEG2RAD(x) ((float)(x) * (float)(SDL_PI_F / 180.f))
 #endif
 
-
 static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
 #if defined(DEBUG_SINPUT_INIT)
@@ -776,7 +780,7 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
         // Low Frequency  = Left
         // High Frequency = Right
-        hapticData.type_2.left.amplitude = (Uint8) (low_frequency_rumble >> 8);
+        hapticData.type_2.left.amplitude = (Uint8)(low_frequency_rumble >> 8);
         hapticData.type_2.right.amplitude = (Uint8)(high_frequency_rumble >> 8);
 
         HapticsType2Pack(&hapticData, &(hapticReport[2]));
@@ -871,7 +875,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
                 bool down = (data[button_idx] & mask) != 0;
 
-                if ( (output_idx < SDL_GAMEPAD_BUTTON_COUNT) && (ctx->last_state[button_idx] != data[button_idx]) ) {
+                if ((output_idx < SDL_GAMEPAD_BUTTON_COUNT) && (ctx->last_state[button_idx] != data[button_idx])) {
                     SDL_SendJoystickButton(timestamp, joystick, output_idx, down);
                 }
 
@@ -942,7 +946,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
     // Battery/Power state handling
-    if (ctx->last_state[SINPUT_REPORT_IDX_PLUG_STATUS]  != data[SINPUT_REPORT_IDX_PLUG_STATUS] ||
+    if (ctx->last_state[SINPUT_REPORT_IDX_PLUG_STATUS] != data[SINPUT_REPORT_IDX_PLUG_STATUS] ||
         ctx->last_state[SINPUT_REPORT_IDX_CHARGE_LEVEL] != data[SINPUT_REPORT_IDX_CHARGE_LEVEL]) {
 
         SDL_PowerState state = SDL_POWERSTATE_UNKNOWN;
@@ -1040,10 +1044,10 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         Uint16 touch2P = EXTRACTUINT16(data, SINPUT_REPORT_IDX_TOUCH2_P);
 
         SDL_SendJoystickTouchpad(timestamp, joystick, touchpad, finger,
-            touch1P > 0,
-            touch1X / 65536.0f + 0.5f,
-            touch1Y / 65536.0f + 0.5f,
-            touch1P / 32768.0f);
+                                 touch1P > 0,
+                                 touch1X / 65536.0f + 0.5f,
+                                 touch1Y / 65536.0f + 0.5f,
+                                 touch1P / 32768.0f);
 
         if (ctx->touchpad_count > 1) {
             ++touchpad;

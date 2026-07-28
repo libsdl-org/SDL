@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenframebuffer.h"
+#include "SDL_emscriptenvideo.h"
 
 #include <emscripten/threading.h>
 

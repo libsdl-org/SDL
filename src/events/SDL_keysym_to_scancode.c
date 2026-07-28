@@ -23,8 +23,8 @@
 #if defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
 
 #include "SDL_keyboard_c.h"
-#include "SDL_scancode_tables_c.h"
 #include "SDL_keysym_to_scancode_c.h"
+#include "SDL_scancode_tables_c.h"
 
 /* *INDENT-OFF* */ // clang-format off
 static const struct {

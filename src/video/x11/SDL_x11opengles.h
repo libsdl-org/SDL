@@ -25,8 +25,8 @@
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 
-#include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
+#include "../SDL_sysvideo.h"
 
 typedef struct SDL_PrivateGLESData
 {
@@ -41,7 +41,7 @@ typedef struct SDL_PrivateGLESData
 #define X11_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define X11_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define X11_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define X11_GLES_DestroyContext   SDL_EGL_DestroyContext
+#define X11_GLES_DestroyContext  SDL_EGL_DestroyContext
 
 extern bool X11_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern XVisualInfo *X11_GLES_GetVisual(SDL_VideoDevice *_this, Display *display, int screen, bool transparent);

@@ -22,15 +22,14 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
+#include "../../events/SDL_events_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_androidevents.h"
 #include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
-#include "../SDL_sysvideo.h"
-#include "../../events/SDL_events_c.h"
 
 #include "../../audio/aaudio/SDL_aaudio.h"
 #include "../../audio/openslES/SDL_openslES.h"
-
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 static void android_egl_context_restore(SDL_Window *window)

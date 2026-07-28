@@ -30,8 +30,8 @@
 #include <stdio.h> // For the definition of NULL
 #include <stdlib.h>
 
-#include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
 
 #define PS2_MAX_PORT      2 // each ps2 has 2 ports
 #define PS2_MAX_SLOT      4 // maximum - 4 slots in one multitap
@@ -221,7 +221,7 @@ static void PS2_InitializePad(int port, int slot)
         // This is no Dual Shock controller
         return;
     }
-    
+
     // If ExId != 0x0 => This controller has actuator engines
     // This check should always pass if the Dual Shock test above passed
     if (!padInfoMode(port, slot, PAD_MODECUREXID, 0)) {
@@ -237,8 +237,8 @@ static void PS2_InitializePad(int port, int slot)
 
     PS2_WaitPadReady(port, slot);
     if (padInfoAct(port, slot, -1, 0)) {
-        actAlign[0] = 0;   // Enable small engine
-        actAlign[1] = 1;   // Enable big engine
+        actAlign[0] = 0; // Enable small engine
+        actAlign[1] = 1; // Enable big engine
         actAlign[2] = 0xff;
         actAlign[3] = 0xff;
         actAlign[4] = 0xff;

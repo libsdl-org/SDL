@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
+#include "SDL_internal.h"
 
 static void normalize_locale_str(char *dst, char *str, size_t buflen)
 {

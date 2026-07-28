@@ -27,12 +27,11 @@ extern "C" {
 #include "../SDL_main_callbacks.h"
 }
 #include <XGameRuntime.h>
-#include <xsapi-c/services_c.h>
-#include <shellapi.h> // CommandLineToArgvW()
 #include <appnotify.h>
+#include <shellapi.h> // CommandLineToArgvW()
+#include <xsapi-c/services_c.h>
 
-extern "C"
-int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved)
+extern "C" int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved)
 {
     (void)reserved;
 
@@ -102,4 +101,3 @@ int SDL_RunApp(int argc, char **argv, SDL_main_func mainFunction, void *reserved
 
     return result;
 }
-

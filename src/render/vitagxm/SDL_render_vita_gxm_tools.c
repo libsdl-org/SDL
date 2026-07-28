@@ -24,24 +24,24 @@
 
 #include "../SDL_sysrender.h"
 
-#include <psp2/kernel/processmgr.h>
 #include <psp2/appmgr.h>
 #include <psp2/display.h>
 #include <psp2/gxm.h>
-#include <psp2/types.h>
+#include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/message_dialog.h>
+#include <psp2/types.h>
 
-#include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "SDL_render_vita_gxm_tools.h"
-#include "SDL_render_vita_gxm_types.h"
 #include "SDL_render_vita_gxm_memory.h"
 #include "SDL_render_vita_gxm_shaders.h"
+#include "SDL_render_vita_gxm_tools.h"
+#include "SDL_render_vita_gxm_types.h"
 
 void init_orthographic_matrix(float *m, float left, float right, float bottom, float top, float near, float far)
 {

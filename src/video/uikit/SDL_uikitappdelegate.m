@@ -160,7 +160,6 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 @end
 #endif // !SDL_PLATFORM_TVOS
 
-
 @interface SDLLaunchScreenController ()
 
 #ifndef SDL_PLATFORM_TVOS
@@ -209,8 +208,6 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         int screenw = (int)([UIScreen mainScreen].bounds.size.width + 0.5);
         int screenh = (int)([UIScreen mainScreen].bounds.size.height + 0.5);
 #endif
-
-
 
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 #pragma clang diagnostic push
@@ -346,7 +343,6 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 #endif // !SDL_PLATFORM_TVOS
 
 @end // SDLLaunchScreenController
-
 
 API_AVAILABLE(ios(13.0))
 @implementation SDLUIKitSceneDelegate
@@ -519,7 +515,6 @@ API_AVAILABLE(ios(13.0))
 }
 
 @end // SDLUIKitSceneDelegate
-
 
 @implementation SDLUIKitDelegate
 {

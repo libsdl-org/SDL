@@ -22,16 +22,16 @@
 
 // General (mostly internal) pixel/color manipulation routines for SDL
 
-#include "SDL_sysvideo.h"
-#include "SDL_pixels_c.h"
 #include "SDL_RLEaccel_c.h"
+#include "SDL_pixels_c.h"
+#include "SDL_sysvideo.h"
 
 // Lookup tables to expand partial bytes to the full 0..255 range
 
 // This is the code used to generate the lookup tables below:
 #if 0
-#include <stdio.h>
 #include <SDL3/SDL.h>
+#include <stdio.h>
 
 #define GENERATE_SHIFTS
 
@@ -143,7 +143,6 @@ const Uint16 SDL_expand_byte_10[] = {
 };
 SDL_COMPILE_TIME_ASSERT(SDL_expand_byte_10_size, SDL_arraysize(SDL_expand_byte_10) == (1 << 8));
 
-
 // Helper functions
 
 #define CASE(X) \
@@ -235,13 +234,13 @@ bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask,
         *Rmask = *Gmask = *Bmask = *Amask = 0;
         // however, some of these are packed formats, and can legit declare bits-per-pixel!
         switch (format) {
-            case SDL_PIXELFORMAT_YUY2:
-            case SDL_PIXELFORMAT_UYVY:
-            case SDL_PIXELFORMAT_YVYU:
-                *bpp = 32;
-                break;
-            default:
-                *bpp = 0;  // oh well.
+        case SDL_PIXELFORMAT_YUY2:
+        case SDL_PIXELFORMAT_UYVY:
+        case SDL_PIXELFORMAT_YVYU:
+            *bpp = 32;
+            break;
+        default:
+            *bpp = 0; // oh well.
         }
         return true;
     }
@@ -806,7 +805,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
         if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
             return details;
         }
-        return NULL;  // oh well.
+        return NULL; // oh well.
     }
 
     return details;
@@ -919,48 +918,120 @@ float SDL_PQfromNits(float v)
  * https://kdashg.github.io/misc/colors/from-coeffs.html
  */
 static const float mat_BT601_Limited_8bit[] = {
-    -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, // offset
-    1.1644f, 0.0000f, 1.5960f, 0.0f,                    // Rcoeff
-    1.1644f, -0.3918f, -0.8130f, 0.0f,                  // Gcoeff
-    1.1644f, 2.0172f, 0.0000f, 0.0f,                    // Bcoeff
+    -0.0627451017f,
+    -0.501960814f,
+    -0.501960814f,
+    0.0f, // offset
+    1.1644f,
+    0.0000f,
+    1.5960f,
+    0.0f, // Rcoeff
+    1.1644f,
+    -0.3918f,
+    -0.8130f,
+    0.0f, // Gcoeff
+    1.1644f,
+    2.0172f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
 static const float mat_BT601_Full_8bit[] = {
-    0.0f, -0.501960814f, -0.501960814f, 0.0f,           // offset
-    1.0000f, 0.0000f, 1.4075f, 0.0f,                    // Rcoeff
-    1.0000f, -0.3455f, -0.7169f, 0.0f,                  // Gcoeff
-    1.0000f, 1.7790f, 0.0000f, 0.0f,                    // Bcoeff
+    0.0f,
+    -0.501960814f,
+    -0.501960814f,
+    0.0f, // offset
+    1.0000f,
+    0.0000f,
+    1.4075f,
+    0.0f, // Rcoeff
+    1.0000f,
+    -0.3455f,
+    -0.7169f,
+    0.0f, // Gcoeff
+    1.0000f,
+    1.7790f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
 static const float mat_BT709_Limited_8bit[] = {
-    -0.0627451017f, -0.501960814f, -0.501960814f, 0.0f, // offset
-    1.1644f, 0.0000f, 1.7927f, 0.0f,                    // Rcoeff
-    1.1644f, -0.2132f, -0.5329f, 0.0f,                  // Gcoeff
-    1.1644f, 2.1124f, 0.0000f, 0.0f,                    // Bcoeff
+    -0.0627451017f,
+    -0.501960814f,
+    -0.501960814f,
+    0.0f, // offset
+    1.1644f,
+    0.0000f,
+    1.7927f,
+    0.0f, // Rcoeff
+    1.1644f,
+    -0.2132f,
+    -0.5329f,
+    0.0f, // Gcoeff
+    1.1644f,
+    2.1124f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
 static const float mat_BT709_Full_8bit[] = {
-    0.0f, -0.501960814f, -0.501960814f, 0.0f,           // offset
-    1.0000f, 0.0000f, 1.5810f, 0.0f,                    // Rcoeff
-    1.0000f, -0.1881f, -0.4700f, 0.0f,                  // Gcoeff
-    1.0000f, 1.8629f, 0.0000f, 0.0f,                    // Bcoeff
+    0.0f,
+    -0.501960814f,
+    -0.501960814f,
+    0.0f, // offset
+    1.0000f,
+    0.0000f,
+    1.5810f,
+    0.0f, // Rcoeff
+    1.0000f,
+    -0.1881f,
+    -0.4700f,
+    0.0f, // Gcoeff
+    1.0000f,
+    1.8629f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
 static const float mat_BT2020_Limited_10bit[] = {
-    -0.062561095f, -0.500488759f, -0.500488759f, 0.0f,  // offset
-    1.1678f, 0.0000f, 1.6836f, 0.0f,                    // Rcoeff
-    1.1678f, -0.1879f, -0.6523f, 0.0f,                  // Gcoeff
-    1.1678f, 2.1481f, 0.0000f, 0.0f,                    // Bcoeff
+    -0.062561095f,
+    -0.500488759f,
+    -0.500488759f,
+    0.0f, // offset
+    1.1678f,
+    0.0000f,
+    1.6836f,
+    0.0f, // Rcoeff
+    1.1678f,
+    -0.1879f,
+    -0.6523f,
+    0.0f, // Gcoeff
+    1.1678f,
+    2.1481f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
 static const float mat_BT2020_Full_10bit[] = {
-    0.0f, -0.500488759f, -0.500488759f, 0.0f,           // offset
-    1.0000f, 0.0000f, 1.4760f, 0.0f,                    // Rcoeff
-    1.0000f, -0.1647f, -0.5719f, 0.0f,                  // Gcoeff
-    1.0000f, 1.8832f, 0.0000f, 0.0f,                    // Bcoeff
+    0.0f,
+    -0.500488759f,
+    -0.500488759f,
+    0.0f, // offset
+    1.0000f,
+    0.0000f,
+    1.4760f,
+    0.0f, // Rcoeff
+    1.0000f,
+    -0.1647f,
+    -0.5719f,
+    0.0f, // Gcoeff
+    1.0000f,
+    1.8832f,
+    0.0000f,
+    0.0f, // Bcoeff
 };
 
-static const float *SDL_GetBT601ConversionMatrix( SDL_Colorspace colorspace )
+static const float *SDL_GetBT601ConversionMatrix(SDL_Colorspace colorspace)
 {
     switch (SDL_COLORSPACERANGE(colorspace)) {
     case SDL_COLOR_RANGE_LIMITED:
@@ -1048,29 +1119,59 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
      * https://www.russellcottrell.com/photo/matrixCalculator.htm
      */
     static const float mat601to709[] = {
-        0.939542f, 0.050181f, 0.010277f,
-        0.017772f, 0.965793f, 0.016435f,
-        -0.001622f, -0.004370f, 1.005991f,
+        0.939542f,
+        0.050181f,
+        0.010277f,
+        0.017772f,
+        0.965793f,
+        0.016435f,
+        -0.001622f,
+        -0.004370f,
+        1.005991f,
     };
     static const float mat601to2020[] = {
-        0.595254f, 0.349314f, 0.055432f,
-        0.081244f, 0.891503f, 0.027253f,
-        0.015512f, 0.081912f, 0.902576f,
+        0.595254f,
+        0.349314f,
+        0.055432f,
+        0.081244f,
+        0.891503f,
+        0.027253f,
+        0.015512f,
+        0.081912f,
+        0.902576f,
     };
     static const float mat709to601[] = {
-        1.065379f, -0.055401f, -0.009978f,
-        -0.019633f, 1.036363f, -0.016731f,
-        0.001632f, 0.004412f, 0.993956f,
+        1.065379f,
+        -0.055401f,
+        -0.009978f,
+        -0.019633f,
+        1.036363f,
+        -0.016731f,
+        0.001632f,
+        0.004412f,
+        0.993956f,
     };
     static const float mat709to2020[] = {
-        0.627404f, 0.329283f, 0.043313f,
-        0.069097f, 0.919541f, 0.011362f,
-        0.016391f, 0.088013f, 0.895595f,
+        0.627404f,
+        0.329283f,
+        0.043313f,
+        0.069097f,
+        0.919541f,
+        0.011362f,
+        0.016391f,
+        0.088013f,
+        0.895595f,
     };
     static const float mat2020to601[] = {
-        1.776133f, -0.687820f, -0.088313f,
-        -0.161376f, 1.187315f, -0.025940f,
-        -0.015881f, -0.095931f, 1.111812f,
+        1.776133f,
+        -0.687820f,
+        -0.088313f,
+        -0.161376f,
+        1.187315f,
+        -0.025940f,
+        -0.015881f,
+        -0.095931f,
+        1.111812f,
     };
     static const float mat2020to709[] = {
         1.660496f, -0.587656f, -0.072840f,
@@ -1078,24 +1179,48 @@ const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_C
         -0.018154f, -0.100597f, 1.118751f
     };
     static const float matSMPTE431to709[] = {
-        1.120713f, -0.234649f, 0.000000f,
-        -0.038478f, 1.087034f, 0.000000f,
-        -0.017967f, -0.082030f, 0.954576f,
+        1.120713f,
+        -0.234649f,
+        0.000000f,
+        -0.038478f,
+        1.087034f,
+        0.000000f,
+        -0.017967f,
+        -0.082030f,
+        0.954576f,
     };
     static const float matSMPTE431to2020[] = {
-        0.689691f, 0.207169f, 0.041346f,
-        0.041852f, 0.982426f, 0.010846f,
-        -0.001107f, 0.018362f, 0.854914f,
+        0.689691f,
+        0.207169f,
+        0.041346f,
+        0.041852f,
+        0.982426f,
+        0.010846f,
+        -0.001107f,
+        0.018362f,
+        0.854914f,
     };
     static const float matSMPTE432to709[] = {
-        1.224940f, -0.224940f, -0.000000f,
-        -0.042057f, 1.042057f, 0.000000f,
-        -0.019638f, -0.078636f, 1.098273f,
+        1.224940f,
+        -0.224940f,
+        -0.000000f,
+        -0.042057f,
+        1.042057f,
+        0.000000f,
+        -0.019638f,
+        -0.078636f,
+        1.098273f,
     };
     static const float matSMPTE432to2020[] = {
-        0.753833f, 0.198597f, 0.047570f,
-        0.045744f, 0.941777f, 0.012479f,
-        -0.001210f, 0.017602f, 0.983609f,
+        0.753833f,
+        0.198597f,
+        0.047570f,
+        0.045744f,
+        0.941777f,
+        0.012479f,
+        -0.001210f,
+        0.017602f,
+        0.983609f,
     };
 
     switch (dst) {
@@ -1164,7 +1289,7 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
     SDL_Palette *palette;
 
     // Input validation
-    CHECK_PARAM(ncolors < 1) {
+    CHECK_PARAM (ncolors < 1) {
         SDL_InvalidParamError("ncolors");
         return NULL;
     }
@@ -1292,8 +1417,8 @@ Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const S
         } else {
             Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
             Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
-            Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
-            Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
+            Uint8 b = (Uint8)((pixelvalue >> 8) & 0xFF);
+            Uint8 a = (Uint8)((pixelvalue >> 0) & 0xFF);
             color_index = SDL_FindColor(pal, r, g, b, a);
             SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
         }
@@ -1350,13 +1475,13 @@ void SDL_DetectPalette(const SDL_Palette *pal, bool *is_opaque, bool *has_alpha_
 // Find the opaque pixel value corresponding to an RGB triple
 Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b)
 {
-    CHECK_PARAM(!format) {
+    CHECK_PARAM (!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        CHECK_PARAM(!palette) {
+        CHECK_PARAM (!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }
@@ -1379,13 +1504,13 @@ Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palet
 // Find the pixel value corresponding to an RGBA quadruple
 Uint32 SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    CHECK_PARAM(!format) {
+    CHECK_PARAM (!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        CHECK_PARAM(!palette) {
+        CHECK_PARAM (!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }
@@ -1693,4 +1818,3 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     // Choose your blitters wisely
     return SDL_CalculateBlit(src, dst);
 }
-

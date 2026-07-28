@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include <SDL3/SDL_test.h>
 #include "SDL_test_internal.h"
+#include <SDL3/SDL_test.h>
 
 #include <stdlib.h> /* Needed for exit() */
 
@@ -29,17 +29,35 @@
 static void SDLTest_LogSummary(bool success, const char *name, int total, int passed, int failed, int skipped)
 {
     SDLTest_LogMessage(success ? SDL_LOG_PRIORITY_INFO : SDL_LOG_PRIORITY_ERROR,
-        "%s Summary: Total=%d " "%s" "Passed=%d" "%s" " " "%s" "Failed=%d" "%s" " " "%s" "Skipped=%d" "%s",
-        name, total, COLOR_GREEN, passed, COLOR_END, success ? COLOR_GREEN : COLOR_RED, failed, COLOR_END, COLOR_BLUE, skipped, COLOR_END);
+                       "%s Summary: Total=%d "
+                       "%s"
+                       "Passed=%d"
+                       "%s"
+                       " "
+                       "%s"
+                       "Failed=%d"
+                       "%s"
+                       " "
+                       "%s"
+                       "Skipped=%d"
+                       "%s",
+                       name, total, COLOR_GREEN, passed, COLOR_END, success ? COLOR_GREEN : COLOR_RED, failed, COLOR_END, COLOR_BLUE, skipped, COLOR_END);
 }
 
 static void SDLTest_LogFinalResult(bool success, const char *stage, const char *name, const char *color_message, const char *message)
 {
     SDL_LogPriority priority = success ? SDL_LOG_PRIORITY_INFO : SDL_LOG_PRIORITY_ERROR;
-    SDLTest_LogMessage(priority, "%s>>> %s '%s':" "%s" " " "%s" "%s" "%s", COLOR_YELLOW, stage, name, COLOR_END, color_message ? color_message : "", message, color_message ? COLOR_END : "");
+    SDLTest_LogMessage(priority, "%s>>> %s '%s':"
+                                 "%s"
+                                 " "
+                                 "%s"
+                                 "%s"
+                                 "%s",
+                       COLOR_YELLOW, stage, name, COLOR_END, color_message ? color_message : "", message, color_message ? COLOR_END : "");
 }
 
-struct SDLTest_TestSuiteRunner {
+struct SDLTest_TestSuiteRunner
+{
     struct
     {
         SDLTest_TestSuiteReference **testSuites;
@@ -564,7 +582,11 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
         if (suiteFilter == 1 && suiteFilterName && testSuite->name &&
             SDL_strcasecmp(suiteFilterName, testSuite->name) != 0) {
             /* Skip suite */
-            SDLTest_Log("===== Test Suite %i: '%s' " "%s" "skipped" "%s" "\n",
+            SDLTest_Log("===== Test Suite %i: '%s' "
+                        "%s"
+                        "skipped"
+                        "%s"
+                        "\n",
                         suiteCounter,
                         currentSuiteName,
                         COLOR_BLUE,
@@ -628,7 +650,11 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
                 if (testFilter == 1 && testFilterName && testCase->name &&
                     SDL_strcasecmp(testFilterName, testCase->name) != 0) {
                     /* Skip test */
-                    SDLTest_Log("===== Test Case %i.%i: '%s' " "%s" "skipped" "%s" "\n",
+                    SDLTest_Log("===== Test Case %i.%i: '%s' "
+                                "%s"
+                                "skipped"
+                                "%s"
+                                "\n",
                                 suiteCounter,
                                 testCounter,
                                 currentTestName,
@@ -645,7 +671,9 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
                     testStartSeconds = GetClock();
 
                     /* Log test started */
-                    SDLTest_Log("%s" "----- Test Case %i.%i: '%s' started" "%s",
+                    SDLTest_Log("%s"
+                                "----- Test Case %i.%i: '%s' started"
+                                "%s",
                                 COLOR_YELLOW,
                                 suiteCounter,
                                 testCounter,
@@ -771,7 +799,10 @@ int SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
     if (failedNumberOfTests > 0) {
         SDLTest_Log("Harness input to repro failures:");
         for (testCounter = 0; testCounter < failedNumberOfTests; testCounter++) {
-            SDLTest_Log("%s" " --seed %s --filter %s" "%s", COLOR_RED, runSeed, failedTests[testCounter]->name, COLOR_END);
+            SDLTest_Log("%s"
+                        " --seed %s --filter %s"
+                        "%s",
+                        COLOR_RED, runSeed, failedTests[testCounter]->name, COLOR_END);
         }
     }
     SDL_free((void *)failedTests);
@@ -792,26 +823,22 @@ static int SDLCALL SDLTest_TestSuiteCommonArg(void *data, char **argv, int index
             }
             return 2;
         }
-    }
-    else if (SDL_strcasecmp(argv[index], "--execKey") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--execKey") == 0) {
         if (argv[index + 1]) {
             (void)SDL_sscanf(argv[index + 1], "%" SDL_PRIu64, &runner->user.execKey);
             return 2;
         }
-    }
-    else if (SDL_strcasecmp(argv[index], "--seed") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--seed") == 0) {
         if (argv[index + 1]) {
             runner->user.runSeed = SDL_strdup(argv[index + 1]);
             return 2;
         }
-    }
-    else if (SDL_strcasecmp(argv[index], "--filter") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--filter") == 0) {
         if (argv[index + 1]) {
             runner->user.filter = SDL_strdup(argv[index + 1]);
             return 2;
         }
-    }
-    else if (SDL_strcasecmp(argv[index], "--random-order") == 0) {
+    } else if (SDL_strcasecmp(argv[index], "--random-order") == 0) {
         runner->user.randomOrder = true;
         return 1;
     }
@@ -847,13 +874,13 @@ SDLTest_TestSuiteRunner *SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *stat
             break;
         }
         argparser = argparser->next;
-
     }
 
     return runner;
 }
 
-void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner) {
+void SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner)
+{
 
     SDL_free(runner->user.filter);
     SDL_free(runner->user.runSeed);

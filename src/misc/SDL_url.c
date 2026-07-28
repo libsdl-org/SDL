@@ -24,7 +24,7 @@
 
 bool SDL_OpenURL(const char *url)
 {
-    CHECK_PARAM(!url) {
+    CHECK_PARAM (!url) {
         return SDL_InvalidParamError("url");
     }
     return SDL_SYS_OpenURL(url);

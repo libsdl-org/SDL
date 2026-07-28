@@ -21,8 +21,8 @@
 
 #include <emscripten.h>
 
-#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
+#include "SDL_internal.h"
 
 bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {

@@ -29,4 +29,3 @@
 int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to);
 
 #endif
-

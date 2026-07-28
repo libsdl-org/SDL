@@ -24,10 +24,10 @@
 
 #include <limits.h> // For INT_MAX
 
-#include "SDL_x11video.h"
-#include "SDL_x11clipboard.h"
-#include "../SDL_clipboard_c.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_clipboard_c.h"
+#include "SDL_x11clipboard.h"
+#include "SDL_x11video.h"
 
 static const char *const text_mime_types[] = {
     "UTF8_STRING",
@@ -62,7 +62,7 @@ Window GetWindow(SDL_VideoDevice *_this)
 }
 
 static bool SetSelectionData(SDL_VideoDevice *_this, Atom selection, SDL_ClipboardDataCallback callback,
-                            void *userdata, const char *const *mime_types, size_t mime_count, Uint32 sequence)
+                             void *userdata, const char *const *mime_types, size_t mime_count, Uint32 sequence)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
@@ -224,7 +224,7 @@ static void *GetSelectionData(SDL_VideoDevice *_this, Atom selection_type,
 
                     X11_XFree(src);
                     if (X11_XGetWindowProperty(display, owner, selection, 0, INT_MAX / 4, False,
-                                           XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) != Success) {
+                                               XA_MIME, &seln_type, &seln_format, &count, &overflow, &src) != Success) {
                         break;
                     }
 

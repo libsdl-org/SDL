@@ -26,22 +26,23 @@
 #include <psp2/camera.h>
 #include <psp2/kernel/sysmem.h>
 
-static struct  {
+static struct
+{
     Sint32 w;
     Sint32 h;
     Sint32 res;
 } resolutions[] = {
-    {640, 480, SCE_CAMERA_RESOLUTION_640_480},
-    {320, 240, SCE_CAMERA_RESOLUTION_320_240},
-    {160, 120, SCE_CAMERA_RESOLUTION_160_120},
-    {352, 288, SCE_CAMERA_RESOLUTION_352_288},
-    {176, 144, SCE_CAMERA_RESOLUTION_176_144},
-    {480, 272, SCE_CAMERA_RESOLUTION_480_272},
-    {640, 360, SCE_CAMERA_RESOLUTION_640_360},
-    {0, 0, 0}
+    { 640, 480, SCE_CAMERA_RESOLUTION_640_480 },
+    { 320, 240, SCE_CAMERA_RESOLUTION_320_240 },
+    { 160, 120, SCE_CAMERA_RESOLUTION_160_120 },
+    { 352, 288, SCE_CAMERA_RESOLUTION_352_288 },
+    { 176, 144, SCE_CAMERA_RESOLUTION_176_144 },
+    { 480, 272, SCE_CAMERA_RESOLUTION_480_272 },
+    { 640, 360, SCE_CAMERA_RESOLUTION_640_360 },
+    { 0, 0, 0 }
 };
 
-static Sint32 fps[] = {5, 10, 15, 20, 24, 25, 30, 60, 0};
+static Sint32 fps[] = { 5, 10, 15, 20, 24, 25, 30, 60, 0 };
 
 static void GatherCameraSpecs(Sint32 devid, CameraFormatAddData *add_data, char **fullname, SDL_CameraPosition *position)
 {
@@ -73,18 +74,18 @@ static void GatherCameraSpecs(Sint32 devid, CameraFormatAddData *add_data, char 
 
 static bool FindVitaCameraByID(SDL_Camera *device, void *userdata)
 {
-    Sint32 devid = (Sint32) userdata;
+    Sint32 devid = (Sint32)userdata;
     return (devid == (Sint32)device->handle);
 }
 
 static void MaybeAddDevice(Sint32 devid)
 {
-    #if DEBUG_CAMERA
+#if DEBUG_CAMERA
     SDL_Log("CAMERA: MaybeAddDevice('%d')", devid);
-    #endif
+#endif
 
-    if (SDL_FindPhysicalCameraByCallback(FindVitaCameraByID, (void *) devid)) {
-        return;  // already have this one.
+    if (SDL_FindPhysicalCameraByCallback(FindVitaCameraByID, (void *)devid)) {
+        return; // already have this one.
     }
 
     SDL_CameraPosition position = SDL_CAMERA_POSITION_UNKNOWN;
@@ -139,14 +140,13 @@ static bool VITACAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec
     info->format = SCE_CAMERA_FORMAT_YUV420_PLANE;
     info->pitch = 0; // same size surface
 
-    info->sizeIBase =  spec->width * spec->height;
-    info->sizeUBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
-    info->sizeVBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
+    info->sizeIBase = spec->width * spec->height;
+    info->sizeUBase = ((spec->width + 1) / 2) * ((spec->height + 1) / 2);
+    info->sizeVBase = ((spec->width + 1) / 2) * ((spec->height + 1) / 2);
 
     // PHYCONT memory size *must* be a multiple of 1MB, we can just always spend 2MB, since we don't use PHYCONT anywhere else
-    imbUid = sceKernelAllocMemBlock("CameraI", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, 2 * 1024 * 1024 , NULL);
-    if (imbUid < 0)
-    {
+    imbUid = sceKernelAllocMemBlock("CameraI", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, 2 * 1024 * 1024, NULL);
+    if (imbUid < 0) {
         return SDL_SetError("sceKernelAllocMemBlock error: 0x%08X", imbUid);
     }
     sceKernelGetMemBlockBase(imbUid, &(info->pIBase));
@@ -186,13 +186,14 @@ static void VITACAMERA_CloseDevice(SDL_Camera *device)
 
 static bool VITACAMERA_WaitDevice(SDL_Camera *device)
 {
-    while(!sceCameraIsActive((int)device->handle)) {}
+    while (!sceCameraIsActive((int)device->handle)) {
+    }
     return true;
 }
 
 static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
 {
-    SceCameraRead read = {0};
+    SceCameraRead read = { 0 };
     read.size = sizeof(SceCameraRead);
     read.mode = 1; // don't wait next frame
 
@@ -255,4 +256,4 @@ CameraBootStrap VITACAMERA_bootstrap = {
     "vita", "SDL PSVita camera driver", VITACAMERA_Init, false
 };
 
-#endif  // SDL_CAMERA_DRIVER_VITA
+#endif // SDL_CAMERA_DRIVER_VITA

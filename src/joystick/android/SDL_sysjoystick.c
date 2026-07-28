@@ -24,12 +24,12 @@
 
 #include <stdio.h> // For the definition of NULL
 
-#include "SDL_sysjoystick_c.h"
-#include "../SDL_joystick_c.h"
-#include "../../events/SDL_keyboard_c.h"
 #include "../../core/android/SDL_android.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
+#include "SDL_sysjoystick_c.h"
 
 #include "android/keycodes.h"
 #include <linux/input-event-codes.h>
@@ -54,7 +54,7 @@
 #define AKEYCODE_BUTTON_16 203
 #endif
 
-#define ANDROID_MAX_NBUTTONS            36
+#define ANDROID_MAX_NBUTTONS 36
 
 static SDL_joylist_item *JoystickByDeviceId(int device_id);
 
@@ -383,7 +383,7 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
 }
 
 void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
-    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope)
+                         bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope)
 {
     SDL_joylist_item *item;
     SDL_GUID guid;

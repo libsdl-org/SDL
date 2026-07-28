@@ -21,12 +21,12 @@
 
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
 
-#import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES3/gl.h>
+#import <UIKit/UIKit.h>
 
-#import "SDL_uikitview.h"
 #include "SDL_uikitvideo.h"
+#import "SDL_uikitview.h"
 
 @interface SDL_uikitopenglview : SDL_uikitview
 

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "../SDL_main_callbacks.h"
+#include "SDL_internal.h"
 
 #include <emscripten.h>
 
@@ -41,7 +41,7 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
     } else {
         const double callback_rate = newValue ? SDL_atof(newValue) : 0.0;
         if (callback_rate > 0.0) {
-            callback_rate_increment = (Uint32) SDL_NS_TO_MS((double) SDL_NS_PER_SECOND / callback_rate);
+            callback_rate_increment = (Uint32)SDL_NS_TO_MS((double)SDL_NS_PER_SECOND / callback_rate);
         } else {
             callback_rate_increment = 0;
         }
@@ -81,8 +81,8 @@ static void EmscriptenInternalMainloop(void)
     const SDL_AppResult rc = SDL_IterateMainCallbacks(!iterate_after_waitevent);
     if (rc != SDL_APP_CONTINUE) {
         SDL_QuitMainCallbacks(rc);
-        emscripten_cancel_main_loop();  // kill" the mainloop, so it stops calling back into it.
-        exit((rc == SDL_APP_FAILURE) ? 1 : 0);  // hopefully this takes down everything else, too.
+        emscripten_cancel_main_loop();         // kill" the mainloop, so it stops calling back into it.
+        exit((rc == SDL_APP_FAILURE) ? 1 : 0); // hopefully this takes down everything else, too.
     }
 }
 
@@ -95,7 +95,7 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
         } else {
             SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
             callback_rate_changed = false;
-            emscripten_set_main_loop(EmscriptenInternalMainloop, 0, 0);  // don't throw an exception since we do an orderly return.
+            emscripten_set_main_loop(EmscriptenInternalMainloop, 0, 0); // don't throw an exception since we do an orderly return.
             if (callback_rate_increment > 0.0) {
                 emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, callback_rate_increment);
             }
@@ -105,4 +105,3 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
     }
     return (rc == SDL_APP_FAILURE) ? 1 : 0;
 }
-

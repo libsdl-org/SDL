@@ -22,16 +22,16 @@
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
+#include "../SDL_sysvideo.h"
 
-#include "SDL_uikitviewcontroller.h"
-#include "SDL_uikitmessagebox.h"
 #include "SDL_uikitevents.h"
-#include "SDL_uikitvideo.h"
+#include "SDL_uikitmessagebox.h"
 #include "SDL_uikitmodes.h"
-#include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
+#include "SDL_uikitvideo.h"
+#include "SDL_uikitviewcontroller.h"
+#include "SDL_uikitwindow.h"
 
 #ifdef SDL_PLATFORM_VISIONOS
 #import "SDL3/SDL3-Swift.h"
@@ -143,14 +143,14 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_PLATFORM_TVOS
     SDL_RemoveHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
-                        SDL_AppleTVControllerUIHintChanged,
-                        (__bridge void *)self);
+                           SDL_AppleTVControllerUIHintChanged,
+                           (__bridge void *)self);
 #endif
 
 #ifndef SDL_PLATFORM_TVOS
     SDL_RemoveHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
-                        SDL_HideHomeIndicatorHintChanged,
-                        (__bridge void *)self);
+                           SDL_HideHomeIndicatorHintChanged,
+                           (__bridge void *)self);
 #endif
 }
 
@@ -195,14 +195,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
 
 #ifdef SDL_PLATFORM_VISIONOS
-    displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
+    displayLink.preferredFramesPerSecond = 90 / animationInterval; // TODO: Get frame max frame rate on visionOS
 #else
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
     displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
 #endif
 
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+    [displayLink addToRunLoop:[NSRunLoop currentRunLoop]
+                      forMode:NSDefaultRunLoopMode];
 }
 
 - (void)stopAnimation
@@ -416,7 +417,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                     object:nil];
 }
 
-- (void)setTextFieldProperties:(SDL_PropertiesID) props
+- (void)setTextFieldProperties:(SDL_PropertiesID)props
 {
     textField.secureTextEntry = NO;
 
@@ -538,7 +539,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     if (isOTPMode) {
         if (textField.text.length == 64 && [textField.text isEqualToString:[@"" stringByPaddingToLength:64 withString:@" " startingAtIndex:0]]) {
             textField.text = @"";
-            committedText  = @"";
+            committedText = @"";
         }
     }
     return [textField becomeFirstResponder];
@@ -635,7 +636,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)updateKeyboard
 {
-    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *) window->internal;
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);

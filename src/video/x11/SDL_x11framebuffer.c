@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include "SDL_x11video.h"
 #include "SDL_x11framebuffer.h"
+#include "SDL_x11video.h"
 #include "SDL_x11xsync.h"
 
 #ifndef NO_SHARED_MEMORY
@@ -49,7 +49,7 @@ static bool have_mitshm(Display *dpy)
 #endif // !NO_SHARED_MEMORY
 
 bool X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format,
-                                void **pixels, int *pitch)
+                                 void **pixels, int *pitch)
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
@@ -144,7 +144,7 @@ bool X11_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL
 }
 
 bool X11_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects,
-                                int numrects)
+                                 int numrects)
 {
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;

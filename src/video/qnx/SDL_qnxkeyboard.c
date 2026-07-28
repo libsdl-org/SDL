@@ -19,10 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
 #include "../../events/SDL_keyboard_c.h"
-#include "SDL3/SDL_scancode.h"
 #include "SDL3/SDL_events.h"
+#include "SDL3/SDL_scancode.h"
+#include "SDL_internal.h"
 #include "SDL_qnx.h"
 #include <sys/keycodes.h>
 
@@ -168,10 +168,10 @@ static int key_to_sdl[] = {
  */
 void handleKeyboardEvent(screen_event_t event)
 {
-    int             val;
-    int             cap;
-    char            ascii_text[2];
-    SDL_Scancode    scancode;
+    int val;
+    int cap;
+    char ascii_text[2];
+    SDL_Scancode scancode;
 
     // Get the key value.
     if (screen_get_event_property_iv(event, SCREEN_PROPERTY_SYM, &val) < 0) {

@@ -26,13 +26,13 @@
 
 // This logic is adapted from drivers/tty/vt/keyboard.c in the Linux kernel source
 
-#include <unistd.h>
 #include <fcntl.h>
-#include <sys/ioctl.h>
 #include <linux/kd.h>
 #include <linux/keyboard.h>
-#include <linux/vt.h>
 #include <linux/tiocl.h> // for TIOCL_GETSHIFTSTATE
+#include <linux/vt.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include <signal.h>
 
@@ -300,7 +300,8 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
-enum {
+enum
+{
     VT_SIGNAL_NONE,
     VT_SIGNAL_RELEASE,
     VT_SIGNAL_ACQUIRE,
@@ -384,7 +385,7 @@ static bool kbd_vt_init(int console_fd)
 
     vt_release_signal = find_free_signal(kbd_vt_release_signal_action);
     vt_acquire_signal = find_free_signal(kbd_vt_acquire_signal_action);
-    if (!vt_release_signal || !vt_acquire_signal ) {
+    if (!vt_release_signal || !vt_acquire_signal) {
         kbd_vt_quit(console_fd);
         return false;
     }

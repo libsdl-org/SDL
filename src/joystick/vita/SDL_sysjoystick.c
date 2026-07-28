@@ -23,15 +23,15 @@
 #ifdef SDL_JOYSTICK_VITA
 
 // This is the PSVita implementation of the SDL joystick API
-#include <psp2/types.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/types.h>
 
 #include <stdio.h> // For the definition of NULL
 #include <stdlib.h>
 
-#include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
+#include "../SDL_sysjoystick.h"
 
 // Current pad state
 static SceCtrlData pad0 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0, .buttons = 0 };

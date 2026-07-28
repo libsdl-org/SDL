@@ -23,12 +23,12 @@
 #include "SDL_hints_c.h"
 #include "SDL_properties_c.h"
 
-
 typedef struct
 {
     SDL_PropertyType type;
 
-    union {
+    union
+    {
         void *pointer_value;
         char *string_value;
         Sint64 number_value;
@@ -52,7 +52,6 @@ static SDL_InitState SDL_properties_init;
 static SDL_HashTable *SDL_properties;
 static SDL_AtomicU32 SDL_last_properties_id;
 static SDL_AtomicU32 SDL_global_properties;
-
 
 static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void *data, bool cleanup)
 {
@@ -105,7 +104,7 @@ bool SDL_InitProperties(void)
 static bool SDLCALL FreeOneProperties(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
     SDL_FreeProperties((SDL_Properties *)value);
-    return true;  // keep iterating.
+    return true; // keep iterating.
 }
 
 void SDL_QuitProperties(void)
@@ -187,14 +186,14 @@ SDL_PropertiesID SDL_CreateProperties(void)
         }
     }
 
-    SDL_assert(!SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, NULL));  // should NOT be in the hash table already.
+    SDL_assert(!SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, NULL)); // should NOT be in the hash table already.
 
     if (!SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties, false)) {
         SDL_FreeProperties(properties);
         return 0;
     }
 
-    return props;  // All done!
+    return props; // All done!
 }
 
 typedef struct CopyOnePropertyData
@@ -208,10 +207,10 @@ static bool SDLCALL CopyOneProperty(void *userdata, const SDL_HashTable *table, 
     const SDL_Property *src_property = (const SDL_Property *)value;
     if (src_property->cleanup) {
         // Can't copy properties with cleanup functions, we don't know how to duplicate the data
-        return true;  // keep iterating.
+        return true; // keep iterating.
     }
 
-    CopyOnePropertyData *data = (CopyOnePropertyData *) userdata;
+    CopyOnePropertyData *data = (CopyOnePropertyData *)userdata;
     SDL_Properties *dst_properties = data->dst_properties;
     const char *src_name = (const char *)key;
     SDL_Property *dst_property;
@@ -245,15 +244,15 @@ static bool SDLCALL CopyOneProperty(void *userdata, const SDL_HashTable *table, 
         data->result = false;
     }
 
-    return true;  // keep iterating.
+    return true; // keep iterating.
 }
 
 bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
 {
-    CHECK_PARAM(!src) {
+    CHECK_PARAM (!src) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM(!dst) {
+    CHECK_PARAM (!dst) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -261,11 +260,11 @@ bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
     SDL_Properties *dst_properties = NULL;
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)src, (const void **)&src_properties);
-    CHECK_PARAM(!src_properties) {
+    CHECK_PARAM (!src_properties) {
         return SDL_InvalidParamError("src");
     }
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)dst, (const void **)&dst_properties);
-    CHECK_PARAM(!dst_properties) {
+    CHECK_PARAM (!dst_properties) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -287,12 +286,12 @@ bool SDL_LockProperties(SDL_PropertiesID props)
 {
     SDL_Properties *properties = NULL;
 
-    CHECK_PARAM(!props) {
+    CHECK_PARAM (!props) {
         return SDL_InvalidParamError("props");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
+    CHECK_PARAM (!properties) {
         return SDL_InvalidParamError("props");
     }
 
@@ -321,17 +320,17 @@ static bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL
     SDL_Properties *properties = NULL;
     bool result = true;
 
-    CHECK_PARAM(!props) {
+    CHECK_PARAM (!props) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
-    CHECK_PARAM(!name || !*name) {
+    CHECK_PARAM (!name || !*name) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("name");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
+    CHECK_PARAM (!properties) {
         SDL_FreePropertyWithCleanup(NULL, property, NULL, true);
         return SDL_InvalidParamError("props");
     }
@@ -741,29 +740,28 @@ typedef struct EnumerateOnePropertyData
     SDL_PropertiesID props;
 } EnumerateOnePropertyData;
 
-
 static bool SDLCALL EnumerateOneProperty(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
-    (void) table;
-    (void) value;
-    const EnumerateOnePropertyData *data = (const EnumerateOnePropertyData *) userdata;
+    (void)table;
+    (void)value;
+    const EnumerateOnePropertyData *data = (const EnumerateOnePropertyData *)userdata;
     data->callback(data->userdata, data->props, (const char *)key);
-    return true;  // keep iterating.
+    return true; // keep iterating.
 }
 
 bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata)
 {
     SDL_Properties *properties = NULL;
 
-    CHECK_PARAM(!props) {
+    CHECK_PARAM (!props) {
         return SDL_InvalidParamError("props");
     }
-    CHECK_PARAM(!callback) {
+    CHECK_PARAM (!callback) {
         return SDL_InvalidParamError("callback");
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
+    CHECK_PARAM (!properties) {
         return SDL_InvalidParamError("props");
     }
 
@@ -787,11 +785,10 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
         SDL_Log("%s: \"%s\"", name, SDL_GetStringProperty(props, name, ""));
         break;
     case SDL_PROPERTY_TYPE_NUMBER:
-        {
-            Sint64 value = SDL_GetNumberProperty(props, name, 0);
-            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")", name, value, value);
-        }
-        break;
+    {
+        Sint64 value = SDL_GetNumberProperty(props, name, 0);
+        SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")", name, value, value);
+    } break;
     case SDL_PROPERTY_TYPE_FLOAT:
         SDL_Log("%s: %g", name, SDL_GetFloatProperty(props, name, 0.0f));
         break;
