@@ -4477,12 +4477,12 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
 
     sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
     sourceInfo.aspect = ((WebGPUTextureContainer *)source->texture)->activeTexture->aspect;
-    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z };
+    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z + source->layer };
     sourceInfo.mipLevel = source->mip_level;
 
     destInfo.texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture;
     destInfo.aspect = ((WebGPUTextureContainer *)destination->texture)->activeTexture->aspect;
-    destInfo.origin = (WGPUOrigin3D){ .x = destination->x, .y = destination->y, .z = destination->z };
+    destInfo.origin = (WGPUOrigin3D){ .x = destination->x, .y = destination->y, .z = destination->z + destination->layer };
     destInfo.mipLevel = destination->mip_level;
 
     wgpuCommandEncoderCopyTextureToTexture(((WebGPUCommandBuffer *)copyPass)->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ w, h, d });
@@ -4542,7 +4542,7 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
         .aspect = WGPUTextureAspect_All,
         .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
         .mipLevel = destination->mip_level,
-        .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->layer },
+        .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->z + destination->layer },
     };
 
     wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ destination->w, destination->h, destination->d });
