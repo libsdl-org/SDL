@@ -33,6 +33,7 @@
 //
 // I'm leaning towards option one, mostly because being able to bind arrays into arbitrary structs is a stupid idea.
 
+#include "SDL3/SDL_stdinc.h"
 #ifdef SDL_GPU_WEBGPU
 
 #ifdef __EMSCRIPTEN__
@@ -206,7 +207,7 @@ static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
     WGPUTextureFormat_BC3RGBAUnormSrgb,     // BC3_UNORM_SRGB
     WGPUTextureFormat_BC7RGBAUnormSrgb,     // BC7_UNORM_SRGB
     WGPUTextureFormat_Depth16Unorm,         // D16_UNORM
-    WGPUTextureFormat_Depth24Plus,          // D24_UNORM, pretty sure this requires a feature
+    WGPUTextureFormat_Depth24Plus,          // D24_UNORM,
     WGPUTextureFormat_Depth32Float,         // D32_FLOAT
     WGPUTextureFormat_Depth24PlusStencil8,  // D24_UNORM_S8_UINT
     WGPUTextureFormat_Depth32FloatStencil8, // D32_FLOAT_S8_UINT, needs WGPUTextureFeature_Depth32FloatStencil8
@@ -525,9 +526,9 @@ static bool WebGPUTextureFormatIsBlendable(WGPUTextureFormat format, bool blenda
 // I don't want my kneecaps broken please
 
 static char *WGSLTextureFormatIdentifiers[43] = {
-    "f32", // RGBA8Unorm
-    "u32", // RGBA8Uint
-    "i32", // RGBA8Sint
+    "f32", // Undefined
+    "u32", // Undefined
+    "i32", // Undefined
     "rgba8unorm",
     "rgba8snorm",
     "rgba8uint",
@@ -668,6 +669,110 @@ static WGPUStorageTextureAccess WGSLStorageTextureAccessIdentifiersIndexWowISuck
     WGPUStorageTextureAccess_ReadOnly,
 };
 
+static const char *WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(WGPUTextureFormat format)
+{
+    switch (format) {
+    case WGPUTextureFormat_RGBA8Unorm:
+        return "rgba8unorm";
+    case WGPUTextureFormat_RGBA8Snorm:
+        return "rgba8snorm";
+    case WGPUTextureFormat_RGBA8Uint:
+        return "rgba8uint";
+    case WGPUTextureFormat_RGBA8Sint:
+        return "rgba8sint";
+    case WGPUTextureFormat_RGBA16Unorm:
+        return "rgba16unorm";
+    case WGPUTextureFormat_RGBA16Snorm:
+        return "rgba16snorm";
+    case WGPUTextureFormat_RGBA16Uint:
+        return "rgba16uint";
+    case WGPUTextureFormat_RGBA16Sint:
+        return "rgba16sint";
+    case WGPUTextureFormat_RGBA16Float:
+        return "rgba16float";
+    case WGPUTextureFormat_RG8Unorm:
+        return "rg8unorm";
+    case WGPUTextureFormat_RG8Snorm:
+        return "rg8snorm";
+    case WGPUTextureFormat_RG8Uint:
+        return "rg8uint";
+    case WGPUTextureFormat_RG8Sint:
+        return "rg8sint";
+    case WGPUTextureFormat_RG16Unorm:
+        return "rg16unorm";
+    case WGPUTextureFormat_RG16Snorm:
+        return "rg16snorm";
+    case WGPUTextureFormat_RG16Uint:
+        return "rg16uint";
+    case WGPUTextureFormat_RG16Sint:
+        return "rg16sint";
+    case WGPUTextureFormat_RG16Float:
+        return "rg16float";
+    case WGPUTextureFormat_R32Uint:
+        return "r32uint";
+    case WGPUTextureFormat_R32Sint:
+        return "r32sint";
+    case WGPUTextureFormat_R32Float:
+        return "r32float";
+    case WGPUTextureFormat_RG32Uint:
+        return "rg32uint";
+    case WGPUTextureFormat_RG32Sint:
+        return "rg32sint";
+    case WGPUTextureFormat_RG32Float:
+        return "rg32float";
+    case WGPUTextureFormat_RGBA32Uint:
+        return "rgba32uint";
+    case WGPUTextureFormat_RGBA32Sint:
+        return "rgba32sint";
+    case WGPUTextureFormat_RGBA32Float:
+        return "rgba32float";
+    case WGPUTextureFormat_BGRA8Unorm:
+        return "bgra8unorm";
+    case WGPUTextureFormat_R8Unorm:
+        return "r8unorm";
+    case WGPUTextureFormat_R8Snorm:
+        return "r8snorm";
+    case WGPUTextureFormat_R8Uint:
+        return "r8uint";
+    case WGPUTextureFormat_R8Sint:
+        return "r8sint";
+    case WGPUTextureFormat_R16Unorm:
+        return "r16unorm";
+    case WGPUTextureFormat_R16Snorm:
+        return "r16snorm";
+    case WGPUTextureFormat_R16Uint:
+        return "r16uint";
+    case WGPUTextureFormat_R16Sint:
+        return "r16sint";
+    case WGPUTextureFormat_R16Float:
+        return "r16float";
+    case WGPUTextureFormat_RGB10A2Unorm:
+        return "rgb10a2unorm";
+    case WGPUTextureFormat_RGB10A2Uint:
+        return "rgb10a2uint";
+    case WGPUTextureFormat_RG11B10Ufloat:
+        return "rg11b10ufloat";
+    default:
+        return NULL;
+    }
+}
+
+const char *mipmapComp = "\n\
+@group(0) @binding(0) var lastMip: texture_2d<f32>;\n\
+@group(1) @binding(0) var generatedMip: texture_storage_2d<%s, write>;\n\
+@compute @workgroup_size(8, 8, 1)\n\
+fn main(@builtin(global_invocation_id) id: vec3<u32>) {\n\
+    let lastDimensions = textureDimensions(lastMip);\n\
+    let genDimensions = textureDimensions(generatedMip);\n\
+    let ratio = lastDimensions.x / genDimensions.x;\n\
+    let offset = vec2<u32>(0, ratio - 1);\n\
+    let averageColour = (textureLoad(lastMip, ratio * id.xy + offset.xx, 0) +\n\
+        textureLoad(lastMip, ratio * id.xy + offset.xy, 0) +\n\
+        textureLoad(lastMip, ratio * id.xy + offset.yx, 0) +\n\
+        textureLoad(lastMip, ratio * id.xy + offset.yy, 0)) * 0.25;\n\
+    textureStore(generatedMip, id.xy, averageColour);\n\
+}";
+
 // Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
 // Thank you very much, I hate writing shaders. -- TheStickmahn
 // https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
@@ -697,7 +802,7 @@ const char *blit2DShader = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\n\
@@ -706,14 +811,14 @@ struct SourceRegionBuffer {\n\
 @fragment\n\
 fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
     let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
-    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blit2DArrayShader = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\n\
@@ -724,14 +829,14 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
     let newCoord = vec2<f32>(\n\
         sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\n\
     );\n\
-    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blit3DShader = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\n\
@@ -743,14 +848,14 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\n\
         sourceRegion.layerOrDepth\n\
     );\n\
-    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blitCubeShader = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\n\
@@ -772,14 +877,14 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
     }\n\
 \n\
-    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blitCubeArrayShader = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\n\
@@ -803,7 +908,7 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
     }\n\
     \n\
-    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blit2DShaderRGBA32 = "\n\
@@ -811,7 +916,7 @@ const char *blit2DShaderRGBA32 = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\n\
@@ -821,7 +926,7 @@ struct SourceRegionBuffer {\n\
 @fragment\n\
 fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
     let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
-    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blit2DArrayShaderRGBA32 = "\n\
@@ -829,7 +934,7 @@ const char *blit2DArrayShaderRGBA32 = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\n\
@@ -841,7 +946,7 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
     let newCoord = vec2<f32>(\n\
         sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\n\
     );\n\
-    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blit3DShaderRGBA32 = "\n\
@@ -849,7 +954,7 @@ const char *blit3DShaderRGBA32 = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\n\
@@ -862,7 +967,7 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\n\
         sourceRegion.layerOrDepth\n\
     );\n\
-    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blitCubeShaderRGBA32 = "\n\
@@ -870,7 +975,7 @@ const char *blitCubeShaderRGBA32 = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\n\
@@ -894,7 +999,7 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
     }\n\
     \n\
-    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
 }";
 
 const char *blitCubeArrayShaderRGBA32 = "\n\
@@ -902,7 +1007,7 @@ const char *blitCubeArrayShaderRGBA32 = "\n\
 struct SourceRegionBuffer {\n\
     uvLeftTop: vec2<f32>,\n\
     uvDimensions: vec2<f32>,\n\
-    mipLevel: f32,\n\
+    mipLevel: u32,\n\
     layerOrDepth: f32\n\
 }\n\
 @group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\n\
@@ -927,7 +1032,7 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
         default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
     }\n\
     \n\
-    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, sourceRegion.mipLevel);\n\
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, f32(sourceRegion.mipLevel));\n\
 }";
 
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
@@ -978,6 +1083,7 @@ typedef struct WebGPURenderer
 
     SDL_PropertiesID props;
     SDL_PropertiesID bindGroups;
+    SDL_PropertiesID mipmapPipelines;
 
     char **bindGroupsQueuedForRelease;
     uint32_t numBindGroupsQueuedForRelease;
@@ -1135,6 +1241,7 @@ struct WebGPUTexture
     WGPUTextureAspect aspect;
     WebGPUTextureView *fullTextureView;
     WebGPUTextureView **textureViews;
+    WebGPUTextureView **mipLevelViews;
 
     SDL_GPUTextureType type;
     SDL_GPUTextureFormat format;
@@ -1142,6 +1249,9 @@ struct WebGPUTexture
 
     uint32_t textureViewCount;
     uint32_t textureViewCapacity;
+
+    uint32_t mipLevelViewCount;
+    uint32_t mipLevelViewCapacity;
 
     bool markedForDestroy;  // so that defrag doesn't double-free
     bool externallyManaged; // true for XR swapchain images
@@ -1319,10 +1429,15 @@ typedef struct WebGPUComputePipeline
 
     WebGPUComputeShaderBindGroupLayouts *bindGroupLayouts;
 
-    uint32_t threadCountX;
-    uint32_t threadCountY;
-    uint32_t threadCountZ;
 } WebGPUComputePipeline;
+
+typedef struct WebGPUMipmapPipeline
+{
+    WGPUShaderModule mipmapComputeShader;
+    WGPUComputePipeline pipeline;
+
+    WebGPUComputeShaderBindGroupLayouts *bindGroupLayouts;
+} WebGPUMipmapPipeline;
 
 typedef struct WebGPUCommandBuffer
 {
@@ -3019,7 +3134,7 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroup(WebGPUCommandBuffer *cmdBuf
     return result;
 }
 
-static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *texture, int depth)
+static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *texture, int depth, int mipLevel)
 {
     WebGPUTextureView *result = NULL;
 
@@ -3050,8 +3165,8 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
     }
 
     WGPUTextureViewDescriptor desc = {
-        .baseMipLevel = 0,
-        .mipLevelCount = mipLevelCount,
+        .baseMipLevel = mipLevel,
+        .mipLevelCount = SDL_min(mipLevelCount, 1),
         .aspect = texture->aspect,
         .dimension = dimension,
         .format = format,
@@ -3063,6 +3178,7 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
         // create whole texture view
         desc.arrayLayerCount = dimension == WGPUTextureViewDimension_2D || dimension == WGPUTextureViewDimension_3D ? 1 : arrayLayerCount;
         desc.baseArrayLayer = 0;
+        desc.mipLevelCount = mipLevelCount;
     } else {
         desc.arrayLayerCount = 1;
         desc.baseArrayLayer = depth;
@@ -3111,6 +3227,7 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     }
     if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE || createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
         desc.usage |= WGPUTextureUsage_StorageBinding;
+        desc.usage |= WGPUTextureUsage_TextureBinding;
     }
 
     desc.usage |= WGPUTextureUsage_CopyDst;
@@ -3145,20 +3262,27 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     SDL_SetAtomicInt(&texture->referenceCount, 0);
     texture->texture = wgpuDeviceCreateTexture(renderer->device, &desc);
     // -1 signals that we want a texture view for all of the layers
-    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1);
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1, 0);
 
     if (createInfo->type == SDL_GPU_TEXTURETYPE_3D) {
         // manually create view
-        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0);
+        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, 0);
         WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                                texture->textureViewCount, WebGPUTextureView *, textureView);
     } else {
         for (int i = 0; i < desc.size.depthOrArrayLayers; i++) {
-            WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, i);
+            WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, i, 0);
 
             WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                                    texture->textureViewCount, WebGPUTextureView *, textureView);
         }
+    }
+
+    for (int i = 0; i < createInfo->num_levels; i++) {
+        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, i);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(texture->mipLevelViews, texture->mipLevelViewCapacity,
+                                               texture->mipLevelViewCount, WebGPUTextureView *, textureView);
     }
 
     return texture;
@@ -3223,7 +3347,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
     desc.addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w];
     desc.compare = SDLToWebGPU_CompareFunc[createInfo->compare_op];
 
-    desc.lodMaxClamp = createInfo->max_lod;
+    desc.lodMaxClamp = createInfo->max_lod == 0 ? 32.0f : createInfo->max_lod;
     desc.lodMinClamp = createInfo->min_lod;
     desc.magFilter = SDLToWebGPU_FilterMode[createInfo->mag_filter];
     desc.minFilter = SDLToWebGPU_FilterMode[createInfo->min_filter];
@@ -3336,9 +3460,9 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     texture->aspect = WGPUTextureAspect_All;
     SDL_SetAtomicInt(&texture->referenceCount, 0);
     texture->format = SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat);
-    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1);
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1, 0);
 
-    WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0);
+    WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, 0);
     WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                            texture->textureViewCount, WebGPUTextureView *, textureView);
 
@@ -4000,6 +4124,10 @@ static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTextu
         WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->textureViews[i]);
     }
 
+    for (int i = 0; i < texture->mipLevelViewCount; i++) {
+        WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->mipLevelViews[i]);
+    }
+
     WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->fullTextureView);
 
     wgpuTextureRelease(texture->texture);
@@ -4032,6 +4160,173 @@ static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPURenderer *renderer, Web
     }
     SDL_free(container->buffers);
     SDL_free(container);
+}
+
+static WebGPUMipmapPipeline *WEBGPU_INTERNAL_CreateMipmapPipelineForFormat(WebGPURenderer *renderer, WGPUTextureFormat format)
+{
+    WGPUShaderModule module;
+    WGPUComputePipeline computePipeline;
+    WebGPUMipmapPipeline *pipeline;
+    char *jankHorribleHack = SDL_calloc(SDL_strlen(mipmapComp) * 2, sizeof(char));
+
+    SDL_snprintf(jankHorribleHack, SDL_strlen(mipmapComp) * 2, mipmapComp, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format));
+
+    WGPUShaderSourceWGSL source = {
+        .code = { jankHorribleHack, SDL_strlen(jankHorribleHack) },
+        .chain = {
+            .next = NULL,
+            .sType = WGPUSType_ShaderSourceWGSL,
+        },
+    };
+    // TODO: Change shader code based on texture type and dimension
+    WGPUShaderModuleDescriptor moduleDesc = {
+        .label = NULL,
+        .nextInChain = &source.chain,
+    };
+
+    module = wgpuDeviceCreateShaderModule(renderer->device, &moduleDesc);
+
+    WGPUPipelineLayout layout;
+    WebGPUComputeShaderBindGroupLayouts *bindGroupLayouts = WEBGPU_INTERNAL_GenerateBindGroupLayoutsForComputeShader(jankHorribleHack, renderer);
+    WGPUBindGroupLayout *pipelineBindGroupLayouts = SDL_calloc(3, sizeof(WGPUBindGroupLayout));
+
+    pipelineBindGroupLayouts[0] = bindGroupLayouts->samplerStorageBindGroupLayout;
+    pipelineBindGroupLayouts[1] = bindGroupLayouts->readWriteStorageBindGroupLayout;
+    pipelineBindGroupLayouts[2] = bindGroupLayouts->uniformBindGroupLayout;
+
+    WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {
+        .bindGroupLayoutCount = 3,
+        .bindGroupLayouts = pipelineBindGroupLayouts,
+        .immediateSize = 0,
+        .label = WGPU_STRING_VIEW_INIT,
+        .nextInChain = NULL,
+    };
+
+    layout = wgpuDeviceCreatePipelineLayout(renderer->device, &pipelineLayoutDesc);
+
+    WGPUComputePipelineDescriptor pipelineDesc = {
+        .compute = (WGPUComputeState){
+            .constantCount = 0,
+            .constants = NULL,
+            .entryPoint = { "main", 4 },
+            .module = module,
+            .nextInChain = NULL,
+        },
+        .layout = layout,
+        .label = WGPU_STRING_VIEW_INIT,
+        .nextInChain = NULL,
+    };
+
+    computePipeline = wgpuDeviceCreateComputePipeline(renderer->device, &pipelineDesc);
+
+    pipeline = SDL_calloc(1, sizeof(*pipeline));
+    pipeline->pipeline = computePipeline;
+    pipeline->mipmapComputeShader = module;
+    pipeline->bindGroupLayouts = bindGroupLayouts;
+
+    SDL_SetPointerProperty(renderer->mipmapPipelines, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format), pipeline);
+
+    SDL_free(jankHorribleHack);
+    return pipeline;
+}
+
+static WebGPUMipmapPipeline *WEBGPU_INTERNAL_GetMipmapPipeline(WebGPURenderer *renderer, WGPUTextureFormat format)
+{
+    WebGPUMipmapPipeline *pipeline = SDL_GetPointerProperty(renderer->mipmapPipelines, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format), NULL);
+
+    if (pipeline == NULL) {
+        pipeline = WEBGPU_INTERNAL_CreateMipmapPipelineForFormat(renderer, format);
+    }
+
+    return pipeline;
+}
+
+static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *_texture)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WebGPUTexture *texture = ((WebGPUTextureContainer *)_texture)->activeTexture;
+    WebGPUMipmapPipeline *pipeline = WEBGPU_INTERNAL_GetMipmapPipeline(cmdBuf->renderer, WGPUTextureFormat_RGBA8Unorm);
+    WGPUComputePassEncoder pass = wgpuCommandEncoderBeginComputePass(cmdBuf->encoder, &WGPU_COMPUTE_PASS_DESCRIPTOR_INIT);
+
+    WebGPUTexture *storageTexture = WEBGPU_INTERNAL_CreateTexture(cmdBuf->renderer, &(SDL_GPUTextureCreateInfo){
+                                                                                        .format = texture->format,
+                                                                                        .height = wgpuTextureGetHeight(texture->texture),
+                                                                                        .width = wgpuTextureGetWidth(texture->texture),
+                                                                                        .layer_count_or_depth = 1,
+                                                                                        .type = texture->type,
+                                                                                        .num_levels = texture->mipLevelViewCount,
+                                                                                        .usage = SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE,
+                                                                                    });
+    wgpuComputePassEncoderSetPipeline(pass, pipeline->pipeline);
+
+    WGPUBindGroup bindGroup0 = wgpuDeviceCreateBindGroup(cmdBuf->device, &(WGPUBindGroupDescriptor){
+                                                                             .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = texture->fullTextureView->view, .nextInChain = NULL },
+                                                                             .entryCount = 1,
+                                                                             .nextInChain = NULL,
+                                                                             .label = WGPU_STRING_VIEW_INIT,
+                                                                             .layout = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout,
+                                                                         });
+
+    uint32_t currentSizeX = wgpuTextureGetWidth(texture->texture);
+    uint32_t currentSizeY = wgpuTextureGetHeight(texture->texture);
+    for (int i = 0; i < texture->mipLevelViewCount; i++) {
+        if (i > 0) {
+            bindGroup0 = wgpuDeviceCreateBindGroup(cmdBuf->device, &(WGPUBindGroupDescriptor){
+                                                                       .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = storageTexture->mipLevelViews[i - 1]->view, .nextInChain = NULL },
+                                                                       .entryCount = 1,
+                                                                       .nextInChain = NULL,
+                                                                       .label = WGPU_STRING_VIEW_INIT,
+                                                                       .layout = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout,
+                                                                   });
+        }
+
+        WGPUBindGroup bindGroup1 =
+            wgpuDeviceCreateBindGroup(cmdBuf->device,
+                                      &(WGPUBindGroupDescriptor){
+                                          .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = storageTexture->mipLevelViews[i]->view, .nextInChain = NULL },
+                                          .entryCount = 1,
+                                          .nextInChain = NULL,
+                                          .label = WGPU_STRING_VIEW_INIT,
+                                          .layout = pipeline->bindGroupLayouts->readWriteStorageBindGroupLayout,
+                                      });
+
+        wgpuComputePassEncoderSetBindGroup(pass, 0, bindGroup0, 0, NULL);
+        wgpuComputePassEncoderSetBindGroup(pass, 1, bindGroup1, 0, NULL);
+
+        wgpuComputePassEncoderDispatchWorkgroups(pass, currentSizeX / 8, currentSizeY / 8, 1);
+        currentSizeX /= 2;
+        currentSizeY /= 2;
+
+        wgpuBindGroupRelease(bindGroup0);
+        wgpuBindGroupRelease(bindGroup1);
+    }
+
+    wgpuComputePassEncoderEnd(pass);
+
+    currentSizeX = wgpuTextureGetWidth(texture->texture);
+    currentSizeY = wgpuTextureGetHeight(texture->texture);
+    for (int i = 0; i < texture->mipLevelViewCount; i++) {
+        wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder,
+                                               &(WGPUTexelCopyTextureInfo){
+                                                   .mipLevel = i,
+                                                   .texture = storageTexture->texture,
+                                                   .aspect = storageTexture->aspect,
+                                                   .origin = WGPU_ORIGIN_3D_INIT,
+                                               },
+                                               &(WGPUTexelCopyTextureInfo){
+                                                   .mipLevel = i,
+                                                   .texture = texture->texture,
+                                                   .aspect = texture->aspect,
+                                                   .origin = WGPU_ORIGIN_3D_INIT,
+                                               },
+                                               &(WGPUExtent3D){
+                                                   .width = currentSizeX,
+                                                   .height = currentSizeY,
+                                                   .depthOrArrayLayers = 1,
+                                               });
+        currentSizeX /= 2;
+        currentSizeY /= 2;
+    }
 }
 
 static SDL_GPUBuffer *WEBGPU_CreateBuffer(
@@ -4874,10 +5169,6 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
         return NULL;
     }
 
-    pipeline->threadCountX = createInfo->threadcount_x;
-    pipeline->threadCountY = createInfo->threadcount_y;
-    pipeline->threadCountZ = createInfo->threadcount_z;
-
     pipeline->header.numSamplers = pipeline->bindGroupLayouts->numSamplers;
     pipeline->header.numUniformBuffers = pipeline->bindGroupLayouts->numUniformBuffers;
     pipeline->header.numReadonlyStorageTextures = pipeline->bindGroupLayouts->numReadOnlyStorageTextures;
@@ -5359,10 +5650,6 @@ static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const
 }
 
 // -- UNIMPLEMENTED FUNCTIONS --
-static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *texture)
-{
-    SDL_assert_release(!"GenerateMipmaps is unimplemented!");
-}
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
 static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
 
@@ -5609,6 +5896,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
     renderer->bindGroups = SDL_CreateProperties();
+    renderer->mipmapPipelines = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
 
     if (!SDL_CopyProperties(props, renderer->props)) {
