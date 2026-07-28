@@ -1562,11 +1562,11 @@ void SDL_ReleaseGPUTexture(
     SDL_GPUDevice *device,
     SDL_GPUTexture *texture)
 {
-    if(texture == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(texture == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTexture(
         device->driverData,
@@ -1581,8 +1581,6 @@ void SDL_ReleaseGPUSampler(
         return;
     }
 
-    CHECK_DEVICE_MAGIC(device, );
-
     device->ReleaseSampler(
         device->driverData,
         sampler);
@@ -1592,11 +1590,11 @@ void SDL_ReleaseGPUBuffer(
     SDL_GPUDevice *device,
     SDL_GPUBuffer *buffer)
 {
-    if(buffer == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseBuffer(
         device->driverData,
@@ -1607,11 +1605,11 @@ void SDL_ReleaseGPUTransferBuffer(
     SDL_GPUDevice *device,
     SDL_GPUTransferBuffer *transfer_buffer)
 {
-    if(transfer_buffer == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTransferBuffer(
         device->driverData,
@@ -1622,11 +1620,11 @@ void SDL_ReleaseGPUShader(
     SDL_GPUDevice *device,
     SDL_GPUShader *shader)
 {
-    if(shader == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseShader(
         device->driverData,
@@ -1637,11 +1635,11 @@ void SDL_ReleaseGPUComputePipeline(
     SDL_GPUDevice *device,
     SDL_GPUComputePipeline *compute_pipeline)
 {
-    if(compute_pipeline == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseComputePipeline(
         device->driverData,
@@ -1652,11 +1650,11 @@ void SDL_ReleaseGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     SDL_GPUGraphicsPipeline *graphics_pipeline)
 {
-    if(graphics_pipeline == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseGraphicsPipeline(
         device->driverData,
@@ -3517,11 +3515,11 @@ void SDL_ReleaseGPUFence(
     SDL_GPUDevice *device,
     SDL_GPUFence *fence)
 {
-    if(fence == NULL) {
+    CHECK_DEVICE_MAGIC(device, );
+
+    CHECK_PARAM(sampler == NULL) {
         return;
     }
-
-    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseFence(
         device->driverData,

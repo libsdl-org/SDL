@@ -68,8 +68,8 @@
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
-#include "pointer-gestures-unstable-v1-client-protocol.h"
 #include "pointer-warp-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
 #include "single-pixel-buffer-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
@@ -599,7 +599,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     SDL_VideoDevice *device;
     SDL_VideoData *data;
     struct wl_display *display = SDL_GetPointerProperty(SDL_GetGlobalProperties(),
-                                                SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
+                                                 SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER, NULL);
     bool display_is_external = !!display;
 
     // Are we trying to connect to, or are currently in, a Wayland session?

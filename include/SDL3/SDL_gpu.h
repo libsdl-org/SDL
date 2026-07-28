@@ -679,7 +679,8 @@ typedef enum SDL_GPUIndexElementSize
  * a format is supported before using it. However, there are a few guaranteed
  * formats.
  *
- * FIXME: Check universal support for 32-bit component formats
+ * FIXME: Check universal support for 32-bit component format FIXME: Check
+ * universal support for SIMULTANEOUS_READ_WRITE
  *
  * For SAMPLER usage, the following formats are universally supported:
  *
@@ -2403,6 +2404,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
+
 #define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
@@ -2479,9 +2481,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * meant to be proper names.
  *
  * \param index the index of a GPU driver.
- * \returns the name of the GPU driver with the given **index** or NULL when
- *          the index is out of bounds; call SDL_GetError() for more
- *          information.
+ * \returns the name of the GPU driver with the given **index**.
  *
  * \since This function is available since SDL 3.2.0.
  *

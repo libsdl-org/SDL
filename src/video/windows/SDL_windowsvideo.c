@@ -25,10 +25,10 @@
 #ifdef SDL_VIDEO_VULKAN
 #include "../SDL_vulkan_internal.h"
 #endif
-#include "../../SDL_hints_c.h"
-#include "../../core/windows/SDL_hid.h"
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../SDL_hints_c.h"
+#include "../../core/windows/SDL_hid.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
