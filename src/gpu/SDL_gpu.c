@@ -1592,9 +1592,7 @@ void SDL_ReleaseGPUBuffer(
     SDL_GPUDevice *device,
     SDL_GPUBuffer *buffer)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(buffer == NULL) {
         return;
     }
 
@@ -1609,9 +1607,7 @@ void SDL_ReleaseGPUTransferBuffer(
     SDL_GPUDevice *device,
     SDL_GPUTransferBuffer *transfer_buffer)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(transfer_buffer == NULL) {
         return;
     }
 
@@ -1626,9 +1622,7 @@ void SDL_ReleaseGPUShader(
     SDL_GPUDevice *device,
     SDL_GPUShader *shader)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(shader == NULL) {
         return;
     }
 
@@ -1643,9 +1637,7 @@ void SDL_ReleaseGPUComputePipeline(
     SDL_GPUDevice *device,
     SDL_GPUComputePipeline *compute_pipeline)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(compute_pipeline == NULL) {
         return;
     }
 
@@ -1660,9 +1652,7 @@ void SDL_ReleaseGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     SDL_GPUGraphicsPipeline *graphics_pipeline)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(graphics_pipeline == NULL) {
         return;
     }
 
@@ -3527,9 +3517,7 @@ void SDL_ReleaseGPUFence(
     SDL_GPUDevice *device,
     SDL_GPUFence *fence)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(sampler == NULL) {
+    if(fence == NULL) {
         return;
     }
 
