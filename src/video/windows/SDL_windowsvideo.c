@@ -30,10 +30,10 @@
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
+#include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
 #include "SDL_windowsmessagebox.h"
 #include "SDL_windowsrawinput.h"
-#include "SDL_windowsvideo.h"
 #include "SDL_windowsvulkan.h"
 #include "SDL_windowswgpu.h"
 
@@ -73,7 +73,7 @@ typedef enum THUMBBUTTONFLAGS
 } THUMBBUTTONFLAGS;
 
 #if defined(_MSC_VER)
-#pragma warning(disable : 4103)
+#pragma warning(disable: 4103)
 #endif
 #pragma pack(push, 8)
 typedef struct THUMBBUTTON
@@ -96,27 +96,27 @@ typedef struct _IMAGELIST *HIMAGELIST;
 
 typedef struct ITaskbarList3Vtbl
 {
-    HRESULT(__stdcall *QueryInterface)(ITaskbarList3 *This, REFIID riid, void **ppvObject);
-    ULONG(__stdcall *AddRef)(ITaskbarList3 *This);
-    ULONG(__stdcall *Release)(ITaskbarList3 *This);
-    HRESULT(__stdcall *HrInit)(ITaskbarList3 *This);
-    HRESULT(__stdcall *AddTab)(ITaskbarList3 *This, HWND hwnd);
-    HRESULT(__stdcall *DeleteTab)(ITaskbarList3 *This, HWND hwnd);
-    HRESULT(__stdcall *ActivateTab)(ITaskbarList3 *This, HWND hwnd);
-    HRESULT(__stdcall *SetActiveAlt)(ITaskbarList3 *This, HWND hwnd);
-    HRESULT(__stdcall *MarkFullscreenWindow)(ITaskbarList3 *This, HWND hwnd, BOOL fFullscreen);
-    HRESULT(__stdcall *SetProgressValue)(ITaskbarList3 *This, HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal);
-    HRESULT(__stdcall *SetProgressState)(ITaskbarList3 *This, HWND hwnd, TBPFLAG tbpFlags);
-    HRESULT(__stdcall *RegisterTab)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI);
-    HRESULT(__stdcall *UnregisterTab)(ITaskbarList3 *This, HWND hwndTab);
-    HRESULT(__stdcall *SetTabOrder)(ITaskbarList3 *This, HWND hwndTab, HWND hwndInsertBefore);
-    HRESULT(__stdcall *SetTabActive)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI, DWORD dwReserved);
-    HRESULT(__stdcall *ThumbBarAddButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
-    HRESULT(__stdcall *ThumbBarUpdateButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
-    HRESULT(__stdcall *ThumbBarSetImageList)(ITaskbarList3 *This, HWND hwnd, HIMAGELIST himl);
-    HRESULT(__stdcall *SetOverlayIcon)(ITaskbarList3 *This, HWND hwnd, HICON hIcon, LPCWSTR pszDescription);
-    HRESULT(__stdcall *SetThumbnailTooltip)(ITaskbarList3 *This, HWND hwnd, LPCWSTR pszTip);
-    HRESULT(__stdcall *SetThumbnailClip)(ITaskbarList3 *This, HWND hwnd, RECT *prcClip);
+    HRESULT (__stdcall *QueryInterface)(ITaskbarList3 *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(ITaskbarList3 *This);
+    ULONG (__stdcall *Release)(ITaskbarList3 *This);
+    HRESULT (__stdcall *HrInit)(ITaskbarList3 *This);
+    HRESULT (__stdcall *AddTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *DeleteTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *ActivateTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *SetActiveAlt)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *MarkFullscreenWindow)(ITaskbarList3 *This, HWND hwnd, BOOL fFullscreen);
+    HRESULT (__stdcall *SetProgressValue)(ITaskbarList3 *This, HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal);
+    HRESULT (__stdcall *SetProgressState)(ITaskbarList3 *This, HWND hwnd, TBPFLAG tbpFlags);
+    HRESULT (__stdcall *RegisterTab)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI);
+    HRESULT (__stdcall *UnregisterTab)(ITaskbarList3 *This, HWND hwndTab);
+    HRESULT (__stdcall *SetTabOrder)(ITaskbarList3 *This, HWND hwndTab, HWND hwndInsertBefore);
+    HRESULT (__stdcall *SetTabActive)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI, DWORD dwReserved);
+    HRESULT (__stdcall *ThumbBarAddButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
+    HRESULT (__stdcall *ThumbBarUpdateButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
+    HRESULT (__stdcall *ThumbBarSetImageList)(ITaskbarList3 *This, HWND hwnd, HIMAGELIST himl);
+    HRESULT (__stdcall *SetOverlayIcon)(ITaskbarList3 *This, HWND hwnd, HICON hIcon, LPCWSTR pszDescription);
+    HRESULT (__stdcall *SetThumbnailTooltip)(ITaskbarList3 *This, HWND hwnd, LPCWSTR pszTip);
+    HRESULT (__stdcall *SetThumbnailClip)(ITaskbarList3 *This, HWND hwnd, RECT *prcClip);
 } ITaskbarList3Vtbl;
 
 struct ITaskbarList3
@@ -454,11 +454,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 
 VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_CreateDevice,
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     WIN_ShowMessageBox,
-#else
+    #else
     NULL,
-#endif
+    #endif
     false
 };
 
@@ -821,11 +821,11 @@ bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outp
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput *pDXGIOutput;
 
-    CHECK_PARAM (!adapterIndex) {
+    CHECK_PARAM(!adapterIndex) {
         return SDL_InvalidParamError("adapterIndex");
     }
 
-    CHECK_PARAM (!outputIndex) {
+    CHECK_PARAM(!outputIndex) {
         return SDL_InvalidParamError("outputIndex");
     }
 

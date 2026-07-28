@@ -28,7 +28,7 @@
  * -flibit
  */
 #define CHECK_DEVICE_MAGIC(device, retval)  \
-    CHECK_PARAM (device == NULL) {          \
+    CHECK_PARAM(device == NULL) {           \
         SDL_SetError("Invalid GPU device"); \
         return retval;                      \
     }
@@ -51,17 +51,17 @@
         return NULL;                                                \
     }
 
-#define CHECK_ANY_PASS_IN_PROGRESS(msg, retval)                                    \
-    if (                                                                           \
+#define CHECK_ANY_PASS_IN_PROGRESS(msg, retval)                                 \
+    if (                                                                        \
         ((CommandBufferCommonHeader *)command_buffer)->render_pass.in_progress ||  \
         ((CommandBufferCommonHeader *)command_buffer)->compute_pass.in_progress || \
         ((CommandBufferCommonHeader *)command_buffer)->copy_pass.in_progress) {    \
-        SDL_assert_release(!msg);                                                  \
-        return retval;                                                             \
+        SDL_assert_release(!msg);                                               \
+        return retval;                                                          \
     }
 
 #define CHECK_RENDERPASS                                     \
-    if (!((RenderPass *)render_pass)->in_progress) {         \
+    if (!((RenderPass *)render_pass)->in_progress) {                 \
         SDL_assert_release(!"Render pass not in progress!"); \
         return;                                              \
     }
@@ -70,20 +70,20 @@
 // The below validation is too aggressive, since there are advanced situations
 // where this is legal. This is being temporarily disabled for further review.
 // See: https://github.com/libsdl-org/SDL/issues/13871
-#define CHECK_SAMPLER_TEXTURES                                                                                                         \
-    RenderPass *rp = (RenderPass *)render_pass;                                                                                        \
-    for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {                         \
-        for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                     \
-            if (rp->color_targets[color_target_index] == texture_sampler_bindings[texture_sampler_index].texture) {                    \
-                SDL_assert_release(!"Texture cannot be simultaneously bound as a color target and a sampler!");                        \
-            }                                                                                                                          \
-        }                                                                                                                              \
-    }                                                                                                                                  \
-                                                                                                                                       \
-    for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                         \
-        if (rp->depth_stencil_target != NULL && rp->depth_stencil_target == texture_sampler_bindings[texture_sampler_index].texture) { \
-            SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a sampler!");                    \
-        }                                                                                                                              \
+#define CHECK_SAMPLER_TEXTURES                                                                                                          \
+    RenderPass *rp = (RenderPass *)render_pass;                                                                                         \
+    for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {                          \
+        for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                      \
+            if (rp->color_targets[color_target_index] == texture_sampler_bindings[texture_sampler_index].texture) {                     \
+                SDL_assert_release(!"Texture cannot be simultaneously bound as a color target and a sampler!");                         \
+            }                                                                                                                           \
+        }                                                                                                                               \
+    }                                                                                                                                   \
+                                                                                                                                        \
+    for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                          \
+        if (rp->depth_stencil_target != NULL && rp->depth_stencil_target == texture_sampler_bindings[texture_sampler_index].texture) {  \
+            SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a sampler!");                     \
+        }                                                                                                                               \
     }
 
 #define CHECK_STORAGE_TEXTURES                                                                                              \
@@ -106,76 +106,76 @@
 #define CHECK_STORAGE_TEXTURES
 #endif
 
-#define CHECK_GRAPHICS_PIPELINE_BOUND                        \
-    if (!((RenderPass *)render_pass)->graphics_pipeline) {   \
-        SDL_assert_release(!"Graphics pipeline not bound!"); \
-        return;                                              \
+#define CHECK_GRAPHICS_PIPELINE_BOUND                                                   \
+    if (!((RenderPass *)render_pass)->graphics_pipeline) { \
+        SDL_assert_release(!"Graphics pipeline not bound!");                            \
+        return;                                                                         \
     }
 
 #define CHECK_COMPUTEPASS                                     \
-    if (!((Pass *)compute_pass)->in_progress) {               \
+    if (!((Pass *)compute_pass)->in_progress) {                 \
         SDL_assert_release(!"Compute pass not in progress!"); \
         return;                                               \
     }
 
-#define CHECK_COMPUTE_PIPELINE_BOUND                        \
+#define CHECK_COMPUTE_PIPELINE_BOUND                                                        \
     if (!((ComputePass *)compute_pass)->compute_pipeline) { \
-        SDL_assert_release(!"Compute pipeline not bound!"); \
-        return;                                             \
+        SDL_assert_release(!"Compute pipeline not bound!");                                 \
+        return;                                                                             \
     }
 
 #define CHECK_COPYPASS                                     \
-    if (!((Pass *)copy_pass)->in_progress) {               \
+    if (!((Pass *)copy_pass)->in_progress) {                 \
         SDL_assert_release(!"Copy pass not in progress!"); \
         return;                                            \
     }
 
-#define CHECK_TEXTUREFORMAT_ENUM_INVALID(enumval, retval)                                              \
-    if (enumval <= SDL_GPU_TEXTUREFORMAT_INVALID || enumval >= SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid texture format enum!");                                           \
-        return retval;                                                                                 \
+#define CHECK_TEXTUREFORMAT_ENUM_INVALID(enumval, retval)     \
+    if (enumval <= SDL_GPU_TEXTUREFORMAT_INVALID || enumval >= SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE) {               \
+        SDL_assert_release(!"Invalid texture format enum!"); \
+        return retval;                                       \
     }
 
-#define CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(enumval, retval)                                                    \
-    if (enumval <= SDL_GPU_VERTEXELEMENTFORMAT_INVALID || enumval >= SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid vertex format enum!");                                                        \
-        return retval;                                                                                             \
+#define CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(enumval, retval)       \
+    if (enumval <= SDL_GPU_VERTEXELEMENTFORMAT_INVALID || enumval >= SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE) {  \
+        SDL_assert_release(!"Invalid vertex format enum!");          \
+        return retval;                                               \
     }
 
-#define CHECK_COMPAREOP_ENUM_INVALID(enumval, retval)                                          \
+#define CHECK_COMPAREOP_ENUM_INVALID(enumval, retval)                              \
     if (enumval <= SDL_GPU_COMPAREOP_INVALID || enumval >= SDL_GPU_COMPAREOP_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid compare op enum!");                                       \
-        return retval;                                                                         \
+        SDL_assert_release(!"Invalid compare op enum!");                          \
+        return retval;                                                            \
     }
 
-#define CHECK_STENCILOP_ENUM_INVALID(enumval, retval)                                          \
+#define CHECK_STENCILOP_ENUM_INVALID(enumval, retval)                                \
     if (enumval <= SDL_GPU_STENCILOP_INVALID || enumval >= SDL_GPU_STENCILOP_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid stencil op enum!");                                       \
-        return retval;                                                                         \
+        SDL_assert_release(!"Invalid stencil op enum!");                            \
+        return retval;                                                              \
     }
 
-#define CHECK_BLENDOP_ENUM_INVALID(enumval, retval)                                        \
+#define CHECK_BLENDOP_ENUM_INVALID(enumval, retval)                              \
     if (enumval <= SDL_GPU_BLENDOP_INVALID || enumval >= SDL_GPU_BLENDOP_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid blend op enum!");                                     \
-        return retval;                                                                     \
+        SDL_assert_release(!"Invalid blend op enum!");                          \
+        return retval;                                                          \
     }
 
-#define CHECK_BLENDFACTOR_ENUM_INVALID(enumval, retval)                                            \
+#define CHECK_BLENDFACTOR_ENUM_INVALID(enumval, retval)                                  \
     if (enumval <= SDL_GPU_BLENDFACTOR_INVALID || enumval >= SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid blend factor enum!");                                         \
-        return retval;                                                                             \
+        SDL_assert_release(!"Invalid blend factor enum!");                              \
+        return retval;                                                                  \
     }
 
-#define CHECK_SWAPCHAINCOMPOSITION_ENUM_INVALID(enumval, retval)                 \
-    if (enumval < 0 || enumval >= SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid swapchain composition enum!");              \
-        return retval;                                                           \
+#define CHECK_SWAPCHAINCOMPOSITION_ENUM_INVALID(enumval, retval)    \
+    if (enumval < 0 || enumval >= SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE) {              \
+        SDL_assert_release(!"Invalid swapchain composition enum!"); \
+        return retval;                                              \
     }
 
-#define CHECK_PRESENTMODE_ENUM_INVALID(enumval, retval)                 \
-    if (enumval < 0 || enumval >= SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE) { \
-        SDL_assert_release(!"Invalid present mode enum!");              \
-        return retval;                                                  \
+#define CHECK_PRESENTMODE_ENUM_INVALID(enumval, retval)    \
+    if (enumval < 0 || enumval >= SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE) {              \
+        SDL_assert_release(!"Invalid present mode enum!"); \
+        return retval;                                     \
     }
 
 #define COMMAND_BUFFER_DEVICE \
@@ -384,7 +384,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
         blit_pipeline_create_info.fragment_shader = blit_from_cube_shader;
     } else if (source_texture_type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
         blit_pipeline_create_info.fragment_shader = blit_from_cube_array_shader;
-    } else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+    }  else if (source_texture_type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_array_shader;
     } else if (source_texture_type == SDL_GPU_TEXTURETYPE_3D) {
         blit_pipeline_create_info.fragment_shader = blit_from_3d_shader;
@@ -604,7 +604,7 @@ static void SDL_GPU_CheckComputeBindings(SDL_GPUComputePass *compute_pass)
 // Driver Functions
 
 #ifndef SDL_GPU_DISABLED
-static const SDL_GPUBootstrap *SDL_GPUSelectBackend(SDL_PropertiesID props)
+static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
 {
     Uint32 i;
     const char *gpudriver;
@@ -786,9 +786,9 @@ int SDL_GetNumGPUDrivers(void)
 #endif
 }
 
-const char *SDL_GetGPUDriver(int index)
+const char * SDL_GetGPUDriver(int index)
 {
-    CHECK_PARAM (index < 0 || index >= SDL_GetNumGPUDrivers()) {
+    CHECK_PARAM(index < 0 || index >= SDL_GetNumGPUDrivers()) {
         SDL_InvalidParamError("index");
         return NULL;
     }
@@ -799,7 +799,7 @@ const char *SDL_GetGPUDriver(int index)
 #endif
 }
 
-const char *SDL_GetGPUDeviceDriver(SDL_GPUDevice *device)
+const char * SDL_GetGPUDeviceDriver(SDL_GPUDevice *device)
 {
     CHECK_DEVICE_MAGIC(device, NULL);
     return device->backend;
@@ -1054,7 +1054,7 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (graphicsPipelineCreateInfo == NULL) {
+    CHECK_PARAM(graphicsPipelineCreateInfo == NULL) {
         SDL_InvalidParamError("graphicsPipelineCreateInfo");
         return NULL;
     }
@@ -1190,7 +1190,7 @@ SDL_GPUSampler *SDL_CreateGPUSampler(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
@@ -1214,7 +1214,7 @@ SDL_GPUShader *SDL_CreateGPUShader(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
@@ -1261,7 +1261,7 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
@@ -1283,7 +1283,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
             SDL_assert_release(!"For any texture: num_levels must be >= 1");
             failed = true;
         }
-        if (createinfo->type == SDL_GPU_TEXTURETYPE_2D && createinfo->layer_count_or_depth != 1) {
+        if (createinfo->type == SDL_GPU_TEXTURETYPE_2D && createinfo->layer_count_or_depth != 1)
+        {
             SDL_assert_release(!"2D textures must have a layer count of 1");
             failed = true;
         }
@@ -1404,7 +1405,7 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
@@ -1430,9 +1431,16 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
+    }
+
+    if (device->debug_mode) {
+        if (createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD &&
+            createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD) {
+            SDL_assert_release(!"Invalid transfer buffer usage!");
+        }
     }
 
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING, NULL);
@@ -1453,11 +1461,11 @@ void SDL_SetGPUBufferName(
 {
     CHECK_DEVICE_MAGIC(device, );
 
-    CHECK_PARAM (buffer == NULL) {
+    CHECK_PARAM(buffer == NULL) {
         SDL_InvalidParamError("buffer");
         return;
     }
-    CHECK_PARAM (text == NULL) {
+    CHECK_PARAM(text == NULL) {
         SDL_InvalidParamError("text");
     }
 
@@ -1474,11 +1482,11 @@ void SDL_SetGPUTextureName(
 {
     CHECK_DEVICE_MAGIC(device, );
 
-    CHECK_PARAM (texture == NULL) {
+    CHECK_PARAM(texture == NULL) {
         SDL_InvalidParamError("texture");
         return;
     }
-    CHECK_PARAM (text == NULL) {
+    CHECK_PARAM(text == NULL) {
         SDL_InvalidParamError("text");
     }
 
@@ -1492,11 +1500,11 @@ void SDL_InsertGPUDebugLabel(
     SDL_GPUCommandBuffer *command_buffer,
     const char *text)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (text == NULL) {
+    CHECK_PARAM(text == NULL) {
         SDL_InvalidParamError("text");
         return;
     }
@@ -1514,11 +1522,11 @@ void SDL_PushGPUDebugGroup(
     SDL_GPUCommandBuffer *command_buffer,
     const char *name)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (name == NULL) {
+    CHECK_PARAM(name == NULL) {
         SDL_InvalidParamError("name");
         return;
     }
@@ -1535,7 +1543,7 @@ void SDL_PushGPUDebugGroup(
 void SDL_PopGPUDebugGroup(
     SDL_GPUCommandBuffer *command_buffer)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
@@ -1554,11 +1562,11 @@ void SDL_ReleaseGPUTexture(
     SDL_GPUDevice *device,
     SDL_GPUTexture *texture)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (texture == NULL) {
+    if(texture == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTexture(
         device->driverData,
@@ -1569,11 +1577,11 @@ void SDL_ReleaseGPUSampler(
     SDL_GPUDevice *device,
     SDL_GPUSampler *sampler)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (sampler == NULL) {
+    if(sampler == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseSampler(
         device->driverData,
@@ -1584,11 +1592,11 @@ void SDL_ReleaseGPUBuffer(
     SDL_GPUDevice *device,
     SDL_GPUBuffer *buffer)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (buffer == NULL) {
+    if(buffer == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseBuffer(
         device->driverData,
@@ -1599,11 +1607,11 @@ void SDL_ReleaseGPUTransferBuffer(
     SDL_GPUDevice *device,
     SDL_GPUTransferBuffer *transfer_buffer)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (transfer_buffer == NULL) {
+    if(transfer_buffer == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTransferBuffer(
         device->driverData,
@@ -1614,11 +1622,11 @@ void SDL_ReleaseGPUShader(
     SDL_GPUDevice *device,
     SDL_GPUShader *shader)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (shader == NULL) {
+    if(shader == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseShader(
         device->driverData,
@@ -1629,11 +1637,11 @@ void SDL_ReleaseGPUComputePipeline(
     SDL_GPUDevice *device,
     SDL_GPUComputePipeline *compute_pipeline)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (compute_pipeline == NULL) {
+    if(compute_pipeline == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseComputePipeline(
         device->driverData,
@@ -1644,11 +1652,11 @@ void SDL_ReleaseGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     SDL_GPUGraphicsPipeline *graphics_pipeline)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (graphics_pipeline == NULL) {
+    if(graphics_pipeline == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseGraphicsPipeline(
         device->driverData,
@@ -1711,15 +1719,15 @@ void SDL_PushGPUVertexUniformData(
     const void *data,
     Uint32 length)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (data == NULL) {
+    CHECK_PARAM(data == NULL) {
         SDL_InvalidParamError("data");
         return;
     }
-    CHECK_PARAM (slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
         SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
         return;
     }
@@ -1741,15 +1749,15 @@ void SDL_PushGPUFragmentUniformData(
     const void *data,
     Uint32 length)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (data == NULL) {
+    CHECK_PARAM(data == NULL) {
         SDL_InvalidParamError("data");
         return;
     }
-    CHECK_PARAM (slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
         SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
         return;
     }
@@ -1771,15 +1779,15 @@ void SDL_PushGPUComputeUniformData(
     const void *data,
     Uint32 length)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (data == NULL) {
+    CHECK_PARAM(data == NULL) {
         SDL_InvalidParamError("data");
         return;
     }
-    CHECK_PARAM (slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(slot_index >= MAX_UNIFORM_BUFFERS_PER_STAGE) {
         SDL_SetError("slot_index exceeds MAX_UNIFORM_BUFFERS_PER_STAGE");
         return;
     }
@@ -1805,16 +1813,16 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return NULL;
     }
-    CHECK_PARAM (color_target_infos == NULL && num_color_targets > 0) {
+    CHECK_PARAM(color_target_infos == NULL && num_color_targets > 0) {
         SDL_InvalidParamError("color_target_infos");
         return NULL;
     }
 
-    CHECK_PARAM (num_color_targets > MAX_COLOR_TARGET_BINDINGS) {
+    CHECK_PARAM(num_color_targets > MAX_COLOR_TARGET_BINDINGS) {
         SDL_SetError("num_color_targets exceeds MAX_COLOR_TARGET_BINDINGS");
         return NULL;
     }
@@ -1926,11 +1934,11 @@ void SDL_BindGPUGraphicsPipeline(
     SDL_GPURenderPass *render_pass,
     SDL_GPUGraphicsPipeline *graphics_pipeline)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (graphics_pipeline == NULL) {
+    CHECK_PARAM(graphics_pipeline == NULL) {
         SDL_InvalidParamError("graphics_pipeline");
         return;
     }
@@ -1938,6 +1946,7 @@ void SDL_BindGPUGraphicsPipeline(
     RENDERPASS_DEVICE->BindGraphicsPipeline(
         RENDERPASS_COMMAND_BUFFER,
         graphics_pipeline);
+
 
     if (RENDERPASS_DEVICE->debug_mode) {
         RENDERPASS_BOUND_PIPELINE = graphics_pipeline;
@@ -1948,11 +1957,11 @@ void SDL_SetGPUViewport(
     SDL_GPURenderPass *render_pass,
     const SDL_GPUViewport *viewport)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (viewport == NULL) {
+    CHECK_PARAM(viewport == NULL) {
         SDL_InvalidParamError("viewport");
         return;
     }
@@ -1970,11 +1979,11 @@ void SDL_SetGPUScissor(
     SDL_GPURenderPass *render_pass,
     const SDL_Rect *scissor)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (scissor == NULL) {
+    CHECK_PARAM(scissor == NULL) {
         SDL_InvalidParamError("scissor");
         return;
     }
@@ -1992,7 +2001,7 @@ void SDL_SetGPUBlendConstants(
     SDL_GPURenderPass *render_pass,
     SDL_FColor blend_constants)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2010,7 +2019,7 @@ void SDL_SetGPUStencilReference(
     SDL_GPURenderPass *render_pass,
     Uint8 reference)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2030,7 +2039,7 @@ void SDL_BindGPUVertexBuffers(
     const SDL_GPUBufferBinding *bindings,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2055,7 +2064,7 @@ void SDL_BindGPUIndexBuffer(
     const SDL_GPUBufferBinding *binding,
     SDL_GPUIndexElementSize index_element_size)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2080,15 +2089,15 @@ void SDL_BindGPUVertexSamplers(
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (texture_sampler_bindings == NULL && num_bindings > 0) {
+    CHECK_PARAM(texture_sampler_bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
         return;
     }
@@ -2096,7 +2105,8 @@ void SDL_BindGPUVertexSamplers(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
 
-        if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation) {
+        if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
+        {
             CHECK_SAMPLER_TEXTURES
         }
 
@@ -2118,15 +2128,15 @@ void SDL_BindGPUVertexStorageTextures(
     SDL_GPUTexture *const *storage_textures,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (storage_textures == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_textures == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_textures");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
         return;
     }
@@ -2153,15 +2163,15 @@ void SDL_BindGPUVertexStorageBuffers(
     SDL_GPUBuffer *const *storage_buffers,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (storage_buffers == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
@@ -2187,15 +2197,15 @@ void SDL_BindGPUFragmentSamplers(
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (texture_sampler_bindings == NULL && num_bindings > 0) {
+    CHECK_PARAM(texture_sampler_bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
         return;
     }
@@ -2225,15 +2235,15 @@ void SDL_BindGPUFragmentStorageTextures(
     SDL_GPUTexture *const *storage_textures,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (storage_textures == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_textures == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_textures");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
         return;
     }
@@ -2260,15 +2270,15 @@ void SDL_BindGPUFragmentStorageBuffers(
     SDL_GPUBuffer *const *storage_buffers,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (storage_buffers == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
@@ -2296,7 +2306,7 @@ void SDL_DrawGPUIndexedPrimitives(
     Sint32 vertex_offset,
     Uint32 first_instance)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2323,7 +2333,7 @@ void SDL_DrawGPUPrimitives(
     Uint32 first_vertex,
     Uint32 first_instance)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2348,11 +2358,11 @@ void SDL_DrawGPUPrimitivesIndirect(
     Uint32 offset,
     Uint32 draw_count)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (buffer == NULL) {
+    CHECK_PARAM(buffer == NULL) {
         SDL_InvalidParamError("buffer");
         return;
     }
@@ -2376,11 +2386,11 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
     Uint32 offset,
     Uint32 draw_count)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
-    CHECK_PARAM (buffer == NULL) {
+    CHECK_PARAM(buffer == NULL) {
         SDL_InvalidParamError("buffer");
         return;
     }
@@ -2401,7 +2411,7 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
 void SDL_EndGPURenderPass(
     SDL_GPURenderPass *render_pass)
 {
-    CHECK_PARAM (render_pass == NULL) {
+    CHECK_PARAM(render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
@@ -2418,7 +2428,8 @@ void SDL_EndGPURenderPass(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         commandBufferCommonHeader->render_pass.in_progress = false;
-        for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
+        for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
+        {
             commandBufferCommonHeader->render_pass.color_targets[i] = NULL;
         }
         commandBufferCommonHeader->render_pass.num_color_targets = 0;
@@ -2444,23 +2455,23 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return NULL;
     }
-    CHECK_PARAM (storage_texture_bindings == NULL && num_storage_texture_bindings > 0) {
+    CHECK_PARAM(storage_texture_bindings == NULL && num_storage_texture_bindings > 0) {
         SDL_InvalidParamError("storage_texture_bindings");
         return NULL;
     }
-    CHECK_PARAM (storage_buffer_bindings == NULL && num_storage_buffer_bindings > 0) {
+    CHECK_PARAM(storage_buffer_bindings == NULL && num_storage_buffer_bindings > 0) {
         SDL_InvalidParamError("storage_buffer_bindings");
         return NULL;
     }
-    CHECK_PARAM (num_storage_texture_bindings > MAX_COMPUTE_WRITE_TEXTURES) {
+    CHECK_PARAM(num_storage_texture_bindings > MAX_COMPUTE_WRITE_TEXTURES) {
         SDL_InvalidParamError("num_storage_texture_bindings");
         return NULL;
     }
-    CHECK_PARAM (num_storage_buffer_bindings > MAX_COMPUTE_WRITE_BUFFERS) {
+    CHECK_PARAM(num_storage_buffer_bindings > MAX_COMPUTE_WRITE_BUFFERS) {
         SDL_InvalidParamError("num_storage_buffer_bindings");
         return NULL;
     }
@@ -2518,11 +2529,11 @@ void SDL_BindGPUComputePipeline(
     SDL_GPUComputePass *compute_pass,
     SDL_GPUComputePipeline *compute_pipeline)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
-    CHECK_PARAM (compute_pipeline == NULL) {
+    CHECK_PARAM(compute_pipeline == NULL) {
         SDL_InvalidParamError("compute_pipeline");
         return;
     }
@@ -2535,6 +2546,7 @@ void SDL_BindGPUComputePipeline(
         COMPUTEPASS_COMMAND_BUFFER,
         compute_pipeline);
 
+
     if (COMPUTEPASS_DEVICE->debug_mode) {
         COMPUTEPASS_BOUND_PIPELINE = compute_pipeline;
     }
@@ -2546,15 +2558,15 @@ void SDL_BindGPUComputeSamplers(
     const SDL_GPUTextureSamplerBinding *texture_sampler_bindings,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
-    CHECK_PARAM (texture_sampler_bindings == NULL && num_bindings > 0) {
+    CHECK_PARAM(texture_sampler_bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("texture_sampler_bindings");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_TEXTURE_SAMPLERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_TEXTURE_SAMPLERS_PER_STAGE");
         return;
     }
@@ -2580,15 +2592,15 @@ void SDL_BindGPUComputeStorageTextures(
     SDL_GPUTexture *const *storage_textures,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
-    CHECK_PARAM (storage_textures == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_textures == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_textures");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_TEXTURES_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_TEXTURES_PER_STAGE");
         return;
     }
@@ -2614,15 +2626,15 @@ void SDL_BindGPUComputeStorageBuffers(
     SDL_GPUBuffer *const *storage_buffers,
     Uint32 num_bindings)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
-    CHECK_PARAM (storage_buffers == NULL && num_bindings > 0) {
+    CHECK_PARAM(storage_buffers == NULL && num_bindings > 0) {
         SDL_InvalidParamError("storage_buffers");
         return;
     }
-    CHECK_PARAM (first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
+    CHECK_PARAM(first_slot + num_bindings > MAX_STORAGE_BUFFERS_PER_STAGE) {
         SDL_SetError("first_slot + num_bindings exceeds MAX_STORAGE_BUFFERS_PER_STAGE");
         return;
     }
@@ -2648,7 +2660,7 @@ void SDL_DispatchGPUCompute(
     Uint32 groupcount_y,
     Uint32 groupcount_z)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
@@ -2671,7 +2683,7 @@ void SDL_DispatchGPUComputeIndirect(
     SDL_GPUBuffer *buffer,
     Uint32 offset)
 {
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
@@ -2693,7 +2705,7 @@ void SDL_EndGPUComputePass(
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
 
-    CHECK_PARAM (compute_pass == NULL) {
+    CHECK_PARAM(compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
     }
@@ -2726,7 +2738,7 @@ void *SDL_MapGPUTransferBuffer(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    CHECK_PARAM (transfer_buffer == NULL) {
+    CHECK_PARAM(transfer_buffer == NULL) {
         SDL_InvalidParamError("transfer_buffer");
         return NULL;
     }
@@ -2743,7 +2755,7 @@ void SDL_UnmapGPUTransferBuffer(
 {
     CHECK_DEVICE_MAGIC(device, );
 
-    CHECK_PARAM (transfer_buffer == NULL) {
+    CHECK_PARAM(transfer_buffer == NULL) {
         SDL_InvalidParamError("transfer_buffer");
         return;
     }
@@ -2760,7 +2772,7 @@ SDL_GPUCopyPass *SDL_BeginGPUCopyPass(
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return NULL;
     }
@@ -2788,11 +2800,11 @@ void SDL_UploadToGPUTexture(
     const SDL_GPUTextureRegion *destination,
     bool cycle)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
@@ -2826,15 +2838,15 @@ void SDL_UploadToGPUBuffer(
     const SDL_GPUBufferRegion *destination,
     bool cycle)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
-    CHECK_PARAM (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -2867,15 +2879,15 @@ void SDL_CopyGPUTextureToTexture(
     Uint32 d,
     bool cycle)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
-    CHECK_PARAM (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -2916,15 +2928,15 @@ void SDL_CopyGPUBufferToBuffer(
     Uint32 size,
     bool cycle)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
-    CHECK_PARAM (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -2954,15 +2966,15 @@ void SDL_DownloadFromGPUTexture(
     const SDL_GPUTextureRegion *source,
     const SDL_GPUTextureTransferInfo *destination)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
-    CHECK_PARAM (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -2990,15 +3002,15 @@ void SDL_DownloadFromGPUBuffer(
     const SDL_GPUBufferRegion *source,
     const SDL_GPUTransferBufferLocation *destination)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
-    CHECK_PARAM (source == NULL) {
+    CHECK_PARAM(source == NULL) {
         SDL_InvalidParamError("source");
         return;
     }
-    CHECK_PARAM (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -3024,7 +3036,7 @@ void SDL_DownloadFromGPUBuffer(
 void SDL_EndGPUCopyPass(
     SDL_GPUCopyPass *copy_pass)
 {
-    CHECK_PARAM (copy_pass == NULL) {
+    CHECK_PARAM(copy_pass == NULL) {
         SDL_InvalidParamError("copy_pass");
         return;
     }
@@ -3045,11 +3057,11 @@ void SDL_GenerateMipmapsForGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
     SDL_GPUTexture *texture)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (texture == NULL) {
+    CHECK_PARAM(texture == NULL) {
         SDL_InvalidParamError("texture");
         return;
     }
@@ -3087,11 +3099,11 @@ void SDL_BlitGPUTexture(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUBlitInfo *info)
 {
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return;
     }
-    CHECK_PARAM (info == NULL) {
+    CHECK_PARAM(info == NULL) {
         SDL_InvalidParamError("info");
         return;
     }
@@ -3153,7 +3165,7 @@ bool SDL_WindowSupportsGPUSwapchainComposition(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         SDL_InvalidParamError("window");
         return false;
     }
@@ -3175,7 +3187,7 @@ bool SDL_WindowSupportsGPUPresentMode(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         SDL_InvalidParamError("window");
         return false;
     }
@@ -3196,7 +3208,7 @@ bool SDL_ClaimWindowForGPUDevice(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         return SDL_InvalidParamError("window");
     }
 
@@ -3215,7 +3227,7 @@ void SDL_ReleaseWindowFromGPUDevice(
 {
     CHECK_DEVICE_MAGIC(device, );
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         SDL_InvalidParamError("window");
         return;
     }
@@ -3233,7 +3245,7 @@ bool SDL_SetGPUSwapchainParameters(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         SDL_InvalidParamError("window");
         return false;
     }
@@ -3257,7 +3269,8 @@ bool SDL_SetGPUAllowedFramesInFlight(
     CHECK_DEVICE_MAGIC(device, false);
 
     if (device->debug_mode) {
-        if (allowed_frames_in_flight < 1 || allowed_frames_in_flight > 3) {
+        if (allowed_frames_in_flight < 1 || allowed_frames_in_flight > 3)
+        {
             SDL_COMPILE_TIME_ASSERT(max_frames_in_flight, MAX_FRAMES_IN_FLIGHT == 3);
             SDL_assert_release(!"allowed_frames_in_flight value must be between 1 and 3!");
         }
@@ -3275,7 +3288,7 @@ SDL_GPUTextureFormat SDL_GetGPUSwapchainTextureFormat(
 {
     CHECK_DEVICE_MAGIC(device, SDL_GPU_TEXTUREFORMAT_INVALID);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         SDL_InvalidParamError("window");
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
@@ -3294,13 +3307,13 @@ bool SDL_AcquireGPUSwapchainTexture(
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         return SDL_InvalidParamError("command_buffer");
     }
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         return SDL_InvalidParamError("window");
     }
-    CHECK_PARAM (swapchain_texture == NULL) {
+    CHECK_PARAM(swapchain_texture == NULL) {
         return SDL_InvalidParamError("swapchain_texture");
     }
 
@@ -3316,7 +3329,7 @@ bool SDL_AcquireGPUSwapchainTexture(
         swapchain_texture_width,
         swapchain_texture_height);
 
-    if (*swapchain_texture != NULL) {
+    if (*swapchain_texture != NULL){
         commandBufferHeader->swapchain_texture_acquired = true;
     }
 
@@ -3329,7 +3342,7 @@ bool SDL_WaitForGPUSwapchain(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         return SDL_InvalidParamError("window");
     }
 
@@ -3347,13 +3360,13 @@ bool SDL_WaitAndAcquireGPUSwapchainTexture(
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         return SDL_InvalidParamError("command_buffer");
     }
-    CHECK_PARAM (window == NULL) {
+    CHECK_PARAM(window == NULL) {
         return SDL_InvalidParamError("window");
     }
-    CHECK_PARAM (swapchain_texture == NULL) {
+    CHECK_PARAM(swapchain_texture == NULL) {
         return SDL_InvalidParamError("swapchain_texture");
     }
 
@@ -3369,7 +3382,7 @@ bool SDL_WaitAndAcquireGPUSwapchainTexture(
         swapchain_texture_width,
         swapchain_texture_height);
 
-    if (*swapchain_texture != NULL) {
+    if (*swapchain_texture != NULL){
         commandBufferHeader->swapchain_texture_acquired = true;
     }
 
@@ -3381,7 +3394,7 @@ bool SDL_SubmitGPUCommandBuffer(
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return false;
     }
@@ -3408,7 +3421,7 @@ SDL_GPUFence *SDL_SubmitGPUCommandBufferAndAcquireFence(
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return NULL;
     }
@@ -3435,7 +3448,7 @@ bool SDL_CancelGPUCommandBuffer(
 {
     CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
-    CHECK_PARAM (command_buffer == NULL) {
+    CHECK_PARAM(command_buffer == NULL) {
         SDL_InvalidParamError("command_buffer");
         return false;
     }
@@ -3472,7 +3485,7 @@ bool SDL_WaitForGPUFences(
         return true;
     }
 
-    CHECK_PARAM (fences == NULL) {
+    CHECK_PARAM(fences == NULL) {
         SDL_InvalidParamError("fences");
         return false;
     }
@@ -3490,7 +3503,7 @@ bool SDL_QueryGPUFence(
 {
     CHECK_DEVICE_MAGIC(device, false);
 
-    CHECK_PARAM (fence == NULL) {
+    CHECK_PARAM(fence == NULL) {
         SDL_InvalidParamError("fence");
         return false;
     }
@@ -3504,11 +3517,11 @@ void SDL_ReleaseGPUFence(
     SDL_GPUDevice *device,
     SDL_GPUFence *fence)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM (fence == NULL) {
+    if(fence == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseFence(
         device->driverData,
@@ -3602,7 +3615,7 @@ XrResult SDL_CreateGPUXRSession(
     return device->CreateXRSession(device->driverData, createinfo, session);
 }
 
-SDL_GPUTextureFormat *SDL_GetGPUXRSwapchainFormats(
+SDL_GPUTextureFormat* SDL_GetGPUXRSwapchainFormats(
     SDL_GPUDevice *device,
     XrSession session,
     int *num_formats)

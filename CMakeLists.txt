@@ -23,12 +23,12 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 if(SDL3_MAINPROJECT)
   get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if(is_multi_config)
-    # The first item in CMAKE_CONFIGURATION_TYPES is the default configuration
-    if(DEFINED CMAKE_CONFIGURATION_TYPES AND "RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
-      list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "RelWithDebInfo")
-      list(INSERT CMAKE_CONFIGURATION_TYPES 0 "RelWithDebInfo")
-      set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "CMake configuration types" FORCE)
-    endif()
+      # The first item in CMAKE_CONFIGURATION_TYPES is the default configuration
+      if(DEFINED CMAKE_CONFIGURATION_TYPES AND "RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
+        list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "RelWithDebInfo")
+        list(INSERT CMAKE_CONFIGURATION_TYPES 0 "RelWithDebInfo")
+        set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "CMake configuration types" FORCE)
+      endif()
   else()
     if(cmake_build_type_undefined)
       set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "CMake build type" FORCE)
@@ -582,10 +582,10 @@ check_linker_supports_version_file(HAVE_WL_VERSION_SCRIPT)
 if(HAVE_WL_VERSION_SCRIPT)
   sdl_shared_link_options("-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/src/dynapi/SDL_dynapi.sym")
 else()
-  # When building with tcc on Linux+glibc or Android, avoid emitting an error
-  # for lack of support of the version-script linker flag: the option will be
-  # silently ignored by the compiler and the build will still succeed.
-  if(((LINUX AND LIBC_IS_GLIBC) OR ANDROID) AND (NOT USE_TCC))
+   # When building with tcc on Linux+glibc or Android, avoid emitting an error
+   # for lack of support of the version-script linker flag: the option will be
+   # silently ignored by the compiler and the build will still succeed.
+   if(((LINUX AND LIBC_IS_GLIBC) OR ANDROID) AND (NOT USE_TCC))
     message(FATAL_ERROR "Linker does not support '-Wl,--version-script=xxx.sym'. This is required on the current host platform (${SDL_CMAKE_PLATFORM}).")
   endif()
 endif()
@@ -948,8 +948,8 @@ if(SDL_ASSEMBLY)
 
   if(SDL_ARMSVE2)
     cmake_push_check_state()
-    string(APPEND CMAKE_REQUIRED_FLAGS " -march=armv8-a+sve2")
-    check_arm_source_compiles([==[
+      string(APPEND CMAKE_REQUIRED_FLAGS " -march=armv8-a+sve2")
+      check_arm_source_compiles([==[
         #include <arm_sve.h>
         svuint32_t sve2_test(svuint32_t a, svuint32_t b) {
           return svadd_u32_x(svptrue_b32(), a, b);
@@ -958,13 +958,13 @@ if(SDL_ASSEMBLY)
           sve2_test(svdup_u32(0), svdup_u32(0));
           return 0;
         }]==] COMPILER_SUPPORTS_ARMSVE2)
-    if(COMPILER_SUPPORTS_ARMSVE2)
-      # IMPORTANT: As not all AArch64 processors support SVE2, we only
-      #            attach the following compilation option to SVE
-      #            dedicated source files.
-      set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
-      set(HAVE_ARMSVE2 TRUE)
-    endif()
+      if(COMPILER_SUPPORTS_ARMSVE2)
+        # IMPORTANT: As not all AArch64 processors support SVE2, we only
+        #            attach the following compilation option to SVE
+        #            dedicated source files.
+        set(SVE2_MARCH_FLAG "-march=armv8-a+sve2")
+        set(HAVE_ARMSVE2 TRUE)
+      endif()
     cmake_pop_check_state()
 
     if(HAVE_ARMSVE2)
@@ -1879,20 +1879,20 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
 
   if(SDL_AUDIO)
     if(NETBSD)
-      set(SDL_AUDIO_DRIVER_NETBSD 1)
-      sdl_glob_sources(
+        set(SDL_AUDIO_DRIVER_NETBSD 1)
+        sdl_glob_sources(
           "${SDL3_SOURCE_DIR}/src/audio/netbsd/*.c"
           "${SDL3_SOURCE_DIR}/src/audio/netbsd/*.h"
         )
-      set(HAVE_SDL_AUDIO TRUE)
+        set(HAVE_SDL_AUDIO TRUE)
     elseif(QNX AND (CMAKE_SYSTEM_VERSION VERSION_LESS "8.0.0"))
-      set(SDL_AUDIO_DRIVER_QNX 1)
-      sdl_glob_sources(
+        set(SDL_AUDIO_DRIVER_QNX 1)
+        sdl_glob_sources(
           "${SDL3_SOURCE_DIR}/src/audio/qnx/*.c"
           "${SDL3_SOURCE_DIR}/src/audio/qnx/*.h"
         )
-      sdl_link_dependency(asound LIBS asound)
-      set(HAVE_SDL_AUDIO TRUE)
+        sdl_link_dependency(asound LIBS asound)
+        set(HAVE_SDL_AUDIO TRUE)
     endif()
     CheckOSS()
     CheckALSA()
@@ -2279,7 +2279,7 @@ elseif(WINDOWS OR CYGWIN)
   if(SDL_DIRECTX)
     cmake_push_check_state()
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
-      set(USE_WINSDK_DIRECTX TRUE)
+        set(USE_WINSDK_DIRECTX TRUE)
     endif()
     if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
       if("$ENV{DXSDK_DIR}" STREQUAL "")

@@ -24,22 +24,22 @@
 
 #include <unistd.h> // For getpid() and readlink()
 
-#include "../../core/linux/SDL_progressbar.h"
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
 #include "SDL_x11framebuffer.h"
-#include "SDL_x11messagebox.h"
 #include "SDL_x11pen.h"
-#include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11video.h"
 #include "SDL_x11wgpu.h"
 #include "SDL_x11xfixes.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11messagebox.h"
+#include "SDL_x11shape.h"
 #include "SDL_x11xsync.h"
 #include "SDL_x11xtest.h"
 
@@ -82,7 +82,7 @@ static bool X11_IsWSL(void)
 {
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_GetPathInfo("/proc/sys/fs/binfmt_misc/WSLInterop", NULL) || SDL_GetPathInfo("/run/WSL", NULL)) { // if either of these exist, we're on WSL.
-        return true;
+         return true;
     }
 #endif
     return false;
@@ -477,7 +477,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
 
     // Request currently available mime-types in the clipboard.
     X11_XConvertSelection(data->display, data->atoms.CLIPBOARD, data->atoms.TARGETS,
-                          data->atoms.SDL_FORMATS, GetWindow(_this), CurrentTime);
+            data->atoms.SDL_FORMATS, GetWindow(_this), CurrentTime);
 
     return true;
 }
