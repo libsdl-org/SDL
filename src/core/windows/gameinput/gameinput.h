@@ -568,12 +568,17 @@ interface IGameInputForceFeedbackEffect;
 interface IGameInputMapper;
 
 typedef uint64_t GameInputCallbackToken;
-
+// start SDL modifications
+#if 0
+// end SDL modifications
 constexpr GUID GAMEINPUT_HAPTIC_LOCATION_NONE          = { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
 constexpr GUID GAMEINPUT_HAPTIC_LOCATION_GRIP_LEFT     = { 0x08c707c2, 0x66bb, 0x406c, { 0xa8, 0x4a, 0xdf, 0xe0, 0x85, 0x12, 0x0a, 0x92 } };
 constexpr GUID GAMEINPUT_HAPTIC_LOCATION_GRIP_RIGHT    = { 0x155a0b77, 0x8bb2, 0x40db, { 0x86, 0x90, 0xb6, 0xd4, 0x11, 0x26, 0xdf, 0xc1 } };
 constexpr GUID GAMEINPUT_HAPTIC_LOCATION_TRIGGER_LEFT  = { 0x8de4d896, 0x5559, 0x4081, { 0x86, 0xe5, 0x17, 0x24, 0xcc, 0x07, 0xc6, 0xbc } };
 constexpr GUID GAMEINPUT_HAPTIC_LOCATION_TRIGGER_RIGHT = { 0xff0cb557, 0x3af5, 0x406b, { 0x8b, 0x0f, 0x55, 0x5a, 0x2d, 0x92, 0xa2, 0x20 } };
+// start SDL modifications
+#endif
+// end SDL modifications
 
 const uint32_t GAMEINPUT_HAPTIC_MAX_LOCATIONS              = 8;
 const uint32_t GAMEINPUT_HAPTIC_MAX_AUDIO_ENDPOINT_ID_SIZE = 256;
