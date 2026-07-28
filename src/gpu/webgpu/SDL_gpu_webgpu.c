@@ -3718,7 +3718,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
         .frontFace = SDLToWebGPU_FrontFace[createInfo->rasterizer_state.front_face],
         .stripIndexFormat = WGPUIndexFormat_Undefined,
         .topology = SDLToWebGPU_PrimitiveType[createInfo->primitive_type],
-        .unclippedDepth = createInfo->rasterizer_state.enable_depth_clip,
+        .unclippedDepth = !createInfo->rasterizer_state.enable_depth_clip,
         .nextInChain = NULL,
     };
 
