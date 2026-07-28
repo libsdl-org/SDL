@@ -712,6 +712,12 @@ static void preedit_caret_callback(XIC xic, XPointer client_data, XIMPreeditCare
     }
 }
 
+static void ic_destroyed_handler(XIC ic, XPointer clientData, XPointer callData)
+{
+    SDL_WindowData *data = (SDL_WindowData *)clientData;
+    data->ic = NULL;
+}
+
 void X11_CreateInputContext(SDL_WindowData *data)
 {
 #ifdef X_HAVE_UTF8_STRING
@@ -719,6 +725,11 @@ void X11_CreateInputContext(SDL_WindowData *data)
 
     if (SDL_X11_HAVE_UTF8 && videodata->im) {
         const char *hint = SDL_GetHint(SDL_HINT_IME_IMPLEMENTED_UI);
+
+        XIMCallback destroyed_callback;
+        destroyed_callback.client_data = (XPointer)data;
+        destroyed_callback.callback = (XIMProc)ic_destroyed_handler;
+
         if (hint && SDL_strstr(hint, "composition")) {
             XIMCallback draw_callback;
             draw_callback.client_data = (XPointer)data;
@@ -747,6 +758,7 @@ void X11_CreateInputContext(SDL_WindowData *data)
                                          XNInputStyle, XIMPreeditCallbacks | XIMStatusCallbacks,
                                          XNPreeditAttributes, attr,
                                          XNClientWindow, data->xwindow,
+                                         XNDestroyCallback, &destroyed_callback,
                                          NULL);
                 X11_XFree(attr);
             }
@@ -755,6 +767,7 @@ void X11_CreateInputContext(SDL_WindowData *data)
             data->ic = X11_XCreateIC(videodata->im,
                                      XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
                                      XNClientWindow, data->xwindow,
+                                     XNDestroyCallback, &destroyed_callback,
                                      NULL);
         }
         data->xim_spot.x = -1;
