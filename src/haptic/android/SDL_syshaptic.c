@@ -41,8 +41,7 @@ static int numhaptics = 0;
 
 bool SDL_SYS_HapticInit(void)
 {
-    Android_JNI_PollHapticDevices();
-
+    Android_JNI_DetectHapticDevices();
     return true;
 }
 

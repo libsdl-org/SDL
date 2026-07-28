@@ -224,6 +224,7 @@ internal class SDL_CurvedContentPersistentSettings: Codable {
     var showHover: Bool?
     var isDimmed: Bool?
     var curvatureRadius: Float?
+    var headroom: Float?
 }
 
 @Observable
@@ -247,6 +248,9 @@ internal class SDL_CurvedContentSettings {
                     if let curvatureRadius = values.curvatureRadius {
                         settings.curvatureRadius = curvatureRadius
                     }
+                    if let headroom = values.headroom {
+                        settings.headroom = headroom
+                    }
                 } catch {
                     NSLog("Couldn't parse window settings: %@", error.localizedDescription)
                 }
@@ -261,6 +265,7 @@ internal class SDL_CurvedContentSettings {
         values.showHover = showHover
         values.isDimmed = isDimmed
         values.curvatureRadius = curvatureRadius
+        values.headroom = headroom
 
         do {
             let data = try JSONEncoder().encode(values)
@@ -276,6 +281,8 @@ internal class SDL_CurvedContentSettings {
     var isDimmed: Bool = false
     var dimmingReady: Bool = false
     var curvatureRadius: Float = 0.0
+    var headroom_enabled: Bool = SDL_VisionOS_ShouldShowHeadroomUI()
+    var headroom: Float = 2.0
     var sceneState: SceneState = .interactive
     var isSnapped: Bool = false
     var settingsExpanded: Bool = false
@@ -314,6 +321,16 @@ struct SDL_SettingsPanelView: View {
         }
     }
 
+    private var headroomLabel: String {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        if let label = formatter.string(for: settings.headroom) {
+            return label
+        } else {
+            return ""
+        }
+    }
+
     var body: some View {
         if settings.settingsExpanded {
             expandedPanel
@@ -332,6 +349,11 @@ struct SDL_SettingsPanelView: View {
 
                     Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                         .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+
+                    if settings.headroom_enabled {
+                        Text("HDR")
+                            .font(.caption)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -354,6 +376,11 @@ struct SDL_SettingsPanelView: View {
 
                     Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                         .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+
+                    if settings.headroom_enabled {
+                        Text("HDR")
+                            .font(.caption)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -413,6 +440,28 @@ struct SDL_SettingsPanelView: View {
 
                 Image(systemName: "moon.fill")
                 Spacer()
+            }
+
+            if settings.headroom_enabled {
+                // HDR slider
+                VStack(spacing: 4) {
+                    Text("HDR \(headroomLabel)")
+                        .font(.caption)
+
+                    HStack() {
+                        Image(systemName: "moon.fill")
+
+                        Slider(value: $settings.headroom, in: 1.1...4) {
+                        } currentValueLabel: {
+                            Text("\(headroomLabel)")
+                        }
+                        .onChange(of: settings.headroom) {
+                            settings.save()
+                        }
+
+                        Image(systemName: "sun.max")
+                    }
+                }
             }
 
             // Curvature slider

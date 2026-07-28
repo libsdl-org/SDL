@@ -30,6 +30,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
+#include "SDL_waylandeventthread.h"
 
 struct xkb_context;
 struct SDL_WaylandSeat;
@@ -87,13 +88,17 @@ struct SDL_VideoData
     struct wl_fixes *wl_fixes;
     struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
     struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
+    struct xdg_session_manager_v1 *xdg_session_manager;
+    struct xdg_toplevel_tag_manager_v1 *xdg_toplevel_tag_manager;
 
+    struct xdg_session_v1 *xdg_session;
     struct xkb_context *xkb_context;
 
     struct wl_list seat_list;
     struct SDL_WaylandSeat *last_implicit_grab_seat;
     struct SDL_WaylandSeat *last_incoming_data_offer_seat;
     struct SDL_WaylandSeat *last_incoming_primary_selection_seat;
+    Wayland_EventThreadContext *event_thread_context;
 
     SDL_DisplayData **output_list;
     int output_count;
@@ -162,9 +167,10 @@ extern bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
 extern bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 extern SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface);
-void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
-void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
-struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name);
+extern void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
+extern void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
+extern struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name);
+extern void Wayland_CreateSession(SDL_VideoData *data);
 
 extern bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg);
 

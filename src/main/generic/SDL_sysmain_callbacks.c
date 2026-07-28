@@ -27,9 +27,11 @@
 
 static Uint64 callback_rate_increment = 0;
 static bool iterate_after_waitevent = false;
+static bool callback_rate_changed = false;
 
 static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
+    callback_rate_changed = true;
     iterate_after_waitevent = newValue && (SDL_strcmp(newValue, "waitevent") == 0);
     if (iterate_after_waitevent) {
         callback_rate_increment = 0;
@@ -45,10 +47,22 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
 
 static SDL_AppResult GenericIterateMainCallbacks(void)
 {
-    if (iterate_after_waitevent) {
+    bool should_wait = iterate_after_waitevent;
+
+    if (callback_rate_changed) {
+        callback_rate_changed = false;
+        if (iterate_after_waitevent) {
+            // just go immediately for one iteration (it will do a PumpEvents),
+            //  and do a full blocking wait for more events next time.
+            should_wait = false;
+        }
+    }
+
+    if (should_wait) {
         SDL_WaitEvent(NULL);
     }
-    return SDL_IterateMainCallbacks(!iterate_after_waitevent);
+
+    return SDL_IterateMainCallbacks(!should_wait);
 }
 
 int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)

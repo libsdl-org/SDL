@@ -117,7 +117,7 @@ static int SDL_HIDAPI_numdrivers = 0;
 static SDL_AtomicInt SDL_HIDAPI_updating_devices;
 static bool SDL_HIDAPI_hints_changed = false;
 static Uint32 SDL_HIDAPI_change_count = 0;
-static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_event_lock);
 static int SDL_HIDAPI_numjoysticks = 0;
 static bool SDL_HIDAPI_combine_joycons = true;
 static bool initialized = false;
@@ -178,6 +178,8 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
         return true;
     case USB_VENDOR_DRAGONRISE:
         return true;
+    case USB_VENDOR_CORSAIR:
+        return true;
     case USB_VENDOR_HORI:
         return true;
     case USB_VENDOR_LOGITECH:
@@ -216,6 +218,8 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
          *            https://github.com/libsdl-org/SDL/issues/6799
          */
         return false;
+    case USB_VENDOR_RED_OCTANE_GAMES:
+        return true;
     case USB_VENDOR_SHANWAN:
         return true;
     case USB_VENDOR_SHANWAN_ALT:
@@ -1325,7 +1329,7 @@ bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version,
         // changes when that happens, we'll pretend the driver isn't available so the XInput
         // interface will always show up (but won't have any input when the controller is in
         // enhanced mode)
-        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && device->driver == &SDL_HIDAPI_DriverFlydigi) {
             continue;
         }
 

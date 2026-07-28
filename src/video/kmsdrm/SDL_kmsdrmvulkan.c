@@ -152,10 +152,21 @@ char const * const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, 
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if (count) {
-        *count = SDL_arraysize(extensionsForKMSDRM);
-    }
+    *count = SDL_arraysize(extensionsForKMSDRM);
     return extensionsForKMSDRM;
+}
+
+static int SDLCALL display_mode_comparator(const void *a_opaque, const void *b_opaque)
+{
+    const VkDisplayModePropertiesKHR *a = a_opaque;
+    const VkDisplayModePropertiesKHR *b = b_opaque;
+
+    if (a->parameters.refreshRate > b->parameters.refreshRate)
+        return -1;
+    else if (a->parameters.refreshRate < b->parameters.refreshRate)
+        return 1;
+    else
+        return 0;
 }
 
 /***********************************************************************/
@@ -343,6 +354,9 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     vkGetDisplayModePropertiesKHR(gpu,
                                   display,
                                   &mode_count, mode_props);
+
+    /* Sort the modes so that larger refresh rates come first. */
+    SDL_qsort(mode_props, mode_count, sizeof(*mode_props), display_mode_comparator);
 
     /* Get a video mode equal to the window size among the predefined ones,
        if possible.

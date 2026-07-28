@@ -26,11 +26,13 @@
 
 #define USB_VENDOR_8BITDO       0x2dc8
 #define USB_VENDOR_AMAZON       0x1949
+#define USB_VENDOR_ANDGAMER     0x38d2
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_ASUS         0x0b05
 #define USB_VENDOR_BACKBONE     0x358a
 #define USB_VENDOR_CRKD         0x3651
+#define USB_VENDOR_CORSAIR      0x1b1c
 #define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_FLYDIGI_V1   0x04b4
@@ -54,6 +56,7 @@
 #define USB_VENDOR_QANBA        0x2c22
 #define USB_VENDOR_RAZER        0x1532
 #define USB_VENDOR_RED_OCTANE   0x1430
+#define USB_VENDOR_RED_OCTANE_GAMES   0x3958
 #define USB_VENDOR_SAITEK       0x06a3
 #define USB_VENDOR_SCEA         0x12ba
 #define USB_VENDOR_SHANWAN      0x2563
@@ -75,6 +78,7 @@
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE3                      0x202f    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
@@ -155,6 +159,8 @@
 #define USB_PRODUCT_RAZER_WOLVERINE_V2_PRO_XBOX_WIRELESS  0x1011
 #define USB_PRODUCT_RAZER_WOLVERINE_V3_PRO                0x0a3f
 #define USB_PRODUCT_RED_OCTANE_XB1_GUITAR_HERO_LIVE_GUITAR 0x0170
+#define USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR      0x4161
+#define USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS       0xD300
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SCEA_PS3_GH_GUITAR                    0x0100
 #define USB_PRODUCT_SCEA_PS3_GH_DRUMS                     0x0120
@@ -171,7 +177,7 @@
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
 #define USB_PRODUCT_STEALTH_ULTRA_WIRED                   0x7073
-#define USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER            0x0575
+#define USB_PRODUCT_SWITCH_RETRO_CONTROLLER               0x0575
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e
 #define USB_PRODUCT_THRUSTMASTER_T_FLIGHT_HOTAS_ONE       0xb68c
 #define USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE         0x1142
@@ -208,6 +214,7 @@
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT                0X001d
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_BT                    0X0017
 #define USB_PRODUCT_VOIDGAMING_PS4FIREBIRD                0x10e5
+#define USB_PRODUCT_VOIDGAMING_GENESIS_SINPUT             0x1014
 
 // USB usage pages
 #define USB_USAGEPAGE_GENERIC_DESKTOP 0x0001

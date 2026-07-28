@@ -51,14 +51,9 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #endif
 };
 
-#ifndef SDL_THREAD_SAFETY_ANALYSIS
-static
-#endif
-SDL_Mutex *SDL_sensor_lock = NULL; // This needs to support recursive locks
-static SDL_AtomicInt SDL_sensor_lock_pending;
 static int SDL_sensors_locked;
 static bool SDL_sensors_initialized;
-static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
+static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 #define CHECK_SENSOR_MAGIC(sensor, result)                          \
     CHECK_PARAM(!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
@@ -74,43 +69,14 @@ bool SDL_SensorsInitialized(void)
 
 void SDL_LockSensors(void)
 {
-    (void)SDL_AtomicIncRef(&SDL_sensor_lock_pending);
-    SDL_LockMutex(SDL_sensor_lock);
-    (void)SDL_AtomicDecRef(&SDL_sensor_lock_pending);
-
+    SDL_LockMutex(SDL_event_lock);
     ++SDL_sensors_locked;
 }
 
 void SDL_UnlockSensors(void)
 {
-    bool last_unlock = false;
-
     --SDL_sensors_locked;
-
-    if (!SDL_sensors_initialized) {
-        // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_sensors_locked && SDL_GetAtomicInt(&SDL_sensor_lock_pending) == 0) {
-            last_unlock = true;
-        }
-    }
-
-    /* The last unlock after sensors are uninitialized will cleanup the mutex,
-     * allowing applications to lock sensors while reinitializing the system.
-     */
-    if (last_unlock) {
-        SDL_Mutex *sensor_lock = SDL_sensor_lock;
-
-        SDL_LockMutex(sensor_lock);
-        {
-            SDL_UnlockMutex(SDL_sensor_lock);
-
-            SDL_sensor_lock = NULL;
-        }
-        SDL_UnlockMutex(sensor_lock);
-        SDL_DestroyMutex(sensor_lock);
-    } else {
-        SDL_UnlockMutex(SDL_sensor_lock);
-    }
+    SDL_UnlockMutex(SDL_event_lock);
 }
 
 bool SDL_SensorsLocked(void)
@@ -127,11 +93,6 @@ bool SDL_InitSensors(void)
 {
     int i;
     bool status;
-
-    // Create the sensor list lock
-    if (SDL_sensor_lock == NULL) {
-        SDL_sensor_lock = SDL_CreateMutex();
-    }
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;

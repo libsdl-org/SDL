@@ -1703,7 +1703,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /**
- * Retrieves a single pixel from a surface.
+ * Retrieves a single pixel from a surface as RGBA in the sRGB colorspace.
  *
  * This function prioritizes correctness over speed: it is suitable for unit
  * tests, but is not intended for use in a game engine.
@@ -1733,7 +1733,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 /**
- * Retrieves a single pixel from a surface.
+ * Retrieves a single pixel from a surface as RGBA in the sRGB colorspace.
  *
  * This function prioritizes correctness over speed: it is suitable for unit
  * tests, but is not intended for use in a game engine.

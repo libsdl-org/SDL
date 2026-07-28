@@ -28,7 +28,7 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 static joystick_hwdata *VIRTUAL_HWDataForInstance(SDL_JoystickID instance_id)
 {

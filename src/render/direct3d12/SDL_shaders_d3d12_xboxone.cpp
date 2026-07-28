@@ -35,12 +35,24 @@
 #include "D3D12_PixelShader_Colors_One.h"
 #undef g_main
 
+#define g_main D3D12_PixelShader_Colors_PQ
+#include "D3D12_PixelShader_Colors_PQ_One.h"
+#undef g_main
+
 #define g_main D3D12_PixelShader_Textures
 #include "D3D12_PixelShader_Textures_One.h"
 #undef g_main
 
 #define g_main D3D12_PixelShader_Advanced
 #include "D3D12_PixelShader_Advanced_One.h"
+#undef g_main
+
+#define g_main D3D12_PixelShader_Textures_PQ
+#include "D3D12_PixelShader_Textures_PQ_One.h"
+#undef g_main
+
+#define g_main D3D12_PixelShader_Textures_Simple
+#include "D3D12_PixelShader_Textures_Simple_One.h"
 #undef g_main
 
 
@@ -77,8 +89,11 @@ static struct
     const void *vs_shader_data;
     SIZE_T vs_shader_size;
     D3D12_RootSignature root_sig;
-} D3D12_shaders[NUM_SHADERS] = {
+} D3D12_shaders[] = {
     { D3D12_PixelShader_Colors, sizeof(D3D12_PixelShader_Colors),
+      D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
+      ROOTSIG_COLOR },
+    { D3D12_PixelShader_Colors_PQ, sizeof(D3D12_PixelShader_Colors_PQ),
       D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
       ROOTSIG_COLOR },
     { D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
@@ -87,17 +102,25 @@ static struct
     { D3D12_PixelShader_Advanced, sizeof(D3D12_PixelShader_Advanced),
       D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
       ROOTSIG_ADVANCED },
+    { D3D12_PixelShader_Textures_PQ, sizeof(D3D12_PixelShader_Textures_PQ),
+      D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
+      ROOTSIG_ADVANCED },
+    { D3D12_PixelShader_Textures_Simple, sizeof(D3D12_PixelShader_Textures_Simple),
+      D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
+      ROOTSIG_TEXTURE },
 };
+SDL_COMPILE_TIME_ASSERT(D3D12_shaders, SDL_arraysize(D3D12_shaders) == NUM_SHADERS);
 
 static struct
 {
     const void *rs_shader_data;
     SIZE_T rs_shader_size;
-} D3D12_rootsigs[NUM_ROOTSIGS] = {
+} D3D12_rootsigs[] = {
     { D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color) },
     { D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture) },
     { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
+SDL_COMPILE_TIME_ASSERT(D3D12_rootsigs, SDL_arraysize(D3D12_rootsigs) == NUM_ROOTSIGS);
 
 extern "C"
 void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)

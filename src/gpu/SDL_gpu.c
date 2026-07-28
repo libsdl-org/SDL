@@ -1562,11 +1562,11 @@ void SDL_ReleaseGPUTexture(
     SDL_GPUDevice *device,
     SDL_GPUTexture *texture)
 {
-    CHECK_DEVICE_MAGIC(device, );
-
-    CHECK_PARAM(texture == NULL) {
+    if(texture == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTexture(
         device->driverData,
@@ -1580,6 +1580,8 @@ void SDL_ReleaseGPUSampler(
     if(sampler == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseSampler(
         device->driverData,
@@ -1596,6 +1598,8 @@ void SDL_ReleaseGPUBuffer(
         return;
     }
 
+    CHECK_DEVICE_MAGIC(device, );
+
     device->ReleaseBuffer(
         device->driverData,
         buffer);
@@ -1610,6 +1614,8 @@ void SDL_ReleaseGPUTransferBuffer(
     CHECK_PARAM(sampler == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseTransferBuffer(
         device->driverData,
@@ -1626,6 +1632,8 @@ void SDL_ReleaseGPUShader(
         return;
     }
 
+    CHECK_DEVICE_MAGIC(device, );
+
     device->ReleaseShader(
         device->driverData,
         shader);
@@ -1641,6 +1649,8 @@ void SDL_ReleaseGPUComputePipeline(
         return;
     }
 
+    CHECK_DEVICE_MAGIC(device, );
+
     device->ReleaseComputePipeline(
         device->driverData,
         compute_pipeline);
@@ -1655,6 +1665,8 @@ void SDL_ReleaseGPUGraphicsPipeline(
     CHECK_PARAM(sampler == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseGraphicsPipeline(
         device->driverData,
@@ -3520,6 +3532,8 @@ void SDL_ReleaseGPUFence(
     CHECK_PARAM(sampler == NULL) {
         return;
     }
+
+    CHECK_DEVICE_MAGIC(device, );
 
     device->ReleaseFence(
         device->driverData,

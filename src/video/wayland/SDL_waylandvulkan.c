@@ -128,10 +128,7 @@ char const * const *Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME
     };
 
-    if (count) {
-        *count = SDL_arraysize(extensionsForWayland);
-    }
-
+    *count = SDL_arraysize(extensionsForWayland);
     return extensionsForWayland;
 }
 

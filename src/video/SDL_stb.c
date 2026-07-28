@@ -330,7 +330,7 @@ static SDL_Surface *SDL_LoadSTB_IO(SDL_IOStream *src)
         }
 
     } else if (format == STBI_grey_alpha) {
-        surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+        surface = SDL_CreateSurfaceUninitialized(w, h, SDL_PIXELFORMAT_RGBA32);
         if (surface) {
             Uint8 *src_ptr = pixels;
             Uint8 *dst = (Uint8 *)surface->pixels;

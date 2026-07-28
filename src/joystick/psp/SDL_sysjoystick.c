@@ -31,12 +31,13 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
+#define PSP_HAT_MASK (PSP_CTRL_DOWN | PSP_CTRL_LEFT | PSP_CTRL_UP | PSP_CTRL_RIGHT )
+
 // Current pad state
 static SceCtrlData pad = { .Lx = 0, .Ly = 0, .Buttons = 0 };
 static const enum PspCtrlButtons button_map[] = {
     PSP_CTRL_TRIANGLE, PSP_CTRL_CIRCLE, PSP_CTRL_CROSS, PSP_CTRL_SQUARE,
     PSP_CTRL_LTRIGGER, PSP_CTRL_RTRIGGER,
-    PSP_CTRL_DOWN, PSP_CTRL_LEFT, PSP_CTRL_UP, PSP_CTRL_RIGHT,
     PSP_CTRL_SELECT, PSP_CTRL_START, PSP_CTRL_HOME, PSP_CTRL_HOLD
 };
 static int analog_map[256]; // Map analog inputs to -32768 -> 32767
@@ -159,7 +160,7 @@ static bool PSP_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     joystick->nbuttons = SDL_arraysize(button_map);
     joystick->naxes = 2;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // we treat the d-pad as a hat.
 
     return true;
 }
@@ -224,14 +225,34 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
     // Buttons
     changed = old_buttons ^ buttons;
     old_buttons = buttons;
-    if (changed) {
+    if (changed & ~PSP_HAT_MASK) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
-                bool down = ((buttons & button_map[i]) != 0);
-                SDL_SendJoystickButton(timestamp,
-                    joystick, i, down);
+                const bool down = ((buttons & button_map[i]) != 0);
+                SDL_SendJoystickButton(timestamp, joystick, i, down);
             }
         }
+    }
+
+    if (changed & PSP_HAT_MASK) {
+        // The PSP dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+        // (but they should _really_ be using the gamepad API.)
+        Uint8 hat = SDL_HAT_CENTERED;
+        #define HATSTATE(name) if (buttons & PSP_CTRL_##name) { hat |= SDL_HAT_##name; }
+        HATSTATE(UP);
+        HATSTATE(RIGHT);
+        HATSTATE(DOWN);
+        HATSTATE(LEFT);
+        #undef HATSTATE
+
+        // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+        if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+            hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+        }
+        if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+            hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 }
 

@@ -186,35 +186,17 @@ void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props)
 #else
     renderer->output_colorspace = (SDL_Colorspace)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
 #endif
+    renderer->current_colorspace = renderer->output_colorspace;
 }
 
-bool SDL_RenderingLinearSpace(SDL_Renderer *renderer)
-{
-    SDL_Colorspace colorspace;
-
-    if (renderer->target) {
-        colorspace = renderer->target->colorspace;
-    } else {
-        colorspace = renderer->output_colorspace;
-    }
-    if (colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-        return true;
-    }
-    return false;
-}
-
-void SDL_ConvertToLinear(SDL_FColor *color)
+void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
 {
     color->r = SDL_sRGBtoLinear(color->r);
     color->g = SDL_sRGBtoLinear(color->g);
     color->b = SDL_sRGBtoLinear(color->b);
-}
-
-void SDL_ConvertFromLinear(SDL_FColor *color)
-{
-    color->r = SDL_sRGBfromLinear(color->r);
-    color->g = SDL_sRGBfromLinear(color->g);
-    color->b = SDL_sRGBfromLinear(color->b);
+    if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+        SDL_ConvertColor709to2020(&color->r, &color->g, &color->b);
+    }
 }
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
@@ -875,7 +857,8 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
         return;
     }
 
-    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+        renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
         renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
         renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
     } else {
@@ -1651,7 +1634,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
                 return NULL;
             }
         } else if (SDL_ISPIXELFORMAT_INDEXED(texture->format)) {
-            texture->palette_surface = SDL_CreateSurface(w, h, texture->format);
+            texture->palette_surface = SDL_CreateSurfaceZeroed(w, h, texture->format);
             if (!texture->palette_surface) {
                 SDL_DestroyTexture(texture);
                 return NULL;
@@ -2518,8 +2501,10 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
     }
 
     CHECK_PARAM(texture->format != SDL_PIXELFORMAT_YV12 &&
-                texture->format != SDL_PIXELFORMAT_IYUV) {
-        return SDL_SetError("Texture format must be YV12 or IYUV");
+                texture->format != SDL_PIXELFORMAT_IYUV &&
+                texture->format != SDL_PIXELFORMAT_P408 &&
+                texture->format != SDL_PIXELFORMAT_P416) {
+        return SDL_SetError("Texture format must be YV12, IYUV, P408, or P416");
     }
 
     real_rect.x = 0;
@@ -2827,8 +2812,10 @@ bool SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     renderer->target = texture;
     if (texture) {
         renderer->view = &texture->view;
+        renderer->current_colorspace = texture->colorspace;
     } else {
         renderer->view = &renderer->main_view;
+        renderer->current_colorspace = renderer->output_colorspace;
     }
     UpdateColorScale(renderer);
 
@@ -5460,7 +5447,11 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_Texture *parent = SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_PARENT_POINTER, NULL);
             SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
 
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
+            if (SDL_COLORSPACETRANSFER(target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * SCRGB_NITS);
+            } else {
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
+            }
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format
@@ -5472,7 +5463,11 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
                 surface->fmt = SDL_GetPixelFormatDetails(expected_format);
             }
         } else {
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
+            if (SDL_COLORSPACETRANSFER(renderer->output_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point * SCRGB_NITS);
+            } else {
+                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
+            }
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
         }
     }
@@ -5956,7 +5951,7 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
 
     // actually make each glyph two pixels taller/wider, to prevent scaling artifacts.
     const int rows = (SDL_DEBUG_FONT_NUM_GLYPHS / SDL_DEBUG_FONT_GLYPHS_PER_ROW) + 1;
-    SDL_Surface *atlas = SDL_CreateSurface((charWidth + 2) * SDL_DEBUG_FONT_GLYPHS_PER_ROW, rows * (charHeight + 2), SDL_PIXELFORMAT_INDEX8);
+    SDL_Surface *atlas = SDL_CreateSurfaceZeroed((charWidth + 2) * SDL_DEBUG_FONT_GLYPHS_PER_ROW, rows * (charHeight + 2), SDL_PIXELFORMAT_INDEX8);
     if (!atlas) {
         return false;
     }

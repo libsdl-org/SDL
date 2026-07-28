@@ -250,8 +250,6 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
             if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone);
-            } else if (navigator.webkitGetUserMedia !== undefined) {
-                navigator.webkitGetUserMedia({ audio: true, video: false }, have_microphone, no_microphone);
             }
         }, device->spec.channels, device->sample_frames, SDL_RecordingAudioThreadIterate, device);
     } else {
@@ -330,8 +328,6 @@ static bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
 
     recording_available = available && MAIN_THREAD_EM_ASM_INT({
         if ((typeof(navigator.mediaDevices) !== 'undefined') && (typeof(navigator.mediaDevices.getUserMedia) !== 'undefined')) {
-            return true;
-        } else if (typeof(navigator.webkitGetUserMedia) !== 'undefined') {
             return true;
         }
         return false;

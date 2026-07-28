@@ -48,7 +48,7 @@ extern bool SDL_JoysticksQuitting(void);
 extern bool SDL_JoysticksLocked(void);
 
 // Make sure we currently have the joysticks locked
-extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);
@@ -107,7 +107,9 @@ extern bool SDL_IsJoystickDualSenseEdge(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick is a Nintendo Switch Pro controller
 extern bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNintendoSwitch2Pro(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickNintendoSwitch2ProInputOnly(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id);

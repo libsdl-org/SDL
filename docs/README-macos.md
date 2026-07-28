@@ -253,12 +253,12 @@ Functionality may be added in the future to help this.
 
 ## Raw Mouse Input
 
-On macOS 14.0 (Sonoma) and later, SDL uses the Game Controller framework's
-GCMouse API to provide raw, unaccelerated mouse input in relative mode. This
-is ideal for games and applications requiring precise 1:1 mouse movement.
+SDL uses the Game Controller framework's GCMouse API to provide raw,
+unaccelerated mouse input in relative mode. This is ideal for games
+and applications requiring precise 1:1 mouse movement.
 
-On older macOS versions, SDL falls back to NSEvent-based mouse input, which
-includes system mouse acceleration.
+On versions older than macOS 11.0 (Big Sur), SDL would fall back to
+NSEvent-based mouse input, which includes system mouse acceleration.
 
 To use accelerated (system-scaled) mouse movement on macOS 14.0+, set the hint:
 

@@ -432,7 +432,7 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
 
         // Get the pixel format
         format = SDL_GetPixelFormatForMasks(biBitCount, Rmask, Gmask, Bmask, Amask);
-        surface = SDL_CreateSurface(biWidth, biHeight, format);
+        surface = SDL_CreateSurfaceUninitialized(biWidth, biHeight, format);
 
         if (!surface) {
             goto done;

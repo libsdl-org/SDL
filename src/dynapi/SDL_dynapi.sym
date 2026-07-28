@@ -1292,6 +1292,18 @@ SDL3_0.0.0 {
     SDL_GamepadHasCapSense;
     SDL_GetGamepadCapSense;
     SDL_WGPU_CreateSurface;
+    SDL_aligned_alloc_zero;
+    SDL_wcstoul;
+    SDL_wcstoll;
+    SDL_wcstoull;
+    SDL_RequestNotificationPermission;
+    SDL_ShowNotificationWithProperties;
+    SDL_ShowNotification;
+    SDL_RemoveNotification;
+    SDL_GetDeviceFormFactor;
+    SDL_GetDeviceFormFactorName;
+    SDL_IsUbuntuTouch;
+    SDL_GetNumProperties;
     # extra symbols go here (don't modify this line)
   local: *;
 };

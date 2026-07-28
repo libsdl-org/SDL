@@ -1689,7 +1689,7 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (ret) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
     }
 
     /***************************/

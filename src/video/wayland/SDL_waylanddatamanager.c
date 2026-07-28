@@ -422,6 +422,11 @@ static void offer_source_done_handler(void *data, struct wl_callback *callback, 
         SDL_free(id);
         if (source_is_external) {
             Wayland_data_offer_notify_from_mimes(offer, false);
+        } else {
+            // Recursive data offer; just destroy it.
+            SDL_WaylandDataDevice *data_device = offer->data_device;
+            Wayland_data_offer_destroy(offer);
+            data_device->selection_offer = NULL;
         }
     }
 }

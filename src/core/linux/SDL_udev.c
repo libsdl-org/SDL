@@ -41,10 +41,8 @@
 static const char *SDL_UDEV_LIBS[] = { SDL_UDEV_FALLBACK_LIBS };
 
 #ifdef SDL_UDEV_DYNAMIC
+
 #define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_DYNAMIC, SDL_UDEV_FALLBACK_LIBS
-#else
-#define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_FALLBACK_LIBS
-#endif
 
 SDL_ELF_NOTE_DLOPEN(
     "events-udev",
@@ -52,17 +50,21 @@ SDL_ELF_NOTE_DLOPEN(
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_UDEV_DLNOTE_LIBS
 )
+#endif
 
 static SDL_UDEV_PrivateData *_this = NULL;
 
+#ifdef SDL_UDEV_DYNAMIC
 static bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static bool SDL_UDEV_load_syms(void);
+#endif
 static bool SDL_UDEV_hotplug_update_available(void);
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len);
 static int guess_device_class(struct udev_device *dev);
 static int device_class(struct udev_device *dev);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
+#ifdef SDL_UDEV_DYNAMIC
 static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
@@ -73,9 +75,12 @@ static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 
     return true;
 }
+#endif
 
 static bool SDL_UDEV_load_syms(void)
 {
+
+#ifdef SDL_UDEV_DYNAMIC
 /* cast funcs to char* first, to please GCC's strict aliasing rules. */
 #define SDL_UDEV_SYM(x)                                          \
     if (!SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x)) \
@@ -83,6 +88,13 @@ static bool SDL_UDEV_load_syms(void)
 
 #define SDL_UDEV_SYM_OPTIONAL(x)                                 \
     SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x);
+#else
+#define SDL_UDEV_SYM(x)                                          \
+    _this->syms.x = x;
+
+#define SDL_UDEV_SYM_OPTIONAL(x)                                 \
+    _this->syms.x = x;
+#endif
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);

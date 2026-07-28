@@ -64,13 +64,13 @@ typedef struct SDL_UDEV_Symbols
     const char *(*udev_device_get_property_value)(struct udev_device *, const char *);
     const char *(*udev_device_get_sysattr_value)(struct udev_device *udev_device, const char *sysattr);
     struct udev_device *(*udev_device_new_from_syspath)(struct udev *, const char *);
-    void (*udev_device_unref)(struct udev_device *);
+    struct udev_device *(*udev_device_unref)(struct udev_device *);
     int (*udev_enumerate_add_match_property)(struct udev_enumerate *, const char *, const char *);
     int (*udev_enumerate_add_match_subsystem)(struct udev_enumerate *, const char *);
     struct udev_list_entry *(*udev_enumerate_get_list_entry)(struct udev_enumerate *);
     struct udev_enumerate *(*udev_enumerate_new)(struct udev *);
     int (*udev_enumerate_scan_devices)(struct udev_enumerate *);
-    void (*udev_enumerate_unref)(struct udev_enumerate *);
+    struct udev_enumerate *(*udev_enumerate_unref)(struct udev_enumerate *);
     const char *(*udev_list_entry_get_name)(struct udev_list_entry *);
     const char *(*udev_list_entry_get_value)(struct udev_list_entry *);
     struct udev_list_entry *(*udev_list_entry_get_next)(struct udev_list_entry *);
@@ -79,9 +79,9 @@ typedef struct SDL_UDEV_Symbols
     int (*udev_monitor_get_fd)(struct udev_monitor *);
     struct udev_monitor *(*udev_monitor_new_from_netlink)(struct udev *, const char *);
     struct udev_device *(*udev_monitor_receive_device)(struct udev_monitor *);
-    void (*udev_monitor_unref)(struct udev_monitor *);
+    struct udev_monitor *(*udev_monitor_unref)(struct udev_monitor *);
     struct udev *(*udev_new)(void);
-    void (*udev_unref)(struct udev *);
+    struct udev *(*udev_unref)(struct udev *);
     struct udev_device *(*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
     dev_t (*udev_device_get_devnum)(struct udev_device *udev_device);
 

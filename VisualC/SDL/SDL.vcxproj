@@ -466,6 +466,7 @@
     <ClInclude Include="..\..\src\events\SDL_keysym_to_keycode_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keysym_to_scancode_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_notificationevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_pen_c.h" />
     <ClInclude Include="..\..\src\events\SDL_scancode_tables_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
@@ -522,6 +523,7 @@
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\..\src\misc\SDL_libusb.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
+    <ClInclude Include="..\..\src\notification\SDL_notification_c.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\process\SDL_sysprocess.h" />
     <ClInclude Include="..\..\src\render\direct3d11\D3D11_PixelShader_Advanced.h" />
@@ -589,8 +591,10 @@
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Colors.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_VertexShader.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
@@ -624,6 +628,7 @@
     <ClCompile Include="..\..\src\events\imKStoUCS.c" />
     <ClCompile Include="..\..\src\events\SDL_keysym_to_keycode.c" />
     <ClCompile Include="..\..\src\events\SDL_keysym_to_scancode.c" />
+    <ClCompile Include="..\..\src\events\SDL_notificationevents.c" />
     <ClCompile Include="..\..\src\events\SDL_scancode_tables.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
@@ -639,6 +644,8 @@
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c" />
+    <ClCompile Include="..\..\src\notification\SDL_notification.c" />
+    <ClCompile Include="..\..\src\notification\windows\SDL_windowsnotification.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />

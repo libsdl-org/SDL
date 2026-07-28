@@ -172,6 +172,7 @@ static void image_description_info_handle_luminances(void *data,
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
     state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
+    state->HDR.SDR_white_level = (float)reference_lum / 80.0f;
 }
 
 static void image_description_info_handle_target_primaries(void *data,

@@ -24,6 +24,7 @@
     int createCustomCursor(int[], int, int, int, int);
     void destroyCustomCursor(int);
     android.app.Activity getContext();
+    java.lang.String getDeviceFormFactor();
     boolean getManifestEnvironmentVariables();
     android.view.Surface getNativeSurface();
     void initTouch();
@@ -69,9 +70,9 @@
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.SDLControllerManager {
     void joystickSetSensorsEnabled(int, boolean);
-    void pollInputDevices();
+    void detectDevices();
     void joystickSetLED(int, int, int, int);
-    void pollHapticDevices();
+    void detectHapticDevices();
     void hapticRun(int, float, int);
     void hapticRumble(int, float, float, int);
     void hapticStop(int);

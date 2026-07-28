@@ -123,6 +123,7 @@ STDLIB_SYMBOLS = (
     'strtol',
     'strtoll',
     'strtoul',
+    'strtoull',
     'strupr',
     'tan',
     'tanf',
@@ -147,6 +148,10 @@ STDLIB_SYMBOLS = (
     'wcsncasecmp',
     'wcsncmp',
     'wcsstr',
+    'wcstol',
+    'wcstoll',
+    'wcstoul',
+    'wcstoull',
 )
 RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 
@@ -250,15 +255,17 @@ def find_symbols_in_dir(path: pathlib.Path) -> int:
 
 def main():
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
-    parser.add_argument("path", default=SDL_ROOT, nargs="?", type=pathlib.Path, help="Path to look for stdlib symbols")
+    parser.add_argument("paths", default=[SDL_ROOT / "src", SDL_ROOT / "test"], nargs="*", type=pathlib.Path, help="Paths to look for stdlib symbols")
     args = parser.parse_args()
 
-    print(f"Looking for stdlib usage in {args.path}...")
+    print(f"Looking for stdlib usage in {', '.join(str(p) for p in args.paths)}...")
 
-    if args.path.is_file():
-        match_count = find_symbols_in_file(args.path)
-    else:
-        match_count = find_symbols_in_dir(args.path)
+    match_count = 0
+    for path in args.paths:
+        if path.is_file():
+            match_count = find_symbols_in_file(path)
+        else:
+            match_count = find_symbols_in_dir(path)
 
     if match_count:
         print("If the stdlib usage is intentional, add a '// This should NOT be SDL_<symbol>()' line comment.")

@@ -1,3 +1,4 @@
+
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
@@ -20,47 +21,21 @@
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_TIME_PS2
+#include "SDL_events_c.h"
+#include "SDL_notificationevents_c.h"
 
-#include "../SDL_time_c.h"
-
-// PS2 epoch is Jan 1 2000 JST (UTC +9)
-#define UNIX_EPOCH_OFFSET_SEC 946717200
-
-// TODO: Implement this...
-void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
+bool SDL_SendNotificationAction(SDL_NotificationID notification_id, const char *action_id)
 {
-}
+    if (SDL_EventEnabled(SDL_EVENT_NOTIFICATION_ACTION_INVOKED)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_NOTIFICATION_ACTION_INVOKED;
 
-bool SDL_GetCurrentTime(SDL_Time *ticks)
-{
-    CHECK_PARAM(!ticks) {
-        return SDL_InvalidParamError("ticks");
+        SDL_NotificationEvent *nevent = &event.notification;
+        nevent->timestamp = 0;
+        nevent->which = notification_id;
+        nevent->action_id = SDL_CreateTemporaryString(action_id);
+        return SDL_PushEvent(&event);
     }
 
-    *ticks = 0;
-
-    return true;
+    return false;
 }
-
-bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
-{
-    CHECK_PARAM(!dt) {
-        return SDL_InvalidParamError("dt");
-    }
-
-    // FIXME: Need implementation
-    dt->year = 1970;
-    dt->month = 1;
-    dt->day = 1;
-    dt->hour = 0;
-    dt->minute = 0;
-    dt->second = 0;
-    dt->nanosecond = 0;
-    dt->day_of_week = 4;
-    dt->utc_offset = 0;
-
-    return true;
-}
-
-#endif // SDL_TIME_PS2

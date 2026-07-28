@@ -264,4 +264,27 @@ void Android_QuitEvents(void)
     Android_EventsInitialized = false;
 }
 
+#else
+
+#include "../../core/android/SDL_android.h"
+
+void Android_InitEvents(void)
+{
+}
+
+void Android_PumpEvents(Sint64 timeoutNS)
+{
+    (void)timeoutNS;
+}
+
+bool Android_WaitActiveAndLockActivity(void)
+{
+    Android_LockActivityMutex();
+    return true;
+}
+
+void Android_QuitEvents(void)
+{
+}
+
 #endif // SDL_VIDEO_DRIVER_ANDROID

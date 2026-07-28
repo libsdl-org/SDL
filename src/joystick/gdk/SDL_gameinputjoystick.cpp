@@ -27,6 +27,11 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_gameinput.h"
 
+extern "C"
+{
+#include "../hidapi/SDL_hidapijoystick_c.h"
+}
+
 enum
 {
     SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
@@ -116,7 +121,7 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 break;
             case USB_VENDOR_CRKD:
                 switch (info->productId) {
-                    case USB_PRODUCT_PDP_XB1_JAGUAR_GUITAR:
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
                     default:
                         break;
@@ -126,6 +131,16 @@ static Uint8 GAMEINPUT_GetDeviceRawType(const GameInputDeviceInfo *info)
                 switch (info->productId) {
                     case USB_PRODUCT_RED_OCTANE_XB1_GUITAR_HERO_LIVE_GUITAR:
                         return SDL_GAMEINPUT_RAWTYPE_GUITAR_HERO_LIVE_GUITAR;
+                    default:
+                        break;
+                }
+                break;
+            case USB_VENDOR_RED_OCTANE_GAMES:
+                switch (info->productId) {
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_GUITAR:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_GUITAR;
+                    case USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS:
+                        return SDL_GAMEINPUT_RAWTYPE_ROCK_BAND_DRUM_KIT;
                     default:
                         break;
                 }
@@ -173,7 +188,48 @@ static int GetSteamVirtualGamepadSlot(const char *device_path)
 }
 #endif // GAMEINPUT_API_VERSION >= 1
 
-static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
+static bool IsXbox360WirelessAdapter(Uint16 vendor, Uint16 product)
+{
+    if (vendor == USB_VENDOR_MICROSOFT) {
+        if (product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 ||
+            product == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void QueryDeviceName(const GameInputDeviceInfo *info, Uint16 vendor_id, Uint16 product_id, char **manufacturer_string, char **product_string)
+{
+    if (!info || !manufacturer_string || !product_string) {
+        return;
+    }
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    *manufacturer_string = HIDAPI_GetDeviceManufacturerName(vendor_id, product_id);
+    *product_string = HIDAPI_GetDeviceProductName(vendor_id, product_id);
+    if (*product_string) {
+        return;
+    }
+#endif
+
+    *manufacturer_string = NULL;
+#if GAMEINPUT_API_VERSION >= 1
+    if (info->displayName) {
+        *product_string = SDL_strdup(info->displayName);
+    }
+#else
+    if (info->displayName) {
+        *product_string = SDL_strdup(info->displayName->data);
+    }
+#endif
+    if (!info->displayName) {
+        *product_string = NULL;
+    }
+}
+
+static void GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
     GAMEINPUT_InternalDevice **devicelist = NULL;
     GAMEINPUT_InternalDevice *elem = NULL;
@@ -182,7 +238,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    const char *product_string = NULL;
+    char *manufacturer_string = NULL;
+    char *product_string = NULL;
     Uint8 driver_signature = 'g';
     Uint8 subtype = 0;
     int raw_type = SDL_GAMEINPUT_RAWTYPE_NONE;
@@ -194,7 +251,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #if GAMEINPUT_API_VERSION >= 1
     HRESULT hr = pDevice->GetDeviceInfo(&info);
     if (FAILED(hr)) {
-        return WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
+        WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
+        return;
     }
 #else
     info = pDevice->GetDeviceInfo();
@@ -210,25 +268,18 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     subtype = GAMEINPUT_GetDeviceSubtype(info);
     raw_type = GAMEINPUT_GetDeviceRawType(info);
 
-#if GAMEINPUT_API_VERSION >= 1
-    if (info->displayName) {
-        product_string = info->displayName;
-    }
-#else
-    if (info->displayName) {
-        product_string = info->displayName->data;
-    }
-#endif
+    QueryDeviceName(info, vendor, product, &manufacturer_string, &product_string);
 
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
+    if (IsXbox360WirelessAdapter(vendor, product) ||
+        SDL_ShouldIgnoreJoystick(vendor, product, version, product_string) ||
         SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, product_string)) {
-        return true;
+        goto done;
     }
 
 #if defined(SDL_JOYSTICK_DINPUT) && defined(SDL_HAPTIC_DINPUT)
     // This joystick backend currently doesn't provide a haptic backend, so fallback to DirectInput for haptic-capable devices.
     if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) && info->forceFeedbackMotorCount > 0 && pDevice->IsForceFeedbackMotorPoweredOn(0)) {
-        return true;
+        goto done;
     }
 #endif
 
@@ -236,7 +287,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 #if defined(SDL_JOYSTICK_DINPUT)
         // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
         if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {
-            return true;
+            goto done;
         }
 #endif
         if (info->supportedInput & GameInputKindController) {
@@ -245,7 +296,7 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
             subtype = 0;
         } else {
             // This joystick backend currently doesn't provide proper reading of other joystick types.
-            return true;
+            goto done;
         }
     }
 
@@ -254,19 +305,19 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
         if (elem && elem->device == pDevice) {
             // we're already added
             elem->isDeleteRequested = false;
-            return true;
+            goto done;
         }
     }
 
     elem = (GAMEINPUT_InternalDevice *)SDL_calloc(1, sizeof(*elem));
     if (!elem) {
-        return false;
+        goto done;
     }
 
     devicelist = (GAMEINPUT_InternalDevice **)SDL_realloc(g_GameInputList.devices, sizeof(elem) * (g_GameInputList.count + 1LL));
     if (!devicelist) {
         SDL_free(elem);
-        return false;
+        goto done;
     }
 
     // Generate a device path
@@ -277,8 +328,8 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     pDevice->AddRef();
     elem->device = pDevice;
-    elem->name = SDL_CreateJoystickName(vendor, product, NULL, product_string);
-    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, NULL, product_string, driver_signature, subtype);
+    elem->name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
+    elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, driver_signature, subtype);
     elem->device_instance = SDL_GetNextObjectID();
     elem->info = info;
     elem->vendor = vendor;
@@ -293,7 +344,9 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     g_GameInputList.devices = devicelist;
     g_GameInputList.devices[g_GameInputList.count++] = elem;
 
-    return true;
+done:
+    SDL_free(manufacturer_string);
+    SDL_free(product_string);
 }
 
 static bool GAMEINPUT_InternalRemoveByIndex(int idx)

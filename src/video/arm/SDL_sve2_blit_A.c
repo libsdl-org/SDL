@@ -96,7 +96,7 @@ static inline void sdl_sve_rgb565_stride_blend_with_opacity(uint16_t *SDL_RESTRI
                                                             size_t uStride,
                                                             uint16_t hwOpacity)
 {
-    sdl_sve_stride_loop_rgb16(uStride, vTailPred)
+    sdl_sve_stride_loop_u16(uStride, vTailPred)
     {
 
         svuint16x3_t vSource16x3 =

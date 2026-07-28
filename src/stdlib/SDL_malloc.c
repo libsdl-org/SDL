@@ -6537,23 +6537,16 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                 SDL_realloc_func realloc_func,
                                 SDL_free_func free_func)
 {
-    CHECK_PARAM(!malloc_func) {
-        return SDL_InvalidParamError("malloc_func");
+    if (!malloc_func && !calloc_func && !realloc_func && !free_func) {
+        SDL_GetOriginalMemoryFunctions(&s_mem.malloc_func, &s_mem.calloc_func, &s_mem.realloc_func, &s_mem.free_func);
+    } else if (!malloc_func || !calloc_func || !realloc_func || !free_func) {  // if not all are NULL, none of them can be NULL.
+        return false;  // do _not_ set an error message in here, since it will allocate memory!
+    } else {
+        s_mem.malloc_func = malloc_func;
+        s_mem.calloc_func = calloc_func;
+        s_mem.realloc_func = realloc_func;
+        s_mem.free_func = free_func;
     }
-    CHECK_PARAM(!calloc_func) {
-        return SDL_InvalidParamError("calloc_func");
-    }
-    CHECK_PARAM(!realloc_func) {
-        return SDL_InvalidParamError("realloc_func");
-    }
-    CHECK_PARAM(!free_func) {
-        return SDL_InvalidParamError("free_func");
-    }
-
-    s_mem.malloc_func = malloc_func;
-    s_mem.calloc_func = calloc_func;
-    s_mem.realloc_func = realloc_func;
-    s_mem.free_func = free_func;
     return true;
 }
 

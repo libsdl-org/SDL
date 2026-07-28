@@ -75,8 +75,8 @@
     } while (0)
 
 static bool SDL_gamepads_initialized;
-static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 // The face button style of a gamepad
 typedef enum
@@ -96,7 +96,7 @@ typedef enum
     SDL_GAMEPAD_MAPPING_PRIORITY_USER,
 } SDL_GamepadMappingPriority;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 typedef struct GamepadMapping_t
 {
@@ -121,13 +121,13 @@ typedef struct
 #undef _guarded
 
 static SDL_GUID s_zeroGUID;
-static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 // The SDL gamepad structure
 struct SDL_Gamepad
@@ -202,6 +202,9 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
 
     // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
     {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
+
+    // The IR receiver on the NVIDIA Shield TV
+    {"gpio_ir_recv",    GAMEPAD_BLACKLIST_BEGIN},
 
     {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
     {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
@@ -714,7 +717,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
     int button_mask;
     int axis_mask;
     Uint16 vendor, product;
-    
+
     SDL_strlcpy(mapping_string, "none,", sizeof(mapping_string));
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
@@ -1262,6 +1265,10 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                    SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
             // Nintendo Switch Pro controllers have a screenshot button
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
+        } else if (SDL_IsJoystickNintendoSwitch2Pro(vendor, product) ||
+                   SDL_IsJoystickNintendoSwitch2ProInputOnly(vendor, product)) {
+            // Nintendo Switch 2 Pro controllers have a screenshot button and C button
+            SDL_strlcat(mapping_string, "misc1:b11,misc2:b12", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
             // The Nintendo Switch Joy-Con combined controllers has a share button and paddles
             SDL_strlcat(mapping_string, "misc1:b11,paddle1:b12,paddle2:b13,paddle3:b14,paddle4:b15,", sizeof(mapping_string));

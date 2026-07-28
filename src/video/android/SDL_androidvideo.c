@@ -28,6 +28,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../../SDL_hints_c.h"
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidgl.h"
@@ -79,6 +80,16 @@ static void Android_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_free(device->internal);
     SDL_free(device);
+}
+
+// Input is part of video for Android, so this goes here.
+static void SDLCALL Android_Video_InternalHintCallback(
+    void *userdata,
+    const char *name,
+    const char *oldvalue,
+    const char *newvalue)
+{
+    Android_JNI_SetBackButtonTrapActive(SDL_GetStringBoolean(newvalue, false));
 }
 
 static SDL_VideoDevice *Android_CreateDevice(void)
@@ -185,6 +196,8 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
 
+    SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
+
     Android_InitTouch();
 
     Android_InitMouse();
@@ -195,6 +208,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
 
 void Android_VideoQuit(SDL_VideoDevice *_this)
 {
+    SDL_RemoveHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
     Android_QuitMouse();
     Android_QuitTouch();
 }

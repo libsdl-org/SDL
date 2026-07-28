@@ -122,9 +122,7 @@ char const * const *VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if (count) {
-        *count = SDL_arraysize(extensionsForVivante);
-    }
+    *count = SDL_arraysize(extensionsForVivante);
     return extensionsForVivante;
 }
 

@@ -36,7 +36,7 @@ extern "C" {
 #define GLAPI extern
 #endif
 
-#define GL_GLEXT_VERSION 20260319
+#define GL_GLEXT_VERSION 20260609
 
 /*#include <KHR/khrplatform.h>*/
 #ifndef __khrplatform_h_
@@ -9822,10 +9822,10 @@ GLAPI void APIENTRY glGetFramebufferParameterivMESA (GLenum target, GLenum pname
 #define GL_MESA_map_buffer_client_pointer 1
 #define GL_MAP_CLIENT_POINTER_BIT_MESA    0x4000
 #define GL_BUFFER_CLIENT_POINTER_SIZE_MESA 0x9790
-typedef void (APIENTRYP PFNGLADDCLIENTPOINTERRANGEMESAPROC) (GLvoid *addr, GLsizeiptr size);
+typedef void (APIENTRYP PFNGLADDCLIENTPOINTERRANGEMESAPROC) (void *addr, GLsizeiptr size);
 typedef void* (APIENTRYP PFNGLRELEASECLIENTPOINTERRANGEMESAPROC) (GLsizeiptr *size);
 #ifdef GL_GLEXT_PROTOTYPES
-GLAPI void APIENTRY glAddClientPointerRangeMESA (GLvoid *addr, GLsizeiptr size);
+GLAPI void APIENTRY glAddClientPointerRangeMESA (void *addr, GLsizeiptr size);
 GLAPI void* APIENTRY glReleaseClientPointerRangeMESA (GLsizeiptr *size);
 #endif
 #endif /* GL_MESA_map_buffer_client_pointer */
