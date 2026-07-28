@@ -253,6 +253,7 @@ extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 extern SDL_JoystickDriver SDL_VITA_JoystickDriver;
 extern SDL_JoystickDriver SDL_N3DS_JoystickDriver;
+extern SDL_JoystickDriver SDL_PLAYDATE_JoystickDriver;
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
