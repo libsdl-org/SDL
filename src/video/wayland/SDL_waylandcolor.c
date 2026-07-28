@@ -23,11 +23,11 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../events/SDL_windowevents_c.h"
 #include "SDL_waylandcolor.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 #include "color-management-v1-client-protocol.h"
+#include "../../events/SDL_windowevents_c.h"
 
 typedef struct Wayland_ColorInfoState
 {
@@ -98,28 +98,28 @@ static void image_description_info_handle_done(void *data,
     Wayland_CancelColorInfoRequest(state);
 
     switch (state->object_type) {
-    case WAYLAND_COLOR_OBJECT_TYPE_WINDOW:
-    {
-        SDL_SetWindowHDRProperties(state->window_data->sdlwindow, &state->HDR, true);
-        if (state->icc_size) {
-            state->window_data->icc_fd = state->icc_fd;
-            state->window_data->icc_size = state->icc_size;
-            SDL_SendWindowEvent(state->window_data->sdlwindow, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
-        }
-    } break;
-    case WAYLAND_COLOR_OBJECT_TYPE_DISPLAY:
-    {
-        SDL_copyp(&state->display_data->HDR, &state->HDR);
-
-        if (state->display_data->display) {
-            SDL_VideoDisplay *disp = SDL_GetVideoDisplay(state->display_data->display);
-            if (disp) {
-                SDL_SetDisplayHDRProperties(disp, &state->HDR);
+        case WAYLAND_COLOR_OBJECT_TYPE_WINDOW:
+        {
+            SDL_SetWindowHDRProperties(state->window_data->sdlwindow, &state->HDR, true);
+            if (state->icc_size) {
+                state->window_data->icc_fd = state->icc_fd;
+                state->window_data->icc_size = state->icc_size;
+                SDL_SendWindowEvent(state->window_data->sdlwindow, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
             }
-        } else {
-            SDL_copyp(&state->display_data->placeholder.HDR, &state->HDR);
-        }
-    } break;
+        } break;
+        case WAYLAND_COLOR_OBJECT_TYPE_DISPLAY:
+        {
+            SDL_copyp(&state->display_data->HDR, &state->HDR);
+
+            if (state->display_data->display) {
+                SDL_VideoDisplay *disp = SDL_GetVideoDisplay(state->display_data->display);
+                if (disp) {
+                    SDL_SetDisplayHDRProperties(disp, &state->HDR);
+                }
+            } else {
+                SDL_copyp(&state->display_data->placeholder.HDR, &state->HDR);
+            }
+        } break;
     }
 }
 

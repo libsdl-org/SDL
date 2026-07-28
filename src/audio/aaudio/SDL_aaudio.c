@@ -36,8 +36,8 @@ struct SDL_PrivateAudioData
 {
     AAudioStream *stream;
     int num_buffers;
-    Uint8 *mixbuf;       // Raw mixing buffer
-    size_t mixbuf_bytes; // num_buffers * device->buffer_size
+    Uint8 *mixbuf;          // Raw mixing buffer
+    size_t mixbuf_bytes;    // num_buffers * device->buffer_size
     size_t callback_bytes;
     size_t processed_bytes;
     SDL_Semaphore *semaphore;
@@ -57,12 +57,13 @@ SDL_ELF_NOTE_DLOPEN(
     "audio-aaudio",
     "Support for audio through AAudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    LIB_AAUDIO_SO)
+    LIB_AAUDIO_SO
+)
 
 typedef struct AAUDIO_Data
 {
     SDL_SharedObject *handle;
-#define SDL_PROC(ret, func, params) ret(*func) params;
+#define SDL_PROC(ret, func, params) ret (*func) params;
 #include "SDL_aaudiofuncs.h"
 } AAUDIO_Data;
 static AAUDIO_Data ctx;
@@ -71,19 +72,20 @@ static bool AAUDIO_LoadFunctions(AAUDIO_Data *data)
 {
 #define SDL_PROC(ret, func, params)                                                             \
     do {                                                                                        \
-        data->func = (ret(*) params)SDL_LoadFunction(data->handle, #func);                      \
+        data->func = (ret (*) params)SDL_LoadFunction(data->handle, #func);                     \
         if (!data->func) {                                                                      \
             return SDL_SetError("Couldn't load AAUDIO function %s: %s", #func, SDL_GetError()); \
         }                                                                                       \
     } while (0);
 
-#define SDL_PROC_OPTIONAL(ret, func, params)                                                        \
-    do {                                                                                            \
-        data->func = (ret(*) params)SDL_LoadFunction(data->handle, #func); /* if it fails, okay. */ \
+#define SDL_PROC_OPTIONAL(ret, func, params)                                                          \
+    do {                                                                                              \
+        data->func = (ret (*) params)SDL_LoadFunction(data->handle, #func);  /* if it fails, okay. */ \
     } while (0);
 #include "SDL_aaudiofuncs.h"
     return true;
 }
+
 
 static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error)
 {
@@ -91,14 +93,14 @@ static void AAUDIO_errorCallback(AAudioStream *stream, void *userData, aaudio_re
 
     // You MUST NOT close the audio stream from this callback, so we cannot call SDL_AudioDeviceDisconnected here.
     // Just flag the device so we can kill it in PlayDevice instead.
-    SDL_AudioDevice *device = (SDL_AudioDevice *)userData;
-    SDL_SetAtomicInt(&device->hidden->error_callback_triggered, (int)error); // AAUDIO_OK is zero, so !triggered means no error.
-    SDL_SignalSemaphore(device->hidden->semaphore);                          // in case we're blocking in WaitDevice.
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
+    SDL_SetAtomicInt(&device->hidden->error_callback_triggered, (int) error);  // AAUDIO_OK is zero, so !triggered means no error.
+    SDL_SignalSemaphore(device->hidden->semaphore);  // in case we're blocking in WaitDevice.
 }
 
 static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)userData;
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userData;
     struct SDL_PrivateAudioData *hidden = device->hidden;
     size_t framesize = SDL_AUDIO_FRAMESIZE(device->spec);
     size_t callback_bytes = numFrames * framesize;
@@ -112,7 +114,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         size_t end = (offset + size) % hidden->mixbuf_bytes;
         SDL_assert(size <= hidden->mixbuf_bytes);
 
-        // LOGI("Recorded %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->callback_bytes / framesize, hidden->processed_bytes / framesize);
+//LOGI("Recorded %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->callback_bytes / framesize, hidden->processed_bytes / framesize);
 
         if (offset <= end) {
             SDL_memcpy(&hidden->mixbuf[offset], input, size);
@@ -136,7 +138,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         size_t end = (offset + size) % hidden->mixbuf_bytes;
         SDL_assert(size <= hidden->mixbuf_bytes);
 
-        // LOGI("Playing %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->processed_bytes / framesize, hidden->callback_bytes / framesize);
+//LOGI("Playing %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->processed_bytes / framesize, hidden->callback_bytes / framesize);
 
         SDL_MemoryBarrierAcquire();
         if (offset <= end) {
@@ -176,7 +178,7 @@ static bool AAUDIO_WaitDevice(SDL_AudioDevice *device)
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (AAUDIO_PauseDevices was called).
         if (SDL_WaitSemaphoreTimeout(device->hidden->semaphore, 100)) {
-            return true; // semaphore was signaled, let's go!
+            return true;  // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }
@@ -205,7 +207,7 @@ static bool RecoverAAudioDevice(SDL_AudioDevice *device)
     SDL_copyp(&prevspec, &device->spec);
 
     if (!BuildAAudioStream(device)) {
-        return false; // oh well, we tried.
+        return false;  // oh well, we tried.
     }
 
     // we don't know the new device spec until we open the new device, so we saved off the old one and force it back
@@ -217,22 +219,23 @@ static bool RecoverAAudioDevice(SDL_AudioDevice *device)
     device->sample_frames = prev_sample_frames;
     SDL_copyp(&device->spec, &prevspec);
     if (!SDL_AudioDeviceFormatChangedAlreadyLocked(device, &newspec, new_sample_frames)) {
-        return false; // ugh
+        return false;  // ugh
     }
     return true;
 }
+
 
 static bool AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    const aaudio_result_t err = (aaudio_result_t)SDL_GetAtomicInt(&hidden->error_callback_triggered);
+    const aaudio_result_t err = (aaudio_result_t) SDL_GetAtomicInt(&hidden->error_callback_triggered);
     if (err) {
-        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Audio device triggered error %d (%s)", (int)err, ctx.AAudio_convertResultToText(err));
+        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Audio device triggered error %d (%s)", (int) err, ctx.AAudio_convertResultToText(err));
 
         if (!RecoverAAudioDevice(device)) {
-            return false; // oh well, we went down hard.
+            return false;  // oh well, we went down hard.
         }
     } else {
         SDL_MemoryBarrierRelease();
@@ -251,7 +254,7 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
         return -1;
     }
 
-    SDL_assert(buflen == device->buffer_size); // If this isn't true, we need to change semaphore trigger logic and account for wrapping copies here
+    SDL_assert(buflen == device->buffer_size);  // If this isn't true, we need to change semaphore trigger logic and account for wrapping copies here
     size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
     SDL_MemoryBarrierAcquire();
     SDL_memcpy(buffer, &hidden->mixbuf[offset], buflen);
@@ -284,10 +287,10 @@ static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 static void SetOptionalStreamUsage(AAudioStreamBuilder *builder)
 {
-    if (ctx.AAudioStreamBuilder_setUsage) { // optional API: requires Android 28
+    if (ctx.AAudioStreamBuilder_setUsage) {    // optional API: requires Android 28
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
         if (hint) {
-            aaudio_usage_t usage = AAUDIO_USAGE_MEDIA; // covers most things, and is the system default.
+            aaudio_usage_t usage = AAUDIO_USAGE_MEDIA;  // covers most things, and is the system default.
             if ((SDL_strcasecmp(hint, "Communications") == 0) || (SDL_strcasecmp(hint, "GameChat") == 0)) {
                 usage = AAUDIO_USAGE_VOICE_COMMUNICATION;
             } else if (SDL_strcasecmp(hint, "Game") == 0) {
@@ -323,7 +326,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     }
 
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
-    const int aaudio_device_id = (int)((size_t)device->handle);
+    const int aaudio_device_id = (int) ((size_t) device->handle);
     LOGI("Opening device id %d", aaudio_device_id);
     ctx.AAudioStreamBuilder_setDeviceId(builder, aaudio_device_id);
 #endif
@@ -334,7 +337,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     } else if (device->spec.format == SDL_AUDIO_F32) {
         format = AAUDIO_FORMAT_PCM_FLOAT;
     } else {
-        format = AAUDIO_FORMAT_PCM_I16; // sint16 is a safe bet for everything else.
+        format = AAUDIO_FORMAT_PCM_I16;  // sint16 is a safe bet for everything else.
     }
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
@@ -364,7 +367,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 
     SetOptionalStreamUsage(builder);
 
-    if (recording && ctx.AAudioStreamBuilder_setInputPreset) { // optional API: requires Android 28
+    if (recording && ctx.AAudioStreamBuilder_setInputPreset) {    // optional API: requires Android 28
         // try to use a microphone that is for recording external audio. Otherwise Android might choose the mic used for talking
         // on the telephone when held to the user's ear, which is often not useful at any distance from the device.
         ctx.AAudioStreamBuilder_setInputPreset(builder, AAUDIO_INPUT_PRESET_CAMCORDER);
@@ -399,7 +402,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     } else if (format == AAUDIO_FORMAT_PCM_FLOAT) {
         device->spec.format = SDL_AUDIO_F32;
     } else {
-        return SDL_SetError("Got unexpected audio format %d from AAudioStream_getFormat", (int)format);
+        return SDL_SetError("Got unexpected audio format %d from AAudioStream_getFormat", (int) format);
     }
 
     SDL_UpdatedAudioDeviceFormat(device);
@@ -439,13 +442,13 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
 // !!! FIXME: make this non-blocking!
 static void SDLCALL RequestAndroidPermissionBlockingCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_SetAtomicInt((SDL_AtomicInt *)userdata, granted ? 1 : -1);
+    SDL_SetAtomicInt((SDL_AtomicInt *) userdata, granted ? 1 : -1);
 }
 
 static bool AAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
-    SDL_assert(device->handle); // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
+    SDL_assert(device->handle);  // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
 #endif
 
     LOGI(SDL_FUNCTION);
@@ -496,14 +499,14 @@ static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
             }
         }
     }
-    return false; // keep enumerating.
+    return false;  // keep enumerating.
 }
 
 // Pause (block) all non already paused audio devices by taking their mixer lock
 void AAUDIO_PauseDevices(void)
 {
-    if (ctx.handle) { // AAUDIO driver is used?
-        (void)SDL_FindPhysicalAudioDeviceByCallback(PauseOneDevice, NULL);
+    if (ctx.handle) {  // AAUDIO driver is used?
+        (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneDevice, NULL);
     }
 }
 
@@ -520,13 +523,13 @@ static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
             }
         }
     }
-    return false; // keep enumerating.
+    return false;  // keep enumerating.
 }
 
 void AAUDIO_ResumeDevices(void)
 {
-    if (ctx.handle) { // AAUDIO driver is used?
-        (void)SDL_FindPhysicalAudioDeviceByCallback(ResumeOneDevice, NULL);
+    if (ctx.handle) {  // AAUDIO driver is used?
+        (void) SDL_FindPhysicalAudioDeviceByCallback(ResumeOneDevice, NULL);
     }
 }
 
@@ -541,6 +544,7 @@ static void AAUDIO_Deinitialize(void)
     SDL_zero(ctx);
     LOGI("End AAUDIO %s", SDL_GetError());
 }
+
 
 static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
 {

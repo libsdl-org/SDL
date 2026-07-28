@@ -19,11 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "SDL_internal.h"
+#include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
-#include "../SDL_sysvideo.h"
-#include "SDL_internal.h"
 #include "SDL_qnx.h"
 
 #include <errno.h>
@@ -56,17 +56,17 @@ SDL_PixelFormat screenToPixelFormat(int screen_format)
 
 bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
-    SDL_DisplayData *display_data = display->internal;
-    SDL_DisplayMode display_mode;
+    SDL_DisplayData     *display_data = display->internal;
+    SDL_DisplayMode     display_mode;
     SDL_DisplayModeData *display_mode_data;
 
     int index;
     int display_mode_count;
 
-    screen_display_t screen_display;
+    screen_display_t      screen_display;
     screen_display_mode_t *screen_display_modes;
-    int screen_format;
-    int screen_refresh_rate;
+    int                   screen_format;
+    int                   screen_refresh_rate;
 
     if (display_data == NULL) {
         return false;
@@ -83,7 +83,7 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
         return false;
     }
 
-    if (screen_get_display_modes(screen_display, display_mode_count, screen_display_modes) < 0) {
+    if(screen_get_display_modes(screen_display, display_mode_count, screen_display_modes) < 0) {
         SDL_free(screen_display_modes);
         return false;
     }

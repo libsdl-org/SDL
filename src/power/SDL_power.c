@@ -26,7 +26,7 @@
  * false to try next implementation.
  */
 typedef bool (*SDL_GetPowerInfo_Impl)(SDL_PowerState *state, int *seconds,
-                                      int *percent);
+                                          int *percent);
 
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_HARDWIRED

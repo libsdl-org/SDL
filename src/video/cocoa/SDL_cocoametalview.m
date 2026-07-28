@@ -146,9 +146,9 @@ SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_MetalView metalview;
 
         newview = [[SDL3_cocoametalview alloc] initWithFrame:view.frame
-                                                     highDPI:highDPI
-                                                    windowID:windowID
-                                                      opaque:opaque];
+                                                    highDPI:highDPI
+                                                   windowID:windowID
+                                                     opaque:opaque];
         if (newview == nil) {
             SDL_OutOfMemory();
             return NULL;

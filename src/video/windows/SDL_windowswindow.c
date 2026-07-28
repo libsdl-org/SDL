@@ -32,8 +32,8 @@
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
-#include "SDL_windowskeyboard.h"
 #include "SDL_windowsvideo.h"
+#include "SDL_windowskeyboard.h"
 #include "SDL_windowswindow.h"
 
 // Dropfile support
@@ -245,14 +245,10 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_AdjustWindowRectWithStyle: in: %d, %d, %dx%d, returning: %d, %d, %dx%d, used dpi %d for frame calculation",
-            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.x : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.x
-                                                                                                              : window->x),
-            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.y : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.y
-                                                                                                              : window->y),
-            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.w : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.w
-                                                                                                              : window->w),
-            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.h : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.h
-                                                                                                              : window->h),
+            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.x : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.x : window->x),
+            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.y : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.y : window->y),
+            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.w : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.w : window->w),
+            (rect_type == SDL_WINDOWRECT_FLOATING ? window->floating.h : rect_type == SDL_WINDOWRECT_WINDOWED ? window->windowed.h : window->h),
             *x, *y, *width, *height, frame_dpi);
 #endif
     return true;
@@ -397,12 +393,13 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->initializing = true;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
+
     // WIN_WarpCursor() jitters by +1, and remote desktop warp wobble is +/- 1
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     LONG remote_desktop_adjustment = GetSystemMetrics(SM_REMOTESESSION) ? 2 : 0;
-    data->cursor_ctrlock_rect.left = 0 - remote_desktop_adjustment;
-    data->cursor_ctrlock_rect.top = 0;
-    data->cursor_ctrlock_rect.right = 1 + remote_desktop_adjustment;
+    data->cursor_ctrlock_rect.left   = 0 - remote_desktop_adjustment;
+    data->cursor_ctrlock_rect.top    = 0;
+    data->cursor_ctrlock_rect.right  = 1 + remote_desktop_adjustment;
     data->cursor_ctrlock_rect.bottom = 1;
 #endif
 
@@ -802,7 +799,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES ||
              SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false))
 #ifdef SDL_VIDEO_OPENGL_WGL
-            && (!_this->gl_data || WIN_GL_UseEGL(_this))
+             && (!_this->gl_data || WIN_GL_UseEGL(_this))
 #endif // SDL_VIDEO_OPENGL_WGL
         ) {
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -823,7 +820,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return false;
         }
 #else
-    return SDL_SetError("Could not create GL window (WGL support not configured)");
+        return SDL_SetError("Could not create GL window (WGL support not configured)");
 #endif
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     }
@@ -926,8 +923,7 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
             WIN_ConstrainPopup(window, true);
             return WIN_SetWindowPositionInternal(window,
                                                  window->internal->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE |
-                                                     SWP_NOACTIVATE,
-                                                 SDL_WINDOWRECT_PENDING);
+                                                 SWP_NOACTIVATE, SDL_WINDOWRECT_PENDING);
         }
     } else {
         return SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_ENTER, true);
@@ -1532,8 +1528,7 @@ static BOOL GetClientScreenRect(HWND hwnd, RECT *rect)
            ClientToScreen(hwnd, (LPPOINT)rect + 1); // POINT( right , bottom )
 }
 
-void WIN_UnclipCursorForWindow(SDL_Window *window)
-{
+void WIN_UnclipCursorForWindow(SDL_Window *window) {
     SDL_WindowData *data = window->internal;
     RECT rect;
     if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
@@ -1567,12 +1562,14 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         if (!GetClipCursor(&current)) {
             return;
         }
-        if (videodevice && (current.left != videodevice->desktop_bounds.x ||
-                            current.top != videodevice->desktop_bounds.y)) {
+        if (videodevice && (
+            current.left != videodevice->desktop_bounds.x ||
+            current.top  != videodevice->desktop_bounds.y
+        )) {
             POINT first, second;
-            first.x = current.left;
-            first.y = current.top;
-            second.x = current.right - 1;
+            first.x  = current.left;
+            first.y  = current.top;
+            second.x = current.right  - 1;
             second.y = current.bottom - 1;
             if (!PtInRect(&data->cursor_clipped_rect, first) ||
                 !PtInRect(&data->cursor_clipped_rect, second)) {
@@ -1608,19 +1605,19 @@ void WIN_UpdateClipCursor(SDL_Window *window)
 
     RECT target = client;
     if (lock_to_ctr) {
-        LONG cx = (client.left + client.right) / 2;
-        LONG cy = (client.top + client.bottom) / 2;
+        LONG cx = (client.left + client.right ) / 2;
+        LONG cy = (client.top  + client.bottom) / 2;
         target = data->cursor_ctrlock_rect;
-        target.left += cx;
-        target.right += cx;
-        target.top += cy;
+        target.left   += cx;
+        target.right  += cx;
+        target.top    += cy;
         target.bottom += cy;
     } else if (win_mouse_rect) {
         RECT custom, overlap;
-        custom.left = client.left + mouse_rect.x;
-        custom.top = client.top + mouse_rect.y;
-        custom.right = client.left + mouse_rect.x + mouse_rect.w;
-        custom.bottom = client.top + mouse_rect.y + mouse_rect.h;
+        custom.left   = client.left + mouse_rect.x;
+        custom.top    = client.top  + mouse_rect.y;
+        custom.right  = client.left + mouse_rect.x + mouse_rect.w;
+        custom.bottom = client.top  + mouse_rect.y + mouse_rect.h;
         if (IntersectRect(&overlap, &client, &custom)) {
             target = overlap;
         } else if (!win_is_grabbed) {

@@ -24,12 +24,11 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 #include "hidapi/SDL_hidapihaptic.h"
 #endif
-#include "../SDL_hints_c.h"
-#include "../joystick/SDL_joystick_c.h" // For SDL_IsJoystickValid
 #include "SDL_haptic_c.h"
+#include "../joystick/SDL_joystick_c.h" // For SDL_IsJoystickValid
+#include "../SDL_hints_c.h"
 
-typedef struct SDL_Haptic_VIDPID_Naxes
-{
+typedef struct SDL_Haptic_VIDPID_Naxes {
     Uint16 vid;
     Uint16 pid;
     Uint16 naxes;
@@ -108,10 +107,10 @@ static int SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
 
 static SDL_Haptic *SDL_haptics = NULL;
 
-#define CHECK_HAPTIC_MAGIC(haptic, result)                           \
-    CHECK_PARAM (!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
-        SDL_InvalidParamError("haptic");                             \
-        return result;                                               \
+#define CHECK_HAPTIC_MAGIC(haptic, result)                          \
+    CHECK_PARAM(!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
+        SDL_InvalidParamError("haptic");                            \
+        return result;                                              \
     }
 
 bool SDL_InitHaptics(void)
@@ -119,12 +118,12 @@ bool SDL_InitHaptics(void)
     if (!SDL_SYS_HapticInit()) {
         return false;
     }
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (!SDL_HIDAPI_HapticInit()) {
         SDL_SYS_HapticQuit();
         return false;
     }
-#endif
+    #endif
 
     return true;
 }
@@ -310,11 +309,11 @@ bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
         // Must be a valid joystick, but not a gamepad unless running under sdl2-compat
         if (SDL_IsJoystickValid(joystick) &&
             (SDL_GetHintBoolean("SDL2_COMPAT", false) || !SDL_IsGamepad(SDL_GetJoystickID(joystick)))) {
-#ifdef SDL_JOYSTICK_HIDAPI
+            #ifdef SDL_JOYSTICK_HIDAPI
             result = SDL_SYS_JoystickIsHaptic(joystick) || SDL_HIDAPI_JoystickIsHaptic(joystick);
-#else
+            #else
             result = SDL_SYS_JoystickIsHaptic(joystick);
-#endif
+            #endif
         }
     }
     SDL_UnlockJoysticks();
@@ -339,11 +338,11 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         hapticlist = SDL_haptics;
         // Check to see if joystick's haptic is already open
         while (hapticlist) {
-#ifdef SDL_JOYSTICK_HIDAPI
+            #ifdef SDL_JOYSTICK_HIDAPI
             if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick) || SDL_HIDAPI_JoystickSameHaptic(hapticlist, joystick)) {
-#else
+            #else
             if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
-#endif
+            #endif
                 haptic = hapticlist;
                 ++haptic->ref_count;
                 SDL_UnlockJoysticks();
@@ -364,7 +363,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
          */
         SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
         haptic->rumble_id = -1;
-#ifdef SDL_JOYSTICK_HIDAPI
+        #ifdef SDL_JOYSTICK_HIDAPI
         if (SDL_HIDAPI_JoystickIsHaptic(joystick)) {
             if (!SDL_HIDAPI_HapticOpenFromJoystick(haptic, joystick)) {
                 SDL_SetError("Haptic: SDL_HIDAPI_HapticOpenFromJoystick failed.");
@@ -373,8 +372,8 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
                 return NULL;
             }
         } else
-#endif
-            if (!SDL_SYS_HapticOpenFromJoystick(haptic, joystick)) {
+        #endif
+        if (!SDL_SYS_HapticOpenFromJoystick(haptic, joystick)) {
             SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
             SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
             SDL_free(haptic);
@@ -423,18 +422,18 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
     SDL_Haptic *hapticlist;
     SDL_Haptic *hapticlistprev;
 
-    CHECK_HAPTIC_MAGIC(haptic, );
+    CHECK_HAPTIC_MAGIC(haptic,);
 
     // Check if it's still in use
     if (--haptic->ref_count > 0) {
         return;
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         SDL_HIDAPI_HapticClose(haptic);
     } else
-#endif
+    #endif
     {
         // Close it, properly removing effects if needed
         for (i = 0; i < haptic->neffects; i++) {
@@ -475,9 +474,9 @@ void SDL_QuitHaptics(void)
         SDL_CloseHaptic(SDL_haptics);
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     SDL_HIDAPI_HapticQuit();
-#endif
+    #endif
     SDL_SYS_HapticQuit();
 }
 
@@ -513,7 +512,7 @@ bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effec
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-    CHECK_PARAM (!effect) {
+    CHECK_PARAM(!effect) {
         return false;
     }
 
@@ -529,7 +528,7 @@ SDL_HapticEffectID SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEf
 
     CHECK_HAPTIC_MAGIC(haptic, -1);
 
-    CHECK_PARAM (!effect) {
+    CHECK_PARAM(!effect) {
         SDL_InvalidParamError("effect");
         return -1;
     }
@@ -540,11 +539,11 @@ SDL_HapticEffectID SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEf
         return -1;
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticNewEffect(haptic, effect);
     }
-#endif
+    #endif
 
     // See if there's a free slot
     for (i = 0; i < haptic->neffects; i++) {
@@ -578,24 +577,24 @@ bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect, const
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-    CHECK_PARAM (!ValidEffect(haptic, effect)) {
+    CHECK_PARAM(!ValidEffect(haptic, effect)) {
         return false;
     }
 
-    CHECK_PARAM (!data) {
+    CHECK_PARAM(!data) {
         return SDL_InvalidParamError("data");
     }
 
     // Can't change type dynamically.
-    CHECK_PARAM (data->type != haptic->effects[effect].effect.type) {
+    CHECK_PARAM(data->type != haptic->effects[effect].effect.type) {
         return SDL_SetError("Haptic: Updating effect type is illegal.");
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticUpdateEffect(haptic, effect, data);
     }
-#endif
+    #endif
 
     // Updates the effect
     if (!SDL_SYS_HapticUpdateEffect(haptic, &haptic->effects[effect], data)) {
@@ -611,11 +610,11 @@ bool SDL_RunHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect, Uint32 i
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticRunEffect(haptic, effect, iterations);
     }
-#endif
+    #endif
 
     if (!ValidEffect(haptic, effect)) {
         return false;
@@ -633,11 +632,11 @@ bool SDL_StopHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticStopEffect(haptic, effect);
     }
-#endif
+    #endif
 
     if (!ValidEffect(haptic, effect)) {
         return false;
@@ -653,14 +652,14 @@ bool SDL_StopHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 
 void SDL_DestroyHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
-    CHECK_HAPTIC_MAGIC(haptic, );
+    CHECK_HAPTIC_MAGIC(haptic,);
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         SDL_HIDAPI_HapticDestroyEffect(haptic, effect);
         return;
     }
-#endif
+    #endif
 
     if (!ValidEffect(haptic, effect)) {
         return;
@@ -678,11 +677,11 @@ bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticGetEffectStatus(haptic, effect);
     }
-#endif
+    #endif
 
     if (!ValidEffect(haptic, effect)) {
         return false;
@@ -730,11 +729,11 @@ bool SDL_SetHapticGain(SDL_Haptic *haptic, int gain)
         real_gain = gain;
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticSetGain(haptic, real_gain);
     }
-#endif
+    #endif
 
     return SDL_SYS_HapticSetGain(haptic, real_gain);
 }
@@ -751,11 +750,11 @@ bool SDL_SetHapticAutocenter(SDL_Haptic *haptic, int autocenter)
         return SDL_SetError("Haptic: Autocenter must be between 0 and 100.");
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticSetAutocenter(haptic, autocenter);
     }
-#endif
+    #endif
 
     return SDL_SYS_HapticSetAutocenter(haptic, autocenter);
 }
@@ -768,11 +767,11 @@ bool SDL_PauseHaptic(SDL_Haptic *haptic)
         return SDL_SetError("Haptic: Device does not support setting pausing.");
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticPause(haptic);
     }
-#endif
+    #endif
 
     return SDL_SYS_HapticPause(haptic);
 }
@@ -785,11 +784,11 @@ bool SDL_ResumeHaptic(SDL_Haptic *haptic)
         return true; // Not going to be paused, so we pretend it's unpaused.
     }
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticResume(haptic);
     }
-#endif
+    #endif
 
     return SDL_SYS_HapticResume(haptic);
 }
@@ -798,11 +797,11 @@ bool SDL_StopHapticEffects(SDL_Haptic *haptic)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-#ifdef SDL_JOYSTICK_HIDAPI
+    #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticStopAll(haptic);
     }
-#endif
+    #endif
 
     return SDL_SYS_HapticStopAll(haptic);
 }

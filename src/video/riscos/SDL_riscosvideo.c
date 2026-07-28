@@ -22,19 +22,19 @@
 
 #ifdef SDL_VIDEO_DRIVER_RISCOS
 
+#include "../SDL_sysvideo.h"
+#include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
-#include "../SDL_pixels_c.h"
-#include "../SDL_sysvideo.h"
 
+#include "SDL_riscosvideo.h"
 #include "SDL_riscosevents_c.h"
 #include "SDL_riscosframebuffer_c.h"
-#include "SDL_riscosmessagebox.h"
-#include "SDL_riscosmodes.h"
 #include "SDL_riscosmouse.h"
-#include "SDL_riscosvideo.h"
+#include "SDL_riscosmodes.h"
 #include "SDL_riscoswindow.h"
+#include "SDL_riscosmessagebox.h"
 
 #define RISCOSVID_DRIVER_NAME "riscos"
 

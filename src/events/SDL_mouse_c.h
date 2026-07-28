@@ -24,10 +24,10 @@
 #define SDL_mouse_c_h_
 
 // Mouse events not associated with a specific input device
-#define SDL_GLOBAL_MOUSE_ID 0
+#define SDL_GLOBAL_MOUSE_ID     0
 
 // The default mouse input device, for platforms that don't have multiple mice
-#define SDL_DEFAULT_MOUSE_ID 1
+#define SDL_DEFAULT_MOUSE_ID    1
 
 typedef struct SDL_CursorData SDL_CursorData;
 
@@ -148,9 +148,9 @@ typedef struct
     bool mouse_touch_events;
     bool pen_mouse_events;
     bool pen_touch_events;
-    bool was_touch_mouse_events;   // Was a touch-mouse event pending?
-    bool added_mouse_touch_device; // did we SDL_AddTouch() a virtual touch device for the mouse?
-    bool added_pen_touch_device;   // did we SDL_AddTouch() a virtual touch device for pens?
+    bool was_touch_mouse_events; // Was a touch-mouse event pending?
+    bool added_mouse_touch_device;  // did we SDL_AddTouch() a virtual touch device for the mouse?
+    bool added_pen_touch_device;  // did we SDL_AddTouch() a virtual touch device for pens?
 #ifdef SDL_PLATFORM_VITA
     Uint8 vita_touch_mouse_device;
 #endif

@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_keyboard_c.h"
 #include "SDL_keymap_c.h"
+#include "SDL_keyboard_c.h"
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate);
 static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
@@ -290,7 +290,7 @@ static const struct
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    CHECK_PARAM (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return SDLK_UNKNOWN;
     }
@@ -726,7 +726,7 @@ static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *m
 
     for (int i = 0; i < SDL_arraysize(normal_default_symbols); ++i) {
         if (key == normal_default_symbols[i]) {
-            return (SDL_Scancode)(SDL_SCANCODE_1 + i);
+            return(SDL_Scancode)(SDL_SCANCODE_1 + i);
         }
     }
 
@@ -735,7 +735,7 @@ static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *m
             if (modstate) {
                 *modstate = SDL_KMOD_SHIFT;
             }
-            return (SDL_Scancode)(SDL_SCANCODE_1 + i);
+            return(SDL_Scancode)(SDL_SCANCODE_1 + i);
         }
     }
 
@@ -746,7 +746,8 @@ static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *m
     return SDL_SCANCODE_UNKNOWN;
 }
 
-static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] = {
+static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] =
+{
     /* 0 */ NULL,
     /* 1 */ NULL,
     /* 2 */ NULL,
@@ -1052,7 +1053,7 @@ static const char *SDL_extended_key_names[] = {
 
 bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
-    CHECK_PARAM (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         return SDL_InvalidParamError("scancode");
     }
 
@@ -1064,7 +1065,7 @@ const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
 
-    CHECK_PARAM (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return "";
     }
@@ -1081,7 +1082,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 {
     int i;
 
-    CHECK_PARAM (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         SDL_InvalidParamError("name");
         return SDL_SCANCODE_UNKNOWN;
     }

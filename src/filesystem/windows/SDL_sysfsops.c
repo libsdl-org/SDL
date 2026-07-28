@@ -36,12 +36,12 @@
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
-    if (*path == '\0') { // if empty (completely at the root), we need to enumerate drive letters.
+    if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
         const DWORD drives = GetLogicalDrives();
         char name[] = { 0, ':', '\\', '\0' };
         for (int i = 'A'; (result == SDL_ENUM_CONTINUE) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
-                name[0] = (char)i;
+                name[0] = (char) i;
                 result = cb(userdata, "", name);
             }
         }
@@ -50,7 +50,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
         // filename element at the end of the path string, so always tack on a "\\*" to get everything, and
         // also prevent any wildcards inserted by the app from being respected.
         char *pattern = NULL;
-        int patternlen = SDL_asprintf(&pattern, "%s\\\\", path); // we'll replace that second '\\' in the trimdown.
+        int patternlen = SDL_asprintf(&pattern, "%s\\\\", path);  // we'll replace that second '\\' in the trimdown.
         if ((patternlen == -1) || (!pattern)) {
             return false;
         }
@@ -58,7 +58,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
         // trim down to a single path separator at the end, in case the caller added one or more.
         patternlen--;
         while ((patternlen > 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
-            pattern[patternlen--] = '\0';
+            pattern[patternlen--] ='\0';
         }
         pattern[++patternlen] = '\\';
         pattern[++patternlen] = '*';
@@ -70,7 +70,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
             return false;
         }
 
-        pattern[--patternlen] = '\0'; // chop off the '*' so we just have the dirname with a path separator.
+        pattern[--patternlen] = '\0';  // chop off the '*' so we just have the dirname with a path separator.
 
         WIN32_FIND_DATAW entw;
         HANDLE dir = FindFirstFileExW(wpattern, FindExInfoStandard, &entw, FindExSearchNameMatch, NULL, 0);
@@ -83,7 +83,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
         do {
             const WCHAR *fn = entw.cFileName;
 
-            if (fn[0] == '.') { // ignore "." and ".."
+            if (fn[0] == '.') {  // ignore "." and ".."
                 if ((fn[1] == '\0') || ((fn[1] == '.') && (fn[2] == '\0'))) {
                     continue;
                 }
@@ -117,7 +117,7 @@ bool SDL_SYS_RemovePath(const char *path)
         SDL_free(wpath);
         if (GetLastError() == ERROR_FILE_NOT_FOUND) {
             // Note that ERROR_PATH_NOT_FOUND means a parent dir is missing, and we consider that an error.
-            return true; // thing is already gone, call it a success.
+            return true;  // thing is already gone, call it a success.
         }
         return WIN_SetError("Couldn't get path's attributes");
     }
@@ -166,7 +166,7 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
         return false;
     }
 
-    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION | COPY_FILE_NO_BUFFERING);
+    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION|COPY_FILE_NO_BUFFERING);
     SDL_free(wnewpath);
     SDL_free(woldpath);
     if (!rc) {
@@ -187,7 +187,7 @@ bool SDL_SYS_CreateDirectory(const char *path)
         WIN32_FILE_ATTRIBUTE_DATA winstat;
         if (GetFileAttributesExW(wpath, GetFileExInfoStandard, &winstat)) {
             if (winstat.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                rc = 1; // exists and is already a directory: cool.
+                rc = 1;  // exists and is already a directory: cool.
             }
         }
     }
@@ -218,10 +218,10 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
         info->size = 0;
     } else if (winstat.dwFileAttributes & (FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_DEVICE)) {
         info->type = SDL_PATHTYPE_OTHER;
-        info->size = ((((Uint64)winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     } else {
         info->type = SDL_PATHTYPE_FILE;
-        info->size = ((((Uint64)winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
+        info->size = ((((Uint64) winstat.nFileSizeHigh) << 32) | winstat.nFileSizeLow);
     }
 
     info->create_time = SDL_TimeFromWindows(winstat.ftCreationTime.dwLowDateTime, winstat.ftCreationTime.dwHighDateTime);
@@ -232,3 +232,4 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 }
 
 #endif // SDL_FSOPS_WINDOWS
+

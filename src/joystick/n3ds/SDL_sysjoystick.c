@@ -36,11 +36,11 @@
   This correction is applied to axis values
   so they fit better in SDL's value range.
 */
-static inline int Correct_Axis_X(int X)
-{
+static inline int Correct_Axis_X(int X) {
     if (X > 160) {
         return SDL_JOYSTICK_AXIS_MAX;
-    } else if (X < -160) {
+    }
+    else if (X < -160) {
         return -SDL_JOYSTICK_AXIS_MAX;
     }
     return (X * SDL_JOYSTICK_AXIS_MAX) / 160;
@@ -50,8 +50,7 @@ static inline int Correct_Axis_X(int X)
   The Y axis needs to be flipped because SDL's "up"
   is reversed compared to libctru's "up"
 */
-static inline int Correct_Axis_Y(int Y)
-{
+static inline int Correct_Axis_Y(int Y) {
     return Correct_Axis_X(-Y);
 }
 
@@ -151,13 +150,13 @@ static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
     hidCircleRead(&current_state);
     if (previous_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                             0,
-                             Correct_Axis_X(current_state.dx));
+                                0,
+                                Correct_Axis_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                             1,
-                             Correct_Axis_Y(current_state.dy));
+                                1,
+                                Correct_Axis_Y(current_state.dy));
     }
     previous_state = current_state;
 }
@@ -169,13 +168,13 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
     hidCstickRead(&current_state);
     if (previous_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                             2,
-                             Correct_Axis_X(current_state.dx));
+                                2,
+                                Correct_Axis_X(current_state.dx));
     }
     if (previous_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
-                             3,
-                             Correct_Axis_Y(current_state.dy));
+                                3,
+                                Correct_Axis_Y(current_state.dy));
     }
     previous_state = current_state;
 }

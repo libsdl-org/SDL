@@ -1129,48 +1129,48 @@ void SDL_QuitMouse(void)
     mouse->num_sources = 0;
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME,
-                           SDL_MouseDoubleClickTimeChanged, mouse);
+                        SDL_MouseDoubleClickTimeChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS,
-                           SDL_MouseDoubleClickRadiusChanged, mouse);
+                        SDL_MouseDoubleClickRadiusChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
-                           SDL_MouseNormalSpeedScaleChanged, mouse);
+                        SDL_MouseNormalSpeedScaleChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
-                           SDL_MouseRelativeSpeedScaleChanged, mouse);
+                        SDL_MouseRelativeSpeedScaleChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
-                           SDL_MouseRelativeSystemScaleChanged, mouse);
+                        SDL_MouseRelativeSystemScaleChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER,
-                           SDL_MouseRelativeModeCenterChanged, mouse);
+                        SDL_MouseRelativeModeCenterChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
-                           SDL_MouseWarpEmulationChanged, mouse);
+                        SDL_MouseWarpEmulationChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
-                           SDL_TouchMouseEventsChanged, mouse);
+                        SDL_TouchMouseEventsChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
-                           SDL_MouseTouchEventsChanged, mouse);
+                        SDL_MouseTouchEventsChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
-                           SDL_PenMouseEventsChanged, mouse);
+                        SDL_PenMouseEventsChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
-                           SDL_MouseAutoCaptureChanged, mouse);
+                        SDL_MouseAutoCaptureChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
-                           SDL_MouseRelativeWarpMotionChanged, mouse);
+                        SDL_MouseRelativeWarpMotionChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
-                           SDL_MouseRelativeCursorVisibleChanged, mouse);
+                        SDL_MouseRelativeCursorVisibleChanged, mouse);
 
     SDL_RemoveHintCallback("SDL_MOUSE_INTEGER_MODE",
-                           SDL_MouseIntegerModeChanged, mouse);
+                        SDL_MouseIntegerModeChanged, mouse);
 
-    for (int i = SDL_mouse_count; i--;) {
+    for (int i = SDL_mouse_count; i--; ) {
         SDL_RemoveMouse(SDL_mice[i]);
     }
     SDL_free(SDL_mice);
@@ -1633,17 +1633,17 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Cursor *cursor = NULL;
 
-    CHECK_PARAM (!frames) {
+    CHECK_PARAM(!frames) {
         SDL_InvalidParamError("frames");
         return NULL;
     }
 
-    CHECK_PARAM (!frames[0].surface) {
+    CHECK_PARAM(!frames[0].surface) {
         SDL_SetError("NULL surface in frame 0");
         return NULL;
     }
 
-    CHECK_PARAM (frame_count <= 0) {
+    CHECK_PARAM(frame_count <= 0) {
         SDL_InvalidParamError("frame_count");
         return NULL;
     }
@@ -1658,8 +1658,8 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     hot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
 
     // Sanity check the hot spot
-    CHECK_PARAM ((hot_x < 0) || (hot_y < 0) ||
-                 (hot_x >= frames[0].surface->w) || (hot_y >= frames[0].surface->h)) {
+    CHECK_PARAM((hot_x < 0) || (hot_y < 0) ||
+                (hot_x >= frames[0].surface->w) || (hot_y >= frames[0].surface->h)) {
         SDL_SetError("Cursor hot spot doesn't lie within cursor");
         return NULL;
     }
@@ -1675,13 +1675,13 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     const int h = frames[0].surface->h;
 
     for (int i = 0; i < frame_count; ++i) {
-        CHECK_PARAM (!frames[i].surface) {
+        CHECK_PARAM(!frames[i].surface) {
             SDL_SetError("Null surface in frame %i", i);
             goto cleanup;
         }
 
         // All cursor images should be the same size.
-        CHECK_PARAM (frames[i].surface->w != w || frames[i].surface->h != h) {
+        CHECK_PARAM(frames[i].surface->w != w || frames[i].surface->h != h) {
             SDL_SetError("All frames in an animated sequence must have the same dimensions");
             goto cleanup;
         }
@@ -1738,7 +1738,7 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     SDL_Surface *temp = NULL;
     SDL_Cursor *cursor;
 
-    CHECK_PARAM (!surface) {
+    CHECK_PARAM(!surface) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -1749,8 +1749,8 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     hot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
 
     // Sanity check the hot spot
-    CHECK_PARAM ((hot_x < 0) || (hot_y < 0) ||
-                 (hot_x >= surface->w) || (hot_y >= surface->h)) {
+    CHECK_PARAM((hot_x < 0) || (hot_y < 0) ||
+                (hot_x >= surface->w) || (hot_y >= surface->h)) {
         SDL_SetError("Cursor hot spot doesn't lie within cursor");
         return NULL;
     }

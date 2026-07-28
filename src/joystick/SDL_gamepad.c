@@ -22,22 +22,23 @@
 
 // This is the gamepad API for Simple DirectMedia Layer
 
-#include "../SDL_hints_c.h"
-#include "../events/SDL_events_c.h"
-#include "SDL_gamepad_c.h"
-#include "SDL_gamepad_db.h"
+#include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_steam_virtual_gamepad.h"
-#include "SDL_sysjoystick.h"
+#include "SDL_gamepad_c.h"
+#include "SDL_gamepad_db.h"
 #include "controller_type.h"
+#include "usb_ids.h"
 #include "hidapi/SDL_hidapi_flydigi.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
 #include "hidapi/SDL_hidapi_sinput.h"
-#include "usb_ids.h"
+#include "../events/SDL_events_c.h"
+#include "../SDL_hints_c.h"
 
 #ifdef SDL_PLATFORM_WIN32
 #include "../core/windows/SDL_windows.h"
 #endif
+
 
 // Many gamepads turn the center button into an instantaneous button press
 #define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS 250
@@ -149,12 +150,12 @@ struct SDL_Gamepad
 
 #undef _guarded
 
-#define CHECK_GAMEPAD_MAGIC(gamepad, result)                           \
-    CHECK_PARAM (!SDL_ObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD) || \
-                 !SDL_IsJoystickValid(gamepad->joystick)) {            \
-        SDL_InvalidParamError("gamepad");                              \
-        SDL_UnlockJoysticks();                                         \
-        return result;                                                 \
+#define CHECK_GAMEPAD_MAGIC(gamepad, result)                            \
+    CHECK_PARAM(!SDL_ObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD) ||   \
+        !SDL_IsJoystickValid(gamepad->joystick)) {                      \
+        SDL_InvalidParamError("gamepad");                               \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
 static SDL_vidpid_list SDL_allowed_gamepads = {
@@ -175,47 +176,45 @@ static SDL_vidpid_list SDL_ignored_gamepads = {
     See also `initial_blacklist_devices` in SDL_joystick.c
 */
 
-enum SDL_GamepadBlacklistWordsPosition
-{
+enum SDL_GamepadBlacklistWordsPosition {
     GAMEPAD_BLACKLIST_BEGIN,
     GAMEPAD_BLACKLIST_END,
     GAMEPAD_BLACKLIST_ANYWHERE,
 };
 
-struct SDL_GamepadBlacklistWords
-{
-    const char *str;
+struct SDL_GamepadBlacklistWords {
+    const char* str;
     enum SDL_GamepadBlacklistWordsPosition pos;
 };
 
 static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
 #ifdef SDL_PLATFORM_LINUX
-    { " Motion Sensors", GAMEPAD_BLACKLIST_END }, // Don't treat the PS3 and PS4 motion controls as a separate gamepad
-    { " IMU", GAMEPAD_BLACKLIST_END },            // Don't treat the Nintendo IMU as a separate gamepad
-    { " Touchpad", GAMEPAD_BLACKLIST_END },       // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
+    {" Motion Sensors", GAMEPAD_BLACKLIST_END}, // Don't treat the PS3 and PS4 motion controls as a separate gamepad
+    {" IMU",            GAMEPAD_BLACKLIST_END}, // Don't treat the Nintendo IMU as a separate gamepad
+    {" Touchpad",       GAMEPAD_BLACKLIST_END}, // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
 
     // Don't treat the Wii extension controls as a separate gamepad
-    { " Accelerometer", GAMEPAD_BLACKLIST_END },
-    { " IR", GAMEPAD_BLACKLIST_END },
-    { " Motion Plus", GAMEPAD_BLACKLIST_END },
-    { " Nunchuk", GAMEPAD_BLACKLIST_END },
+    {" Accelerometer",  GAMEPAD_BLACKLIST_END},
+    {" IR",             GAMEPAD_BLACKLIST_END},
+    {" Motion Plus",    GAMEPAD_BLACKLIST_END},
+    {" Nunchuk",        GAMEPAD_BLACKLIST_END},
 #endif
 
     // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
-    { "uinput-", GAMEPAD_BLACKLIST_BEGIN },
+    {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
 
-    { "Synaptics ", GAMEPAD_BLACKLIST_ANYWHERE }, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
-    { "Trackpad", GAMEPAD_BLACKLIST_ANYWHERE },
-    { "Clickpad", GAMEPAD_BLACKLIST_ANYWHERE },
+    {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
+    {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
+    {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
     // "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
-    { " Keyboard", GAMEPAD_BLACKLIST_ANYWHERE },
-    { " Laptop ", GAMEPAD_BLACKLIST_ANYWHERE },   // "Framework Laptop 16 Numpad Module System Control"
-    { "Mouse ", GAMEPAD_BLACKLIST_BEGIN },        // "Mouse passthrough"
-    { " Pen", GAMEPAD_BLACKLIST_END },            // "Wacom One by Wacom S Pen"
-    { " Finger", GAMEPAD_BLACKLIST_END },         // "Wacom HID 495F Finger"
-    { " System Control", GAMEPAD_BLACKLIST_END }, // "hid-over-i2c 0107 System Control"
-    { " LED ", GAMEPAD_BLACKLIST_ANYWHERE },      // "ASRock LED Controller"
-    { " Thelio ", GAMEPAD_BLACKLIST_ANYWHERE },   // "System76 Thelio Io 2"
+    {" Keyboard",       GAMEPAD_BLACKLIST_ANYWHERE},
+    {" Laptop ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "Framework Laptop 16 Numpad Module System Control"
+    {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
+    {" Pen",            GAMEPAD_BLACKLIST_END}, // "Wacom One by Wacom S Pen"
+    {" Finger",         GAMEPAD_BLACKLIST_END}, // "Wacom HID 495F Finger"
+    {" System Control", GAMEPAD_BLACKLIST_END}, // "hid-over-i2c 0107 System Control"
+    {" LED ",           GAMEPAD_BLACKLIST_ANYWHERE}, // "ASRock LED Controller"
+    {" Thelio ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "System76 Thelio Io 2"
 };
 
 static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char *mappingString, bool *existing, SDL_GamepadMappingPriority priority);
@@ -715,7 +714,7 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
     int button_mask;
     int axis_mask;
     Uint16 vendor, product;
-
+    
     SDL_strlcpy(mapping_string, "none,", sizeof(mapping_string));
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
@@ -829,9 +828,9 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
 #endif // SDL_PLATFORM_ANDROID
 
 /*
- * Helper function to apply SInput decoded styles to the mapping string
- */
-static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t *styles, char *mapping_string, size_t mapping_string_len)
+* Helper function to apply SInput decoded styles to the mapping string
+*/
+static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, char* mapping_string, size_t mapping_string_len)
 {
     int current_button = 0;
     int current_axis = 0;
@@ -1052,9 +1051,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t *styles, cha
 }
 
 /*
- * Helper function to decode SInput features information packed into version
- */
-static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char *mapping_string, size_t mapping_string_len)
+* Helper function to decode SInput features information packed into version
+*/
+static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char* mapping_string, size_t mapping_string_len)
 {
     SDL_SInputStyles_t decoded = { 0 };
 
@@ -1225,21 +1224,21 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_PRO_2 ||
                 product == USB_PRODUCT_8BITDO_PRO_2_BT ||
                 product == USB_PRODUCT_8BITDO_PRO_3)) {
-        SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-        if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
-            SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
-        } else if (product == USB_PRODUCT_8BITDO_PRO_3) {
-            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
-        }
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
+                SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
+            } else if (product == USB_PRODUCT_8BITDO_PRO_3) {
+                SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
+            }
     } else if (vendor == USB_VENDOR_8BITDO &&
                (product == USB_PRODUCT_8BITDO_SF30_PRO ||
                 product == USB_PRODUCT_8BITDO_SF30_PRO_BT)) {
-        // This controller has no guide button
-        SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            // This controller has no guide button
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
 
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
-        Uint8 sub_product = guid.data[15] & 0x1F;
+        Uint8 sub_product  = guid.data[15] & 0x1F;
 
         SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string));
     } else {
@@ -1699,7 +1698,7 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
     }
 
     // FIXME: We fix these up when loading the mapping, does this ever get hit?
-    // SDL_assert(!axby_mapping && !baxy_mapping);
+    //SDL_assert(!axby_mapping && !baxy_mapping);
 
     axis = SDL_GetGamepadAxisFromString(szGameButton);
     button = SDL_PrivateGetGamepadButtonFromString(szGameButton, axby_mapping, baxy_mapping);
@@ -2291,10 +2290,10 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
         break;
     case EMappingKind_Axis:
         (void)SDL_snprintf(buffer, sizeof(buffer), "%sa%u%s",
-                           mapping->half_axis_positive ? "+" : mapping->half_axis_negative ? "-"
-                                                                                           : "",
-                           mapping->target,
-                           mapping->axis_reversed ? "~" : "");
+            mapping->half_axis_positive ? "+" :
+            mapping->half_axis_negative ? "-" : "",
+            mapping->target,
+            mapping->axis_reversed ? "~" : "");
         break;
     case EMappingKind_Hat:
         (void)SDL_snprintf(buffer, sizeof(buffer), "h%i.%i", mapping->target >> 4, mapping->target & 0x0F);
@@ -2308,8 +2307,8 @@ static void SDL_PrivateAppendToMappingString(char *mapping_string,
 }
 
 static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *name,
-                                                                    SDL_GUID guid,
-                                                                    SDL_GamepadMapping *raw_map)
+                                                                          SDL_GUID guid,
+                                                                          SDL_GamepadMapping *raw_map)
 {
     bool existing;
     char name_string[128];
@@ -2581,7 +2580,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
 
     SDL_AssertJoysticksLocked();
 
-    CHECK_PARAM (!mappingString) {
+    CHECK_PARAM(!mappingString) {
         SDL_InvalidParamError("mappingString");
         return -1;
     }
@@ -2815,9 +2814,9 @@ char **SDL_GetGamepadMappings(int *count)
         num_mappings++;
     }
 
-    size_t final_allocation = sizeof(char *); // for the NULL terminator element.
+    size_t final_allocation = sizeof (char *);  // for the NULL terminator element.
     bool failed = false;
-    mappings = (char **)SDL_calloc(num_mappings + 1, sizeof(char *));
+    mappings = (char **) SDL_calloc(num_mappings + 1, sizeof (char *));
     if (!mappings) {
         failed = true;
     } else {
@@ -2830,23 +2829,23 @@ char **SDL_GetGamepadMappings(int *count)
             char *mappingstr = CreateMappingString(mapping, mapping->guid);
             if (!mappingstr) {
                 failed = true;
-                break; // error string is already set.
+                break;  // error string is already set.
             }
 
             SDL_assert(i < num_mappings);
             mappings[i++] = mappingstr;
 
-            final_allocation += SDL_strlen(mappingstr) + 1 + sizeof(char *);
+            final_allocation += SDL_strlen(mappingstr) + 1 + sizeof (char *);
         }
     }
 
     SDL_UnlockJoysticks();
 
     if (!failed) {
-        result = (char **)SDL_malloc(final_allocation);
+        result = (char **) SDL_malloc(final_allocation);
         if (result) {
-            final_allocation -= (sizeof(char *) * num_mappings + 1);
-            char *strptr = (char *)(result + (num_mappings + 1));
+            final_allocation -= (sizeof (char *) * num_mappings + 1);
+            char *strptr = (char *) (result + (num_mappings + 1));
             for (int i = 0; i < num_mappings; i++) {
                 result[i] = strptr;
                 const size_t slen = SDL_strlcpy(strptr, mappings[i], final_allocation) + 1;
@@ -2920,7 +2919,7 @@ bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
     SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
     bool result = false;
 
-    CHECK_PARAM (SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
+    CHECK_PARAM(SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
         return SDL_InvalidParamError("instance_id");
     }
 
@@ -3087,7 +3086,7 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
             if (SDL_IsGamepad(joysticks[i])) {
                 ++num_gamepads;
             } else {
-                SDL_memmove(&joysticks[i], &joysticks[i + 1], (num_gamepads + 1) * sizeof(joysticks[i]));
+                SDL_memmove(&joysticks[i], &joysticks[i+1], (num_gamepads + 1) * sizeof(joysticks[i]));
             }
         }
     }
@@ -3268,27 +3267,27 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
             const struct SDL_GamepadBlacklistWords *blacklist_word = &SDL_gamepad_blacklist_words[i];
 
             switch (blacklist_word->pos) {
-            case GAMEPAD_BLACKLIST_BEGIN:
-                if (SDL_startswith(name, blacklist_word->str)) {
-                    return true;
-                }
-                break;
-
-            case GAMEPAD_BLACKLIST_END:
-                if (SDL_endswith(name, blacklist_word->str)) {
-                    return true;
-                }
-                break;
-
-            case GAMEPAD_BLACKLIST_ANYWHERE:
-                if (SDL_strstr(name, blacklist_word->str) != NULL) {
-                    if (SDL_startswith(name, "PG-")) {
-                        // Ipega gamepads have modes with keyboard keys in addition to gamepad controls
-                        break;
+                case GAMEPAD_BLACKLIST_BEGIN:
+                    if (SDL_startswith(name, blacklist_word->str)) {
+                        return true;
                     }
-                    return true;
-                }
-                break;
+                    break;
+
+                case GAMEPAD_BLACKLIST_END:
+                    if (SDL_endswith(name, blacklist_word->str)) {
+                        return true;
+                    }
+                    break;
+
+                case GAMEPAD_BLACKLIST_ANYWHERE:
+                    if (SDL_strstr(name, blacklist_word->str) != NULL) {
+                        if (SDL_startswith(name, "PG-")) {
+                            // Ipega gamepads have modes with keyboard keys in addition to gamepad controls
+                            break;
+                        }
+                        return true;
+                    }
+                    break;
             }
         }
     }
@@ -4144,7 +4143,7 @@ Uint16 SDL_GetGamepadFirmwareVersion(SDL_Gamepad *gamepad)
     return SDL_GetJoystickFirmwareVersion(joystick);
 }
 
-const char *SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
+const char * SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
 {
     SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
 
@@ -4152,6 +4151,7 @@ const char *SDL_GetGamepadSerial(SDL_Gamepad *gamepad)
         return NULL;
     }
     return SDL_GetJoystickSerial(joystick);
+
 }
 
 Uint64 SDL_GetGamepadSteamHandle(SDL_Gamepad *gamepad)
@@ -4561,7 +4561,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_
 {
     const char *result = NULL;
 #ifdef SDL_JOYSTICK_MFI
-    const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad * gamepad, SDL_GamepadButton button);
+    const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
 
     SDL_LockJoysticks();
     {
@@ -4578,7 +4578,7 @@ const char *SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_Ga
 {
     const char *result = NULL;
 #ifdef SDL_JOYSTICK_MFI
-    const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad * gamepad, SDL_GamepadAxis axis);
+    const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
     SDL_LockJoysticks();
     {

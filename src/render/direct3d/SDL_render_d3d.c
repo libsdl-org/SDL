@@ -24,10 +24,10 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "../../video/SDL_pixels_c.h"
-#include "../../video/windows/SDL_windowsvideo.h"
-#include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
+#include "../SDL_d3dmath.h"
+#include "../../video/windows/SDL_windowsvideo.h"
+#include "../../video/SDL_pixels_c.h"
 
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
@@ -199,21 +199,20 @@ static bool D3D_SetError(const char *prefix, HRESULT result)
     return SDL_SetError("%s: %s", prefix, error);
 }
 
-static const struct
-{
+static const struct {
     Uint32 sdl;
     D3DFORMAT d3d;
 } d3d_format_map[] = {
-    { SDL_PIXELFORMAT_ARGB8888, D3DFMT_A8R8G8B8 },
-    { SDL_PIXELFORMAT_XRGB8888, D3DFMT_X8R8G8B8 },
-    { SDL_PIXELFORMAT_ABGR8888, D3DFMT_A8B8G8R8 },
-    { SDL_PIXELFORMAT_XBGR8888, D3DFMT_X8B8G8R8 },
-    { SDL_PIXELFORMAT_ARGB2101010, D3DFMT_A2R10G10B10 },
-    { SDL_PIXELFORMAT_RGB565, D3DFMT_R5G6B5 },
-    { SDL_PIXELFORMAT_ARGB1555, D3DFMT_A1R5G5B5 },
-    { SDL_PIXELFORMAT_XRGB1555, D3DFMT_X1R5G5B5 },
-    { SDL_PIXELFORMAT_ARGB4444, D3DFMT_A4R4G4B4 },
-    { SDL_PIXELFORMAT_XRGB4444, D3DFMT_X4R4G4B4 }
+    { SDL_PIXELFORMAT_ARGB8888,     D3DFMT_A8R8G8B8      },
+    { SDL_PIXELFORMAT_XRGB8888,     D3DFMT_X8R8G8B8      },
+    { SDL_PIXELFORMAT_ABGR8888,     D3DFMT_A8B8G8R8      },
+    { SDL_PIXELFORMAT_XBGR8888,     D3DFMT_X8B8G8R8      },
+    { SDL_PIXELFORMAT_ARGB2101010,  D3DFMT_A2R10G10B10   },
+    { SDL_PIXELFORMAT_RGB565,       D3DFMT_R5G6B5        },
+    { SDL_PIXELFORMAT_ARGB1555,     D3DFMT_A1R5G5B5      },
+    { SDL_PIXELFORMAT_XRGB1555,     D3DFMT_X1R5G5B5      },
+    { SDL_PIXELFORMAT_ARGB4444,     D3DFMT_A4R4G4B4      },
+    { SDL_PIXELFORMAT_XRGB4444,     D3DFMT_X4R4G4B4      }
 };
 
 static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
@@ -615,7 +614,7 @@ static void D3D_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palet
 }
 
 static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                              const SDL_Rect *rect, const void *pixels, int pitch)
+                             const SDL_Rect *rect, const void *pixels, int pitch)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
@@ -727,10 +726,10 @@ static bool D3D_RecreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
 #ifdef SDL_HAVE_YUV
 static bool D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                 const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *Uplane, int Upitch,
-                                 const Uint8 *Vplane, int Vpitch)
+                                const SDL_Rect *rect,
+                                const Uint8 *Yplane, int Ypitch,
+                                const Uint8 *Uplane, int Upitch,
+                                const Uint8 *Vplane, int Vpitch)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
@@ -753,7 +752,7 @@ static bool D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 #endif
 
 static bool D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                            const SDL_Rect *rect, void **pixels, int *pitch)
+                           const SDL_Rect *rect, void **pixels, int *pitch)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
@@ -930,9 +929,9 @@ static bool D3D_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 }
 
 static bool D3D_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                              const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                              int num_vertices, const void *indices, int num_indices, int size_indices,
-                              float scale_x, float scale_y)
+                             const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                             int num_vertices, const void *indices, int num_indices, int size_indices,
+                             float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;

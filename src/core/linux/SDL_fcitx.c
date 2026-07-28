@@ -22,11 +22,11 @@
 
 #include <unistd.h>
 
-#include "../../core/unix/SDL_appid.h"
-#include "../../events/SDL_keyboard_c.h"
-#include "../../video/SDL_sysvideo.h"
-#include "SDL_dbus.h"
 #include "SDL_fcitx.h"
+#include "../../video/SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "../../core/unix/SDL_appid.h"
+#include "SDL_dbus.h"
 
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
@@ -65,10 +65,10 @@ static const char *GetAppName(void)
 }
 
 static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
-                                     DBusMessage *msg,
-                                     char **ret,
-                                     Sint32 *start_pos,
-                                     Sint32 *end_pos)
+                       DBusMessage *msg,
+                       char **ret,
+                       Sint32 *start_pos,
+                       Sint32 *end_pos)
 {
     char *text = NULL, *subtext;
     size_t text_bytes = 0;

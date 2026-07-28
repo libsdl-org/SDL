@@ -22,9 +22,9 @@
 
 #if defined(SDL_PLATFORM_WINDOWS) && defined(HAVE_MMDEVICEAPI_H)
 
-#include "../../audio/SDL_sysaudio.h"
-#include "SDL_immdevice.h"
 #include "SDL_windows.h"
+#include "SDL_immdevice.h"
+#include "../../audio/SDL_sysaudio.h"
 #include <objbase.h> // For CLSIDFromString
 
 typedef struct SDL_IMMDevice_HandleData
@@ -70,17 +70,17 @@ static bool FindByDevIDCallback(SDL_AudioDevice *device, void *userdata)
 
 static SDL_AudioDevice *SDL_IMMDevice_FindByDevID(LPCWSTR devid)
 {
-    return SDL_FindPhysicalAudioDeviceByCallback(FindByDevIDCallback, (void *)devid);
+    return SDL_FindPhysicalAudioDeviceByCallback(FindByDevIDCallback, (void *) devid);
 }
 
 LPGUID SDL_IMMDevice_GetDirectSoundGUID(SDL_AudioDevice *device)
 {
-    return (device && device->handle) ? &(((SDL_IMMDevice_HandleData *)device->handle)->directsound_guid) : NULL;
+    return (device && device->handle) ? &(((SDL_IMMDevice_HandleData *) device->handle)->directsound_guid) : NULL;
 }
 
 LPCWSTR SDL_IMMDevice_GetDevID(SDL_AudioDevice *device)
 {
-    return (device && device->handle) ? ((const SDL_IMMDevice_HandleData *)device->handle)->immdevice_id : NULL;
+    return (device && device->handle) ? ((const SDL_IMMDevice_HandleData *) device->handle)->immdevice_id : NULL;
 }
 
 static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSIBLE *fmt, GUID *guid)
@@ -113,7 +113,7 @@ static void GetMMDeviceInfo(IMMDevice *device, char **utf8dev, WAVEFORMATEXTENSI
 void SDL_IMMDevice_FreeDeviceHandle(SDL_AudioDevice *device)
 {
     if (device && device->handle) {
-        SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *)device->handle;
+        SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *) device->handle;
         SDL_free(handle->immdevice_id);
         SDL_free(handle);
         device->handle = NULL;
@@ -138,10 +138,10 @@ static SDL_AudioDevice *SDL_IMMDevice_Add(const bool recording, const char *devn
             // whoa, it came back! This can happen if you unplug and replug USB headphones while we're still keeping the SDL object alive.
             // Kill this device's IMMDevice id; the device will go away when the app closes it, or maybe a new default device is chosen
             // (possibly this reconnected device), so we just want to make sure IMMDevice doesn't try to find the old device by the existing ID string.
-            SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *)device->handle;
+            SDL_IMMDevice_HandleData *handle = (SDL_IMMDevice_HandleData *) device->handle;
             SDL_free(handle->immdevice_id);
             handle->immdevice_id = NULL;
-            device = NULL; // add a new device, below.
+            device = NULL;  // add a new device, below.
         }
     }
 
@@ -260,7 +260,7 @@ static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceAdded(IMMNotifi
 
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceRemoved(IMMNotificationClient *iclient, LPCWSTR pwstrDeviceId)
 {
-    return S_OK; // See notes in OnDeviceAdded handler about why we ignore this.
+    return S_OK;  // See notes in OnDeviceAdded handler about why we ignore this.
 }
 
 static HRESULT STDMETHODCALLTYPE SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *iclient, LPCWSTR pwstrDeviceId, DWORD dwNewState)
@@ -363,7 +363,7 @@ void SDL_IMMDevice_Quit(void)
 
 bool SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool recording)
 {
-    const Uint64 timeout = SDL_GetTicks() + 8000; // intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep.
+    const Uint64 timeout = SDL_GetTicks() + 8000;  // intel's audio drivers can fail for up to EIGHT SECONDS after a device is connected or we wake from sleep.
 
     SDL_assert(device != NULL);
     SDL_assert(immdevice != NULL);
@@ -376,7 +376,7 @@ bool SDL_IMMDevice_Get(SDL_AudioDevice *device, IMMDevice **immdevice, bool reco
         const Uint64 now = SDL_GetTicks();
         if (timeout > now) {
             const Uint64 ticksleft = timeout - now;
-            SDL_Delay((Uint32)SDL_min(ticksleft, 300)); // wait awhile and try again.
+            SDL_Delay((Uint32)SDL_min(ticksleft, 300));   // wait awhile and try again.
             continue;
         }
         break;
@@ -427,7 +427,7 @@ static void EnumerateEndpointsForFlow(const bool recording, SDL_AudioDevice **de
         if (SUCCEEDED(IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_IMMDevice_role, &default_immdevice))) {
             LPWSTR devid = NULL;
             if (SUCCEEDED(IMMDevice_GetId(default_immdevice, &devid))) {
-                default_devid = SDL_wcsdup(devid); // if this fails, oh well.
+                default_devid = SDL_wcsdup(devid);  // if this fails, oh well.
                 CoTaskMemFree(devid);
             }
             IMMDevice_Release(default_immdevice);

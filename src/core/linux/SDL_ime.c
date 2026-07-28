@@ -20,9 +20,9 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_fcitx.h"
-#include "SDL_ibus.h"
 #include "SDL_ime.h"
+#include "SDL_ibus.h"
+#include "SDL_fcitx.h"
 
 typedef bool (*SDL_IME_Init_t)(void);
 typedef void (*SDL_IME_Quit_t)(void);

@@ -28,12 +28,12 @@
 // This logic is adapted from drivers/tty/vt/keyboard.c in the Linux kernel source, slightly modified to work with FreeBSD
 
 #include <errno.h>
+#include <unistd.h>
 #include <fcntl.h>
-#include <sys/consio.h>
 #include <sys/ioctl.h>
 #include <sys/kbio.h>
+#include <sys/consio.h>
 #include <termios.h>
-#include <unistd.h>
 
 #include <signal.h>
 
@@ -45,6 +45,7 @@
 #endif
 
 typedef void(fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
+
 
 /*
  * Keyboard State
@@ -237,8 +238,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
-enum
-{
+enum {
     VT_SIGNAL_NONE,
     VT_SIGNAL_RELEASE,
     VT_SIGNAL_ACQUIRE,
@@ -249,6 +249,7 @@ static SDL_AtomicInt vt_signal_pending;
 SDL_AtomicInt vt_current;
 
 typedef void (*signal_handler)(int signum);
+
 
 static void kbd_vt_release_signal_action(int signum)
 {
@@ -316,7 +317,7 @@ static bool kbd_vt_init(int console_fd)
     if (setup_vt_signal(SIGUSR2, kbd_vt_acquire_signal_action)) {
         vt_acquire_signal = SIGUSR2;
     }
-    if (!vt_release_signal || !vt_acquire_signal) {
+    if (!vt_release_signal || !vt_acquire_signal ) {
         kbd_vt_quit(console_fd);
         return false;
     }

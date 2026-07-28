@@ -25,6 +25,7 @@
 
 #include "SDL_sysvideo.h"
 
+
 // Return true if the mime type is valid clipboard text
 extern bool SDL_IsTextMimeType(const char *mime_type);
 
@@ -36,7 +37,7 @@ extern void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mi
 extern bool SDL_HasInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type);
 
 // General purpose clipboard text callback
-const void *SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size);
+const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size);
 
 bool SDL_SaveClipboardMimeTypes(const char *const *mime_types, size_t num_mime_types);
 void SDL_FreeClipboardMimeTypes(SDL_VideoDevice *_this);

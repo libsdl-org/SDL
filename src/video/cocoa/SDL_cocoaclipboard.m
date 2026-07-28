@@ -22,13 +22,13 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-#include "../../events/SDL_clipboardevents_c.h"
-#include "../../events/SDL_events_c.h"
 #include "SDL_cocoavideo.h"
+#include "../../events/SDL_events_c.h"
+#include "../../events/SDL_clipboardevents_c.h"
 
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-@interface Cocoa_PasteboardDataProvider : NSObject <NSPasteboardItemDataProvider>
+@interface Cocoa_PasteboardDataProvider : NSObject<NSPasteboardItemDataProvider>
 {
     SDL_ClipboardDataCallback m_callback;
     void *m_userdata;
@@ -50,8 +50,8 @@
 }
 
 - (void)pasteboard:(NSPasteboard *)pasteboard
-                  item:(NSPasteboardItem *)item
-    provideDataForType:(NSPasteboardType)type
+              item:(NSPasteboardItem *)item
+provideDataForType:(NSPasteboardType)type
 {
     @autoreleasepool {
         size_t size = 0;
@@ -64,8 +64,8 @@
         if (callbackData == NULL || size == 0) {
             return;
         }
-        data = [NSData dataWithBytes:callbackData length:size];
-        [item setData:data forType:type];
+        data = [NSData dataWithBytes: callbackData length: size];
+        [item setData: data forType: type];
     }
 }
 
@@ -131,6 +131,7 @@ static char **GetMimeTypes(int *pnformats)
     return new_mime_types;
 }
 
+
 void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
 {
     @autoreleasepool {
@@ -170,7 +171,7 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
 
         NSPasteboardItem *newItem = [NSPasteboardItem new];
         NSMutableArray *utiTypes = [NSMutableArray new];
-        Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith:_this->clipboard_callback userData:_this->clipboard_userdata];
+        Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith: _this->clipboard_callback userData: _this->clipboard_userdata];
         BOOL itemResult = FALSE;
         BOOL writeResult = FALSE;
 
@@ -180,16 +181,16 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
                 CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
                 CFRelease(mimeType);
 
-                [utiTypes addObject:(__bridge NSString *)utiType];
+                [utiTypes addObject: (__bridge NSString *)utiType];
                 CFRelease(utiType);
             }
-            itemResult = [newItem setDataProvider:provider forTypes:utiTypes];
+            itemResult = [newItem setDataProvider: provider forTypes: utiTypes];
             if (itemResult == FALSE) {
                 return SDL_SetError("Unable to set clipboard item data");
             }
 
             [pasteboard clearContents];
-            writeResult = [pasteboard writeObjects:@[ newItem ]];
+            writeResult = [pasteboard writeObjects: @[newItem]];
             if (writeResult == FALSE) {
                 return SDL_SetError("Unable to set clipboard data");
             }
@@ -237,14 +238,14 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
         for (NSPasteboardItem *item in [pasteboard pasteboardItems]) {
             NSData *itemData;
             CFStringRef utiType = GetUTIType(mime_type);
-            itemData = [item dataForType:(__bridge NSString *)utiType];
+            itemData = [item dataForType: (__bridge NSString *)utiType];
             CFRelease(utiType);
             if (itemData != nil) {
                 NSUInteger length = [itemData length];
                 *size = (size_t)length;
                 data = SDL_malloc(*size + sizeof(Uint32));
                 if (data) {
-                    [itemData getBytes:data length:length];
+                    [itemData getBytes: data length: length];
                     SDL_memset((Uint8 *)data + length, 0, sizeof(Uint32));
                 }
                 break;
@@ -260,12 +261,13 @@ bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     @autoreleasepool {
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
         CFStringRef utiType = GetUTIType(mime_type);
-        if ([pasteboard canReadItemWithDataConformingToTypes:@[ (__bridge NSString *)utiType ]]) {
+        if ([pasteboard canReadItemWithDataConformingToTypes: @[(__bridge NSString *)utiType]]) {
             result = true;
         }
         CFRelease(utiType);
     }
     return result;
+
 }
 
 #endif // SDL_VIDEO_DRIVER_COCOA

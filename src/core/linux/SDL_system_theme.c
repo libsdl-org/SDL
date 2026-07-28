@@ -20,21 +20,21 @@
 */
 #include "SDL_internal.h"
 
-#include "../../video/SDL_sysvideo.h"
 #include "SDL_dbus.h"
 #include "SDL_system_theme.h"
+#include "../../video/SDL_sysvideo.h"
 
 #include <unistd.h>
 
 #define PORTAL_DESTINATION "org.freedesktop.portal.Desktop"
-#define PORTAL_PATH        "/org/freedesktop/portal/desktop"
-#define PORTAL_INTERFACE   "org.freedesktop.portal.Settings"
-#define PORTAL_METHOD      "Read"
+#define PORTAL_PATH "/org/freedesktop/portal/desktop"
+#define PORTAL_INTERFACE "org.freedesktop.portal.Settings"
+#define PORTAL_METHOD "Read"
 
 #define SIGNAL_INTERFACE "org.freedesktop.portal.Settings"
 #define SIGNAL_NAMESPACE "org.freedesktop.appearance"
-#define SIGNAL_NAME      "SettingChanged"
-#define SIGNAL_KEY       "color-scheme"
+#define SIGNAL_NAME "SettingChanged"
+#define SIGNAL_KEY "color-scheme"
 
 typedef struct SystemThemeData
 {
@@ -44,8 +44,7 @@ typedef struct SystemThemeData
 
 static SystemThemeData system_theme_data;
 
-static bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme)
-{
+static bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *theme) {
     SDL_DBusContext *dbus = system_theme_data.dbus;
     Uint32 color_scheme;
     DBusMessageIter variant_iter;
@@ -57,21 +56,20 @@ static bool DBus_ExtractThemeVariant(DBusMessageIter *iter, SDL_SystemTheme *the
         return false;
     dbus->message_iter_get_basic(&variant_iter, &color_scheme);
     switch (color_scheme) {
-    case 0:
-        *theme = SDL_SYSTEM_THEME_UNKNOWN;
-        break;
-    case 1:
-        *theme = SDL_SYSTEM_THEME_DARK;
-        break;
-    case 2:
-        *theme = SDL_SYSTEM_THEME_LIGHT;
-        break;
+        case 0:
+            *theme = SDL_SYSTEM_THEME_UNKNOWN;
+            break;
+        case 1:
+            *theme = SDL_SYSTEM_THEME_DARK;
+            break;
+        case 2:
+            *theme = SDL_SYSTEM_THEME_LIGHT;
+            break;
     }
     return true;
 }
 
-static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
-{
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
     SDL_DBusContext *dbus = (SDL_DBusContext *)data;
 
     if (dbus->message_is_signal(msg, SIGNAL_INTERFACE, SIGNAL_NAME)) {
@@ -135,7 +133,7 @@ bool SDL_SystemTheme_Init(void)
                 dbus->message_iter_recurse(&reply_iter, &variant_outer_iter);
                 if (!DBus_ExtractThemeVariant(&variant_outer_iter, &system_theme_data.theme))
                     goto incorrect_type;
-            incorrect_type:
+incorrect_type:
                 dbus->message_unref(reply);
             }
         }
@@ -143,10 +141,9 @@ bool SDL_SystemTheme_Init(void)
     }
 
     dbus->bus_add_match(dbus->session_conn,
-                        "type='signal', interface='" SIGNAL_INTERFACE "',"
-                        "member='" SIGNAL_NAME "', arg0='" SIGNAL_NAMESPACE "',"
-                        "arg1='" SIGNAL_KEY "'",
-                        NULL);
+                        "type='signal', interface='"SIGNAL_INTERFACE"',"
+                        "member='"SIGNAL_NAME"', arg0='"SIGNAL_NAMESPACE"',"
+                        "arg1='"SIGNAL_KEY"'", NULL);
     dbus->connection_add_filter(dbus->session_conn,
                                 &DBus_MessageFilter, dbus, NULL);
     dbus->connection_flush(dbus->session_conn);

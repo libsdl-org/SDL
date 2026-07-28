@@ -23,8 +23,8 @@
 // This is not ideal, it's meant to be used if there isn't a platform-specific
 // backend that can do something more efficient!
 
-#include "../SDL_sysasyncio.h"
 #include "SDL_internal.h"
+#include "../SDL_sysasyncio.h"
 
 // on Emscripten without threads, async i/o is synchronous. Sorry. Almost
 // everything is MEMFS, so it's just a memcpy anyhow, and the Emscripten
@@ -46,17 +46,17 @@ typedef struct GenericAsyncIOQueueData
 
 typedef struct GenericAsyncIOData
 {
-    SDL_Mutex *lock; // !!! FIXME: we can skip this lock if we have an equivalent of pread/pwrite
+    SDL_Mutex *lock;  // !!! FIXME: we can skip this lock if we have an equivalent of pread/pwrite
     SDL_IOStream *io;
 } GenericAsyncIOData;
 
 static void AsyncIOTaskComplete(SDL_AsyncIOTask *task)
 {
     SDL_assert(task->queue);
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)task->queue->userdata;
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) task->queue->userdata;
     SDL_LockMutex(data->lock);
     LINKED_LIST_PREPEND(task, data->completed_tasks, queue);
-    SDL_SignalCondition(data->condition); // wake a thread waiting on the queue.
+    SDL_SignalCondition(data->condition);  // wake a thread waiting on the queue.
     SDL_UnlockMutex(data->lock);
 }
 
@@ -64,11 +64,11 @@ static void AsyncIOTaskComplete(SDL_AsyncIOTask *task)
 // This is called directly, without a threadpool, if !SDL_ASYNCIO_USE_THREADPOOL.
 static void SynchronousIO(SDL_AsyncIOTask *task)
 {
-    SDL_assert(task->result != SDL_ASYNCIO_CANCELED); // shouldn't have gotten in here if canceled!
+    SDL_assert(task->result != SDL_ASYNCIO_CANCELED);  // shouldn't have gotten in here if canceled!
 
-    GenericAsyncIOData *data = (GenericAsyncIOData *)task->asyncio->userdata;
+    GenericAsyncIOData *data = (GenericAsyncIOData *) task->asyncio->userdata;
     SDL_IOStream *io = data->io;
-    const size_t size = (size_t)task->requested_size;
+    const size_t size = (size_t) task->requested_size;
     void *ptr = task->buffer;
 
     // this seek won't work if two tasks are reading from the same file at the same time,
@@ -82,20 +82,20 @@ static void SynchronousIO(SDL_AsyncIOTask *task)
         }
         okay = SDL_CloseIO(data->io) && okay;
         task->result = okay ? SDL_ASYNCIO_COMPLETE : SDL_ASYNCIO_FAILURE;
-    } else if (SDL_SeekIO(io, (Sint64)task->offset, SDL_IO_SEEK_SET) < 0) {
+    } else if (SDL_SeekIO(io, (Sint64) task->offset, SDL_IO_SEEK_SET) < 0) {
         task->result = SDL_ASYNCIO_FAILURE;
     } else {
         const bool writing = (task->type == SDL_ASYNCIO_TASK_WRITE);
-        task->result_size = (Uint64)(writing ? SDL_WriteIO(io, ptr, size) : SDL_ReadIO(io, ptr, size));
+        task->result_size = (Uint64) (writing ? SDL_WriteIO(io, ptr, size) : SDL_ReadIO(io, ptr, size));
         if (task->result_size == task->requested_size) {
             task->result = SDL_ASYNCIO_COMPLETE;
         } else {
             if (writing) {
-                task->result = SDL_ASYNCIO_FAILURE; // it's always a failure on short writes.
+                task->result = SDL_ASYNCIO_FAILURE;  // it's always a failure on short writes.
             } else {
                 const SDL_IOStatus status = SDL_GetIOStatus(io);
-                SDL_assert(status != SDL_IO_STATUS_READY);     // this should have either failed or been EOF.
-                SDL_assert(status != SDL_IO_STATUS_NOT_READY); // these should not be non-blocking reads!
+                SDL_assert(status != SDL_IO_STATUS_READY);  // this should have either failed or been EOF.
+                SDL_assert(status != SDL_IO_STATUS_NOT_READY);  // these should not be non-blocking reads!
                 task->result = (status == SDL_IO_STATUS_EOF) ? SDL_ASYNCIO_COMPLETE : SDL_ASYNCIO_FAILURE;
             }
         }
@@ -145,7 +145,7 @@ static int SDLCALL AsyncIOThreadpoolWorker(void *data)
         // bookkeeping is done, so we drop the mutex and fire the work.
         SynchronousIO(task);
 
-        SDL_LockMutex(threadpool_lock); // take the lock again and see if there's another task (if not, we'll wait on the Condition).
+        SDL_LockMutex(threadpool_lock);  // take the lock again and see if there's another task (if not, we'll wait on the Condition).
     }
 
     running_threadpool_threads--;
@@ -165,12 +165,12 @@ static bool MaybeSpinNewWorkerThread(void)
     // if all existing threads are busy and the pool of threads isn't maxed out, make a new one.
     if ((idle_threadpool_threads == 0) && (running_threadpool_threads < max_threadpool_threads)) {
         char threadname[32];
-        SDL_snprintf(threadname, sizeof(threadname), "SDLasyncio%d", threadpool_threads_spun);
+        SDL_snprintf(threadname, sizeof (threadname), "SDLasyncio%d", threadpool_threads_spun);
         SDL_Thread *thread = SDL_CreateThread(AsyncIOThreadpoolWorker, threadname, NULL);
         if (thread == NULL) {
             return false;
         }
-        SDL_DetachThread(thread); // these terminate themselves when idle too long, so we never WaitThread.
+        SDL_DetachThread(thread);  // these terminate themselves when idle too long, so we never WaitThread.
         running_threadpool_threads++;
         threadpool_threads_spun++;
     }
@@ -183,12 +183,12 @@ static void QueueAsyncIOTask(SDL_AsyncIOTask *task)
 
     SDL_LockMutex(threadpool_lock);
 
-    if (stop_threadpool) { // just in case.
+    if (stop_threadpool) {  // just in case.
         task->result = SDL_ASYNCIO_CANCELED;
         AsyncIOTaskComplete(task);
     } else {
         LINKED_LIST_PREPEND(task, threadpool_tasks, threadpool);
-        MaybeSpinNewWorkerThread(); // okay if this fails or the thread pool is maxed out. Something will get there eventually.
+        MaybeSpinNewWorkerThread();  // okay if this fails or the thread pool is maxed out. Something will get there eventually.
 
         // tell idle threads to get to work.
         // This is a broadcast because we want someone from the thread pool to wake up, but
@@ -207,12 +207,12 @@ static bool PrepareThreadpool(void)
 {
     bool okay = true;
     if (SDL_ShouldInit(&threadpool_init)) {
-        max_threadpool_threads = (SDL_GetNumLogicalCPUCores() * 2) + 1;   // !!! FIXME: this should probably have a hint to override.
-        max_threadpool_threads = SDL_clamp(max_threadpool_threads, 1, 8); // 8 is probably more than enough.
+        max_threadpool_threads = (SDL_GetNumLogicalCPUCores() * 2) + 1;  // !!! FIXME: this should probably have a hint to override.
+        max_threadpool_threads = SDL_clamp(max_threadpool_threads, 1, 8);  // 8 is probably more than enough.
 
         okay = (okay && ((threadpool_lock = SDL_CreateMutex()) != NULL));
         okay = (okay && ((threadpool_condition = SDL_CreateCondition()) != NULL));
-        okay = (okay && MaybeSpinNewWorkerThread()); // make sure at least one thread is going, since we'll need it.
+        okay = (okay && MaybeSpinNewWorkerThread());  // make sure at least one thread is going, since we'll need it.
 
         if (!okay) {
             if (threadpool_condition) {
@@ -244,7 +244,7 @@ static void ShutdownThreadpool(void)
         }
 
         stop_threadpool = true;
-        SDL_BroadcastCondition(threadpool_condition); // tell the whole threadpool to wake up and quit.
+        SDL_BroadcastCondition(threadpool_condition);  // tell the whole threadpool to wake up and quit.
 
         while (running_threadpool_threads > 0) {
             // each threadpool thread will broadcast this condition before it terminates if stop_threadpool is set.
@@ -267,9 +267,10 @@ static void ShutdownThreadpool(void)
 }
 #endif
 
+
 static Sint64 generic_asyncio_size(void *userdata)
 {
-    GenericAsyncIOData *data = (GenericAsyncIOData *)userdata;
+    GenericAsyncIOData *data = (GenericAsyncIOData *) userdata;
     return SDL_GetIOSize(data->io);
 }
 
@@ -280,41 +281,42 @@ static bool generic_asyncio_io(void *userdata, SDL_AsyncIOTask *task)
 
 static void generic_asyncio_destroy(void *userdata)
 {
-    GenericAsyncIOData *data = (GenericAsyncIOData *)userdata;
+    GenericAsyncIOData *data = (GenericAsyncIOData *) userdata;
     SDL_DestroyMutex(data->lock);
     SDL_free(data);
 }
 
+
 static bool generic_asyncioqueue_queue_task(void *userdata, SDL_AsyncIOTask *task)
 {
-#if SDL_ASYNCIO_USE_THREADPOOL
+    #if SDL_ASYNCIO_USE_THREADPOOL
     QueueAsyncIOTask(task);
-#else
-    SynchronousIO(task); // oh well. Get a better platform.
-#endif
+    #else
+    SynchronousIO(task);  // oh well. Get a better platform.
+    #endif
     return true;
 }
 
 static void generic_asyncioqueue_cancel_task(void *userdata, SDL_AsyncIOTask *task)
 {
-#if !SDL_ASYNCIO_USE_THREADPOOL // in theory, this was all synchronous and should never call this, but just in case.
+    #if !SDL_ASYNCIO_USE_THREADPOOL  // in theory, this was all synchronous and should never call this, but just in case.
     task->result = SDL_ASYNCIO_CANCELED;
     AsyncIOTaskComplete(task);
-#else
+    #else
     // we can't stop i/o that's in-flight, but we _can_ just refuse to start it if the threadpool hadn't picked it up yet.
     SDL_LockMutex(threadpool_lock);
-    if (LINKED_LIST_PREV(task, threadpool) != NULL) { // still in the queue waiting to be run? Take it out.
+    if (LINKED_LIST_PREV(task, threadpool) != NULL) {  // still in the queue waiting to be run? Take it out.
         LINKED_LIST_UNLINK(task, threadpool);
         task->result = SDL_ASYNCIO_CANCELED;
         AsyncIOTaskComplete(task);
     }
     SDL_UnlockMutex(threadpool_lock);
-#endif
+    #endif
 }
 
 static SDL_AsyncIOTask *generic_asyncioqueue_get_results(void *userdata)
 {
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)userdata;
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) userdata;
     SDL_LockMutex(data->lock);
     SDL_AsyncIOTask *task = LINKED_LIST_START(data->completed_tasks, queue);
     if (task) {
@@ -326,7 +328,7 @@ static SDL_AsyncIOTask *generic_asyncioqueue_get_results(void *userdata)
 
 static SDL_AsyncIOTask *generic_asyncioqueue_wait_results(void *userdata, Sint32 timeoutMS)
 {
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)userdata;
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) userdata;
     SDL_LockMutex(data->lock);
     SDL_AsyncIOTask *task = LINKED_LIST_START(data->completed_tasks, queue);
     if (!task) {
@@ -342,7 +344,7 @@ static SDL_AsyncIOTask *generic_asyncioqueue_wait_results(void *userdata, Sint32
 
 static void generic_asyncioqueue_signal(void *userdata)
 {
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)userdata;
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) userdata;
     SDL_LockMutex(data->lock);
     SDL_BroadcastCondition(data->condition);
     SDL_UnlockMutex(data->lock);
@@ -350,7 +352,7 @@ static void generic_asyncioqueue_signal(void *userdata)
 
 static void generic_asyncioqueue_destroy(void *userdata)
 {
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)userdata;
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) userdata;
     SDL_DestroyMutex(data->lock);
     SDL_DestroyCondition(data->condition);
     SDL_free(data);
@@ -358,13 +360,13 @@ static void generic_asyncioqueue_destroy(void *userdata)
 
 bool SDL_SYS_CreateAsyncIOQueue_Generic(SDL_AsyncIOQueue *queue)
 {
-#if SDL_ASYNCIO_USE_THREADPOOL
+    #if SDL_ASYNCIO_USE_THREADPOOL
     if (!PrepareThreadpool()) {
         return false;
     }
-#endif
+    #endif
 
-    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *)SDL_calloc(1, sizeof(*data));
+    GenericAsyncIOQueueData *data = (GenericAsyncIOQueueData *) SDL_calloc(1, sizeof (*data));
     if (!data) {
         return false;
     }
@@ -396,15 +398,16 @@ bool SDL_SYS_CreateAsyncIOQueue_Generic(SDL_AsyncIOQueue *queue)
     return true;
 }
 
+
 bool SDL_SYS_AsyncIOFromFile_Generic(const char *file, const char *mode, SDL_AsyncIO *asyncio)
 {
-#if SDL_ASYNCIO_USE_THREADPOOL
+    #if SDL_ASYNCIO_USE_THREADPOOL
     if (!PrepareThreadpool()) {
         return false;
     }
-#endif
+    #endif
 
-    GenericAsyncIOData *data = (GenericAsyncIOData *)SDL_calloc(1, sizeof(*data));
+    GenericAsyncIOData *data = (GenericAsyncIOData *) SDL_calloc(1, sizeof (*data));
     if (!data) {
         return false;
     }
@@ -437,10 +440,11 @@ bool SDL_SYS_AsyncIOFromFile_Generic(const char *file, const char *mode, SDL_Asy
 
 void SDL_SYS_QuitAsyncIO_Generic(void)
 {
-#if SDL_ASYNCIO_USE_THREADPOOL
+    #if SDL_ASYNCIO_USE_THREADPOOL
     ShutdownThreadpool();
-#endif
+    #endif
 }
+
 
 #if SDL_ASYNCIO_ONLY_HAVE_GENERIC
 bool SDL_SYS_AsyncIOFromFile(const char *file, const char *mode, SDL_AsyncIO *asyncio)
@@ -458,3 +462,4 @@ void SDL_SYS_QuitAsyncIO(void)
     SDL_SYS_QuitAsyncIO_Generic();
 }
 #endif
+

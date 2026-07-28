@@ -33,12 +33,12 @@
 
 #ifdef SDL_JOYSTICK_RAWINPUT
 
-#include "../../core/windows/SDL_gameinput.h"
-#include "../../core/windows/SDL_hid.h"
-#include "../../core/windows/SDL_windows.h"
-#include "../SDL_sysjoystick.h"
-#include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../usb_ids.h"
+#include "../SDL_sysjoystick.h"
+#include "../../core/windows/SDL_windows.h"
+#include "../../core/windows/SDL_hid.h"
+#include "../../core/windows/SDL_gameinput.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 /* SDL_JOYSTICK_RAWINPUT_XINPUT is disabled because using XInput at the same time as
    raw input will turn off the Xbox Series X controller when it is connected via the
@@ -1591,21 +1591,21 @@ static void RAWINPUT_HandleStatePacket(SDL_Joystick *joystick, Uint8 *data, int 
     };
     Uint64 match_state = ctx->match_state;
     // Update match_state with button bit, then fall through
-#define SDL_SendJoystickButton(timestamp, joystick, button, down)          \
-    if (button < SDL_arraysize(button_map)) {                              \
-        Uint64 button_bit = 1ull << button_map[button];                    \
-        match_state = (match_state & ~button_bit) | (button_bit * (down)); \
-    }                                                                      \
+#define SDL_SendJoystickButton(timestamp, joystick, button, down)           \
+    if (button < SDL_arraysize(button_map)) {                               \
+        Uint64 button_bit = 1ull << button_map[button];                     \
+        match_state = (match_state & ~button_bit) | (button_bit * (down));  \
+    }                                                                       \
     SDL_SendJoystickButton(timestamp, joystick, button, down)
 #ifdef SDL_JOYSTICK_RAWINPUT_MATCH_AXES
     // Grab high 4 bits of value, then fall through
-#define AddAxisToMatchState(axis, value)                                                                      \
-    {                                                                                                         \
-        match_state = (match_state & ~(0xFull << (4 * axis + 16))) | ((value) & 0xF000ull) << (4 * axis + 4); \
+#define AddAxisToMatchState(axis, value)                                                                    \
+    {                                                                                                       \
+        match_state = (match_state & ~(0xFull << (4 * axis + 16))) | ((value)&0xF000ull) << (4 * axis + 4); \
     }
 #define SDL_SendJoystickAxis(timestamp, joystick, axis, value) \
-    if (axis < 4)                                              \
-        AddAxisToMatchState(axis, value);                      \
+    if (axis < 4)                                      \
+        AddAxisToMatchState(axis, value);              \
     SDL_SendJoystickAxis(timestamp, joystick, axis, value)
 #endif
 #endif // SDL_JOYSTICK_RAWINPUT_MATCHING

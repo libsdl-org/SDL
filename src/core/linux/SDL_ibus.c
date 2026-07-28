@@ -21,21 +21,21 @@
 #include "SDL_internal.h"
 
 #ifdef HAVE_IBUS_IBUS_H
-#include "SDL_dbus.h"
 #include "SDL_ibus.h"
+#include "SDL_dbus.h"
 
 #ifdef SDL_USE_LIBDBUS
 
-#include "../../events/SDL_keyboard_c.h"
 #include "../../video/SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
 
 #ifdef SDL_VIDEO_DRIVER_X11
 #include "../../video/x11/SDL_x11video.h"
 #endif
 
-#include <fcntl.h>
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 static const char IBUS_PATH[] = "/org/freedesktop/IBus";
 
@@ -92,7 +92,7 @@ static Uint32 IBus_ModState(void)
 }
 
 static bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
-                              DBusMessageIter *inside, const char *struct_id, size_t id_size)
+                                  DBusMessageIter *inside, const char *struct_id, size_t id_size)
 {
     DBusMessageIter sub;
     if (dbus->message_iter_get_arg_type(iter) != DBUS_TYPE_VARIANT) {
@@ -119,7 +119,7 @@ static bool IBus_EnterVariant(DBusConnection *conn, DBusMessageIter *iter, SDL_D
 }
 
 static bool IBus_GetDecorationPosition(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
-                                       Uint32 *start_pos, Uint32 *end_pos)
+                                           Uint32 *start_pos, Uint32 *end_pos)
 {
     DBusMessageIter sub1, sub2, array;
 
@@ -204,7 +204,7 @@ static const char *IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *it
 }
 
 static bool IBus_GetVariantCursorPos(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext *dbus,
-                                     Uint32 *pos)
+                                         Uint32 *pos)
 {
     dbus->message_iter_next(iter);
 

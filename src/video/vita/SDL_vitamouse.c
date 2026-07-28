@@ -22,13 +22,13 @@
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 
+#include <psp2/kernel/processmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/hid.h>
-#include <psp2/kernel/processmgr.h>
 
-#include "../../events/SDL_mouse_c.h"
-#include "SDL_vitamouse_c.h"
 #include "SDL_vitavideo.h"
+#include "SDL_vitamouse_c.h"
+#include "../../events/SDL_mouse_c.h"
 
 SceHidMouseReport m_reports[SCE_HID_MAX_REPORT];
 int mouse_hid_handle = 0;

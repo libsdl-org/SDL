@@ -39,16 +39,16 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    return NULL; // no EXE name on this system.
+    return NULL;  // no EXE name on this system.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-#ifdef SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING
+    #ifdef SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING
     const char *prepend = SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING;
-#else
+    #else
     const char *prepend = "/libsdl";
-#endif
+    #endif
     char *result;
     char *ptr = NULL;
     const size_t len = SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 4;

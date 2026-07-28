@@ -45,6 +45,7 @@ struct SDL_WindowData
 #endif
     bool backup_done;
     ANativeWindow *native_window;
+
 };
 
 #endif // SDL_androidwindow_h_

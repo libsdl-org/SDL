@@ -62,10 +62,10 @@ typedef struct GPU_AdvancedFragmentShaderUniformData
 
 // These should mirror the definitions in shaders/texture_advanced.frag.hlsl
 static const float TONEMAP_NONE = 0;
-// static const float TONEMAP_LINEAR = 1;
+//static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
 
-// static const float TEXTURETYPE_NONE = 0;
+//static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_RGBA = 3;
@@ -563,10 +563,10 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
 
 #ifdef SDL_HAVE_YUV
 static bool GPU_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                 const SDL_Rect *rect,
-                                 const Uint8 *Yplane, int Ypitch,
-                                 const Uint8 *Uplane, int Upitch,
-                                 const Uint8 *Vplane, int Vpitch)
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
     GPU_TextureData *data = (GPU_TextureData *)texture->internal;
@@ -583,9 +583,9 @@ static bool GPU_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool GPU_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                const SDL_Rect *rect,
-                                const Uint8 *Yplane, int Ypitch,
-                                const Uint8 *UVplane, int UVpitch)
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
     GPU_TextureData *data = (GPU_TextureData *)texture->internal;
@@ -807,7 +807,7 @@ static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, 
             sci.mag_filter = SDL_GPU_FILTER_NEAREST;
             sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
             break;
-        case SDL_SCALEMODE_PIXELART: // Uses linear sampling
+        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
             sci.min_filter = SDL_GPU_FILTER_LINEAR;
             sci.mag_filter = SDL_GPU_FILTER_LINEAR;

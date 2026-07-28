@@ -31,8 +31,8 @@
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitwindow.h"
 
-#include "SDL_uikitmetalview.h"
 #include "SDL_uikitvulkan.h"
+#include "SDL_uikitmetalview.h"
 
 #include <dlfcn.h>
 
@@ -167,22 +167,22 @@ void UIKit_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const *const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const * const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if (count) {
+    if(count) {
         *count = SDL_arraysize(extensionsForUIKit);
     }
     return extensionsForUIKit;
 }
 
 bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                SDL_Window *window,
-                                VkInstance instance,
-                                const struct VkAllocationCallbacks *allocator,
-                                VkSurfaceKHR *surface)
+                               SDL_Window *window,
+                               VkInstance instance,
+                               const struct VkAllocationCallbacks *allocator,
+                               VkSurfaceKHR *surface)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
@@ -203,7 +203,7 @@ bool UIKit_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 
     if (!vkCreateMetalSurfaceEXT && !vkCreateIOSSurfaceMVK) {
         return SDL_SetError(VK_EXT_METAL_SURFACE_EXTENSION_NAME " or " VK_MVK_IOS_SURFACE_EXTENSION_NAME
-                                                                " extensions are not enabled in the Vulkan instance.");
+                            " extensions are not enabled in the Vulkan instance.");
     }
 
     metalview = UIKit_Metal_CreateView(_this, window);

@@ -60,7 +60,7 @@ extern bool UIKit_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDispla
 // By default, a window measures 1280x720 pt.
 // https://developer.apple.com/design/human-interface-guidelines/windows#visionOS
 #ifdef SDL_PLATFORM_VISIONOS
-#define SDL_XR_SCREENWIDTH  1280
+#define SDL_XR_SCREENWIDTH 1280
 #define SDL_XR_SCREENHEIGHT 720
 #endif
 

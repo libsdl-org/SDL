@@ -22,15 +22,15 @@
 
 // This is the joystick API for Simple DirectMedia Layer
 
+#include "SDL_sysjoystick.h"
 #include "../SDL_hints_c.h"
 #include "SDL_gamepad_c.h"
 #include "SDL_joystick_c.h"
 #include "SDL_steam_virtual_gamepad.h"
-#include "SDL_sysjoystick.h"
 
 #include "../events/SDL_events_c.h"
-#include "../sensor/SDL_sensor_c.h"
 #include "../video/SDL_sysvideo.h"
+#include "../sensor/SDL_sensor_c.h"
 #include "hidapi/SDL_hidapijoystick_c.h"
 
 // This is included in only one place because it has a large static list of controllers
@@ -117,7 +117,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-    SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
+SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
 static SDL_AtomicInt SDL_joystick_lock_pending;
 static int SDL_joysticks_locked;
 static bool SDL_joysticks_initialized;
@@ -621,26 +621,26 @@ static SDL_vidpid_list wheel_devices = {
 };
 
 static Uint32 initial_guitar_devices[] = {
-    MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
-    MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
-    MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
-    MAKE_VIDPID(0x1BAD, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
-    MAKE_VIDPID(0x1BAD, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
-    MAKE_VIDPID(0x0351, 0x1000), // CRKD Guitar
-    MAKE_VIDPID(0x0351, 0x2000), // CRKD Guitar
-    MAKE_VIDPID(0x0738, 0x02A6), // Mad Catz Wireless Rock Band Guitar
-    MAKE_VIDPID(0x0738, 0x02AB), // Mad Catz Wireless Precision Bass Guitar
-    MAKE_VIDPID(0x0738, 0x9806), // Mad Catz Precision Bass Guitar
-    MAKE_VIDPID(0x1430, 0x02a7), // Guitar Hero Wireless Guitar (Linux)
-    MAKE_VIDPID(0x1430, 0x0705), // Guitar Hero 5 Guitar
-    MAKE_VIDPID(0x1430, 0x070B), // Guitar Hero Live Guitar
-    MAKE_VIDPID(0x1430, 0x4734), // Guitar Hero World Tour Kiosk
-    MAKE_VIDPID(0x1430, 0x4748), // RedOctane Guitar Hero X-plorer
-    MAKE_VIDPID(0x1bad, 0x02a6), // Rock Band 2 Wireless Guitar (Linux)
-    MAKE_VIDPID(0x1bad, 0x02ab), // Rock Band Wireless Bass Guitar (Linux)
-    MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
-    MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
-    MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
+	MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
+	MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
+	MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
+	MAKE_VIDPID(0x1BAD, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
+	MAKE_VIDPID(0x1BAD, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
+	MAKE_VIDPID(0x0351, 0x1000), // CRKD Guitar
+	MAKE_VIDPID(0x0351, 0x2000), // CRKD Guitar
+	MAKE_VIDPID(0x0738, 0x02A6), // Mad Catz Wireless Rock Band Guitar
+	MAKE_VIDPID(0x0738, 0x02AB), // Mad Catz Wireless Precision Bass Guitar
+	MAKE_VIDPID(0x0738, 0x9806), // Mad Catz Precision Bass Guitar
+	MAKE_VIDPID(0x1430, 0x02a7), // Guitar Hero Wireless Guitar (Linux)
+	MAKE_VIDPID(0x1430, 0x0705), // Guitar Hero 5 Guitar
+	MAKE_VIDPID(0x1430, 0x070B), // Guitar Hero Live Guitar
+	MAKE_VIDPID(0x1430, 0x4734), // Guitar Hero World Tour Kiosk
+	MAKE_VIDPID(0x1430, 0x4748), // RedOctane Guitar Hero X-plorer
+	MAKE_VIDPID(0x1bad, 0x02a6), // Rock Band 2 Wireless Guitar (Linux)
+	MAKE_VIDPID(0x1bad, 0x02ab), // Rock Band Wireless Bass Guitar (Linux)
+	MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
+	MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
+	MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
 };
 static SDL_vidpid_list guitar_devices = {
     SDL_HINT_JOYSTICK_GUITAR_DEVICES, 0, 0, NULL,
@@ -650,17 +650,17 @@ static SDL_vidpid_list guitar_devices = {
 };
 
 static Uint32 initial_drum_devices[] = {
-    MAKE_VIDPID(0x12ba, 0x0120), // PS3 Guitar Hero Drums
-    MAKE_VIDPID(0x12ba, 0x0210), // PS3 Rock Band Drums
-    MAKE_VIDPID(0x12ba, 0x0218), // PS3 Midi Pro Adapter - Drums Mode
-    MAKE_VIDPID(0x1BAD, 0x0005), // Wii RB1 Drums (Uses PS3 protocol)
-    MAKE_VIDPID(0x1BAD, 0x3110), // Wii RB2 Drums (Uses PS3 protocol)
-    MAKE_VIDPID(0x1BAD, 0x3138), // Wii RB3 Midi Pro Adapter - Drums Mode (Uses PS3 protocol)
-    MAKE_VIDPID(0x1430, 0x02a8), // Guitar Hero Wireless Drum Kit (Linux)
-    MAKE_VIDPID(0x1430, 0x0805), // Band Hero Wireless Drum Kit
-    MAKE_VIDPID(0x1bad, 0x0003), // Harmonix Rock Band Drumkit
-    MAKE_VIDPID(0x1bad, 0x0130), // ION Drum Rocker
-    MAKE_VIDPID(0x2068, 0x0002), // Power Gig Drums
+	MAKE_VIDPID(0x12ba, 0x0120), // PS3 Guitar Hero Drums
+	MAKE_VIDPID(0x12ba, 0x0210), // PS3 Rock Band Drums
+	MAKE_VIDPID(0x12ba, 0x0218), // PS3 Midi Pro Adapter - Drums Mode
+	MAKE_VIDPID(0x1BAD, 0x0005), // Wii RB1 Drums (Uses PS3 protocol)
+	MAKE_VIDPID(0x1BAD, 0x3110), // Wii RB2 Drums (Uses PS3 protocol)
+	MAKE_VIDPID(0x1BAD, 0x3138), // Wii RB3 Midi Pro Adapter - Drums Mode (Uses PS3 protocol)
+	MAKE_VIDPID(0x1430, 0x02a8), // Guitar Hero Wireless Drum Kit (Linux)
+	MAKE_VIDPID(0x1430, 0x0805), // Band Hero Wireless Drum Kit
+	MAKE_VIDPID(0x1bad, 0x0003), // Harmonix Rock Band Drumkit
+	MAKE_VIDPID(0x1bad, 0x0130), // ION Drum Rocker
+	MAKE_VIDPID(0x2068, 0x0002), // Power Gig Drums
 };
 static SDL_vidpid_list drum_devices = {
     SDL_HINT_JOYSTICK_DRUM_DEVICES, 0, 0, NULL,
@@ -680,18 +680,18 @@ static SDL_vidpid_list zero_centered_devices = {
     false
 };
 
-#define CHECK_JOYSTICK_MAGIC(joystick, result)                           \
-    CHECK_PARAM (!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
-        SDL_InvalidParamError("joystick");                               \
-        SDL_UnlockJoysticks();                                           \
-        return result;                                                   \
+#define CHECK_JOYSTICK_MAGIC(joystick, result)                          \
+    CHECK_PARAM(!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
+        SDL_InvalidParamError("joystick");                              \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
-#define CHECK_JOYSTICK_VIRTUAL(joystick, result) \
-    CHECK_PARAM (!joystick->is_virtual) {        \
-        SDL_SetError("joystick isn't virtual");  \
-        SDL_UnlockJoysticks();                   \
-        return result;                           \
+#define CHECK_JOYSTICK_VIRTUAL(joystick, result)                        \
+    CHECK_PARAM(!joystick->is_virtual) {                                \
+        SDL_SetError("joystick isn't virtual");                         \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
 bool SDL_JoysticksInitialized(void)
@@ -2244,7 +2244,7 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 
     SDL_LockJoysticks();
     {
-        CHECK_JOYSTICK_MAGIC(joystick, );
+        CHECK_JOYSTICK_MAGIC(joystick,);
 
         // First decrement ref count
         if (--joystick->ref_count > 0) {
@@ -2340,7 +2340,7 @@ void SDL_QuitJoysticks(void)
     SDL_QuitSteamVirtualGamepadInfo();
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
-                           SDL_JoystickAllowBackgroundEventsChanged, NULL);
+                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
     SDL_FreeVIDPIDList(&old_xboxone_controllers);
     SDL_FreeVIDPIDList(&arcadestick_devices);

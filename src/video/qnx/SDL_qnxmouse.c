@@ -19,19 +19,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../events/SDL_mouse_c.h"
-#include "../SDL_sysvideo.h"
 #include "SDL_internal.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_qnx.h"
+#include "../../events/SDL_mouse_c.h"
 
 #include <errno.h>
+
 
 static int SDLToScreenCursorShape(SDL_SystemCursor id)
 {
     // This is reserved by screen, but still not used for anything.
     int shape = -1;
 
-    switch (id) {
+    switch(id)
+    {
     case SDL_SYSTEM_CURSOR_DEFAULT:
     case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
     case SDL_SYSTEM_CURSOR_NO_DROP:
@@ -96,15 +98,14 @@ static int SDLToScreenCursorShape(SDL_SystemCursor id)
 
 static SDL_Cursor *genericCreateCursor(int shape)
 {
-    SDL_Cursor *cursor;
-    SDL_CursorData *impl;
-    screen_session_t session;
-    screen_context_t *context = getContext();
+    SDL_Cursor          *cursor;
+    SDL_CursorData      *impl;
+    screen_session_t    session;
+    screen_context_t    *context = getContext();
 
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
-        impl = SDL_calloc(1, sizeof(SDL_CursorData));
-        ;
+        impl = SDL_calloc(1, sizeof(SDL_CursorData));;
         if (impl == NULL) {
             SDL_free(cursor);
             SDL_OutOfMemory();
@@ -116,7 +117,7 @@ static SDL_Cursor *genericCreateCursor(int shape)
 
         impl->session = session;
         impl->is_visible = true;
-        cursor->internal = (void *)impl;
+        cursor->internal = (void*)impl;
     } else {
         SDL_OutOfMemory();
     }
@@ -124,7 +125,7 @@ static SDL_Cursor *genericCreateCursor(int shape)
     return cursor;
 }
 
-static SDL_Cursor *createCursor(SDL_Surface *surface, int hot_x, int hot_y)
+static SDL_Cursor *createCursor(SDL_Surface * surface, int hot_x, int hot_y)
 {
     return genericCreateCursor(SCREEN_CURSOR_SHAPE_ARROW);
 }
@@ -140,16 +141,16 @@ static SDL_Cursor *createSystemCursor(SDL_SystemCursor id)
     return genericCreateCursor(shape);
 }
 
-static bool showCursor(SDL_Cursor *cursor)
+static bool showCursor(SDL_Cursor * cursor)
 {
-    SDL_CursorData *impl;
-    screen_session_t session;
+    SDL_CursorData      *impl;
+    screen_session_t    session;
     int shape;
 
     // SDL does not provide information about previous visibility to its
     // drivers. We need to track that ourselves.
     if (cursor) {
-        impl = (SDL_CursorData *)cursor->internal;
+        impl = (SDL_CursorData*)cursor->internal;
         SDL_assert(impl != NULL);
         if (impl->is_visible) {
             return true;
@@ -162,7 +163,7 @@ static bool showCursor(SDL_Cursor *cursor)
         if (cursor == NULL) {
             return false;
         }
-        impl = (SDL_CursorData *)cursor->internal;
+        impl = (SDL_CursorData*)cursor->internal;
         SDL_assert(impl != NULL);
         if (!impl->is_visible) {
             return 0;
@@ -179,9 +180,9 @@ static bool showCursor(SDL_Cursor *cursor)
     return true;
 }
 
-static void freeCursor(SDL_Cursor *cursor)
+static void freeCursor(SDL_Cursor * cursor)
 {
-    SDL_CursorData *impl = (SDL_CursorData *)cursor->internal;
+    SDL_CursorData *impl = (SDL_CursorData*)cursor->internal;
     if (impl != NULL) {
         screen_destroy_session(impl->session);
         SDL_free(impl);
@@ -200,8 +201,8 @@ static bool setRelativeMouseMode(bool enabled)
 
 void initMouse(SDL_VideoDevice *_this)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseData *mouse_data;
+    SDL_Mouse       *mouse = SDL_GetMouse();
+    SDL_MouseData   *mouse_data;
 
     mouse_data = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
     if (mouse_data == NULL) {

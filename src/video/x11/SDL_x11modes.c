@@ -22,10 +22,10 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include "../../events/SDL_displayevents_c.h"
-#include "SDL_x11settings.h"
 #include "SDL_x11video.h"
+#include "SDL_x11settings.h"
 #include "edid.h"
+#include "../../events/SDL_displayevents_c.h"
 
 // #define X11MODES_DEBUG
 
@@ -96,7 +96,7 @@ float X11_GetGlobalContentScale(Display *display, XSettingsClient *client)
             if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
                 if (value.addr && type && SDL_strcmp(type, "String") == 0) {
                     int dpi = SDL_atoi(value.addr);
-                    scale_factor = dpi / 96.0;
+                    scale_factor  = dpi / 96.0;
                 }
             }
             X11_XrmDestroyDatabase(db);
@@ -115,7 +115,7 @@ float X11_GetGlobalContentScale(Display *display, XSettingsClient *client)
         if (scale_factor <= 0.0) {
             int dpi = X11_GetXsettingsClientIntKey(client, "Xft/DPI", -1);
             if (dpi > 0) {
-                scale_factor = (double)dpi / 1024.0;
+                scale_factor = (double) dpi / 1024.0;
                 scale_factor /= 96.0;
             }
         }
@@ -408,7 +408,7 @@ static void CalculateXRandRRefreshRate(const XRRModeInfo *info, int *numerator, 
 }
 
 static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
-                              RRMode modeID, SDL_DisplayMode *mode)
+                                  RRMode modeID, SDL_DisplayMode *mode)
 {
     int i;
     for (i = 0; i < res->nmode; ++i) {
@@ -630,6 +630,7 @@ static bool X11_AddXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int scree
     return true;
 }
 
+
 static bool X11_UpdateXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_VideoDisplay *existing_display)
 {
     SDL_VideoDisplay display;
@@ -654,7 +655,7 @@ static bool X11_UpdateXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int sc
     SDL_SetDisplayContentScale(existing_display, display.content_scale);
 
     // SDL_DisplayData is updated piece-meal above, free our local copy of this data
-    SDL_free(display.internal);
+    SDL_free( display.internal );
 
     return true;
 }
@@ -1147,9 +1148,9 @@ bool X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_di
 
     _NET_WORKAREA = X11_XInternAtom(display, "_NET_WORKAREA", False);
     int status = X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                                        _NET_WORKAREA, 0L, 4L, False, XA_CARDINAL,
-                                        &real_type, &real_format, &items_read,
-                                        &items_left, &propdata);
+                                    _NET_WORKAREA, 0L, 4L, False, XA_CARDINAL,
+                                    &real_type, &real_format, &items_read,
+                                    &items_left, &propdata);
     if ((status == Success) && (items_read >= 4)) {
         const long *p = (long *)propdata;
         const SDL_Rect usable = { (int)p[0], (int)p[1], (int)p[2], (int)p[3] };

@@ -24,14 +24,14 @@
 
 #include <android/log.h>
 
-#include "../../core/android/SDL_android.h"
+#include "SDL_androidtouch.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
-#include "SDL_androidtouch.h"
+#include "../../core/android/SDL_android.h"
 
-#define ACTION_DOWN   0
-#define ACTION_UP     1
-#define ACTION_MOVE   2
+#define ACTION_DOWN 0
+#define ACTION_UP   1
+#define ACTION_MOVE 2
 #define ACTION_CANCEL 3
 // #define ACTION_OUTSIDE 4
 #define ACTION_POINTER_DOWN 5
@@ -46,6 +46,7 @@ void Android_InitTouch(void)
 void Android_QuitTouch(void)
 {
 }
+
 
 SDL_TouchID Android_ConvertJavaTouchID(int touchID)
 {

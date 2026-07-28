@@ -22,9 +22,9 @@
 
 #ifdef SDL_VIDEO_DRIVER_OFFSCREEN
 
+#include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../SDL_egl_c.h"
-#include "../SDL_sysvideo.h"
 
 #include "SDL_offscreenwindow.h"
 

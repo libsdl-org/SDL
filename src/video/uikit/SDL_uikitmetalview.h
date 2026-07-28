@@ -33,9 +33,9 @@
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 
+#import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
-#import <UIKit/UIKit.h>
 
 @interface SDL_uikitmetalview : SDL_uikitview
 

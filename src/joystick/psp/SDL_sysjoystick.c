@@ -28,8 +28,8 @@
 #include <stdio.h> // For the definition of NULL
 #include <stdlib.h>
 
-#include "../SDL_joystick_c.h"
 #include "../SDL_sysjoystick.h"
+#include "../SDL_joystick_c.h"
 
 // Current pad state
 static SceCtrlData pad = { .Lx = 0, .Ly = 0, .Buttons = 0 };
@@ -229,7 +229,7 @@ static void PSP_JoystickUpdate(SDL_Joystick *joystick)
             if (changed & button_map[i]) {
                 bool down = ((buttons & button_map[i]) != 0);
                 SDL_SendJoystickButton(timestamp,
-                                       joystick, i, down);
+                    joystick, i, down);
             }
         }
     }

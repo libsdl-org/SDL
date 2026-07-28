@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_VITA
 
-#include "SDL_vitamessagebox.h"
 #include "SDL_vitavideo.h"
+#include "SDL_vitamessagebox.h"
 #include <psp2/message_dialog.h>
 
 #ifdef SDL_VIDEO_RENDER_VITA_GXM

@@ -247,14 +247,12 @@ int SDLTest_CompareSurfacesIgnoreTransparentPixels(SDL_Surface *surface, SDL_Sur
     return ret;
 }
 
-int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *reference, size_t size_reference)
-{
+int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *reference, size_t size_reference) {
 #define WIDTH 16
 
     const size_t size_max = SDL_max(size_actual, size_reference);
     size_t i;
-    struct
-    {
+    struct {
         const char *header;
         const Uint8 *data;
         size_t size;
@@ -293,7 +291,7 @@ int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *re
         size_t pos = 0;
         size_t col;
 
-        pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%016" SDL_PRIx64, (Uint64)i);
+        pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%016" SDL_PRIx64 , (Uint64)i);
 
         for (col = 0; col < SDL_arraysize(columns); col++) {
             size_t j;

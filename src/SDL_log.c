@@ -54,6 +54,7 @@ typedef struct SDL_LogLevel
     struct SDL_LogLevel *next;
 } SDL_LogLevel;
 
+
 // The default log output function
 static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
@@ -75,7 +76,7 @@ static void *SDL_log_userdata SDL_GUARDED_BY(SDL_log_function_lock) = NULL;
 #endif
 
 // If this list changes, update the documentation for SDL_HINT_LOGGING
-static const char *const SDL_priority_names[] = {
+static const char * const SDL_priority_names[] = {
     NULL,
     "TRACE",
     "VERBOSE",
@@ -91,7 +92,7 @@ SDL_COMPILE_TIME_ASSERT(priority_names, SDL_arraysize(SDL_priority_names) == SDL
 static char *SDL_priority_prefixes[SDL_LOG_PRIORITY_COUNT] SDL_GUARDED_BY(SDL_log_function_lock);
 
 // If this list changes, update the documentation for SDL_HINT_LOGGING
-static const char *const SDL_category_names[] = {
+static const char * const SDL_category_names[] = {
     "APP",
     "ERROR",
     "ASSERT",
@@ -464,7 +465,7 @@ bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     char *prefix_copy;
 
-    CHECK_PARAM (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
+    CHECK_PARAM(priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return SDL_InvalidParamError("priority");
     }
 
@@ -651,8 +652,7 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
 }
 
 #if defined(SDL_PLATFORM_WIN32) && !defined(SDL_PLATFORM_GDK)
-enum
-{
+enum {
     CONSOLE_UNATTACHED = 0,
     CONSOLE_ATTACHED_CONSOLE = 1,
     CONSOLE_ATTACHED_FILE = 2,
@@ -801,9 +801,9 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 #endif
     }
 #endif
-#if defined(HAVE_STDIO_H) &&                                                                                  \
+#if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
-    !(defined(SDL_PLATFORM_NGAGE)) &&                                                                         \
+    !(defined(SDL_PLATFORM_NGAGE)) && \
     !(defined(SDL_PLATFORM_WIN32))
     (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif

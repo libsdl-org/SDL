@@ -21,11 +21,11 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_RENDER_OGL
-#include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_sysvideo.h" // For SDL_RecreateWindow
+#include <SDL3/SDL_opengl.h>
 #include "../SDL_sysrender.h"
 #include "SDL_shaders_gl.h"
-#include <SDL3/SDL_opengl.h>
+#include "../../video/SDL_pixels_c.h"
 
 #ifdef SDL_PLATFORM_MACOS
 #include <OpenGL/OpenGL.h>
@@ -110,7 +110,7 @@ typedef struct
     GL_FBOList *framebuffers;
 
     // OpenGL functions
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "SDL_glfuncs.h"
 #undef SDL_PROC
 
@@ -259,7 +259,7 @@ static bool GL_LoadFunctions(GL_RenderData *data)
     bool result = true;
 #define SDL_PROC(ret, func, params)                                                           \
     do {                                                                                      \
-        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                    \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                            \
         if (!data->func) {                                                                    \
             result = SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         }                                                                                     \
@@ -461,7 +461,7 @@ static bool SetTextureScaleMode(GL_RenderData *data, GLenum textype, SDL_PixelFo
         data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         break;
-    case SDL_SCALEMODE_PIXELART: // Uses linear sampling if supported
+    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling if supported
         if (!data->pixelart_supported) {
             data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -566,7 +566,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     GL_ActivateRenderer(renderer);
 
-    renderdata->drawstate.texture = NULL;         // we trash this state.
+    renderdata->drawstate.texture = NULL; // we trash this state.
     renderdata->drawstate.texturing_dirty = true; // we trash this state.
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET &&
@@ -643,7 +643,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, data->texture);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, (Sint64)textype);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, (Sint64) textype);
     SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_OPENGL_TEX_W_FLOAT, data->texw);
     SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_OPENGL_TEX_H_FLOAT, data->texh);
 
@@ -786,7 +786,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 }
 
 static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                             const SDL_Rect *rect, const void *pixels, int pitch)
+                            const SDL_Rect *rect, const void *pixels, int pitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     const GLenum textype = renderdata->textype;
@@ -848,10 +848,10 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #ifdef SDL_HAVE_YUV
 static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                const SDL_Rect *rect,
-                                const Uint8 *Yplane, int Ypitch,
-                                const Uint8 *Uplane, int Upitch,
-                                const Uint8 *Vplane, int Vpitch)
+                               const SDL_Rect *rect,
+                               const Uint8 *Yplane, int Ypitch,
+                               const Uint8 *Uplane, int Upitch,
+                               const Uint8 *Vplane, int Vpitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     const GLenum textype = renderdata->textype;
@@ -884,9 +884,9 @@ static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool GL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                               const SDL_Rect *rect,
-                               const Uint8 *Yplane, int Ypitch,
-                               const Uint8 *UVplane, int UVpitch)
+                              const SDL_Rect *rect,
+                              const Uint8 *Yplane, int Ypitch,
+                              const Uint8 *UVplane, int UVpitch)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     const GLenum textype = renderdata->textype;
@@ -914,7 +914,7 @@ static bool GL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 #endif
 
 static bool GL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                           const SDL_Rect *rect, void **pixels, int *pitch)
+                          const SDL_Rect *rect, void **pixels, int *pitch)
 {
     GL_TextureData *data = (GL_TextureData *)texture->internal;
 
@@ -1037,9 +1037,9 @@ static bool GL_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 }
 
 static bool GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                             const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                             int num_vertices, const void *indices, int num_indices, int size_indices,
-                             float scale_x, float scale_y)
+                            const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                            int num_vertices, const void *indices, int num_indices, int size_indices,
+                            float scale_x, float scale_y)
 {
     GL_TextureData *texturedata = NULL;
     int i;
@@ -1354,8 +1354,8 @@ static void GL_InvalidateCachedState(SDL_Renderer *renderer)
     cache->cliprect_dirty = true;
     cache->texturing_dirty = true;
     cache->vertex_array = false;  // !!! FIXME: this resets to false at the end of GL_RunCommandQueue, but we could cache this more aggressively.
-    cache->color_array = false;   // !!! FIXME: this resets to false at the end of GL_RunCommandQueue, but we could cache this more aggressively.
-    cache->texture_array = false; // !!! FIXME: this resets to false at the end of GL_RunCommandQueue, but we could cache this more aggressively.
+    cache->color_array = false;  // !!! FIXME: this resets to false at the end of GL_RunCommandQueue, but we could cache this more aggressively.
+    cache->texture_array = false;  // !!! FIXME: this resets to false at the end of GL_RunCommandQueue, but we could cache this more aggressively.
     cache->color_dirty = true;
     cache->clear_color_dirty = true;
 }
@@ -1939,7 +1939,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     // RGBA32 is always supported with OpenGL
     if (bgra_supported) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32); // SDL_PIXELFORMAT_ARGB8888 on little endian systems
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
     }
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
 

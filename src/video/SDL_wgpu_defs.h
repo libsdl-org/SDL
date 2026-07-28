@@ -53,8 +53,7 @@
 #define WGPU_STRLEN (SIZE_MAX)
 #endif
 
-typedef enum WGPUSType
-{
+typedef enum WGPUSType {
     WGPUSType_ShaderSourceSPIRV = 0x00000001,
     WGPUSType_ShaderSourceWGSL = 0x00000002,
     WGPUSType_RenderPassMaxDrawCount = 0x00000003,
@@ -101,28 +100,25 @@ typedef struct WGPUSurfaceSourceWaylandSurface
     void *surface;
 } WGPUSurfaceSourceWaylandSurface;
 
-typedef struct WGPUSurfaceSourceXlibWindow
-{
+typedef struct WGPUSurfaceSourceXlibWindow {
     WGPUChainedStruct chain;
-    void *display;
+    void * display;
     uint64_t window;
 } WGPUSurfaceSourceXlibWindow;
 
-typedef struct WGPUSurfaceSourceWindowsHWND
-{
+typedef struct WGPUSurfaceSourceWindowsHWND {
     WGPUChainedStruct chain;
-    void *hinstance;
-    void *hwnd;
+    void * hinstance;
+    void * hwnd;
 } WGPUSurfaceSourceWindowsHWND;
 
-typedef struct WGPUEmscriptenSurfaceSourceCanvasHTMLSelector
-{
+typedef struct WGPUEmscriptenSurfaceSourceCanvasHTMLSelector {
     WGPUChainedStruct chain;
     WGPUStringView selector;
 } WGPUEmscriptenSurfaceSourceCanvasHTMLSelector;
 
 typedef WGPUSurface (*WGPUProcInstanceCreateSurface)(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
 
-WGPU_EXTERN WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const *descriptor) WGPU_FUNCTION_ATTRIBUTE;
+WGPU_EXTERN WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const * descriptor) WGPU_FUNCTION_ATTRIBUTE;
 
 #endif

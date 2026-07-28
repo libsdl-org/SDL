@@ -24,9 +24,9 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapi_nintendo.h"
-#include "SDL_hidapi_rumble.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_nintendo.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_WII
 
@@ -1583,7 +1583,7 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
-                           SDL_PlayerLEDHintChanged, ctx);
+                        SDL_PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
 }

@@ -46,35 +46,35 @@ enum
 
 typedef enum
 {
-    STEAMDECK_LBUTTON_R2 = 0x00000001,
-    STEAMDECK_LBUTTON_L2 = 0x00000002,
-    STEAMDECK_LBUTTON_R = 0x00000004,
-    STEAMDECK_LBUTTON_L = 0x00000008,
-    STEAMDECK_LBUTTON_Y = 0x00000010,
-    STEAMDECK_LBUTTON_B = 0x00000020,
-    STEAMDECK_LBUTTON_X = 0x00000040,
-    STEAMDECK_LBUTTON_A = 0x00000080,
-    STEAMDECK_LBUTTON_DPAD_UP = 0x00000100,
-    STEAMDECK_LBUTTON_DPAD_RIGHT = 0x00000200,
-    STEAMDECK_LBUTTON_DPAD_LEFT = 0x00000400,
-    STEAMDECK_LBUTTON_DPAD_DOWN = 0x00000800,
-    STEAMDECK_LBUTTON_VIEW = 0x00001000,
-    STEAMDECK_LBUTTON_STEAM = 0x00002000,
-    STEAMDECK_LBUTTON_MENU = 0x00004000,
-    STEAMDECK_LBUTTON_L5 = 0x00008000,
-    STEAMDECK_LBUTTON_R5 = 0x00010000,
-    STEAMDECK_LBUTTON_LEFT_PAD = 0x00020000,
-    STEAMDECK_LBUTTON_RIGHT_PAD = 0x00040000,
-    STEAMDECK_LBUTTON_LEFT_TOUCHPAD_TOUCH = 0x00080000,
-    STEAMDECK_LBUTTON_RIGHT_TOUCHPAD_TOUCH = 0x00100000,
-    STEAMDECK_LBUTTON_L3 = 0x00400000,
-    STEAMDECK_LBUTTON_R3 = 0x04000000,
+    STEAMDECK_LBUTTON_R2            = 0x00000001,
+    STEAMDECK_LBUTTON_L2            = 0x00000002,
+    STEAMDECK_LBUTTON_R             = 0x00000004,
+    STEAMDECK_LBUTTON_L             = 0x00000008,
+    STEAMDECK_LBUTTON_Y             = 0x00000010,
+    STEAMDECK_LBUTTON_B             = 0x00000020,
+    STEAMDECK_LBUTTON_X             = 0x00000040,
+    STEAMDECK_LBUTTON_A             = 0x00000080,
+    STEAMDECK_LBUTTON_DPAD_UP       = 0x00000100,
+    STEAMDECK_LBUTTON_DPAD_RIGHT    = 0x00000200,
+    STEAMDECK_LBUTTON_DPAD_LEFT     = 0x00000400,
+    STEAMDECK_LBUTTON_DPAD_DOWN     = 0x00000800,
+    STEAMDECK_LBUTTON_VIEW          = 0x00001000,
+    STEAMDECK_LBUTTON_STEAM         = 0x00002000,
+    STEAMDECK_LBUTTON_MENU          = 0x00004000,
+    STEAMDECK_LBUTTON_L5            = 0x00008000,
+    STEAMDECK_LBUTTON_R5            = 0x00010000,
+    STEAMDECK_LBUTTON_LEFT_PAD      = 0x00020000,
+    STEAMDECK_LBUTTON_RIGHT_PAD     = 0x00040000,
+    STEAMDECK_LBUTTON_LEFT_TOUCHPAD_TOUCH      = 0x00080000,
+    STEAMDECK_LBUTTON_RIGHT_TOUCHPAD_TOUCH     = 0x00100000,
+    STEAMDECK_LBUTTON_L3            = 0x00400000,
+    STEAMDECK_LBUTTON_R3            = 0x04000000,
 
-    STEAMDECK_HBUTTON_L4 = 0x00000200,
-    STEAMDECK_HBUTTON_R4 = 0x00000400,
-    STEAMDECK_HBUTTON_LSTICK_TOUCH = 0x00004000,
-    STEAMDECK_HBUTTON_RSTICK_TOUCH = 0x00008000,
-    STEAMDECK_HBUTTON_QAM = 0x00040000,
+    STEAMDECK_HBUTTON_L4            = 0x00000200,
+    STEAMDECK_HBUTTON_R4            = 0x00000400,
+    STEAMDECK_HBUTTON_LSTICK_TOUCH  = 0x00004000,
+    STEAMDECK_HBUTTON_RSTICK_TOUCH  = 0x00008000,
+    STEAMDECK_HBUTTON_QAM           = 0x00040000,
 } SteamDeckButtons;
 
 typedef struct
@@ -263,12 +263,13 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
         if (left_touch_down) {
             ctx->left_touch_x = pInReport->payload.deckState.sLeftPadX / 65536.0f + 0.5f;
             ctx->left_touch_y = -(float)pInReport->payload.deckState.sLeftPadY / 65536.0f + 0.5f;
+
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
-                                 left_touch_down,
-                                 ctx->left_touch_x,
-                                 ctx->left_touch_y,
-                                 pInReport->payload.deckState.sPressurePadLeft / 32768.0f);
+                left_touch_down,
+                ctx->left_touch_x,
+                ctx->left_touch_y,
+                pInReport->payload.deckState.sPressurePadLeft / 32768.0f);
         ctx->left_touch_down = left_touch_down;
     }
     if (right_touch_down || ctx->right_touch_down) {
@@ -277,10 +278,10 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
             ctx->right_touch_y = -(float)pInReport->payload.deckState.sRightPadY / 65536.0f + 0.5f;
         }
         SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
-                                 right_touch_down,
-                                 ctx->right_touch_x,
-                                 ctx->right_touch_y,
-                                 pInReport->payload.deckState.sPressurePadRight / 32768.0f);
+                right_touch_down,
+                ctx->right_touch_x,
+                ctx->right_touch_y,
+                pInReport->payload.deckState.sPressurePadRight / 32768.0f);
         ctx->right_touch_down = right_touch_down;
     }
 }

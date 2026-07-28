@@ -33,10 +33,10 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
     SDL_Rect full_src;
     SDL_Rect full_dst;
 
-    CHECK_PARAM (!src) {
+    CHECK_PARAM(!src) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM (!dst) {
+    CHECK_PARAM(!dst) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -67,10 +67,10 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
             result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
             if (result) {
                 result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
-                                                        dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
-                                                        dst_tmp->pixels, dst_tmp->pitch,
-                                                        dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
-                                                        (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                            dst_tmp->pixels, dst_tmp->pitch,
+                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
+                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
             }
         } else {
             result = false;

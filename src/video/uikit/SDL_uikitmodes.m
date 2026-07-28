@@ -100,7 +100,7 @@
 
 #ifndef SDL_PLATFORM_VISIONOS
 static bool UIKit_AllocateDisplayModeData(SDL_DisplayMode *mode,
-                                          UIScreenMode *uiscreenmode)
+                                         UIScreenMode *uiscreenmode)
 {
     SDL_UIKitDisplayModeData *data = nil;
 
@@ -135,7 +135,7 @@ static float UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
 }
 
 static bool UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
-                                       UIScreen *uiscreen, UIScreenMode *uiscreenmode)
+                                      UIScreen *uiscreen, UIScreenMode *uiscreenmode)
 {
     SDL_DisplayMode mode;
 
@@ -159,7 +159,7 @@ static bool UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,
 }
 
 static bool UIKit_AddDisplayMode(SDL_VideoDisplay *display, int w, int h,
-                                 UIScreen *uiscreen, UIScreenMode *uiscreenmode, bool addRotation)
+                                UIScreen *uiscreen, UIScreenMode *uiscreenmode, bool addRotation)
 {
     if (!UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode)) {
         return false;
@@ -230,7 +230,7 @@ bool UIKit_AddDisplay(UIScreen *uiscreen, bool send_event)
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;
     } else
 #endif
-        if (UIKit_IsDisplayLandscape(uiscreen)) {
+    if (UIKit_IsDisplayLandscape(uiscreen)) {
         display.natural_orientation = SDL_ORIENTATION_LANDSCAPE;
     } else {
         display.natural_orientation = SDL_ORIENTATION_PORTRAIT;

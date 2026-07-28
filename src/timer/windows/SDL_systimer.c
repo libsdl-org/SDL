@@ -65,20 +65,20 @@ static HANDLE SDL_GetWaitableEvent(void)
 #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2
 #endif
 
-typedef HANDLE(WINAPI *pfnCreateWaitableTimerExW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerExW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
 static pfnCreateWaitableTimerExW pCreateWaitableTimerExW;
 
 #if WINVER < _WIN32_WINNT_WIN7
 typedef struct _REASON_CONTEXT REASON_CONTEXT;
-typedef REASON_CONTEXT *PREASON_CONTEXT;
+typedef REASON_CONTEXT * PREASON_CONTEXT;
 #endif
-typedef BOOL(WINAPI *pfnSetWaitableTimerEx)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
+typedef BOOL (WINAPI *pfnSetWaitableTimerEx)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
 static pfnSetWaitableTimerEx pSetWaitableTimerEx;
 
-typedef HANDLE(WINAPI *pfnCreateWaitableTimerW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
 static pfnCreateWaitableTimerW pCreateWaitableTimerW;
 
-typedef BOOL(WINAPI *pfnSetWaitableTimer)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
+typedef BOOL (WINAPI *pfnSetWaitableTimer)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
 static pfnSetWaitableTimer pSetWaitableTimer;
 
 static HANDLE SDL_GetWaitableTimer(void)

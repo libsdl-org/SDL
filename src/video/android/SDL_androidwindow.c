@@ -22,15 +22,16 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-#include "../../core/android/SDL_android.h"
+#include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
-#include "../SDL_sysvideo.h"
+#include "../../core/android/SDL_android.h"
 
-#include "SDL_androidevents.h"
 #include "SDL_androidvideo.h"
+#include "SDL_androidevents.h"
 #include "SDL_androidwindow.h"
+
 
 // Currently only one window
 SDL_Window *Android_Window = NULL;

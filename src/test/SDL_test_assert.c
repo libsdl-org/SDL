@@ -24,8 +24,8 @@
  Used by the test framework and test cases.
 
 */
-#include "SDL_test_internal.h"
 #include <SDL3/SDL_test.h>
+#include "SDL_test_internal.h"
 
 /* ! counts the failed asserts */
 static int SDLTest_AssertsFailed = 0;
@@ -133,16 +133,9 @@ void SDLTest_LogAssertSummary(void)
     bool success = SDLTest_AssertsFailed == 0;
 
     SDLTest_LogMessage(success ? SDL_LOG_PRIORITY_INFO : SDL_LOG_PRIORITY_ERROR,
-                       "Assert Summary: Total=%d "
-                       "%s"
-                       "Passed=%d"
-                       "%s"
-                       " "
-                       "%s"
-                       "Failed=%d"
-                       "%s",
-                       totalAsserts, COLOR_GREEN, SDLTest_AssertsPassed, COLOR_END,
-                       success ? COLOR_GREEN : COLOR_RED, SDLTest_AssertsFailed, COLOR_END);
+        "Assert Summary: Total=%d " "%s" "Passed=%d" "%s" " " "%s" "Failed=%d" "%s",
+        totalAsserts, COLOR_GREEN, SDLTest_AssertsPassed, COLOR_END,
+        success ? COLOR_GREEN : COLOR_RED, SDLTest_AssertsFailed, COLOR_END);
 }
 
 /*

@@ -51,12 +51,12 @@ typedef void *SDL_RequestAndroidPermissionCallback;
 typedef void *JavaVM;
 
 extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
-extern SDL_DECLSPEC void *SDLCALL SDL_GetAndroidActivity(void);
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidCachePath(void);
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidExternalStoragePath(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
-extern SDL_DECLSPEC void *SDLCALL SDL_GetAndroidJNIEnv(void);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
 extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
 extern SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);

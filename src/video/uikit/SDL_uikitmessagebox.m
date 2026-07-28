@@ -142,7 +142,7 @@ typedef struct UIKit_ShowMessageBoxData
 static void SDLCALL UIKit_ShowMessageBoxMainThreadCallback(void *userdata)
 {
     @autoreleasepool {
-        UIKit_ShowMessageBoxData *data = (UIKit_ShowMessageBoxData *)userdata;
+        UIKit_ShowMessageBoxData *data = (UIKit_ShowMessageBoxData *) userdata;
         data->result = UIKit_ShowMessageBoxAlertController(data->messageboxdata, data->buttonID);
     }
 }

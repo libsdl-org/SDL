@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
+
 #ifdef SDL_memcpy
 #undef SDL_memcpy
 #endif

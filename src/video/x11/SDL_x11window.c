@@ -22,17 +22,17 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
-#include "../../core/unix/SDL_appid.h"
-#include "../../events/SDL_events_c.h"
+#include "../SDL_sysvideo.h"
+#include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
-#include "../SDL_pixels_c.h"
-#include "../SDL_sysvideo.h"
+#include "../../events/SDL_events_c.h"
+#include "../../core/unix/SDL_appid.h"
 
-#include "SDL_x11mouse.h"
 #include "SDL_x11video.h"
-#include "SDL_x11xfixes.h"
+#include "SDL_x11mouse.h"
 #include "SDL_x11xinput2.h"
+#include "SDL_x11xfixes.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -43,20 +43,20 @@
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD    1l
 
-#define CHECK_WINDOW_DATA(window)                          \
-    if (!window) {                                         \
-        return SDL_SetError("Invalid window");             \
-    }                                                      \
-    if (!window->internal) {                               \
-        return SDL_SetError("Invalid window driver data"); \
+#define CHECK_WINDOW_DATA(window)                                       \
+    if (!window) {                                                      \
+        return SDL_SetError("Invalid window");                          \
+    }                                                                   \
+    if (!window->internal) {                                          \
+        return SDL_SetError("Invalid window driver data");              \
     }
 
-#define CHECK_DISPLAY_DATA(display)                         \
-    if (!_display) {                                        \
-        return SDL_SetError("Invalid display");             \
-    }                                                       \
-    if (!_display->internal) {                              \
-        return SDL_SetError("Invalid display driver data"); \
+#define CHECK_DISPLAY_DATA(display)                                     \
+    if (!_display) {                                                    \
+        return SDL_SetError("Invalid display");                         \
+    }                                                                   \
+    if (!_display->internal) {                                        \
+        return SDL_SetError("Invalid display driver data");             \
     }
 
 static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win) // NOLINT(readability-non-const-parameter): cannot make XPointer a const pointer due to typedef
@@ -390,7 +390,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
     // Associate the data with the window
 
     if (videodata->numwindows >= videodata->windowlistlength) {
-        SDL_WindowData **new_windowlist = (SDL_WindowData **)SDL_realloc(videodata->windowlist, (videodata->numwindows + 1) * sizeof(*videodata->windowlist));
+        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(videodata->windowlist, (videodata->numwindows + 1) * sizeof(*videodata->windowlist));
         if (!new_windowlist) {
             goto error_cleanup;
         }
@@ -447,6 +447,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, data->videodata->display);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_X11_SCREEN_NUMBER, screen);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, data->xwindow);
+
 
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2) || defined(SDL_VIDEO_OPENGL_EGL)
     if ((window->flags & SDL_WINDOW_OPENGL) &&
@@ -555,7 +556,7 @@ static void SetWindowBordered(Display *display, int screen, Window window, bool 
 bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     Window w = (Window)SDL_GetNumberProperty(create_props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER,
-                                             (Window)SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL));
+                (Window)SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL));
     if (w) {
         window->flags |= SDL_WINDOW_EXTERNAL;
 
@@ -2346,8 +2347,8 @@ bool X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     // If the window is external and has only a pending resize or move event, use the special external sync path to avoid processing events.
     if ((window->flags & SDL_WINDOW_EXTERNAL) &&
         (data->pending_operation & ~(X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE)) == X11_PENDING_OP_NONE) {
-        X11_ExternalResizeMoveSync(window);
-        return true;
+            X11_ExternalResizeMoveSync(window);
+            return true;
     }
 
     const Uint64 current_time = SDL_GetTicksNS();

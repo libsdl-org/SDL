@@ -22,8 +22,8 @@
 
 #if defined(SDL_VIDEO_DRIVER_RPI) && defined(SDL_VIDEO_OPENGL_EGL)
 
-#include "SDL_rpiopengles.h"
 #include "SDL_rpivideo.h"
+#include "SDL_rpiopengles.h"
 
 // EGL implementation of SDL OpenGL support
 
@@ -60,6 +60,6 @@ bool RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 
 SDL_EGL_CreateContext_impl(RPI)
-    SDL_EGL_MakeCurrent_impl(RPI)
+SDL_EGL_MakeCurrent_impl(RPI)
 
 #endif // SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL

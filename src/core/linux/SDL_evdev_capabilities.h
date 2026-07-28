@@ -29,16 +29,16 @@
 #include <linux/input.h>
 
 #ifndef INPUT_PROP_SEMI_MT
-#define INPUT_PROP_SEMI_MT 0x03
+#define INPUT_PROP_SEMI_MT          0x03
 #endif
 #ifndef INPUT_PROP_TOPBUTTONPAD
-#define INPUT_PROP_TOPBUTTONPAD 0x04
+#define INPUT_PROP_TOPBUTTONPAD     0x04
 #endif
 #ifndef INPUT_PROP_POINTING_STICK
-#define INPUT_PROP_POINTING_STICK 0x05
+#define INPUT_PROP_POINTING_STICK   0x05
 #endif
 #ifndef INPUT_PROP_ACCELEROMETER
-#define INPUT_PROP_ACCELEROMETER 0x06
+#define INPUT_PROP_ACCELEROMETER    0x06
 #endif
 #ifndef INPUT_PROP_MAX
 #define INPUT_PROP_MAX 0x1f
@@ -60,7 +60,7 @@ typedef enum
 } SDL_UDEV_deviceclass;
 
 #define BITS_PER_LONG        (sizeof(unsigned long) * 8)
-#define NBITS(x)             ((((x) - 1) / BITS_PER_LONG) + 1)
+#define NBITS(x)             ((((x)-1) / BITS_PER_LONG) + 1)
 #define EVDEV_OFF(x)         ((x) % BITS_PER_LONG)
 #define EVDEV_LONG(x)        ((x) / BITS_PER_LONG)
 #define test_bit(bit, array) ((array[EVDEV_LONG(bit)] >> EVDEV_OFF(bit)) & 1)

@@ -29,7 +29,7 @@
 
 typedef struct SDL_LibUSBContext
 {
-    /* *INDENT-OFF* */ // clang-format off
+/* *INDENT-OFF* */ // clang-format off
     int (LIBUSB_CALL *init)(libusb_context **ctx);
     void (LIBUSB_CALL *exit)(libusb_context *ctx);
     ssize_t (LIBUSB_CALL *get_device_list)(libusb_context *ctx, libusb_device ***list);

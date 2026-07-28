@@ -38,13 +38,13 @@
 #endif // WINAPI_PARTITION_GAMES
 
 #ifdef __CYGWIN__
-// generated header d3d12.h wants to see _WIN32 defined in order to believe it's targeting windows
-#define _WIN32 1
+  // generated header d3d12.h wants to see _WIN32 defined in order to believe it's targeting windows
+  #define _WIN32 1
 #endif
 #define COBJMACROS
 #include "d3d12.h"
 #ifdef __CYGWIN__
-#undef _WIN32
+  #undef _WIN32
 #endif
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
@@ -83,10 +83,10 @@
 #define D3D12_TEXTURE_DATA_PITCH_ALIGNMENT 256
 #endif
 #ifndef D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE
-#define D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ((D3D12_RESOURCE_STATES)(0x40 | 0x80))
+#define D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ((D3D12_RESOURCE_STATES) (0x40 | 0x80))
 #endif
 #ifndef D3D12_HEAP_TYPE_GPU_UPLOAD
-#define D3D12_HEAP_TYPE_GPU_UPLOAD ((D3D12_HEAP_TYPE)5)
+#define D3D12_HEAP_TYPE_GPU_UPLOAD ((D3D12_HEAP_TYPE) 5)
 #endif
 
 // DXGI_PRESENT flags are removed on Xbox
@@ -96,9 +96,9 @@
 #include "SDL_d3d12_xbox_cmacros.h"
 
 // They don't even define the CMACROS for ID3DBlob, come on man
-#define ID3D10Blob_GetBufferPointer(blob)     blob->GetBufferPointer()
-#define ID3D10Blob_GetBufferSize(blob)        blob->GetBufferSize()
-#define ID3D10Blob_Release(blob)              blob->Release()
+#define ID3D10Blob_GetBufferPointer(blob) blob->GetBufferPointer()
+#define ID3D10Blob_GetBufferSize(blob) blob->GetBufferSize()
+#define ID3D10Blob_Release(blob) blob->Release()
 
 /* Xbox's D3D12 ABI actually varies from Windows, if a function does not exist
  * in the above header then you need to use this instead :(

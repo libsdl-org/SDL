@@ -22,11 +22,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_OFFSCREEN
 
-#include "../../SDL_properties_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../SDL_properties_c.h"
 #include "SDL_offscreenframebuffer_c.h"
 
 #define OFFSCREEN_SURFACE "SDL.internal.window.surface"
+
 
 bool SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {

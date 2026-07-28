@@ -311,8 +311,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
         return;
     }
 
-    static struct
-    {
+    static struct {
         int flags;
         SDL_Keymod modstate;
     } mods[] = {
@@ -349,7 +348,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
              * UCKeyTranslate() function does not do its job properly for ISO layout keyboards, where the key '@',
              * which is located in the top left corner of the keyboard right under the Escape key, and the additional
              * key '<', which is on the right of the Shift key, are inverted
-             */
+            */
             if ((scancode == SDL_SCANCODE_NONUSBACKSLASH || scancode == SDL_SCANCODE_GRAVE) && KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
                 // see comments in scancodes_darwin.h
                 scancode = (SDL_Scancode)((SDL_SCANCODE_NONUSBACKSLASH + SDL_SCANCODE_GRAVE) - scancode);
@@ -562,8 +561,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, false);
         break;
-    case NSEventTypeFlagsChanged:
-    {
+    case NSEventTypeFlagsChanged: {
         // see if the new modifierFlags mean any existing keys should be pressed/released...
         const unsigned int modflags = (unsigned int)[event modifierFlags];
         HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);

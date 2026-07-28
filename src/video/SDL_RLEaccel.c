@@ -87,10 +87,10 @@
  *   beginning of an opaque line.
  */
 
-#include "SDL_RLEaccel_c.h"
-#include "SDL_pixels_c.h"
-#include "SDL_surface_c.h"
 #include "SDL_sysvideo.h"
+#include "SDL_surface_c.h"
+#include "SDL_pixels_c.h"
+#include "SDL_RLEaccel_c.h"
 
 #define PIXEL_COPY(to, from, len, bpp) \
     SDL_memcpy(to, from, (size_t)(len) * (bpp))
@@ -176,53 +176,53 @@
     dst[1] = (Uint8)(d >> 8);  \
     dst[2] = (Uint8)(d);
 #else
-#define SET_RGB24(dst, d)     \
-    dst[0] = (Uint8)(d);      \
-    dst[1] = (Uint8)(d >> 8); \
+#define SET_RGB24(dst, d)      \
+    dst[0] = (Uint8)(d);       \
+    dst[1] = (Uint8)(d >> 8);  \
     dst[2] = (Uint8)(d >> 16);
 #endif
-#define ALPHA_BLIT_ANY(to, from, length, bpp, alpha) \
-    do {                                             \
-        int i;                                       \
-        Uint8 *src = from;                           \
-        Uint8 *dst = to;                             \
-        for (i = 0; i < (int)(length); i++) {        \
-            Uint32 s = 0, d = 0;                     \
-            unsigned rs, gs, bs, rd, gd, bd;         \
-            switch (bpp) {                           \
-            case 2:                                  \
-                s = *(Uint16 *)src;                  \
-                d = *(Uint16 *)dst;                  \
-                break;                               \
-            case 3:                                  \
-                s = GET_RGB24(src);                  \
-                d = GET_RGB24(dst);                  \
-                break;                               \
-            case 4:                                  \
-                s = *(Uint32 *)src;                  \
-                d = *(Uint32 *)dst;                  \
-                break;                               \
-            }                                        \
-            RGB_FROM_PIXEL(s, fmt, rs, gs, bs);      \
-            RGB_FROM_PIXEL(d, fmt, rd, gd, bd);      \
-            rd += (rs - rd) * alpha >> 8;            \
-            gd += (gs - gd) * alpha >> 8;            \
-            bd += (bs - bd) * alpha >> 8;            \
-            PIXEL_FROM_RGB(d, fmt, rd, gd, bd);      \
-            switch (bpp) {                           \
-            case 2:                                  \
-                *(Uint16 *)dst = (Uint16)d;          \
-                break;                               \
-            case 3:                                  \
-                SET_RGB24(dst, d);                   \
-                break;                               \
-            case 4:                                  \
-                *(Uint32 *)dst = d;                  \
-                break;                               \
-            }                                        \
-            src += bpp;                              \
-            dst += bpp;                              \
-        }                                            \
+#define ALPHA_BLIT_ANY(to, from, length, bpp, alpha)             \
+    do {                                                         \
+        int i;                                                   \
+        Uint8 *src = from;                                       \
+        Uint8 *dst = to;                                         \
+        for (i = 0; i < (int)(length); i++) {                    \
+            Uint32 s = 0, d = 0;                                 \
+            unsigned rs, gs, bs, rd, gd, bd;                     \
+            switch (bpp) {                                       \
+            case 2:                                              \
+                s = *(Uint16 *)src;                              \
+                d = *(Uint16 *)dst;                              \
+                break;                                           \
+            case 3:                                              \
+                s = GET_RGB24(src);                              \
+                d = GET_RGB24(dst);                              \
+                break;                                           \
+            case 4:                                              \
+                s = *(Uint32 *)src;                              \
+                d = *(Uint32 *)dst;                              \
+                break;                                           \
+            }                                                    \
+            RGB_FROM_PIXEL(s, fmt, rs, gs, bs);                  \
+            RGB_FROM_PIXEL(d, fmt, rd, gd, bd);                  \
+            rd += (rs - rd) * alpha >> 8;                        \
+            gd += (gs - gd) * alpha >> 8;                        \
+            bd += (bs - bd) * alpha >> 8;                        \
+            PIXEL_FROM_RGB(d, fmt, rd, gd, bd);                  \
+            switch (bpp) {                                       \
+            case 2:                                              \
+                *(Uint16 *)dst = (Uint16)d;                      \
+                break;                                           \
+            case 3:                                              \
+                SET_RGB24(dst, d);                               \
+                break;                                           \
+            case 4:                                              \
+                *(Uint32 *)dst = d;                              \
+                break;                                           \
+            }                                                    \
+            src += bpp;                                          \
+            dst += bpp;                                          \
+        }                                                        \
     } while (0)
 
 /*
@@ -296,7 +296,7 @@
 #define CHOOSE_BLIT(blitter, alpha, fmt)                                                                                                              \
     do {                                                                                                                                              \
         if (alpha == 255) {                                                                                                                           \
-            switch (fmt->bytes_per_pixel) {                                                                                                           \
+            switch (fmt->bytes_per_pixel) {                                                                                                             \
             case 1:                                                                                                                                   \
                 blitter(1, Uint8, OPAQUE_BLIT);                                                                                                       \
                 break;                                                                                                                                \
@@ -311,7 +311,7 @@
                 break;                                                                                                                                \
             }                                                                                                                                         \
         } else {                                                                                                                                      \
-            switch (fmt->bytes_per_pixel) {                                                                                                           \
+            switch (fmt->bytes_per_pixel) {                                                                                                             \
             case 1:                                                                                                                                   \
                 /* No 8bpp alpha blitting */                                                                                                          \
                 break;                                                                                                                                \
@@ -372,12 +372,12 @@
  * Set a pixel value using the given format, except that the alpha value is
  * placed in the top byte. This is the format used for RLE with alpha.
  */
-#define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)         \
-    {                                                      \
+#define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)   \
+    {                                                \
         Pixel = ((r >> (8 - fmt->Rbits)) << fmt->Rshift) | \
                 ((g >> (8 - fmt->Gbits)) << fmt->Gshift) | \
                 ((b >> (8 - fmt->Bbits)) << fmt->Bshift) | \
-                (a << 24);                                 \
+                (a << 24);                           \
     }
 
 /*
@@ -931,10 +931,10 @@ static int copy_32(void *dst, const Uint32 *src, int n,
     return n * 4;
 }
 
-#define ISOPAQUE(pixel, fmt) ((((pixel) & fmt->Amask) >> fmt->Ashift) == 255)
+#define ISOPAQUE(pixel, fmt) ((((pixel)&fmt->Amask) >> fmt->Ashift) == 255)
 
 #define ISTRANSL(pixel, fmt) \
-    ((unsigned)((((pixel) & fmt->Amask) >> fmt->Ashift) - 1U) < 254U)
+    ((unsigned)((((pixel)&fmt->Amask) >> fmt->Ashift) - 1U) < 254U)
 
 // convert surface to be quickly alpha-blittable onto dest, if possible
 static bool RLEAlphaSurface(SDL_Surface *surface)
@@ -1025,15 +1025,15 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         Uint8 *lastline = dst; // end of last non-blank line
 
         // opaque counts are 8 or 16 bits, depending on target depth
-#define ADD_OPAQUE_COUNTS(n, m)         \
-    if (df->bytes_per_pixel == 4) {     \
-        ((Uint16 *)dst)[0] = (Uint16)n; \
-        ((Uint16 *)dst)[1] = (Uint16)m; \
-        dst += 4;                       \
-    } else {                            \
-        dst[0] = (Uint8)n;              \
-        dst[1] = (Uint8)m;              \
-        dst += 2;                       \
+#define ADD_OPAQUE_COUNTS(n, m)           \
+    if (df->bytes_per_pixel == 4) {         \
+        ((Uint16 *)dst)[0] = (Uint16)n;   \
+        ((Uint16 *)dst)[1] = (Uint16)m;   \
+        dst += 4;                         \
+    } else {                              \
+        dst[0] = (Uint8)n;                \
+        dst[1] = (Uint8)m;                \
+        dst += 2;                         \
     }
 
         // translucent counts are always 16 bit

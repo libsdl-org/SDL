@@ -22,8 +22,8 @@
 
 #ifdef SDL_AUDIO_DRIVER_WASAPI
 
-#include "../../core/windows/SDL_immdevice.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../../core/windows/SDL_immdevice.h"
 #include "../../thread/SDL_systhread.h"
 #include "../SDL_sysaudio.h"
 
@@ -45,8 +45,8 @@
 
 // handle to Avrt.dll--Vista and later!--for flagging the callback thread as "Pro Audio" (low latency).
 static HMODULE libavrt = NULL;
-typedef HANDLE(WINAPI *pfnAvSetMmThreadCharacteristicsW)(LPCWSTR, LPDWORD);
-typedef BOOL(WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
+typedef HANDLE (WINAPI *pfnAvSetMmThreadCharacteristicsW)(LPCWSTR, LPDWORD);
+typedef BOOL (WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
 static pfnAvSetMmThreadCharacteristicsW pAvSetMmThreadCharacteristicsW = NULL;
 static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 
@@ -69,11 +69,9 @@ static bool supports_recording_on_playback_devices = false;
 // added in Windows 8.1: This ugliness is here to make sure that
 // we can build against older SDK versions.
 #define SDL_AUDCLNT_STREAMOPTIONS_RAW 0x1
-typedef union SDL_AudioClientProperties
-{
+typedef union SDL_AudioClientProperties {
     AudioClientProperties a;
-    struct _SDL_AudioClientProperties
-    {
+    struct _SDL_AudioClientProperties {
         UINT32 cbSize;
         BOOL bIsOffload;
         AUDIO_STREAM_CATEGORY eCategory;
@@ -109,10 +107,10 @@ static void ManagementThreadMainloop(void)
         if (!task) {
             SDL_WaitCondition(ManagementThreadCondition, ManagementThreadLock); // block until there's something to do.
         } else {
-            SDL_SetAtomicPointer((void **)&ManagementThreadPendingTasks, task->next); // take task off the pending list.
-            SDL_UnlockMutex(ManagementThreadLock);                                    // let other things add to the list while we chew on this task.
-            task->result = task->fn(task->userdata);                                  // run this task.
-            if (task->task_complete_sem) {                                            // something waiting on result?
+            SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, task->next); // take task off the pending list.
+            SDL_UnlockMutex(ManagementThreadLock);                       // let other things add to the list while we chew on this task.
+            task->result = task->fn(task->userdata);                     // run this task.
+            if (task->task_complete_sem) {                               // something waiting on result?
                 task->errorstr = SDL_strdup(SDL_GetError());
                 SDL_SignalSemaphore(task->task_complete_sem);
             } else { // nothing waiting, we're done, free it.
@@ -129,7 +127,7 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
     // We want to block for a result, but we are already running from the management thread! Just run the task now so we don't deadlock.
     if ((wait_on_result) && (SDL_GetCurrentThreadID() == SDL_GetThreadID(ManagementThread))) {
         *wait_on_result = task(userdata);
-        return true; // completed!
+        return true;  // completed!
     }
 
     if (SDL_GetAtomicInt(&ManagementThreadShutdown)) {
@@ -165,7 +163,7 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
     if (prev) {
         prev->next = pending;
     } else {
-        SDL_SetAtomicPointer((void **)&ManagementThreadPendingTasks, pending);
+        SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, pending);
     }
 
     // task is added to the end of the pending list, let management thread rip!
@@ -186,6 +184,7 @@ bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, b
     return true; // successfully added (and possibly executed)!
 }
 
+
 static void AudioDeviceDisconnected(SDL_AudioDevice *device)
 {
     WASAPI_DisconnectDevice(device);
@@ -193,9 +192,9 @@ static void AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 static bool mgmtthrtask_DefaultAudioDeviceChanged(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
     SDL_DefaultAudioDeviceChanged(device);
-    UnrefPhysicalAudioDevice(device); // make sure this lived until the task completes.
+    UnrefPhysicalAudioDevice(device);  // make sure this lived until the task completes.
     return true;
 }
 
@@ -203,7 +202,7 @@ static void DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
 {
     // don't wait on this, IMMDevice's own thread needs to return or everything will deadlock.
     if (new_default_device) {
-        RefPhysicalAudioDevice(new_default_device); // make sure this lives until the task completes.
+        RefPhysicalAudioDevice(new_default_device);  // make sure this lives until the task completes.
         WASAPI_ProxyToManagementThread(mgmtthrtask_DefaultAudioDeviceChanged, new_default_device, NULL);
     }
 }
@@ -297,7 +296,7 @@ static bool InitManagementThread(void)
         return false;
     }
 
-    SDL_SetAtomicPointer((void **)&ManagementThreadPendingTasks, NULL);
+    SDL_SetAtomicPointer((void **) &ManagementThreadPendingTasks, NULL);
     SDL_SetAtomicInt(&ManagementThreadShutdown, 0);
     ManagementThread = SDL_CreateThreadWithStackSize(ManagementThreadEntry, "SDLWASAPIMgmt", 256 * 1024, &mgmtdata); // !!! FIXME: maybe even smaller stack size?
     if (!ManagementThread) {
@@ -329,7 +328,7 @@ static void DeinitManagementThread(void)
         ManagementThread = NULL;
     }
 
-    SDL_assert(SDL_GetAtomicPointer((void **)&ManagementThreadPendingTasks) == NULL);
+    SDL_assert(SDL_GetAtomicPointer((void **) &ManagementThreadPendingTasks) == NULL);
 
     SDL_DestroyCondition(ManagementThreadCondition);
     SDL_DestroyMutex(ManagementThreadLock);
@@ -384,7 +383,7 @@ static bool WasapiFailed(SDL_AudioDevice *device, const HRESULT err)
 
 static bool mgmtthrtask_StopAndReleaseClient(void *userdata)
 {
-    IAudioClient *client = (IAudioClient *)userdata;
+    IAudioClient *client = (IAudioClient *) userdata;
     IAudioClient_Stop(client);
     IAudioClient_Release(client);
     return true;
@@ -410,7 +409,7 @@ static bool mgmtthrtask_CoTaskMemFree(void *userdata)
 
 static bool mgmtthrtask_CloseHandle(void *userdata)
 {
-    CloseHandle((HANDLE)userdata);
+    CloseHandle((HANDLE) userdata);
     return true;
 }
 
@@ -450,13 +449,13 @@ static void ResetWasapiDevice(SDL_AudioDevice *device)
     if (device->hidden->event) {
         HANDLE event = device->hidden->event;
         device->hidden->event = NULL;
-        WASAPI_ProxyToManagementThread(mgmtthrtask_CloseHandle, (void *)event, NULL);
+        WASAPI_ProxyToManagementThread(mgmtthrtask_CloseHandle, (void *) event, NULL);
     }
 }
 
 static bool mgmtthrtask_ActivateDevice(void *userdata)
 {
-    SDL_AudioDevice *device = (SDL_AudioDevice *)userdata;
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
 
     IMMDevice *immdevice = NULL;
     if (!SDL_IMMDevice_Get(device, &immdevice, device->recording)) {
@@ -511,16 +510,16 @@ static bool RecoverWasapiDevice(SDL_AudioDevice *device)
 static bool RecoverWasapiIfLost(SDL_AudioDevice *device)
 {
     if (SDL_GetAtomicInt(&device->shutdown)) {
-        return false; // closing, stop trying.
+        return false;                         // closing, stop trying.
     } else if (SDL_GetAtomicInt(&device->hidden->device_disconnecting)) {
-        return false;                         // failing via the WASAPI management thread, stop trying.
+        return false; // failing via the WASAPI management thread, stop trying.
     } else if (device->hidden->device_dead) { // had a fatal error elsewhere, clean up and quit
         IAudioClient_Stop(device->hidden->client);
         WASAPI_DisconnectDevice(device);
-        SDL_assert(SDL_GetAtomicInt(&device->shutdown)); // so we don't come back through here.
-        return false;                                    // already failed.
+        SDL_assert(SDL_GetAtomicInt(&device->shutdown));  // so we don't come back through here.
+        return false; // already failed.
     } else if (SDL_GetAtomicInt(&device->zombie)) {
-        return false; // we're already dead, so just leave and let the Zombie implementations take over.
+        return false;  // we're already dead, so just leave and let the Zombie implementations take over.
     } else if (!device->hidden->client) {
         return true; // still waiting for activation.
     }
@@ -537,11 +536,11 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
         const HRESULT ret = IAudioRenderClient_GetBuffer(device->hidden->render, device->sample_frames, &buffer);
         if (ret == AUDCLNT_E_BUFFER_TOO_LARGE) {
             SDL_assert(buffer == NULL);
-            *buffer_size = 0; // just go back to WaitDevice and try again after the hardware has consumed some more data.
+            *buffer_size = 0;  // just go back to WaitDevice and try again after the hardware has consumed some more data.
         } else if (WasapiFailed(device, ret)) {
             SDL_assert(buffer == NULL);
-            if (device->hidden->device_lost) { // just use an available buffer, we won't be playing it anyhow.
-                *buffer_size = 0;              // we'll recover during WaitDevice and try again.
+            if (device->hidden->device_lost) {  // just use an available buffer, we won't be playing it anyhow.
+                *buffer_size = 0;  // we'll recover during WaitDevice and try again.
             }
         }
     }
@@ -566,7 +565,7 @@ static bool WASAPI_WaitDevice(SDL_AudioDevice *device)
             // Recording devices should return immediately if there is any data available
             UINT32 padding = 0;
             if (!WasapiFailed(device, IAudioClient_GetCurrentPadding(device->hidden->client, &padding))) {
-                // SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);
+                //SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);
                 if (padding > 0) {
                     break;
                 }
@@ -578,7 +577,7 @@ static bool WASAPI_WaitDevice(SDL_AudioDevice *device)
                 break;
 
             default:
-                // SDL_Log("WASAPI FAILED EVENT!");
+                //SDL_Log("WASAPI FAILED EVENT!");
                 IAudioClient_Stop(device->hidden->client);
                 return false;
             }
@@ -587,13 +586,13 @@ static bool WASAPI_WaitDevice(SDL_AudioDevice *device)
             if (waitResult == WAIT_OBJECT_0) {
                 UINT32 padding = 0;
                 if (!WasapiFailed(device, IAudioClient_GetCurrentPadding(device->hidden->client, &padding))) {
-                    // SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);
+                    //SDL_Log("WASAPI EVENT! padding=%u maxpadding=%u", (unsigned int)padding, (unsigned int)maxpadding);
                     if (padding <= (UINT32)device->sample_frames) {
                         break;
                     }
                 }
             } else if (waitResult != WAIT_TIMEOUT) {
-                // SDL_Log("WASAPI FAILED EVENT!");*/
+                //SDL_Log("WASAPI FAILED EVENT!");*/
                 IAudioClient_Stop(device->hidden->client);
                 return false;
             }
@@ -612,7 +611,7 @@ static int WASAPI_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     while (device->hidden->capture && !SDL_GetAtomicInt(&device->hidden->device_disconnecting)) {
         const HRESULT ret = IAudioCaptureClient_GetBuffer(device->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
         if (ret == AUDCLNT_S_BUFFER_EMPTY) {
-            return 0; // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL3.
+            return 0;  // in theory we should have waited until there was data, but oh well, we'll go back to waiting. Returning 0 is safe in SDL3.
         }
 
         WasapiFailed(device, ret); // mark device lost/failed if necessary.
@@ -623,7 +622,7 @@ static int WASAPI_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
             const int leftover = total - cpy;
             const bool silent = (flags & AUDCLNT_BUFFERFLAGS_SILENT) ? true : false;
 
-            SDL_assert(leftover == 0); // according to MSDN, this isn't everything available, just one "packet" of data per-GetBuffer call.
+            SDL_assert(leftover == 0);  // according to MSDN, this isn't everything available, just one "packet" of data per-GetBuffer call.
 
             if (silent) {
                 SDL_memset(buffer, device->silence_value, cpy);
@@ -787,7 +786,7 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
             SDL_GetHintBoolean(SDL_HINT_AUDIO_DEVICE_RAW_STREAM, false)) {
             audioProps.s.Options = SDL_AUDCLNT_STREAMOPTIONS_RAW;
         } else {
-            audioProps.a.cbSize = sizeof(AudioClientProperties);
+            audioProps.a.cbSize = sizeof (AudioClientProperties);
         }
 
         ret = IAudioClient2_SetClientProperties(client2, (AudioClientProperties *)&audioProps);
@@ -851,12 +850,12 @@ static bool mgmtthrtask_PrepDevice(void *userdata)
     if (new_sample_frames <= 0) {
         const float period_millis = default_period / 10000.0f;
         const float period_frames = period_millis * newspec.freq / 1000.0f;
-        new_sample_frames = (int)SDL_ceilf(period_frames);
+        new_sample_frames = (int) SDL_ceilf(period_frames);
     }
 
     // regardless of what we calculated for the period size, clamp it to the expected hardware buffer size.
-    if (new_sample_frames > (int)bufsize) {
-        new_sample_frames = (int)bufsize;
+    if (new_sample_frames > (int) bufsize) {
+        new_sample_frames = (int) bufsize;
     }
 
     // Update the fragment size as size in bytes
@@ -909,7 +908,7 @@ bool WASAPI_PrepDevice(SDL_AudioDevice *device)
 static bool WASAPI_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
-    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     } else if (!ActivateWasapiDevice(device)) {
@@ -956,7 +955,7 @@ static void WASAPI_ThreadDeinit(SDL_AudioDevice *device)
 
 static bool mgmtthrtask_FreeDeviceHandle(void *userdata)
 {
-    SDL_IMMDevice_FreeDeviceHandle((SDL_AudioDevice *)userdata);
+    SDL_IMMDevice_FreeDeviceHandle((SDL_AudioDevice *) userdata);
     return true;
 }
 

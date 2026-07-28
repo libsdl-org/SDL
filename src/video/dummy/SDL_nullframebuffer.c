@@ -22,11 +22,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_DUMMY
 
-#include "../../SDL_properties_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../SDL_properties_c.h"
 #include "SDL_nullframebuffer_c.h"
 
 #define DUMMY_SURFACE "SDL.internal.window.surface"
+
 
 bool SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {

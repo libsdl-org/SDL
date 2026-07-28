@@ -21,9 +21,9 @@
 #ifndef SDL_BAPP_H
 #define SDL_BAPP_H
 
+#include <Path.h>
 #include <InterfaceKit.h>
 #include <LocaleRoster.h>
-#include <Path.h>
 #ifdef SDL_VIDEO_OPENGL
 #include <OpenGLKit.h>
 #endif
@@ -46,6 +46,7 @@ extern "C" {
 
 #include <vector>
 
+
 // Forward declarations
 class SDL_BLooper;
 class SDL_BWin;
@@ -59,7 +60,7 @@ enum ToSDL
     BAPP_MOUSE_WHEEL,
     BAPP_KEY,
     BAPP_REPAINT, // from _UPDATE_
-                  // From BWindow
+    // From BWindow
     BAPP_MAXIMIZE, // from B_ZOOM
     BAPP_MINIMIZE,
     BAPP_RESTORE, // TODO: IMPLEMENT!
@@ -73,7 +74,9 @@ enum ToSDL
     BAPP_SCREEN_CHANGED
 };
 
+
 extern "C" SDL_BLooper *SDL_Looper;
+
 
 // Create a descendant of BLooper
 class SDL_BLooper : public BLooper
@@ -262,7 +265,7 @@ class SDL_BLooper : public BLooper
         SDL_Window *win;
         int32 winID;
         int32 button;
-        bool down;
+		bool down;
         if (
             !_GetWinID(msg, &winID) ||
             msg->FindInt32("button-id", &button) != B_OK ||

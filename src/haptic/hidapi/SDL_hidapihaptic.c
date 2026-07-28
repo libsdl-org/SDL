@@ -22,10 +22,10 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "SDL3/SDL_error.h"
-#include "SDL3/SDL_mutex.h"
 #include "SDL_hidapihaptic.h"
 #include "SDL_hidapihaptic_c.h"
+#include "SDL3/SDL_mutex.h"
+#include "SDL3/SDL_error.h"
 
 typedef struct haptic_list_node
 {
@@ -37,9 +37,9 @@ static haptic_list_node *haptic_list_head = NULL;
 static SDL_Mutex *haptic_list_mutex = NULL;
 
 static SDL_HIDAPI_HapticDriver *drivers[] = {
-#ifdef SDL_HAPTIC_HIDAPI_LG4FF
+    #ifdef SDL_HAPTIC_HIDAPI_LG4FF
     &SDL_HIDAPI_HapticDriverLg4ff,
-#endif
+    #endif
     NULL
 };
 
@@ -72,6 +72,7 @@ bool SDL_HIDAPI_HapticIsHidapi(SDL_Haptic *haptic)
 
     return ret;
 }
+
 
 bool SDL_HIDAPI_JoystickIsHaptic(SDL_Joystick *joystick)
 {
@@ -158,7 +159,7 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
 
             list_node->haptic = haptic;
             list_node->next = NULL;
-
+            
             // grab a joystick ref so that it doesn't get fully destroyed before the haptic is closed
             SDL_OpenJoystick(SDL_GetJoystickID(joystick));
 
@@ -167,8 +168,8 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
                 haptic_list_head = list_node;
             } else {
                 haptic_list_node *cur = haptic_list_head;
-                while (cur->next != NULL) {
-                    cur = cur->next;
+                while(cur->next != NULL) {
+                cur = cur->next;
                 }
                 cur->next = list_node;
             }
@@ -211,7 +212,7 @@ void SDL_HIDAPI_HapticClose(SDL_Haptic *haptic)
             SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
 
             device->driver->Close(device);
-
+            
             // a reference was grabbed during open, now release it
             SDL_CloseJoystick(device->joystick);
 
@@ -248,7 +249,7 @@ SDL_HapticEffectID SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_Hapt
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     SDL_HapticEffectID new_id = device->driver->CreateEffect(device, base);
-    if (new_id >= 0) {
+    if (new_id >= 0){
         haptic->effects[new_id].effect = *base;
     }
     return new_id;
@@ -314,4 +315,4 @@ bool SDL_HIDAPI_HapticStopAll(SDL_Haptic *haptic)
     return device->driver->StopEffects(device);
 }
 
-#endif // SDL_JOYSTICK_HIDAPI
+#endif //SDL_JOYSTICK_HIDAPI

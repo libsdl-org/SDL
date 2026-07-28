@@ -51,6 +51,7 @@ enum TAudioState
     EStateDone
 };
 
+
 class CAudio : public CActive, public MMdaAudioOutputStreamCallback
 {
   public:
@@ -60,6 +61,7 @@ class CAudio : public CActive, public MMdaAudioOutputStreamCallback
     void ConstructL(TInt aLatency);
     void Start();
 
+
     void RunL();
     void DoCancel();
 
@@ -68,6 +70,7 @@ class CAudio : public CActive, public MMdaAudioOutputStreamCallback
     void MaoscOpenComplete(TInt aError);
     void MaoscBufferCopied(TInt aError, const TDesC8 &aBuffer);
     void MaoscPlayComplete(TInt aError);
+
 
     TAudioState iState;
     CMdaAudioOutputStream *iStream; /*CMdaAudioOutputStream handler*/
@@ -80,16 +83,19 @@ class CAudio : public CActive, public MMdaAudioOutputStreamCallback
     void StartThread();
     void StopThread();
 
+  
     TMdaAudioDataSettings iStreamSettings;
-
-    TInt iLatency;        // Latency target in ms
-    TInt iLatencySamples; // Latency target in samples.
-    TInt iMinWrite;       // Min number of samples to write per turn.
-    TInt iMaxWrite;       // Max number of samples to write per turn.
+   
+    TInt iLatency;           // Latency target in ms
+    TInt iLatencySamples;    // Latency target in samples.
+    TInt iMinWrite;          // Min number of samples to write per turn.
+    TInt iMaxWrite;          // Max number of samples to write per turn.
+   
 
     RTimer iTimer;
     TBool iTimerCreated;
     TBool iTimerActive;
+
 };
 
 #endif // SDL_ngageaudio_hpp

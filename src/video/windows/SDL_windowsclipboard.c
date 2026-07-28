@@ -22,11 +22,11 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "../../events/SDL_clipboardevents_c.h"
-#include "../../events/SDL_events_c.h"
-#include "../SDL_clipboard_c.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
+#include "../SDL_clipboard_c.h"
+#include "../../events/SDL_events_c.h"
+#include "../../events/SDL_clipboardevents_c.h"
 
 #define BFT_BITMAP 0x4d42 // 'BM'
 
@@ -476,7 +476,7 @@ static char **GetMimeTypes(int *pnformats)
         UINT format = 0;
         int formatsSz = 0;
         bool have_image_bmp = false;
-        for (;;) {
+        for ( ; ; ) {
             format = EnumClipboardFormats(format);
             if (!format) {
                 break;
@@ -509,7 +509,7 @@ static char **GetMimeTypes(int *pnformats)
             format = 0;
             char *strPtr = (char *)(new_mime_types + nformats + 1);
             int i = 0;
-            for (;;) {
+            for ( ; ; ) {
                 format = EnumClipboardFormats(format);
                 if (!format) {
                     break;

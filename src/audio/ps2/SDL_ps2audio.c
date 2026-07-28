@@ -23,13 +23,13 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_ps2audio.h"
 
-#include <audsrv.h>
 #include <kernel.h>
+#include <audsrv.h>
 #include <ps2_audio_driver.h>
 
 static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     }
@@ -43,7 +43,7 @@ static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
     case 32000:
     case 44100:
     case 48000:
-        break; // acceptable value, keep it
+        break;  // acceptable value, keep it
     default:
         device->spec.freq = 48000;
         break;

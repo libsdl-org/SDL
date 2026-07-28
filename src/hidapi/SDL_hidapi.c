@@ -30,10 +30,10 @@
 
 #include "SDL_internal.h"
 
-#include "../SDL_hints_c.h"
-#include "../joystick/SDL_joystick_c.h"
-#include "../joystick/usb_ids.h"
 #include "SDL_hidapi_c.h"
+#include "../joystick/usb_ids.h"
+#include "../joystick/SDL_joystick_c.h"
+#include "../SDL_hints_c.h"
 
 // Initial type declarations
 #define HID_API_NO_EXPORT_DEFINE // do not export hidapi procedures
@@ -46,7 +46,8 @@ SDL_ELF_NOTE_DLOPEN(
     "hidabi-libusb",
     "Support for joysticks through libusb",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_LIBUSB_DYNAMIC)
+    SDL_LIBUSB_DYNAMIC
+)
 #endif
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
@@ -54,12 +55,12 @@ SDL_ELF_NOTE_DLOPEN(
 #endif
 
 #ifdef SDL_PLATFORM_MACOS
-#include <AvailabilityMacros.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <mach/mach.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/usb/USBSpec.h>
-#include <mach/mach.h>
+#include <AvailabilityMacros.h>
 // Things named "Master" were renamed to "Main" in macOS 12.0's SDK.
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 #define kIOMainPortDefault kIOMasterPortDefault
@@ -72,10 +73,10 @@ SDL_ELF_NOTE_DLOPEN(
 #endif
 
 #ifdef HAVE_INOTIFY
-#include <errno.h> // errno
+#include <string.h> // strerror
+#include <errno.h>  // errno
 #include <fcntl.h>
 #include <limits.h> // For the definition of NAME_MAX
-#include <string.h> // strerror
 #include <sys/inotify.h>
 #endif
 
@@ -543,44 +544,44 @@ static void HIDAPI_ShutdownDiscovery(void)
 
 #define HIDAPI_USING_SDL_RUNTIME
 #define HIDAPI_IGNORE_DEVICE(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB) \
-    SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB)
+        SDL_HIDAPI_ShouldIgnoreDevice(BUS, VID, PID, USAGE_PAGE, USAGE, LIBUSB)
 
 struct PLATFORM_hid_device_;
 typedef struct PLATFORM_hid_device_ PLATFORM_hid_device;
 
-#define api_version                   PLATFORM_api_version
+#define api_version                  PLATFORM_api_version
 #define create_device_info_for_device PLATFORM_create_device_info_for_device
-#define free_hid_device               PLATFORM_free_hid_device
-#define hid_close                     PLATFORM_hid_close
-#define hid_device                    PLATFORM_hid_device
-#define hid_device_                   PLATFORM_hid_device_
-#define hid_enumerate                 PLATFORM_hid_enumerate
-#define hid_error                     PLATFORM_hid_error
-#define hid_exit                      PLATFORM_hid_exit
-#define hid_free_enumeration          PLATFORM_hid_free_enumeration
-#define hid_get_device_info           PLATFORM_hid_get_device_info
-#define hid_get_feature_report        PLATFORM_hid_get_feature_report
-#define hid_get_indexed_string        PLATFORM_hid_get_indexed_string
-#define hid_get_input_report          PLATFORM_hid_get_input_report
-#define hid_get_manufacturer_string   PLATFORM_hid_get_manufacturer_string
-#define hid_get_product_string        PLATFORM_hid_get_product_string
-#define hid_get_report_descriptor     PLATFORM_hid_get_report_descriptor
-#define hid_get_serial_number_string  PLATFORM_hid_get_serial_number_string
-#define hid_init                      PLATFORM_hid_init
-#define hid_open_path                 PLATFORM_hid_open_path
-#define hid_open                      PLATFORM_hid_open
-#define hid_read                      PLATFORM_hid_read
-#define hid_read_timeout              PLATFORM_hid_read_timeout
-#define hid_send_feature_report       PLATFORM_hid_send_feature_report
-#define hid_set_nonblocking           PLATFORM_hid_set_nonblocking
-#define hid_version                   PLATFORM_hid_version
-#define hid_version_str               PLATFORM_hid_version_str
-#define hid_write                     PLATFORM_hid_write
-#define input_report                  PLATFORM_input_report
-#define make_path                     PLATFORM_make_path
-#define new_hid_device                PLATFORM_new_hid_device
-#define read_thread                   PLATFORM_read_thread
-#define return_data                   PLATFORM_return_data
+#define free_hid_device              PLATFORM_free_hid_device
+#define hid_close                    PLATFORM_hid_close
+#define hid_device                   PLATFORM_hid_device
+#define hid_device_                  PLATFORM_hid_device_
+#define hid_enumerate                PLATFORM_hid_enumerate
+#define hid_error                    PLATFORM_hid_error
+#define hid_exit                     PLATFORM_hid_exit
+#define hid_free_enumeration         PLATFORM_hid_free_enumeration
+#define hid_get_device_info          PLATFORM_hid_get_device_info
+#define hid_get_feature_report       PLATFORM_hid_get_feature_report
+#define hid_get_indexed_string       PLATFORM_hid_get_indexed_string
+#define hid_get_input_report         PLATFORM_hid_get_input_report
+#define hid_get_manufacturer_string  PLATFORM_hid_get_manufacturer_string
+#define hid_get_product_string       PLATFORM_hid_get_product_string
+#define hid_get_report_descriptor    PLATFORM_hid_get_report_descriptor
+#define hid_get_serial_number_string PLATFORM_hid_get_serial_number_string
+#define hid_init                     PLATFORM_hid_init
+#define hid_open_path                PLATFORM_hid_open_path
+#define hid_open                     PLATFORM_hid_open
+#define hid_read                     PLATFORM_hid_read
+#define hid_read_timeout             PLATFORM_hid_read_timeout
+#define hid_send_feature_report      PLATFORM_hid_send_feature_report
+#define hid_set_nonblocking          PLATFORM_hid_set_nonblocking
+#define hid_version                  PLATFORM_hid_version
+#define hid_version_str              PLATFORM_hid_version_str
+#define hid_write                    PLATFORM_hid_write
+#define input_report                 PLATFORM_input_report
+#define make_path                    PLATFORM_make_path
+#define new_hid_device               PLATFORM_new_hid_device
+#define read_thread                  PLATFORM_read_thread
+#define return_data                  PLATFORM_return_data
 
 #ifdef SDL_PLATFORM_LINUX
 #include "SDL_hidapi_linux.h"
@@ -847,8 +848,7 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
  * via libusb; these are typically devices that look like HIDs but have a
  * quirk that requires direct access to the hardware.
  */
-static const struct
-{
+static const struct {
     Uint16 vendor;
     Uint16 product;
 } SDL_libusb_required[] = {
@@ -994,10 +994,10 @@ static void DeleteHIDDeviceWrapper(SDL_hid_device *wrapper)
     SDL_free(wrapper);
 }
 
-#define CHECK_DEVICE_MAGIC(device, result)                         \
-    if (!SDL_ObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_DEVICE)) { \
-        SDL_SetError("Invalid device");                            \
-        return result;                                             \
+#define CHECK_DEVICE_MAGIC(device, result)                          \
+    if (!SDL_ObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_DEVICE)) {  \
+        SDL_SetError("Invalid device");                             \
+        return result;                                              \
     }
 
 #define COPY_IF_EXISTS(var)                \
@@ -1076,7 +1076,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             // Ignore the mouse/keyboard interface on Steam Controllers
             if (
 #ifdef SDL_PLATFORM_WIN32
-            // Check the usage page and usage on both USB and Bluetooth
+                // Check the usage page and usage on both USB and Bluetooth
 #else
                 // Only check the usage page and usage on USB
                 bus == HID_API_BUS_USB &&
@@ -1091,7 +1091,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             }
             return true;
         } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
-                   (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }

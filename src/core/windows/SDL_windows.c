@@ -48,8 +48,7 @@ typedef enum RO_INIT_TYPE
 #endif
 
 // Dark mode support
-typedef enum
-{
+typedef enum {
     UXTHEME_APPMODE_DEFAULT,
     UXTHEME_APPMODE_ALLOW_DARK,
     UXTHEME_APPMODE_FORCE_DARK,
@@ -57,22 +56,19 @@ typedef enum
     UXTHEME_APPMODE_MAX
 } UxthemePreferredAppMode;
 
-typedef enum
-{
+typedef enum {
     WCA_UNDEFINED = 0,
     WCA_USEDARKMODECOLORS = 26,
     WCA_LAST = 27
 } WINDOWCOMPOSITIONATTRIB;
 
-typedef struct
-{
+typedef struct {
     WINDOWCOMPOSITIONATTRIB Attrib;
     PVOID pvData;
     SIZE_T cbData;
 } WINDOWCOMPOSITIONATTRIBDATA;
 
-typedef struct
-{
+typedef struct {
     ULONG dwOSVersionInfoSize;
     ULONG dwMajorVersion;
     ULONG dwMinorVersion;
@@ -81,13 +77,13 @@ typedef struct
     WCHAR szCSDVersion[128];
 } NT_OSVERSIONINFOW;
 
-typedef bool(WINAPI *ShouldAppsUseDarkMode_t)(void);
-typedef void(WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
-typedef void(WINAPI *AllowDarkModeForApp_t)(bool);
-typedef void(WINAPI *RefreshImmersiveColorPolicyState_t)(void);
-typedef UxthemePreferredAppMode(WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
-typedef BOOL(WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
-typedef void(NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
+typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
+typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
+typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
+typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
+typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
+typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
+typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Fake window to help with DirectInput events.
 HWND SDL_HelperWindow = NULL;
@@ -324,16 +320,16 @@ static BOOL IsWindowsBuildVersionAtLeast(DWORD dwBuildNumber)
 
 // apply some static variables so we only call into the Win32 API once per process for each check.
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-#define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
+    #define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
 #else
-#define CHECKWINVER(notdesktop_platform_result, test) \
-    static bool checked = false;                      \
-    static BOOL result = FALSE;                       \
-    if (!checked) {                                   \
-        result = (test);                              \
-        checked = true;                               \
-    }                                                 \
-    return result
+    #define CHECKWINVER(notdesktop_platform_result, test) \
+        static bool checked = false; \
+        static BOOL result = FALSE; \
+        if (!checked) { \
+            result = (test); \
+            checked = true; \
+        } \
+        return result
 #endif
 
 BOOL WIN_IsWine(void)
@@ -389,6 +385,7 @@ BOOL WIN_IsWindows11OrGreater(void)
 }
 
 #undef CHECKWINVER
+
 
 /*
 WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
@@ -601,7 +598,7 @@ HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            BYTE *pixel = (BYTE *)pBits + (y * width + x) * 4;
+            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
             BYTE alpha = pixel[3];
             COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
             SetPixel(hdcMem, x, y, maskColor);
@@ -656,10 +653,11 @@ SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
     return SDL_AUDIO_UNKNOWN;
 }
 
+
 int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar)
 {
     if (WIN_IsWindowsXP()) {
-        dwFlags &= ~WC_ERR_INVALID_CHARS; // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
+        dwFlags &= ~WC_ERR_INVALID_CHARS;  // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
     }
     return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
@@ -676,7 +674,7 @@ const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocate
     *pallocated = NULL;
 
     if (*pargv) {
-        return NULL; // just go with what was provided, no error message.
+        return NULL;  // just go with what was provided, no error message.
     }
 
     // We need to be careful about how we allocate/free memory here. We can't use SDL_alloc()/SDL_free()
@@ -729,7 +727,7 @@ const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocate
     *pallocated = argv;
     *pargv = argv;
 
-    return NULL; // no error string.
+    return NULL;  // no error string.
 }
 
 char *WIN_GetModulePath(HMODULE handle)

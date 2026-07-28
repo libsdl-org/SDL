@@ -27,11 +27,11 @@
 
 #include "../SDL_sysjoystick.h"
 
-#define AXES_CHANGED      0x00000001
-#define BALLS_CHANGED     0x00000002
-#define BUTTONS_CHANGED   0x00000004
-#define HATS_CHANGED      0x00000008
-#define TOUCHPADS_CHANGED 0x00000010
+#define AXES_CHANGED        0x00000001
+#define BALLS_CHANGED       0x00000002
+#define BUTTONS_CHANGED     0x00000004
+#define HATS_CHANGED        0x00000008
+#define TOUCHPADS_CHANGED   0x00000010
 
 /**
  * Data for a virtual, software-only joystick.

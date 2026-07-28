@@ -24,27 +24,27 @@
 
 #include "SDL_android.h"
 
-#include "../../SDL_hints_c.h"
 #include "../../events/SDL_events_c.h"
-#include "../../haptic/android/SDL_syshaptic_c.h"
-#include "../../hidapi/android/hid.h"
-#include "../../joystick/android/SDL_sysjoystick_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
-#include "../../video/android/SDL_androidpen.h"
 #include "../../video/android/SDL_androidtouch.h"
+#include "../../video/android/SDL_androidpen.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
+#include "../../joystick/android/SDL_sysjoystick_c.h"
+#include "../../haptic/android/SDL_syshaptic_c.h"
+#include "../../hidapi/android/hid.h"
+#include "../../SDL_hints_c.h"
 
-#include <android/asset_manager_jni.h>
-#include <android/configuration.h>
 #include <android/log.h>
-#include <dlfcn.h>
-#include <pthread.h>
+#include <android/configuration.h>
+#include <android/asset_manager_jni.h>
 #include <sys/system_properties.h>
+#include <pthread.h>
 #include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
+#include <dlfcn.h>
+#include <time.h>
 
 #define SDL_JAVA_PREFIX                               org_libsdl_app
 #define CONCAT1(prefix, class, function)              CONCAT2(prefix, class, function)
@@ -275,11 +275,11 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
 
 JNIEXPORT void JNICALL
     SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name,
-                                                   jint device_id);
+                                             jint device_id);
 
 JNIEXPORT void JNICALL
     SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
-                                                      jint device_id);
+                                                jint device_id);
 
 static JNINativeMethod SDLAudioManager_tab[] = {
     { "nativeSetupJNI", "()V", SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI) },
@@ -729,11 +729,11 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
     mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midRegisterAudioDeviceCallback = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                               "registerAudioDeviceCallback",
-                                                               "()V");
+                                                         "registerAudioDeviceCallback",
+                                                         "()V");
     midUnregisterAudioDeviceCallback = (*env)->GetStaticMethodID(env, mAudioManagerClass,
-                                                                 "unregisterAudioDeviceCallback",
-                                                                 "()V");
+                                                         "unregisterAudioDeviceCallback",
+                                                         "()V");
     midAudioSetThreadPriority = (*env)->GetStaticMethodID(env, mAudioManagerClass,
                                                           "audioSetThreadPriority", "(ZI)V");
 
@@ -755,15 +755,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
     midPollInputDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                     "pollInputDevices", "()V");
     midJoystickSetLED = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                  "joystickSetLED", "(IIII)V");
+                                              "joystickSetLED", "(IIII)V");
     midJoystickSetSensorsEnabled = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                             "joystickSetSensorsEnabled", "(IZ)V");
+                                              "joystickSetSensorsEnabled", "(IZ)V");
     midPollHapticDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                                      "pollHapticDevices", "()V");
     midHapticRun = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                              "hapticRun", "(IFI)V");
     midHapticRumble = (*env)->GetStaticMethodID(env, mControllerManagerClass,
-                                                "hapticRumble", "(IFFI)V");
+                                             "hapticRumble", "(IFFI)V");
     midHapticStop = (*env)->GetStaticMethodID(env, mControllerManagerClass,
                                               "hapticStop", "(I)V");
 
@@ -847,11 +847,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             //   https://github.com/love2d/love-android/issues/24
             // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
             const char *argv0 = "app_process";
-            const int len = (*env)->GetArrayLength(env, array); // argv elements, not counting argv[0].
+            const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
 
-            size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof(char *)); // len+2 to allocate an array that also holds argv0 and a NULL terminator.
+            size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
             for (int i = 0; i < len; ++i) {
-                total_alloc_len++; // null terminator.
+                total_alloc_len++;  // null terminator.
                 jstring string = (*env)->GetObjectArrayElement(env, array, i);
                 if (string) {
                     const char *utf = (*env)->GetStringUTFChars(env, string, 0);
@@ -863,19 +863,17 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
                 }
             }
 
-            void *args = malloc(total_alloc_len); // This should NOT be SDL_malloc()
-            if (!args) {                          // uhoh.
+            void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
+            if (!args) { // uhoh.
                 __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
             } else {
-                size_t remain = total_alloc_len - (sizeof(char *) * (len + 2));
+                size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
                 int argc = 0;
-                char **argv = (char **)args;
-                char *ptr = (char *)&argv[len + 2];
+                char **argv = (char **) args;
+                char *ptr = (char *) &argv[len + 2];
                 size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
                 argv[argc++] = ptr;
-                SDL_assert(cpy <= remain);
-                remain -= cpy;
-                ptr += cpy;
+                SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
                 for (int i = 0; i < len; ++i) {
                     jstring string = (*env)->GetObjectArrayElement(env, array, i);
                     const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
@@ -898,7 +896,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
                 status = SDL_RunApp(argc, argv, SDL_main, NULL);
 
                 // Release the arguments.
-                free(args); // This should NOT be SDL_free()
+                free(args);  // This should NOT be SDL_free()
             }
         } else {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
@@ -931,7 +929,7 @@ static int FindLifecycleEvent(SDL_AndroidLifecycleEvent event)
 static void RemoveLifecycleEvent(int index)
 {
     if (index < Android_NumLifecycleEvents - 1) {
-        SDL_memmove(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index + 1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
+        SDL_memmove(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
     }
     --Android_NumLifecycleEvents;
 }
@@ -1118,14 +1116,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
 
     SDL_AddTouch(Android_ConvertJavaTouchID(touchId),
-                 SDL_TOUCH_DEVICE_DIRECT, utfname);
+            SDL_TOUCH_DEVICE_DIRECT, utfname);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 }
 
 JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
-                                               jstring name, jint device_id)
+                                         jstring name, jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     if (SDL_GetCurrentAudioDriver() != NULL) {
@@ -1141,7 +1139,7 @@ SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolea
 
 JNIEXPORT void JNICALL
 SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
-                                                  jint device_id)
+                                            jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
     if (SDL_GetCurrentAudioDriver() != NULL) {
@@ -1217,7 +1215,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
     Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats,
-                        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope);
+        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -1754,7 +1752,7 @@ void Android_StartAudioHotplug(SDL_AudioDevice **default_playback, SDL_AudioDevi
     JNIEnv *env = Android_JNI_GetEnv();
     // this will fire the callback for each existing device right away (which will eventually SDL_AddAudioDevice), and again later when things change.
     (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midRegisterAudioDeviceCallback);
-    *default_playback = *default_recording = NULL; // !!! FIXME: how do you decide the default device id?
+    *default_playback = *default_recording = NULL;  // !!! FIXME: how do you decide the default device id?
 }
 
 void Android_StopAudioHotplug(void)
@@ -1771,7 +1769,7 @@ static void Android_JNI_AudioSetThreadPriority(int recording, int device_id)
 
 void Android_AudioThreadInit(SDL_AudioDevice *device)
 {
-    Android_JNI_AudioSetThreadPriority((int)device->recording, (int)device->instance_id);
+    Android_JNI_AudioSetThreadPriority((int) device->recording, (int)device->instance_id);
 }
 
 // Test for an exception and call SDL_SetError with its detail if one occurs
@@ -1828,6 +1826,7 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
     return false;
 }
 
+
 // APK file tree discovery...
 
 // APK files are just .zip files, so try to find parse out the file tree from it. We'll still
@@ -1860,9 +1859,9 @@ static void FreeAPKNode(APKNode *node)
 
 static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
 {
-    if ((child[0] == '.') && (child[1] == '\0')) { // "." paths just return the current dir.
+    if ((child[0] == '.') && (child[1] == '\0')) {  // "." paths just return the current dir.
         return parent;
-    } else if ((child[0] == '.') && (child[1] == '.') && (child[2] == '\0')) { // ".." paths return the parent dir (or the current dir if at the root).
+    } else if ((child[0] == '.') && (child[1] == '.') && (child[2] == '\0')) {  // ".." paths return the parent dir (or the current dir if at the root).
         return parent->parent ? parent->parent : parent;
     }
 
@@ -1876,7 +1875,7 @@ static APKNode *FindAPKChildNode(APKNode *parent, const char *child)
 
 static const APKNode *FindAPKNode(const char *constpath)
 {
-    // SDL_Log("FindAPKNode('%s') ...", constpath);
+    //SDL_Log("FindAPKNode('%s') ...", constpath);
 
     if (SDL_strncmp(constpath, "assets://", 9) == 0) {
         constpath += 9;
@@ -1900,23 +1899,23 @@ static const APKNode *FindAPKNode(const char *constpath)
 
     while (parent) {
         while (*path == '/') {
-            path++; // just in case there are absolute paths or double-slashes, drop them.
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
         }
 
-        if (*path == '\0') { // ended with a '/'? We're done.
+        if (*path == '\0') {  // ended with a '/'? We're done.
             break;
         }
 
         char *ptr = SDL_strchr(path, '/');
         if (ptr) {
-            *ptr = '\0'; // terminate on the end of this subdir's name.
+            *ptr = '\0';  // terminate on the end of this subdir's name.
         }
 
         APKNode *node = FindAPKChildNode(parent, path);
         if (!node) {
             SDL_SetError("No such file or directory");
             parent = NULL;
-        } else if ((node->info.type == SDL_PATHTYPE_FILE) && ptr) { // file where we want a directory?
+        } else if ((node->info.type == SDL_PATHTYPE_FILE) && ptr) {  // file where we want a directory?
             SDL_SetError("%s is not a directory", alloc_path);
             parent = NULL;
         } else {
@@ -1936,22 +1935,22 @@ static const APKNode *FindAPKNode(const char *constpath)
 static APKNode *AddAPKChildNode(APKNode *parent, const char *child)
 {
     APKNode *node = FindAPKChildNode(parent, child);
-    if (!node) { // don't have this one yet, make a new node.
-        node = (APKNode *)SDL_calloc(1, sizeof(*node));
+    if (!node) {  // don't have this one yet, make a new node.
+        node = (APKNode *) SDL_calloc(1, sizeof (*node));
         if (!node) {
-            return NULL; // uhoh.
+            return NULL;  // uhoh.
         }
 
         node->name = SDL_strdup(child);
         if (!node->name) {
             SDL_free(node);
-            return NULL; // uhoh.
+            return NULL;  // uhoh.
         }
 
-        SDL_copyp(&node->info, &parent->info); // you probably need to update this afterwards.
+        SDL_copyp(&node->info, &parent->info);  // you probably need to update this afterwards.
 
         node->parent = parent;
-        if (parent->children_tail) { // APKs tend to be sorted alphabetically, so insert new nodes at the end of the list to maintain this order.
+        if (parent->children_tail) {  // APKs tend to be sorted alphabetically, so insert new nodes at the end of the list to maintain this order.
             parent->children_tail->next_sibling = node;
         } else {
             parent->children = node;
@@ -1975,36 +1974,37 @@ static APKNode *AddAPKDirs(char *path, APKNode *parent)
     SDL_assert(parent->info.type == SDL_PATHTYPE_DIRECTORY);
     SDL_assert(parent->info.size == 0);
 
-    while (true) { // while still subdirectories to handle...
+    while (true) {  // while still subdirectories to handle...
         while (*path == '/') {
-            path++; // just in case there are absolute paths or double-slashes, drop them.
+            path++;  // just in case there are absolute paths or double-slashes, drop them.
         }
 
         char *ptr = SDL_strchr(path, '/');
         if (!ptr) {
-            break; // last thing is either an empty string (we ended with a '/'), or an actual file's name, so drop it.
+            break;  // last thing is either an empty string (we ended with a '/'), or an actual file's name, so drop it.
         }
 
-        if ((path[0] == '.') && ((path[1] == '\0') || ((path[1] == '.') || (path[2] == '\0')))) {
+        if ((path[0] == '.') && ((path[1] == '\0') || ((path[1] == '.') ||(path[2] == '\0')))) {
             // whoa, there's a "." or ".." subdir in a zip entry's path? Fail!
             SDL_SetError("bogus file path in APK file entry");
             return NULL;
         }
 
-        *ptr = '\0'; // terminate on the end of this subdir's name.
+        *ptr = '\0';  // terminate on the end of this subdir's name.
         APKNode *node = AddAPKChildNode(parent, path);
         *ptr = '/';
 
         if (!node) {
-            return NULL; // uhoh.
+            return NULL;  // uhoh.
         }
 
         parent = node;
-        path = ptr + 1; // point to start of next section.
+        path = ptr + 1;  // point to start of next section.
     }
 
     return parent;
 }
+
 
 static SDL_Time ZipDosTimeToSDLTime(Uint32 dostime)
 {
@@ -2014,31 +2014,33 @@ static SDL_Time ZipDosTimeToSDLTime(Uint32 dostime)
     // There are possibly better timestamps in extended fields (!!! FIXME: add
     // support for those), but this field is guaranteed to exist with all its
     // flaws and is probably Good Enough anyhow.
-    const Uint32 dosdate = (Uint32)((dostime >> 16) & 0xFFFF);
+    const Uint32 dosdate = (Uint32) ((dostime >> 16) & 0xFFFF);
     const Uint32 dostime16 = dostime & 0xFFFF;
 
-    const int m = (int)((dosdate >> 5) & 0x0F);
-    const int d = (int)((dosdate >> 0) & 0x1F) + 1;
-    const int y = (int)(((dosdate >> 9) & 0x7F) + 1980) - (m <= 2 ? 1 : 0);
-    const int hour = (int)((dostime16 >> 11) & 0x1F);
-    const int minute = (int)((dostime16 >> 5) & 0x3F);
-    const int sec = (int)((dostime16 << 1) & 0x3E);
+    const int m = (int) ((dosdate >> 5) & 0x0F);
+    const int d = (int) ((dosdate >> 0) & 0x1F) + 1;
+    const int y = (int) (((dosdate >> 9) & 0x7F) + 1980) - (m <= 2 ? 1 : 0);
+    const int hour   = (int) ((dostime16 >> 11) & 0x1F);
+    const int minute = (int) ((dostime16 >>  5) & 0x3F);
+    const int sec    = (int) ((dostime16 <<  1) & 0x3E);
 
     // days since 1/1/1970: https://howardhinnant.github.io/date_algorithms.html#days_from_civil
     const int era = ((y >= 0) ? y : (y - 399)) / 400;
-    const unsigned int yoe = (unsigned int)(y - era * 400);                               // [0, 399]
-    const unsigned int doy = (((153 * ((m > 2) ? (m - 3) : (m + 9))) + 2) / 5) + (d - 1); // [0, 365]
-    const unsigned int doe = (yoe * 365) + (yoe / 4) - (yoe / 100) + doy;                 // [0, 146096]
-    const int days = (era * 146097) + ((int)doe) - 719468;
+    const unsigned int yoe = (unsigned int) (y - era * 400);      // [0, 399]
+    const unsigned int doy = (((153 * ((m > 2) ? (m - 3) : (m + 9))) + 2) / 5) + (d - 1);  // [0, 365]
+    const unsigned int doe = (yoe * 365) + (yoe / 4) - (yoe / 100) + doy;         // [0, 146096]
+    const int days = (era * 146097) + ((int) doe) - 719468;
     const int seconds = (hour * (60 * 60)) + (minute * 60) + (sec);
-    return (SDL_Time)(((Sint64)days) * 86400) + seconds;
+    return (SDL_Time) (((Sint64) days) * 86400) + seconds;
 }
 
-#define ZIP_CENTRAL_DIR_SIG                        0x02014b50
-#define ZIP_END_OF_CENTRAL_DIR_SIG                 0x06054b50
-#define ZIP64_END_OF_CENTRAL_DIR_SIG               0x06064b50
-#define ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG 0x07064b50
-#define ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG        0x0001
+
+
+#define ZIP_CENTRAL_DIR_SIG                         0x02014b50
+#define ZIP_END_OF_CENTRAL_DIR_SIG                  0x06054b50
+#define ZIP64_END_OF_CENTRAL_DIR_SIG                0x06064b50
+#define ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG  0x07064b50
+#define ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG         0x0001
 
 static bool ProcessZip(SDL_IOStream *io, APKNode *root)
 {
@@ -2061,57 +2063,57 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
     Uint64 val64 = 0;
 
     // First, check if this is actually zip64 format instead. The zip64 magic is 20 bytes back.
-    if (eocd < 20) { // presumably we always _are_ > 20, but let's be defensive here.
+    if (eocd < 20) {  // presumably we always _are_ > 20, but let's be defensive here.
         goto corrupterr;
     } else if (SDL_SeekIO(io, eocd - 20, SDL_IO_SEEK_SET) < 0) {
         goto ioerr;
     } else if (!SDL_ReadU32LE(io, &val32)) {
         goto ioerr;
-    } else if (val32 == ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG) { // this is a zip64 archive?
-        if (!SDL_ReadU32LE(io, &val32)) {                             // disk number with start of central directory.
+    } else if (val32 == ZIP64_END_OF_CENTRAL_DIRECTORY_LOCATOR_SIG) {  // this is a zip64 archive?
+        if (!SDL_ReadU32LE(io, &val32)) {  // disk number with start of central directory.
             goto ioerr;
         } else if (val32 != 0) {
             goto corrupterr;
-        } else if (!SDL_ReadU64LE(io, &val64)) { // file offset of zip64 end-of-central-dir record
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // file offset of zip64 end-of-central-dir record
             goto ioerr;
 
-            // note that this gets significantly more complex if there is data prepended to the .zip file
-            //  (like a self-extracting .exe, etc), but until that happens, we're keeping this as simple
-            //  as possible and assuming the file offset in val64 is correct.
+        // note that this gets significantly more complex if there is data prepended to the .zip file
+        //  (like a self-extracting .exe, etc), but until that happens, we're keeping this as simple
+        //  as possible and assuming the file offset in val64 is correct.
 
-        } else if (SDL_SeekIO(io, (Sint64)val64, SDL_IO_SEEK_SET) < 0) {
+        } else if (SDL_SeekIO(io, (Sint64) val64, SDL_IO_SEEK_SET) < 0) {
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // zip64 end-of-central-dir signature.
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // zip64 end-of-central-dir signature.
             goto ioerr;
         } else if (val32 != ZIP64_END_OF_CENTRAL_DIR_SIG) {
             goto corrupterr;
-        } else if (SDL_SeekIO(io, 28, SDL_IO_SEEK_CUR) < 0) { // we don't care about several of the fields, skip over them.
+        } else if (SDL_SeekIO(io, 28, SDL_IO_SEEK_CUR) < 0) {  // we don't care about several of the fields, skip over them.
             goto ioerr;
-        } else if (!SDL_ReadU64LE(io, &num_entries)) { // total entries in the central dir.
+        } else if (!SDL_ReadU64LE(io, &num_entries)) {  // total entries in the central dir.
             goto ioerr;
-        } else if (!SDL_ReadU64LE(io, &val64)) { // size of the central dir.
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // size of the central dir.
             goto ioerr;
-        } else if (!SDL_ReadU64LE(io, &val64)) { // offset of the central dir.
+        } else if (!SDL_ReadU64LE(io, &val64)) {  // offset of the central dir.
             goto ioerr;
         }
 
         zip64 = true;
-        centraldir = (Sint64)val64;
-    } else if (SDL_SeekIO(io, eocd + 4 + 6, SDL_IO_SEEK_SET) < 0) { // skip back to where we were, plus skip some fields we don't care about.
+        centraldir = (Sint64) val64;
+    } else if (SDL_SeekIO(io, eocd + 4 + 6, SDL_IO_SEEK_SET) < 0) {  // skip back to where we were, plus skip some fields we don't care about.
         goto ioerr;
     } else if (!SDL_ReadU16LE(io, &val16)) {
         goto ioerr;
-    } else if (!SDL_ReadU32LE(io, &val32)) { // size of the central dir.
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // size of the central dir.
         goto ioerr;
-    } else if (!SDL_ReadU32LE(io, &val32)) { // offset of the central dir.
+    } else if (!SDL_ReadU32LE(io, &val32)) {  // offset of the central dir.
         goto ioerr;
     } else {
-        num_entries = (Uint64)val16;
-        centraldir = (Sint64)val32;
+        num_entries = (Uint64) val16;
+        centraldir = (Sint64) val32;
     }
 
     // okay, we know where the central dir is now, go there and start reading entries.
-    SDL_assert(centraldir > 0); // negative means we failed, zero is impossible since there should be something else there.
+    SDL_assert(centraldir > 0);  // negative means we failed, zero is impossible since there should be something else there.
 
     for (Uint64 i = 0; i < num_entries; i++) {
         Uint16 fnamelen = 0;
@@ -2124,65 +2126,65 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
         // we don't care about most of this information, just parse through it to get what we need.
         if (SDL_SeekIO(io, centraldir, SDL_IO_SEEK_SET) < 0) {
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // central dir item signature.
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // central dir item signature.
             goto ioerr;
         } else if (val32 != ZIP_CENTRAL_DIR_SIG) {
             goto corrupterr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // version made by
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version made by
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // version needed
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // version needed
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // general bits
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // general bits
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // compression method
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // compression method
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &dosmodtime)) { // last mod date/time
+        } else if (!SDL_ReadU32LE(io, &dosmodtime)) {  // last mod date/time
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // CRC-32
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // CRC-32
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // compressed size
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // compressed size
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &uncompressed32)) { // uncompressed size
+        } else if (!SDL_ReadU32LE(io, &uncompressed32)) {  // uncompressed size
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &fnamelen)) { // filename length
+        } else if (!SDL_ReadU16LE(io, &fnamelen)) {  // filename length
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &extralen)) { // extra length
+        } else if (!SDL_ReadU16LE(io, &extralen)) {  // extra length
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &commentlen)) { // comment length
+        } else if (!SDL_ReadU16LE(io, &commentlen)) {  // comment length
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // disk number start
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // disk number start
             goto ioerr;
-        } else if (!SDL_ReadU16LE(io, &val16)) { // internal file attributes
+        } else if (!SDL_ReadU16LE(io, &val16)) {  // internal file attributes
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // external file attributes
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // external file attributes
             goto ioerr;
-        } else if (!SDL_ReadU32LE(io, &val32)) { // relative offset of local header
+        } else if (!SDL_ReadU32LE(io, &val32)) {  // relative offset of local header
             goto ioerr;
         }
 
-        char fnamebuf[0xFFFF + 1]; // just eat 64k of stack like a boss until someone complains.
-        if (SDL_ReadIO(io, fnamebuf, (size_t)fnamelen) != ((size_t)fnamelen)) {
+        char fnamebuf[0xFFFF+1];  // just eat 64k of stack like a boss until someone complains.
+        if (SDL_ReadIO(io, fnamebuf, (size_t) fnamelen) != ((size_t) fnamelen)) {
             goto ioerr;
         }
 
         // technically zip files might have '\\' dir separators, but these were mostly old DOS files and not Android APKs, I think. Revisit if necessary.
 
-        fnamebuf[fnamelen] = '\0'; // make sure the string is null-terminated.
+        fnamebuf[fnamelen] = '\0';  // make sure the string is null-terminated.
 
-        // SDL_Log("ANDROID: Saw ZIP entry '%s'", fnamebuf);
+        //SDL_Log("ANDROID: Saw ZIP entry '%s'", fnamebuf);
 
-        uncompressed64 = (Uint64)uncompressed32;
-        if (zip64 && (uncompressed32 == 0xFFFFFFFF)) { // file is larger than 4gig, find the zip64 extended info field in the extra section.
+        uncompressed64 = (Uint64) uncompressed32;
+        if (zip64 && (uncompressed32 == 0xFFFFFFFF)) {  // file is larger than 4gig, find the zip64 extended info field in the extra section.
             bool found = false;
             Uint16 remaining = extralen;
-            while (remaining > 4) { // Two 16-bit values at a minimum, tag and len.
+            while (remaining > 4) {  // Two 16-bit values at a minimum, tag and len.
                 Uint16 tag, len;
                 if (!SDL_ReadU16LE(io, &tag) || !SDL_ReadU16LE(io, &len)) {
                     goto ioerr;
                 } else if (remaining < (len + 4)) {
                     goto corrupterr;
-                } else if (tag != ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG) { // not the field we need, skip over it.
-                    if (SDL_SeekIO(io, (Sint64)len, SDL_IO_SEEK_CUR) < 0) {
+                } else if (tag != ZIP64_EXTENDED_INFO_EXTRA_FIELD_SIG) {  // not the field we need, skip over it.
+                    if (SDL_SeekIO(io, (Sint64) len, SDL_IO_SEEK_CUR) < 0) {
                         goto ioerr;
                     }
                 } else if (len < 8) {
@@ -2190,11 +2192,11 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
                 } else if ((uncompressed32 == 0xFFFFFFFF) && !SDL_ReadU64LE(io, &uncompressed64)) {
                     goto ioerr;
 
-                    // there are other values in here, but we don't care about them and we're done, so don't try to skip over them.
+                // there are other values in here, but we don't care about them and we're done, so don't try to skip over them.
 
                 } else {
                     found = true;
-                    break; // got what we need, drop out.
+                    break;  // got what we need, drop out.
                 }
                 remaining -= len + 4;
             }
@@ -2205,27 +2207,27 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
         }
 
         char *ptr = fnamebuf;
-        while (*ptr == '/') { // drop absolute paths.
+        while (*ptr == '/') {  // drop absolute paths.
             ptr++;
         }
 
-        if (SDL_strncmp(ptr, "assets/", 7) == 0) { //  we only care about things under 'assets' for now. Drop everything else.
-            ptr += 6;                              // keep the '/' so strrchr never returns NULL.
-            APKNode *node = AddAPKDirs(ptr, root); // this builds out any missing subdirs, returns parent dir's node.
+        if (SDL_strncmp(ptr, "assets/", 7) == 0) {  //  we only care about things under 'assets' for now. Drop everything else.
+            ptr += 6;  // keep the '/' so strrchr never returns NULL.
+            APKNode *node = AddAPKDirs(ptr, root);  // this builds out any missing subdirs, returns parent dir's node.
             if (!node) {
-                goto ioerr; // (probably out of memory.)
+                goto ioerr;  // (probably out of memory.)
             }
 
             const SDL_Time modtime = ZipDosTimeToSDLTime(dosmodtime);
             ptr = SDL_strrchr(ptr, '/');
             SDL_assert(ptr != NULL);
-            if (*(++ptr) == '\0') { // explicit directory entry paths end with '/' ...`node` is the new node.
+            if (*(++ptr) == '\0') {  // explicit directory entry paths end with '/' ...`node` is the new node.
                 node->info.type = SDL_PATHTYPE_DIRECTORY;
                 node->info.size = 0;
             } else {
                 node = AddAPKChildNode(node, ptr);
                 if (!node) {
-                    goto ioerr; // (probably out of memory.)
+                    goto ioerr;  // (probably out of memory.)
                 }
                 node->info.type = SDL_PATHTYPE_FILE;
                 node->info.size = uncompressed64;
@@ -2233,7 +2235,7 @@ static bool ProcessZip(SDL_IOStream *io, APKNode *root)
             node->info.create_time = node->info.modify_time = node->info.access_time = modtime;
         }
 
-        centraldir += (Sint64)(46 + fnamelen + extralen + commentlen); // will seek to next file entry.
+        centraldir += (Sint64) (46 + fnamelen + extralen + commentlen);  // will seek to next file entry.
     }
 
     return true;
@@ -2249,7 +2251,7 @@ ioerr:
 
 static bool CreateAPKNodes(const char *path)
 {
-    // SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
+    //SDL_Log("ANDROID: Parsing APK file '%s' ...", path);
 
     SDL_IOStream *io = SDL_IOFromFile(path, "rb");
     if (!io) {
@@ -2267,9 +2269,9 @@ static bool PrepareAPK(void)
     bool retval = (APKRootNode != NULL);
     if (!retval) {
         // allocate this upfront, so if there's a failure, we'll not try again and just have an empty file tree.
-        APKRootNode = (APKNode *)SDL_calloc(1, sizeof(*APKRootNode));
+        APKRootNode = (APKNode *) SDL_calloc(1, sizeof (*APKRootNode));
         if (!APKRootNode) {
-            return false; // oh well.
+            return false;  // oh well.
         }
         APKRootNode->info.type = SDL_PATHTYPE_DIRECTORY;
 
@@ -2281,12 +2283,12 @@ static bool PrepareAPK(void)
             jstring jstr = (jstring)(*env)->CallObjectMethod(env, context, mid);
             jthrowable jexception = (*env)->ExceptionOccurred(env);
             if (jexception != NULL) {
-                (*env)->ExceptionClear(env); // oh well
+                (*env)->ExceptionClear(env);  // oh well
             } else {
                 const char *apkpath = (*env)->GetStringUTFChars(env, jstr, NULL);
                 SDL_PathInfo apkinfo;
-                SDL_assert(apkpath[0] == '/');            // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
-                if (SDL_GetPathInfo(apkpath, &apkinfo)) { // we just want the file times here, so oh well if it fails.
+                SDL_assert(apkpath[0] == '/');  // So SDL_GetPathInfo goes through the `stat` path and doesn't try to dig into the APK.
+                if (SDL_GetPathInfo(apkpath, &apkinfo)) {   // we just want the file times here, so oh well if it fails.
                     APKRootNode->info.create_time = apkinfo.create_time;
                     APKRootNode->info.modify_time = apkinfo.modify_time;
                     APKRootNode->info.access_time = apkinfo.access_time;
@@ -2298,7 +2300,7 @@ static bool PrepareAPK(void)
         }
         LocalReferenceHolder_Cleanup(&refs);
     }
-    return retval; // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
+    return retval;  // even on failure, leave an empty root node so we have zero files and don't try to load the .zip again.
 }
 
 static void Internal_Android_Create_AssetManager(void)
@@ -2420,12 +2422,12 @@ size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SD
 
 Sint64 Android_JNI_FileSize(void *userdata)
 {
-    return (Sint64)AAsset_getLength64((AAsset *)userdata);
+    return (Sint64) AAsset_getLength64((AAsset *)userdata);
 }
 
 Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
-    return (Sint64)AAsset_seek64((AAsset *)userdata, offset, (int)whence);
+    return (Sint64) AAsset_seek64((AAsset *)userdata, offset, (int)whence);
 }
 
 bool Android_JNI_FileClose(void *userdata)
@@ -2684,7 +2686,7 @@ void Android_JNI_HapticStop(int device_id)
 
 bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
-    CHECK_PARAM (command < 0x8000) {
+    CHECK_PARAM(command < 0x8000) {
         return SDL_InvalidParamError("command");
     }
     return Android_JNI_SendMessage(command, param);
@@ -2885,6 +2887,7 @@ char *SDL_GetAndroidPackageName(void)
 
     return retval;
 }
+
 
 bool SDL_IsAndroidTablet(void)
 {
@@ -3186,7 +3189,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
     SDL_LockMutex(Android_ActivityMutex);
     NativePermissionRequestInfo *prev = &pending_permissions;
     for (NativePermissionRequestInfo *info = prev->next; info != NULL; info = info->next) {
-        if (info->request_code == (int)requestCode) {
+        if (info->request_code == (int) requestCode) {
             prev->next = info->next;
             SDL_UnlockMutex(Android_ActivityMutex);
             info->callback(info->userdata, info->permission, result ? true : false);
@@ -3208,7 +3211,7 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
         return SDL_InvalidParamError("cb");
     }
 
-    NativePermissionRequestInfo *info = (NativePermissionRequestInfo *)SDL_calloc(1, sizeof(NativePermissionRequestInfo));
+    NativePermissionRequestInfo *info = (NativePermissionRequestInfo *) SDL_calloc(1, sizeof (NativePermissionRequestInfo));
     if (!info) {
         return false;
     }
@@ -3286,20 +3289,20 @@ int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode)
 
     for (const char *cmode = mode; *cmode; cmode++) {
         switch (*cmode) {
-        case 'a':
-            modeappend = 1;
-            break;
-        case 'r':
-            moderead = 1;
-            break;
-        case 'w':
-            modewrite = 1;
-            break;
-        case '+':
-            modeupdate = 1;
-            break;
-        default:
-            break;
+            case 'a':
+                modeappend = 1;
+                break;
+            case 'r':
+                moderead = 1;
+                break;
+            case 'w':
+                modewrite = 1;
+                break;
+            case '+':
+                modeupdate = 1;
+                break;
+            default:
+                break;
         }
     }
 
@@ -3398,7 +3401,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
         // Call user-provided callback
         SDL_ClearError();
-        mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, (const char *const *)charFileList, filter);
+        mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, (const char *const *) charFileList, filter);
         mAndroidFileDialogData.callback = NULL;
 
         // Cleanup memory
@@ -3470,8 +3473,8 @@ bool Android_JNI_ShowFileDialog(
 
     // Invoke JNI
     jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass,
-                                                       midShowFileDialog, filtersArray, (jboolean)multiple,
-                                                       dialogType, initialPathString, mAndroidFileDialogData.request_code);
+        midShowFileDialog, filtersArray, (jboolean) multiple,
+        dialogType, initialPathString, mAndroidFileDialogData.request_code);
     (*env)->DeleteLocalRef(env, filtersArray);
     (*env)->DeleteLocalRef(env, initialPathString);
     if (!success) {

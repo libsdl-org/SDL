@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#include <emscripten/dom_pk_codes.h>
 #include <emscripten/html5.h>
+#include <emscripten/dom_pk_codes.h>
 
 #include "../../events/SDL_dropevents_c.h"
 #include "../../events/SDL_events_c.h"
@@ -279,7 +279,8 @@ static SDL_Window *Emscripten_GetFocusedWindow(SDL_VideoDevice *device)
             {
                 // querySelector throws if not a valid selector
             }
-            return false; }, wdata->canvas_id);
+            return false;
+        }, wdata->canvas_id);
 
         if (focused) {
             break;
@@ -503,7 +504,7 @@ static EM_BOOL Emscripten_HandleFullscreenChangeGlobal(int eventType, const Emsc
             canvas_id++;
         }
         if (SDL_strcmp(fullscreenChangeEvent->id, canvas_id) == 0) {
-            break; // this is the window.
+            break;  // this is the window.
         }
     }
 
@@ -529,13 +530,13 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
     }
 
     const bool fill_document = (Emscripten_fill_document_window == window_data->window);
-    const bool fullscreen = (window_data->window->flags & SDL_WINDOW_FULLSCREEN) != 0; // fullscreen windows can resize on Emscripten, and the canvas should fill it.
+    const bool fullscreen = (window_data->window->flags & SDL_WINDOW_FULLSCREEN) != 0;  // fullscreen windows can resize on Emscripten, and the canvas should fill it.
     const bool resizable = (window_data->window->flags & SDL_WINDOW_RESIZABLE) != 0;
     if (fill_document || fullscreen || resizable) {
         double w, h;
         if (fill_document || fullscreen) {
-            w = (double)uiEvent->windowInnerWidth;
-            h = (double)uiEvent->windowInnerHeight;
+            w = (double) uiEvent->windowInnerWidth;
+            h = (double) uiEvent->windowInnerHeight;
         } else {
             SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
             w = window_data->window->w;
@@ -613,34 +614,29 @@ static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const Emscripte
 {
     SDL_DisplayOrientation orientation;
     switch (orientationChangeEvent->orientationIndex) {
-#define CHECK_ORIENTATION(emsdk, sdl)        \
-    case EMSCRIPTEN_ORIENTATION_##emsdk:     \
-        orientation = SDL_ORIENTATION_##sdl; \
-        break
+        #define CHECK_ORIENTATION(emsdk, sdl) case EMSCRIPTEN_ORIENTATION_##emsdk: orientation = SDL_ORIENTATION_##sdl; break
         CHECK_ORIENTATION(LANDSCAPE_PRIMARY, LANDSCAPE);
         CHECK_ORIENTATION(LANDSCAPE_SECONDARY, LANDSCAPE_FLIPPED);
         CHECK_ORIENTATION(PORTRAIT_PRIMARY, PORTRAIT);
         CHECK_ORIENTATION(PORTRAIT_SECONDARY, PORTRAIT_FLIPPED);
-#undef CHECK_ORIENTATION
-    default:
-        orientation = SDL_ORIENTATION_UNKNOWN;
-        break;
+        #undef CHECK_ORIENTATION
+        default: orientation = SDL_ORIENTATION_UNKNOWN; break;
     }
 
-    SDL_WindowData *window_data = (SDL_WindowData *)userData;
+    SDL_WindowData *window_data = (SDL_WindowData *) userData;
     SDL_SendDisplayEvent(SDL_GetVideoDisplayForWindow(window_data->window), SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
 
     // fake a UI event so we can tell the app the canvas might have resized.
     EmscriptenUiEvent uiEvent;
     SDL_zero(uiEvent);
-    uiEvent.documentBodyClientWidth = MAIN_THREAD_EM_ASM_INT({ return document.body.clientWidth; });
-    uiEvent.documentBodyClientHeight = MAIN_THREAD_EM_ASM_INT({ return document.body.clientHeight; });
-    uiEvent.windowInnerWidth = MAIN_THREAD_EM_ASM_INT({ return window.innerWidth; });
-    uiEvent.windowInnerHeight = MAIN_THREAD_EM_ASM_INT({ return window.innerHeight; });
-    uiEvent.windowOuterWidth = MAIN_THREAD_EM_ASM_INT({ return window.outerWidth; });
-    uiEvent.windowOuterHeight = MAIN_THREAD_EM_ASM_INT({ return window.outerHeight; });
-    uiEvent.scrollTop = MAIN_THREAD_EM_ASM_INT({ return window.pageXOffset; });
-    uiEvent.scrollLeft = MAIN_THREAD_EM_ASM_INT({ return window.pageYOffset; });
+    uiEvent.documentBodyClientWidth = MAIN_THREAD_EM_ASM_INT( { return document.body.clientWidth; } );
+    uiEvent.documentBodyClientHeight = MAIN_THREAD_EM_ASM_INT( { return document.body.clientHeight; } );
+    uiEvent.windowInnerWidth = MAIN_THREAD_EM_ASM_INT( { return window.innerWidth; } );
+    uiEvent.windowInnerHeight = MAIN_THREAD_EM_ASM_INT( { return window.innerHeight; } );
+    uiEvent.windowOuterWidth = MAIN_THREAD_EM_ASM_INT( { return window.outerWidth; } );
+    uiEvent.windowOuterHeight = MAIN_THREAD_EM_ASM_INT( { return window.outerHeight; } );
+    uiEvent.scrollTop = MAIN_THREAD_EM_ASM_INT( { return window.pageXOffset; } );
+    uiEvent.scrollLeft = MAIN_THREAD_EM_ASM_INT( { return window.pageYOffset; } );
     Emscripten_HandleResize(EMSCRIPTEN_EVENT_RESIZE, &uiEvent, userData);
 
     return 0;
@@ -649,7 +645,7 @@ static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const Emscripte
 // IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: SDL3.makePointerEventCStruct, below.
 #define PTRTYPE_MOUSE 1
 #define PTRTYPE_TOUCH 2
-#define PTRTYPE_PEN   3
+#define PTRTYPE_PEN 3
 typedef struct Emscripten_PointerEvent
 {
     int pointer_type;
@@ -673,20 +669,14 @@ static void Emscripten_HandleMouseButton(SDL_WindowData *window_data, const Emsc
     Uint8 sdl_button;
     bool down = false;
     switch (event->button) {
-#define CHECK_MOUSE_BUTTON(jsbutton, downflag, sdlbutton)                \
-    case jsbutton:                                                       \
-        sdl_button = SDL_BUTTON_##sdlbutton;                             \
-        down = (event->down != 0) || ((event->buttons & downflag) != 0); \
-        break
+        #define CHECK_MOUSE_BUTTON(jsbutton, downflag, sdlbutton) case jsbutton: sdl_button = SDL_BUTTON_##sdlbutton; down = (event->down != 0) || ((event->buttons & downflag) != 0); break
         CHECK_MOUSE_BUTTON(0, 1, LEFT);
         CHECK_MOUSE_BUTTON(1, 4, MIDDLE);
         CHECK_MOUSE_BUTTON(2, 2, RIGHT);
         CHECK_MOUSE_BUTTON(3, 8, X1);
         CHECK_MOUSE_BUTTON(4, 16, X2);
-#undef CHECK_MOUSE_BUTTON
-    default:
-        sdl_button = 0;
-        break;
+        #undef CHECK_MOUSE_BUTTON
+        default: sdl_button = 0; break;
     }
 
     if (sdl_button) {
@@ -779,7 +769,7 @@ static void Emscripten_UpdateTouchFromEvent(SDL_WindowData *window_data, const E
     }
 
     const bool down = (event->buttons & 1) != 0;
-    if (event->button == 0) { // touch is starting or ending if this is zero (-1 means "no change").
+    if (event->button == 0) {  // touch is starting or ending if this is zero (-1 means "no change").
         if (down) {
             SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_DOWN, x, y, 1.0f);
         }
@@ -787,7 +777,7 @@ static void Emscripten_UpdateTouchFromEvent(SDL_WindowData *window_data, const E
 
     SDL_SendTouchMotion(0, deviceId, id, window_data->window, x, y, 1.0f);
 
-    if (event->button == 0) { // touch is starting or ending if this is zero (-1 means "no change").
+    if (event->button == 0) {  // touch is starting or ending if this is zero (-1 means "no change").
         if (!down) {
             SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_UP, x, y, 1.0f);
         }
@@ -797,7 +787,7 @@ static void Emscripten_UpdateTouchFromEvent(SDL_WindowData *window_data, const E
 static void Emscripten_UpdatePenFromEvent(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
     SDL_assert(event->pointer_type == PTRTYPE_PEN);
-    const SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)1); // something > 0 for the single pen handle.
+    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) 1);   // something > 0 for the single pen handle.
     if (pen) {
         // rescale (in case canvas is being scaled)
         double client_w, client_h;
@@ -817,10 +807,10 @@ static void Emscripten_UpdatePenFromEvent(SDL_WindowData *window_data, const Ems
 
         SDL_SendPenMotion(0, pen, window_data->window, mx, my);
 
-        if (event->button == 0) { // pen touch
+        if (event->button == 0) {  // pen touch
             bool down = ((event->buttons & 1) != 0);
             SDL_SendPenTouch(0, pen, window_data->window, false, down);
-        } else if (event->button == 5) { // eraser touch...? Not sure if this is right...
+        } else if (event->button == 5) {  // eraser touch...? Not sure if this is right...
             bool down = ((event->buttons & 32) != 0);
             SDL_SendPenTouch(0, pen, window_data->window, true, down);
         } else if (event->button == 1) {
@@ -876,9 +866,9 @@ static void Emscripten_HandleMouseFocus(SDL_WindowData *window_data, const Emscr
     }
 
     if (isenter && window_data->mouse_focus_loss_pending) {
-        window_data->mouse_focus_loss_pending = false; // just drop the state, but don't send the enter event.
+        window_data->mouse_focus_loss_pending = false;  // just drop the state, but don't send the enter event.
     } else if (!isenter && (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-        window_data->mouse_focus_loss_pending = true; // waiting on a mouse button to let go before we send the mouse focus update.
+        window_data->mouse_focus_loss_pending = true;  // waiting on a mouse button to let go before we send the mouse focus update.
     } else {
         SDL_SetMouseFocus(isenter ? window_data->window : NULL);
     }
@@ -891,7 +881,7 @@ static void Emscripten_HandlePenEnter(SDL_WindowData *window_data, const Emscrip
     // event->pointerid is one continuous interaction; it doesn't necessarily track a specific tool over time, like the same finger's ID changed on each new touch event.
     // as such, we only expose a single pen, and when the touch ends, we say it lost proximity instead of the calling SDL_RemovePenDevice().
 
-    SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)1); // something > 0 for the single pen handle.
+    SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) 1);  // something > 0 for the single pen handle.
     if (pen) {
         SDL_SendPenProximity(0, pen, window_data->window, true, true);
     } else {
@@ -902,7 +892,7 @@ static void Emscripten_HandlePenEnter(SDL_WindowData *window_data, const Emscrip
         peninfo.max_tilt = 90.0f;
         peninfo.num_buttons = 2;
         peninfo.subtype = SDL_PEN_TYPE_PEN;
-        SDL_AddPenDevice(0, NULL, window_data->window, &peninfo, (void *)(size_t)1, true);
+        SDL_AddPenDevice(0, NULL, window_data->window, &peninfo, (void *) (size_t) 1, true);
     }
 
     Emscripten_UpdatePenFromEvent(window_data, event);
@@ -924,9 +914,9 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerEnter(SDL_WindowData *window_d
 
 static void Emscripten_HandlePenLeave(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
-    const SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)1); // something > 0 for the single pen handle.
+    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) 1);   // something > 0 for the single pen handle.
     if (pen) {
-        Emscripten_UpdatePointerFromEvent(window_data, event); // last data updates?
+        Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
         SDL_SendPenProximity(0, pen, window_data->window, false, false);
     }
 }
@@ -1019,7 +1009,8 @@ static void Emscripten_prep_pointer_event_callbacks(void)
                 }
                 return ptr;
             };
-        } }, sizeof(Emscripten_PointerEvent));
+        }
+    }, sizeof (Emscripten_PointerEvent));
 }
 
 static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
@@ -1066,7 +1057,8 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             target.addEventListener("pointerdown", target.sdlEventHandlerPointerGeneric);
             target.addEventListener("pointermove", target.sdlEventHandlerPointerGeneric);
             target.addEventListener("pointerup", target.sdlEventHandlerPointerGeneric);
-        } }, data, data->canvas_id);
+        }
+    }, data, data->canvas_id);
 }
 
 static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
@@ -1084,7 +1076,8 @@ static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
             target.sdlEventHandlerPointerEnter = undefined;
             target.sdlEventHandlerPointerLeave = undefined;
             target.sdlEventHandlerPointerGeneric = undefined;
-        } }, data->canvas_id);
+        }
+    }, data->canvas_id);
 }
 
 EMSCRIPTEN_KEEPALIVE void Emscripten_HandleMouseButtonUpGlobal(SDL_VideoDevice *device, const Emscripten_PointerEvent *event)
@@ -1115,7 +1108,8 @@ static void Emscripten_set_global_mouseup_callback(SDL_VideoDevice *device)
                 }
             };
             target.addEventListener("pointerup", target.sdlEventHandlerMouseButtonUpGlobal);
-        } }, device);
+        }
+    }, device);
 }
 
 static void Emscripten_unset_global_mouseup_callback(SDL_VideoDevice *device)
@@ -1245,7 +1239,8 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
             };
             target.addEventListener("dragend", SDL3.eventHandlerDropDragend);
             target.addEventListener("dragleave", SDL3.eventHandlerDropDragend);
-        } }, data, data->canvas_id, sizeof(Emscripten_DropEvent));
+        }
+    }, data, data->canvas_id, sizeof (Emscripten_DropEvent));
 }
 
 static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
@@ -1277,7 +1272,8 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
             SDL3.eventHandlerDropDragover = undefined;
             SDL3.eventHandlerDropDrop = undefined;
             SDL3.eventHandlerDropDragend = undefined;
-        } }, data->canvas_id);
+        }
+    }, data->canvas_id);
 }
 
 static const char *Emscripten_GetKeyboardTargetElement(const char *target)
@@ -1327,8 +1323,8 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_HandleLockKeysCheck(SDL_WindowData *window_
 {
     const SDL_Keymod new_mods = (capslock ? SDL_KMOD_CAPS : 0) | (numlock ? SDL_KMOD_NUM : 0) | (scrolllock ? SDL_KMOD_SCROLL : 0);
     SDL_Keymod modstate = SDL_GetModState();
-    if ((modstate & (SDL_KMOD_CAPS | SDL_KMOD_NUM | SDL_KMOD_SCROLL)) != new_mods) {
-        modstate &= ~(SDL_KMOD_CAPS | SDL_KMOD_NUM | SDL_KMOD_SCROLL);
+    if ((modstate & (SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL)) != new_mods) {
+        modstate &= ~(SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL);
         modstate |= new_mods;
         SDL_SetModState(modstate);
     }
@@ -1379,7 +1375,8 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
                     _Emscripten_HandleLockKeysCheck(Module['SDL3'].JSVarToCPtr(data), event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
                 }
             };
-            document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck); }, data);
+            document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+        }, data);
         emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);

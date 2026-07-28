@@ -22,11 +22,11 @@
 
 #ifdef SDL_VIDEO_RENDER_OGL_ES2
 
-#include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_sysvideo.h" // For SDL_RecreateWindow
-#include "../SDL_sysrender.h"
-#include "SDL_shaders_gles2.h"
 #include <SDL3/SDL_opengles2.h>
+#include "../SDL_sysrender.h"
+#include "../../video/SDL_pixels_c.h"
+#include "SDL_shaders_gles2.h"
 
 /* WebGL doesn't offer client-side arrays, so use Vertex Buffer Objects
    on Emscripten, which converts GLES2 into WebGL calls.
@@ -62,7 +62,7 @@ typedef struct
 typedef struct
 {
     GLuint texture;
-    GLuint fbo; // framebuffer object; this is zero unless this texture is a render target.
+    GLuint fbo;  // framebuffer object; this is zero unless this texture is a render target.
     bool texture_external;
     GLenum texture_type;
     GLenum pixel_format;
@@ -181,7 +181,7 @@ typedef struct GLES2_RenderData
     bool GL_OES_EGL_image_external_supported;
     bool GL_EXT_blend_minmax_supported;
 
-#define SDL_PROC(ret, func, params) ret(APIENTRY *func) params;
+#define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC
     GLuint window_framebuffer;
@@ -279,7 +279,7 @@ static bool GLES2_LoadFunctions(GLES2_RenderData *data)
 #else
 #define SDL_PROC(ret, func, params)                                                            \
     do {                                                                                       \
-        data->func = (ret(APIENTRY *) params)SDL_GL_GetProcAddress(#func);                     \
+        data->func = (ret (APIENTRY *) params)SDL_GL_GetProcAddress(#func);                                             \
         if (!data->func) {                                                                     \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         }                                                                                      \
@@ -565,6 +565,7 @@ static bool GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, GLe
             SDL_free(info);
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to load the shader %d", type);
+
         }
         data->glDeleteShader(id);
 
@@ -789,7 +790,8 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
                 matrix[2 * 3 + 2] = shader_params[14];
                 data->glUniformMatrix3fv(program->uniform_locations[GLES2_UNIFORM_MATRIX], 1, GL_FALSE, matrix);
             }
-        } else
+        }
+        else
 #endif
         {
             data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_TEXEL_SIZE], shader_params[0], shader_params[1], shader_params[2], shader_params[3]);
@@ -909,9 +911,9 @@ static bool GLES2_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
 }
 
 static bool GLES2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                                const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                                int num_vertices, const void *indices, int num_indices, int size_indices,
-                                float scale_x, float scale_y)
+                               const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                               int num_vertices, const void *indices, int num_indices, int size_indices,
+                               float scale_x, float scale_y)
 {
     int i;
     const bool colorswap = (renderer->target && (renderer->target->format == SDL_PIXELFORMAT_BGRA32 || renderer->target->format == SDL_PIXELFORMAT_BGRX32));
@@ -1937,7 +1939,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         renderdata->glBindFramebuffer(GL_FRAMEBUFFER, data->fbo);
         renderdata->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, data->texture_type, data->texture, 0);
         const GLenum status = renderdata->glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        renderdata->glBindFramebuffer(GL_FRAMEBUFFER, renderer->target ? ((GLES2_TextureData *)renderer->target->internal)->fbo : renderdata->window_framebuffer); // rebind previous fbo.
+        renderdata->glBindFramebuffer(GL_FRAMEBUFFER, renderer->target ? ((GLES2_TextureData *)renderer->target->internal)->fbo : renderdata->window_framebuffer);  // rebind previous fbo.
         if (status != GL_FRAMEBUFFER_COMPLETE) {
             renderdata->glDeleteFramebuffers(1, &data->fbo);
             if (!data->texture_external) {
@@ -1986,7 +1988,7 @@ static bool GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xof
 }
 
 static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
-                                const void *pixels, int pitch)
+                               const void *pixels, int pitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
@@ -2064,10 +2066,10 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 
 #ifdef SDL_HAVE_YUV
 static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                   const SDL_Rect *rect,
-                                   const Uint8 *Yplane, int Ypitch,
-                                   const Uint8 *Uplane, int Upitch,
-                                   const Uint8 *Vplane, int Vpitch)
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
@@ -2115,9 +2117,9 @@ static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool GLES2_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                  const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *UVplane, int UVpitch)
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch)
 {
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
@@ -2156,7 +2158,7 @@ static bool GLES2_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 #endif
 
 static bool GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
-                              void **pixels, int *pitch)
+                             void **pixels, int *pitch)
 {
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
 
@@ -2402,7 +2404,7 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     data->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &window_framebuffer);
     data->window_framebuffer = (GLuint)window_framebuffer;
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32); // SDL_PIXELFORMAT_ARGB8888 on little endian systems
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);    // SDL_PIXELFORMAT_ARGB8888 on little endian systems
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);

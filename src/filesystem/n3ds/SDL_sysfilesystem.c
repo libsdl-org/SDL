@@ -42,7 +42,7 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    return NULL; // there isn't an "exe name" on this platform.
+    return NULL;  // there isn't an "exe name" on this platform.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

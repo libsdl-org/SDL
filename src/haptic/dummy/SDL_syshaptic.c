@@ -87,20 +87,20 @@ void SDL_SYS_HapticQuit(void)
 }
 
 bool SDL_SYS_HapticNewEffect(SDL_Haptic *haptic,
-                             struct haptic_effect *effect, const SDL_HapticEffect *base)
+                            struct haptic_effect *effect, const SDL_HapticEffect *base)
 {
     return SDL_SYS_LogicError();
 }
 
 bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
-                                struct haptic_effect *effect,
-                                const SDL_HapticEffect *data)
+                               struct haptic_effect *effect,
+                               const SDL_HapticEffect *data)
 {
     return SDL_SYS_LogicError();
 }
 
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                             Uint32 iterations)
+                            Uint32 iterations)
 {
     return SDL_SYS_LogicError();
 }

@@ -546,7 +546,7 @@ static void SetupAudioResampler(void)
     } else
 #endif
 #ifdef SDL_NEON_INTRINSICS
-        if (SDL_HasNEON()) {
+    if (SDL_HasNEON()) {
         for (i = 0; i < 8; ++i) {
             ResampleFrame[i] = ResampleFrame_Generic_NEON;
         }

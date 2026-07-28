@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#include "../thread/SDL_systhread.h"
 #include "SDL_timer_c.h"
+#include "../thread/SDL_systhread.h"
 
 // #define DEBUG_TIMERS
 
@@ -301,7 +301,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    CHECK_PARAM (!callback_ms && !callback_ns) {
+    CHECK_PARAM(!callback_ms && !callback_ns) {
         SDL_InvalidParamError("callback");
         return 0;
     }
@@ -374,7 +374,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     SDL_TimerMap *prev, *entry;
     bool canceled = false;
 
-    CHECK_PARAM (!id) {
+    CHECK_PARAM(!id) {
         return SDL_InvalidParamError("id");
     }
 
@@ -407,7 +407,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#else // Emscripten-specific implementation.
+#else   // Emscripten-specific implementation.
 
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
@@ -467,7 +467,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
 
-    CHECK_PARAM (!callback_ms && !callback_ns) {
+    CHECK_PARAM(!callback_ms && !callback_ns) {
         SDL_InvalidParamError("callback");
         return 0;
     }
@@ -507,7 +507,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
 
-    CHECK_PARAM (!id) {
+    CHECK_PARAM(!id) {
         return SDL_InvalidParamError("id");
     }
 
@@ -630,7 +630,7 @@ void SDL_InitTicks(void)
 void SDL_QuitTicks(void)
 {
     SDL_RemoveHintCallback(SDL_HINT_TIMER_RESOLUTION,
-                           SDL_TimerResolutionChanged, NULL);
+                        SDL_TimerResolutionChanged, NULL);
 
     SDL_SetSystemTimerResolutionMS(0); // always release our timer resolution request.
 

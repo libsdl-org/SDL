@@ -20,11 +20,12 @@
 */
 #include "SDL_internal.h"
 
-#include "../thread/SDL_systhread.h"
+#include "SDL_syscamera.h"
+#include "SDL_camera_c.h"
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_surface_c.h"
-#include "SDL_camera_c.h"
-#include "SDL_syscamera.h"
+#include "../thread/SDL_systhread.h"
+
 
 // A lot of this is a simplified version of SDL_audio.c; if fixing stuff here,
 //  maybe check that file, too.
@@ -60,6 +61,7 @@ static const CameraBootStrap *const bootstrap[] = {
 
 static SDL_CameraDriver camera_driver;
 
+
 int SDL_GetNumCameraDrivers(void)
 {
     return SDL_arraysize(bootstrap) - 1;
@@ -67,7 +69,7 @@ int SDL_GetNumCameraDrivers(void)
 
 const char *SDL_GetCameraDriver(int index)
 {
-    CHECK_PARAM (index < 0 || index >= SDL_GetNumCameraDrivers()) {
+    CHECK_PARAM(index < 0 || index >= SDL_GetNumCameraDrivers()) {
         SDL_InvalidParamError("index");
         return NULL;
     }
@@ -81,7 +83,7 @@ const char *SDL_GetCurrentCameraDriver(void)
 
 char *SDL_GetCameraThreadName(SDL_Camera *device, char *buf, size_t buflen)
 {
-    (void)SDL_snprintf(buf, buflen, "SDLCamera%d", (int)device->instance_id);
+    (void)SDL_snprintf(buf, buflen, "SDLCamera%d", (int) device->instance_id);
     return buf;
 }
 
@@ -90,11 +92,11 @@ bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_
     SDL_assert(data != NULL);
     if (data->allocated_specs <= data->num_specs) {
         const int newalloc = data->allocated_specs ? (data->allocated_specs * 2) : 16;
-        void *ptr = SDL_realloc(data->specs, sizeof(SDL_CameraSpec) * newalloc);
+        void *ptr = SDL_realloc(data->specs, sizeof (SDL_CameraSpec) * newalloc);
         if (!ptr) {
             return false;
         }
-        data->specs = (SDL_CameraSpec *)ptr;
+        data->specs = (SDL_CameraSpec *) ptr;
         data->allocated_specs = newalloc;
     }
 
@@ -111,6 +113,7 @@ bool SDL_AddCameraFormat(CameraFormatAddData *data, SDL_PixelFormat format, SDL_
     return true;
 }
 
+
 // Zombie device implementation...
 
 // These get used when a device is disconnected or fails. Apps that ignore the
@@ -119,29 +122,28 @@ static bool ZombieWaitDevice(SDL_Camera *device)
 {
     if (!SDL_GetAtomicInt(&device->shutdown)) {
         // !!! FIXME: this is bad for several reasons (uses double, could be precalculated, doesn't track elapsed time).
-        const double duration = ((double)device->actual_spec.framerate_denominator / ((double)device->actual_spec.framerate_numerator));
-        SDL_Delay((Uint32)(duration * 1000.0));
+        const double duration = ((double) device->actual_spec.framerate_denominator / ((double) device->actual_spec.framerate_numerator));
+        SDL_Delay((Uint32) (duration * 1000.0));
     }
     return true;
 }
 
 static size_t GetFrameBufLen(const SDL_CameraSpec *spec)
 {
-    const size_t w = (const size_t)spec->width;
-    const size_t h = (const size_t)spec->height;
+    const size_t w = (const size_t) spec->width;
+    const size_t h = (const size_t) spec->height;
     const size_t wxh = w * h;
     const SDL_PixelFormat fmt = spec->format;
 
     switch (fmt) {
-    // Some YUV formats have a larger Y plane than their U or V planes.
-    case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12:
-    case SDL_PIXELFORMAT_NV21:
-        return wxh + (wxh / 2);
+        // Some YUV formats have a larger Y plane than their U or V planes.
+        case SDL_PIXELFORMAT_YV12:
+        case SDL_PIXELFORMAT_IYUV:
+        case SDL_PIXELFORMAT_NV12:
+        case SDL_PIXELFORMAT_NV21:
+            return wxh + (wxh / 2);
 
-    default:
-        break;
+        default: break;
     }
 
     // this is correct for most things.
@@ -163,55 +165,57 @@ static SDL_CameraFrameResult ZombieAcquireFrame(SDL_Camera *device, SDL_Surface 
 
         Uint8 *dst = device->zombie_pixels;
         switch (spec->format) {
-        // in YUV formats, the U and V values must be 128 to get a black frame. If set to zero, it'll be bright green.
-        case SDL_PIXELFORMAT_YV12:
-        case SDL_PIXELFORMAT_IYUV:
-        case SDL_PIXELFORMAT_NV12:
-        case SDL_PIXELFORMAT_NV21:
-            SDL_memset(dst, 0, spec->width * spec->height);                                        // set Y to zero.
-            SDL_memset(dst + (spec->width * spec->height), 128, (spec->width * spec->height) / 2); // set U and V to 128.
-            break;
+            // in YUV formats, the U and V values must be 128 to get a black frame. If set to zero, it'll be bright green.
+            case SDL_PIXELFORMAT_YV12:
+            case SDL_PIXELFORMAT_IYUV:
+            case SDL_PIXELFORMAT_NV12:
+            case SDL_PIXELFORMAT_NV21:
+                SDL_memset(dst, 0, spec->width * spec->height);  // set Y to zero.
+                SDL_memset(dst + (spec->width * spec->height), 128, (spec->width * spec->height) / 2); // set U and V to 128.
+                break;
 
-        case SDL_PIXELFORMAT_YUY2:
-        case SDL_PIXELFORMAT_YVYU:
-            // Interleaved Y1[U1|V1]Y2[U2|V2].
-            for (size_t i = 0; i < buflen; i += 4) {
-                dst[i] = 0;
-                dst[i + 1] = 128;
-                dst[i + 2] = 0;
-                dst[i + 3] = 128;
-            }
-            break;
+            case SDL_PIXELFORMAT_YUY2:
+            case SDL_PIXELFORMAT_YVYU:
+                // Interleaved Y1[U1|V1]Y2[U2|V2].
+                for (size_t i = 0; i < buflen; i += 4) {
+                    dst[i] = 0;
+                    dst[i+1] = 128;
+                    dst[i+2] = 0;
+                    dst[i+3] = 128;
+                }
+                break;
 
-        case SDL_PIXELFORMAT_UYVY:
-            // Interleaved [U1|V1]Y1[U2|V2]Y2.
-            for (size_t i = 0; i < buflen; i += 4) {
-                dst[i] = 128;
-                dst[i + 1] = 0;
-                dst[i + 2] = 128;
-                dst[i + 3] = 0;
-            }
-            break;
 
-        default:
-            // just zero everything else, it'll _probably_ be okay.
-            SDL_memset(dst, 0, buflen);
-            break;
+            case SDL_PIXELFORMAT_UYVY:
+                 // Interleaved [U1|V1]Y1[U2|V2]Y2.
+                for (size_t i = 0; i < buflen; i += 4) {
+                    dst[i] = 128;
+                    dst[i+1] = 0;
+                    dst[i+2] = 128;
+                    dst[i+3] = 0;
+                }
+                break;
+
+            default:
+                // just zero everything else, it'll _probably_ be okay.
+                SDL_memset(dst, 0, buflen);
+                break;
         }
     }
+
 
     *timestampNS = SDL_GetTicksNS();
     frame->pixels = device->zombie_pixels;
 
     // SDL (currently) wants the pitch of YUV formats to be the pitch of the (1-byte-per-pixel) Y plane.
     frame->pitch = spec->width;
-    if (!SDL_ISPIXELFORMAT_FOURCC(spec->format)) { // checking if it's not FOURCC to only do this for non-YUV data is good enough for now.
+    if (!SDL_ISPIXELFORMAT_FOURCC(spec->format)) {  // checking if it's not FOURCC to only do this for non-YUV data is good enough for now.
         frame->pitch *= SDL_BYTESPERPIXEL(spec->format);
     }
 
-#if DEBUG_CAMERA
-    SDL_Log("CAMERA: dev[%p] Acquired Zombie frame, timestamp %llu", device, (unsigned long long)*timestampNS);
-#endif
+    #if DEBUG_CAMERA
+    SDL_Log("CAMERA: dev[%p] Acquired Zombie frame, timestamp %llu", device, (unsigned long long) *timestampNS);
+    #endif
 
     return SDL_CAMERA_FRAME_READY; // frame is available.
 }
@@ -225,18 +229,20 @@ static void ZombieReleaseFrame(SDL_Camera *device, SDL_Surface *frame) // Reclai
     // we just leave zombie_pixels alone, as we'll reuse it for every new frame until the camera is closed.
 }
 
+
 static void ObtainPhysicalCameraObj(SDL_Camera *device);
 static void ReleaseCamera(SDL_Camera *device);
+
 
 static void ClosePhysicalCamera(SDL_Camera *device)
 {
     if (!device || (device->hidden == NULL)) {
-        return; // device is not open.
+        return;  // device is not open.
     }
 
     SDL_SetAtomicInt(&device->shutdown, 1);
 
-    // !!! FIXME: the close_cond stuff from audio might help the race condition here.
+// !!! FIXME: the close_cond stuff from audio might help the race condition here.
 
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
@@ -256,7 +262,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
     }
 
     camera_driver.impl.CloseDevice(device);
-    device->hidden = NULL; // just in case backend didn't reset this.
+    device->hidden = NULL;  // just in case backend didn't reset this.
 
     SDL_DestroyProperties(device->props);
 
@@ -282,7 +288,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
     device->adjust_timestamp = 0;
 
     SDL_zero(device->spec);
-    UnrefPhysicalCamera(device); // we're closed, release a reference.
+    UnrefPhysicalCamera(device);  // we're closed, release a reference.
 
     ReleaseCamera(device);
 }
@@ -293,7 +299,7 @@ void UnrefPhysicalCamera(SDL_Camera *device)
     if (SDL_AtomicDecRef(&device->refcount)) {
         // take it out of the device list. This will call DestroyCameraHashItem to clean up the object.
         SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-        if (SDL_RemoveFromHashTable(camera_driver.device_hash, (const void *)(uintptr_t)device->instance_id)) {
+        if (SDL_RemoveFromHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id)) {
             SDL_AddAtomicInt(&camera_driver.device_count, -1);
         }
         SDL_UnlockRWLock(camera_driver.device_hash_lock);
@@ -305,7 +311,7 @@ void RefPhysicalCamera(SDL_Camera *device)
     SDL_AtomicIncRef(&device->refcount);
 }
 
-static void ObtainPhysicalCameraObj(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS // !!! FIXME: SDL_ACQUIRE
+static void ObtainPhysicalCameraObj(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXME: SDL_ACQUIRE
 {
     if (device) {
         RefPhysicalCamera(device);
@@ -313,7 +319,7 @@ static void ObtainPhysicalCameraObj(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANA
     }
 }
 
-static SDL_Camera *ObtainPhysicalCamera(SDL_CameraID devid) // !!! FIXME: SDL_ACQUIRE
+static SDL_Camera *ObtainPhysicalCamera(SDL_CameraID devid)  // !!! FIXME: SDL_ACQUIRE
 {
     if (!SDL_GetCurrentCameraDriver()) {
         SDL_SetError("Camera subsystem is not initialized");
@@ -322,7 +328,7 @@ static SDL_Camera *ObtainPhysicalCamera(SDL_CameraID devid) // !!! FIXME: SDL_AC
 
     SDL_Camera *device = NULL;
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
-    SDL_FindInHashTable(camera_driver.device_hash, (const void *)(uintptr_t)devid, (const void **)&device);
+    SDL_FindInHashTable(camera_driver.device_hash, (const void *) (uintptr_t) devid, (const void **) &device);
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
     if (!device) {
         SDL_SetError("Invalid camera device instance ID");
@@ -332,7 +338,7 @@ static SDL_Camera *ObtainPhysicalCamera(SDL_CameraID devid) // !!! FIXME: SDL_AC
     return device;
 }
 
-static void ReleaseCamera(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS // !!! FIXME: SDL_RELEASE
+static void ReleaseCamera(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXME: SDL_RELEASE
 {
     if (device) {
         SDL_UnlockMutex(device->lock);
@@ -350,8 +356,8 @@ static void ReleaseCamera(SDL_Camera *device) SDL_NO_THREAD_SAFETY_ANALYSIS // !
 // we want specs sorted largest to smallest dimensions, larger width taking precedence over larger height.
 static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
 {
-    const SDL_CameraSpec *a = (const SDL_CameraSpec *)vpa;
-    const SDL_CameraSpec *b = (const SDL_CameraSpec *)vpb;
+    const SDL_CameraSpec *a = (const SDL_CameraSpec *) vpa;
+    const SDL_CameraSpec *b = (const SDL_CameraSpec *) vpb;
 
     // driver shouldn't send specs like this, check here since we're eventually going to sniff the whole array anyhow.
     SDL_assert(a->format != SDL_PIXELFORMAT_UNKNOWN);
@@ -405,7 +411,7 @@ static int SDLCALL CameraSpecCmp(const void *vpa, const void *vpb)
         return 1;
     }
 
-    return 0; // apparently, they're equal.
+    return 0;  // apparently, they're equal.
 }
 
 // The camera backends call this when a new device is plugged in.
@@ -420,7 +426,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     const int shutting_down = SDL_GetAtomicInt(&camera_driver.shutting_down);
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
     if (shutting_down) {
-        return NULL; // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
+        return NULL;  // we're shutting down, don't add any devices that are hotplugged at the last possible moment.
     }
 
     SDL_Camera *device = (SDL_Camera *)SDL_calloc(1, sizeof(SDL_Camera));
@@ -443,7 +449,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
         return NULL;
     }
 
-    device->all_specs = (SDL_CameraSpec *)SDL_calloc(num_specs + 1, sizeof(*specs));
+    device->all_specs = (SDL_CameraSpec *)SDL_calloc(num_specs + 1, sizeof (*specs));
     if (!device->all_specs) {
         SDL_DestroyMutex(device->lock);
         SDL_free(device->name);
@@ -452,22 +458,22 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     }
 
     if (num_specs > 0) {
-        SDL_memcpy(device->all_specs, specs, sizeof(*specs) * num_specs);
-        SDL_qsort(device->all_specs, num_specs, sizeof(*specs), CameraSpecCmp);
+        SDL_memcpy(device->all_specs, specs, sizeof (*specs) * num_specs);
+        SDL_qsort(device->all_specs, num_specs, sizeof (*specs), CameraSpecCmp);
 
         // weed out duplicates, just in case.
         for (int i = 0; i < num_specs; i++) {
             SDL_CameraSpec *a = &device->all_specs[i];
             SDL_CameraSpec *b = &device->all_specs[i + 1];
-            if (SDL_memcmp(a, b, sizeof(*a)) == 0) {
-                SDL_memmove(a, b, sizeof(*specs) * (num_specs - i));
+            if (SDL_memcmp(a, b, sizeof (*a)) == 0) {
+                SDL_memmove(a, b, sizeof (*specs) * (num_specs - i));
                 i--;
                 num_specs--;
             }
         }
     }
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     const char *posstr = "unknown position";
     if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
         posstr = "front-facing";
@@ -479,7 +485,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
         const SDL_CameraSpec *spec = &device->all_specs[i];
         SDL_Log("CAMERA:   - fmt=%s, w=%d, h=%d, numerator=%d, denominator=%d", SDL_GetPixelFormatName(spec->format), spec->width, spec->height, spec->framerate_numerator, spec->framerate_denominator);
     }
-#endif
+    #endif
 
     device->num_specs = num_specs;
     device->handle = handle;
@@ -489,7 +495,7 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
     RefPhysicalCamera(device);
 
     SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    if (SDL_InsertIntoHashTable(camera_driver.device_hash, (const void *)(uintptr_t)device->instance_id, device, false)) {
+    if (SDL_InsertIntoHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id, device, false)) {
         SDL_AddAtomicInt(&camera_driver.device_count, 1);
     } else {
         SDL_DestroyMutex(device->lock);
@@ -501,8 +507,8 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
 
     // Add a device add event to the pending list, to be pushed when the event queue is pumped (away from any of our internal threads).
     if (device) {
-        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *)SDL_malloc(sizeof(SDL_PendingCameraEvent));
-        if (p) { // if allocation fails, you won't get an event, but we can't help that.
+        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *) SDL_malloc(sizeof (SDL_PendingCameraEvent));
+        if (p) {  // if allocation fails, you won't get an event, but we can't help that.
             p->type = SDL_EVENT_CAMERA_DEVICE_ADDED;
             p->devid = device->instance_id;
             p->next = NULL;
@@ -524,9 +530,9 @@ void SDL_CameraDisconnected(SDL_Camera *device)
         return;
     }
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: DISCONNECTED! dev[%p]", device);
-#endif
+    #endif
 
     // Save off removal info in a list so we can send events for each, next
     //  time the event queue pumps, in case something tries to close a device
@@ -539,7 +545,7 @@ void SDL_CameraDisconnected(SDL_Camera *device)
     ObtainPhysicalCameraObj(device);
 
     const bool first_disconnect = SDL_CompareAndSwapAtomicInt(&device->zombie, 0, 1);
-    if (first_disconnect) { // if already disconnected this device, don't do it twice.
+    if (first_disconnect) {   // if already disconnected this device, don't do it twice.
         // Swap in "Zombie" versions of the usual platform interfaces, so the device will keep
         // making progress until the app closes it. Otherwise, streams might continue to
         // accumulate waste data that never drains, apps that depend on audio callbacks to
@@ -552,8 +558,8 @@ void SDL_CameraDisconnected(SDL_Camera *device)
         device->adjust_timestamp = 0;
         device->base_timestamp = 0;
 
-        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *)SDL_malloc(sizeof(SDL_PendingCameraEvent));
-        if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
+        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *) SDL_malloc(sizeof (SDL_PendingCameraEvent));
+        if (p) {  // if this failed, no event for you, but you have deeper problems anyhow.
             p->type = SDL_EVENT_CAMERA_DEVICE_REMOVED;
             p->devid = device->instance_id;
             p->next = NULL;
@@ -561,13 +567,13 @@ void SDL_CameraDisconnected(SDL_Camera *device)
             pending_tail = p;
         }
 
-        UnrefPhysicalCamera(device); // camera is disconnected, drop its reference
+        UnrefPhysicalCamera(device);   // camera is disconnected, drop its reference
     }
 
     ReleaseCamera(device);
 
     if (first_disconnect) {
-        if (pending.next) { // NULL if event is disabled or disaster struck.
+        if (pending.next) {  // NULL if event is disabled or disaster struck.
             SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
             SDL_assert(camera_driver.pending_events_tail != NULL);
             SDL_assert(camera_driver.pending_events_tail->next == NULL);
@@ -593,8 +599,8 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
     ObtainPhysicalCameraObj(device);
     if (device->permission != permission) {
         device->permission = permission;
-        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *)SDL_malloc(sizeof(SDL_PendingCameraEvent));
-        if (p) { // if this failed, no event for you, but you have deeper problems anyhow.
+        SDL_PendingCameraEvent *p = (SDL_PendingCameraEvent *) SDL_malloc(sizeof (SDL_PendingCameraEvent));
+        if (p) {  // if this failed, no event for you, but you have deeper problems anyhow.
             p->type = approved ? SDL_EVENT_CAMERA_DEVICE_APPROVED : SDL_EVENT_CAMERA_DEVICE_DENIED;
             p->devid = device->instance_id;
             p->next = NULL;
@@ -605,7 +611,7 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
 
     ReleaseCamera(device);
 
-    if (pending.next) { // NULL if event is disabled or disaster struck.
+    if (pending.next) {  // NULL if event is disabled or disaster struck.
         SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
         SDL_assert(camera_driver.pending_events_tail != NULL);
         SDL_assert(camera_driver.pending_events_tail->next == NULL);
@@ -624,13 +630,13 @@ typedef struct FindOnePhysicalCameraByCallbackData
 
 static bool SDLCALL FindOnePhysicalCameraByCallback(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
-    FindOnePhysicalCameraByCallbackData *data = (FindOnePhysicalCameraByCallbackData *)userdata;
-    SDL_Camera *device = (SDL_Camera *)value;
+    FindOnePhysicalCameraByCallbackData *data = (FindOnePhysicalCameraByCallbackData *) userdata;
+    SDL_Camera *device = (SDL_Camera *) value;
     if (data->callback(device, data->userdata)) {
         data->device = device;
-        return false; // stop iterating.
+        return false;  // stop iterating.
     }
-    return true; // keep iterating.
+    return true;  // keep iterating.
 }
 
 // !!! FIXME: this doesn't follow SDL convention of `userdata` being the first param of the callback.
@@ -640,6 +646,7 @@ SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device
         SDL_SetError("Camera subsystem is not initialized");
         return NULL;
     }
+
 
     FindOnePhysicalCameraByCallbackData data = { callback, userdata, NULL };
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
@@ -655,7 +662,7 @@ SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device
 
 void SDL_CloseCamera(SDL_Camera *camera)
 {
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ClosePhysicalCamera(device);
 }
 
@@ -663,14 +670,14 @@ bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 {
     bool result;
 
-    CHECK_PARAM (!camera) {
+    CHECK_PARAM(!camera) {
         return SDL_InvalidParamError("camera");
     }
-    CHECK_PARAM (!spec) {
+    CHECK_PARAM(!spec) {
         return SDL_InvalidParamError("spec");
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
     if (device->permission > SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_copyp(spec, &device->spec);
@@ -706,6 +713,7 @@ SDL_CameraPosition SDL_GetCameraPosition(SDL_CameraID instance_id)
     return result;
 }
 
+
 typedef struct GetOneCameraData
 {
     SDL_CameraID *result;
@@ -714,9 +722,9 @@ typedef struct GetOneCameraData
 
 static bool SDLCALL GetOneCamera(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
-    GetOneCameraData *data = (GetOneCameraData *)userdata;
-    data->result[data->devs_seen++] = (SDL_CameraID)(uintptr_t)key;
-    return true; // keep iterating.
+    GetOneCameraData *data = (GetOneCameraData *) userdata;
+    data->result[data->devs_seen++] = (SDL_CameraID) (uintptr_t) key;
+    return true;  // keep iterating.
 }
 
 SDL_CameraID *SDL_GetCameras(int *count)
@@ -736,14 +744,14 @@ SDL_CameraID *SDL_GetCameras(int *count)
 
     SDL_LockRWLockForReading(camera_driver.device_hash_lock);
     int num_devices = SDL_GetAtomicInt(&camera_driver.device_count);
-    result = (SDL_CameraID *)SDL_malloc((num_devices + 1) * sizeof(SDL_CameraID));
+    result = (SDL_CameraID *) SDL_malloc((num_devices + 1) * sizeof (SDL_CameraID));
     if (!result) {
         num_devices = 0;
     } else {
         GetOneCameraData data = { result, 0 };
         SDL_IterateHashTable(camera_driver.device_hash, GetOneCamera, &data);
         SDL_assert(data.devs_seen == num_devices);
-        result[num_devices] = 0; // null-terminated.
+        result[num_devices] = 0;  // null-terminated.
     }
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
 
@@ -765,7 +773,7 @@ SDL_CameraSpec **SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *co
 
     int i;
     int num_specs = device->num_specs;
-    SDL_CameraSpec **result = (SDL_CameraSpec **)SDL_malloc(((num_specs + 1) * sizeof(*result)) + (num_specs * sizeof(**result)));
+    SDL_CameraSpec **result = (SDL_CameraSpec **) SDL_malloc(((num_specs + 1) * sizeof(*result)) + (num_specs * sizeof (**result)));
     if (result) {
         SDL_CameraSpec *specs = (SDL_CameraSpec *)(result + (num_specs + 1));
         SDL_memcpy(specs, device->all_specs, num_specs * sizeof(*specs));
@@ -784,11 +792,12 @@ SDL_CameraSpec **SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *co
     return result;
 }
 
+
 // Camera device thread. This is split into chunks, so drivers that need to control this directly can use the pieces they need without duplicating effort.
 
 void SDL_CameraThreadSetup(SDL_Camera *device)
 {
-    // camera_driver.impl.ThreadInit(device);
+    //camera_driver.impl.ThreadInit(device);
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     // TODO
     /*
@@ -809,16 +818,16 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
 
     if (SDL_GetAtomicInt(&device->shutdown)) {
         SDL_UnlockMutex(device->lock);
-        return false; // we're done, shut it down.
+        return false;  // we're done, shut it down.
     }
 
     const int permission = device->permission;
     if (permission <= SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_UnlockMutex(device->lock);
-        return (permission < SDL_CAMERA_PERMISSION_STATE_PENDING) ? false : true; // if permission was denied, shut it down. if undecided, we're done for now.
+        return (permission < SDL_CAMERA_PERMISSION_STATE_PENDING) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
     }
 
-    bool failed = false; // set to true if disaster worthy of treating the device as lost has happened.
+    bool failed = false;  // set to true if disaster worthy of treating the device as lost has happened.
     SDL_Surface *acquired = NULL;
     SDL_Surface *output_surface = NULL;
     SurfaceList *slist = NULL;
@@ -828,24 +837,24 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     // AcquireFrame SHOULD NOT BLOCK, as we are holding a lock right now. Block in WaitDevice instead!
     const SDL_CameraFrameResult rc = device->AcquireFrame(device, device->acquire_surface, &timestampNS, &rotation);
 
-    if (rc == SDL_CAMERA_FRAME_READY) { // new frame acquired!
-#if DEBUG_CAMERA
+    if (rc == SDL_CAMERA_FRAME_READY) {  // new frame acquired!
+        #if DEBUG_CAMERA
         SDL_Log("CAMERA: New frame available! pixels=%p pitch=%d", device->acquire_surface->pixels, device->acquire_surface->pitch);
-#endif
+        #endif
 
         if (device->drop_frames > 0) {
-#if DEBUG_CAMERA
+            #if DEBUG_CAMERA
             SDL_Log("CAMERA: Dropping an initial frame");
-#endif
+            #endif
             device->drop_frames--;
             device->ReleaseFrame(device, device->acquire_surface);
             device->acquire_surface->pixels = NULL;
             device->acquire_surface->pitch = 0;
         } else if (device->empty_output_surfaces.next == NULL) {
-// uhoh, no output frames available! Either the app is slow, or it forgot to release frames when done with them. Drop this new frame.
-#if DEBUG_CAMERA
+            // uhoh, no output frames available! Either the app is slow, or it forgot to release frames when done with them. Drop this new frame.
+            #if DEBUG_CAMERA
             SDL_Log("CAMERA: No empty output surfaces! Dropping frame!");
-#endif
+            #endif
             device->ReleaseFrame(device, device->acquire_surface);
             device->acquire_surface->pixels = NULL;
             device->acquire_surface->pitch = 0;
@@ -862,14 +871,14 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
             acquired = device->acquire_surface;
             slist->timestampNS = timestampNS;
         }
-    } else if (rc == SDL_CAMERA_FRAME_SKIP) { // no frame available yet; not an error.
-#if 0                                         // DEBUG_CAMERA
+    } else if (rc == SDL_CAMERA_FRAME_SKIP) {  // no frame available yet; not an error.
+        #if 0 //DEBUG_CAMERA
         SDL_Log("CAMERA: No frame available yet.");
-#endif
-    } else { // fatal error!
-#if DEBUG_CAMERA
+        #endif
+    } else {  // fatal error!
+        #if DEBUG_CAMERA
         SDL_Log("CAMERA: dev[%p] error AcquireFrame: %s", device, SDL_GetError());
-#endif
+        #endif
         failed = true;
     }
 
@@ -880,25 +889,25 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     if (failed) {
         SDL_assert(slist == NULL);
         SDL_assert(acquired == NULL);
-        SDL_CameraDisconnected(device); // doh.
-    } else if (acquired) {              // we have a new frame, scale/convert if necessary and queue it for the app!
+        SDL_CameraDisconnected(device);  // doh.
+    } else if (acquired) {  // we have a new frame, scale/convert if necessary and queue it for the app!
         SDL_assert(slist != NULL);
-        if (!device->needs_scaling && !device->needs_conversion) { // no conversion needed? Just move the pointer/pitch into the output surface.
-#if DEBUG_CAMERA
+        if (!device->needs_scaling && !device->needs_conversion) {  // no conversion needed? Just move the pointer/pitch into the output surface.
+            #if DEBUG_CAMERA
             SDL_Log("CAMERA: Frame is going through without conversion!");
-#endif
+            #endif
             output_surface->w = acquired->w;
             output_surface->h = acquired->h;
             output_surface->pixels = acquired->pixels;
             output_surface->pitch = acquired->pitch;
-        } else { // convert/scale into a different surface.
-#if DEBUG_CAMERA
+        } else {  // convert/scale into a different surface.
+            #if DEBUG_CAMERA
             SDL_Log("CAMERA: Frame is getting converted!");
-#endif
+            #endif
             SDL_Surface *srcsurf = acquired;
-            if (device->needs_scaling == -1) { // downscaling? Do it first.  -1: downscale, 0: no scaling, 1: upscale
+            if (device->needs_scaling == -1) {  // downscaling? Do it first.  -1: downscale, 0: no scaling, 1: upscale
                 SDL_Surface *dstsurf = device->needs_conversion ? device->conversion_surface : output_surface;
-                SDL_StretchSurface(srcsurf, NULL, dstsurf, NULL, SDL_SCALEMODE_NEAREST); // !!! FIXME: linear scale? letterboxing?
+                SDL_StretchSurface(srcsurf, NULL, dstsurf, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
                 srcsurf = dstsurf;
             }
             if (device->needs_conversion) {
@@ -908,8 +917,8 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
                                   dstsurf->format, dstsurf->pixels, dstsurf->pitch);
                 srcsurf = dstsurf;
             }
-            if (device->needs_scaling == 1) {                                                   // upscaling? Do it last.  -1: downscale, 0: no scaling, 1: upscale
-                SDL_StretchSurface(srcsurf, NULL, output_surface, NULL, SDL_SCALEMODE_NEAREST); // !!! FIXME: linear scale? letterboxing?
+            if (device->needs_scaling == 1) {  // upscaling? Do it last.  -1: downscale, 0: no scaling, 1: upscale
+                SDL_StretchSurface(srcsurf, NULL, output_surface, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
             }
 
             // we made a copy, so we can give the driver back its resources.
@@ -929,56 +938,56 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
         SDL_UnlockMutex(device->lock);
     }
 
-    return true; // always go on if not shutting down, even if device failed.
+    return true;  // always go on if not shutting down, even if device failed.
 }
 
 void SDL_CameraThreadShutdown(SDL_Camera *device)
 {
-    // device->FlushRecording(device);
-    // camera_driver.impl.ThreadDeinit(device);
-    // SDL_CameraThreadFinalize(device);
+    //device->FlushRecording(device);
+    //camera_driver.impl.ThreadDeinit(device);
+    //SDL_CameraThreadFinalize(device);
 }
 
 // Actual thread entry point, if driver didn't handle this itself.
 static int SDLCALL CameraThread(void *devicep)
 {
-    SDL_Camera *device = (SDL_Camera *)devicep;
+    SDL_Camera *device = (SDL_Camera *) devicep;
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: dev[%p] Start thread 'CameraThread'", devicep);
-#endif
+    #endif
 
-    RefPhysicalCamera(device); // this thread holds a reference.
+    RefPhysicalCamera(device);  // this thread holds a reference.
 
     SDL_assert(device != NULL);
     SDL_CameraThreadSetup(device);
 
     do {
         if (!device->WaitDevice(device)) {
-            SDL_CameraDisconnected(device); // doh. (but don't break out of the loop, just be a zombie for now!)
+            SDL_CameraDisconnected(device);  // doh. (but don't break out of the loop, just be a zombie for now!)
         }
     } while (SDL_CameraThreadIterate(device));
 
     SDL_CameraThreadShutdown(device);
 
-    UnrefPhysicalCamera(device); // this thread no longer holds a reference.
+    UnrefPhysicalCamera(device);  // this thread no longer holds a reference.
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: dev[%p] End thread 'CameraThread'", devicep);
-#endif
+    #endif
 
     return 0;
 }
 
 bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
 {
-    SDL_CameraSpec *appspec = &device->spec;              // the app wants this format.
-    const SDL_CameraSpec *devspec = &device->actual_spec; // the hardware is set to this format.
+    SDL_CameraSpec *appspec = &device->spec;           // the app wants this format.
+    const SDL_CameraSpec *devspec = &device->actual_spec;  // the hardware is set to this format.
 
-    SDL_assert(device->acquire_surface == NULL);            // shouldn't call this function twice on an opened camera!
-    SDL_assert(devspec->format != SDL_PIXELFORMAT_UNKNOWN); // fix the backend, it should have an actual format by now.
-    SDL_assert(devspec->width >= 0);                        // fix the backend, it should have an actual format by now.
-    SDL_assert(devspec->height >= 0);                       // fix the backend, it should have an actual format by now.
+    SDL_assert(device->acquire_surface == NULL);   // shouldn't call this function twice on an opened camera!
+    SDL_assert(devspec->format != SDL_PIXELFORMAT_UNKNOWN);  // fix the backend, it should have an actual format by now.
+    SDL_assert(devspec->width >= 0);  // fix the backend, it should have an actual format by now.
+    SDL_assert(devspec->height >= 0);  // fix the backend, it should have an actual format by now.
 
     if (appspec->width <= 0 || appspec->height <= 0) {
         appspec->width = devspec->width;
@@ -997,12 +1006,12 @@ bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
     if ((devspec->width == appspec->width) && (devspec->height == appspec->height)) {
         device->needs_scaling = 0;
     } else {
-        const Uint64 srcarea = ((Uint64)devspec->width) * ((Uint64)devspec->height);
-        const Uint64 dstarea = ((Uint64)appspec->width) * ((Uint64)appspec->height);
+        const Uint64 srcarea = ((Uint64) devspec->width) * ((Uint64) devspec->height);
+        const Uint64 dstarea = ((Uint64) appspec->width) * ((Uint64) appspec->height);
         if (dstarea <= srcarea) {
-            device->needs_scaling = -1; // downscaling (or changing to new aspect ratio with same area)
+            device->needs_scaling = -1;  // downscaling (or changing to new aspect ratio with same area)
         } else {
-            device->needs_scaling = 1; // upscaling
+            device->needs_scaling = 1;  // upscaling
         }
     }
 
@@ -1088,15 +1097,15 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
 
     SDL_zerop(closest);
 
-    if (device->num_specs == 0) { // device listed no specs! You get whatever you want!
+    if (device->num_specs == 0) {  // device listed no specs! You get whatever you want!
         if (spec) {
             SDL_copyp(closest, spec);
         }
         return;
-    } else if (!spec) { // nothing specifically requested, get the best format we can...
+    } else if (!spec) {  // nothing specifically requested, get the best format we can...
         // we sorted this into the "best" format order when adding the camera.
         SDL_copyp(closest, &device->all_specs[0]);
-    } else { // specific thing requested, try to get as close to that as possible...
+    } else {  // specific thing requested, try to get as close to that as possible...
         const int num_specs = device->num_specs;
         int wantw = spec->width;
         int wanth = spec->height;
@@ -1146,13 +1155,13 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
             const SDL_CameraSpec *thisspec = &device->all_specs[i];
             if ((thisspec->width == closest->width) && (thisspec->height == closest->height)) {
                 if (best_format == SDL_PIXELFORMAT_UNKNOWN) {
-                    best_format = thisspec->format; // spec list is sorted by what we consider "best" format, so unless we find an exact match later, first size match is the one!
+                    best_format = thisspec->format;  // spec list is sorted by what we consider "best" format, so unless we find an exact match later, first size match is the one!
                     best_colorspace = thisspec->colorspace;
                 }
                 if (thisspec->format == wantfmt) {
                     best_format = thisspec->format;
                     best_colorspace = thisspec->colorspace;
-                    break; // exact match, stop looking.
+                    break;  // exact match, stop looking.
                 }
             }
         }
@@ -1171,12 +1180,12 @@ static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec,
                 if ((thisspec->framerate_numerator == spec->framerate_numerator) && (thisspec->framerate_denominator == spec->framerate_denominator)) {
                     closest->framerate_numerator = thisspec->framerate_numerator;
                     closest->framerate_denominator = thisspec->framerate_denominator;
-                    break; // exact match, stop looking.
+                    break;  // exact match, stop looking.
                 }
 
                 const float thisfps = thisspec->framerate_denominator ? ((float)thisspec->framerate_numerator / thisspec->framerate_denominator) : 0.0f;
                 const float fpsdiff = SDL_fabsf(wantfps - thisfps);
-                if (fpsdiff < closestfps) { // this is a closest FPS? Take it until something closer arrives.
+                if (fpsdiff < closestfps) {  // this is a closest FPS? Take it until something closer arrives.
                     closestfps = fpsdiff;
                     closest->framerate_numerator = thisspec->framerate_numerator;
                     closest->framerate_denominator = thisspec->framerate_denominator;
@@ -1199,7 +1208,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
 
     if (device->hidden != NULL) {
         ReleaseCamera(device);
-        SDL_SetError("Camera already opened"); // we may remove this limitation at some point.
+        SDL_SetError("Camera already opened");  // we may remove this limitation at some point.
         return NULL;
     }
 
@@ -1213,14 +1222,14 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
     SDL_CameraSpec closest;
     ChooseBestCameraSpec(device, spec, &closest);
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: App wanted [(%dx%d) fmt=%s framerate=%d/%d], chose [(%dx%d) fmt=%s framerate=%d/%d]",
             spec ? spec->width : -1, spec ? spec->height : -1, spec ? SDL_GetPixelFormatName(spec->format) : "(null)", spec ? spec->framerate_numerator : -1, spec ? spec->framerate_denominator : -1,
             closest.width, closest.height, SDL_GetPixelFormatName(closest.format), closest.framerate_numerator, closest.framerate_denominator);
-#endif
+    #endif
 
     if (!camera_driver.impl.OpenDevice(device, &closest)) {
-        ClosePhysicalCamera(device); // in case anything is half-initialized.
+        ClosePhysicalCamera(device);  // in case anything is half-initialized.
         ReleaseCamera(device);
         return NULL;
     }
@@ -1245,7 +1254,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
     // Start the camera thread if necessary
     if (!camera_driver.impl.ProvidesOwnCallbackThread) {
         char threadname[64];
-        SDL_GetCameraThreadName(device, threadname, sizeof(threadname));
+        SDL_GetCameraThreadName(device, threadname, sizeof (threadname));
         device->thread = SDL_CreateThread(CameraThread, threadname, device);
         if (!device->thread) {
             ClosePhysicalCamera(device);
@@ -1255,11 +1264,11 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
         }
     }
 
-    RefPhysicalCamera(device); // we're open, hold a reference.
+    RefPhysicalCamera(device);  // we're open, hold a reference.
 
-    ReleaseCamera(device); // unlock, we're good to go!
+    ReleaseCamera(device);  // unlock, we're good to go!
 
-    return device; // currently there's no separation between physical and logical device.
+    return device;  // currently there's no separation between physical and logical device.
 }
 
 SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
@@ -1268,12 +1277,12 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
         *timestampNS = 0;
     }
 
-    CHECK_PARAM (!camera) {
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
         return NULL;
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
 
     ObtainPhysicalCameraObj(device);
 
@@ -1299,8 +1308,8 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
             *timestampNS = slist->timestampNS;
         }
         result = slist->surface;
-        slistprev->next = slist->next;                       // remove from filled list.
-        slist->next = device->app_held_output_surfaces.next; // add to app_held list.
+        slistprev->next = slist->next;  // remove from filled list.
+        slist->next = device->app_held_output_surfaces.next;  // add to app_held list.
         device->app_held_output_surfaces.next = slist;
     }
 
@@ -1315,7 +1324,7 @@ void SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surface *frame)
         return;
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
 
     SurfaceList *slistprev = &device->app_held_output_surfaces;
@@ -1355,12 +1364,12 @@ SDL_CameraID SDL_GetCameraID(SDL_Camera *camera)
 {
     SDL_CameraID result;
 
-    CHECK_PARAM (!camera) {
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
         return 0;
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
     result = device->instance_id;
     ReleaseCamera(device);
@@ -1372,12 +1381,12 @@ SDL_PropertiesID SDL_GetCameraProperties(SDL_Camera *camera)
 {
     SDL_PropertiesID result;
 
-    CHECK_PARAM (!camera) {
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
         return 0;
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
     if (device->props == 0) {
         device->props = SDL_CreateProperties();
@@ -1392,12 +1401,12 @@ SDL_CameraPermissionState SDL_GetCameraPermissionState(SDL_Camera *camera)
 {
     SDL_CameraPermissionState result;
 
-    CHECK_PARAM (!camera) {
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
         return SDL_CAMERA_PERMISSION_STATE_DENIED;
     }
 
-    SDL_Camera *device = camera; // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
     result = device->permission;
     ReleaseCamera(device);
@@ -1405,10 +1414,11 @@ SDL_CameraPermissionState SDL_GetCameraPermissionState(SDL_Camera *camera)
     return result;
 }
 
+
 static void CompleteCameraEntryPoints(void)
 {
-// this doesn't currently fill in stub implementations, it just asserts the backend filled them all in.
-#define FILL_STUB(x) SDL_assert(camera_driver.impl.x != NULL)
+    // this doesn't currently fill in stub implementations, it just asserts the backend filled them all in.
+    #define FILL_STUB(x) SDL_assert(camera_driver.impl.x != NULL)
     FILL_STUB(DetectDevices);
     FILL_STUB(OpenDevice);
     FILL_STUB(CloseDevice);
@@ -1416,12 +1426,12 @@ static void CompleteCameraEntryPoints(void)
     FILL_STUB(ReleaseFrame);
     FILL_STUB(FreeDeviceHandle);
     FILL_STUB(Deinitialize);
-#undef FILL_STUB
+    #undef FILL_STUB
 }
 
 void SDL_QuitCamera(void)
 {
-    if (!camera_driver.name) { // not initialized?!
+    if (!camera_driver.name) {  // not initialized?!
         return;
     }
 
@@ -1453,11 +1463,11 @@ void SDL_QuitCamera(void)
 // Physical camera objects are only destroyed when removed from the device hash.
 static void SDLCALL DestroyCameraHashItem(void *userdata, const void *key, const void *value)
 {
-    SDL_Camera *device = (SDL_Camera *)value;
+    SDL_Camera *device = (SDL_Camera *) value;
 
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("DESTROYING CAMERA '%s'", device->name);
-#endif
+    #endif
 
     ClosePhysicalCamera(device);
     camera_driver.impl.FreeDeviceHandle(device);
@@ -1473,7 +1483,7 @@ bool SDL_CameraInit(const char *driver_name)
         SDL_QuitCamera(); // shutdown driver if already running.
     }
 
-    SDL_RWLock *device_hash_lock = SDL_CreateRWLock(); // create this early, so if it fails we don't have to tear down the whole camera subsystem.
+    SDL_RWLock *device_hash_lock = SDL_CreateRWLock();  // create this early, so if it fails we don't have to tear down the whole camera subsystem.
     if (!device_hash_lock) {
         return false;
     }
@@ -1562,7 +1572,7 @@ bool SDL_CameraInit(const char *driver_name)
         SDL_zero(camera_driver);
         SDL_DestroyRWLock(device_hash_lock);
         SDL_DestroyHashTable(device_hash);
-        return false; // No driver was available, so fail.
+        return false;  // No driver was available, so fail.
     }
 
     CompleteCameraEntryPoints();
@@ -1582,12 +1592,12 @@ void SDL_UpdateCamera(void)
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
 
     if (!pending_events) {
-        return; // nothing to do, check next time.
+        return;  // nothing to do, check next time.
     }
 
     // okay, let's take this whole list of events so we can dump the lock, and new ones can queue up for a later update.
     SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
-    pending_events = camera_driver.pending_events.next; // in case this changed...
+    pending_events = camera_driver.pending_events.next;  // in case this changed...
     camera_driver.pending_events.next = NULL;
     camera_driver.pending_events_tail = &camera_driver.pending_events;
     SDL_UnlockRWLock(camera_driver.device_hash_lock);
@@ -1599,9 +1609,10 @@ void SDL_UpdateCamera(void)
             SDL_Event event;
             SDL_zero(event);
             event.type = i->type;
-            event.cdevice.which = (Uint32)i->devid;
+            event.cdevice.which = (Uint32) i->devid;
             SDL_PushEvent(&event);
         }
         SDL_free(i);
     }
 }
+

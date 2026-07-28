@@ -23,10 +23,11 @@
 #ifdef SDL_TIMER_VITA
 
 #include "../SDL_timer_c.h"
-#include <psp2/kernel/processmgr.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <time.h>
+#include <sys/time.h>
+#include <psp2/kernel/processmgr.h>
+
 
 Uint64 SDL_GetPerformanceCounter(void)
 {

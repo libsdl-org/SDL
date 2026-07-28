@@ -43,7 +43,7 @@ static bool DISKAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, i
         return false;
     }
 #ifdef DEBUG_AUDIO
-    SDL_Log("DISKAUDIO: Wrote %d bytes of audio data", (int)written);
+    SDL_Log("DISKAUDIO: Wrote %d bytes of audio data", (int) written);
 #endif
     return true;
 }
@@ -105,7 +105,7 @@ static const char *AudioFormatString(SDL_AudioFormat fmt)
     const char *str = SDL_GetAudioFormatName(fmt);
     SDL_assert(str);
     if (SDL_strncmp(str, "SDL_AUDIO_", 10) == 0) {
-        str += 10; // so we return "S8" instead of "SDL_AUDIO_S8", etc.
+        str += 10;  // so we return "S8" instead of "SDL_AUDIO_S8", etc.
     }
     return str;
 }
@@ -115,7 +115,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     bool recording = device->recording;
     const char *fname = get_filename(recording);
 
-    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     }
@@ -150,7 +150,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
                     recording ? "Reading from" : "Writing to", fname,
                     AudioFormatString(device->spec.format), device->spec.channels, device->spec.freq);
 
-    return true; // We're ready to rock and roll. :-)
+    return true;  // We're ready to rock and roll. :-)
 }
 
 static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)

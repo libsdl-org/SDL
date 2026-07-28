@@ -78,7 +78,7 @@ static const Uint8 mix8[] = {
 };
 
 // The volume ranges from 0 - 128
-#define MIX_MAXVOLUME             128
+#define MIX_MAXVOLUME 128
 #define ADJUST_VOLUME(type, s, v) ((s) = (type)(((s) * (v)) / MIX_MAXVOLUME))
 #define ADJUST_VOLUME_U8(s, v)    ((s) = (Uint8)(((((s) - 128) * (v)) / MIX_MAXVOLUME) + 128))
 

@@ -27,9 +27,9 @@
 
 #include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
-#include "SDL_hidapi_nintendo.h"
-#include "SDL_hidapi_rumble.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_nintendo.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
 
@@ -60,8 +60,8 @@
 #define SWITCH_GYRO_SCALE  14.2842f
 #define SWITCH_ACCEL_SCALE 4096.f
 
-#define SWITCH_GYRO_SCALE_MULT  936.0f
-#define SWITCH_ACCEL_SCALE_MULT 4.0f
+#define SWITCH_GYRO_SCALE_MULT    936.0f
+#define SWITCH_ACCEL_SCALE_MULT   4.0f
 
 enum
 {
@@ -1017,7 +1017,8 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     }
 
     // If we still don't have calibration data, return false
-    if (pLeftStickCal == NULL || pRightStickCal == NULL) {
+    if (pLeftStickCal == NULL || pRightStickCal == NULL)
+    {
         return false;
     }
 
@@ -1231,7 +1232,7 @@ static ESwitchDeviceInfoControllerType ReadJoyConControllerType(SDL_HIDAPI_Devic
         ctx->m_bSyncWrite = true;
         ctx->m_nMaxWriteAttempts = GetMaxWriteAttempts(device);
 
-        for (;;) {
+        for ( ; ; ) {
             ++attempts;
             if (device->is_bluetooth) {
                 SwitchSubcommandInputPacket_t *reply = NULL;
@@ -2847,19 +2848,19 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
-                           SDL_EnhancedReportsChanged, ctx);
+                        SDL_EnhancedReportsChanged, ctx);
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
         ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
         SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED,
-                               SDL_HomeLEDHintChanged, ctx);
+                            SDL_HomeLEDHintChanged, ctx);
     } else {
         SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED,
-                               SDL_HomeLEDHintChanged, ctx);
+                            SDL_HomeLEDHintChanged, ctx);
     }
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
-                           SDL_PlayerLEDHintChanged, ctx);
+                        SDL_PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
 

@@ -23,9 +23,9 @@
 #ifndef SDL_windowshaptic_c_h_
 #define SDL_windowshaptic_c_h_
 
+#include "../SDL_syshaptic.h"
 #include "../../core/windows/SDL_directx.h"
 #include "../../core/windows/SDL_xinput.h"
-#include "../SDL_syshaptic.h"
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
@@ -40,7 +40,7 @@ struct haptic_hwdata
 #ifdef SDL_HAPTIC_DINPUT
     LPDIRECTINPUTDEVICE8 device;
 #endif
-    DWORD axes[3];    // Axes to use.
+    DWORD axes[3];        // Axes to use.
     bool is_joystick; // Device is loaded as joystick.
     SDL_Thread *thread;
     SDL_Mutex *mutex;

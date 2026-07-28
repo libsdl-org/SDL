@@ -23,16 +23,16 @@
 #ifdef SDL_AUDIO_DRIVER_VITA
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "../SDL_audiodev_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_vitaaudio.h"
 
-#include <psp2/audioin.h>
-#include <psp2/audioout.h>
 #include <psp2/kernel/threadmgr.h>
+#include <psp2/audioout.h>
+#include <psp2/audioin.h>
 
 #define SCE_AUDIO_SAMPLE_ALIGN(s) (((s) + 63) & ~63)
 #define SCE_AUDIO_MAX_VOLUME      0x8000

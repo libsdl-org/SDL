@@ -24,9 +24,9 @@
 
 #ifdef SDL_HAVE_YUV
 
+#include "SDL_yuv_sw_c.h"
 #include "../video/SDL_surface_c.h"
 #include "../video/SDL_yuv_c.h"
-#include "SDL_yuv_sw_c.h"
 
 SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspace colorspace, int w, int h)
 {
@@ -105,7 +105,7 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
 }
 
 bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels,
-                                  int *pitch)
+                                 int *pitch)
 {
     *pixels = swdata->planes[0];
     *pitch = swdata->pitches[0];
@@ -113,7 +113,7 @@ bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels,
 }
 
 bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                             const void *pixels, int pitch)
+                            const void *pixels, int pitch)
 {
     switch (swdata->format) {
     case SDL_PIXELFORMAT_YV12:
@@ -221,9 +221,9 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
 }
 
 bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                   const Uint8 *Yplane, int Ypitch,
-                                   const Uint8 *Uplane, int Upitch,
-                                   const Uint8 *Vplane, int Vpitch)
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch)
 {
     const Uint8 *src;
     Uint8 *dst;
@@ -275,8 +275,8 @@ bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *re
 }
 
 bool SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *UVplane, int UVpitch)
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch)
 {
     const Uint8 *src;
     Uint8 *dst;
@@ -309,7 +309,7 @@ bool SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rec
 }
 
 bool SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                           void **pixels, int *pitch)
+                          void **pixels, int *pitch)
 {
     switch (swdata->format) {
     case SDL_PIXELFORMAT_YV12:

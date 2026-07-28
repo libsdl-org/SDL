@@ -22,16 +22,16 @@
 
 #if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2))
 
-#include "../../SDL_hints_c.h"
+#include "SDL_uikitopengles.h"
+#import "SDL_uikitopenglview.h"
+#include "SDL_uikitmodes.h"
+#include "SDL_uikitwindow.h"
+#include "SDL_uikitevents.h"
+#include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../power/uikit/SDL_syspower.h"
-#include "../SDL_sysvideo.h"
-#include "SDL_uikitevents.h"
-#include "SDL_uikitmodes.h"
-#include "SDL_uikitopengles.h"
-#import "SDL_uikitopenglview.h"
-#include "SDL_uikitwindow.h"
+#include "../../SDL_hints_c.h"
 #include <dlfcn.h>
 
 @interface SDLEAGLContext : EAGLContext
@@ -157,7 +157,7 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         int srgb = _this->gl_config.framebuffer_srgb_capable;
         const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
         if (srgbhint && *srgbhint) {
-            srgb = SDL_GetStringBoolean(srgbhint, false) ? 1 : 0; // there is no "skip" here, since initWithFrame expects it, so we'll treat it as false.
+            srgb = SDL_GetStringBoolean(srgbhint, false) ? 1 : 0;  // there is no "skip" here, since initWithFrame expects it, so we'll treat it as false.
         }
 
         // construct our view, passing in SDL's OpenGL configuration data

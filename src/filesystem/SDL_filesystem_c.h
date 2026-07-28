@@ -26,3 +26,4 @@ extern void SDL_InitFilesystem(void);
 extern void SDL_QuitFilesystem(void);
 
 #endif
+

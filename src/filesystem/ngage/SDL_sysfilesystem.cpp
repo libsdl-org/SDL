@@ -54,8 +54,10 @@ void NGAGE_GetAppPath(char *path)
     path[utf8Path.Length()] = '\0';
 
     // Replace backslashes with forward slashes.
-    for (int i = 0; i < utf8Path.Length(); i++) {
-        if (path[i] == '\\') {
+    for (int i = 0; i < utf8Path.Length(); i++)
+    {
+        if (path[i] == '\\')
+        {
             path[i] = '/';
         }
     }

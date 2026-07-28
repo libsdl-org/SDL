@@ -30,19 +30,19 @@
 
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_mouse_c.h"
+#include "SDL_waylandvideo.h"
 #include "../SDL_pixels_c.h"
 #include "SDL_waylandevents_c.h"
-#include "SDL_waylandvideo.h"
 
+#include "wayland-cursor.h"
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandshmbuffer.h"
-#include "wayland-cursor.h"
 
 #include "cursor-shape-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 #include "pointer-warp-v1-client-protocol.h"
 #include "tablet-v2-client-protocol.h"
-#include "viewporter-client-protocol.h"
 
 #include "../../SDL_hints_c.h"
 
@@ -895,7 +895,8 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
     SDL_WaylandSeat *seat;
 
     // Stop any frame callbacks and detach buffers associated with the cursor being destroyed.
-    wl_list_for_each (seat, &video_data->seat_list, link) {
+    wl_list_for_each (seat, &video_data->seat_list, link)
+    {
         if (seat->pointer.cursor_state.current_cursor == d) {
             Wayland_CursorStateDestroyFrameCallback(&seat->pointer.cursor_state);
 
@@ -924,7 +925,7 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
 
     if (d->is_system_cursor) {
         Wayland_CachedSystemCursor *c, *temp;
-        wl_list_for_each_safe (c, temp, &d->cursor_data.system.cursor_buffer_cache, node) {
+        wl_list_for_each_safe(c, temp, &d->cursor_data.system.cursor_buffer_cache, node) {
             SDL_free(c);
         }
     } else {
@@ -1165,6 +1166,7 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
                 hot_x = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_x / focus->pointer_scale.x);
                 hot_y = (int)SDL_lround((double)cursor_data->cursor_data.custom.hot_y / focus->pointer_scale.y);
             }
+
         }
 
         state->current_cursor = cursor_data;
@@ -1284,7 +1286,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
         }
 
         SDL_WaylandPenTool *tool;
-        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+        wl_list_for_each(tool, &seat->tablet.tool_list, link) {
             obj.wl_tool = tool->wltool;
             obj.is_pointer = false;
 

@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL3/SDL_revision.h"
 #include "SDL_internal.h"
+#include "SDL3/SDL_revision.h"
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #include "core/windows/SDL_windows.h"
@@ -44,9 +44,7 @@
 #include "camera/SDL_camera_c.h"
 #include "cpuinfo/SDL_cpuinfo_c.h"
 #include "events/SDL_events_c.h"
-#include "filesystem/SDL_filesystem_c.h"
 #include "haptic/SDL_haptic_c.h"
-#include "io/SDL_asyncio_c.h"
 #include "joystick/SDL_gamepad_c.h"
 #include "joystick/SDL_joystick_c.h"
 #include "render/SDL_sysrender.h"
@@ -57,6 +55,8 @@
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
+#include "filesystem/SDL_filesystem_c.h"
+#include "io/SDL_asyncio_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
@@ -105,9 +105,9 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
     emscripten_cancel_main_loop();   // this should "kill" the app.
     emscripten_force_exit(exitcode); // this should "kill" the app.
     exit(exitcode);
-#elif defined(SDL_PLATFORM_HAIKU) // Haiku has _Exit, but it's not marked noreturn.
+#elif defined(SDL_PLATFORM_HAIKU)  // Haiku has _Exit, but it's not marked noreturn.
     _exit(exitcode);
-#elif defined(HAVE__EXIT)         // Upper case _Exit()
+#elif defined(HAVE__EXIT) // Upper case _Exit()
     _Exit(exitcode);
 #else
     _exit(exitcode);
@@ -144,7 +144,7 @@ static bool SDL_ValidMetadataProperty(const char *name)
 
 bool SDL_SetAppMetadataProperty(const char *name, const char *value)
 {
-    CHECK_PARAM (!SDL_ValidMetadataProperty(name)) {
+    CHECK_PARAM(!SDL_ValidMetadataProperty(name)) {
         return SDL_InvalidParamError("name");
     }
 
@@ -153,7 +153,7 @@ bool SDL_SetAppMetadataProperty(const char *name, const char *value)
 
 const char *SDL_GetAppMetadataProperty(const char *name)
 {
-    CHECK_PARAM (!SDL_ValidMetadataProperty(name)) {
+    CHECK_PARAM(!SDL_ValidMetadataProperty(name)) {
         SDL_InvalidParamError("name");
         return NULL;
     }
@@ -179,6 +179,7 @@ const char *SDL_GetAppMetadataProperty(const char *name)
     }
     return value;
 }
+
 
 // The initialized subsystems
 #ifdef SDL_MAIN_NEEDED
@@ -332,28 +333,20 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     MAIN_THREAD_EM_ASM({
         // make sure this generic table to hang SDL-specific Javascript stuff is available at init time.
-        if (typeof(Module['SDL3']) == = 'undefined') {
+        if (typeof(Module['SDL3']) === 'undefined') {
             Module['SDL3'] = {};
         }
 
         var SDL3 = Module['SDL3'];
-#if defined(__wasm32__)
-        if (typeof(SDL3.JSVarToCPtr) == = 'undefined') {
-            SDL3.JSVarToCPtr = function(v) { return v; };
-        }
-        if (typeof(SDL3.CPtrToHeap32Index) == = 'undefined') {
-            SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; };
-        }
-#elif defined(__wasm64__)
-        if (typeof(SDL3.JSVarToCPtr) == = 'undefined') {
-            SDL3.JSVarToCPtr = function(v) { return BigInt(v); };
-        }
-        if (typeof(SDL3.CPtrToHeap32Index) == = 'undefined') {
-            SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); };
-        }
-#else
-#error Please define your platform.
-#endif
+        #if defined(__wasm32__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return v; }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; }; }
+        #elif defined(__wasm64__)
+        if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return BigInt(v); }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); }; }
+        #else
+        #error Please define your platform.
+        #endif
     });
 #endif
 
@@ -576,11 +569,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     return SDL_ClearError();
 
 quit_and_error:
-{
-    SDL_PushError();
-    SDL_QuitSubSystem(flags_initialized);
-    SDL_PopError();
-}
+    {
+        SDL_PushError();
+        SDL_QuitSubSystem(flags_initialized);
+        SDL_PopError();
+    }
     return false;
 }
 

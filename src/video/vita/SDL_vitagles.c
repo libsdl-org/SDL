@@ -37,7 +37,7 @@
         err = eglGetError();                   \
         if (err != EGL_SUCCESS) {              \
             SDL_SetError("EGL error %d", err); \
-            return NULL;                       \
+            return NULL;                          \
         }                                      \
     } while (0)
 

@@ -23,8 +23,8 @@
 #ifndef SDL_x11video_h_
 #define SDL_x11video_h_
 
-#include "../../events/SDL_keymap_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_keymap_c.h"
 
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
@@ -38,8 +38,8 @@
 #include "SDL_x11mouse.h"
 #include "SDL_x11opengl.h"
 #include "SDL_x11settings.h"
-#include "SDL_x11vulkan.h"
 #include "SDL_x11window.h"
+#include "SDL_x11vulkan.h"
 
 // Private display data
 
@@ -67,8 +67,7 @@ struct SDL_VideoData
     bool net_wm;
 
     // Useful atoms
-    struct
-    {
+    struct {
         Atom WM_PROTOCOLS;
         Atom WM_DELETE_WINDOW;
         Atom WM_TAKE_FOCUS;

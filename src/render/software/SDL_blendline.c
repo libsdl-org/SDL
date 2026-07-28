@@ -22,9 +22,9 @@
 
 #ifdef SDL_VIDEO_RENDER_SW
 
+#include "SDL_draw.h"
 #include "SDL_blendline.h"
 #include "SDL_blendpoint.h"
-#include "SDL_draw.h"
 
 static void SDL_BlendLine_RGB2(SDL_Surface *dst, int x1, int y1, int x2, int y2,
                                SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
@@ -640,8 +640,8 @@ static void SDL_BlendLine_RGBA4(SDL_Surface *dst, int x1, int y1, int x2, int y2
 }
 
 static void SDL_BlendLine_XRGB8888(SDL_Surface *dst, int x1, int y1, int x2, int y2,
-                                   SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
-                                   bool draw_end)
+                                 SDL_BlendMode blendMode, Uint8 _r, Uint8 _g, Uint8 _b, Uint8 _a,
+                                 bool draw_end)
 {
     unsigned r, g, b, a, inva;
 
@@ -923,7 +923,7 @@ bool SDL_BlendLine(SDL_Surface *dst, int x1, int y1, int x2, int y2, SDL_BlendMo
 {
     BlendLineFunc func;
 
-    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendLine(): dst");
     }
 

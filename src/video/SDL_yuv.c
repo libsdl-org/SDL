@@ -25,6 +25,7 @@
 
 #include "yuv2rgb/yuv_rgb.h"
 
+
 #ifdef SDL_HAVE_YUV
 static bool IsPlanar2x2Format(SDL_PixelFormat format);
 #endif
@@ -45,7 +46,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             if (!SDL_size_mul_check_overflow(w, h, &s1)) {
                 return SDL_SetError("width * height would overflow");
             }
-            sz_plane = (int)s1;
+            sz_plane = (int) s1;
         }
 
         {
@@ -62,7 +63,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             if (!SDL_size_mul_check_overflow(s1, s2, &s3)) {
                 return SDL_SetError("width * height would overflow");
             }
-            sz_plane_chroma = (int)s3;
+            sz_plane_chroma = (int) s3;
         }
     } else {
         /* sz_plane_packed == ((w + 1) / 2) * h; */
@@ -74,7 +75,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         if (!SDL_size_mul_check_overflow(s1, h, &s2)) {
             return SDL_SetError("width * height would overflow");
         }
-        sz_plane_packed = (int)s2;
+        sz_plane_packed = (int) s2;
     }
 
     switch (format) {
@@ -104,15 +105,15 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
 
         if (pitch) {
             /* pitch == ((w + 1) / 2) * 4; */
-            size_t p1, p2;
-            if (!SDL_size_add_check_overflow(w, 1, &p1)) {
-                return SDL_SetError("width + 1 would overflow");
-            }
-            p1 = p1 / 2;
-            if (!SDL_size_mul_check_overflow(p1, 4, &p2)) {
-                return SDL_SetError("width * 4 would overflow");
-            }
-            *pitch = p2;
+           size_t p1, p2;
+           if (!SDL_size_add_check_overflow(w, 1, &p1)) {
+               return SDL_SetError("width + 1 would overflow");
+           }
+           p1 = p1 / 2;
+           if (!SDL_size_mul_check_overflow(p1, 4, &p2)) {
+               return SDL_SetError("width * 4 would overflow");
+           }
+           *pitch = p2;
         }
 
         if (size) {
@@ -121,7 +122,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             if (!SDL_size_mul_check_overflow(sz_plane_packed, 4, &s1)) {
                 return SDL_SetError("plane * 4 would overflow");
             }
-            *size = (int)s1;
+            *size = (int) s1;
         }
         break;
 
@@ -140,7 +141,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             if (!SDL_size_add_check_overflow(s1, sz_plane_chroma, &s2)) {
                 return SDL_SetError("Y + U + V would overflow");
             }
-            *size = (int)s2;
+            *size = (int) s2;
         }
         break;
 
@@ -723,9 +724,9 @@ static bool SDL_ConvertPixels_XRGB8888_to_YUV(int width, int height, const void 
 
     const struct RGB2YUVFactors *cvt = &RGB2YUVFactorTables[yuv_type];
 
-#define MAKE_Y(r, g, b) (Uint8) SDL_clamp(((int)(cvt->y[0] * (r) + cvt->y[1] * (g) + cvt->y[2] * (b) + 0.5f) + cvt->y_offset), 0, 255)
-#define MAKE_U(r, g, b) (Uint8) SDL_clamp(((int)(cvt->u[0] * (r) + cvt->u[1] * (g) + cvt->u[2] * (b) + 0.5f) + 128), 0, 255)
-#define MAKE_V(r, g, b) (Uint8) SDL_clamp(((int)(cvt->v[0] * (r) + cvt->v[1] * (g) + cvt->v[2] * (b) + 0.5f) + 128), 0, 255)
+#define MAKE_Y(r, g, b) (Uint8)SDL_clamp(((int)(cvt->y[0] * (r) + cvt->y[1] * (g) + cvt->y[2] * (b) + 0.5f) + cvt->y_offset), 0, 255)
+#define MAKE_U(r, g, b) (Uint8)SDL_clamp(((int)(cvt->u[0] * (r) + cvt->u[1] * (g) + cvt->u[2] * (b) + 0.5f) + 128), 0, 255)
+#define MAKE_V(r, g, b) (Uint8)SDL_clamp(((int)(cvt->v[0] * (r) + cvt->v[1] * (g) + cvt->v[2] * (b) + 0.5f) + 128), 0, 255)
 
 #define READ_2x2_PIXELS                                                                                     \
     const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];                                                    \
@@ -1073,7 +1074,7 @@ static bool SDL_ConvertPixels_XBGR2101010_to_P010(int width, int height, const v
     for (j = 0; j < height; j++) {
         for (i = 0; i < width; i++) {
             const Uint32 p1 = ((const Uint32 *)curr_row)[i];
-            const Uint32 r = (p1 >> 0) & 0x03ff;
+            const Uint32 r = (p1 >>  0) & 0x03ff;
             const Uint32 g = (p1 >> 10) & 0x03ff;
             const Uint32 b = (p1 >> 20) & 0x03ff;
             *plane_y++ = MAKE_Y(r, g, b);
@@ -1673,7 +1674,7 @@ static bool SDL_ConvertPixels_PackUVPlanes_to_NV(int width, int height, const vo
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_PackUVPlanes_to_NV_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+      return SDL_ConvertPixels_PackUVPlanes_to_NV_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
     }
 #endif
     return SDL_ConvertPixels_PackUVPlanes_to_NV_std(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
@@ -1683,7 +1684,7 @@ static bool SDL_ConvertPixels_SplitNV_to_UVPlanes(int width, int height, const v
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
+      return SDL_ConvertPixels_SplitNV_to_UVPlanes_SSE2(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
     }
 #endif
     return SDL_ConvertPixels_SplitNV_to_UVPlanes_std(width, height, src, src_pitch, dst, dst_pitch, reverseUV);
@@ -1693,7 +1694,7 @@ static bool SDL_ConvertPixels_SwapNV(int width, int height, const void *src, int
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_SwapNV_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_SwapNV_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_SwapNV_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2201,7 +2202,7 @@ static bool SDL_ConvertPixels_YUY2_to_UYVY(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_YUY2_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_YUY2_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_YUY2_to_UYVY_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2211,7 +2212,7 @@ static bool SDL_ConvertPixels_YUY2_to_YVYU(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_YUY2_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_YUY2_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_YUY2_to_YVYU_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2221,7 +2222,7 @@ static bool SDL_ConvertPixels_UYVY_to_YUY2(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_UYVY_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_UYVY_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_UYVY_to_YUY2_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2231,7 +2232,7 @@ static bool SDL_ConvertPixels_UYVY_to_YVYU(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_UYVY_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_UYVY_to_YVYU_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_UYVY_to_YVYU_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2241,7 +2242,7 @@ static bool SDL_ConvertPixels_YVYU_to_YUY2(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_YVYU_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_YVYU_to_YUY2_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_YVYU_to_YUY2_std(width, height, src, src_pitch, dst, dst_pitch);
@@ -2251,15 +2252,15 @@ static bool SDL_ConvertPixels_YVYU_to_UYVY(int width, int height, const void *sr
 {
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
-        return SDL_ConvertPixels_YVYU_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
+      return SDL_ConvertPixels_YVYU_to_UYVY_SSE2(width, height, src, src_pitch, dst, dst_pitch);
     }
 #endif
     return SDL_ConvertPixels_YVYU_to_UYVY_std(width, height, src, src_pitch, dst, dst_pitch);
 }
 
 static bool SDL_ConvertPixels_Packed4_to_Packed4(int width, int height,
-                                                 SDL_PixelFormat src_format, const void *src, int src_pitch,
-                                                 SDL_PixelFormat dst_format, void *dst, int dst_pitch)
+                                                SDL_PixelFormat src_format, const void *src, int src_pitch,
+                                                SDL_PixelFormat dst_format, void *dst, int dst_pitch)
 {
     switch (src_format) {
     case SDL_PIXELFORMAT_YUY2:

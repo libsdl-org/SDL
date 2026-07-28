@@ -110,7 +110,7 @@ void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const *const *WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const * const *WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -122,10 +122,10 @@ char const *const *WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint
 }
 
 bool WIN_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                              SDL_Window *window,
-                              VkInstance instance,
-                              const struct VkAllocationCallbacks *allocator,
-                              VkSurfaceKHR *surface)
+                             SDL_Window *window,
+                             VkInstance instance,
+                             const struct VkAllocationCallbacks *allocator,
+                             VkSurfaceKHR *surface)
 {
     SDL_WindowData *windowData = window->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
@@ -168,9 +168,9 @@ void WIN_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 }
 
 bool WIN_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
-                                       VkInstance instance,
-                                       VkPhysicalDevice physicalDevice,
-                                       Uint32 queueFamilyIndex)
+                                           VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
         (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;

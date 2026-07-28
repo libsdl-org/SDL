@@ -40,7 +40,7 @@ void SDL_DestroyMutex(SDL_Mutex *mutex)
     SDL_free(mutex);
 }
 
-void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS // clang doesn't know about NULL mutexes
+void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes
 {
     if (mutex) {
         RecursiveLock_Lock(&mutex->lock);

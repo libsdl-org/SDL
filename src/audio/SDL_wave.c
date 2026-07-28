@@ -33,8 +33,8 @@ SDL_COMPILE_TIME_ASSERT(int_size, sizeof(int) == sizeof(Sint32));
 
 // Microsoft WAVE file loading routines
 
-#include "SDL_sysaudio.h"
 #include "SDL_wave.h"
+#include "SDL_sysaudio.h"
 
 /* Reads the value stored at the location of the f1 pointer, multiplies it
  * with the second argument and then stores the result to f1.
@@ -1713,7 +1713,7 @@ static bool WaveCheckFormat(WaveFile *file, size_t datalength)
 
         // All supported formats must have a proper block size.
         if (format->blockalign == 0) {
-            format->blockalign = 1; // force it to 1 if it was unset.
+            format->blockalign = 1;  // force it to 1 if it was unset.
         }
 
         /* If the fact chunk is valid and the appropriate hint is set, the
@@ -1775,7 +1775,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
     int result;
     Uint32 chunkcount = 0;
     Uint32 chunkcountlimit = 10000;
-    const Sint64 flen = SDL_GetIOSize(src); // this might be -1 if the IOStream can't determine the total size.
+    const Sint64 flen = SDL_GetIOSize(src);   // this might be -1 if the IOStream can't determine the total size.
     const char *hint;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
     bool RIFFlengthknown = false;
@@ -1889,7 +1889,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
                size. This also means a malicious file can't allocate 4 gigabytes
                for the chunks without actually supplying a 4 gigabyte file. */
             if ((flen > 0) && ((chunk->position + chunk->length) > flen)) {
-                chunk->length = (Uint32)(flen - chunk->position);
+                chunk->length = (Uint32) (flen - chunk->position);
             }
 
             /* Only use the first data chunk. Handling the wavl list madness
@@ -2101,19 +2101,19 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
     }
 
     // Make sure we are passed a valid data source
-    CHECK_PARAM (!src) {
+    CHECK_PARAM(!src) {
         SDL_InvalidParamError("src");
         goto done;
     }
-    CHECK_PARAM (!spec) {
+    CHECK_PARAM(!spec) {
         SDL_InvalidParamError("spec");
         goto done;
     }
-    CHECK_PARAM (!audio_buf) {
+    CHECK_PARAM(!audio_buf) {
         SDL_InvalidParamError("audio_buf");
         goto done;
     }
-    CHECK_PARAM (!audio_len) {
+    CHECK_PARAM(!audio_len) {
         SDL_InvalidParamError("audio_len");
         goto done;
     }
@@ -2160,3 +2160,4 @@ bool SDL_LoadWAV(const char *path, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint3
     }
     return SDL_LoadWAV_IO(stream, true, spec, audio_buf, audio_len);
 }
+

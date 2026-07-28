@@ -22,11 +22,11 @@
 
 #ifdef SDL_VIDEO_RENDER_SW
 
-#include "SDL_blendfillrect.h"
 #include "SDL_draw.h"
+#include "SDL_blendfillrect.h"
 
 static bool SDL_BlendFillRect_RGB555(SDL_Surface *dst, const SDL_Rect *rect,
-                                     SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                    SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
@@ -55,7 +55,7 @@ static bool SDL_BlendFillRect_RGB555(SDL_Surface *dst, const SDL_Rect *rect,
 }
 
 static bool SDL_BlendFillRect_RGB565(SDL_Surface *dst, const SDL_Rect *rect,
-                                     SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                    SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
@@ -84,7 +84,7 @@ static bool SDL_BlendFillRect_RGB565(SDL_Surface *dst, const SDL_Rect *rect,
 }
 
 static bool SDL_BlendFillRect_XRGB8888(SDL_Surface *dst, const SDL_Rect *rect,
-                                       SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                    SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
@@ -113,7 +113,7 @@ static bool SDL_BlendFillRect_XRGB8888(SDL_Surface *dst, const SDL_Rect *rect,
 }
 
 static bool SDL_BlendFillRect_ARGB8888(SDL_Surface *dst, const SDL_Rect *rect,
-                                       SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                      SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     unsigned inva = 0xff - a;
 
@@ -142,7 +142,7 @@ static bool SDL_BlendFillRect_ARGB8888(SDL_Surface *dst, const SDL_Rect *rect,
 }
 
 static bool SDL_BlendFillRect_RGB(SDL_Surface *dst, const SDL_Rect *rect,
-                                  SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                 SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     const SDL_PixelFormatDetails *fmt = dst->fmt;
     unsigned inva = 0xff - a;
@@ -200,7 +200,7 @@ static bool SDL_BlendFillRect_RGB(SDL_Surface *dst, const SDL_Rect *rect,
 }
 
 static bool SDL_BlendFillRect_RGBA(SDL_Surface *dst, const SDL_Rect *rect,
-                                   SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+                                  SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     const SDL_PixelFormatDetails *fmt = dst->fmt;
     unsigned inva = 0xff - a;
@@ -238,7 +238,7 @@ bool SDL_BlendFillRect(SDL_Surface *dst, const SDL_Rect *rect, SDL_BlendMode ble
 {
     SDL_Rect clipped;
 
-    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendFillRect(): dst");
     }
 
@@ -303,10 +303,10 @@ bool SDL_BlendFillRects(SDL_Surface *dst, const SDL_Rect *rects, int count, SDL_
 {
     SDL_Rect rect;
     int i;
-    bool (*func)(SDL_Surface *dst, const SDL_Rect *rect, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
+    bool (*func)(SDL_Surface * dst, const SDL_Rect *rect, SDL_BlendMode blendMode, Uint8 r, Uint8 g, Uint8 b, Uint8 a) = NULL;
     bool result = true;
 
-    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_BlendFillRects(): dst");
     }
 

@@ -27,8 +27,8 @@
 
 #include "../../events/SDL_events_c.h"
 
-#include "SDL_offscreenevents_c.h"
 #include "SDL_offscreenvideo.h"
+#include "SDL_offscreenevents_c.h"
 
 void OFFSCREEN_PumpEvents(SDL_VideoDevice *_this)
 {

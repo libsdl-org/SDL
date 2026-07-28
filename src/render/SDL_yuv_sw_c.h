@@ -49,9 +49,9 @@ extern SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Co
 extern bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels, int *pitch);
 extern bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect, const void *pixels, int pitch);
 extern bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
-                                          const Uint8 *Yplane, int Ypitch,
-                                          const Uint8 *Uplane, int Upitch,
-                                          const Uint8 *Vplane, int Vpitch);
+                                         const Uint8 *Yplane, int Ypitch,
+                                         const Uint8 *Uplane, int Upitch,
+                                         const Uint8 *Vplane, int Vpitch);
 extern bool SDL_SW_UpdateNVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                                          const Uint8 *Yplane, int Ypitch,
                                          const Uint8 *UVplane, int UVpitch);

@@ -24,21 +24,21 @@
 
 // Android SDL video driver implementation
 
+#include "../SDL_sysvideo.h"
+#include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_windowevents_c.h"
-#include "../SDL_pixels_c.h"
-#include "../SDL_sysvideo.h"
 
+#include "SDL_androidvideo.h"
+#include "SDL_androidgl.h"
 #include "SDL_androidclipboard.h"
 #include "SDL_androidevents.h"
-#include "SDL_androidgl.h"
 #include "SDL_androidkeyboard.h"
-#include "SDL_androidmessagebox.h"
 #include "SDL_androidmouse.h"
 #include "SDL_androidtouch.h"
-#include "SDL_androidvideo.h"
-#include "SDL_androidvulkan.h"
 #include "SDL_androidwindow.h"
+#include "SDL_androidvulkan.h"
+#include "SDL_androidmessagebox.h"
 
 #define ANDROID_VID_DRIVER_NAME "android"
 
@@ -51,7 +51,7 @@ static void Android_VideoQuit(SDL_VideoDevice *_this);
 #define Android_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define Android_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define Android_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define Android_GLES_DestroyContext  SDL_EGL_DestroyContext
+#define Android_GLES_DestroyContext   SDL_EGL_DestroyContext
 
 // Android driver bootstrap functions
 

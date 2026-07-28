@@ -29,8 +29,8 @@
 #ifdef SDL_PLATFORM_WIN32
 #include "../core/windows/SDL_windows.h"
 #else
-#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
@@ -38,6 +38,7 @@ static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joyst
 static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
+
 
 static Uint64 GetFileModificationTime(const char *file)
 {
@@ -97,7 +98,7 @@ static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
     }
 
     if (slot >= SDL_steam_virtual_gamepad_info_count) {
-        SDL_SteamVirtualGamepadInfo **slots = (SDL_SteamVirtualGamepadInfo **)SDL_realloc(SDL_steam_virtual_gamepad_info, (slot + 1) * sizeof(*SDL_steam_virtual_gamepad_info));
+        SDL_SteamVirtualGamepadInfo **slots = (SDL_SteamVirtualGamepadInfo **)SDL_realloc(SDL_steam_virtual_gamepad_info, (slot + 1)*sizeof(*SDL_steam_virtual_gamepad_info));
         if (!slots) {
             return;
         }
@@ -193,7 +194,7 @@ bool SDL_UpdateSteamVirtualGamepadInfo(void)
     slot = -1;
     SDL_zero(info);
 
-    for (next = data, end = data + size; next < end;) {
+    for (next = data, end = data + size; next < end; ) {
         while (next < end && (*next == '\0' || *next == '\r' || *next == '\n')) {
             ++next;
         }

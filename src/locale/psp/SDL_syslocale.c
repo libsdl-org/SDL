@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../SDL_syslocale.h"
 #include "SDL_internal.h"
+#include "../SDL_syslocale.h"
 
 #include <psputility.h>
 
@@ -31,46 +31,46 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_assert(buflen > 0);
 
     sceUtilityGetSystemParamInt(PSP_SYSTEMPARAM_ID_INT_LANGUAGE, &current_locale_int);
-    switch (current_locale_int) {
-    case PSP_SYSTEMPARAM_LANGUAGE_JAPANESE:
-        SDL_strlcpy(buf, "ja_JP", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_ENGLISH:
-        SDL_strlcpy(buf, "en_US", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_FRENCH:
-        SDL_strlcpy(buf, "fr_FR", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_SPANISH:
-        SDL_strlcpy(buf, "es_ES", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_GERMAN:
-        SDL_strlcpy(buf, "de_DE", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_ITALIAN:
-        SDL_strlcpy(buf, "it_IT", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_DUTCH:
-        SDL_strlcpy(buf, "nl_NL", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_PORTUGUESE:
-        SDL_strlcpy(buf, "pt_PT", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_RUSSIAN:
-        SDL_strlcpy(buf, "ru_RU", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_KOREAN:
-        SDL_strlcpy(buf, "ko_KR", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_TRADITIONAL:
-        SDL_strlcpy(buf, "zh_TW", buflen);
-        break;
-    case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_SIMPLIFIED:
-        SDL_strlcpy(buf, "zh_CN", buflen);
-        break;
-    default:
-        SDL_strlcpy(buf, "en_US", buflen);
-        break;
+    switch(current_locale_int) {
+        case PSP_SYSTEMPARAM_LANGUAGE_JAPANESE:
+            SDL_strlcpy(buf, "ja_JP", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_ENGLISH:
+            SDL_strlcpy(buf, "en_US", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_FRENCH:
+            SDL_strlcpy(buf, "fr_FR", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_SPANISH:
+            SDL_strlcpy(buf, "es_ES", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_GERMAN:
+            SDL_strlcpy(buf, "de_DE", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_ITALIAN:
+            SDL_strlcpy(buf, "it_IT", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_DUTCH:
+            SDL_strlcpy(buf, "nl_NL", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_PORTUGUESE:
+            SDL_strlcpy(buf, "pt_PT", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_RUSSIAN:
+            SDL_strlcpy(buf, "ru_RU", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_KOREAN:
+            SDL_strlcpy(buf, "ko_KR", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_TRADITIONAL:
+            SDL_strlcpy(buf, "zh_TW", buflen);
+            break;
+        case PSP_SYSTEMPARAM_LANGUAGE_CHINESE_SIMPLIFIED:
+            SDL_strlcpy(buf, "zh_CN", buflen);
+            break;
+        default:
+            SDL_strlcpy(buf, "en_US", buflen);
+            break;
     }
     return true;
 }

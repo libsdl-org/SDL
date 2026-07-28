@@ -537,7 +537,7 @@ SDL_BlitFunc SDL_CalculateBlit1(SDL_Surface *surface)
         }
         break;
 
-    case SDL_COPY_COLORKEY | SDL_COPY_BLEND: // this is not super-robust but handles a specific case we found sdl12-compat.
+    case SDL_COPY_COLORKEY | SDL_COPY_BLEND:  // this is not super-robust but handles a specific case we found sdl12-compat.
         if (surface->map.info.a == 255) {
             if (which < SDL_arraysize(one_blitkey)) {
                 return one_blitkey[which];

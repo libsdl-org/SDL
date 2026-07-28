@@ -256,7 +256,8 @@ typedef struct SDL_GamepadMapping
 
 // Function to get autodetected gamepad controller mapping from the driver
 extern bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
-                                                     SDL_GamepadMapping *out);
+                                                         SDL_GamepadMapping *out);
+
 
 typedef struct
 {

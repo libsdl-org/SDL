@@ -25,9 +25,9 @@
 #include "SDL_shaders_vulkan.h"
 
 // The shaders here were compiled with compile_shaders.bat
-#include "VULKAN_PixelShader_Advanced.h"
 #include "VULKAN_PixelShader_Colors.h"
 #include "VULKAN_PixelShader_Textures.h"
+#include "VULKAN_PixelShader_Advanced.h"
 #include "VULKAN_VertexShader.h"
 
 static struct

@@ -24,16 +24,16 @@
 extern bool SDLTest_Color;
 extern bool SDLTest_Time;
 
-#define COLOR_RAW_RED    "\033[0;31m"
-#define COLOR_RAW_GREEN  "\033[0;32m"
-#define COLOR_RAW_YELLOW "\033[0;93m"
-#define COLOR_RAW_BLUE   "\033[0;94m"
-#define COLOR_RAW_END    "\033[0m"
+#define COLOR_RAW_RED       "\033[0;31m"
+#define COLOR_RAW_GREEN     "\033[0;32m"
+#define COLOR_RAW_YELLOW    "\033[0;93m"
+#define COLOR_RAW_BLUE      "\033[0;94m"
+#define COLOR_RAW_END       "\033[0m"
 
-#define COLOR_RED    (SDLTest_Color ? COLOR_RAW_RED : "")
-#define COLOR_GREEN  (SDLTest_Color ? COLOR_RAW_GREEN : "")
-#define COLOR_YELLOW (SDLTest_Color ? COLOR_RAW_YELLOW : "")
-#define COLOR_BLUE   (SDLTest_Color ? COLOR_RAW_BLUE : "")
-#define COLOR_END    (SDLTest_Color ? COLOR_RAW_END : "")
+#define COLOR_RED       (SDLTest_Color ? COLOR_RAW_RED : "")
+#define COLOR_GREEN     (SDLTest_Color ? COLOR_RAW_GREEN : "")
+#define COLOR_YELLOW    (SDLTest_Color ? COLOR_RAW_YELLOW : "")
+#define COLOR_BLUE      (SDLTest_Color ? COLOR_RAW_BLUE : "")
+#define COLOR_END       (SDLTest_Color ? COLOR_RAW_END : "")
 
 #endif // SDL_test_internal_h

@@ -23,8 +23,8 @@
 #ifndef SDL_waylandopengles_h_
 #define SDL_waylandopengles_h_
 
-#include "../SDL_egl_c.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
 typedef struct SDL_PrivateGLESData
 {

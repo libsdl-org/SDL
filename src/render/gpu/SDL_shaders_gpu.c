@@ -34,7 +34,7 @@ typedef struct GPU_ShaderModuleSource
 } GPU_ShaderModuleSource;
 
 #if defined(SDL_GPU_PRIVATE)
-#define IF_PRIVATE(...)      __VA_ARGS__
+#define IF_PRIVATE(...)     __VA_ARGS__
 #define HAVE_PRIVATE_SHADERS 1
 #include "SDL_render_private_shaders.h"
 #else
@@ -193,7 +193,7 @@ static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDev
 #if HAVE_METAL_SHADERS
         (sms == &sources->msl) ? "main0" :
 #endif // HAVE_METAL_SHADERS
-                               "main";
+        "main";
     sci.num_samplers = sources->num_samplers;
     sci.num_uniform_buffers = sources->num_uniform_buffers;
     sci.stage = stage;

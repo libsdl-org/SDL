@@ -33,9 +33,9 @@
 #include <X11/XKBlib.h>
 #endif
 
-#include "../../events/SDL_keysym_to_keycode_c.h"
-#include "../../events/SDL_keysym_to_scancode_c.h"
 #include "../../events/imKStoUCS.h"
+#include "../../events/SDL_keysym_to_scancode_c.h"
+#include "../../events/SDL_keysym_to_keycode_c.h"
 
 #ifdef X_HAVE_UTF8_STRING
 #include <locale.h>
@@ -153,8 +153,8 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
         // If XKB isn't available, initialize the legacy path.
         X11_XDisplayKeycodes(data->display, &data->keyboard.core.min_keycode, &data->keyboard.core.max_keycode);
         data->keyboard.core.keysym_map = X11_XGetKeyboardMapping(data->display, data->keyboard.core.min_keycode,
-                                                                 data->keyboard.core.max_keycode - data->keyboard.core.min_keycode,
-                                                                 &data->keyboard.core.keysyms_per_key);
+                                                              data->keyboard.core.max_keycode - data->keyboard.core.min_keycode,
+                                                              &data->keyboard.core.keysyms_per_key);
     }
 
     // Open a connection to the X input manager
@@ -507,8 +507,8 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
             }
         }
 
-        data->keyboard.alt_mask = Mod1Mask;    // Alt or Meta
-        data->keyboard.gui_mask = Mod4Mask;    // Super
+        data->keyboard.alt_mask = Mod1Mask; // Alt or Meta
+        data->keyboard.gui_mask = Mod4Mask; // Super
         data->keyboard.level3_mask = Mod5Mask; // Note: Not a typo, Mod5 = level 3 shift, and Mod3 = level 5 shift.
         data->keyboard.level5_mask = Mod3Mask;
         data->keyboard.numlock_mask = X11_GetXModifierMask(_this, SDL_SCANCODE_NUMLOCKCLEAR);
@@ -762,6 +762,7 @@ void X11_CreateInputContext(SDL_WindowData *data)
     }
 #endif // X_HAVE_UTF8_STRING
 }
+
 
 void X11_DestroyInputContext(SDL_WindowData *data)
 {

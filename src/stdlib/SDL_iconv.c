@@ -27,8 +27,8 @@
 // Define LIBICONV_PLUG to use iconv from the base instead of ports and avoid linker errors.
 #define LIBICONV_PLUG 1
 #endif
-#include <errno.h>
 #include <iconv.h>
+#include <errno.h>
 
 SDL_COMPILE_TIME_ASSERT(iconv_t, sizeof(iconv_t) <= sizeof(SDL_iconv_t));
 
@@ -46,8 +46,8 @@ int SDL_iconv_close(SDL_iconv_t cd)
 }
 
 size_t SDL_iconv(SDL_iconv_t cd,
-                 const char **inbuf, size_t *inbytesleft,
-                 char **outbuf, size_t *outbytesleft)
+          const char **inbuf, size_t *inbytesleft,
+          char **outbuf, size_t *outbytesleft)
 {
     if ((size_t)cd == SDL_ICONV_ERROR) {
         return SDL_ICONV_ERROR;
@@ -232,8 +232,8 @@ SDL_iconv_t SDL_iconv_open(const char *tocode, const char *fromcode)
 }
 
 size_t SDL_iconv(SDL_iconv_t cd,
-                 const char **inbuf, size_t *inbytesleft,
-                 char **outbuf, size_t *outbytesleft)
+          const char **inbuf, size_t *inbytesleft,
+          char **outbuf, size_t *outbytesleft)
 {
     // For simplicity, we'll convert everything to and from UCS-4
     const char *src;
@@ -823,7 +823,7 @@ char *SDL_iconv_string(const char *tocode, const char *fromcode, const char *inb
         switch (retCode) {
         case SDL_ICONV_E2BIG:
         {
-            const ptrdiff_t diff = (ptrdiff_t)(outbuf - string);
+            const ptrdiff_t diff = (ptrdiff_t) (outbuf - string);
             char *oldstring = string;
             stringsize *= 2;
             string = (char *)SDL_realloc(string, stringsize + sizeof(Uint32));

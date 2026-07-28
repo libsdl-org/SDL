@@ -22,8 +22,8 @@
 
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
 
-#include "../SDL_syssensor.h"
 #include "SDL_dummysensor.h"
+#include "../SDL_syssensor.h"
 
 static bool SDL_DUMMY_SensorInit(void)
 {

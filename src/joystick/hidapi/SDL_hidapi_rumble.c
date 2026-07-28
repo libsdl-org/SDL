@@ -24,9 +24,9 @@
 
 // Handle rumble on a separate thread so it doesn't block the application
 
-#include "../../thread/SDL_systhread.h"
-#include "SDL_hidapi_rumble.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
+#include "../../thread/SDL_systhread.h"
 
 typedef struct SDL_HIDAPI_RumbleRequest
 {
@@ -52,7 +52,7 @@ typedef struct SDL_HIDAPI_RumbleContext
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-    SDL_Mutex *SDL_HIDAPI_rumble_lock;
+SDL_Mutex *SDL_HIDAPI_rumble_lock;
 static SDL_HIDAPI_RumbleContext rumble_context SDL_GUARDED_BY(SDL_HIDAPI_rumble_lock);
 
 static int SDLCALL SDL_HIDAPI_RumbleThread(void *data)

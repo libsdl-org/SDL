@@ -345,8 +345,8 @@ void WIN_UpdateIMECandidates(SDL_VideoDevice *_this)
 #define LANG_CHS MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)
 
 #define MAKEIMEVERSION(major, minor) ((DWORD)(((BYTE)(major) << 24) | ((BYTE)(minor) << 16)))
-#define IMEID_VER(id)                ((id) & 0xffff0000)
-#define IMEID_LANG(id)               ((id) & 0x0000ffff)
+#define IMEID_VER(id)                ((id)&0xffff0000)
+#define IMEID_LANG(id)               ((id)&0x0000ffff)
 
 #define CHT_HKL_DAYI          ((HKL)(UINT_PTR)0xE0060404)
 #define CHT_HKL_NEW_PHONETIC  ((HKL)(UINT_PTR)0xE0080404)

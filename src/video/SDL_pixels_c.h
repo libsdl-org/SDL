@@ -27,6 +27,7 @@
 
 #include "SDL_blit.h"
 
+
 // Pixel format functions
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat pixel_format);

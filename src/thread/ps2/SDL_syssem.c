@@ -24,9 +24,9 @@
 
 // Semaphore functions for the PS2.
 
-#include <kernel_util.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <kernel_util.h>
 
 #include <kernel.h>
 
@@ -87,7 +87,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 
     timeout_ptr = NULL;
 
-    if (timeoutNS != -1) { // -1 == wait indefinitely.
+    if (timeoutNS != -1) {  // -1 == wait indefinitely.
         timeout_usec = SDL_NS_TO_US(timeoutNS);
         timeout_ptr = &timeout_usec;
     }

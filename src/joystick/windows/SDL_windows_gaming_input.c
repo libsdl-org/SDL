@@ -22,18 +22,18 @@
 
 #ifdef SDL_JOYSTICK_WGI
 
-#include "../../core/windows/SDL_gameinput.h"
 #include "../SDL_sysjoystick.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "SDL_rawinputjoystick_c.h"
 
 #include "../../core/windows/SDL_windows.h"
 #define COBJMACROS
 #include "windows.gaming.input.h"
 #include <cfgmgr32.h>
-#include <initguid.h>
 #include <objidlbase.h>
 #include <roapi.h>
+#include <initguid.h>
 
 #ifdef ____FIReference_1_INT32_INTERFACE_DEFINED__
 // MinGW-64 uses __FIReference_1_INT32 instead of Microsoft's __FIReference_1_int
@@ -62,7 +62,7 @@ typedef struct WindowsGamingInputControllerState
     int steam_virtual_gamepad_slot;
 } WindowsGamingInputControllerState;
 
-typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(HANDLE *pCookie); // CO_MTA_USAGE_COOKIE*
+typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(HANDLE* pCookie); // CO_MTA_USAGE_COOKIE*
 typedef HRESULT(WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void **factory);
 typedef HRESULT(WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING *string);
 typedef HRESULT(WINAPI *WindowsDeleteString_t)(HSTRING string);
@@ -107,6 +107,7 @@ DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameController2, 0x43c0c035
 DEFINE_GUID(IID___x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics, 0xeb8d0792, 0xe95a, 0x4b19, 0xaf, 0xc7, 0x0a, 0x59, 0xf8, 0xbf, 0x75, 0x9e);
 
 extern bool SDL_XINPUT_Enabled(void);
+
 
 static bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product, const char *name)
 {
@@ -596,10 +597,7 @@ static bool WGI_JoystickInit(void)
     }
     wgi.ro_initialized = true;
 
-#define RESOLVE(x)                              \
-    wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); \
-    if (!wgi.x)                                 \
-    return WIN_SetError("GetProcAddress failed for " #x)
+#define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x)
     RESOLVE(CoIncrementMTAUsage);
     RESOLVE(RoGetActivationFactory);
     RESOLVE(WindowsCreateStringReference);

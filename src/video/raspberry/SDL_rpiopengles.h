@@ -25,8 +25,8 @@
 
 #if defined(SDL_VIDEO_DRIVER_RPI) && defined(SDL_VIDEO_OPENGL_EGL)
 
-#include "../SDL_egl_c.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
 // OpenGLES functions
 #define RPI_GLES_GetAttribute    SDL_EGL_GetAttribute
@@ -34,7 +34,7 @@
 #define RPI_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define RPI_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define RPI_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-#define RPI_GLES_DestroyContext  SDL_EGL_DestroyContext
+#define RPI_GLES_DestroyContext   SDL_EGL_DestroyContext
 
 extern bool RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_GLContext RPI_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);

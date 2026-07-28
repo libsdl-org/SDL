@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#include "../../thread/SDL_systhread.h"
+#include "../SDL_syscamera.h"
+#include "../SDL_camera_c.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_surface_c.h"
-#include "../SDL_camera_c.h"
-#include "../SDL_syscamera.h"
+#include "../../thread/SDL_systhread.h"
 
 #ifdef SDL_CAMERA_DRIVER_ANDROID
 
@@ -53,39 +53,39 @@
 #define __ANDROID_API__ 24
 #endif
 
+#include <dlfcn.h>
 #include <camera/NdkCameraDevice.h>
 #include <camera/NdkCameraManager.h>
-#include <dlfcn.h>
 #include <media/NdkImage.h>
 #include <media/NdkImageReader.h>
 
 #include "../../core/android/SDL_android.h"
 
 static void *libcamera2ndk = NULL;
-typedef ACameraManager *(*pfnACameraManager_create)(void);
-typedef camera_status_t (*pfnACameraManager_registerAvailabilityCallback)(ACameraManager *, const ACameraManager_AvailabilityCallbacks *);
-typedef camera_status_t (*pfnACameraManager_unregisterAvailabilityCallback)(ACameraManager *, const ACameraManager_AvailabilityCallbacks *);
-typedef camera_status_t (*pfnACameraManager_getCameraIdList)(ACameraManager *, ACameraIdList **);
-typedef void (*pfnACameraManager_deleteCameraIdList)(ACameraIdList *);
-typedef void (*pfnACameraCaptureSession_close)(ACameraCaptureSession *);
-typedef void (*pfnACaptureRequest_free)(ACaptureRequest *);
-typedef void (*pfnACameraOutputTarget_free)(ACameraOutputTarget *);
-typedef camera_status_t (*pfnACameraDevice_close)(ACameraDevice *);
-typedef void (*pfnACameraManager_delete)(ACameraManager *);
-typedef void (*pfnACaptureSessionOutputContainer_free)(ACaptureSessionOutputContainer *);
-typedef void (*pfnACaptureSessionOutput_free)(ACaptureSessionOutput *);
-typedef camera_status_t (*pfnACameraManager_openCamera)(ACameraManager *, const char *, ACameraDevice_StateCallbacks *, ACameraDevice **);
-typedef camera_status_t (*pfnACameraDevice_createCaptureRequest)(const ACameraDevice *, ACameraDevice_request_template, ACaptureRequest **);
-typedef camera_status_t (*pfnACameraDevice_createCaptureSession)(ACameraDevice *, const ACaptureSessionOutputContainer *, const ACameraCaptureSession_stateCallbacks *, ACameraCaptureSession **);
-typedef camera_status_t (*pfnACameraManager_getCameraCharacteristics)(ACameraManager *, const char *, ACameraMetadata **);
-typedef void (*pfnACameraMetadata_free)(ACameraMetadata *);
-typedef camera_status_t (*pfnACameraMetadata_getConstEntry)(const ACameraMetadata *, uint32_t tag, ACameraMetadata_const_entry *);
-typedef camera_status_t (*pfnACameraCaptureSession_setRepeatingRequest)(ACameraCaptureSession *, ACameraCaptureSession_captureCallbacks *, int numRequests, ACaptureRequest **, int *);
-typedef camera_status_t (*pfnACameraOutputTarget_create)(ACameraWindowType *, ACameraOutputTarget **);
-typedef camera_status_t (*pfnACaptureRequest_addTarget)(ACaptureRequest *, const ACameraOutputTarget *);
-typedef camera_status_t (*pfnACaptureSessionOutputContainer_add)(ACaptureSessionOutputContainer *, const ACaptureSessionOutput *);
-typedef camera_status_t (*pfnACaptureSessionOutputContainer_create)(ACaptureSessionOutputContainer **);
-typedef camera_status_t (*pfnACaptureSessionOutput_create)(ACameraWindowType *, ACaptureSessionOutput **);
+typedef ACameraManager* (*pfnACameraManager_create)(void);
+typedef camera_status_t (*pfnACameraManager_registerAvailabilityCallback)(ACameraManager*, const ACameraManager_AvailabilityCallbacks*);
+typedef camera_status_t (*pfnACameraManager_unregisterAvailabilityCallback)(ACameraManager*, const ACameraManager_AvailabilityCallbacks*);
+typedef camera_status_t (*pfnACameraManager_getCameraIdList)(ACameraManager*, ACameraIdList**);
+typedef void (*pfnACameraManager_deleteCameraIdList)(ACameraIdList*);
+typedef void (*pfnACameraCaptureSession_close)(ACameraCaptureSession*);
+typedef void (*pfnACaptureRequest_free)(ACaptureRequest*);
+typedef void (*pfnACameraOutputTarget_free)(ACameraOutputTarget*);
+typedef camera_status_t (*pfnACameraDevice_close)(ACameraDevice*);
+typedef void (*pfnACameraManager_delete)(ACameraManager*);
+typedef void (*pfnACaptureSessionOutputContainer_free)(ACaptureSessionOutputContainer*);
+typedef void (*pfnACaptureSessionOutput_free)(ACaptureSessionOutput*);
+typedef camera_status_t (*pfnACameraManager_openCamera)(ACameraManager*, const char*, ACameraDevice_StateCallbacks*, ACameraDevice**);
+typedef camera_status_t (*pfnACameraDevice_createCaptureRequest)(const ACameraDevice*, ACameraDevice_request_template, ACaptureRequest**);
+typedef camera_status_t (*pfnACameraDevice_createCaptureSession)(ACameraDevice*, const ACaptureSessionOutputContainer*, const ACameraCaptureSession_stateCallbacks*,ACameraCaptureSession**);
+typedef camera_status_t (*pfnACameraManager_getCameraCharacteristics)(ACameraManager*, const char*, ACameraMetadata**);
+typedef void (*pfnACameraMetadata_free)(ACameraMetadata*);
+typedef camera_status_t (*pfnACameraMetadata_getConstEntry)(const ACameraMetadata*, uint32_t tag, ACameraMetadata_const_entry*);
+typedef camera_status_t (*pfnACameraCaptureSession_setRepeatingRequest)(ACameraCaptureSession*, ACameraCaptureSession_captureCallbacks*, int numRequests, ACaptureRequest**, int*);
+typedef camera_status_t (*pfnACameraOutputTarget_create)(ACameraWindowType*,ACameraOutputTarget**);
+typedef camera_status_t (*pfnACaptureRequest_addTarget)(ACaptureRequest*, const ACameraOutputTarget*);
+typedef camera_status_t (*pfnACaptureSessionOutputContainer_add)(ACaptureSessionOutputContainer*, const ACaptureSessionOutput*);
+typedef camera_status_t (*pfnACaptureSessionOutputContainer_create)(ACaptureSessionOutputContainer**);
+typedef camera_status_t (*pfnACaptureSessionOutput_create)(ACameraWindowType*, ACaptureSessionOutput**);
 static pfnACameraManager_create pACameraManager_create = NULL;
 static pfnACameraManager_registerAvailabilityCallback pACameraManager_registerAvailabilityCallback = NULL;
 static pfnACameraManager_unregisterAvailabilityCallback pACameraManager_unregisterAvailabilityCallback = NULL;
@@ -112,16 +112,16 @@ static pfnACaptureSessionOutputContainer_create pACaptureSessionOutputContainer_
 static pfnACaptureSessionOutput_create pACaptureSessionOutput_create = NULL;
 
 static void *libmediandk = NULL;
-typedef void (*pfnAImage_delete)(AImage *);
-typedef media_status_t (*pfnAImage_getTimestamp)(const AImage *, int64_t *);
-typedef media_status_t (*pfnAImage_getNumberOfPlanes)(const AImage *, int32_t *);
-typedef media_status_t (*pfnAImage_getPlaneRowStride)(const AImage *, int, int32_t *);
-typedef media_status_t (*pfnAImage_getPlaneData)(const AImage *, int, uint8_t **, int *);
-typedef media_status_t (*pfnAImageReader_acquireNextImage)(AImageReader *, AImage **);
-typedef void (*pfnAImageReader_delete)(AImageReader *);
-typedef media_status_t (*pfnAImageReader_setImageListener)(AImageReader *, AImageReader_ImageListener *);
-typedef media_status_t (*pfnAImageReader_getWindow)(AImageReader *, ANativeWindow **);
-typedef media_status_t (*pfnAImageReader_new)(int32_t, int32_t, int32_t, int32_t, AImageReader **);
+typedef void (*pfnAImage_delete)(AImage*);
+typedef media_status_t (*pfnAImage_getTimestamp)(const AImage*, int64_t*);
+typedef media_status_t (*pfnAImage_getNumberOfPlanes)(const AImage*, int32_t*);
+typedef media_status_t (*pfnAImage_getPlaneRowStride)(const AImage*, int, int32_t*);
+typedef media_status_t (*pfnAImage_getPlaneData)(const AImage*, int, uint8_t**, int*);
+typedef media_status_t (*pfnAImageReader_acquireNextImage)(AImageReader*, AImage**);
+typedef void (*pfnAImageReader_delete)(AImageReader*);
+typedef media_status_t (*pfnAImageReader_setImageListener)(AImageReader*, AImageReader_ImageListener*);
+typedef media_status_t (*pfnAImageReader_getWindow)(AImageReader*, ANativeWindow**);
+typedef media_status_t (*pfnAImageReader_new)(int32_t, int32_t, int32_t, int32_t, AImageReader**);
 static pfnAImage_delete pAImage_delete = NULL;
 static pfnAImage_getTimestamp pAImage_getTimestamp = NULL;
 static pfnAImage_getNumberOfPlanes pAImage_getNumberOfPlanes = NULL;
@@ -133,8 +133,8 @@ static pfnAImageReader_setImageListener pAImageReader_setImageListener = NULL;
 static pfnAImageReader_getWindow pAImageReader_getWindow = NULL;
 static pfnAImageReader_new pAImageReader_new = NULL;
 
-typedef media_status_t (*pfnAImage_getWidth)(const AImage *, int32_t *);
-typedef media_status_t (*pfnAImage_getHeight)(const AImage *, int32_t *);
+typedef media_status_t (*pfnAImage_getWidth)(const AImage*, int32_t*);
+typedef media_status_t (*pfnAImage_getHeight)(const AImage*, int32_t*);
 static pfnAImage_getWidth pAImage_getWidth = NULL;
 static pfnAImage_getHeight pAImage_getHeight = NULL;
 
@@ -149,14 +149,14 @@ struct SDL_PrivateCameraData
     ACaptureRequest *request;
     ACameraCaptureSession *session;
     SDL_CameraSpec requested_spec;
-    int rotation; // degrees to rotate clockwise to get from camera's static orientation to device's native orientation. Apply this plus current phone rotation to get upright image!
+    int rotation;  // degrees to rotate clockwise to get from camera's static orientation to device's native orientation. Apply this plus current phone rotation to get upright image!
 };
 
 static bool SetErrorStr(const char *what, const char *errstr, const int rc)
 {
     char errbuf[128];
     if (!errstr) {
-        SDL_snprintf(errbuf, sizeof(errbuf), "Unknown error #%d", rc);
+        SDL_snprintf(errbuf, sizeof (errbuf), "Unknown error #%d", rc);
         errstr = errbuf;
     }
     return SDL_SetError("%s: %s", what, errstr);
@@ -165,116 +165,73 @@ static bool SetErrorStr(const char *what, const char *errstr, const int rc)
 static const char *CameraStatusStr(const camera_status_t rc)
 {
     switch (rc) {
-    case ACAMERA_OK:
-        return "no error";
-    case ACAMERA_ERROR_UNKNOWN:
-        return "unknown error";
-    case ACAMERA_ERROR_INVALID_PARAMETER:
-        return "invalid parameter";
-    case ACAMERA_ERROR_CAMERA_DISCONNECTED:
-        return "camera disconnected";
-    case ACAMERA_ERROR_NOT_ENOUGH_MEMORY:
-        return "not enough memory";
-    case ACAMERA_ERROR_METADATA_NOT_FOUND:
-        return "metadata not found";
-    case ACAMERA_ERROR_CAMERA_DEVICE:
-        return "camera device error";
-    case ACAMERA_ERROR_CAMERA_SERVICE:
-        return "camera service error";
-    case ACAMERA_ERROR_SESSION_CLOSED:
-        return "session closed";
-    case ACAMERA_ERROR_INVALID_OPERATION:
-        return "invalid operation";
-    case ACAMERA_ERROR_STREAM_CONFIGURE_FAIL:
-        return "configure failure";
-    case ACAMERA_ERROR_CAMERA_IN_USE:
-        return "camera in use";
-    case ACAMERA_ERROR_MAX_CAMERA_IN_USE:
-        return "max cameras in use";
-    case ACAMERA_ERROR_CAMERA_DISABLED:
-        return "camera disabled";
-    case ACAMERA_ERROR_PERMISSION_DENIED:
-        return "permission denied";
-    case ACAMERA_ERROR_UNSUPPORTED_OPERATION:
-        return "unsupported operation";
-    default:
-        break;
+        case ACAMERA_OK: return "no error";
+        case ACAMERA_ERROR_UNKNOWN: return "unknown error";
+        case ACAMERA_ERROR_INVALID_PARAMETER: return "invalid parameter";
+        case ACAMERA_ERROR_CAMERA_DISCONNECTED: return "camera disconnected";
+        case ACAMERA_ERROR_NOT_ENOUGH_MEMORY: return "not enough memory";
+        case ACAMERA_ERROR_METADATA_NOT_FOUND: return "metadata not found";
+        case ACAMERA_ERROR_CAMERA_DEVICE: return "camera device error";
+        case ACAMERA_ERROR_CAMERA_SERVICE: return "camera service error";
+        case ACAMERA_ERROR_SESSION_CLOSED: return "session closed";
+        case ACAMERA_ERROR_INVALID_OPERATION: return "invalid operation";
+        case ACAMERA_ERROR_STREAM_CONFIGURE_FAIL: return "configure failure";
+        case ACAMERA_ERROR_CAMERA_IN_USE: return "camera in use";
+        case ACAMERA_ERROR_MAX_CAMERA_IN_USE: return "max cameras in use";
+        case ACAMERA_ERROR_CAMERA_DISABLED: return "camera disabled";
+        case ACAMERA_ERROR_PERMISSION_DENIED: return "permission denied";
+        case ACAMERA_ERROR_UNSUPPORTED_OPERATION: return "unsupported operation";
+        default: break;
     }
 
-    return NULL; // unknown error
+    return NULL;  // unknown error
 }
 
 static bool SetCameraError(const char *what, const camera_status_t rc)
 {
-    return SetErrorStr(what, CameraStatusStr(rc), (int)rc);
+    return SetErrorStr(what, CameraStatusStr(rc), (int) rc);
 }
 
 static const char *MediaStatusStr(const media_status_t rc)
 {
     switch (rc) {
-    case AMEDIA_OK:
-        return "no error";
-    case AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE:
-        return "insufficient resources";
-    case AMEDIACODEC_ERROR_RECLAIMED:
-        return "reclaimed";
-    case AMEDIA_ERROR_UNKNOWN:
-        return "unknown error";
-    case AMEDIA_ERROR_MALFORMED:
-        return "malformed";
-    case AMEDIA_ERROR_UNSUPPORTED:
-        return "unsupported";
-    case AMEDIA_ERROR_INVALID_OBJECT:
-        return "invalid object";
-    case AMEDIA_ERROR_INVALID_PARAMETER:
-        return "invalid parameter";
-    case AMEDIA_ERROR_INVALID_OPERATION:
-        return "invalid operation";
-    case AMEDIA_ERROR_END_OF_STREAM:
-        return "end of stream";
-    case AMEDIA_ERROR_IO:
-        return "i/o error";
-    case AMEDIA_ERROR_WOULD_BLOCK:
-        return "operation would block";
-    case AMEDIA_DRM_NOT_PROVISIONED:
-        return "DRM not provisioned";
-    case AMEDIA_DRM_RESOURCE_BUSY:
-        return "DRM resource busy";
-    case AMEDIA_DRM_DEVICE_REVOKED:
-        return "DRM device revoked";
-    case AMEDIA_DRM_SHORT_BUFFER:
-        return "DRM short buffer";
-    case AMEDIA_DRM_SESSION_NOT_OPENED:
-        return "DRM session not opened";
-    case AMEDIA_DRM_TAMPER_DETECTED:
-        return "DRM tampering detected";
-    case AMEDIA_DRM_VERIFY_FAILED:
-        return "DRM verify failed";
-    case AMEDIA_DRM_NEED_KEY:
-        return "DRM need key";
-    case AMEDIA_DRM_LICENSE_EXPIRED:
-        return "DRM license expired";
-    case AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE:
-        return "no buffer available";
-    case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED:
-        return "maximum images acquired";
-    case AMEDIA_IMGREADER_CANNOT_LOCK_IMAGE:
-        return "cannot lock image";
-    case AMEDIA_IMGREADER_CANNOT_UNLOCK_IMAGE:
-        return "cannot unlock image";
-    case AMEDIA_IMGREADER_IMAGE_NOT_LOCKED:
-        return "image not locked";
-    default:
-        break;
+        case AMEDIA_OK: return "no error";
+        case AMEDIACODEC_ERROR_INSUFFICIENT_RESOURCE: return "insufficient resources";
+        case AMEDIACODEC_ERROR_RECLAIMED: return "reclaimed";
+        case AMEDIA_ERROR_UNKNOWN: return "unknown error";
+        case AMEDIA_ERROR_MALFORMED: return "malformed";
+        case AMEDIA_ERROR_UNSUPPORTED: return "unsupported";
+        case AMEDIA_ERROR_INVALID_OBJECT: return "invalid object";
+        case AMEDIA_ERROR_INVALID_PARAMETER: return "invalid parameter";
+        case AMEDIA_ERROR_INVALID_OPERATION: return "invalid operation";
+        case AMEDIA_ERROR_END_OF_STREAM: return "end of stream";
+        case AMEDIA_ERROR_IO: return "i/o error";
+        case AMEDIA_ERROR_WOULD_BLOCK: return "operation would block";
+        case AMEDIA_DRM_NOT_PROVISIONED: return "DRM not provisioned";
+        case AMEDIA_DRM_RESOURCE_BUSY: return "DRM resource busy";
+        case AMEDIA_DRM_DEVICE_REVOKED: return "DRM device revoked";
+        case AMEDIA_DRM_SHORT_BUFFER: return "DRM short buffer";
+        case AMEDIA_DRM_SESSION_NOT_OPENED: return "DRM session not opened";
+        case AMEDIA_DRM_TAMPER_DETECTED: return "DRM tampering detected";
+        case AMEDIA_DRM_VERIFY_FAILED: return "DRM verify failed";
+        case AMEDIA_DRM_NEED_KEY: return "DRM need key";
+        case AMEDIA_DRM_LICENSE_EXPIRED: return "DRM license expired";
+        case AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE: return "no buffer available";
+        case AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED: return "maximum images acquired";
+        case AMEDIA_IMGREADER_CANNOT_LOCK_IMAGE: return "cannot lock image";
+        case AMEDIA_IMGREADER_CANNOT_UNLOCK_IMAGE: return "cannot unlock image";
+        case AMEDIA_IMGREADER_IMAGE_NOT_LOCKED: return "image not locked";
+        default: break;
     }
 
-    return NULL; // unknown error
+    return NULL;  // unknown error
 }
 
 static bool SetMediaError(const char *what, const media_status_t rc)
 {
-    return SetErrorStr(what, MediaStatusStr(rc), (int)rc);
+    return SetErrorStr(what, MediaStatusStr(rc), (int) rc);
 }
+
 
 static ACameraManager *cameraMgr = NULL;
 
@@ -300,25 +257,20 @@ static void DestroyCameraManager(void)
 static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspace *colorspace)
 {
     switch (fmt) {
-#define CASE(x, y, z)    \
-    case x:              \
-        *format = y;     \
-        *colorspace = z; \
-        return
+        #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
         CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED);
-        CASE(AIMAGE_FORMAT_RGB_565, SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
-        CASE(AIMAGE_FORMAT_RGB_888, SDL_PIXELFORMAT_XRGB8888, SDL_COLORSPACE_SRGB);
-        CASE(AIMAGE_FORMAT_RGBA_8888, SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB);
-        CASE(AIMAGE_FORMAT_RGBX_8888, SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB);
-        CASE(AIMAGE_FORMAT_RGBA_FP16, SDL_PIXELFORMAT_RGBA64_FLOAT, SDL_COLORSPACE_SRGB);
-#undef CASE
-    default:
-        break;
+        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888, SDL_COLORSPACE_SRGB);
+        CASE(AIMAGE_FORMAT_RGBA_FP16,   SDL_PIXELFORMAT_RGBA64_FLOAT, SDL_COLORSPACE_SRGB);
+        #undef CASE
+        default: break;
     }
 
-#if DEBUG_CAMERA
-// SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
-#endif
+    #if DEBUG_CAMERA
+    //SDL_Log("Unknown format AIMAGE_FORMAT '%d'", fmt);
+    #endif
 
     *format = SDL_PIXELFORMAT_UNKNOWN;
     *colorspace = SDL_COLORSPACE_UNKNOWN;
@@ -327,23 +279,21 @@ static void format_android_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Color
 static Uint32 format_sdl_to_android(SDL_PixelFormat fmt)
 {
     switch (fmt) {
-#define CASE(x, y) \
-    case y:        \
-        return x
+        #define CASE(x, y)  case y: return x
         CASE(AIMAGE_FORMAT_YUV_420_888, SDL_PIXELFORMAT_NV12);
-        CASE(AIMAGE_FORMAT_RGB_565, SDL_PIXELFORMAT_RGB565);
-        CASE(AIMAGE_FORMAT_RGB_888, SDL_PIXELFORMAT_XRGB8888);
-        CASE(AIMAGE_FORMAT_RGBA_8888, SDL_PIXELFORMAT_RGBA8888);
-        CASE(AIMAGE_FORMAT_RGBX_8888, SDL_PIXELFORMAT_RGBX8888);
-#undef CASE
-    default:
-        return 0;
+        CASE(AIMAGE_FORMAT_RGB_565,     SDL_PIXELFORMAT_RGB565);
+        CASE(AIMAGE_FORMAT_RGB_888,     SDL_PIXELFORMAT_XRGB8888);
+        CASE(AIMAGE_FORMAT_RGBA_8888,   SDL_PIXELFORMAT_RGBA8888);
+        CASE(AIMAGE_FORMAT_RGBX_8888,   SDL_PIXELFORMAT_RGBX8888);
+        #undef CASE
+        default:
+            return 0;
     }
 }
 
 static bool ANDROIDCAMERA_WaitDevice(SDL_Camera *device)
 {
-    return true; // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
+    return true;  // this isn't used atm, since we run our own thread via onImageAvailable callbacks.
 }
 
 static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation)
@@ -354,9 +304,9 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
 
     res = pAImageReader_acquireNextImage(device->hidden->reader, &image);
     // We could also use this one:
-    // res = AImageReader_acquireLatestImage(device->hidden->reader, &image);
+    //res = AImageReader_acquireLatestImage(device->hidden->reader, &image);
 
-    SDL_assert(res != AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE); // we should only be here if onImageAvailable was called.
+    SDL_assert(res != AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE);  // we should only be here if onImageAvailable was called.
 
     if (res != AMEDIA_OK) {
         SetMediaError("Error AImageReader_acquireNextImage", res);
@@ -365,7 +315,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
 
     int64_t atimestamp = 0;
     if (pAImage_getTimestamp(image, &atimestamp) == AMEDIA_OK) {
-        *timestampNS = (Uint64)atimestamp;
+        *timestampNS = (Uint64) atimestamp;
     } else {
         *timestampNS = 0;
     }
@@ -375,7 +325,7 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
     pAImage_getNumberOfPlanes(image, &num_planes);
 
     if ((num_planes == 3) && (device->spec.format == SDL_PIXELFORMAT_NV12)) {
-        num_planes--; // treat the interleaved planes as one.
+        num_planes--;   // treat the interleaved planes as one.
     }
 
     size_t buflen = 0;
@@ -419,29 +369,18 @@ static SDL_CameraFrameResult ANDROIDCAMERA_AcquireFrame(SDL_Camera *device, SDL_
 
     int dev_rotation = 0;
     switch (Android_JNI_GetDisplayCurrentOrientation()) {
-    case SDL_ORIENTATION_PORTRAIT:
-        dev_rotation = 0;
-        break;
-    case SDL_ORIENTATION_LANDSCAPE:
-        dev_rotation = 90;
-        break;
-    case SDL_ORIENTATION_PORTRAIT_FLIPPED:
-        dev_rotation = 180;
-        break;
-    case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
-        dev_rotation = 270;
-        break;
-    default:
-        SDL_assert(!"Unexpected device rotation!");
-        dev_rotation = 0;
-        break;
+        case SDL_ORIENTATION_PORTRAIT: dev_rotation = 0; break;
+        case SDL_ORIENTATION_LANDSCAPE: dev_rotation = 90; break;
+        case SDL_ORIENTATION_PORTRAIT_FLIPPED: dev_rotation = 180; break;
+        case SDL_ORIENTATION_LANDSCAPE_FLIPPED: dev_rotation = 270; break;
+        default: SDL_assert(!"Unexpected device rotation!"); dev_rotation = 0; break;
     }
 
     if (device->position == SDL_CAMERA_POSITION_BACK_FACING) {
-        dev_rotation = -dev_rotation; // we want to subtract this value, instead of add, if back-facing.
+        dev_rotation = -dev_rotation;  // we want to subtract this value, instead of add, if back-facing.
     }
 
-    *rotation = (float)(dev_rotation + device->hidden->rotation); // current phone orientation, static camera orientation in relation to phone.
+    *rotation = (float) (dev_rotation + device->hidden->rotation);   // current phone orientation, static camera orientation in relation to phone.
 
     return result;
 }
@@ -454,51 +393,51 @@ static void ANDROIDCAMERA_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 
 static void onImageAvailable(void *context, AImageReader *reader)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onImageAvailable");
-#endif
-    SDL_Camera *device = (SDL_Camera *)context;
+    #endif
+    SDL_Camera *device = (SDL_Camera *) context;
     SDL_CameraThreadIterate(device);
 }
 
 static void onDisconnected(void *context, ACameraDevice *device)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onDisconnected");
-#endif
-    SDL_CameraDisconnected((SDL_Camera *)context);
+    #endif
+    SDL_CameraDisconnected((SDL_Camera *) context);
 }
 
 static void onError(void *context, ACameraDevice *device, int error)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onError");
-#endif
-    SDL_CameraDisconnected((SDL_Camera *)context);
+    #endif
+    SDL_CameraDisconnected((SDL_Camera *) context);
 }
 
-static void onClosed(void *context, ACameraCaptureSession *session)
+static void onClosed(void* context, ACameraCaptureSession *session)
 {
-// SDL_Camera *_this = (SDL_Camera *) context;
-#if DEBUG_CAMERA
+    // SDL_Camera *_this = (SDL_Camera *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onClosed");
-#endif
+    #endif
 }
 
-static void onReady(void *context, ACameraCaptureSession *session)
+static void onReady(void* context, ACameraCaptureSession *session)
 {
-// SDL_Camera *_this = (SDL_Camera *) context;
-#if DEBUG_CAMERA
+    // SDL_Camera *_this = (SDL_Camera *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onReady");
-#endif
+    #endif
 }
 
-static void onActive(void *context, ACameraCaptureSession *session)
+static void onActive(void* context, ACameraCaptureSession *session)
 {
-// SDL_Camera *_this = (SDL_Camera *) context;
-#if DEBUG_CAMERA
+    // SDL_Camera *_this = (SDL_Camera *) context;
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onActive");
-#endif
+    #endif
 }
 
 static void ANDROIDCAMERA_CloseDevice(SDL_Camera *device)
@@ -571,14 +510,15 @@ static bool PrepareCamera(SDL_Camera *device)
     imglistener.context = device;
     imglistener.onImageAvailable = onImageAvailable;
 
-    const char *devid = (const char *)device->handle;
+
+    const char *devid = (const char *) device->handle;
 
     device->hidden->rotation = 0;
     ACameraMetadata *metadata = NULL;
     ACameraMetadata_const_entry orientationentry;
     if (pACameraManager_getCameraCharacteristics(cameraMgr, devid, &metadata) == ACAMERA_OK) {
         if (pACameraMetadata_getConstEntry(metadata, ACAMERA_SENSOR_ORIENTATION, &orientationentry) == ACAMERA_OK) {
-            device->hidden->rotation = (int)(*orientationentry.data.i32 % 360);
+            device->hidden->rotation = (int) (*orientationentry.data.i32 % 360);
         }
         pACameraMetadata_free(metadata);
     }
@@ -617,25 +557,26 @@ static bool PrepareCamera(SDL_Camera *device)
 
 static void SDLCALL CameraPermissionCallback(void *userdata, const char *permission, bool granted)
 {
-    SDL_Camera *device = (SDL_Camera *)userdata;
-    if (device->hidden != NULL) { // if device was already closed, don't send an event.
+    SDL_Camera *device = (SDL_Camera *) userdata;
+    if (device->hidden != NULL) {   // if device was already closed, don't send an event.
         if (!granted) {
-            SDL_CameraPermissionOutcome(device, false); // sorry, permission denied.
-        } else if (!PrepareCamera(device)) {            // permission given? Actually open the camera now.
+            SDL_CameraPermissionOutcome(device, false);  // sorry, permission denied.
+        } else if (!PrepareCamera(device)) {  // permission given? Actually open the camera now.
             // uhoh, setup failed; since the app thinks we already "opened" the device, mark it as disconnected and don't report the permission.
             SDL_CameraDisconnected(device);
         } else {
             // okay! We have permission to use the camera _and_ opening the hardware worked out, report that the camera is usable!
-            SDL_CameraPermissionOutcome(device, true); // go go go!
+            SDL_CameraPermissionOutcome(device, true);  // go go go!
         }
     }
 
-    UnrefPhysicalCamera(device); // we ref'd this in OpenDevice, release the extra reference.
+    UnrefPhysicalCamera(device);   // we ref'd this in OpenDevice, release the extra reference.
 }
+
 
 static bool ANDROIDCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
 {
-#if 0 // !!! FIXME: for now, we'll just let this fail if it is going to fail, without checking for this
+#if 0  // !!! FIXME: for now, we'll just let this fail if it is going to fail, without checking for this
     /* Cannot open a second camera, while the first one is opened.
      * If you want to play several camera, they must all be opened first, then played.
      *
@@ -649,12 +590,12 @@ static bool ANDROIDCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *s
     }
 #endif
 
-    device->hidden = (struct SDL_PrivateCameraData *)SDL_calloc(1, sizeof(struct SDL_PrivateCameraData));
+    device->hidden = (struct SDL_PrivateCameraData *) SDL_calloc(1, sizeof (struct SDL_PrivateCameraData));
     if (device->hidden == NULL) {
         return false;
     }
 
-    RefPhysicalCamera(device); // ref'd until permission callback fires.
+    RefPhysicalCamera(device);  // ref'd until permission callback fires.
 
     // just in case SDL_OpenCamera is overwriting device->spec as CameraPermissionCallback runs, we work from a different copy.
     SDL_copyp(&device->hidden->requested_spec, spec);
@@ -663,7 +604,7 @@ static bool ANDROIDCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *s
         return false;
     }
 
-    return true; // we don't open the camera until permission is granted, so always succeed for now.
+    return true;  // we don't open the camera until permission is granted, so always succeed for now.
 }
 
 static void ANDROIDCAMERA_FreeDeviceHandle(SDL_Camera *device)
@@ -689,25 +630,25 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
     // libcamera2ndk. The Java camera2 API apparently _can_ access these cameras, but we're going on
     // without them here for now, in hopes that such hardware is a dying breed.
     if (pACameraManager_getCameraCharacteristics(cameraMgr, devid, &metadata) != ACAMERA_OK) {
-        return; // oh well.
+        return;  // oh well.
     } else if (pACameraMetadata_getConstEntry(metadata, ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &cfgentry) != ACAMERA_OK) {
         pACameraMetadata_free(metadata);
-        return; // oh well.
+        return;  // oh well.
     } else if (pACameraMetadata_getConstEntry(metadata, ACAMERA_SCALER_AVAILABLE_MIN_FRAME_DURATIONS, &durentry) != ACAMERA_OK) {
         pACameraMetadata_free(metadata);
-        return; // oh well.
+        return;  // oh well.
     }
 
     *fullname = NULL;
     if (pACameraMetadata_getConstEntry(metadata, ACAMERA_INFO_VERSION, &infoentry) == ACAMERA_OK) {
-        *fullname = (char *)SDL_malloc(infoentry.count + 1);
+        *fullname = (char *) SDL_malloc(infoentry.count + 1);
         if (*fullname) {
-            SDL_strlcpy(*fullname, (const char *)infoentry.data.u8, infoentry.count + 1);
+            SDL_strlcpy(*fullname, (const char *) infoentry.data.u8, infoentry.count + 1);
         }
     }
 
     ACameraMetadata_const_entry posentry;
-    if (pACameraMetadata_getConstEntry(metadata, ACAMERA_LENS_FACING, &posentry) == ACAMERA_OK) { // ignore this if it fails.
+    if (pACameraMetadata_getConstEntry(metadata, ACAMERA_LENS_FACING, &posentry) == ACAMERA_OK) {  // ignore this if it fails.
         if (*posentry.data.u8 == ACAMERA_LENS_FACING_FRONT) {
             *position = SDL_CAMERA_POSITION_FRONT_FACING;
             if (!*fullname) {
@@ -722,7 +663,7 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
     }
 
     if (!*fullname) {
-        *fullname = SDL_strdup("Generic camera"); // we tried.
+        *fullname = SDL_strdup("Generic camera");   // we tried.
     }
 
     const int32_t *i32ptr = cfgentry.data.i32;
@@ -767,18 +708,18 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
 
 static bool FindAndroidCameraByID(SDL_Camera *device, void *userdata)
 {
-    const char *devid = (const char *)userdata;
-    return (SDL_strcmp(devid, (const char *)device->handle) == 0);
+    const char *devid = (const char *) userdata;
+    return (SDL_strcmp(devid, (const char *) device->handle) == 0);
 }
 
 static void MaybeAddDevice(const char *devid)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: MaybeAddDevice('%s')", devid);
-#endif
+    #endif
 
-    if (SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *)devid)) {
-        return; // already have this one.
+    if (SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *) devid)) {
+        return;  // already have this one.
     }
 
     SDL_CameraPosition position = SDL_CAMERA_POSITION_UNKNOWN;
@@ -807,24 +748,24 @@ static void MaybeAddDevice(const char *devid)
 
 static void onCameraAvailable(void *context, const char *cameraId)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onCameraAvailable('%s')", cameraId);
-#endif
+    #endif
     SDL_assert(cameraId != NULL);
     MaybeAddDevice(cameraId);
 }
 
 static void onCameraUnavailable(void *context, const char *cameraId)
 {
-#if DEBUG_CAMERA
+    #if DEBUG_CAMERA
     SDL_Log("CAMERA: CB onCameraUnavailable('%s')", cameraId);
-#endif
+    #endif
 
     SDL_assert(cameraId != NULL);
 
     // THIS CALLBACK FIRES WHEN YOU OPEN THE DEVICE YOURSELF.  :(
     // Make sure we don't have the device opened, in which case onDisconnected will fire instead if actually lost.
-    SDL_Camera *device = SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *)cameraId);
+    SDL_Camera *device = SDL_FindPhysicalCameraByCallback(FindAndroidCameraByID, (void *) cameraId);
     if (device && !device->hidden) {
         SDL_CameraDisconnected(device);
     }
@@ -917,15 +858,8 @@ static bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
     }
 
     bool okay = true;
-#define LOADSYM(lib, fn)                                                                            \
-    if (okay) {                                                                                     \
-        p##fn = (pfn##fn)dlsym(lib, #fn);                                                           \
-        if (!p##fn) {                                                                               \
-            SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); \
-            okay = false;                                                                           \
-        }                                                                                           \
-    }
-    // #define LOADSYM(lib, fn) p##fn = (pfn##fn) fn
+    #define LOADSYM(lib, fn) if (okay) { p##fn = (pfn##fn) dlsym(lib, #fn); if (!p##fn) { SDL_Log("CAMERA: symbol '%s' can't be found in %s: %s", #fn, #lib "ndk.so", dlerror()); okay = false; } }
+    //#define LOADSYM(lib, fn) p##fn = (pfn##fn) fn
     LOADSYM(libcamera2, ACameraManager_create);
     LOADSYM(libcamera2, ACameraManager_registerAvailabilityCallback);
     LOADSYM(libcamera2, ACameraManager_unregisterAvailabilityCallback);
@@ -963,7 +897,7 @@ static bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
     LOADSYM(libmedia, AImage_getWidth);
     LOADSYM(libmedia, AImage_getHeight);
 
-#undef LOADSYM
+    #undef LOADSYM
 
     if (!okay) {
         dlclose(libmedia);

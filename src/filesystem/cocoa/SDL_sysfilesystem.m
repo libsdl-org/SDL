@@ -75,7 +75,7 @@ char *SDL_SYS_GetExeName(void)
                 if (!name) {
                     name = [[[bundle infoDictionary] objectForKey:@"CFBundleExecutable"] UTF8String];
                     if (!name) {
-                        name = [[[NSProcessInfo processInfo] processName] UTF8String]; // oh well.
+                        name = [[[NSProcessInfo processInfo] processName] UTF8String];  // oh well.
                     }
                 }
             }
@@ -207,7 +207,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
             break;
 
         default:
-            SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
+            SDL_SetError("Invalid SDL_Folder: %d", (int) folder);
             return NULL;
         };
 
@@ -225,7 +225,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
             return NULL;
         }
 
-    append_slash:
+append_slash:
         result = SDL_malloc(SDL_strlen(base) + 2);
         if (result == NULL) {
             return NULL;

@@ -24,6 +24,7 @@
 
 #include <kernel/OS.h>
 
+
 Uint64 SDL_GetPerformanceCounter(void)
 {
     return system_time();

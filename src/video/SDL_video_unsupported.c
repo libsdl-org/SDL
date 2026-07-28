@@ -106,3 +106,4 @@ void SDL_SetiOSEventPump(bool enabled)
     SDL_Unsupported();
 }
 #endif
+

@@ -22,13 +22,13 @@
 
 #ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#include <GLES2/gl2.h>
 #include <emscripten/emscripten.h>
 #include <emscripten/html5_webgl.h>
+#include <GLES2/gl2.h>
 
-#include "../../main/SDL_main_callbacks.h"
-#include "SDL_emscriptenopengles.h"
 #include "SDL_emscriptenvideo.h"
+#include "SDL_emscriptenopengles.h"
+#include "../../main/SDL_main_callbacks.h"
 
 bool Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {

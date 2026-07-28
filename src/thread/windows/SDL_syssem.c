@@ -60,8 +60,8 @@ static SDL_sem_impl_t SDL_sem_impl_active = { 0 };
 // APIs not available on WinPhone 8.1
 // https://www.microsoft.com/en-us/download/details.aspx?id=47328
 
-typedef BOOL(WINAPI *pfnWaitOnAddress)(volatile VOID *, PVOID, SIZE_T, DWORD);
-typedef VOID(WINAPI *pfnWakeByAddressSingle)(PVOID);
+typedef BOOL (WINAPI *pfnWaitOnAddress)(volatile VOID *, PVOID, SIZE_T, DWORD);
+typedef VOID (WINAPI *pfnWakeByAddressSingle)(PVOID);
 
 static pfnWaitOnAddress pWaitOnAddress = NULL;
 static pfnWakeByAddressSingle pWakeByAddressSingle = NULL;

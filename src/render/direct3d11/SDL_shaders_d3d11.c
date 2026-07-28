@@ -50,6 +50,7 @@
 #include "D3D11_VertexShader.h"
 #undef g_main
 
+
 static struct
 {
     const void *shader_data;

@@ -132,7 +132,8 @@ typedef struct SDL_HashTable SDL_HashTable;
  * \sa SDL_HashID
  * \sa SDL_HashPointer
  */
-typedef Uint32(SDLCALL *SDL_HashCallback)(void *userdata, const void *key);
+typedef Uint32 (SDLCALL *SDL_HashCallback)(void *userdata, const void *key);
+
 
 /**
  * A function pointer representing a hash table matching callback.
@@ -169,7 +170,8 @@ typedef Uint32(SDLCALL *SDL_HashCallback)(void *userdata, const void *key);
  *
  * \sa SDL_CreateHashTable
  */
-typedef bool(SDLCALL *SDL_HashKeyMatchCallback)(void *userdata, const void *a, const void *b);
+typedef bool (SDLCALL *SDL_HashKeyMatchCallback)(void *userdata, const void *a, const void *b);
+
 
 /**
  * A function pointer representing a hash table cleanup callback.
@@ -195,7 +197,8 @@ typedef bool(SDLCALL *SDL_HashKeyMatchCallback)(void *userdata, const void *a, c
  *
  * \sa SDL_CreateHashTable
  */
-typedef void(SDLCALL *SDL_HashDestroyCallback)(void *userdata, const void *key, const void *value);
+typedef void (SDLCALL *SDL_HashDestroyCallback)(void *userdata, const void *key, const void *value);
+
 
 /**
  * A function pointer representing a hash table iterator callback.
@@ -225,7 +228,8 @@ typedef void(SDLCALL *SDL_HashDestroyCallback)(void *userdata, const void *key, 
  *
  * \sa SDL_IterateHashTable
  */
-typedef bool(SDLCALL *SDL_HashTableIterateCallback)(void *userdata, const SDL_HashTable *table, const void *key, const void *value);
+typedef bool (SDLCALL *SDL_HashTableIterateCallback)(void *userdata, const SDL_HashTable *table, const void *key, const void *value);
+
 
 /**
  * Create a new hash table.
@@ -282,12 +286,13 @@ typedef bool(SDLCALL *SDL_HashTableIterateCallback)(void *userdata, const SDL_Ha
  *
  * \sa SDL_DestroyHashTable
  */
-extern SDL_HashTable *SDL_CreateHashTable(int estimated_capacity,
-                                          bool threadsafe,
-                                          SDL_HashCallback hash,
-                                          SDL_HashKeyMatchCallback keymatch,
-                                          SDL_HashDestroyCallback destroy,
-                                          void *userdata);
+extern SDL_HashTable * SDL_CreateHashTable(int estimated_capacity,
+                                           bool threadsafe,
+                                           SDL_HashCallback hash,
+                                           SDL_HashKeyMatchCallback keymatch,
+                                           SDL_HashDestroyCallback destroy,
+                                           void *userdata);
+
 
 /**
  * Destroy a hash table.
@@ -422,6 +427,7 @@ extern bool SDL_HashTableEmpty(SDL_HashTable *table);
  * \since This function is available since SDL 3.4.0.
  */
 extern bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallback callback, void *userdata);
+
 
 /* Helper functions for SDL_CreateHashTable callbacks... */
 
@@ -616,6 +622,7 @@ extern void SDL_DestroyHashKey(void *unused, const void *key, const void *value)
  * \sa SDL_CreateHashTable
  */
 extern void SDL_DestroyHashValue(void *unused, const void *key, const void *value);
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

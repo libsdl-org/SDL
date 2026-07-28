@@ -22,19 +22,19 @@
 
 #ifdef SDL_HAPTIC_LINUX
 
-#include "../../core/linux/SDL_evdev_capabilities.h"
-#include "../../core/linux/SDL_udev.h"
+#include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"         // For the real SDL_Joystick
 #include "../../joystick/linux/SDL_sysjoystick_c.h" // For joystick hwdata
-#include "../SDL_syshaptic.h"
+#include "../../core/linux/SDL_evdev_capabilities.h"
+#include "../../core/linux/SDL_udev.h"
 
-#include <errno.h>       // errno
+#include <unistd.h>      // close
+#include <linux/input.h> // Force feedback linux stuff.
 #include <fcntl.h>       // O_RDWR
 #include <limits.h>      // INT_MAX
-#include <linux/input.h> // Force feedback linux stuff.
+#include <errno.h>       // errno
 #include <string.h>      // strerror
 #include <sys/stat.h>    // stat
-#include <unistd.h>      // close
 
 #define MAX_HAPTICS 32 // It's doubtful someone has more then 32 evdev
 
@@ -918,7 +918,7 @@ static bool SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *s
  * Creates a new haptic effect.
  */
 bool SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                             const SDL_HapticEffect *base)
+                            const SDL_HapticEffect *base)
 {
     struct ff_effect *linux_effect;
 
@@ -958,8 +958,8 @@ new_effect_err:
  * the effect to restart and run once.
  */
 bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
-                                struct haptic_effect *effect,
-                                const SDL_HapticEffect *data)
+                               struct haptic_effect *effect,
+                               const SDL_HapticEffect *data)
 {
     struct ff_effect linux_effect;
 
@@ -986,7 +986,7 @@ bool SDL_SYS_HapticUpdateEffect(SDL_Haptic *haptic,
  * Runs an effect.
  */
 bool SDL_SYS_HapticRunEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                             Uint32 iterations)
+                            Uint32 iterations)
 {
     struct input_event run;
 

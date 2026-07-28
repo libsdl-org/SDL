@@ -44,15 +44,15 @@ typedef enum
 
 typedef enum
 {
-    MainFlagConstant = 0x0001,
-    MainFlagVariable = 0x0002,
-    MainFlagRelative = 0x0004,
-    MainFlagWrap = 0x0008,
-    MainFlagNonLinear = 0x0010,
-    MainFlagNoPreferred = 0x0020,
-    MainFlagNullState = 0x0040,
-    MainFlagVolatile = 0x0080,
-    MainFlagBufferedBytes = 0x0100,
+    MainFlagConstant        = 0x0001,
+    MainFlagVariable        = 0x0002,
+    MainFlagRelative        = 0x0004,
+    MainFlagWrap            = 0x0008,
+    MainFlagNonLinear        = 0x0010,
+    MainFlagNoPreferred        = 0x0020,
+    MainFlagNullState        = 0x0040,
+    MainFlagVolatile        = 0x0080,
+    MainFlagBufferedBytes    = 0x0100,
 } MainFlag;
 
 typedef enum
@@ -464,7 +464,7 @@ static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, int
 {
     SDL_zerop(ctx);
 
-    for (const Uint8 *here = descriptor; here < descriptor + descriptor_size;) {
+    for (const Uint8 *here = descriptor; here < descriptor + descriptor_size; ) {
         static const int sizes[4] = { 0, 1, 2, 4 };
         Uint8 data = *here++;
         int size = sizes[(data & 0x3)];

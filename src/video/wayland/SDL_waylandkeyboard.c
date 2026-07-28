@@ -22,10 +22,10 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../events/SDL_keyboard_c.h"
 #include "../SDL_sysvideo.h"
-#include "SDL_waylandevents_c.h"
 #include "SDL_waylandvideo.h"
+#include "SDL_waylandevents_c.h"
+#include "../../events/SDL_keyboard_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
 bool Wayland_InitKeyboard(SDL_VideoDevice *_this)

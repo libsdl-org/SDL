@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../dialog/unix/SDL_zenitymessagebox.h"
 #include "SDL_waylandmessagebox.h"
+#include "../../dialog/unix/SDL_zenitymessagebox.h"
 
 bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {

@@ -25,8 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL_pspgl_c.h"
 #include "SDL_pspvideo.h"
+#include "SDL_pspgl_c.h"
 
 /*****************************************************************************/
 // SDL OpenGL/OpenGL ES functions
@@ -39,7 +39,7 @@
         err = eglGetError();                   \
         if (err != EGL_SUCCESS) {              \
             SDL_SetError("EGL error %d", err); \
-            return NULL;                       \
+            return NULL;                          \
         }                                      \
     } while (0)
 

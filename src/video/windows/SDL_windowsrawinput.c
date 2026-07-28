@@ -28,8 +28,8 @@
 
 #include "SDL_windowsevents.h"
 
-#include "../../events/SDL_events_c.h"
 #include "../../joystick/usb_ids.h"
+#include "../../events/SDL_events_c.h"
 #include "../../thread/SDL_systhread.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
@@ -354,8 +354,7 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
-typedef enum WIN_RawKeyboardFlag
-{
+typedef enum WIN_RawKeyboardFlag {
     NOHOTKEYS,
     INPUTSINK,
 } WIN_RawKeyboardFlag;
@@ -364,15 +363,15 @@ static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag f
 {
     SDL_VideoData *data = _this->internal;
 
-    switch (flag) {
-    case NOHOTKEYS:
-        data->raw_keyboard_flag_nohotkeys = enabled;
-        break;
-    case INPUTSINK:
-        data->raw_keyboard_flag_inputsink = enabled;
-        break;
-    default:
-        return false;
+    switch(flag) {
+        case NOHOTKEYS:
+            data->raw_keyboard_flag_nohotkeys = enabled;
+            break;
+        case INPUTSINK:
+            data->raw_keyboard_flag_inputsink = enabled;
+            break;
+        default:
+            return false;
     }
 
     if (data->gameinput_context) {

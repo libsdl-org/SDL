@@ -25,8 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 // System dependent filesystem routines
 
-#include "../../core/android/SDL_android.h"
 #include "../SDL_sysfilesystem.h"
+#include "../../core/android/SDL_android.h"
 
 char *SDL_SYS_GetBasePath(void)
 {

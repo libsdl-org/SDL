@@ -57,6 +57,7 @@ extern void SDL_CameraThreadShutdown(SDL_Camera *device);
 // Backends can call this if they have to finish initializing later, like Emscripten. Most backends should _not_ call this directly!
 extern bool SDL_PrepareCameraSurfaces(SDL_Camera *device);
 
+
 // common utility functionality to gather up camera specs. Not required!
 typedef struct CameraFormatAddData
 {
@@ -136,15 +137,15 @@ struct SDL_Camera
 
     // A queue of surfaces that buffer converted/scaled frames of video until the app claims them.
     SurfaceList output_surfaces[8];
-    SurfaceList filled_output_surfaces; // this is FIFO
-    SurfaceList empty_output_surfaces;  // this is LIFO
+    SurfaceList filled_output_surfaces;        // this is FIFO
+    SurfaceList empty_output_surfaces;         // this is LIFO
     SurfaceList app_held_output_surfaces;
 
     // A fake video frame we allocate if the camera fails/disconnects.
     Uint8 *zombie_pixels;
 
     // non-zero if acquire_surface needs to be scaled for final output.
-    int needs_scaling; // -1: downscale, 0: no scaling, 1: upscale
+    int needs_scaling;  // -1: downscale, 0: no scaling, 1: upscale
 
     // true if acquire_surface needs to be converted for final output.
     bool needs_conversion;
@@ -166,6 +167,7 @@ struct SDL_Camera
     struct SDL_PrivateCameraData *hidden;
 };
 
+
 // Note that for AcquireFrame, `rotation` is degrees, with positive values rotating clockwise. This is the amount to rotate an image so it would be right-side up.
 // Rotations should be in 90 degree increments at this time (landscape to portrait, or upside down to right side up, etc).
 // Most platforms won't care about this, but mobile devices might need to deal with the device itself being physically rotated, causing the fixed-orientation camera to be presenting sideways images.
@@ -177,8 +179,8 @@ typedef struct SDL_CameraDriverImpl
     void (*CloseDevice)(SDL_Camera *device);
     bool (*WaitDevice)(SDL_Camera *device);
     SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation); // set frame->pixels, frame->pitch, *timestampNS, and *rotation!
-    void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);                                                        // Reclaim frame->pixels and frame->pitch!
-    void (*FreeDeviceHandle)(SDL_Camera *device);                                                                        // SDL is done with this device; free the handle from SDL_AddCamera()
+    void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
+    void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);
 
     bool ProvidesOwnCallbackThread;
@@ -193,17 +195,17 @@ typedef struct SDL_PendingCameraEvent
 
 typedef struct SDL_CameraDriver
 {
-    const char *name;          // The name of this camera driver
-    const char *desc;          // The description of this camera driver
+    const char *name;  // The name of this camera driver
+    const char *desc;  // The description of this camera driver
     SDL_CameraDriverImpl impl; // the backend's interface
 
-    SDL_RWLock *device_hash_lock; // A rwlock that protects `device_hash`   // !!! FIXME: device_hash _also_ has a rwlock, see if we still need this one.
-    SDL_HashTable *device_hash;   // the collection of currently-available camera devices
+    SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash`   // !!! FIXME: device_hash _also_ has a rwlock, see if we still need this one.
+    SDL_HashTable *device_hash;  // the collection of currently-available camera devices
     SDL_PendingCameraEvent pending_events;
     SDL_PendingCameraEvent *pending_events_tail;
 
     SDL_AtomicInt device_count;
-    SDL_AtomicInt shutting_down; // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
+    SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_CameraDriver;
 
 typedef struct CameraBootStrap

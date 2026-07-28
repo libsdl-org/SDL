@@ -22,8 +22,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_RISCOS
 
-#include "../../events/SDL_mouse_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_mouse_c.h"
 
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"

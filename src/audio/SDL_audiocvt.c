@@ -26,7 +26,7 @@
 #include "SDL_audioresample.h"
 
 #ifndef SDL_INT_MAX
-#define SDL_INT_MAX ((int)(~0u >> 1))
+#define SDL_INT_MAX ((int)(~0u>>1))
 #endif
 
 #ifdef SDL_SSE3_INTRINSICS
@@ -41,7 +41,7 @@ static void SDL_TARGETING("sse3") SDL_ConvertStereoToMono_SSE3(float *dst, const
     /* Do SSE blocks as long as we have 16 bytes available.
        Just use unaligned load/stores, if the memory at runtime is
        aligned it'll be just as fast on modern processors */
-    while (i >= 4) { // 4 * float32
+    while (i >= 4) {  // 4 * float32
         _mm_storeu_ps(dst, _mm_mul_ps(_mm_hadd_ps(_mm_loadu_ps(src), _mm_loadu_ps(src + 4)), divby2));
         i -= 4;
         src += 8;
@@ -65,8 +65,8 @@ static void SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(float *dst, const f
     LOG_DEBUG_AUDIO_CONVERT("mono", "stereo (using SSE)");
 
     // convert backwards, since output is growing in-place.
-    src += (num_frames - 4) * 1;
-    dst += (num_frames - 4) * 2;
+    src += (num_frames-4) * 1;
+    dst += (num_frames-4) * 2;
 
     /* Do SSE blocks as long as we have 16 bytes available.
        Just use unaligned load/stores, if the memory at runtime is
@@ -85,7 +85,7 @@ static void SDL_TARGETING("sse") SDL_ConvertMonoToStereo_SSE(float *dst, const f
     // Finish off any leftovers with scalar operations.
     src += 3;
     dst += 6;   // adjust for smaller buffers.
-    while (i) { // convert backwards, since output is growing in-place.
+    while (i) {  // convert backwards, since output is growing in-place.
         const float srcFC = src[0];
         dst[1] /* FR */ = srcFC;
         dst[0] /* FL */ = srcFC;
@@ -110,13 +110,13 @@ static bool SDL_IsSupportedAudioFormat(const SDL_AudioFormat fmt)
     case SDL_AUDIO_S32BE:
     case SDL_AUDIO_F32LE:
     case SDL_AUDIO_F32BE:
-        return true; // supported.
+        return true;  // supported.
 
     default:
         break;
     }
 
-    return false; // unsupported.
+    return false;  // unsupported.
 }
 
 static bool SDL_IsSupportedChannelCount(const int channels)
@@ -152,9 +152,9 @@ bool SDL_ChannelMapIsDefault(const int *chmap, int channels)
 // Swizzle audio channels. src and dst can be the same pointer. It does not change the buffer size.
 static void SwizzleAudio(const int num_frames, void *dst, const void *src, int channels, const int *map, SDL_AudioFormat fmt)
 {
-    const int bitsize = (int)SDL_AUDIO_BITSIZE(fmt);
+    const int bitsize = (int) SDL_AUDIO_BITSIZE(fmt);
 
-    bool has_null_mappings = false; // !!! FIXME: calculate this when setting the channel map instead.
+    bool has_null_mappings = false;  // !!! FIXME: calculate this when setting the channel map instead.
     for (int i = 0; i < channels; i++) {
         if (map[i] == -1) {
             has_null_mappings = true;
@@ -162,74 +162,66 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
         }
     }
 
-#define CHANNEL_SWIZZLE(bits)                                                                                                                              \
-    {                                                                                                                                                      \
-        Uint##bits *tdst = (Uint##bits *)dst; /* treat as UintX; we only care about moving bits and not the type here. */                                  \
-        const Uint##bits *tsrc = (const Uint##bits *)src;                                                                                                  \
-        if (src != dst) { /* don't need to copy to a temporary frame first. */                                                                             \
-            if (has_null_mappings) {                                                                                                                       \
-                const Uint##bits silence = (Uint##bits)SDL_GetSilenceValueForFormat(fmt);                                                                  \
-                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) {                                                                 \
-                    for (int ch = 0; ch < channels; ch++) {                                                                                                \
-                        const int m = map[ch];                                                                                                             \
-                        tdst[ch] = (m == -1) ? silence : tsrc[m];                                                                                          \
-                    }                                                                                                                                      \
-                }                                                                                                                                          \
-            } else {                                                                                                                                       \
-                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) {                                                                 \
-                    for (int ch = 0; ch < channels; ch++) {                                                                                                \
-                        tdst[ch] = tsrc[map[ch]];                                                                                                          \
-                    }                                                                                                                                      \
-                }                                                                                                                                          \
-            }                                                                                                                                              \
-        } else {                                                                                                                                           \
-            bool isstack;                                                                                                                                  \
-            Uint##bits *tmp = (Uint##bits *)SDL_small_alloc(int, channels, &isstack); /* !!! FIXME: allocate this when setting the channel map instead. */ \
-            if (tmp) {                                                                                                                                     \
-                if (has_null_mappings) {                                                                                                                   \
-                    const Uint##bits silence = (Uint##bits)SDL_GetSilenceValueForFormat(fmt);                                                              \
-                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) {                                                             \
-                        for (int ch = 0; ch < channels; ch++) {                                                                                            \
-                            const int m = map[ch];                                                                                                         \
-                            tmp[ch] = (m == -1) ? silence : tsrc[m];                                                                                       \
-                        }                                                                                                                                  \
-                        for (int ch = 0; ch < channels; ch++) {                                                                                            \
-                            tdst[ch] = tmp[ch];                                                                                                            \
-                        }                                                                                                                                  \
-                    }                                                                                                                                      \
-                } else {                                                                                                                                   \
-                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) {                                                             \
-                        for (int ch = 0; ch < channels; ch++) {                                                                                            \
-                            tmp[ch] = tsrc[map[ch]];                                                                                                       \
-                        }                                                                                                                                  \
-                        for (int ch = 0; ch < channels; ch++) {                                                                                            \
-                            tdst[ch] = tmp[ch];                                                                                                            \
-                        }                                                                                                                                  \
-                    }                                                                                                                                      \
-                }                                                                                                                                          \
-                SDL_small_free(tmp, isstack);                                                                                                              \
-            }                                                                                                                                              \
-        }                                                                                                                                                  \
+    #define CHANNEL_SWIZZLE(bits) { \
+        Uint##bits *tdst = (Uint##bits *) dst; /* treat as UintX; we only care about moving bits and not the type here. */ \
+        const Uint##bits *tsrc = (const Uint##bits *) src; \
+        if (src != dst) {  /* don't need to copy to a temporary frame first. */ \
+            if (has_null_mappings) { \
+                const Uint##bits silence = (Uint##bits) SDL_GetSilenceValueForFormat(fmt); \
+                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                    for (int ch = 0; ch < channels; ch++) { \
+                        const int m = map[ch]; \
+                        tdst[ch] = (m == -1) ? silence : tsrc[m]; \
+                    } \
+                } \
+            } else { \
+                for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                    for (int ch = 0; ch < channels; ch++) { \
+                        tdst[ch] = tsrc[map[ch]]; \
+                    } \
+                } \
+            } \
+        } else { \
+            bool isstack; \
+            Uint##bits *tmp = (Uint##bits *) SDL_small_alloc(int, channels, &isstack); /* !!! FIXME: allocate this when setting the channel map instead. */ \
+            if (tmp) { \
+                if (has_null_mappings) { \
+                    const Uint##bits silence = (Uint##bits) SDL_GetSilenceValueForFormat(fmt); \
+                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            const int m = map[ch]; \
+                            tmp[ch] = (m == -1) ? silence : tsrc[m]; \
+                        } \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tdst[ch] = tmp[ch]; \
+                        } \
+                    } \
+                } else { \
+                    for (int i = 0; i < num_frames; i++, tsrc += channels, tdst += channels) { \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tmp[ch] = tsrc[map[ch]]; \
+                        } \
+                        for (int ch = 0; ch < channels; ch++) { \
+                            tdst[ch] = tmp[ch]; \
+                        } \
+                    } \
+                } \
+                SDL_small_free(tmp, isstack); \
+            } \
+        } \
     }
 
     switch (bitsize) {
-    case 8:
-        CHANNEL_SWIZZLE(8);
-        break;
-    case 16:
-        CHANNEL_SWIZZLE(16);
-        break;
-    case 32:
-        CHANNEL_SWIZZLE(32);
-        break;
-    // we don't currently have int64 or double audio datatypes, so no `case 64` for now.
-    default:
-        SDL_assert(!"Unsupported audio datatype size");
-        break;
+        case 8: CHANNEL_SWIZZLE(8); break;
+        case 16: CHANNEL_SWIZZLE(16); break;
+        case 32: CHANNEL_SWIZZLE(32); break;
+        // we don't currently have int64 or double audio datatypes, so no `case 64` for now.
+        default: SDL_assert(!"Unsupported audio datatype size"); break;
     }
 
-#undef CHANNEL_SWIZZLE
+    #undef CHANNEL_SWIZZLE
 }
+
 
 // This does type and channel conversions _but not resampling_ (resampling happens in SDL_AudioStream).
 // This does not check parameter validity, (beyond asserts), it expects you did that already!
@@ -255,19 +247,19 @@ void ConvertAudio(int num_frames,
     SDL_assert(SDL_IsSupportedChannelCount(dst_channels));
 
     if (!num_frames) {
-        return; // no data to convert, quit.
+        return;  // no data to convert, quit.
     }
 
 #if DEBUG_AUDIO_CONVERT
     SDL_Log("SDL_AUDIO_CONVERT: Convert format %04x->%04x, channels %u->%u", src_format, dst_format, src_channels, dst_channels);
 #endif
 
-    const int dst_bitsize = (int)SDL_AUDIO_BITSIZE(dst_format);
+    const int dst_bitsize = (int) SDL_AUDIO_BITSIZE(dst_format);
     const int dst_sample_frame_size = (dst_bitsize / 8) * dst_channels;
 
     const bool chmaps_match = (src_channels == dst_channels) && SDL_AudioChannelMapsEqual(src_channels, src_map, dst_map);
     if (chmaps_match) {
-        src_map = dst_map = NULL; // NULL both these out so we don't do any unnecessary swizzling.
+        src_map = dst_map = NULL;  // NULL both these out so we don't do any unnecessary swizzling.
     }
 
     /* Type conversion goes like this now:
@@ -288,7 +280,7 @@ void ConvertAudio(int num_frames,
 
     // swizzle input to "standard" format if necessary.
     if (src_map) {
-        void *buf = scratch ? scratch : dst; // use scratch if available, since it has to be big enough to hold src, unless it's NULL, then dst has to be.
+        void *buf = scratch ? scratch : dst;  // use scratch if available, since it has to be big enough to hold src, unless it's NULL, then dst has to be.
         SwizzleAudio(num_frames, buf, src, src_channels, src_map, src_format);
         src = buf;
     }
@@ -307,12 +299,12 @@ void ConvertAudio(int num_frames,
 
         // just a byteswap needed?
         if ((src_format ^ dst_format) == SDL_AUDIO_MASK_BIG_ENDIAN) {
-            if (dst_map) { // do this first, in case we duplicate channels, we can avoid an extra copy if src != dst.
+            if (dst_map) {  // do this first, in case we duplicate channels, we can avoid an extra copy if src != dst.
                 SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_format);
                 src = dst;
             }
             ConvertAudioSwapEndian(dst, src, num_frames * dst_channels, dst_bitsize);
-            return; // all done.
+            return;  // all done.
         }
     }
 
@@ -327,7 +319,7 @@ void ConvertAudio(int num_frames,
     // get us to float format.
     if (srcconvert) {
         void *buf = (channelconvert || dstconvert) ? scratch : dst;
-        ConvertAudioToFloat((float *)buf, src, num_frames * src_channels, src_format);
+        ConvertAudioToFloat((float *) buf, src, num_frames * src_channels, src_format);
         src = buf;
     }
 
@@ -363,17 +355,13 @@ void ConvertAudio(int num_frames,
 
         // swap in some SIMD versions for a few of these.
         if (channel_converter == SDL_ConvertStereoToMono) {
-#ifdef SDL_SSE3_INTRINSICS
-            if (!override && SDL_HasSSE3()) {
-                override = SDL_ConvertStereoToMono_SSE3;
-            }
-#endif
+            #ifdef SDL_SSE3_INTRINSICS
+            if (!override && SDL_HasSSE3()) { override = SDL_ConvertStereoToMono_SSE3; }
+            #endif
         } else if (channel_converter == SDL_ConvertMonoToStereo) {
-#ifdef SDL_SSE_INTRINSICS
-            if (!override && SDL_HasSSE()) {
-                override = SDL_ConvertMonoToStereo_SSE;
-            }
-#endif
+            #ifdef SDL_SSE_INTRINSICS
+            if (!override && SDL_HasSSE()) { override = SDL_ConvertMonoToStereo_SSE; }
+            #endif
         }
 
         if (override) {
@@ -381,7 +369,7 @@ void ConvertAudio(int num_frames,
         }
 
         void *buf = dstconvert ? scratch : dst;
-        channel_converter((float *)buf, (const float *)src, num_frames);
+        channel_converter((float *) buf, (const float *) src, num_frames);
         src = buf;
     }
 
@@ -389,11 +377,11 @@ void ConvertAudio(int num_frames,
 
     // Move to final data type.
     if (dstconvert) {
-        ConvertAudioFromFloat(dst, (const float *)src, num_frames * dst_channels, dst_format);
+        ConvertAudioFromFloat(dst, (const float *) src, num_frames * dst_channels, dst_format);
         src = dst;
     }
 
-    SDL_assert(src == dst); // if we got here, we _had_ to have done _something_. Otherwise, we should have memcpy'd!
+    SDL_assert(src == dst);  // if we got here, we _had_ to have done _something_. Otherwise, we should have memcpy'd!
 
     if (dst_map) {
         SwizzleAudio(num_frames, dst, src, dst_channels, dst_map, dst_format);
@@ -406,7 +394,7 @@ static int CalculateMaxFrameSize(SDL_AudioFormat src_format, int src_channels, S
     const int src_format_size = SDL_AUDIO_BYTESIZE(src_format);
     const int dst_format_size = SDL_AUDIO_BYTESIZE(dst_format);
     const int max_app_format_size = SDL_max(src_format_size, dst_format_size);
-    const int max_format_size = SDL_max(max_app_format_size, sizeof(float)); // ConvertAudio and ResampleAudio use floats.
+    const int max_format_size = SDL_max(max_app_format_size, sizeof (float));  // ConvertAudio and ResampleAudio use floats.
     const int max_channels = SDL_max(src_channels, dst_channels);
     return max_format_size * max_channels;
 }
@@ -438,7 +426,7 @@ static bool UpdateAudioStreamInputSpec(SDL_AudioStream *stream, const SDL_AudioS
     if (!chmap) {
         stream->input_chmap = NULL;
     } else {
-        const size_t chmaplen = sizeof(*chmap) * spec->channels;
+        const size_t chmaplen = sizeof (*chmap) * spec->channels;
         stream->input_chmap = stream->input_chmap_storage;
         SDL_memcpy(stream->input_chmap, chmap, chmaplen);
     }
@@ -486,7 +474,7 @@ SDL_AudioStream *SDL_CreateAudioStream(const SDL_AudioSpec *src_spec, const SDL_
 
 SDL_PropertiesID SDL_GetAudioStreamProperties(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return 0;
     }
@@ -501,7 +489,7 @@ SDL_PropertiesID SDL_GetAudioStreamProperties(SDL_AudioStream *stream)
 
 bool SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -514,7 +502,7 @@ bool SDL_SetAudioStreamGetCallback(SDL_AudioStream *stream, SDL_AudioStreamCallb
 
 bool SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallback callback, void *userdata)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -527,7 +515,7 @@ bool SDL_SetAudioStreamPutCallback(SDL_AudioStream *stream, SDL_AudioStreamCallb
 
 bool SDL_LockAudioStream(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -537,7 +525,7 @@ bool SDL_LockAudioStream(SDL_AudioStream *stream)
 
 bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -547,7 +535,7 @@ bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
 
 bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         if (src_spec) {
             SDL_zerop(src_spec);
         }
@@ -577,7 +565,7 @@ bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, 
 
 bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_spec, const SDL_AudioSpec *dst_spec)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -586,25 +574,25 @@ bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_
     // like 196608000Hz. File a bug.  :P
 
     if (src_spec) {
-        CHECK_PARAM (!SDL_IsSupportedAudioFormat(src_spec->format)) {
+        CHECK_PARAM(!SDL_IsSupportedAudioFormat(src_spec->format)) {
             return SDL_InvalidParamError("src_spec->format");
         }
-        CHECK_PARAM (!SDL_IsSupportedChannelCount(src_spec->channels)) {
+        CHECK_PARAM(!SDL_IsSupportedChannelCount(src_spec->channels)) {
             return SDL_InvalidParamError("src_spec->channels");
         }
-        CHECK_PARAM (src_spec->freq <= 0) {
+        CHECK_PARAM(src_spec->freq <= 0) {
             return SDL_InvalidParamError("src_spec->freq");
         }
     }
 
     if (dst_spec) {
-        CHECK_PARAM (!SDL_IsSupportedAudioFormat(dst_spec->format)) {
+        CHECK_PARAM(!SDL_IsSupportedAudioFormat(dst_spec->format)) {
             return SDL_InvalidParamError("dst_spec->format");
         }
-        CHECK_PARAM (!SDL_IsSupportedChannelCount(dst_spec->channels)) {
+        CHECK_PARAM(!SDL_IsSupportedChannelCount(dst_spec->channels)) {
             return SDL_InvalidParamError("dst_spec->channels");
         }
-        CHECK_PARAM (dst_spec->freq <= 0) {
+        CHECK_PARAM(dst_spec->freq <= 0) {
             return SDL_InvalidParamError("dst_spec->freq");
         }
     }
@@ -643,7 +631,7 @@ bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_
 
 bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec, int **stream_chmap, const int *chmap, int channels, int isinput)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -655,13 +643,13 @@ bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec
         result = SDL_SetError("Wrong number of channels");
     } else if (!*stream_chmap && !chmap) {
         // already at default, we're good.
-    } else if (*stream_chmap && chmap && (SDL_memcmp(*stream_chmap, chmap, sizeof(*chmap) * channels) == 0)) {
+    } else if (*stream_chmap && chmap && (SDL_memcmp(*stream_chmap, chmap, sizeof (*chmap) * channels) == 0)) {
         // already have this map, don't allocate/copy it again.
     } else if (SDL_ChannelMapIsBogus(chmap, channels)) {
         result = SDL_SetError("Invalid channel mapping");
     } else {
         if (SDL_ChannelMapIsDefault(chmap, channels)) {
-            chmap = NULL; // just apply a default mapping.
+            chmap = NULL;  // just apply a default mapping.
         }
         if (chmap) {
             int *dupmap = SDL_ChannelMapDup(chmap, channels);
@@ -729,7 +717,7 @@ int *SDL_GetAudioStreamOutputChannelMap(SDL_AudioStream *stream, int *count)
 
 float SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return 0.0f;
     }
@@ -743,7 +731,7 @@ float SDL_GetAudioStreamFrequencyRatio(SDL_AudioStream *stream)
 
 bool SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -766,7 +754,7 @@ bool SDL_SetAudioStreamFrequencyRatio(SDL_AudioStream *stream, float freq_ratio)
 
 float SDL_GetAudioStreamGain(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return -1.0f;
     }
@@ -780,10 +768,10 @@ float SDL_GetAudioStreamGain(SDL_AudioStream *stream)
 
 bool SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
-    CHECK_PARAM (gain < 0.0f) {
+    CHECK_PARAM(gain < 0.0f) {
         return SDL_InvalidParamError("gain");
     }
 
@@ -869,13 +857,13 @@ static void SDLCALL FreeAllocatedAudioBuffer(void *userdata, const void *buf, in
 
 bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
-    CHECK_PARAM (!buf) {
+    CHECK_PARAM(!buf) {
         return SDL_InvalidParamError("buf");
     }
-    CHECK_PARAM (len < 0) {
+    CHECK_PARAM(len < 0) {
         return SDL_InvalidParamError("len");
     }
 
@@ -906,44 +894,43 @@ bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     return PutAudioStreamBuffer(stream, buf, len, NULL, NULL);
 }
 
-#define GENERIC_INTERLEAVE_FUNCTION(bits)                                                                                                   \
-    static void InterleaveAudioChannelsGeneric##bits(void *output, const void *const *channel_buffers, const int channels, int num_samples) \
-    {                                                                                                                                       \
-        Uint##bits *dst = (Uint##bits *)output;                                                                                             \
-        const Uint##bits *const *srcs = (const Uint##bits *const *)channel_buffers;                                                         \
-        for (int frame = 0; frame < num_samples; frame++) {                                                                                 \
-            for (int channel = 0; channel < channels; channel++) {                                                                          \
-                *(dst++) = srcs[channel][frame];                                                                                            \
-            }                                                                                                                               \
-        }                                                                                                                                   \
+
+#define GENERIC_INTERLEAVE_FUNCTION(bits) \
+    static void InterleaveAudioChannelsGeneric##bits(void *output, const void * const *channel_buffers, const int channels, int num_samples) { \
+        Uint##bits *dst = (Uint##bits *) output; \
+        const Uint##bits * const *srcs = (const Uint##bits * const *) channel_buffers; \
+        for (int frame = 0; frame < num_samples; frame++) { \
+            for (int channel = 0; channel < channels; channel++) { \
+                *(dst++) = srcs[channel][frame]; \
+            } \
+        } \
     }
 
 GENERIC_INTERLEAVE_FUNCTION(8)
 GENERIC_INTERLEAVE_FUNCTION(16)
 GENERIC_INTERLEAVE_FUNCTION(32)
-// GENERIC_INTERLEAVE_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
+//GENERIC_INTERLEAVE_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
 #undef GENERIC_INTERLEAVE_FUNCTION
 
-#define GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(bits)                                                                                                                     \
-    static void InterleaveAudioChannelsWithNullsGeneric##bits(void *output, const void *const *channel_buffers, const int channels, int num_samples, const int isilence) \
-    {                                                                                                                                                                    \
-        const Uint##bits silence = (Uint##bits)isilence;                                                                                                                 \
-        Uint##bits *dst = (Uint##bits *)output;                                                                                                                          \
-        const Uint##bits *const *srcs = (const Uint##bits *const *)channel_buffers;                                                                                      \
-        for (int frame = 0; frame < num_samples; frame++) {                                                                                                              \
-            for (int channel = 0; channel < channels; channel++) {                                                                                                       \
-                *(dst++) = srcs[channel] ? srcs[channel][frame] : silence;                                                                                               \
-            }                                                                                                                                                            \
-        }                                                                                                                                                                \
+#define GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(bits) \
+    static void InterleaveAudioChannelsWithNullsGeneric##bits(void *output, const void * const *channel_buffers, const int channels, int num_samples, const int isilence) { \
+        const Uint##bits silence = (Uint##bits) isilence; \
+        Uint##bits *dst = (Uint##bits *) output; \
+        const Uint##bits * const *srcs = (const Uint##bits * const *) channel_buffers; \
+        for (int frame = 0; frame < num_samples; frame++) { \
+            for (int channel = 0; channel < channels; channel++) { \
+                *(dst++) = srcs[channel] ? srcs[channel][frame] : silence; \
+            } \
+        } \
     }
 
 GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(8)
 GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(16)
 GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(32)
-// GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
+//GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
 #undef GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION
 
-static void InterleaveAudioChannels(void *output, const void *const *channel_buffers, int channels, int num_samples, const SDL_AudioSpec *spec)
+static void InterleaveAudioChannels(void *output, const void * const *channel_buffers, int channels, int num_samples, const SDL_AudioSpec *spec)
 {
     bool have_null_channel = false;
     void *channels_full[16];
@@ -953,12 +940,12 @@ static void InterleaveAudioChannels(void *output, const void *const *channel_buf
         have_null_channel = true;
         SDL_assert(SDL_IsSupportedChannelCount(spec->channels));
         SDL_assert(spec->channels <= SDL_arraysize(channels_full));
-        SDL_memcpy(channels_full, channel_buffers, channels * sizeof(*channel_buffers));
-        SDL_memset(channels_full + channels, 0, (spec->channels - channels) * sizeof(*channel_buffers));
-        channel_buffers = (const void *const *)channels_full;
+        SDL_memcpy(channels_full, channel_buffers, channels * sizeof (*channel_buffers));
+        SDL_memset(channels_full + channels, 0, (spec->channels - channels) * sizeof (*channel_buffers));
+        channel_buffers = (const void * const *) channels_full;
     }
 
-    channels = spec->channels; // it's either < 0, needs to be clamped to spec->channels, or we just padded it out to spec->channels with channels_full.
+    channels = spec->channels;  // it's either < 0, needs to be clamped to spec->channels, or we just padded it out to spec->channels with channels_full.
 
     if (!have_null_channel) {
         for (int i = 0; i < channels; i++) {
@@ -972,51 +959,33 @@ static void InterleaveAudioChannels(void *output, const void *const *channel_buf
     if (have_null_channel) {
         const int silence = SDL_GetSilenceValueForFormat(spec->format);
         switch (SDL_AUDIO_BITSIZE(spec->format)) {
-        case 8:
-            InterleaveAudioChannelsWithNullsGeneric8(output, channel_buffers, channels, num_samples, silence);
-            break;
-        case 16:
-            InterleaveAudioChannelsWithNullsGeneric16(output, channel_buffers, channels, num_samples, silence);
-            break;
-        case 32:
-            InterleaveAudioChannelsWithNullsGeneric32(output, channel_buffers, channels, num_samples, silence);
-            break;
-        // case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
-        default:
-            SDL_assert(!"Missing needed generic audio interleave function!");
-            SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples);
-            break;
+            case 8: InterleaveAudioChannelsWithNullsGeneric8(output, channel_buffers, channels, num_samples, silence); break;
+            case 16: InterleaveAudioChannelsWithNullsGeneric16(output, channel_buffers, channels, num_samples, silence); break;
+            case 32: InterleaveAudioChannelsWithNullsGeneric32(output, channel_buffers, channels, num_samples, silence); break;
+            //case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
+            default: SDL_assert(!"Missing needed generic audio interleave function!"); SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples); break;
         }
     } else {
         // !!! FIXME: it would be possible to do this really well in SIMD for stereo data, using unpack (intel) or zip (arm) instructions, etc.
         switch (SDL_AUDIO_BITSIZE(spec->format)) {
-        case 8:
-            InterleaveAudioChannelsGeneric8(output, channel_buffers, channels, num_samples);
-            break;
-        case 16:
-            InterleaveAudioChannelsGeneric16(output, channel_buffers, channels, num_samples);
-            break;
-        case 32:
-            InterleaveAudioChannelsGeneric32(output, channel_buffers, channels, num_samples);
-            break;
-        // case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
-        default:
-            SDL_assert(!"Missing needed generic audio interleave function!");
-            SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples);
-            break;
+            case 8: InterleaveAudioChannelsGeneric8(output, channel_buffers, channels, num_samples); break;
+            case 16: InterleaveAudioChannelsGeneric16(output, channel_buffers, channels, num_samples); break;
+            case 32: InterleaveAudioChannelsGeneric32(output, channel_buffers, channels, num_samples); break;
+            //case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
+            default: SDL_assert(!"Missing needed generic audio interleave function!"); SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples); break;
         }
     }
 }
 
-bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void *const *channel_buffers, int num_channels, int num_samples)
+bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_channels, int num_samples)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
-    CHECK_PARAM (!channel_buffers) {
+    CHECK_PARAM(!channel_buffers) {
         return SDL_InvalidParamError("channel_buffers");
     }
-    CHECK_PARAM (num_samples < 0) {
+    CHECK_PARAM(num_samples < 0) {
         return SDL_InvalidParamError("num_samples");
     }
 
@@ -1037,23 +1006,23 @@ bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void *const *ch
     SDL_copyp(&spec, &stream->src_spec);
     if (stream->src_chmap) {
         chmap = chmap_copy;
-        SDL_memcpy(chmap, stream->src_chmap, sizeof(*chmap) * spec.channels);
+        SDL_memcpy(chmap, stream->src_chmap, sizeof (*chmap) * spec.channels);
     }
     SDL_UnlockMutex(stream->lock);
 
-    if (spec.channels == 1) { // nothing to interleave, just use the usual function.
+    if (spec.channels == 1) {  // nothing to interleave, just use the usual function.
         return SDL_PutAudioStreamData(stream, channel_buffers[0], SDL_AUDIO_FRAMESIZE(spec) * num_samples);
     }
 
     bool retval = false;
 
     const int len = SDL_AUDIO_FRAMESIZE(spec) * num_samples;
-#if DEBUG_AUDIOSTREAM
+    #if DEBUG_AUDIOSTREAM
     SDL_Log("AUDIOSTREAM: wants to put %d bytes of planar data", len);
-#endif
+    #endif
 
-// Is the data small enough to just interleave it on the stack and put it through the normal interface?
-#define INTERLEAVE_STACK_SIZE 1024
+    // Is the data small enough to just interleave it on the stack and put it through the normal interface?
+    #define INTERLEAVE_STACK_SIZE 1024
     Uint8 stackbuf[INTERLEAVE_STACK_SIZE];
     void *data = stackbuf;
     SDL_ReleaseAudioBufferCallback callback = NULL;
@@ -1088,13 +1057,13 @@ static void SDLCALL DontFreeThisAudioBuffer(void *userdata, const void *buf, int
 
 bool SDL_PutAudioStreamDataNoCopy(SDL_AudioStream *stream, const void *buf, int len, SDL_AudioStreamDataCompleteCallback callback, void *userdata)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
-    CHECK_PARAM (!buf) {
+    CHECK_PARAM(!buf) {
         return SDL_InvalidParamError("buf");
     }
-    CHECK_PARAM (len < 0) {
+    CHECK_PARAM(len < 0) {
         return SDL_InvalidParamError("len");
     }
 
@@ -1110,7 +1079,7 @@ bool SDL_PutAudioStreamDataNoCopy(SDL_AudioStream *stream, const void *buf, int 
 
 bool SDL_FlushAudioStream(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -1129,9 +1098,9 @@ static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t ne
         return stream->work_buffer;
     }
 
-    Uint8 *ptr = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), newlen);
+    Uint8 *ptr = (Uint8 *) SDL_aligned_alloc(SDL_GetSIMDAlignment(), newlen);
     if (!ptr) {
-        return NULL; // previous work buffer is still valid!
+        return NULL;  // previous work buffer is still valid!
     }
 
     SDL_aligned_free(stream->work_buffer);
@@ -1141,7 +1110,7 @@ static Uint8 *EnsureAudioStreamWorkBufferSize(SDL_AudioStream *stream, size_t ne
 }
 
 static Sint64 NextAudioStreamIter(SDL_AudioStream *stream, void **inout_iter,
-                                  Sint64 *inout_resample_offset, SDL_AudioSpec *out_spec, int **out_chmap, bool *out_flushed)
+    Sint64 *inout_resample_offset, SDL_AudioSpec *out_spec, int **out_chmap, bool *out_flushed)
 {
     SDL_AudioSpec spec;
     bool flushed;
@@ -1281,7 +1250,7 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
     // Because resampling happens "between" frames, The same number of output_frames
     // can require a different number of input_frames, depending on the resample_offset.
     // In fact, input_frames can sometimes even be zero when upsampling.
-    const int input_frames = (int)SDL_GetResamplerInputFrames(output_frames, resample_rate, stream->resample_offset);
+    const int input_frames = (int) SDL_GetResamplerInputFrames(output_frames, resample_rate, stream->resample_offset);
 
     const int padding_frames = SDL_GetResamplerPaddingFrames(resample_rate);
 
@@ -1318,7 +1287,7 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
         work_buffer_capacity = SDL_max(work_buffer_capacity, resample_convert_bytes);
 
         // SIMD-align the buffer
-        int simd_alignment = (int)SDL_GetSIMDAlignment();
+        int simd_alignment = (int) SDL_GetSIMDAlignment();
         work_buffer_capacity += simd_alignment - 1;
         work_buffer_capacity -= work_buffer_capacity % simd_alignment;
 
@@ -1341,8 +1310,8 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
 
     // (dst channel map is NULL because we'll do the final swizzle on ConvertAudio after resample.)
     const Uint8 *input_buffer = SDL_ReadFromAudioQueue(stream->queue,
-                                                       NULL, resample_format, resample_channels, NULL,
-                                                       padding_frames, input_frames, padding_frames, work_buffer, preresample_gain);
+        NULL, resample_format, resample_channels, NULL,
+        padding_frames, input_frames, padding_frames, work_buffer, preresample_gain);
 
     if (!input_buffer) {
         return SDL_SetError("Not enough data in queue (resample)");
@@ -1354,9 +1323,9 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
     void *resample_buffer = (resample_buffer_offset != -1) ? (work_buffer + resample_buffer_offset) : buf;
 
     SDL_ResampleAudio(resample_channels,
-                      (const float *)input_buffer, input_frames,
-                      (float *)resample_buffer, output_frames,
-                      resample_rate, &stream->resample_offset);
+                  (const float *)input_buffer, input_frames,
+                  (float *)resample_buffer, output_frames,
+                  resample_rate, &stream->resample_offset);
 
     // Convert to the final format, if necessary (src channel map is NULL because SDL_ReadFromAudioQueue already handled this).
     ConvertAudio(output_frames, resample_buffer, resample_format, resample_channels, NULL, buf, dst_format, dst_channels, dst_map, work_buffer, postresample_gain);
@@ -1367,21 +1336,21 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
 // get converted/resampled data from the stream
 int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int len, float extra_gain)
 {
-    Uint8 *buf = (Uint8 *)voidbuf;
+    Uint8 *buf = (Uint8 *) voidbuf;
 
 #if DEBUG_AUDIOSTREAM
     SDL_Log("AUDIOSTREAM: want to get %d converted bytes", len);
 #endif
 
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return -1;
     }
-    CHECK_PARAM (!buf) {
+    CHECK_PARAM(!buf) {
         SDL_InvalidParamError("buf");
         return -1;
     }
-    CHECK_PARAM (len < 0) {
+    CHECK_PARAM(len < 0) {
         SDL_InvalidParamError("len");
         return -1;
     }
@@ -1400,11 +1369,11 @@ int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int
     const float gain = stream->gain * extra_gain;
     const int dst_frame_size = SDL_AUDIO_FRAMESIZE(stream->dst_spec);
 
-    len -= len % dst_frame_size; // chop off any fractional sample frame.
+    len -= len % dst_frame_size;  // chop off any fractional sample frame.
 
     // give the callback a chance to fill in more stream data if it wants.
     if (stream->get_callback) {
-        Sint64 total_request = len / dst_frame_size; // start with sample frames desired
+        Sint64 total_request = len / dst_frame_size;  // start with sample frames desired
         Sint64 additional_request = total_request;
 
         Sint64 resample_offset = 0;
@@ -1419,9 +1388,9 @@ int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int
             additional_request = SDL_GetResamplerInputFrames(additional_request, resample_rate, resample_offset);
         }
 
-        total_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);      // convert sample frames to bytes.
-        additional_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec); // convert sample frames to bytes.
-        stream->get_callback(stream->get_callback_userdata, stream, (int)SDL_min(additional_request, SDL_INT_MAX), (int)SDL_min(total_request, SDL_INT_MAX));
+        total_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
+        additional_request *= SDL_AUDIO_FRAMESIZE(stream->src_spec);  // convert sample frames to bytes.
+        stream->get_callback(stream->get_callback_userdata, stream, (int) SDL_min(additional_request, SDL_INT_MAX), (int) SDL_min(total_request, SDL_INT_MAX));
     }
 
     // Process the data in chunks to avoid allocating too much memory (and potential integer overflows)
@@ -1457,7 +1426,7 @@ int SDL_GetAudioStreamDataAdjustGain(SDL_AudioStream *stream, void *voidbuf, int
         // GetAudioStreamDataInternal requires enough input data is available.
         int output_frames = (len - total) / dst_frame_size;
         output_frames = SDL_min(output_frames, chunk_size);
-        output_frames = (int)SDL_min(output_frames, available_frames);
+        output_frames = (int) SDL_min(output_frames, available_frames);
 
         if (!GetAudioStreamDataInternal(stream, &buf[total], output_frames, gain)) {
             total = total ? total : -1;
@@ -1484,7 +1453,7 @@ int SDL_GetAudioStreamData(SDL_AudioStream *stream, void *voidbuf, int len)
 // number of converted/resampled bytes available for output
 int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return -1;
     }
@@ -1504,13 +1473,13 @@ int SDL_GetAudioStreamAvailable(SDL_AudioStream *stream)
     SDL_UnlockMutex(stream->lock);
 
     // if this overflows an int, just clamp it to a maximum.
-    return (int)SDL_min(count, SDL_INT_MAX);
+    return (int) SDL_min(count, SDL_INT_MAX);
 }
 
 // number of sample frames that are currently queued as input.
 int SDL_GetAudioStreamQueued(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return -1;
     }
@@ -1522,12 +1491,12 @@ int SDL_GetAudioStreamQueued(SDL_AudioStream *stream)
     SDL_UnlockMutex(stream->lock);
 
     // if this overflows an int, just clamp it to a maximum.
-    return (int)SDL_min(total, SDL_INT_MAX);
+    return (int) SDL_min(total, SDL_INT_MAX);
 }
 
 bool SDL_ClearAudioStream(SDL_AudioStream *stream)
 {
-    CHECK_PARAM (!stream) {
+    CHECK_PARAM(!stream) {
         return SDL_InvalidParamError("stream");
     }
 
@@ -1556,7 +1525,7 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     if (simplified) {
         if (stream->bound_device) {
             SDL_assert(stream->bound_device->simplified);
-            SDL_CloseAudioDevice(stream->bound_device->instance_id); // this will unbind the stream.
+            SDL_CloseAudioDevice(stream->bound_device->instance_id);  // this will unbind the stream.
         }
     } else {
         SDL_UnbindAudioStream(stream);
@@ -1579,16 +1548,16 @@ bool SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_dat
         *dst_len = 0;
     }
 
-    CHECK_PARAM (!src_data) {
+    CHECK_PARAM(!src_data) {
         return SDL_InvalidParamError("src_data");
     }
-    CHECK_PARAM (src_len < 0) {
+    CHECK_PARAM(src_len < 0) {
         return SDL_InvalidParamError("src_len");
     }
-    CHECK_PARAM (!dst_data) {
+    CHECK_PARAM(!dst_data) {
         return SDL_InvalidParamError("dst_data");
     }
-    CHECK_PARAM (!dst_len) {
+    CHECK_PARAM(!dst_len) {
         return SDL_InvalidParamError("dst_len");
     }
 

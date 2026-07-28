@@ -43,7 +43,7 @@ typedef struct SDL_ErrorInfo
 
 typedef struct SDL_error
 {
-    SDL_ErrorInfo info[2]; // there are two, so you can do SDL_SetError("%s", SDL_GetError()) without stomping the buffer.
+    SDL_ErrorInfo info[2];  // there are two, so you can do SDL_SetError("%s", SDL_GetError()) without stomping the buffer.
     int current;
     SDL_realloc_func realloc_func;
     SDL_free_func free_func;

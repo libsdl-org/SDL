@@ -26,10 +26,10 @@
 #include "SDL_keymap_c.h"
 
 // Keyboard events not associated with a specific input device
-#define SDL_GLOBAL_KEYBOARD_ID 0
+#define SDL_GLOBAL_KEYBOARD_ID     0
 
 // The default keyboard input device, for platforms that don't have multiple keyboards
-#define SDL_DEFAULT_KEYBOARD_ID 1
+#define SDL_DEFAULT_KEYBOARD_ID    1
 
 // Initialize the keyboard subsystem
 extern bool SDL_InitKeyboard(void);

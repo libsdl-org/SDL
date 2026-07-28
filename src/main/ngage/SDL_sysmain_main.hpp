@@ -27,17 +27,17 @@
 
 class CSDLmain : public CActive
 {
-  public:
+public:
     static CSDLmain *NewL();
     ~CSDLmain();
 
     void Start();
 
-  protected:
-    void DoCancel();
+protected:
+    void DoCancel() ;
     void RunL();
 
-  private:
+private:
     CSDLmain();
     void ConstructL();
     SDL_AppResult iResult;

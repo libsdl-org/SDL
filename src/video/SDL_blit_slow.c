@@ -20,9 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_surface_c.h"
 #include "SDL_blit_slow.h"
 #include "SDL_pixels_c.h"
-#include "SDL_surface_c.h"
 
 typedef enum
 {
@@ -347,7 +347,7 @@ typedef union
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 4214)
+#pragma warning(disable:4214)
 #endif
 
 typedef union
@@ -373,11 +373,11 @@ static float half_to_float(Uint16 unValue)
     FP32 o;
 
     h.u = unValue;
-    o.u = (h.u & 0x7fff) << 13; // exponent/mantissa bits
-    o.f *= magic.f;             // exponent adjust
-    if (o.f >= was_infnan.f)    // make sure Inf/NaN survive
+    o.u = (h.u & 0x7fff) << 13;     // exponent/mantissa bits
+    o.f *= magic.f;                 // exponent adjust
+    if (o.f >= was_infnan.f)        // make sure Inf/NaN survive
         o.u |= 255 << 23;
-    o.u |= (h.u & 0x8000) << 16; // sign bit
+    o.u |= (h.u & 0x8000) << 16;    // sign bit
     return o.f;
 }
 
@@ -404,7 +404,7 @@ static Uint16 float_to_half(float a)
             ir |= 0x7c00; // infinity
         } else {
             ia = (ia & 0x007fffff) | 0x00800000; // extract mantissa
-            if (shift < -14) {                   // denormal
+            if (shift < -14) { // denormal
                 ir |= ia >> (-1 - shift);
                 ia = ia << (32 - (-1 - shift));
             } else { // normal
@@ -739,15 +739,12 @@ typedef struct
 {
     SDL_TonemapOperator op;
 
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             float scale;
         } linear;
 
-        struct
-        {
+        struct {
             float a;
             float b;
             const float *color_primaries_matrix;
@@ -996,3 +993,4 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
         info->dst += info->dst_pitch;
     }
 }
+

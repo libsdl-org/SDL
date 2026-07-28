@@ -20,8 +20,8 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_blit_copy.h"
 #include "SDL_surface_c.h"
+#include "SDL_blit_copy.h"
 
 #ifdef SDL_SSE_INTRINSICS
 // This assumes 16-byte aligned src and dst

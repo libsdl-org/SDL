@@ -22,8 +22,8 @@
 
 #ifdef SDL_SENSOR_VITA
 
-#include "../SDL_syssensor.h"
 #include "SDL_vitasensor.h"
+#include "../SDL_syssensor.h"
 #include <psp2/motion.h>
 
 #ifndef SCE_MOTION_MAX_NUM_STATES

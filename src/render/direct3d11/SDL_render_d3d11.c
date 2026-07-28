@@ -24,10 +24,10 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
-#include "../../video/SDL_pixels_c.h"
 #include "../../video/windows/SDL_windowswindow.h"
-#include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
+#include "../SDL_d3dmath.h"
+#include "../../video/SDL_pixels_c.h"
 
 #include <d3d11_1.h>
 #ifdef HAVE_DXGI1_5_H
@@ -57,10 +57,10 @@ typedef struct
 
 // These should mirror the definitions in D3D11_PixelShader_Common.hlsli
 static const float TONEMAP_NONE = 0;
-// static const float TONEMAP_LINEAR = 1;
+//static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
 
-// static const float TEXTURETYPE_NONE = 0;
+//static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_PALETTE_NEAREST = 3;
@@ -234,20 +234,19 @@ static const GUID SDL_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe
 
 static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, int bpp, int x, int y, int w, int h, const void *pixels, int pitch);
 
-static const struct
-{
+static const struct {
     Uint32 sdl;
     DXGI_FORMAT unorm;
     DXGI_FORMAT srgb;
 } dxgi_format_map[] = {
-    { SDL_PIXELFORMAT_ARGB8888, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB },
-    { SDL_PIXELFORMAT_ABGR8888, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
-    { SDL_PIXELFORMAT_XRGB8888, DXGI_FORMAT_B8G8R8X8_UNORM, DXGI_FORMAT_B8G8R8X8_UNORM_SRGB },
-    { SDL_PIXELFORMAT_ABGR2101010, DXGI_FORMAT_R10G10B10A2_UNORM, DXGI_FORMAT_R10G10B10A2_UNORM },
-    { SDL_PIXELFORMAT_RGBA64_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT },
-    { SDL_PIXELFORMAT_RGB565, DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G6R5_UNORM },
-    { SDL_PIXELFORMAT_ARGB1555, DXGI_FORMAT_B5G5R5A1_UNORM, DXGI_FORMAT_B5G5R5A1_UNORM },
-    { SDL_PIXELFORMAT_ARGB4444, DXGI_FORMAT_B4G4R4A4_UNORM, DXGI_FORMAT_B4G4R4A4_UNORM }
+    { SDL_PIXELFORMAT_ARGB8888,     DXGI_FORMAT_B8G8R8A8_UNORM,     DXGI_FORMAT_B8G8R8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR8888,     DXGI_FORMAT_R8G8B8A8_UNORM,     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_XRGB8888,     DXGI_FORMAT_B8G8R8X8_UNORM,     DXGI_FORMAT_B8G8R8X8_UNORM_SRGB },
+    { SDL_PIXELFORMAT_ABGR2101010,  DXGI_FORMAT_R10G10B10A2_UNORM,  DXGI_FORMAT_R10G10B10A2_UNORM   },
+    { SDL_PIXELFORMAT_RGBA64_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R16G16B16A16_FLOAT  },
+    { SDL_PIXELFORMAT_RGB565,       DXGI_FORMAT_B5G6R5_UNORM,       DXGI_FORMAT_B5G6R5_UNORM        },
+    { SDL_PIXELFORMAT_ARGB1555,     DXGI_FORMAT_B5G5R5A1_UNORM,     DXGI_FORMAT_B5G5R5A1_UNORM      },
+    { SDL_PIXELFORMAT_ARGB4444,     DXGI_FORMAT_B4G4R4A4_UNORM,     DXGI_FORMAT_B4G4R4A4_UNORM      }
 };
 
 SDL_PixelFormat D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
@@ -292,10 +291,10 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12: // For the Y texture
-    case SDL_PIXELFORMAT_NV21: // For the Y texture
+    case SDL_PIXELFORMAT_NV12:  // For the Y texture
+    case SDL_PIXELFORMAT_NV21:  // For the Y texture
         return DXGI_FORMAT_R8_UNORM;
-    case SDL_PIXELFORMAT_P010: // For the Y texture
+    case SDL_PIXELFORMAT_P010:  // For the Y texture
         return DXGI_FORMAT_R16_UNORM;
     default:
         return SDLPixelFormatToDXGITextureFormat(format, colorspace);
@@ -492,8 +491,8 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
 // Create resources that depend on the device.
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
-    typedef HRESULT(WINAPI * pfnCreateDXGIFactory)(REFIID riid, void **ppFactory);
-    typedef HRESULT(WINAPI * pfnCreateDXGIFactory2)(UINT flags, REFIID riid, void **ppFactory);
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory)(REFIID riid, void **ppFactory);
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory2)(UINT flags, REFIID riid, void **ppFactory);
     pfnCreateDXGIFactory pCreateDXGIFactory = NULL;
     pfnCreateDXGIFactory2 pCreateDXGIFactory2 = NULL;
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
@@ -1530,20 +1529,20 @@ static bool D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Te
 
 #ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                  const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *UVplane, int UVpitch);
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch);
 
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                   const SDL_Rect *rect,
-                                   const Uint8 *Yplane, int Ypitch,
-                                   const Uint8 *Uplane, int Upitch,
-                                   const Uint8 *Vplane, int Vpitch);
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch);
 #endif
 
 static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                                const SDL_Rect *rect, const void *srcPixels,
-                                int srcPitch)
+                               const SDL_Rect *rect, const void *srcPixels,
+                               int srcPitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
@@ -1585,10 +1584,10 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #ifdef SDL_HAVE_YUV
 static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                   const SDL_Rect *rect,
-                                   const Uint8 *Yplane, int Ypitch,
-                                   const Uint8 *Uplane, int Upitch,
-                                   const Uint8 *Vplane, int Vpitch)
+                                  const SDL_Rect *rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
@@ -1610,9 +1609,9 @@ static bool D3D11_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 }
 
 static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                  const SDL_Rect *rect,
-                                  const Uint8 *Yplane, int Ypitch,
-                                  const Uint8 *UVplane, int UVpitch)
+                                 const SDL_Rect *rect,
+                                 const Uint8 *Yplane, int Ypitch,
+                                 const Uint8 *UVplane, int UVpitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
@@ -1725,7 +1724,7 @@ static bool D3D11_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 #endif
 
 static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                              const SDL_Rect *rect, void **pixels, int *pitch)
+                             const SDL_Rect *rect, void **pixels, int *pitch)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     D3D11_TextureData *textureData = (D3D11_TextureData *)texture->internal;
@@ -1898,9 +1897,9 @@ static bool D3D11_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 }
 
 static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                                const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                                int num_vertices, const void *indices, int num_indices, int size_indices,
-                                float scale_x, float scale_y)
+                               const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                               int num_vertices, const void *indices, int num_indices, int size_indices,
+                               float scale_x, float scale_y)
 {
     int i;
     int count = indices ? num_indices : num_vertices;
@@ -1954,7 +1953,7 @@ static bool D3D11_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 }
 
 static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
-                                     const void *vertexData, size_t dataSizeInBytes)
+                                    const void *vertexData, size_t dataSizeInBytes)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
     HRESULT result = S_OK;
@@ -2231,9 +2230,9 @@ static D3D11_Shader SelectShader(const D3D11_PixelShaderConstants *shader_consta
 }
 
 static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd,
-                               const D3D11_PixelShaderConstants *shader_constants,
-                               int numShaderResources, ID3D11ShaderResourceView **shaderResources,
-                               int numShaderSamplers, ID3D11SamplerState **shaderSamplers, const Float4X4 *matrix)
+                              const D3D11_PixelShaderConstants *shader_constants,
+                              int numShaderResources, ID3D11ShaderResourceView **shaderResources,
+                              int numShaderSamplers, ID3D11SamplerState **shaderSamplers, const Float4X4 *matrix)
 
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
@@ -2416,7 +2415,7 @@ static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_Pix
         case SDL_SCALEMODE_NEAREST:
             samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
             break;
-        case SDL_SCALEMODE_PIXELART: // Uses linear sampling
+        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
             samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
             break;
@@ -2447,8 +2446,8 @@ static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_Pix
             return NULL;
         }
         HRESULT result = ID3D11Device_CreateSamplerState(data->d3dDevice,
-                                                         &samplerDesc,
-                                                         &data->samplers[key]);
+                                                 &samplerDesc,
+                                                 &data->samplers[key]);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT("ID3D11Device::CreateSamplerState", result);
             return NULL;
@@ -2965,7 +2964,7 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         }
 
         if ((unorm & D3D11_FORMAT_SUPPORT_TEXTURE2D) &&
-            (srgb & D3D11_FORMAT_SUPPORT_TEXTURE2D)) {
+            (srgb  & D3D11_FORMAT_SUPPORT_TEXTURE2D)) {
             SDL_AddSupportedTextureFormat(renderer, dxgi_format_map[i].sdl);
         }
     }

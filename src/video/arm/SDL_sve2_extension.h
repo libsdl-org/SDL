@@ -22,7 +22,7 @@
 /*
  * IMPORTANT: Please do NOT include this header file directly or indirectly
  *            outside the src/video/arm folder.
- *
+ * 
  */
 
 #if !defined(SDL_SVE2_EXTENSION_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
@@ -31,15 +31,15 @@
 #include "SDL_sve2_util.h"
 
 /*
- * NOTE: Some Android builds didn't attach '-march=armv8-a+sve2' to
+ * NOTE: Some Android builds didn't attach '-march=armv8-a+sve2' to 
  *       SDL_sve2_*.c and hence the macro __ARM_FEATURE_SVE is not
- *       defined by the compiler. This might not be a problem as the
+ *       defined by the compiler. This might not be a problem as the 
  *       SDL_TARGETING("arch=armv8-a+sve2") enables the feature for
  *       individual functions, until some version of compilers
- *       provides arm_sve.h raising errors then __ARM_FEATURE_SVE
- *       is not defined. Although it should be avoided, as a
- *       workaround, we have to define the __ARM_FEATURE_SVE here as
- *       an ugly hack.
+ *       provides arm_sve.h raising errors then __ARM_FEATURE_SVE 
+ *       is not defined. Although it should be avoided, as a 
+ *       workaround, we have to define the __ARM_FEATURE_SVE here as 
+ *       an ugly hack. 
  */
 #ifdef SDL_PLATFORM_ANDROID
 #ifndef __ARM_FEATURE_SVE

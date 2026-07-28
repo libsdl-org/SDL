@@ -23,11 +23,12 @@
 #ifdef SDL_TIMER_PSP
 
 #include "../SDL_timer_c.h"
-#include <psprtc.h>
-#include <pspthreadman.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <time.h>
+#include <sys/time.h>
+#include <pspthreadman.h>
+#include <psprtc.h>
+
 
 Uint64 SDL_GetPerformanceCounter(void)
 {

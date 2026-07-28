@@ -2766,3 +2766,4 @@ static const CaseFoldHashBucket3_16 case_fold_hash3_16[] = {
 };
 
 #endif // SDL_casefolding_h_
+

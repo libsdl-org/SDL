@@ -32,10 +32,10 @@
 // #include <xcb/xcb.h>
 
 #ifdef SDL_PLATFORM_OPENBSD
-#define DEFAULT_VULKAN  "libvulkan.so"
+#define DEFAULT_VULKAN "libvulkan.so"
 #define DEFAULT_X11_XCB "libX11-xcb.so"
 #else
-#define DEFAULT_VULKAN  "libvulkan.so.1"
+#define DEFAULT_VULKAN "libvulkan.so.1"
 #define DEFAULT_X11_XCB "libX11-xcb.so.1"
 #endif
 
@@ -43,13 +43,15 @@ SDL_ELF_NOTE_DLOPEN(
     "x11-vulkan",
     "Support for vulkan on X11",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_VULKAN)
+    DEFAULT_VULKAN
+)
 
 SDL_ELF_NOTE_DLOPEN(
     "x11-vulkan",
     "Support for vulkan on X11",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_X11_XCB)
+    DEFAULT_X11_XCB
+)
 
 /*
 typedef uint32_t xcb_window_t;
@@ -156,7 +158,7 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const *const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const * const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     SDL_VideoData *videoData = _this->internal;
     if (videoData->vulkan_xlib_xcb_library) {
@@ -164,7 +166,7 @@ char const *const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XCB_SURFACE_EXTENSION_NAME,
         };
-        if (count) {
+        if(count) {
             *count = SDL_arraysize(extensionsForXCB);
         }
         return extensionsForXCB;
@@ -173,7 +175,7 @@ char const *const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_XLIB_SURFACE_EXTENSION_NAME,
         };
-        if (count) {
+        if(count) {
             *count = SDL_arraysize(extensionsForXlib);
         }
         return extensionsForXlib;
@@ -181,10 +183,10 @@ char const *const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint
 }
 
 bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                              SDL_Window *window,
-                              VkInstance instance,
-                              const struct VkAllocationCallbacks *allocator,
-                              VkSurfaceKHR *surface)
+                             SDL_Window *window,
+                             VkInstance instance,
+                             const struct VkAllocationCallbacks *allocator,
+                             VkSurfaceKHR *surface)
 {
     SDL_VideoData *videoData = _this->internal;
     SDL_WindowData *windowData = window->internal;
@@ -232,7 +234,7 @@ bool X11_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         }
     }
 
-    return true; // success!
+    return true;  // success!
 }
 
 void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
@@ -246,9 +248,9 @@ void X11_Vulkan_DestroySurface(SDL_VideoDevice *_this,
 }
 
 bool X11_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
-                                       VkInstance instance,
-                                       VkPhysicalDevice physicalDevice,
-                                       Uint32 queueFamilyIndex)
+                                           VkInstance instance,
+                                           VkPhysicalDevice physicalDevice,
+                                           Uint32 queueFamilyIndex)
 {
     SDL_VideoData *videoData = _this->internal;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;

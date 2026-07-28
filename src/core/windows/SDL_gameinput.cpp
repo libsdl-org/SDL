@@ -20,14 +20,15 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_gameinput.h"
 #include "SDL_windows.h"
+#include "SDL_gameinput.h"
 
 #ifdef HAVE_GAMEINPUT_H
 
 static SDL_SharedObject *g_hGameInputDLL;
 static IGameInput *g_pGameInput;
 static int g_nGameInputRefCount;
+
 
 bool SDL_InitGameInput(IGameInput **ppGameInput)
 {
@@ -37,7 +38,7 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
             return false;
         }
 
-        typedef HRESULT(WINAPI * pfnGameInputCreate)(IGameInput * *gameInput);
+        typedef HRESULT (WINAPI *pfnGameInputCreate)(IGameInput **gameInput);
         pfnGameInputCreate pGameInputCreate = (pfnGameInputCreate)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
         if (!pGameInputCreate) {
             SDL_UnloadObject(g_hGameInputDLL);

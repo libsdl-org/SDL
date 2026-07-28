@@ -27,3 +27,4 @@
 extern void SDL_QuitAsyncIO(void);
 
 #endif // SDL_asyncio_c_h_
+

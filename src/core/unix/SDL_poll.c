@@ -23,8 +23,8 @@
 
 #include "SDL_poll.h"
 
-#include <errno.h>
 #include <poll.h>
+#include <errno.h>
 
 #ifdef HAVE_PPOLL
 #include <time.h>

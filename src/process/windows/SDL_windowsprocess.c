@@ -23,14 +23,13 @@
 #ifdef SDL_PROCESS_WINDOWS
 
 #include "../../core/windows/SDL_windows.h"
-#include "../../io/SDL_iostream_c.h"
 #include "../SDL_sysprocess.h"
+#include "../../io/SDL_iostream_c.h"
 
-#define READ_END  0
+#define READ_END 0
 #define WRITE_END 1
 
-struct SDL_ProcessData
-{
+struct SDL_ProcessData {
     PROCESS_INFORMATION process_information;
 };
 
@@ -85,8 +84,7 @@ static bool SetupRedirect(SDL_PropertiesID props, const char *property, HANDLE *
     return true;
 }
 
-static bool is_batch_file_path(const char *path)
-{
+static bool is_batch_file_path(const char *path) {
     size_t len_path = SDL_strlen(path);
     if (len_path < 4) {
         return false;
@@ -97,7 +95,7 @@ static bool is_batch_file_path(const char *path)
     return false;
 }
 
-static bool join_arguments(const char *const *args, LPWSTR *args_out)
+static bool join_arguments(const char * const *args, LPWSTR *args_out)
 {
     size_t len;
     int i;
@@ -246,7 +244,7 @@ static bool join_env(char **env, LPWSTR *env_out)
 
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
-    const char *const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
+    const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
     const char *cmdline = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
@@ -349,7 +347,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             WIN_SetError("SetNamedPipeHandleState()");
             goto done;
         }
-        if (!SetHandleInformation(stdin_pipe[WRITE_END], HANDLE_FLAG_INHERIT, 0)) {
+        if (!SetHandleInformation(stdin_pipe[WRITE_END], HANDLE_FLAG_INHERIT, 0) ) {
             WIN_SetError("SetHandleInformation()");
             goto done;
         }
@@ -364,8 +362,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (!handle) {
             startup_info.hStdInput = NULL;
         } else if (!DuplicateHandle(GetCurrentProcess(), handle,
-                                    GetCurrentProcess(), &startup_info.hStdInput,
-                                    0, TRUE, DUPLICATE_SAME_ACCESS)) {
+                             GetCurrentProcess(), &startup_info.hStdInput,
+                             0, TRUE, DUPLICATE_SAME_ACCESS)) {
             startup_info.hStdInput = INVALID_HANDLE_VALUE;
             WIN_SetError("DuplicateHandle()");
             goto done;
@@ -389,7 +387,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             WIN_SetError("SetNamedPipeHandleState()");
             goto done;
         }
-        if (!SetHandleInformation(stdout_pipe[READ_END], HANDLE_FLAG_INHERIT, 0)) {
+        if (!SetHandleInformation(stdout_pipe[READ_END], HANDLE_FLAG_INHERIT, 0) ) {
             WIN_SetError("SetHandleInformation()");
             goto done;
         }
@@ -404,8 +402,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (!handle) {
             startup_info.hStdOutput = NULL;
         } else if (!DuplicateHandle(GetCurrentProcess(), handle,
-                                    GetCurrentProcess(), &startup_info.hStdOutput,
-                                    0, TRUE, DUPLICATE_SAME_ACCESS)) {
+                             GetCurrentProcess(), &startup_info.hStdOutput,
+                             0, TRUE, DUPLICATE_SAME_ACCESS)) {
             startup_info.hStdOutput = INVALID_HANDLE_VALUE;
             WIN_SetError("DuplicateHandle()");
             goto done;
@@ -418,8 +416,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (!handle) {
             startup_info.hStdError = NULL;
         } else if (!DuplicateHandle(GetCurrentProcess(), handle,
-                                    GetCurrentProcess(), &startup_info.hStdError,
-                                    0, TRUE, DUPLICATE_SAME_ACCESS)) {
+                             GetCurrentProcess(), &startup_info.hStdError,
+                             0, TRUE, DUPLICATE_SAME_ACCESS)) {
             startup_info.hStdError = INVALID_HANDLE_VALUE;
             WIN_SetError("DuplicateHandle()");
             goto done;
@@ -441,7 +439,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
                 WIN_SetError("SetNamedPipeHandleState()");
                 goto done;
             }
-            if (!SetHandleInformation(stderr_pipe[READ_END], HANDLE_FLAG_INHERIT, 0)) {
+            if (!SetHandleInformation(stderr_pipe[READ_END], HANDLE_FLAG_INHERIT, 0) ) {
                 WIN_SetError("SetHandleInformation()");
                 goto done;
             }
@@ -456,8 +454,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             if (!handle) {
                 startup_info.hStdError = NULL;
             } else if (!DuplicateHandle(GetCurrentProcess(), handle,
-                                        GetCurrentProcess(), &startup_info.hStdError,
-                                        0, TRUE, DUPLICATE_SAME_ACCESS)) {
+                                 GetCurrentProcess(), &startup_info.hStdError,
+                                 0, TRUE, DUPLICATE_SAME_ACCESS)) {
                 startup_info.hStdError = INVALID_HANDLE_VALUE;
                 WIN_SetError("DuplicateHandle()");
                 goto done;
@@ -537,7 +535,7 @@ done:
 
 static BOOL CALLBACK terminate_app(HWND hwnd, LPARAM lparam)
 {
-    DWORD current_proc_id = 0, *term_info = (DWORD *)lparam;
+    DWORD current_proc_id = 0, *term_info = (DWORD *) lparam;
     GetWindowThreadProcessId(hwnd, &current_proc_id);
     if (current_proc_id == term_info[0] && PostMessage(hwnd, WM_CLOSE, 0, 0)) {
         term_info[1]++;
@@ -552,7 +550,7 @@ bool SDL_SYS_KillProcess(SDL_Process *process, bool force)
         DWORD term_info[2];
         term_info[0] = process->internal->process_information.dwProcessId;
         term_info[1] = 0;
-        EnumWindows(terminate_app, (LPARAM)&term_info);
+        EnumWindows(terminate_app, (LPARAM) &term_info);
         if (term_info[1] || PostThreadMessage(process->internal->process_information.dwThreadId, WM_CLOSE, 0, 0)) {
             return true;
         }

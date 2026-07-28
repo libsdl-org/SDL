@@ -28,13 +28,13 @@
 #include "../SDL_sysfilesystem.h"
 
 #include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <psp2/io/stat.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <psp2/io/stat.h>
+#include <sys/types.h>
+#include <limits.h>
+#include <fcntl.h>
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -43,7 +43,7 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetExeName(void)
 {
-    return NULL; // no EXE name on this system.
+    return NULL;  // no EXE name on this system.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

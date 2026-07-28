@@ -39,7 +39,7 @@ SDL_COMPILE_TIME_ASSERT(sizeof_SDL_HashItem, sizeof(SDL_HashItem) <= MAX_HASHITE
 
 struct SDL_HashTable
 {
-    SDL_RWLock *lock; // NULL if not created threadsafe
+    SDL_RWLock *lock;  // NULL if not created threadsafe
     SDL_HashItem *table;
     SDL_HashCallback hash;
     SDL_HashKeyMatchCallback keymatch;
@@ -50,16 +50,17 @@ struct SDL_HashTable
     Uint32 num_occupied_slots;
 };
 
+
 static Uint32 CalculateHashBucketsFromEstimate(int estimated_capacity)
 {
     if (estimated_capacity <= 0) {
-        return 4; // start small, grow as necessary.
+        return 4;  // start small, grow as necessary.
     }
 
-    const Uint32 estimated32 = (Uint32)estimated_capacity;
-    Uint32 buckets = ((Uint32)1) << SDL_MostSignificantBitIndex32(estimated32);
+    const Uint32 estimated32 = (Uint32) estimated_capacity;
+    Uint32 buckets = ((Uint32) 1) << SDL_MostSignificantBitIndex32(estimated32);
     if (!SDL_HasExactlyOneBitSet32(estimated32)) {
-        buckets <<= 1; // need next power of two up to fit overflow capacity bits.
+        buckets <<= 1;  // need next power of two up to fit overflow capacity bits.
     }
 
     return SDL_min(buckets, MAX_HASHTABLE_SIZE);
@@ -291,7 +292,7 @@ static bool maybe_resize(SDL_HashTable *ht)
 
 bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value, bool replace)
 {
-    CHECK_PARAM (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 
@@ -337,7 +338,7 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
 
 bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **value)
 {
-    CHECK_PARAM (!table) {
+    CHECK_PARAM(!table) {
         if (value) {
             *value = NULL;
         }
@@ -363,7 +364,7 @@ bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void
 
 bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 {
-    CHECK_PARAM (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 
@@ -383,10 +384,10 @@ bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 
 bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallback callback, void *userdata)
 {
-    CHECK_PARAM (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
-    CHECK_PARAM (!callback) {
+    CHECK_PARAM(!callback) {
         return SDL_InvalidParamError("callback");
     }
 
@@ -397,9 +398,9 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallba
     for (SDL_HashItem *item = table->table; item < end; item++) {
         if (item->live) {
             if (!callback(userdata, table, item->key, item->value)) {
-                break; // callback requested iteration stop.
+                break;  // callback requested iteration stop.
             } else if (++num_iterated >= table->num_occupied_slots) {
-                break; // we can drop out early because we've seen all the live items.
+                break;  // we can drop out early because we've seen all the live items.
             }
         }
     }
@@ -410,7 +411,7 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallba
 
 bool SDL_HashTableEmpty(SDL_HashTable *table)
 {
-    CHECK_PARAM (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 
@@ -419,6 +420,7 @@ bool SDL_HashTableEmpty(SDL_HashTable *table)
     SDL_UnlockRWLock(table->lock);
     return retval;
 }
+
 
 static void destroy_all(SDL_HashTable *table)
 {

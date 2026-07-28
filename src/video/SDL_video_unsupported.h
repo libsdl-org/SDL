@@ -54,7 +54,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_OnApplicationDidChangeStatusBarOrientation(
 
 #if !defined(SDL_VIDEO_DRIVER_UIKIT)
 
-typedef void(SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
+typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
 
 extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window, int interval, SDL_iOSAnimationCallback callback, void *callbackParam);
 extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(bool enabled);

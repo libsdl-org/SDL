@@ -22,12 +22,13 @@
 
 #ifdef SDL_PLATFORM_VISIONOS
 
-#include "../../events/SDL_events_c.h"
 #include "SDL_UIKitBridge-objc.h"
 #include "SDL_UIKitBridge-swift.h"
 #include "SDL_uikitevents.h"
-#include "SDL_uikitmetalview.h"
 #include "SDL_uikitwindow.h"
+#include "SDL_uikitmetalview.h"
+#include "../../events/SDL_events_c.h"
+
 
 // Called from Swift scene delegates when window size changes
 void SDL_VisionOS_SendSizeChanged(long width, long height)
@@ -133,7 +134,7 @@ void SDL_VisionOS_SetWindowRealityKitHosting(id hosting)
     // On visionOS, this gets rid of the default glass background effect (not wanted for our content).
     [windowData.viewcontroller setNeedsUpdateOfPreferredContainerBackgroundStyle];
 
-    // SDL_Log("VISIONOS: RealityKit hosting registered");
+    //SDL_Log("VISIONOS: RealityKit hosting registered");
 }
 
 bool SDL_UIKit_HasCurvedWindow()

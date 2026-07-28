@@ -30,8 +30,8 @@
 
 #include "../SDL_vulkan_internal.h"
 
-#include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvideo.h"
+#include "SDL_kmsdrmdyn.h"
 #include "SDL_kmsdrmvulkan.h"
 
 #include <sys/ioctl.h>
@@ -46,7 +46,8 @@ SDL_ELF_NOTE_DLOPEN(
     "kmsdrm-vulkan",
     "Support for Vulkan on KMSDRM",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_VULKAN)
+    DEFAULT_VULKAN
+)
 
 bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -146,7 +147,7 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 // members of the VkInstanceCreateInfo struct passed to
 // vkCreateInstance().
 /*********************************************************************/
-char const *const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const * const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
@@ -166,10 +167,10 @@ char const *const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, U
 // VK_KHR_DISPLAY_EXTENSION_NAME, which is what we need for x-less VK.
 /***********************************************************************/
 bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                 SDL_Window *window,
-                                 VkInstance instance,
-                                 const struct VkAllocationCallbacks *allocator,
-                                 VkSurfaceKHR *surface)
+                                SDL_Window *window,
+                                VkInstance instance,
+                                const struct VkAllocationCallbacks *allocator,
+                                VkSurfaceKHR *surface)
 {
     VkPhysicalDevice gpu = NULL;
     uint32_t gpu_count;
@@ -488,7 +489,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
         goto clean;
     }
 
-    ret = true; // success!
+    ret = true;  // success!
 
 clean:
     SDL_free(physical_devices);

@@ -22,8 +22,8 @@
 
 #ifdef SDL_TIME_PSP
 
-#include <psprtc.h>
 #include <psptypes.h>
+#include <psprtc.h>
 #include <psputility_sysparam.h>
 
 #include "../SDL_time_c.h"
@@ -69,7 +69,7 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     u64 sceTicks;
 
-    CHECK_PARAM (!ticks) {
+    CHECK_PARAM(!ticks) {
         return SDL_InvalidParamError("ticks");
     }
 
@@ -99,7 +99,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     u64 local;
     int ret = 0;
 
-    CHECK_PARAM (!dt) {
+    CHECK_PARAM(!dt) {
         return SDL_InvalidParamError("dt");
     }
 

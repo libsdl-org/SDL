@@ -23,9 +23,9 @@
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
-#include "SDL_kmsdrmdyn.h"
-#include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmvideo.h"
+#include "SDL_kmsdrmmouse.h"
+#include "SDL_kmsdrmdyn.h"
 
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
@@ -70,7 +70,7 @@ void KMSDRM_DestroyCursorBO(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     // Destroy the curso GBM BO.
     if (dispdata->cursor_bo) {
-        SDL_VideoData *viddata = (SDL_VideoData *)_this->internal;
+        SDL_VideoData *viddata = (SDL_VideoData *) _this->internal;
         if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
             if (dispdata->cursor_plane) {
                 // Unset the the cursor BO from the cursor plane.
@@ -227,8 +227,8 @@ static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Mouse *mouse, S
         info.fb_id = fb->fb_id;
         info.src_w = dispdata->cursor_w;
         info.src_h = dispdata->cursor_h;
-        info.crtc_x = ((int32_t)SDL_roundf(mouse->x)) - curdata->hot_x;
-        info.crtc_y = ((int32_t)SDL_roundf(mouse->y)) - curdata->hot_y;
+        info.crtc_x = ((int32_t) SDL_roundf(mouse->x)) - curdata->hot_x;
+        info.crtc_y = ((int32_t) SDL_roundf(mouse->y)) - curdata->hot_y;
         info.crtc_w = curdata->w;
         info.crtc_h = curdata->h;
         drm_atomic_set_plane_props(dispdata, &info);
@@ -383,7 +383,7 @@ static bool KMSDRM_ShowCursor(SDL_Cursor *cursor)
 
 static void drm_atomic_movecursor(SDL_DisplayData *dispdata, const SDL_CursorData *curdata, uint16_t x, uint16_t y)
 {
-    if (dispdata->cursor_plane) { // We can't move a non-existing cursor, but that's ok.
+    if (dispdata->cursor_plane) {  // We can't move a non-existing cursor, but that's ok.
         // Do we have a set of changes already in the making? If not, allocate a new one.
         if (!dispdata->atomic_req) {
             dispdata->atomic_req = KMSDRM_drmModeAtomicAlloc();
@@ -409,8 +409,8 @@ static bool KMSDRM_WarpMouseGlobal(float x, float y)
             SDL_VideoDevice *dev = SDL_GetVideoDevice();
             SDL_VideoData *viddata = dev->internal;
             if (USE_ATOMIC_CURSOR && viddata->is_atomic) {
-                const SDL_CursorData *curdata = (const SDL_CursorData *)mouse->cur_cursor->internal;
-                drm_atomic_movecursor(dispdata, curdata, (uint16_t)(int)x, (uint16_t)(int)y);
+                const SDL_CursorData *curdata = (const SDL_CursorData *) mouse->cur_cursor->internal;
+                drm_atomic_movecursor(dispdata, curdata, (uint16_t) (int) x, (uint16_t) (int) y);
             } else {
                 const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc.crtc->crtc_id, (int)x, (int)y);
                 if (rc < 0) {
@@ -482,8 +482,8 @@ static bool KMSDRM_MoveCursor(SDL_Cursor *cursor)
                for each cursor movement request, but it cripples the movement to 30FPS,
                so a future solution is needed. SDLPoP "QUIT?" menu is an example of this
                situation. */
-            const SDL_CursorData *curdata = (const SDL_CursorData *)mouse->cur_cursor->internal;
-            drm_atomic_movecursor(dispdata, curdata, (uint16_t)(int)mouse->x, (uint16_t)(int)mouse->y);
+            const SDL_CursorData *curdata = (const SDL_CursorData *) mouse->cur_cursor->internal;
+            drm_atomic_movecursor(dispdata, curdata, (uint16_t) (int) mouse->x, (uint16_t) (int) mouse->y);
         } else {
             const int rc = KMSDRM_drmModeMoveCursor(dispdata->cursor_bo_drm_fd, dispdata->crtc.crtc->crtc_id, (int)mouse->x, (int)mouse->y);
             if (rc < 0) {

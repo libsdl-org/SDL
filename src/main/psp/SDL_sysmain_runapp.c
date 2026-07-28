@@ -25,10 +25,10 @@
 
 // SDL_RunApp() for PSP based on SDL_psp_main.c, placed in the public domain by Sam Lantinga  3/13/14
 
-#include "../../events/SDL_events_c.h"
-#include "../SDL_main_callbacks.h"
 #include <pspkernel.h>
 #include <pspthreadman.h>
+#include "../../events/SDL_events_c.h"
+#include "../SDL_main_callbacks.h"
 
 /* If application's main() is redefined as SDL_main, and libSDL_main is
    linked, then this file will create the standard exit callback,
@@ -70,7 +70,7 @@ int sdl_psp_setup_callbacks(void)
     return thid;
 }
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
 

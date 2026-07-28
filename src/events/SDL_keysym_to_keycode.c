@@ -26,20 +26,21 @@
 #include "SDL_keysym_to_scancode_c.h"
 #include "imKStoUCS.h"
 
+
 // Extended key code mappings
 static const struct
 {
     Uint32 keysym;
     SDL_Keycode keycode;
 } keysym_to_keycode_table[] = {
-    { 0xfe03, SDLK_MODE },              // XK_ISO_Level3_Shift
-    { 0xfe11, SDLK_LEVEL5_SHIFT },      // XK_ISO_Level5_Shift
-    { 0xfe20, SDLK_LEFT_TAB },          // XK_ISO_Left_Tab
+    { 0xfe03, SDLK_MODE }, // XK_ISO_Level3_Shift
+    { 0xfe11, SDLK_LEVEL5_SHIFT }, // XK_ISO_Level5_Shift
+    { 0xfe20, SDLK_LEFT_TAB }, // XK_ISO_Left_Tab
     { 0xff20, SDLK_MULTI_KEY_COMPOSE }, // XK_Multi_key
-    { 0xffe7, SDLK_LMETA },             // XK_Meta_L
-    { 0xffe8, SDLK_RMETA },             // XK_Meta_R
-    { 0xffed, SDLK_LHYPER },            // XK_Hyper_L
-    { 0xffee, SDLK_RHYPER },            // XK_Hyper_R
+    { 0xffe7, SDLK_LMETA }, // XK_Meta_L
+    { 0xffe8, SDLK_RMETA }, // XK_Meta_R
+    { 0xffed, SDLK_LHYPER }, // XK_Hyper_L
+    { 0xffee, SDLK_RHYPER }, // XK_Hyper_R
 };
 
 SDL_Keycode SDL_GetKeyCodeFromKeySym(Uint32 keysym, Uint32 keycode, SDL_Keymod modifiers)

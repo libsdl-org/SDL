@@ -42,14 +42,16 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC
+)
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
 SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT NULL
 #endif
@@ -59,7 +61,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR NULL
 #endif
@@ -69,7 +72,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 NULL
 #endif
@@ -79,7 +83,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES NULL
 #endif
@@ -89,7 +94,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR NULL
 #endif
@@ -99,7 +105,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS NULL
 #endif
@@ -109,7 +116,8 @@ SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
-    SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST)
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
+)
 #else
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST NULL
 #endif
@@ -174,7 +182,7 @@ void SDL_X11_UnloadSymbols(void)
 #endif
 
             // set all the function pointers to NULL.
-#define SDL_X11_MODULE(modname)     SDL_X11_HAVE_##modname = 0;
+#define SDL_X11_MODULE(modname)                SDL_X11_HAVE_##modname = 0;
 #define SDL_X11_SYM(rc, fn, params) X11_##fn = NULL;
 #include "SDL_x11sym.h"
 

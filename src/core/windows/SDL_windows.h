@@ -124,9 +124,9 @@
 #define MINGW32_FORCEALIGN
 #endif
 
+#include <windows.h>
 #include <basetyps.h> // for REFIID with broken mingw.org headers
 #include <mmreg.h>
-#include <windows.h>
 
 // Routines to convert from UTF8 to native Windows text
 #define WIN_StringToUTF8W(S) SDL_iconv_string("UTF-8", "UTF-16LE", (const char *)(S), (SDL_wcslen(S) + 1) * sizeof(WCHAR))
@@ -147,13 +147,13 @@
 #endif
 
 #if defined(__LP64__)
-#define SDL_PRIdSLONG "d"
-#define SDL_PRIuULONG "u"
-#define SDL_PRIxSLONG "x"
+#define SDL_PRIdSLONG   "d"
+#define SDL_PRIuULONG   "u"
+#define SDL_PRIxSLONG   "x"
 #else
-#define SDL_PRIdSLONG "ld"
-#define SDL_PRIuULONG "lu"
-#define SDL_PRIxSLONG "lx"
+#define SDL_PRIdSLONG   "ld"
+#define SDL_PRIuULONG   "lu"
+#define SDL_PRIxSLONG   "lx"
 #endif
 
 // Set up for C function definitions, even when using C++

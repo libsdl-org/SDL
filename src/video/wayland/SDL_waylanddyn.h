@@ -48,8 +48,8 @@ enum libdecor_window_state;
 
 #include "wayland-cursor.h"
 #include "wayland-util.h"
-#include "xkbcommon/xkbcommon-compose.h"
 #include "xkbcommon/xkbcommon.h"
+#include "xkbcommon/xkbcommon-compose.h"
 
 // Must be included before our #defines, see Bugzilla #4957
 #include "wayland-client-core.h"

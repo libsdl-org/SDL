@@ -22,9 +22,9 @@
 
 #ifdef SDL_HAVE_BLIT_N
 
-#include "SDL_blit_copy.h"
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
+#include "SDL_blit_copy.h"
 
 #ifdef SDL_SVE2_INTRINSICS
 #include "./arm/SDL_sve2_blit_N.h"
@@ -41,10 +41,10 @@
 
 // Functions to blit from N-bit surfaces to other surfaces
 
-#define BLIT_FEATURE_NONE                      0x00
-#define BLIT_FEATURE_HAS_SSE41                 0x01
-#define BLIT_FEATURE_HAS_ALTIVEC               0x02
-#define BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH 0x04
+#define BLIT_FEATURE_NONE                       0x00
+#define BLIT_FEATURE_HAS_SSE41                  0x01
+#define BLIT_FEATURE_HAS_ALTIVEC                0x02
+#define BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH  0x04
 
 #ifdef SDL_ALTIVEC_BLITTERS
 #ifdef SDL_PLATFORM_MACOS
@@ -296,7 +296,7 @@ static void Blit_XRGB8888_RGB565Altivec(SDL_BlitInfo *info)
     }
 }
 
-#ifdef BROKEN_ALTIVEC_BLITTERS // This doesn't properly expand to the lower destination bits
+#ifdef BROKEN_ALTIVEC_BLITTERS	// This doesn't properly expand to the lower destination bits
 static void Blit_RGB565_32Altivec(SDL_BlitInfo *info)
 {
     int height = info->dst_h;
@@ -752,8 +752,8 @@ static void ConvertAltivec32to32_noprefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); // src is ready.
-            vbits = vec_perm(vbits, vzero, vpermute);     // swizzle it.
-            vec_st(vbits, 0, dst);                        // store it back out.
+            vbits = vec_perm(vbits, vzero, vpermute); // swizzle it.
+            vec_st(vbits, 0, dst);                    // store it back out.
             dst += 4;
             vbits = voverflow;
         }
@@ -846,8 +846,8 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
             src += 4;
             width -= 4;
             vbits = vec_perm(vbits, voverflow, valigner); // src is ready.
-            vbits = vec_perm(vbits, vzero, vpermute);     // swizzle it.
-            vec_st(vbits, 0, dst);                        // store it back out.
+            vbits = vec_perm(vbits, vzero, vpermute); // swizzle it.
+            vec_st(vbits, 0, dst);                    // store it back out.
             dst += 4;
             vbits = voverflow;
         }
@@ -873,16 +873,16 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
 }
 
 // !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4.
-#define GetBlitFeatures()                                \
-    ((SDL_HasAltiVec() ? BLIT_FEATURE_HAS_ALTIVEC : 0) | \
-     ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0))
+#define GetBlitFeatures()   \
+            ((SDL_HasAltiVec() ? BLIT_FEATURE_HAS_ALTIVEC : 0) | \
+             ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0))
 
 #ifdef __MWERKS__
 #pragma altivec_model off
 #endif
 #else
-#define GetBlitFeatures() \
-    (SDL_HasSSE41() ? BLIT_FEATURE_HAS_SSE41 : 0)
+#define GetBlitFeatures()   \
+             (SDL_HasSSE41() ? BLIT_FEATURE_HAS_SSE41 : 0)
 #endif
 
 // This is now endian dependent
@@ -1200,12 +1200,12 @@ static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info)
     // The byte offsets for the start of each pixel
     const __m128i mask_offsets = _mm_set_epi8(12, 12, 12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
     const __m128i convert_mask = _mm_add_epi32(
-        _mm_set1_epi32(
-            ((16 >> 3) << Rshift) |
-            ((8 >> 3) << Gshift) |
-            ((0 >> 3) << Bshift) |
-            ((24 >> 3) << Ashift)),
-        mask_offsets);
+            _mm_set1_epi32(
+                ((16 >> 3) << Rshift) |
+                (( 8 >> 3) << Gshift) |
+                (( 0 >> 3) << Bshift) |
+                ((24 >> 3) << Ashift)),
+            mask_offsets);
 
     while (height--) {
         // Copy in 8 pixel chunks
@@ -1242,8 +1242,8 @@ static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info)
             out1 = _mm_shuffle_epi8(out1, convert_mask);
             out2 = _mm_shuffle_epi8(out2, convert_mask);
 
-            _mm_storeu_si128((__m128i *)dst, out1);
-            _mm_storeu_si128((__m128i *)(dst + 4), out2);
+            _mm_storeu_si128((__m128i*)dst, out1);
+            _mm_storeu_si128((__m128i*)(dst + 4), out2);
 
             src += 8;
             dst += 8;
@@ -2526,20 +2526,20 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
 }
 
 // Convert between two 8888 pixels with differing formats.
-#define SWIZZLE_8888_SRC_ALPHA(src, dst, srcfmt, dstfmt)             \
-    do {                                                             \
-        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) | \
-              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) | \
-              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) | \
-              (((src >> srcfmt->Ashift) & 0xFF) << dstfmt->Ashift);  \
+#define SWIZZLE_8888_SRC_ALPHA(src, dst, srcfmt, dstfmt)                \
+    do {                                                                \
+        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) |    \
+              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) |    \
+              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) |    \
+              (((src >> srcfmt->Ashift) & 0xFF) << dstfmt->Ashift);     \
     } while (0)
 
-#define SWIZZLE_8888_DST_ALPHA(src, dst, srcfmt, dstfmt, dstAmask)   \
-    do {                                                             \
-        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) | \
-              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) | \
-              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) | \
-              dstAmask;                                              \
+#define SWIZZLE_8888_DST_ALPHA(src, dst, srcfmt, dstfmt, dstAmask)      \
+    do {                                                                \
+        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) |    \
+              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) |    \
+              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) |    \
+              dstAmask;                                                 \
     } while (0)
 
 #ifdef SDL_SSE4_1_INTRINSICS
@@ -3212,7 +3212,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
                 return Blit32to32KeyAltivec;
             } else
 #endif
-                if (srcfmt->Amask && dstfmt->Amask) {
+            if (srcfmt->Amask && dstfmt->Amask) {
                 return BlitNtoNKeyCopyAlpha;
             } else {
                 return BlitNtoNKey;

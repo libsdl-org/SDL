@@ -204,9 +204,9 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
 
             // dst = ((src - dst) * srcA) + ((dst << 8) - dst)
             dst_lo = _mm_add_epi16(_mm_mullo_epi16(_mm_sub_epi16(src_lo, dst_lo), srcA),
-                                   _mm_sub_epi16(_mm_slli_epi16(dst_lo, 8), dst_lo));
+                                      _mm_sub_epi16(_mm_slli_epi16(dst_lo, 8), dst_lo));
             dst_hi = _mm_add_epi16(_mm_mullo_epi16(_mm_sub_epi16(src_hi, dst_hi), srcA),
-                                   _mm_sub_epi16(_mm_slli_epi16(dst_hi, 8), dst_hi));
+                                      _mm_sub_epi16(_mm_slli_epi16(dst_hi, 8), dst_hi));
 
             // dst += 0x1U (use 0x80 to round instead of floor)
             dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1));
@@ -260,7 +260,7 @@ static void SDL_TARGETING("lsx") Blit8888to8888PixelAlphaSwizzleLSX(SDL_BlitInfo
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     bool fill_alpha = !dstfmt->Amask;
     Uint32 dstAmask, dstAshift;
-    const Uint8 offsets[] = { 0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12 };
+    const Uint8 offsets[] = {0, 0, 0, 0, 4, 4, 4, 4, 8, 8, 8, 8, 12, 12, 12, 12};
 
     SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
 
@@ -1361,15 +1361,15 @@ static void Blit8888to8888PixelAlphaSwizzleNEON(SDL_BlitInfo *info)
             uint16x8_t res_hi = vdupq_n_u16(1);
 
             // res = alpha * src + (255 - alpha) * dst
-            res_lo = vmlal_u8(res_lo, vget_low_u8(srcA), vget_low_u8(src128));
+            res_lo = vmlal_u8(res_lo, vget_low_u8(srcA),    vget_low_u8(src128));
             res_lo = vmlal_u8(res_lo, vget_low_u8(srcInvA), vget_low_u8(dst128));
-            res_hi = vmlal_high_u8(res_hi, srcA, src128);
+            res_hi = vmlal_high_u8(res_hi, srcA,    src128);
             res_hi = vmlal_high_u8(res_hi, srcInvA, dst128);
 
             // Now result has +1 already added for truncated division
             // dst = (res + (res >> 8)) >> 8
             uint8x8_t temp;
-            temp = vaddhn_u16(res_lo, vshrq_n_u16(res_lo, 8));
+            temp   = vaddhn_u16(res_lo, vshrq_n_u16(res_lo, 8));
             dst128 = vaddhn_high_u16(temp, res_hi, vshrq_n_u16(res_hi, 8));
 
             // For rounded division remove the constant 1 and change first two vmlal_u8 to vmull_u8
@@ -1400,7 +1400,7 @@ static void Blit8888to8888PixelAlphaSwizzleNEON(SDL_BlitInfo *info)
             uint8x8_t srcInvA = vmvn_u8(srcA);
 
             uint16x8_t res = vdupq_n_u16(1);
-            res = vmlal_u8(res, srcA, src32);
+            res = vmlal_u8(res, srcA,    src32);
             res = vmlal_u8(res, srcInvA, dst32);
 
             dst32 = vaddhn_u16(res, vshrq_n_u16(res, 8));
@@ -1446,17 +1446,17 @@ static void BlitNtoNPixelAlpha(SDL_BlitInfo *info)
 
     while (height--) {
         DUFFS_LOOP(
-            {
-                DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-                if (sA) {
-                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
-                    ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
-                    ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
-                }
-                src += srcbpp;
-                dst += dstbpp;
-            },
-            width);
+        {
+        DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
+        if (sA) {
+            DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
+            ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
+            ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
+        }
+        src += srcbpp;
+        dst += dstbpp;
+        },
+        width);
         /* *INDENT-ON* */ // clang-format on
         src += srcskip;
         dst += dstskip;
@@ -1520,11 +1520,11 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                 }
 #endif
 #ifdef SDL_SVE2_INTRINSICS
-                if (SDL_HasSVE2()
-/* NEON is faster than SVE2 when vector size is 128bit */
-#if defined(SDL_NEON_INTRINSICS)
-                    && (SDL_GetSVEVectorSize() > 128 || !SDL_HasNEON())
-#endif
+                if (SDL_HasSVE2() 
+            /* NEON is faster than SVE2 when vector size is 128bit */
+            #if defined(SDL_NEON_INTRINSICS)
+                && (SDL_GetSVEVectorSize() > 128 || !SDL_HasNEON())
+            #endif
                 ) {
                     // To prevent "unused function" compiler warnings/errors
                     (void)Blit8888to8888PixelAlpha;
@@ -1572,9 +1572,9 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                         } else
 #endif
 #ifdef SDL_SVE2_INTRINSICS
-                            if (SDL_HasSVE2()) {
+                        if (SDL_HasSVE2()) {
                             return Blit565to565SurfaceAlphaSVE2;
-                        } else
+                        } else 
 #endif
                         {
                             return Blit565to565SurfaceAlpha;
@@ -1633,3 +1633,4 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 }
 
 #endif // SDL_HAVE_BLIT_A
+

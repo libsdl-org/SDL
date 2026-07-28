@@ -37,7 +37,7 @@
 #define DRAW_FASTSETPIXEL4 DRAW_FASTSETPIXEL(Uint32)
 
 #define DRAW_FASTSETPIXELXY(x, y, type, bpp, color) \
-    *(type *)((Uint8 *)dst->pixels + (y) * dst->pitch + (x) * bpp) = (type)color
+    *(type *)((Uint8 *)dst->pixels + (y)*dst->pitch + (x)*bpp) = (type)color
 
 #define DRAW_FASTSETPIXELXY1(x, y) DRAW_FASTSETPIXELXY(x, y, Uint8, 1, color)
 #define DRAW_FASTSETPIXELXY2(x, y) DRAW_FASTSETPIXELXY(x, y, Uint16, 2, color)
@@ -125,10 +125,10 @@
         setpixel;                                  \
     } while (0)
 
-#define DRAW_SETPIXELXY(x, y, type, bpp, op)                                          \
-    do {                                                                              \
-        type *pixels = (type *)((Uint8 *)dst->pixels + (y) * dst->pitch + (x) * bpp); \
-        op;                                                                           \
+#define DRAW_SETPIXELXY(x, y, type, bpp, op)                                     \
+    do {                                                                         \
+        type *pixels = (type *)((Uint8 *)dst->pixels + (y)*dst->pitch + (x)*bpp);\
+        op;                                                                      \
     } while (0)
 
 /*
@@ -138,24 +138,24 @@
 #define DRAW_SETPIXEL_RGB555 \
     DRAW_SETPIXEL(RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_RGB555                            \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB555(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_RGB555                           \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB555(*pixels, sr, sg, sb),\
                         RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB555                            \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB555(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB555                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB555(*pixels, sr, sg, sb),\
                                 RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_RGB555                            \
-    DRAW_SETPIXEL_ADD(RGB_FROM_RGB555(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_ADD_RGB555                           \
+    DRAW_SETPIXEL_ADD(RGB_FROM_RGB555(*pixels, sr, sg, sb),\
                       RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_RGB555                            \
-    DRAW_SETPIXEL_MOD(RGB_FROM_RGB555(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MOD_RGB555                           \
+    DRAW_SETPIXEL_MOD(RGB_FROM_RGB555(*pixels, sr, sg, sb),\
                       RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_RGB555                            \
-    DRAW_SETPIXEL_MUL(RGB_FROM_RGB555(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MUL_RGB555                           \
+    DRAW_SETPIXEL_MUL(RGB_FROM_RGB555(*pixels, sr, sg, sb),\
                       RGB555_FROM_RGB(*pixels, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_RGB555(x, y) \
@@ -183,24 +183,24 @@
 #define DRAW_SETPIXEL_RGB565 \
     DRAW_SETPIXEL(RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_RGB565                            \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB565(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_RGB565                           \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_RGB565(*pixels, sr, sg, sb),\
                         RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB565                            \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB565(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB565                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_RGB565(*pixels, sr, sg, sb),\
                                 RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_RGB565                            \
-    DRAW_SETPIXEL_ADD(RGB_FROM_RGB565(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_ADD_RGB565                           \
+    DRAW_SETPIXEL_ADD(RGB_FROM_RGB565(*pixels, sr, sg, sb),\
                       RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_RGB565                            \
-    DRAW_SETPIXEL_MOD(RGB_FROM_RGB565(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MOD_RGB565                           \
+    DRAW_SETPIXEL_MOD(RGB_FROM_RGB565(*pixels, sr, sg, sb),\
                       RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_RGB565                            \
-    DRAW_SETPIXEL_MUL(RGB_FROM_RGB565(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MUL_RGB565                           \
+    DRAW_SETPIXEL_MUL(RGB_FROM_RGB565(*pixels, sr, sg, sb),\
                       RGB565_FROM_RGB(*pixels, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_RGB565(x, y) \
@@ -228,24 +228,24 @@
 #define DRAW_SETPIXEL_XRGB8888 \
     DRAW_SETPIXEL(XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_XRGB8888                            \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_XRGB8888(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_XRGB8888                           \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_XRGB8888(*pixels, sr, sg, sb),\
                         XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888                            \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_XRGB8888(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_XRGB8888                           \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_XRGB8888(*pixels, sr, sg, sb),\
                                 XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_XRGB8888                            \
-    DRAW_SETPIXEL_ADD(RGB_FROM_XRGB8888(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_ADD_XRGB8888                           \
+    DRAW_SETPIXEL_ADD(RGB_FROM_XRGB8888(*pixels, sr, sg, sb),\
                       XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_XRGB8888                            \
-    DRAW_SETPIXEL_MOD(RGB_FROM_XRGB8888(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MOD_XRGB8888                           \
+    DRAW_SETPIXEL_MOD(RGB_FROM_XRGB8888(*pixels, sr, sg, sb),\
                       XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_XRGB8888                            \
-    DRAW_SETPIXEL_MUL(RGB_FROM_XRGB8888(*pixels, sr, sg, sb), \
+#define DRAW_SETPIXEL_MUL_XRGB8888                           \
+    DRAW_SETPIXEL_MUL(RGB_FROM_XRGB8888(*pixels, sr, sg, sb),\
                       XRGB8888_FROM_RGB(*pixels, sr, sg, sb))
 
 #define DRAW_SETPIXELXY_XRGB8888(x, y) \
@@ -273,24 +273,24 @@
 #define DRAW_SETPIXEL_ARGB8888 \
     DRAW_SETPIXEL(ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_BLEND_ARGB8888                                 \
-    DRAW_SETPIXEL_BLEND(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_BLEND_ARGB8888                                \
+    DRAW_SETPIXEL_BLEND(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa),\
                         ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888                                 \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_ARGB8888                                \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa),\
                                 ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_ADD_ARGB8888                                 \
-    DRAW_SETPIXEL_ADD(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_ADD_ARGB8888                                \
+    DRAW_SETPIXEL_ADD(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa),\
                       ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_MOD_ARGB8888                                 \
-    DRAW_SETPIXEL_MOD(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_MOD_ARGB8888                                \
+    DRAW_SETPIXEL_MOD(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa),\
                       ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_MUL_ARGB8888                                 \
-    DRAW_SETPIXEL_MUL(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_MUL_ARGB8888                                \
+    DRAW_SETPIXEL_MUL(RGBA_FROM_ARGB8888(*pixels, sr, sg, sb, sa),\
                       ARGB8888_FROM_RGBA(*pixels, sr, sg, sb, sa))
 
 #define DRAW_SETPIXELXY_ARGB8888(x, y) \
@@ -318,24 +318,24 @@
 #define DRAW_SETPIXEL_RGB \
     DRAW_SETPIXEL(PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_RGB                                   \
-    DRAW_SETPIXEL_BLEND(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_RGB                                  \
+    DRAW_SETPIXEL_BLEND(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb),\
                         PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB                                   \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGB                                  \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb),\
                                 PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
-#define DRAW_SETPIXEL_ADD_RGB                                   \
-    DRAW_SETPIXEL_ADD(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb), \
+#define DRAW_SETPIXEL_ADD_RGB                                  \
+    DRAW_SETPIXEL_ADD(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb),\
                       PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MOD_RGB                                   \
-    DRAW_SETPIXEL_MOD(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb), \
+#define DRAW_SETPIXEL_MOD_RGB                                  \
+    DRAW_SETPIXEL_MOD(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb),\
                       PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
-#define DRAW_SETPIXEL_MUL_RGB                                   \
-    DRAW_SETPIXEL_MUL(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb), \
+#define DRAW_SETPIXEL_MUL_RGB                                  \
+    DRAW_SETPIXEL_MUL(RGB_FROM_PIXEL(*pixels, fmt, sr, sg, sb),\
                       PIXEL_FROM_RGB(*pixels, fmt, sr, sg, sb))
 
 #define DRAW_SETPIXELXY2_RGB(x, y) \
@@ -381,24 +381,24 @@
 #define DRAW_SETPIXEL_RGBA \
     DRAW_SETPIXEL(PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_BLEND_RGBA                                       \
-    DRAW_SETPIXEL_BLEND(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_BLEND_RGBA                                      \
+    DRAW_SETPIXEL_BLEND(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa),\
                         PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_BLEND_CLAMPED_RGBA                                       \
-    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_BLEND_CLAMPED_RGBA                                      \
+    DRAW_SETPIXEL_BLEND_CLAMPED(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa),\
                                 PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_ADD_RGBA                                       \
-    DRAW_SETPIXEL_ADD(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_ADD_RGBA                                      \
+    DRAW_SETPIXEL_ADD(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa),\
                       PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_MOD_RGBA                                       \
-    DRAW_SETPIXEL_MOD(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_MOD_RGBA                                      \
+    DRAW_SETPIXEL_MOD(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa),\
                       PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
-#define DRAW_SETPIXEL_MUL_RGBA                                       \
-    DRAW_SETPIXEL_MUL(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa), \
+#define DRAW_SETPIXEL_MUL_RGBA                                      \
+    DRAW_SETPIXEL_MUL(RGBA_FROM_PIXEL(*pixels, fmt, sr, sg, sb, sa),\
                       PIXEL_FROM_RGBA(*pixels, fmt, sr, sg, sb, sa))
 
 #define DRAW_SETPIXELXY4_RGBA(x, y) \
@@ -426,82 +426,82 @@
 #define ABS(_x) ((_x) < 0 ? -(_x) : (_x))
 
 // Horizontal line
-#define HLINE(type, op, draw_end)                             \
-    {                                                         \
-        int length;                                           \
-        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel); \
-        type *pixels;                                         \
-        if (x1 <= x2) {                                       \
-            pixels = (type *)dst->pixels + y1 * pitch + x1;   \
-            length = draw_end ? (x2 - x1 + 1) : (x2 - x1);    \
-        } else {                                              \
-            pixels = (type *)dst->pixels + y1 * pitch + x2;   \
-            if (!draw_end) {                                  \
-                ++pixels;                                     \
-            }                                                 \
-            length = draw_end ? (x1 - x2 + 1) : (x1 - x2);    \
-        }                                                     \
-        while (length--) {                                    \
-            op;                                               \
-            ++pixels;                                         \
-        }                                                     \
+#define HLINE(type, op, draw_end)                              \
+    {                                                          \
+        int length;                                            \
+        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
+        type *pixels;                                          \
+        if (x1 <= x2) {                                        \
+            pixels = (type *)dst->pixels + y1 * pitch + x1;    \
+            length = draw_end ? (x2 - x1 + 1) : (x2 - x1);     \
+        } else {                                               \
+            pixels = (type *)dst->pixels + y1 * pitch + x2;    \
+            if (!draw_end) {                                   \
+                ++pixels;                                      \
+            }                                                  \
+            length = draw_end ? (x1 - x2 + 1) : (x1 - x2);     \
+        }                                                      \
+        while (length--) {                                     \
+            op;                                                \
+            ++pixels;                                          \
+        }                                                      \
     }
 
 // Vertical line
-#define VLINE(type, op, draw_end)                             \
-    {                                                         \
-        int length;                                           \
-        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel); \
-        type *pixels;                                         \
-        if (y1 <= y2) {                                       \
-            pixels = (type *)dst->pixels + y1 * pitch + x1;   \
-            length = draw_end ? (y2 - y1 + 1) : (y2 - y1);    \
-        } else {                                              \
-            pixels = (type *)dst->pixels + y2 * pitch + x1;   \
-            if (!draw_end) {                                  \
-                pixels += pitch;                              \
-            }                                                 \
-            length = draw_end ? (y1 - y2 + 1) : (y1 - y2);    \
-        }                                                     \
-        while (length--) {                                    \
-            op;                                               \
-            pixels += pitch;                                  \
-        }                                                     \
+#define VLINE(type, op, draw_end)                              \
+    {                                                          \
+        int length;                                            \
+        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
+        type *pixels;                                          \
+        if (y1 <= y2) {                                        \
+            pixels = (type *)dst->pixels + y1 * pitch + x1;    \
+            length = draw_end ? (y2 - y1 + 1) : (y2 - y1);     \
+        } else {                                               \
+            pixels = (type *)dst->pixels + y2 * pitch + x1;    \
+            if (!draw_end) {                                   \
+                pixels += pitch;                               \
+            }                                                  \
+            length = draw_end ? (y1 - y2 + 1) : (y1 - y2);     \
+        }                                                      \
+        while (length--) {                                     \
+            op;                                                \
+            pixels += pitch;                                   \
+        }                                                      \
     }
 
 // Diagonal line
-#define DLINE(type, op, draw_end)                             \
-    {                                                         \
-        int length;                                           \
-        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel); \
-        type *pixels;                                         \
-        if (y1 <= y2) {                                       \
-            pixels = (type *)dst->pixels + y1 * pitch + x1;   \
-            if (x1 <= x2) {                                   \
-                ++pitch;                                      \
-            } else {                                          \
-                --pitch;                                      \
-            }                                                 \
-            length = (y2 - y1);                               \
-        } else {                                              \
-            pixels = (type *)dst->pixels + y2 * pitch + x2;   \
-            if (x2 <= x1) {                                   \
-                ++pitch;                                      \
-            } else {                                          \
-                --pitch;                                      \
-            }                                                 \
-            if (!draw_end) {                                  \
-                pixels += pitch;                              \
-            }                                                 \
-            length = (y1 - y2);                               \
-        }                                                     \
-        if (draw_end) {                                       \
-            ++length;                                         \
-        }                                                     \
-        while (length--) {                                    \
-            op;                                               \
-            pixels += pitch;                                  \
-        }                                                     \
+#define DLINE(type, op, draw_end)                              \
+    {                                                          \
+        int length;                                            \
+        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);  \
+        type *pixels;                                          \
+        if (y1 <= y2) {                                        \
+            pixels = (type *)dst->pixels + y1 * pitch + x1;    \
+            if (x1 <= x2) {                                    \
+                ++pitch;                                       \
+            } else {                                           \
+                --pitch;                                       \
+            }                                                  \
+            length = (y2 - y1);                                \
+        } else {                                               \
+            pixels = (type *)dst->pixels + y2 * pitch + x2;    \
+            if (x2 <= x1) {                                    \
+                ++pitch;                                       \
+            } else {                                           \
+                --pitch;                                       \
+            }                                                  \
+            if (!draw_end) {                                   \
+                pixels += pitch;                               \
+            }                                                  \
+            length = (y1 - y2);                                \
+        }                                                      \
+        if (draw_end) {                                        \
+            ++length;                                          \
+        }                                                      \
+        while (length--) {                                     \
+            op;                                                \
+            pixels += pitch;                                   \
+        }                                                      \
     }
 
 // Bresenham's line algorithm
@@ -689,36 +689,36 @@
  * Define fill rect macro
  */
 
-#define FILLRECT(type, op)                                              \
-    do {                                                                \
-        int width = rect->w;                                            \
-        int height = rect->h;                                           \
-        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);           \
-        int skip = pitch - width;                                       \
-        type *pixels = (type *)dst->pixels + rect->y * pitch + rect->x; \
-        while (height--) {                                              \
-            {                                                           \
-                int n = (width + 3) / 4;                                \
-                switch (width & 3) {                                    \
-                case 0:                                                 \
-                    do {                                                \
-                        op;                                             \
-                        pixels++;                                       \
-                        SDL_FALLTHROUGH;                                \
-                    case 3:                                             \
-                        op;                                             \
-                        pixels++;                                       \
-                        SDL_FALLTHROUGH;                                \
-                    case 2:                                             \
-                        op;                                             \
-                        pixels++;                                       \
-                        SDL_FALLTHROUGH;                                \
-                    case 1:                                             \
-                        op;                                             \
-                        pixels++;                                       \
-                    } while (--n > 0);                                  \
-                }                                                       \
-            }                                                           \
-            pixels += skip;                                             \
-        }                                                               \
+#define FILLRECT(type, op)                                             \
+    do {                                                               \
+        int width = rect->w;                                           \
+        int height = rect->h;                                          \
+        int pitch = (dst->pitch / dst->fmt->bytes_per_pixel);          \
+        int skip = pitch - width;                                      \
+        type *pixels = (type *)dst->pixels + rect->y * pitch + rect->x;\
+        while (height--) {                                             \
+            {                                                          \
+                int n = (width + 3) / 4;                               \
+                switch (width & 3) {                                   \
+                case 0:                                                \
+                    do {                                               \
+                        op;                                            \
+                        pixels++;                                      \
+                        SDL_FALLTHROUGH;                               \
+                    case 3:                                            \
+                        op;                                            \
+                        pixels++;                                      \
+                        SDL_FALLTHROUGH;                               \
+                    case 2:                                            \
+                        op;                                            \
+                        pixels++;                                      \
+                        SDL_FALLTHROUGH;                               \
+                    case 1:                                            \
+                        op;                                            \
+                        pixels++;                                      \
+                    } while (--n > 0);                                 \
+                }                                                      \
+            }                                                          \
+            pixels += skip;                                            \
+        }                                                              \
     } while (0)

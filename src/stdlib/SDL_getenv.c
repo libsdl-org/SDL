@@ -32,9 +32,9 @@
 
 #if defined(SDL_PLATFORM_WINDOWS)
 #define HAVE_WIN32_ENVIRONMENT
-#elif defined(HAVE_GETENV) &&                         \
-    (defined(HAVE_SETENV) || defined(HAVE_PUTENV)) && \
-    (defined(HAVE_UNSETENV) || defined(HAVE_PUTENV))
+#elif defined(HAVE_GETENV) && \
+      (defined(HAVE_SETENV) || defined(HAVE_PUTENV)) && \
+      (defined(HAVE_UNSETENV) || defined(HAVE_PUTENV))
 #define HAVE_LIBC_ENVIRONMENT
 #if defined(SDL_PLATFORM_MACOS)
 #include <crt_externs.h>
@@ -55,9 +55,10 @@ extern char **environ;
 static char **environ;
 #endif
 
+
 struct SDL_Environment
 {
-    SDL_Mutex *lock; // !!! FIXME: reuse SDL_HashTable's lock.
+    SDL_Mutex *lock;   // !!! FIXME: reuse SDL_HashTable's lock.
     SDL_HashTable *strings;
 };
 static SDL_Environment *SDL_environment;
@@ -182,10 +183,10 @@ typedef struct CountEnvStringsData
 
 static bool SDLCALL CountEnvStrings(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
-    CountEnvStringsData *data = (CountEnvStringsData *)userdata;
-    data->length += SDL_strlen((const char *)key) + 1 + SDL_strlen((const char *)value) + 1;
+    CountEnvStringsData *data = (CountEnvStringsData *) userdata;
+    data->length += SDL_strlen((const char *) key) + 1 + SDL_strlen((const char *) value) + 1;
     data->count++;
-    return true; // keep iterating.
+    return true;  // keep iterating.
 }
 
 typedef struct CopyEnvStringsData
@@ -197,9 +198,9 @@ typedef struct CopyEnvStringsData
 
 static bool SDLCALL CopyEnvStrings(void *userdata, const SDL_HashTable *table, const void *vkey, const void *vvalue)
 {
-    CopyEnvStringsData *data = (CopyEnvStringsData *)userdata;
-    const char *key = (const char *)vkey;
-    const char *value = (const char *)vvalue;
+    CopyEnvStringsData *data = (CopyEnvStringsData *) userdata;
+    const char *key = (const char *) vkey;
+    const char *value = (const char *) vvalue;
     size_t len;
 
     len = SDL_strlen(key);
@@ -214,14 +215,14 @@ static bool SDLCALL CopyEnvStrings(void *userdata, const SDL_HashTable *table, c
     *(data->string++) = '\0';
     data->count++;
 
-    return true; // keep iterating.
+    return true;  // keep iterating.
 }
 
 char **SDL_GetEnvironmentVariables(SDL_Environment *env)
 {
     char **result = NULL;
 
-    CHECK_PARAM (!env) {
+    CHECK_PARAM(!env) {
         SDL_InvalidParamError("env");
         return NULL;
     }
@@ -252,13 +253,13 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
 {
     bool result = false;
 
-    CHECK_PARAM (!env) {
+    CHECK_PARAM(!env) {
         return SDL_InvalidParamError("env");
     }
-    CHECK_PARAM (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+    CHECK_PARAM(!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return SDL_InvalidParamError("name");
     }
-    CHECK_PARAM (!value) {
+    CHECK_PARAM(!value) {
         return SDL_InvalidParamError("value");
     }
 
@@ -278,7 +279,7 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
                     const void *existing_value = NULL;
                     // !!! FIXME: InsertIntoHashTable does this lookup too, maybe we should have a means to report that, to avoid duplicate work?
                     if (SDL_FindInHashTable(env->strings, origname, &existing_value)) {
-                        result = true; // it already existed, and we refused to overwrite it. Call it success.
+                        result = true;  // it already existed, and we refused to overwrite it. Call it success.
                     }
                 }
             }
@@ -293,10 +294,10 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
     bool result = false;
 
-    CHECK_PARAM (!env) {
+    CHECK_PARAM(!env) {
         return SDL_InvalidParamError("env");
     }
-    CHECK_PARAM (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+    CHECK_PARAM(!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return SDL_InvalidParamError("name");
     }
 
@@ -393,7 +394,7 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
     }
     return 0;
 }
-#else  // roll our own
+#else // roll our own
 
 int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
 {
@@ -566,13 +567,13 @@ const char *SDL_getenv_unsafe(const char *name)
         return NULL;
     }
 
-    for (;;) {
+    for ( ; ; ) {
         SetLastError(ERROR_SUCCESS);
         length = GetEnvironmentVariableA(name, string, maxlen);
 
         if (length > maxlen) {
             char *temp = (char *)SDL_realloc(string, length);
-            if (!temp) {
+            if (!temp)  {
                 return NULL;
             }
             string = temp;

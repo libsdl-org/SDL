@@ -37,6 +37,7 @@ typedef struct SDL_EventWatchList
     bool removed;
 } SDL_EventWatchList;
 
+
 extern bool SDL_InitEventWatchList(SDL_EventWatchList *list);
 extern void SDL_QuitEventWatchList(SDL_EventWatchList *list);
 extern bool SDL_DispatchEventWatchList(SDL_EventWatchList *list, SDL_Event *event);

@@ -22,16 +22,18 @@
 
 // SDL event categories
 
-#include "SDL_categories_c.h"
 #include "SDL_events_c.h"
+#include "SDL_categories_c.h"
 
 SDL_EventCategory SDL_GetEventCategory(Uint32 type)
 {
     if (type >= SDL_EVENT_USER && type <= SDL_EVENT_LAST) {
         return SDL_EVENTCATEGORY_USER;
-    } else if (type >= SDL_EVENT_DISPLAY_FIRST && type <= SDL_EVENT_DISPLAY_LAST) {
+    }
+    else if (type >= SDL_EVENT_DISPLAY_FIRST && type <= SDL_EVENT_DISPLAY_LAST) {
         return SDL_EVENTCATEGORY_DISPLAY;
-    } else if (type >= SDL_EVENT_WINDOW_FIRST && type <= SDL_EVENT_WINDOW_LAST) {
+    }
+    else if (type >= SDL_EVENT_WINDOW_FIRST && type <= SDL_EVENT_WINDOW_LAST) {
         return SDL_EVENTCATEGORY_WINDOW;
     }
     switch (type) {

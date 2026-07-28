@@ -24,8 +24,8 @@
 
 // Win32 thread management routines for SDL
 
-#include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
+#include "../SDL_systhread.h"
 #include "SDL_systhread_c.h"
 
 #ifndef STACK_SIZE_PARAM_IS_A_RESERVATION
@@ -34,9 +34,10 @@
 
 #define SDL_DEBUGGER_NAME_EXCEPTION_CODE 0x406D1388
 
-typedef void(__cdecl *SDL_EndThreadExCallback)(unsigned retval);
-typedef uintptr_t(__cdecl *SDL_BeginThreadExCallback)(void *security, unsigned stacksize, unsigned(__stdcall *startaddr)(void *),
-                                                      void *arglist, unsigned initflag, unsigned *threadaddr);
+typedef void (__cdecl * SDL_EndThreadExCallback) (unsigned retval);
+typedef uintptr_t (__cdecl * SDL_BeginThreadExCallback)
+                   (void *security, unsigned stacksize, unsigned (__stdcall *startaddr)(void *),
+                    void * arglist, unsigned initflag, unsigned *threadaddr);
 
 static DWORD RunThread(void *data)
 {
@@ -63,7 +64,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
                           SDL_FunctionPointer vpfnBeginThread,
                           SDL_FunctionPointer vpfnEndThread)
 {
-    SDL_BeginThreadExCallback pfnBeginThread = (SDL_BeginThreadExCallback)vpfnBeginThread;
+    SDL_BeginThreadExCallback pfnBeginThread = (SDL_BeginThreadExCallback) vpfnBeginThread;
 
     const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
 
@@ -76,13 +77,13 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         thread->handle = (SYS_ThreadHandle)((size_t)pfnBeginThread(NULL, (unsigned int)thread->stacksize,
                                                                    RunThreadViaBeginThreadEx,
                                                                    thread, flags, &threadid));
-        thread->threadid = (SDL_ThreadID)threadid;
+        thread->threadid = (SDL_ThreadID) threadid;
     } else {
         DWORD threadid = 0;
         thread->handle = CreateThread(NULL, thread->stacksize,
                                       RunThreadViaCreateThread,
                                       thread, flags, &threadid);
-        thread->threadid = (SDL_ThreadID)threadid;
+        thread->threadid = (SDL_ThreadID) threadid;
     }
     if (!thread->handle) {
         return SDL_SetError("Not enough resources to create thread");
@@ -110,7 +111,7 @@ static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *info)
     }
 }
 
-typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 
 void SDL_SYS_SetupThread(const char *name)
 {

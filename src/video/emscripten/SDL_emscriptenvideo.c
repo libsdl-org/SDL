@@ -22,16 +22,16 @@
 
 #ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#include "../../SDL_hints_c.h"
-#include "../../events/SDL_events_c.h"
-#include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
+#include "../SDL_pixels_c.h"
+#include "../../events/SDL_events_c.h"
+#include "../../SDL_hints_c.h"
 
-#include "SDL_emscriptenevents.h"
-#include "SDL_emscriptenframebuffer.h"
-#include "SDL_emscriptenmouse.h"
-#include "SDL_emscriptenopengles.h"
 #include "SDL_emscriptenvideo.h"
+#include "SDL_emscriptenopengles.h"
+#include "SDL_emscriptenframebuffer.h"
+#include "SDL_emscriptenevents.h"
+#include "SDL_emscriptenmouse.h"
 #include "SDL_emscriptenwgpu.h"
 
 #define EMSCRIPTENVID_DRIVER_NAME "emscripten"
@@ -44,7 +44,7 @@ static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoD
 
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
-static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
+static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable);
 static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
@@ -104,8 +104,7 @@ static void Emscripten_ListenSystemTheme(void)
         if (window.matchMedia) {
             var SDL3 = Module['SDL3'];
 
-            SDL3.eventHandlerThemeChanged = function(event)
-            {
+            SDL3.eventHandlerThemeChanged = function(event) {
                 _Emscripten_SendSystemThemeChangedEvent();
             };
 
@@ -118,7 +117,7 @@ static void Emscripten_ListenSystemTheme(void)
 static void Emscripten_UnlistenSystemTheme(void)
 {
     MAIN_THREAD_EM_ASM({
-        if (typeof(Module['SDL3']) != = 'undefined') {
+        if (typeof(Module['SDL3']) !== 'undefined') {
             var SDL3 = Module['SDL3'];
 
             SDL3.themeChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerThemeChanged);
@@ -199,8 +198,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     return device;
 }
 
-static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
-{
+static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, int *buttonID) {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         char dialog_background[32];
         char dialog_color[32];
@@ -258,7 +256,8 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
             p.innerText = message;
             dialog.append(p);
 
-            dialog.showModal(); }, messageboxdata->title, messageboxdata->message, dialog_background, dialog_color, dialog_id);
+            dialog.showModal();
+        }, messageboxdata->title, messageboxdata->message, dialog_background, dialog_color, dialog_id);
 
         int i;
         for (i = 0; i < messageboxdata->numbuttons; ++i) {
@@ -308,7 +307,17 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
                     };
 
                     dialog.append(button);
-                    return true; }, dialog_id, button.text, button.buttonID, button.flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, button.flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, button_border, button_background, button_hovered);
+                    return true;
+                },
+                dialog_id,
+                button.text,
+                button.buttonID,
+                button.flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
+                button.flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
+                button_border,
+                button_background,
+                button_hovered
+            );
 
             if (!created) {
                 return false;
@@ -326,7 +335,8 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
                 if (!dialog) {
                     return false;
                 }
-                return dialog.open; }, dialog_id);
+                return dialog.open;
+            }, dialog_id);
 
             if (dialog_open) {
                 continue;
@@ -345,13 +355,16 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
                 catch(e)
                 {
                     return 0;
-                } }, dialog_id);
+                }
+            }, dialog_id);
             break;
         }
 
     } else {
         // Cannot add elements to DOM and block without Asyncify. So, fall back to the alert function.
-        EM_ASM({ alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1)); }, messageboxdata->title, messageboxdata->message);
+        EM_ASM({
+            alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
+        }, messageboxdata->title, messageboxdata->message);
     }
     return true;
 }
@@ -489,7 +502,8 @@ static bool Emscripten_SetWindowFillDocument(SDL_VideoDevice *_this, SDL_Window 
             document.body.appendChild(canvas);
             canvas.style.position = 'fixed';
             canvas.style.top = '0';
-            canvas.style.left = '0'; }, wdata->canvas_id);
+            canvas.style.left = '0';
+        }, wdata->canvas_id);
 
         emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
@@ -554,8 +568,8 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     bool fill_document = ((window->flags & SDL_WINDOW_FILL_DOCUMENT) != 0);
     if (fill_document && Emscripten_fill_document_window) {
-        fill_document = false;                      // only one allowed at a time.
-        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT; // !!! FIXME: should this fail instead?
+        fill_document = false;  // only one allowed at a time.
+        window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;   // !!! FIXME: should this fail instead?
     }
 
     // Allocate window internal data
@@ -588,9 +602,9 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
     if (wdata->external_size) {
-        fill_document = false; // can't be resizable if something else is controlling it.
-        window->w = (int)css_w;
-        window->h = (int)css_h;
+        fill_document = false;  // can't be resizable if something else is controlling it.
+        window->w = (int) css_w;
+        window->h = (int) css_h;
     }
 
     wdata->window = window;
@@ -612,7 +626,8 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     MAIN_THREAD_EM_ASM({
         Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {
             _requestFullscreenThroughSDL($0);
-        }; }, window);
+        };
+    }, window);
 
     // Ensure various things are added to the window's properties
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
@@ -622,7 +637,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     return true;
 }
 
-static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable)
+static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable)
 {
     // this function just has to exist or the higher level won't let the window change its SDL_WINDOW_RESIZABLE flag.
 }
@@ -632,7 +647,7 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
     if (window->internal) {
         SDL_WindowData *data = window->internal;
         if (window == Emscripten_fill_document_window) {
-            return; // canvas size is being dictated by the browser window size, refuse request.
+            return;  // canvas size is being dictated by the browser window size, refuse request.
         }
 
         // update pixel ratio
@@ -686,7 +701,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     MAIN_THREAD_EM_ASM({
         // just ignore clicks on the fullscreen button while there's no SDL window.
-        Module['requestFullscreen'] = function(lockPointer, resizeCanvas){};
+        Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {};
     });
 }
 
@@ -699,14 +714,13 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
         data = window->internal;
 
         if (data->fullscreen_change_in_progress) {
-            return SDL_FULLSCREEN_FAILED;
-            ;
+            return SDL_FULLSCREEN_FAILED;;
         }
 
         EmscriptenFullscreenChangeEvent fsevent;
         if (emscripten_get_fullscreen_status(&fsevent) == EMSCRIPTEN_RESULT_SUCCESS) {
             if ((fullscreen == SDL_FULLSCREEN_OP_ENTER) == fsevent.isFullscreen) {
-                return SDL_FULLSCREEN_SUCCEEDED; // already there.
+                return SDL_FULLSCREEN_SUCCEEDED;  // already there.
             }
         }
 
@@ -740,7 +754,7 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     }
 
     if (res == EMSCRIPTEN_RESULT_SUCCESS) {
-        data->fullscreen_change_in_progress = true; // even on success, this might animate to the new state.
+        data->fullscreen_change_in_progress = true;   // even on success, this might animate to the new state.
         return SDL_FULLSCREEN_SUCCEEDED;
     } else if (res == EMSCRIPTEN_RESULT_DEFERRED) {
         data->fullscreen_change_in_progress = true;
@@ -773,7 +787,8 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
     void *png_data = SDL_GetPointerProperty(
         SDL_GetIOProperties(stream),
         SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER,
-        NULL);
+        NULL
+    );
     size_t png_size = (size_t)SDL_GetIOSize(stream);
 
     // Pass PNG data to JavaScript
@@ -799,7 +814,8 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
             URL.revokeObjectURL(link.href);
         }
 
-        link.href = url; }, png_data, png_size);
+        link.href = url;
+    }, png_data, png_size);
 
     SDL_CloseIO(stream);
     return true;

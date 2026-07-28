@@ -22,14 +22,14 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
+#include "SDL_windowsvideo.h"
 #include "SDL_windowsevents.h"
 #include "SDL_windowsrawinput.h"
-#include "SDL_windowsvideo.h"
 
-#include "../../core/windows/SDL_windows.h" // for checking windows version
+#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../joystick/usb_ids.h"
-#include "../SDL_video_c.h"
+#include "../../core/windows/SDL_windows.h" // for checking windows version
 
 #define RIFF_FOURCC(c0, c1, c2, c3)                 \
     ((DWORD)(BYTE)(c0) | ((DWORD)(BYTE)(c1) << 8) | \
@@ -170,7 +170,7 @@ static SDL_Cursor *WIN_CreateAnimatedCursorAndData(SDL_CursorFrameInfo *frames, 
     return cursor;
 }
 
-static bool SaveChunkSize(SDL_IOStream *dst, Sint64 offset)
+static bool SaveChunkSize(SDL_IOStream* dst, Sint64 offset)
 {
     Sint64 here = SDL_TellIO(dst);
     if (here < 0) {
@@ -789,8 +789,8 @@ static void WIN_ApplySystemScale(void *internal, Uint64 timestamp, SDL_Window *w
 
     Uint32 denom = data->dpidenom;
     Sint64 scale = 0;
-    Sint64 xdiff = xs[j + 1] - xs[j];
-    Sint64 ydiff = ys[j + 1] - ys[j];
+    Sint64 xdiff = xs[j+1] - xs[j];
+    Sint64 ydiff = ys[j+1] - ys[j];
     if (xdiff != 0) {
         Sint64 slope = ydiff / xdiff;
         Sint64 inter = slope * xs[i] - ys[i];
@@ -799,8 +799,8 @@ static void WIN_ApplySystemScale(void *internal, Uint64 timestamp, SDL_Window *w
 
     if (j > k) {
         denom <<= 1;
-        xdiff = xs[k + 1] - xs[k];
-        ydiff = ys[k + 1] - ys[k];
+        xdiff = xs[k+1] - xs[k];
+        ydiff = ys[k+1] - ys[k];
         if (xdiff != 0) {
             Sint64 slope = ydiff / xdiff;
             Sint64 inter = slope * xs[k] - ys[k];
@@ -876,8 +876,8 @@ static void ReadMouseCurve(int v, Uint64 xs[5], Uint64 ys[5])
     DWORD ysize = sizeof(ybuff);
     HKEY open_handle;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Mouse", 0, KEY_READ, &open_handle) == ERROR_SUCCESS) {
-        RegQueryValueExW(open_handle, L"SmoothMouseXCurve", NULL, NULL, (BYTE *)xbuff, &xsize);
-        RegQueryValueExW(open_handle, L"SmoothMouseYCurve", NULL, NULL, (BYTE *)ybuff, &ysize);
+        RegQueryValueExW(open_handle, L"SmoothMouseXCurve", NULL, NULL, (BYTE*)xbuff, &xsize);
+        RegQueryValueExW(open_handle, L"SmoothMouseYCurve", NULL, NULL, (BYTE*)ybuff, &ysize);
         RegCloseKey(open_handle);
     }
     xs[0] = 0; // first node must always be origin

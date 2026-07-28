@@ -20,10 +20,10 @@
 */
 #include "SDL_internal.h"
 
-#include "../events/SDL_clipboardevents_c.h"
-#include "../events/SDL_events_c.h"
 #include "SDL_clipboard_c.h"
 #include "SDL_sysvideo.h"
+#include "../events/SDL_events_c.h"
+#include "../events/SDL_clipboardevents_c.h"
 
 void SDL_FreeClipboardMimeTypes(SDL_VideoDevice *_this)
 {
@@ -36,6 +36,7 @@ void SDL_FreeClipboardMimeTypes(SDL_VideoDevice *_this)
         _this->num_clipboard_mime_types = 0;
     }
 }
+
 
 void SDL_CancelClipboardData(Uint32 sequence)
 {
@@ -157,7 +158,7 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
     char **mime_types_copy = SDL_CopyClipboardMimeTypes(mime_types, num_mime_types, true);
     if (!mime_types_copy) {
         return SDL_SetError("unable to copy current mime types");
-    }
+	}
     SDL_SendClipboardUpdate(true, mime_types_copy, num_mime_types);
     return true;
 }
@@ -202,7 +203,7 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
         return NULL;
     }
 
-    CHECK_PARAM (!mime_type) {
+    CHECK_PARAM(!mime_type) {
         SDL_InvalidParamError("mime_type");
         return NULL;
     }
@@ -251,7 +252,7 @@ bool SDL_HasClipboardData(const char *mime_type)
         return SDL_UninitializedVideo();
     }
 
-    CHECK_PARAM (!mime_type) {
+    CHECK_PARAM(!mime_type) {
         return SDL_InvalidParamError("mime_type");
     }
 
@@ -296,6 +297,7 @@ char **SDL_CopyClipboardMimeTypes(const char *const *clipboard_mime_types, size_
     result[num_mime_types] = NULL;
 
     return result;
+
 }
 
 char **SDL_GetClipboardMimeTypes(size_t *num_mime_types)
@@ -338,7 +340,7 @@ static const char *const *SDL_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *n
     }
 }
 
-const void *SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size)
+const void * SDLCALL SDL_ClipboardTextCallback(void *userdata, const char *mime_type, size_t *size)
 {
     char *text = (char *)userdata;
     if (text) {
@@ -439,7 +441,7 @@ bool SDL_SetPrimarySelectionText(const char *text)
     char **mime_types = SDL_CopyClipboardMimeTypes((const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types, true);
     if (!mime_types) {
         return SDL_SetError("unable to copy current mime types");
-    }
+	}
     SDL_SendClipboardUpdate(true, mime_types, _this->num_clipboard_mime_types);
     return true;
 }
@@ -482,3 +484,4 @@ bool SDL_HasPrimarySelectionText(void)
         }
     }
 }
+

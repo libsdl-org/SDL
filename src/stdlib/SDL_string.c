@@ -38,18 +38,19 @@
 #define SDL_SIZEOF_WCHAR_T 2
 #elif defined(SDL_PLATFORM_WINDOWS) || defined(SDL_PLATFORM_DOS)
 #define SDL_SIZEOF_WCHAR_T 2
-#else // assume everything else is UTF-32 (add more tests if compiler-assert fails below!)
+#else  // assume everything else is UTF-32 (add more tests if compiler-assert fails below!)
 #define SDL_SIZEOF_WCHAR_T 4
 #endif
 SDL_COMPILE_TIME_ASSERT(sizeof_wchar_t, sizeof(wchar_t) == SDL_SIZEOF_WCHAR_T);
 
+
 char *SDL_UCS4ToUTF8(Uint32 codepoint, char *dst)
 {
     if (!dst) {
-        return NULL;                   // I guess...?
-    } else if (codepoint > 0x10FFFF) { // Outside the range of Unicode codepoints (also, larger than can be encoded in 4 bytes of UTF-8!).
+        return NULL;  // I guess...?
+    } else if (codepoint > 0x10FFFF) {  // Outside the range of Unicode codepoints (also, larger than can be encoded in 4 bytes of UTF-8!).
         codepoint = SDL_INVALID_UNICODE_CODEPOINT;
-    } else if ((codepoint >= 0xD800) && (codepoint <= 0xDFFF)) { // UTF-16 surrogate values are illegal in UTF-8.
+    } else if ((codepoint >= 0xD800) && (codepoint <= 0xDFFF)) {  // UTF-16 surrogate values are illegal in UTF-8.
         codepoint = SDL_INVALID_UNICODE_CODEPOINT;
     }
 
@@ -78,25 +79,26 @@ char *SDL_UCS4ToUTF8(Uint32 codepoint, char *dst)
     return dst;
 }
 
+
 // this expects `from` and `to` to be UTF-32 encoding!
 int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
 {
     // !!! FIXME: since the hashtable is static, maybe we should binary
     // !!! FIXME: search it instead of walking the whole bucket.
 
-    if (from < 128) { // low-ASCII, easy!
+    if (from < 128) {   // low-ASCII, easy!
         if ((from >= 'A') && (from <= 'Z')) {
             *to = 'a' + (from - 'A');
             return 1;
         }
-    } else if (from <= 0xFFFF) { // the Basic Multilingual Plane.
+    } else if (from <= 0xFFFF) {  // the Basic Multilingual Plane.
         const Uint8 hash = ((from ^ (from >> 8)) & 0xFF);
-        const Uint16 from16 = (Uint16)from;
+        const Uint16 from16 = (Uint16) from;
 
         // see if it maps to a single char (most common)...
         {
             const CaseFoldHashBucket1_16 *bucket = &case_fold_hash1_16[hash];
-            const int count = (int)bucket->count;
+            const int count = (int) bucket->count;
             for (int i = 0; i < count; i++) {
                 const CaseFoldMapping1_16 *mapping = &bucket->list[i];
                 if (mapping->from == from16) {
@@ -109,7 +111,7 @@ int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
         // see if it folds down to two chars...
         {
             const CaseFoldHashBucket2_16 *bucket = &case_fold_hash2_16[hash & 15];
-            const int count = (int)bucket->count;
+            const int count = (int) bucket->count;
             for (int i = 0; i < count; i++) {
                 const CaseFoldMapping2_16 *mapping = &bucket->list[i];
                 if (mapping->from == from16) {
@@ -123,7 +125,7 @@ int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
         // okay, maybe it's _three_ characters!
         {
             const CaseFoldHashBucket3_16 *bucket = &case_fold_hash3_16[hash & 3];
-            const int count = (int)bucket->count;
+            const int count = (int) bucket->count;
             for (int i = 0; i < count; i++) {
                 const CaseFoldMapping3_16 *mapping = &bucket->list[i];
                 if (mapping->from == from16) {
@@ -135,10 +137,10 @@ int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
             }
         }
 
-    } else { // codepoint that doesn't fit in 16 bits.
+    } else {  // codepoint that doesn't fit in 16 bits.
         const Uint8 hash = ((from ^ (from >> 8)) & 0xFF);
         const CaseFoldHashBucket1_32 *bucket = &case_fold_hash1_32[hash & 15];
-        const int count = (int)bucket->count;
+        const int count = (int) bucket->count;
         for (int i = 0; i < count; i++) {
             const CaseFoldMapping1_32 *mapping = &bucket->list[i];
             if (mapping->from == from) {
@@ -153,38 +155,39 @@ int SDL_CaseFoldUnicode(Uint32 from, Uint32 *to)
     return 1;
 }
 
-#define UNICODE_STRCASECMP(bits, slen1, slen2, update_slen1, update_slen2)     \
-    Uint32 folded1[3], folded2[3];                                             \
-    int head1 = 0, tail1 = 0, head2 = 0, tail2 = 0;                            \
-    while (true) {                                                             \
-        Uint32 cp1, cp2;                                                       \
-        if (head1 != tail1) {                                                  \
-            cp1 = folded1[tail1++];                                            \
-        } else {                                                               \
-            const Uint##bits *str1start = (const Uint##bits *)str1;            \
+#define UNICODE_STRCASECMP(bits, slen1, slen2, update_slen1, update_slen2) \
+    Uint32 folded1[3], folded2[3]; \
+    int head1 = 0, tail1 = 0, head2 = 0, tail2 = 0; \
+    while (true) { \
+        Uint32 cp1, cp2; \
+        if (head1 != tail1) { \
+            cp1 = folded1[tail1++]; \
+        } else { \
+            const Uint##bits *str1start = (const Uint##bits *) str1; \
             head1 = SDL_CaseFoldUnicode(StepUTF##bits(&str1, slen1), folded1); \
-            update_slen1;                                                      \
-            cp1 = folded1[0];                                                  \
-            tail1 = 1;                                                         \
-        }                                                                      \
-        if (head2 != tail2) {                                                  \
-            cp2 = folded2[tail2++];                                            \
-        } else {                                                               \
-            const Uint##bits *str2start = (const Uint##bits *)str2;            \
+            update_slen1; \
+            cp1 = folded1[0]; \
+            tail1 = 1; \
+        } \
+        if (head2 != tail2) { \
+            cp2 = folded2[tail2++]; \
+        } else { \
+            const Uint##bits *str2start = (const Uint##bits *) str2; \
             head2 = SDL_CaseFoldUnicode(StepUTF##bits(&str2, slen2), folded2); \
-            update_slen2;                                                      \
-            cp2 = folded2[0];                                                  \
-            tail2 = 1;                                                         \
-        }                                                                      \
-        if (cp1 < cp2) {                                                       \
-            return -1;                                                         \
-        } else if (cp1 > cp2) {                                                \
-            return 1;                                                          \
-        } else if (cp1 == 0) {                                                 \
-            break; /* complete match. */                                       \
-        }                                                                      \
-    }                                                                          \
+            update_slen2; \
+            cp2 = folded2[0]; \
+            tail2 = 1; \
+        } \
+        if (cp1 < cp2) { \
+            return -1; \
+        } else if (cp1 > cp2) { \
+            return 1; \
+        } else if (cp1 == 0) { \
+            break;  /* complete match. */ \
+        } \
+    } \
     return 0
+
 
 static Uint32 StepUTF8(const char **_str, const size_t slen)
 {
@@ -201,47 +204,47 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
      *   0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
      */
 
-    const Uint8 *str = (const Uint8 *)*_str;
-    const Uint32 octet = (Uint32)(slen ? *str : 0);
+    const Uint8 *str = (const Uint8 *) *_str;
+    const Uint32 octet = (Uint32) (slen ? *str : 0);
 
-    if (octet == 0) {                 // null terminator, end of string.
-        return 0;                     // don't advance `*_str`.
-    } else if ((octet & 0x80) == 0) { // 0xxxxxxx: one byte codepoint.
+    if (octet == 0) {  // null terminator, end of string.
+        return 0;  // don't advance `*_str`.
+    } else if ((octet & 0x80) == 0) {  // 0xxxxxxx: one byte codepoint.
         (*_str)++;
         return octet;
-    } else if (((octet & 0xE0) == 0xC0) && (slen >= 2)) { // 110xxxxx 10xxxxxx: two byte codepoint.
+    } else if (((octet & 0xE0) == 0xC0) && (slen >= 2)) {  // 110xxxxx 10xxxxxx: two byte codepoint.
         const Uint8 str1 = str[1];
-        if ((str1 & 0xC0) == 0x80) { // If trailing bytes aren't 10xxxxxx, sequence is bogus.
+        if ((str1 & 0xC0) == 0x80) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
             const Uint32 result = ((octet & 0x1F) << 6) | (str1 & 0x3F);
-            if (result >= 0x0080) { // rfc3629 says you can't use overlong sequences for smaller values.
+            if (result >= 0x0080) {  // rfc3629 says you can't use overlong sequences for smaller values.
                 *_str += 2;
                 return result;
             }
         }
-    } else if (((octet & 0xF0) == 0xE0) && (slen >= 3)) { // 1110xxxx 10xxxxxx 10xxxxxx: three byte codepoint.
+    } else if (((octet & 0xF0) == 0xE0) && (slen >= 3)) {  // 1110xxxx 10xxxxxx 10xxxxxx: three byte codepoint.
         const Uint8 str1 = str[1];
         const Uint8 str2 = str[2];
-        if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80)) { // If trailing bytes aren't 10xxxxxx, sequence is bogus.
-            const Uint32 octet2 = ((Uint32)(str1 & 0x3F)) << 6;
-            const Uint32 octet3 = ((Uint32)(str2 & 0x3F));
+        if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80)) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
+            const Uint32 octet2 = ((Uint32) (str1 & 0x3F)) << 6;
+            const Uint32 octet3 = ((Uint32) (str2 & 0x3F));
             const Uint32 result = ((octet & 0x0F) << 12) | octet2 | octet3;
-            if (result >= 0x800) {                            // rfc3629 says you can't use overlong sequences for smaller values.
-                if ((result < 0xD800) || (result > 0xDFFF)) { // UTF-16 surrogate values are illegal in UTF-8.
+            if (result >= 0x800) {  // rfc3629 says you can't use overlong sequences for smaller values.
+                if ((result < 0xD800) || (result > 0xDFFF)) {  // UTF-16 surrogate values are illegal in UTF-8.
                     *_str += 3;
                     return result;
                 }
             }
         }
-    } else if (((octet & 0xF8) == 0xF0) && (slen >= 4)) { // 11110xxxx 10xxxxxx 10xxxxxx 10xxxxxx: four byte codepoint.
+    } else if (((octet & 0xF8) == 0xF0) && (slen >= 4)) {  // 11110xxxx 10xxxxxx 10xxxxxx 10xxxxxx: four byte codepoint.
         const Uint8 str1 = str[1];
         const Uint8 str2 = str[2];
         const Uint8 str3 = str[3];
-        if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80) && ((str3 & 0xC0) == 0x80)) { // If trailing bytes aren't 10xxxxxx, sequence is bogus.
-            const Uint32 octet2 = ((Uint32)(str1 & 0x1F)) << 12;
-            const Uint32 octet3 = ((Uint32)(str2 & 0x3F)) << 6;
-            const Uint32 octet4 = ((Uint32)(str3 & 0x3F));
+        if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80) && ((str3 & 0xC0) == 0x80)) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
+            const Uint32 octet2 = ((Uint32) (str1 & 0x1F)) << 12;
+            const Uint32 octet3 = ((Uint32) (str2 & 0x3F)) << 6;
+            const Uint32 octet4 = ((Uint32) (str3 & 0x3F));
             const Uint32 result = ((octet & 0x07) << 18) | octet2 | octet3 | octet4;
-            if (result >= 0x10000) { // rfc3629 says you can't use overlong sequences for smaller values.
+            if (result >= 0x10000) {  // rfc3629 says you can't use overlong sequences for smaller values.
                 *_str += 4;
                 return result;
             }
@@ -256,11 +259,11 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
 Uint32 SDL_StepUTF8(const char **pstr, size_t *pslen)
 {
     if (!pslen) {
-        return StepUTF8(pstr, 4); // 4 == max codepoint size.
+        return StepUTF8(pstr, 4);  // 4 == max codepoint size.
     }
     const char *origstr = *pstr;
     const Uint32 result = StepUTF8(pstr, *pslen);
-    *pslen -= (size_t)(*pstr - origstr);
+    *pslen -= (size_t) (*pstr - origstr);
     return result;
 }
 
@@ -288,17 +291,17 @@ Uint32 SDL_StepBackUTF8(const char *start, const char **pstr)
 static Uint32 StepUTF16(const Uint16 **_str, const size_t slen)
 {
     const Uint16 *str = *_str;
-    Uint32 cp = (Uint32) * (str++);
+    Uint32 cp = (Uint32) *(str++);
     if (cp == 0) {
-        return 0; // don't advance string pointer.
+        return 0;  // don't advance string pointer.
     } else if ((cp >= 0xDC00) && (cp <= 0xDFFF)) {
-        cp = SDL_INVALID_UNICODE_CODEPOINT;        // Orphaned second half of surrogate pair
-    } else if ((cp >= 0xD800) && (cp <= 0xDBFF)) { // start of surrogate pair!
-        const Uint32 pair = (Uint32)*str;
+        cp = SDL_INVALID_UNICODE_CODEPOINT;  // Orphaned second half of surrogate pair
+    } else if ((cp >= 0xD800) && (cp <= 0xDBFF)) {  // start of surrogate pair!
+        const Uint32 pair = (Uint32) *str;
         if ((pair == 0) || ((pair < 0xDC00) || (pair > 0xDFFF))) {
             cp = SDL_INVALID_UNICODE_CODEPOINT;
         } else {
-            str++; // eat the other surrogate.
+            str++;  // eat the other surrogate.
             cp = 0x10000 + (((cp - 0xD800) << 10) | (pair - 0xDC00));
         }
     }
@@ -316,7 +319,7 @@ static Uint32 StepUTF32(const Uint32 **_str, const size_t slen)
     const Uint32 *str = *_str;
     const Uint32 cp = *str;
     if (cp == 0) {
-        return 0; // don't advance string pointer.
+        return 0;  // don't advance string pointer.
     }
 
     (*_str)++;
@@ -874,15 +877,15 @@ int SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen)
 int SDL_wcscasecmp(const wchar_t *wstr1, const wchar_t *wstr2)
 {
 #if (SDL_SIZEOF_WCHAR_T == 2)
-    const Uint16 *str1 = (const Uint16 *)wstr1;
-    const Uint16 *str2 = (const Uint16 *)wstr2;
-    UNICODE_STRCASECMP(16, 2, 2, (void)str1start, (void)str2start); // always NULL-terminated, no need to adjust lengths.
+    const Uint16 *str1 = (const Uint16 *) wstr1;
+    const Uint16 *str2 = (const Uint16 *) wstr2;
+    UNICODE_STRCASECMP(16, 2, 2, (void) str1start, (void) str2start);  // always NULL-terminated, no need to adjust lengths.
 #elif (SDL_SIZEOF_WCHAR_T == 4)
-    const Uint32 *str1 = (const Uint32 *)wstr1;
-    const Uint32 *str2 = (const Uint32 *)wstr2;
-    UNICODE_STRCASECMP(32, 1, 1, (void)str1start, (void)str2start); // always NULL-terminated, no need to adjust lengths.
+    const Uint32 *str1 = (const Uint32 *) wstr1;
+    const Uint32 *str2 = (const Uint32 *) wstr2;
+    UNICODE_STRCASECMP(32, 1, 1, (void) str1start, (void) str2start);  // always NULL-terminated, no need to adjust lengths.
 #else
-#error Unexpected wchar_t size
+    #error Unexpected wchar_t size
     return -1;
 #endif
 }
@@ -893,15 +896,15 @@ int SDL_wcsncasecmp(const wchar_t *wstr1, const wchar_t *wstr2, size_t maxlen)
     size_t slen2 = maxlen;
 
 #if (SDL_SIZEOF_WCHAR_T == 2)
-    const Uint16 *str1 = (const Uint16 *)wstr1;
-    const Uint16 *str2 = (const Uint16 *)wstr2;
-    UNICODE_STRCASECMP(16, slen1, slen2, slen1 -= (size_t)(str1 - str1start), slen2 -= (size_t)(str2 - str2start));
+    const Uint16 *str1 = (const Uint16 *) wstr1;
+    const Uint16 *str2 = (const Uint16 *) wstr2;
+    UNICODE_STRCASECMP(16, slen1, slen2, slen1 -= (size_t) (str1 - str1start), slen2 -= (size_t) (str2 - str2start));
 #elif (SDL_SIZEOF_WCHAR_T == 4)
-    const Uint32 *str1 = (const Uint32 *)wstr1;
-    const Uint32 *str2 = (const Uint32 *)wstr2;
-    UNICODE_STRCASECMP(32, slen1, slen2, slen1 -= (size_t)(str1 - str1start), slen2 -= (size_t)(str2 - str2start));
+    const Uint32 *str1 = (const Uint32 *) wstr1;
+    const Uint32 *str2 = (const Uint32 *) wstr2;
+    UNICODE_STRCASECMP(32, slen1, slen2, slen1 -= (size_t) (str1 - str1start), slen2 -= (size_t) (str2 - str2start));
 #else
-#error Unexpected wchar_t size
+    #error Unexpected wchar_t size
     return -1;
 #endif
 }
@@ -939,33 +942,33 @@ size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size
 {
     size_t bytes = 0;
 
-    if (dst_bytes > 0) {
-        size_t src_bytes = SDL_strlen(src);
-        size_t i = 0;
-        size_t trailing_bytes = 0;
+	if (dst_bytes > 0) {
+		size_t src_bytes = SDL_strlen(src);
+		size_t i = 0;
+		size_t trailing_bytes = 0;
 
-        bytes = SDL_min(src_bytes, dst_bytes - 1);
-        if (bytes) {
-            unsigned char c = (unsigned char)src[bytes - 1];
-            if (UTF8_IsLeadByte(c)) {
-                --bytes;
-            } else if (UTF8_IsTrailingByte(c)) {
-                for (i = bytes - 1; i != 0; --i) {
-                    c = (unsigned char)src[i];
-                    trailing_bytes = UTF8_GetTrailingBytes(c);
-                    if (trailing_bytes) {
-                        if ((bytes - i) != (trailing_bytes + 1)) {
-                            bytes = i;
-                        }
+		bytes = SDL_min(src_bytes, dst_bytes - 1);
+		if (bytes) {
+			unsigned char c = (unsigned char)src[bytes - 1];
+			if (UTF8_IsLeadByte(c)) {
+				--bytes;
+			} else if (UTF8_IsTrailingByte(c)) {
+				for (i = bytes - 1; i != 0; --i) {
+					c = (unsigned char)src[i];
+					trailing_bytes = UTF8_GetTrailingBytes(c);
+					if (trailing_bytes) {
+						if ((bytes - i) != (trailing_bytes + 1)) {
+							bytes = i;
+						}
 
-                        break;
-                    }
-                }
-            }
-            SDL_memcpy(dst, src, bytes);
-        }
-        dst[bytes] = '\0';
-    }
+						break;
+					}
+				}
+			}
+			SDL_memcpy(dst, src, bytes);
+		}
+		dst[bytes] = '\0';
+	}
 
     return bytes;
 }
@@ -1135,7 +1138,7 @@ char *SDL_strcasestr(const char *haystack, const char *needle)
         if (SDL_strncasecmp(haystack, needle, length) == 0) {
             return (char *)haystack;
         }
-    } while (SDL_StepUTF8(&haystack, NULL)); // move ahead by a full codepoint at a time, regardless of bytes.
+    } while (SDL_StepUTF8(&haystack, NULL));  // move ahead by a full codepoint at a time, regardless of bytes.
 
     return NULL;
 }
@@ -1157,7 +1160,7 @@ char *SDL_uitoa(unsigned int value, char *string, int radix)
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable : 4996) // Ignore warning about deprecated itoa, _ltoa, _ultoa, _i64toa, _ui64toa
+#pragma warning(disable:4996) // Ignore warning about deprecated itoa, _ltoa, _ultoa, _i64toa, _ui64toa
 #endif
 char *SDL_itoa(int value, char *string, int radix)
 {
@@ -1384,14 +1387,14 @@ int SDL_strncmp(const char *str1, const char *str2, size_t maxlen)
 
 int SDL_strcasecmp(const char *str1, const char *str2)
 {
-    UNICODE_STRCASECMP(8, 4, 4, (void)str1start, (void)str2start); // always NULL-terminated, no need to adjust lengths.
+    UNICODE_STRCASECMP(8, 4, 4, (void) str1start, (void) str2start);  // always NULL-terminated, no need to adjust lengths.
 }
 
 int SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen)
 {
     size_t slen1 = maxlen;
     size_t slen2 = maxlen;
-    UNICODE_STRCASECMP(8, slen1, slen2, slen1 -= (size_t)(str1 - ((const char *)str1start)), slen2 -= (size_t)(str2 - ((const char *)str2start)));
+    UNICODE_STRCASECMP(8, slen1, slen2, slen1 -= (size_t) (str1 - ((const char *) str1start)), slen2 -= (size_t) (str2 - ((const char *) str2start)));
 }
 
 int SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...)
@@ -2058,14 +2061,14 @@ static size_t SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, do
                 // Carry the one...
                 size_t i;
 
-                for (i = length; i--;) {
+                for (i = length; i--; ) {
                     if (num[i] == decimal_separator) {
                         continue;
                     }
                     if (num[i] == '9') {
                         num[i] = '0';
                         if (i == 0 || num[i - 1] == '-' || num[i - 1] == '+') {
-                            SDL_memmove(&num[i + 1], &num[i], length - i);
+                            SDL_memmove(&num[i+1], &num[i], length - i);
                             num[i] = '1';
                             ++length;
                             break;
@@ -2370,12 +2373,12 @@ int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wcha
         }
     }
 
-    char tinybuf[64]; // for really small strings, calculate it once.
+    char tinybuf[64];  // for really small strings, calculate it once.
 
     // generate the text to find the final text length
     va_list aq;
     va_copy(aq, ap);
-    const int utf8len = SDL_vsnprintf(tinybuf, sizeof(tinybuf), fmt_utf8, aq);
+    const int utf8len = SDL_vsnprintf(tinybuf, sizeof (tinybuf), fmt_utf8, aq);
     va_end(aq);
 
     if (utf8len < 0) {
@@ -2388,18 +2391,18 @@ int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wcha
     char *utf8buf;
     int result;
 
-    if (utf8len < sizeof(tinybuf)) { // whole thing fit in the stack buffer, just use that copy.
+    if (utf8len < sizeof (tinybuf)) {   // whole thing fit in the stack buffer, just use that copy.
         utf8buf = tinybuf;
-    } else { // didn't fit in the stack buffer, allocate the needed space and run it again.
+    } else {  // didn't fit in the stack buffer, allocate the needed space and run it again.
         utf8buf = smallbuf = SDL_small_alloc(char, utf8len + 1, &isstack);
         if (!smallbuf) {
             SDL_free(fmt_utf8);
-            return -1; // oh well.
+            return -1;  // oh well.
         }
         const int utf8len2 = SDL_vsnprintf(smallbuf, utf8len + 1, fmt_utf8, ap);
         if (utf8len2 > utf8len) {
             SDL_free(fmt_utf8);
-            return SDL_SetError("Formatted output changed between two runs"); // race condition on the parameters, and we no longer have room...yikes.
+            return SDL_SetError("Formatted output changed between two runs");  // race condition on the parameters, and we no longer have room...yikes.
         }
     }
 
@@ -2480,7 +2483,7 @@ int SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list
     }
 }
 
-char *SDL_strpbrk(const char *str, const char *breakset)
+char * SDL_strpbrk(const char *str, const char *breakset)
 {
 #ifdef HAVE_STRPBRK
     return SDL_const_cast(char *, strpbrk(str, breakset));
@@ -2491,7 +2494,7 @@ char *SDL_strpbrk(const char *str, const char *breakset)
 
         for (b = breakset; *b; b++) {
             if (*str == *b) {
-                return (char *)str;
+                return (char *) str;
             }
         }
     }

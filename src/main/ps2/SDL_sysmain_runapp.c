@@ -27,16 +27,16 @@
 
 #include "../SDL_main_callbacks.h"
 
-#include <stdio.h>
-#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <stdio.h>
 
-#include <iopcontrol.h>
 #include <kernel.h>
-#include <ps2_filesystem_driver.h>
-#include <sbv_patches.h>
 #include <sifrpc.h>
+#include <iopcontrol.h>
+#include <sbv_patches.h>
+#include <ps2_filesystem_driver.h>
 
 __attribute__((weak)) void reset_IOP(void)
 {
@@ -58,15 +58,15 @@ static void prepare_IOP(void)
 
 static void init_drivers(void)
 {
-    init_ps2_filesystem_driver();
+	init_ps2_filesystem_driver();
 }
 
 static void deinit_drivers(void)
 {
-    deinit_ps2_filesystem_driver();
+	deinit_ps2_filesystem_driver();
 }
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     int result;
     (void)reserved;

@@ -27,34 +27,34 @@
 #include "SDL_mouse_c.h"
 
 typedef Uint32 SDL_PenCapabilityFlags;
-#define SDL_PEN_CAPABILITY_PRESSURE            (1u << 0) /**< Provides pressure information on SDL_PEN_AXIS_PRESSURE. */
-#define SDL_PEN_CAPABILITY_XTILT               (1u << 1) /**< Provides horizontal tilt information on SDL_PEN_AXIS_XTILT. */
-#define SDL_PEN_CAPABILITY_YTILT               (1u << 2) /**< Provides vertical tilt information on SDL_PEN_AXIS_YTILT. */
-#define SDL_PEN_CAPABILITY_DISTANCE            (1u << 3) /**< Provides distance to drawing tablet on SDL_PEN_AXIS_DISTANCE. */
-#define SDL_PEN_CAPABILITY_ROTATION            (1u << 4) /**< Provides barrel rotation info on SDL_PEN_AXIS_ROTATION. */
-#define SDL_PEN_CAPABILITY_SLIDER              (1u << 5) /**< Provides slider/finger wheel/etc on SDL_PEN_AXIS_SLIDER. */
-#define SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE (1u << 6) /**< Provides barrel pressure on SDL_PEN_AXIS_TANGENTIAL_PRESSURE. */
-#define SDL_PEN_CAPABILITY_ERASER              (1u << 7) /**< Pen also has an eraser tip. */
+#define SDL_PEN_CAPABILITY_PRESSURE  (1u << 0)  /**< Provides pressure information on SDL_PEN_AXIS_PRESSURE. */
+#define SDL_PEN_CAPABILITY_XTILT     (1u << 1)  /**< Provides horizontal tilt information on SDL_PEN_AXIS_XTILT. */
+#define SDL_PEN_CAPABILITY_YTILT     (1u << 2)  /**< Provides vertical tilt information on SDL_PEN_AXIS_YTILT. */
+#define SDL_PEN_CAPABILITY_DISTANCE  (1u << 3)  /**< Provides distance to drawing tablet on SDL_PEN_AXIS_DISTANCE. */
+#define SDL_PEN_CAPABILITY_ROTATION  (1u << 4)  /**< Provides barrel rotation info on SDL_PEN_AXIS_ROTATION. */
+#define SDL_PEN_CAPABILITY_SLIDER    (1u << 5)  /**< Provides slider/finger wheel/etc on SDL_PEN_AXIS_SLIDER. */
+#define SDL_PEN_CAPABILITY_TANGENTIAL_PRESSURE (1u << 6)  /**< Provides barrel pressure on SDL_PEN_AXIS_TANGENTIAL_PRESSURE. */
+#define SDL_PEN_CAPABILITY_ERASER    (1u << 7)  /**< Pen also has an eraser tip. */
 
 // Rename before making this public as it clashes with SDL_PenDeviceType.
 // Prior art in Android calls this "tool type".
 typedef enum SDL_PenSubtype
 {
-    SDL_PEN_TYPE_UNKNOWN, /**< Unknown pen device */
-    SDL_PEN_TYPE_ERASER,  /**< Eraser */
-    SDL_PEN_TYPE_PEN,     /**< Generic pen; this is the default. */
-    SDL_PEN_TYPE_PENCIL,  /**< Pencil */
-    SDL_PEN_TYPE_BRUSH,   /**< Brush-like device */
-    SDL_PEN_TYPE_AIRBRUSH /**< Airbrush device that "sprays" ink */
+    SDL_PEN_TYPE_UNKNOWN,   /**< Unknown pen device */
+    SDL_PEN_TYPE_ERASER,    /**< Eraser */
+    SDL_PEN_TYPE_PEN,       /**< Generic pen; this is the default. */
+    SDL_PEN_TYPE_PENCIL,    /**< Pencil */
+    SDL_PEN_TYPE_BRUSH,     /**< Brush-like device */
+    SDL_PEN_TYPE_AIRBRUSH   /**< Airbrush device that "sprays" ink */
 } SDL_PenSubtype;
 
 typedef struct SDL_PenInfo
 {
-    SDL_PenCapabilityFlags capabilities; /**< bitflags of device capabilities */
-    float max_tilt;                      /**< Physical maximum tilt angle, for XTILT and YTILT, or -1.0f if unknown.  Pens cannot typically tilt all the way to 90 degrees, so this value is usually less than 90.0. */
-    Uint32 wacom_id;                     /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
-    int num_buttons;                     /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
-    SDL_PenSubtype subtype;              /**< type of pen device */
+    SDL_PenCapabilityFlags capabilities;  /**< bitflags of device capabilities */
+    float max_tilt;    /**< Physical maximum tilt angle, for XTILT and YTILT, or -1.0f if unknown.  Pens cannot typically tilt all the way to 90 degrees, so this value is usually less than 90.0. */
+    Uint32 wacom_id;   /**< For Wacom devices: wacom tool type ID, otherwise 0 (useful e.g. with libwacom) */
+    int num_buttons; /**< Number of pen buttons (not counting the pen tip), or -1 if unknown. */
+    SDL_PenSubtype subtype;  /**< type of pen device */
     SDL_PenDeviceType device_type;
 } SDL_PenInfo;
 

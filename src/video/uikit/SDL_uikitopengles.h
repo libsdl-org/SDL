@@ -26,7 +26,7 @@
 #include "../SDL_sysvideo.h"
 
 extern bool UIKit_GL_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window,
-                                 SDL_GLContext context);
+                                SDL_GLContext context);
 extern bool UIKit_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool UIKit_GL_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);

@@ -22,8 +22,9 @@
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "SDL_windowsshape.h"
 #include "SDL_windowsvideo.h"
+#include "SDL_windowsshape.h"
+
 
 static void AddRegion(HRGN *mask, int x1, int y1, int x2, int y2)
 {

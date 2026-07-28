@@ -26,8 +26,8 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_ANDROID
-#include "../video/android/SDL_androidvideo.h"
 #include <android/native_window.h>
+#include "../video/android/SDL_androidvideo.h"
 #endif
 #ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
@@ -36,9 +36,9 @@
 #include <GLES2/gl2.h>
 #endif
 
-#include "../SDL_hints_c.h"
-#include "SDL_egl_c.h"
 #include "SDL_sysvideo.h"
+#include "SDL_egl_c.h"
+#include "../SDL_hints_c.h"
 
 #ifdef EGL_KHR_create_context
 // EGL_OPENGL_ES3_BIT_KHR was added in version 13 of the extension.
@@ -66,10 +66,10 @@
 
 #ifdef SDL_VIDEO_DRIVER_RPI
 // Raspbian places the OpenGL ES/EGL binaries in a non standard path
-#define DEFAULT_EGL     (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
-#define ALT_EGL         "libEGL.so"
-#define DEFAULT_OGL_ES2 (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
-#define ALT_OGL_ES2     "libGLESv2.so"
+#define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
+#define ALT_EGL            "libEGL.so"
+#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
+#define ALT_OGL_ES2        "libGLESv2.so"
 // The GLESv2 library also contains GLESv1 exports when using the dispmanx implementation
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
@@ -107,8 +107,8 @@
 
 #elif defined(SDL_VIDEO_DRIVER_QNX)
 // QNX
-#define DEFAULT_EGL     "libEGL.so.1"
-#define DEFAULT_OGL_ES2 "libGLESv2.so.1"
+#define DEFAULT_EGL        "libEGL.so.1"
+#define DEFAULT_OGL_ES2    "libGLESv2.so.1"
 
 #else
 // Desktop Linux/Unix-like
@@ -123,27 +123,32 @@ SDL_ELF_NOTE_DLOPEN(
     "egl-opengl",
     "Support for OpenGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_OGL, ALT_OGL)
+    DEFAULT_OGL, ALT_OGL
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-egl",
     "Support for EGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_EGL)
+    DEFAULT_EGL
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es2",
     "Support for EGL ES2",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_OGL_ES2)
+    DEFAULT_OGL_ES2
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es-pvr",
     "Support for EGL ES PVR",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_OGL_ES_PVR)
+    DEFAULT_OGL_ES_PVR
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-ogl-es",
     "Support for OpenGL ES",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_OGL_ES)
+    DEFAULT_OGL_ES
+)
 #endif // SDL_VIDEO_DRIVER_RPI
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
@@ -151,7 +156,7 @@ SDL_ELF_NOTE_DLOPEN(
 #endif
 
 #ifdef SDL_VIDEO_OPENGL
-typedef void(APIENTRY *PFNGLGETINTEGERVPROC)(GLenum pname, GLint *params);
+typedef void (APIENTRY* PFNGLGETINTEGERVPROC) (GLenum pname, GLint * params);
 #endif
 
 #if defined(SDL_VIDEO_STATIC_ANGLE) || defined(SDL_VIDEO_DRIVER_VITA)
@@ -160,8 +165,8 @@ typedef void(APIENTRY *PFNGLGETINTEGERVPROC)(GLenum pname, GLint *params);
 #else
 #define LOAD_FUNC(TYPE, NAME)                                                               \
     _this->egl_data->NAME = (TYPE)SDL_LoadFunction(_this->egl_data->egl_dll_handle, #NAME); \
-    if (!_this->egl_data->NAME) {                                                           \
-        return SDL_SetError("Could not retrieve EGL function " #NAME);                      \
+    if (!_this->egl_data->NAME) {                                                     \
+        return SDL_SetError("Could not retrieve EGL function " #NAME);                \
     }
 #endif
 
@@ -1149,7 +1154,7 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             // Desktop OpenGL supports it by default from version 3.0 on.
-            PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
+             PFNGLGETINTEGERVPROC glGetIntegervFunc = (PFNGLGETINTEGERVPROC)SDL_GL_GetProcAddress("glGetIntegerv");
             if (glGetIntegervFunc) {
                 GLint v = 0;
                 glGetIntegervFunc(GL_MAJOR_VERSION, &v);
@@ -1161,7 +1166,7 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
         }
     }
 
-    SDL_EGL_SetSwapInterval(_this, 0); // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
+    SDL_EGL_SetSwapInterval(_this, 0);  // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
 
     return (SDL_GLContext)egl_context;
 }
@@ -1297,7 +1302,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
                 attribs[attr++] = EGL_GL_COLORSPACE_KHR;
                 attribs[attr++] = SDL_GetStringBoolean(srgbhint, false) ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
             }
-        } else if (_this->gl_config.framebuffer_srgb_capable >= 0) { // default behavior without the hint.
+        } else if (_this->gl_config.framebuffer_srgb_capable >= 0) {  // default behavior without the hint.
             attribs[attr++] = EGL_GL_COLORSPACE_KHR;
             attribs[attr++] = _this->gl_config.framebuffer_srgb_capable ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
         }
@@ -1350,7 +1355,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
         //  use EGL_PRESENT_OPAQUE_EXT, even when EGL_EXT_present_opaque is reported as available.
         //  If we used it, try a second time without this attribute.
         if ((_this->egl_data->eglGetError() == EGL_BAD_ATTRIBUTE) && (opaque_ext_idx >= 0)) {
-            SDL_memmove(&attribs[opaque_ext_idx], &attribs[opaque_ext_idx + 2], sizeof(attribs[0]) * ((attr - opaque_ext_idx) - 2));
+            SDL_memmove(&attribs[opaque_ext_idx], &attribs[opaque_ext_idx + 2], sizeof (attribs[0]) * ((attr - opaque_ext_idx) - 2));
             surface = _this->egl_data->eglCreateWindowSurface(_this->egl_data->egl_display, _this->egl_data->egl_config, nw, &attribs[0]);
         }
     }

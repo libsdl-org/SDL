@@ -22,13 +22,13 @@
 
 #ifdef SDL_HAPTIC_DINPUT
 
+#include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"               // For the real SDL_Joystick
 #include "../../joystick/windows/SDL_windowsjoystick_c.h" // For joystick hwdata
 #include "../../joystick/windows/SDL_xinputjoystick_c.h"  // For xinput rumble
-#include "../SDL_syshaptic.h"
 
-#include "SDL_dinputhaptic_c.h"
 #include "SDL_windowshaptic_c.h"
+#include "SDL_dinputhaptic_c.h"
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
@@ -261,12 +261,12 @@ void SDL_SYS_HapticQuit(void)
  * Creates a new haptic effect.
  */
 bool SDL_SYS_HapticNewEffect(SDL_Haptic *haptic, struct haptic_effect *effect,
-                             const SDL_HapticEffect *base)
+                            const SDL_HapticEffect *base)
 {
     bool result;
 
     // Alloc the effect.
-    effect->hweffect = (struct haptic_hweffect *)SDL_calloc(1, sizeof(struct haptic_hweffect));
+    effect->hweffect = (struct haptic_hweffect *) SDL_calloc(1, sizeof(struct haptic_hweffect));
     if (!effect->hweffect) {
         return false;
     }

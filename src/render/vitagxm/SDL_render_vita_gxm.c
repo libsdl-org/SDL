@@ -24,15 +24,15 @@
 
 #include "../SDL_sysrender.h"
 
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "SDL_render_vita_gxm_memory.h"
-#include "SDL_render_vita_gxm_tools.h"
 #include "SDL_render_vita_gxm_types.h"
+#include "SDL_render_vita_gxm_tools.h"
+#include "SDL_render_vita_gxm_memory.h"
 
 #include <psp2/common_dialog.h>
 
@@ -51,27 +51,27 @@ static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode ble
 static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props);
 
 static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                                   const SDL_Rect *rect, const void *pixels, int pitch);
+                                  const SDL_Rect *rect, const void *pixels, int pitch);
 
 static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                      const SDL_Rect *rect,
-                                      const Uint8 *Yplane, int Ypitch,
-                                      const Uint8 *Uplane, int Upitch,
-                                      const Uint8 *Vplane, int Vpitch);
-
-static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,
-                                     const Uint8 *UVplane, int UVpitch);
+                                     const Uint8 *Uplane, int Upitch,
+                                     const Uint8 *Vplane, int Vpitch);
+
+static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
+                                    const SDL_Rect *rect,
+                                    const Uint8 *Yplane, int Ypitch,
+                                    const Uint8 *UVplane, int UVpitch);
 
 static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                                 const SDL_Rect *rect, void **pixels, int *pitch);
+                                const SDL_Rect *rect, void **pixels, int *pitch);
 
 static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer,
                                    SDL_Texture *texture);
 
 static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer,
-                                     SDL_Texture *texture);
+                                    SDL_Texture *texture);
 
 static bool VITA_GXM_QueueNoOp(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
@@ -81,9 +81,9 @@ static bool VITA_GXM_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *
 static bool VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points, int count);
 
 static bool VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                                   const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                                   int num_vertices, const void *indices, int num_indices, int size_indices,
-                                   float scale_x, float scale_y);
+                                  const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                                  int num_vertices, const void *indices, int num_indices, int size_indices,
+                                  float scale_x, float scale_y);
 
 static bool VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
 
@@ -333,7 +333,7 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
 }
 
 static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                                   const SDL_Rect *rect, const void *pixels, int pitch)
+                                  const SDL_Rect *rect, const void *pixels, int pitch)
 {
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
     Uint8 *dst;
@@ -367,7 +367,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
 
         // skip Y plane
-        Uint8 *Dpixels = (Uint8 *)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
+        Uint8 *Dpixels = (Uint8*)gxm_texture_get_datap(vita_texture->tex) + (vita_texture->pitch * vita_texture->h);
 
         Udst = Dpixels + (UVrect.y * uv_pitch) + UVrect.x;
         Vdst = Dpixels + (uv_pitch * ((vita_texture->h + 1) / 2)) + (UVrect.y * uv_pitch) + UVrect.x;
@@ -427,10 +427,10 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
 #ifdef SDL_HAVE_YUV
 static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                      const SDL_Rect *rect,
-                                      const Uint8 *Yplane, int Ypitch,
-                                      const Uint8 *Uplane, int Upitch,
-                                      const Uint8 *Vplane, int Vpitch)
+                                     const SDL_Rect *rect,
+                                     const Uint8 *Yplane, int Ypitch,
+                                     const Uint8 *Uplane, int Upitch,
+                                     const Uint8 *Vplane, int Vpitch)
 {
     Uint8 *dst;
     int row, length, dpitch;
@@ -501,9 +501,9 @@ static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *textu
 }
 
 static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
-                                     const SDL_Rect *rect,
-                                     const Uint8 *Yplane, int Ypitch,
-                                     const Uint8 *UVplane, int UVpitch)
+                                    const SDL_Rect *rect,
+                                    const Uint8 *Yplane, int Ypitch,
+                                    const Uint8 *UVplane, int UVpitch)
 {
 
     Uint8 *dst;
@@ -558,7 +558,7 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
 #endif
 
 static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
-                                 const SDL_Rect *rect, void **pixels, int *pitch)
+                                const SDL_Rect *rect, void **pixels, int *pitch)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
@@ -680,9 +680,9 @@ static bool VITA_GXM_QueueDrawLines(SDL_Renderer *renderer, SDL_RenderCommand *c
 }
 
 static bool VITA_GXM_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                                   const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                                   int num_vertices, const void *indices, int num_indices, int size_indices,
-                                   float scale_x, float scale_y)
+                                  const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                                  int num_vertices, const void *indices, int num_indices, int size_indices,
+                                  float scale_x, float scale_y)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
     int i;

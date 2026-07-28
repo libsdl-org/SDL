@@ -26,10 +26,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include "../SDL_syspower.h"
 
@@ -56,7 +56,7 @@ static int open_power_file(const char *base, const char *node, const char *key)
 }
 
 static bool read_power_file(const char *base, const char *node, const char *key,
-                            char *buf, size_t buflen)
+                                char *buf, size_t buflen)
 {
     ssize_t br = 0;
     const int fd = open_power_file(base, node, key);
@@ -634,7 +634,7 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
     if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, &reply, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "GetDisplayDevice",
                                         DBUS_TYPE_INVALID,
                                         DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
-        result = true;                      // Clearly we can use this interface.
+        result = true;                  // Clearly we can use this interface.
         *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
         *seconds = -1;
         *percent = -1;
@@ -643,9 +643,9 @@ bool SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *s
         SDL_DBus_FreeReply(&reply);
 
     } else if (SDL_DBus_CallMethodOnConnection(dbus->system_conn, NULL, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
-                                               DBUS_TYPE_INVALID,
-                                               DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
-        result = true;                      // Clearly we can use this interface.
+                                                DBUS_TYPE_INVALID,
+                                                DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
+        result = true;                  // Clearly we can use this interface.
         *state = SDL_POWERSTATE_NO_BATTERY; // assume we're just plugged in.
         *seconds = -1;
         *percent = -1;

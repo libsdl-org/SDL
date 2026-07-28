@@ -24,18 +24,20 @@
 
 #include <GLES/egl.h>
 
-#include "../SDL_sysvideo.h"
 #include "SDL_internal.h"
+#include "../SDL_sysvideo.h"
 
 struct SDL_VideoData
 {
-    bool egl_initialized;  // OpenGL ES device initialization status
-    uint32_t egl_refcount; // OpenGL ES reference count
+    bool egl_initialized; // OpenGL ES device initialization status
+    uint32_t egl_refcount;    // OpenGL ES reference count
+
 };
 
 struct SDL_WindowData
 {
     bool uses_gles; // if true window must support OpenGL ES
+
 };
 
 /****************************************************************************/

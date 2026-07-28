@@ -59,3 +59,4 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 }
 
 #endif // SDL_FSOPS_DUMMY
+

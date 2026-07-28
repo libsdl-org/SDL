@@ -917,23 +917,21 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
     }
 }
 
-static void Blit1bto1(SDL_BlitInfo *info)
-{
+
+
+static void Blit1bto1(SDL_BlitInfo *info) {
     BlitBto1(info, 1);
 }
 
-static void Blit1bto2(SDL_BlitInfo *info)
-{
+static void Blit1bto2(SDL_BlitInfo *info) {
     BlitBto2(info, 1);
 }
 
-static void Blit1bto3(SDL_BlitInfo *info)
-{
+static void Blit1bto3(SDL_BlitInfo *info) {
     BlitBto3(info, 1);
 }
 
-static void Blit1bto4(SDL_BlitInfo *info)
-{
+static void Blit1bto4(SDL_BlitInfo *info) {
     BlitBto4(info, 1);
 }
 
@@ -941,23 +939,19 @@ static const SDL_BlitFunc bitmap_blit_1b[] = {
     (SDL_BlitFunc)NULL, Blit1bto1, Blit1bto2, Blit1bto3, Blit1bto4
 };
 
-static void Blit1bto1Key(SDL_BlitInfo *info)
-{
+static void Blit1bto1Key(SDL_BlitInfo *info) {
     BlitBto1Key(info, 1);
 }
 
-static void Blit1bto2Key(SDL_BlitInfo *info)
-{
+static void Blit1bto2Key(SDL_BlitInfo *info) {
     BlitBto2Key(info, 1);
 }
 
-static void Blit1bto3Key(SDL_BlitInfo *info)
-{
+static void Blit1bto3Key(SDL_BlitInfo *info) {
     BlitBto3Key(info, 1);
 }
 
-static void Blit1bto4Key(SDL_BlitInfo *info)
-{
+static void Blit1bto4Key(SDL_BlitInfo *info) {
     BlitBto4Key(info, 1);
 }
 
@@ -965,23 +959,21 @@ static const SDL_BlitFunc colorkey_blit_1b[] = {
     (SDL_BlitFunc)NULL, Blit1bto1Key, Blit1bto2Key, Blit1bto3Key, Blit1bto4Key
 };
 
-static void Blit2bto1(SDL_BlitInfo *info)
-{
+
+
+static void Blit2bto1(SDL_BlitInfo *info) {
     BlitBto1(info, 2);
 }
 
-static void Blit2bto2(SDL_BlitInfo *info)
-{
+static void Blit2bto2(SDL_BlitInfo *info) {
     BlitBto2(info, 2);
 }
 
-static void Blit2bto3(SDL_BlitInfo *info)
-{
+static void Blit2bto3(SDL_BlitInfo *info) {
     BlitBto3(info, 2);
 }
 
-static void Blit2bto4(SDL_BlitInfo *info)
-{
+static void Blit2bto4(SDL_BlitInfo *info) {
     BlitBto4(info, 2);
 }
 
@@ -989,23 +981,19 @@ static const SDL_BlitFunc bitmap_blit_2b[] = {
     (SDL_BlitFunc)NULL, Blit2bto1, Blit2bto2, Blit2bto3, Blit2bto4
 };
 
-static void Blit2bto1Key(SDL_BlitInfo *info)
-{
+static void Blit2bto1Key(SDL_BlitInfo *info) {
     BlitBto1Key(info, 2);
 }
 
-static void Blit2bto2Key(SDL_BlitInfo *info)
-{
+static void Blit2bto2Key(SDL_BlitInfo *info) {
     BlitBto2Key(info, 2);
 }
 
-static void Blit2bto3Key(SDL_BlitInfo *info)
-{
+static void Blit2bto3Key(SDL_BlitInfo *info) {
     BlitBto3Key(info, 2);
 }
 
-static void Blit2bto4Key(SDL_BlitInfo *info)
-{
+static void Blit2bto4Key(SDL_BlitInfo *info) {
     BlitBto4Key(info, 2);
 }
 
@@ -1013,23 +1001,21 @@ static const SDL_BlitFunc colorkey_blit_2b[] = {
     (SDL_BlitFunc)NULL, Blit2bto1Key, Blit2bto2Key, Blit2bto3Key, Blit2bto4Key
 };
 
-static void Blit4bto1(SDL_BlitInfo *info)
-{
+
+
+static void Blit4bto1(SDL_BlitInfo *info) {
     BlitBto1(info, 4);
 }
 
-static void Blit4bto2(SDL_BlitInfo *info)
-{
+static void Blit4bto2(SDL_BlitInfo *info) {
     BlitBto2(info, 4);
 }
 
-static void Blit4bto3(SDL_BlitInfo *info)
-{
+static void Blit4bto3(SDL_BlitInfo *info) {
     BlitBto3(info, 4);
 }
 
-static void Blit4bto4(SDL_BlitInfo *info)
-{
+static void Blit4bto4(SDL_BlitInfo *info) {
     BlitBto4(info, 4);
 }
 
@@ -1037,29 +1023,27 @@ static const SDL_BlitFunc bitmap_blit_4b[] = {
     (SDL_BlitFunc)NULL, Blit4bto1, Blit4bto2, Blit4bto3, Blit4bto4
 };
 
-static void Blit4bto1Key(SDL_BlitInfo *info)
-{
+static void Blit4bto1Key(SDL_BlitInfo *info) {
     BlitBto1Key(info, 4);
 }
 
-static void Blit4bto2Key(SDL_BlitInfo *info)
-{
+static void Blit4bto2Key(SDL_BlitInfo *info) {
     BlitBto2Key(info, 4);
 }
 
-static void Blit4bto3Key(SDL_BlitInfo *info)
-{
+static void Blit4bto3Key(SDL_BlitInfo *info) {
     BlitBto3Key(info, 4);
 }
 
-static void Blit4bto4Key(SDL_BlitInfo *info)
-{
+static void Blit4bto4Key(SDL_BlitInfo *info) {
     BlitBto4Key(info, 4);
 }
 
 static const SDL_BlitFunc colorkey_blit_4b[] = {
     (SDL_BlitFunc)NULL, Blit4bto1Key, Blit4bto2Key, Blit4bto3Key, Blit4bto4Key
 };
+
+
 
 SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {

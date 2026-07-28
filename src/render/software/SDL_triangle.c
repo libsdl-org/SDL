@@ -118,15 +118,15 @@ static bool is_top_left(const SDL_Point *a, const SDL_Point *b, int is_clockwise
 
 // x = (y << FP_BITS)
 // prevent runtime error: left shift of negative value
-#define PRECOMP(x, y)       \
-    val = y;                \
-    if (val >= 0) {         \
-        x = val << FP_BITS; \
-    } else {                \
-        val *= -1;          \
-        x = val << FP_BITS; \
-        x *= -1;            \
-    }
+#define PRECOMP(x, y)               \
+        val = y;                    \
+        if (val >= 0) {             \
+            x = val << FP_BITS;     \
+        } else {                    \
+            val *= -1;              \
+            x = val << FP_BITS;     \
+            x *= -1;                \
+        }
 
 void trianglepoint_2_fixedpoint(SDL_Point *a)
 {
@@ -198,7 +198,7 @@ static void bounding_rect_fixedpoint(const SDL_Point *a, const SDL_Point *b, con
         }                                                                               \
     }
 
-#define TRIANGLE_GET_MAPPED_COLOR                                                          \
+#define TRIANGLE_GET_MAPPED_COLOR                                                      \
     Uint8 r = (Uint8)(((Sint64)w0 * c0.r + (Sint64)w1 * c1.r + (Sint64)w2 * c2.r) / area); \
     Uint8 g = (Uint8)(((Sint64)w0 * c0.g + (Sint64)w1 * c1.g + (Sint64)w2 * c2.g) / area); \
     Uint8 b = (Uint8)(((Sint64)w0 * c0.b + (Sint64)w1 * c1.b + (Sint64)w2 * c2.b) / area); \
@@ -502,10 +502,10 @@ bool SDL_SW_BlitTriangle(
 
     bool has_modulation;
 
-    CHECK_PARAM (!SDL_SurfaceValid(src)) {
+    CHECK_PARAM(!SDL_SurfaceValid(src)) {
         return SDL_InvalidParamError("src");
     }
-    CHECK_PARAM (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("dst");
     }
 
@@ -677,10 +677,10 @@ bool SDL_SW_BlitTriangle(
         tmp_info.dst = dst_ptr;
         tmp_info.dst_pitch = dst_pitch;
 
-#define CHECK_INT_RANGE(X)                                                       \
-    if ((X) < INT_MIN || (X) > INT_MAX) {                                        \
+#define CHECK_INT_RANGE(X) \
+    if ((X) < INT_MIN || (X) > INT_MAX) { \
         result = SDL_SetError("integer overflow (%s = %" SDL_PRIs64 ")", #X, X); \
-        goto end;                                                                \
+        goto end; \
     }
         CHECK_INT_RANGE(area);
         CHECK_INT_RANGE(w0_row);
@@ -752,8 +752,7 @@ static int detect_format(const SDL_PixelFormatDetails *pf)
 {
     if (SDL_ISPIXELFORMAT_INDEXED(pf->format)) {
         return FORMAT_INDEX8;
-    }
-    if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
+    } if (pf->format == SDL_PIXELFORMAT_ARGB2101010) {
         return FORMAT_2101010;
     } else if (pf->Amask) {
         return FORMAT_ALPHA;
@@ -837,7 +836,7 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                 dstA = 0xFF;
             } else {
                 // SDL_PIXELFORMAT_ARGB2101010
-                dstpixel = *((Uint32 *)(dst));
+                dstpixel = *((Uint32 *) (dst));
                 RGBA_FROM_ARGB2101010(dstpixel, dstR, dstG, dstB, dstA);
             }
         } else {

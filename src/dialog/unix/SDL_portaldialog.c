@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_dialog_utils.h"
 #include "SDL_internal.h"
+#include "../SDL_dialog_utils.h"
 
 #include "../../core/linux/SDL_dbus.h"
 
@@ -33,21 +33,20 @@
 #include <unistd.h>
 
 #define PORTAL_DESTINATION "org.freedesktop.portal.Desktop"
-#define PORTAL_PATH        "/org/freedesktop/portal/desktop"
-#define PORTAL_INTERFACE   "org.freedesktop.portal.FileChooser"
+#define PORTAL_PATH "/org/freedesktop/portal/desktop"
+#define PORTAL_INTERFACE "org.freedesktop.portal.FileChooser"
 
-#define SIGNAL_SENDER    "org.freedesktop.portal.Desktop"
+#define SIGNAL_SENDER "org.freedesktop.portal.Desktop"
 #define SIGNAL_INTERFACE "org.freedesktop.portal.Request"
-#define SIGNAL_NAME      "Response"
-#define SIGNAL_FILTER    "type='signal', sender='" SIGNAL_SENDER "', interface='" SIGNAL_INTERFACE "', member='" SIGNAL_NAME "', path='"
+#define SIGNAL_NAME "Response"
+#define SIGNAL_FILTER "type='signal', sender='"SIGNAL_SENDER"', interface='"SIGNAL_INTERFACE"', member='"SIGNAL_NAME"', path='"
 
 #define HANDLE_LEN 10
 
 #define WAYLAND_HANDLE_PREFIX "wayland:"
-#define X11_HANDLE_PREFIX     "x11:"
+#define X11_HANDLE_PREFIX "x11:"
 
-typedef struct
-{
+typedef struct {
     SDL_DialogFileCallback callback;
     void *userdata;
     const char *path;
@@ -283,7 +282,7 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
         }
         path[current] = NULL;
         signal_data->callback(signal_data->userdata, path, -1); // TODO: Fetch the index of the filter that was used
-    done:
+done:
         dbus->connection_remove_filter(conn, &DBus_MessageFilter, signal_data);
 
         if (path) {
@@ -308,7 +307,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
     SDL_Window *window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
-    int nfilters = (int)SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     const char *default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
     const char *accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
@@ -510,7 +509,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         goto incorrect_type;
     }
 
-    SDL_snprintf(filter, filter_len, SIGNAL_FILTER "%s'", signal_id);
+    SDL_snprintf(filter, filter_len, SIGNAL_FILTER"%s'", signal_id);
     dbus->bus_add_match(dbus->session_conn, filter, &error);
     SDL_free(filter);
 

@@ -22,12 +22,12 @@
 
 #ifdef SDL_VIDEO_DRIVER_RPI
 
-#include "SDL_rpimouse.h"
 #include "SDL_rpivideo.h"
+#include "SDL_rpimouse.h"
 
+#include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
-#include "../SDL_sysvideo.h"
 
 // Copied from vc_vchi_dispmanx.h which is bugged and tries to include a non existing file
 // Attributes changes flag mask

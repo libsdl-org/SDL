@@ -72,7 +72,7 @@ static bool load_sndio_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(sndio_handle, fn);
     if (!*addr) {
-        return false; // Don't call SDL_SetError(): SDL_LoadFunction already did.
+        return false;  // Don't call SDL_SetError(): SDL_LoadFunction already did.
     }
 
     return true;
@@ -81,7 +81,7 @@ static bool load_sndio_sym(const char *fn, void **addr)
 // cast funcs to char* first, to please GCC's strict aliasing rules.
 #define SDL_SNDIO_SYM(x)                                  \
     if (!load_sndio_sym(#x, (void **)(char *)&SNDIO_##x)) \
-    return false
+        return false
 #else
 #define SDL_SNDIO_SYM(x) SNDIO_##x = x
 #endif
@@ -112,7 +112,8 @@ SDL_ELF_NOTE_DLOPEN(
     "audio-libsndio",
     "Support for audio through libsndio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_AUDIO_DRIVER_SNDIO_DYNAMIC)
+    SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
+)
 
 static void UnloadSNDIOLibrary(void)
 {
@@ -128,7 +129,7 @@ static bool LoadSNDIOLibrary(void)
     if (!sndio_handle) {
         sndio_handle = SDL_LoadObject(sndio_library);
         if (!sndio_handle) {
-            result = false; // Don't call SDL_SetError(): SDL_LoadObject already did.
+            result = false;  // Don't call SDL_SetError(): SDL_LoadObject already did.
         } else {
             result = load_sndio_syms();
             if (!result) {
@@ -185,7 +186,7 @@ static bool SNDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int b
     // !!! FIXME: this should be non-blocking so we can check device->shutdown.
     // this is set to blocking, because we _have_ to send the entire buffer down, but hopefully WaitDevice took most of the delay time.
     if (SNDIO_sio_write(device->hidden->dev, buffer, buflen) != buflen) {
-        return false; // If we couldn't write, assume fatal error for now
+        return false;  // If we couldn't write, assume fatal error for now
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -200,7 +201,7 @@ static int SNDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
     if ((br == 0) && SNDIO_sio_eof(device->hidden->dev)) {
         return -1;
     }
-    return (int)br;
+    return (int) br;
 }
 
 static void SNDIO_FlushRecording(SDL_AudioDevice *device)
@@ -232,7 +233,7 @@ static void SNDIO_CloseDevice(SDL_AudioDevice *device)
 
 static bool SNDIO_OpenDevice(SDL_AudioDevice *device)
 {
-    device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
+    device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
         return false;
     }
@@ -319,7 +320,7 @@ static bool SNDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("sio_start() failed");
     }
 
-    return true; // We're ready to rock and roll. :-)
+    return true;  // We're ready to rock and roll. :-)
 }
 
 static void SNDIO_Deinitialize(void)

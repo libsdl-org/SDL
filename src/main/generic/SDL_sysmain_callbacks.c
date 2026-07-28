@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../video/SDL_sysvideo.h"
-#include "../SDL_main_callbacks.h"
 #include "SDL_internal.h"
+#include "../SDL_main_callbacks.h"
+#include "../../video/SDL_sysvideo.h"
 
 #ifndef SDL_PLATFORM_IOS
 
@@ -36,7 +36,7 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
     } else {
         const double callback_rate = newValue ? SDL_atof(newValue) : 0.0;
         if (callback_rate > 0.0) {
-            callback_rate_increment = (Uint64)((double)SDL_NS_PER_SECOND / callback_rate);
+            callback_rate_increment = (Uint64) ((double) SDL_NS_PER_SECOND / callback_rate);
         } else {
             callback_rate_increment = 0;
         }
@@ -77,10 +77,10 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
                 next_iteration = 0; // just clear the timer and run at the pace the video subsystem allows.
             } else {
                 const Uint64 now = SDL_GetTicksNS();
-                if (next_iteration > now) { // Running faster than the limit, sleep a little.
+                if (next_iteration > now) {  // Running faster than the limit, sleep a little.
                     SDL_DelayPrecise(next_iteration - now);
                 } else {
-                    next_iteration = now; // if running behind, reset the timer. If right on time, `next_iteration` already equals `now`.
+                    next_iteration = now;  // if running behind, reset the timer. If right on time, `next_iteration` already equals `now`.
                 }
                 next_iteration += callback_rate_increment;
             }

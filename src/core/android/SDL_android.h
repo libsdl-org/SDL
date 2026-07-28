@@ -152,12 +152,12 @@ int SDL_GetAndroidSDKVersion(void);
 bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
 
-char *SDL_GetAndroidPackageName(void); // this is a SDL_malloc'd string the caller will own.
+char *SDL_GetAndroidPackageName(void);  // this is a SDL_malloc'd string the caller will own.
 
 // File Dialogs
 bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
-                                const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
-                                bool multiple, const char *initialPath);
+    const SDL_DialogFileFilter *filters, int nfilters, SDL_FileDialogType type,
+    bool multiple, const char *initialPath);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

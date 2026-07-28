@@ -24,12 +24,12 @@
 
 #ifdef SDL_JOYSTICK_DINPUT
 
-#include "../../core/windows/SDL_gameinput.h"
-#include "../hidapi/SDL_hidapijoystick_c.h"
+#include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
-#include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL 0x80000000
@@ -38,7 +38,7 @@
 #define INPUT_QSIZE        128                                                         // Buffer up to 128 input messages
 #define JOY_AXIS_THRESHOLD (((SDL_JOYSTICK_AXIS_MAX) - (SDL_JOYSTICK_AXIS_MIN)) / 100) // 1% motion
 
-#define CONVERT_MAGNITUDE(x) (((x) * 10000) / 0x7FFF)
+#define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
 
 // external variables referenced.
 extern HWND SDL_HelperWindow;
@@ -244,7 +244,8 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
 #ifdef SDL_JOYSTICK_RAWINPUT
         && !RAWINPUT_IsEnabled()
 #endif
-        && !SDL_UsingGameInputForXInputControllers()) {
+        && !SDL_UsingGameInputForXInputControllers()
+    ) {
         return false;
     }
 
@@ -1065,7 +1066,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
 
         case BUTTON:
             SDL_SendJoystickButton(timestamp, joystick, in->num,
-                                   (state.rgbButtons[in->ofs - DIJOFS_BUTTON0] != 0));
+                                      (state.rgbButtons[in->ofs - DIJOFS_BUTTON0] != 0));
             break;
         case HAT:
         {
@@ -1119,7 +1120,7 @@ static void UpdateDINPUTJoystickState_Buffered(SDL_Joystick *joystick)
                 break;
             case BUTTON:
                 SDL_SendJoystickButton(timestamp, joystick, in->num,
-                                       (evtbuf[i].dwData != 0));
+                                          (evtbuf[i].dwData != 0));
                 break;
             case HAT:
             {
@@ -1155,7 +1156,7 @@ void SDL_DINPUT_JoystickUpdate(SDL_Joystick *joystick)
         return;
     }
 
-    if (joystick->hwdata->buffered) {
+    if (joystick->hwdata->buffered ) {
         UpdateDINPUTJoystickState_Buffered(joystick);
     } else {
         UpdateDINPUTJoystickState_Polled(joystick);

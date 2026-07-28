@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <pspkerror.h>
 #include <pspthreadman.h>
+#include <pspkerror.h>
 
 struct SDL_Semaphore
 {
@@ -73,7 +73,7 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
  * is specified, convert it to microseconds. */
 bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-    SceUInt timeoutUS;
+	SceUInt timeoutUS;
     SceUInt *pTimeout = NULL;
 
     if (!sem) {

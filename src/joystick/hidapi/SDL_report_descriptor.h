@@ -22,16 +22,16 @@
 
 typedef struct
 {
-    Uint8 report_id;
-    Uint32 usage;
-    int bit_offset;
-    int bit_size;
+	Uint8 report_id;
+	Uint32 usage;
+	int bit_offset;
+	int bit_size;
 } DescriptorInputField;
 
 typedef struct
 {
-    int field_count;
-    DescriptorInputField *fields;
+	int field_count;
+	DescriptorInputField *fields;
 } SDL_ReportDescriptor;
 
 extern SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, int descriptor_size);

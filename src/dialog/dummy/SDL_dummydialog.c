@@ -26,8 +26,8 @@
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-    SDL_Unsupported();
-    callback(userdata, NULL, -1);
+  SDL_Unsupported();
+  callback(userdata, NULL, -1);
 }
 
 #endif // SDL_DIALOG_DUMMY

@@ -23,31 +23,31 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "../../core/linux/SDL_system_theme.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
-#include "../../events/SDL_keysym_to_keycode_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
+#include "../../events/SDL_keysym_to_keycode_c.h"
+#include "../../core/linux/SDL_system_theme.h"
 #include "../SDL_sysvideo.h"
 
-#include "SDL_waylandclipboard.h"
-#include "SDL_waylandevents_c.h"
-#include "SDL_waylandkeyboard.h"
-#include "SDL_waylandmouse.h"
 #include "SDL_waylandvideo.h"
+#include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
+#include "SDL_waylandmouse.h"
+#include "SDL_waylandclipboard.h"
+#include "SDL_waylandkeyboard.h"
 
-#include "cursor-shape-v1-client-protocol.h"
-#include "input-timestamps-unstable-v1-client-protocol.h"
-#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
-#include "pointer-gestures-unstable-v1-client-protocol.h"
-#include "primary-selection-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
-#include "tablet-v2-client-protocol.h"
-#include "text-input-unstable-v3-client-protocol.h"
-#include "viewporter-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
+#include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "text-input-unstable-v3-client-protocol.h"
+#include "tablet-v2-client-protocol.h"
+#include "primary-selection-unstable-v1-client-protocol.h"
+#include "input-timestamps-unstable-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "cursor-shape-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -87,8 +87,8 @@
 
 // Keyboard and mouse names to match XWayland
 #define WAYLAND_DEFAULT_KEYBOARD_NAME "Virtual core keyboard"
-#define WAYLAND_DEFAULT_POINTER_NAME  "Virtual core pointer"
-#define WAYLAND_DEFAULT_TOUCH_NAME    "Virtual core touch"
+#define WAYLAND_DEFAULT_POINTER_NAME "Virtual core pointer"
+#define WAYLAND_DEFAULT_TOUCH_NAME "Virtual core touch"
 
 // Focus clickthrough timeout
 #define WAYLAND_FOCUS_CLICK_TIMEOUT_NS SDL_MS_TO_NS(10)
@@ -271,7 +271,7 @@ Uint64 Wayland_GetTouchTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 }
 
 static void input_timestamp_listener(void *data, struct zwp_input_timestamps_v1 *zwp_input_timestamps_v1,
-                                     uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
+                                             uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
 {
     *((Uint64 *)data) = ((((Uint64)tv_sec_hi << 32) | (Uint64)tv_sec_lo) * SDL_NS_PER_SECOND) + tv_nsec;
 }
@@ -383,7 +383,7 @@ static void Wayland_SeatCreateCursorShape(SDL_WaylandSeat *seat)
         }
 
         SDL_WaylandPenTool *tool;
-        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+        wl_list_for_each(tool, &seat->tablet.tool_list, link) {
             if (!tool->cursor_state.cursor_shape) {
                 tool->cursor_state.cursor_shape = wp_cursor_shape_manager_v1_get_tablet_tool_v2(seat->display->cursor_shape_manager, tool->wltool);
             }
@@ -3329,7 +3329,7 @@ static void Wayland_SeatCreateTextInput(SDL_WaylandSeat *seat)
 void Wayland_DisplayInitTextInputManager(SDL_VideoData *d, uint32_t id)
 {
     SDL_WaylandSeat *seat;
-    wl_list_for_each (seat, &d->seat_list, link) {
+    wl_list_for_each(seat, &d->seat_list, link) {
         Wayland_SeatCreateTextInput(seat);
     }
 }
@@ -3337,20 +3337,16 @@ void Wayland_DisplayInitTextInputManager(SDL_VideoData *d, uint32_t id)
 // Pen/Tablet support...
 static void tablet_tool_handle_type(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t type)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     switch (type) {
-#define CASE(typ)                                   \
-    case ZWP_TABLET_TOOL_V2_TYPE_##typ:             \
-        sdltool->info.subtype = SDL_PEN_TYPE_##typ; \
-        return
+        #define CASE(typ) case ZWP_TABLET_TOOL_V2_TYPE_##typ: sdltool->info.subtype = SDL_PEN_TYPE_##typ; return
         CASE(ERASER);
         CASE(PEN);
         CASE(PENCIL);
         CASE(AIRBRUSH);
         CASE(BRUSH);
-#undef CASE
-    default:
-        sdltool->info.subtype = SDL_PEN_TYPE_UNKNOWN; // we'll decline to add this when the `done` event comes through.
+        #undef CASE
+        default: sdltool->info.subtype = SDL_PEN_TYPE_UNKNOWN;  // we'll decline to add this when the `done` event comes through.
     }
 }
 
@@ -3361,33 +3357,29 @@ static void tablet_tool_handle_hardware_serial(void *data, struct zwp_tablet_too
 
 static void tablet_tool_handle_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t id_hi, uint32_t id_lo)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->info.wacom_id = id_lo;
 }
 
 static void tablet_tool_handle_capability(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t capability)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     switch (capability) {
-#define CASE(wltyp, sdltyp)                     \
-    case ZWP_TABLET_TOOL_V2_CAPABILITY_##wltyp: \
-        sdltool->info.capabilities |= sdltyp;   \
-        return
+        #define CASE(wltyp,sdltyp) case ZWP_TABLET_TOOL_V2_CAPABILITY_##wltyp: sdltool->info.capabilities |= sdltyp; return
         CASE(TILT, SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT);
         CASE(PRESSURE, SDL_PEN_CAPABILITY_PRESSURE);
         CASE(DISTANCE, SDL_PEN_CAPABILITY_DISTANCE);
         CASE(ROTATION, SDL_PEN_CAPABILITY_ROTATION);
         CASE(SLIDER, SDL_PEN_CAPABILITY_SLIDER);
-#undef CASE
-    default:
-        break; // unsupported here.
+        #undef CASE
+        default: break;  // unsupported here.
     }
 }
 
 static void tablet_tool_handle_done(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
-    if (sdltool->info.subtype != SDL_PEN_TYPE_UNKNOWN) { // don't tell SDL about it if we don't know its role.
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
+    if (sdltool->info.subtype != SDL_PEN_TYPE_UNKNOWN) {   // don't tell SDL about it if we don't know its role.
         SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
         sdltool->instance_id = SDL_AddPenDevice(0, NULL, window, &sdltool->info, sdltool, false);
     }
@@ -3395,7 +3387,7 @@ static void tablet_tool_handle_done(void *data, struct zwp_tablet_tool_v2 *tool)
 
 static void tablet_tool_handle_removed(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     if (sdltool->instance_id) {
         SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
         SDL_RemovePenDevice(0, window, sdltool->instance_id);
@@ -3409,7 +3401,7 @@ static void tablet_tool_handle_removed(void *data, struct zwp_tablet_tool_v2 *to
 
 static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     SDL_WindowData *windowdata = surface ? Wayland_GetWindowDataForOwnedSurface(surface) : NULL;
     sdltool->focus = windowdata && windowdata->surface == surface ? windowdata : NULL;
     sdltool->proximity_serial = serial;
@@ -3421,26 +3413,26 @@ static void tablet_tool_handle_proximity_in(void *data, struct zwp_tablet_tool_v
 
 static void tablet_tool_handle_proximity_out(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->frame.have_proximity = true;
     sdltool->frame.in_proximity = false;
 }
 
 static void tablet_tool_handle_down(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->frame.tool_state = WAYLAND_TABLET_TOOL_STATE_DOWN;
 }
 
 static void tablet_tool_handle_up(void *data, struct zwp_tablet_tool_v2 *tool)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->frame.tool_state = WAYLAND_TABLET_TOOL_STATE_UP;
 }
 
 static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     SDL_WindowData *windowdata = sdltool->focus;
     if (windowdata) {
         sdltool->frame.x = (float)(wl_fixed_to_double(sx_w) * windowdata->pointer_scale.x);
@@ -3451,8 +3443,8 @@ static void tablet_tool_handle_motion(void *data, struct zwp_tablet_tool_v2 *too
 
 static void tablet_tool_handle_pressure(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t pressure)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
-    sdltool->frame.axes[SDL_PEN_AXIS_PRESSURE] = ((float)pressure) / 65535.0f;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
+    sdltool->frame.axes[SDL_PEN_AXIS_PRESSURE] = ((float) pressure) / 65535.0f;
     sdltool->frame.axes_set |= (1u << SDL_PEN_AXIS_PRESSURE);
     if (pressure) {
         sdltool->frame.axes[SDL_PEN_AXIS_DISTANCE] = 0.0f;
@@ -3462,8 +3454,8 @@ static void tablet_tool_handle_pressure(void *data, struct zwp_tablet_tool_v2 *t
 
 static void tablet_tool_handle_distance(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t distance)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
-    sdltool->frame.axes[SDL_PEN_AXIS_DISTANCE] = ((float)distance) / 65535.0f;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
+    sdltool->frame.axes[SDL_PEN_AXIS_DISTANCE] = ((float) distance) / 65535.0f;
     sdltool->frame.axes_set |= (1u << SDL_PEN_AXIS_DISTANCE);
     if (distance) {
         sdltool->frame.axes[SDL_PEN_AXIS_PRESSURE] = 0.0f;
@@ -3473,7 +3465,7 @@ static void tablet_tool_handle_distance(void *data, struct zwp_tablet_tool_v2 *t
 
 static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t xtilt, wl_fixed_t ytilt)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->frame.axes[SDL_PEN_AXIS_XTILT] = (float)(wl_fixed_to_double(xtilt));
     sdltool->frame.axes[SDL_PEN_AXIS_YTILT] = (float)(wl_fixed_to_double(ytilt));
     sdltool->frame.axes_set |= (1u << SDL_PEN_AXIS_XTILT) | (1u << SDL_PEN_AXIS_YTILT);
@@ -3481,7 +3473,7 @@ static void tablet_tool_handle_tilt(void *data, struct zwp_tablet_tool_v2 *tool,
 
 static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t serial, uint32_t button, uint32_t state)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     int sdlbutton;
 
     switch (button) {
@@ -3495,24 +3487,24 @@ static void tablet_tool_handle_button(void *data, struct zwp_tablet_tool_v2 *too
         sdlbutton = 3;
         break;
     default:
-        return; // don't care about this button, I guess.
+        return;  // don't care about this button, I guess.
     }
 
     SDL_assert((sdlbutton >= 1) && (sdlbutton <= SDL_arraysize(sdltool->frame.buttons)));
-    sdltool->frame.buttons[sdlbutton - 1] = (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED) ? WAYLAND_TABLET_TOOL_BUTTON_DOWN : WAYLAND_TABLET_TOOL_BUTTON_UP;
+    sdltool->frame.buttons[sdlbutton-1] = (state == ZWP_TABLET_PAD_V2_BUTTON_STATE_PRESSED) ? WAYLAND_TABLET_TOOL_BUTTON_DOWN : WAYLAND_TABLET_TOOL_BUTTON_UP;
 }
 
 static void tablet_tool_handle_rotation(void *data, struct zwp_tablet_tool_v2 *tool, wl_fixed_t degrees)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     const float rotation = (float)(wl_fixed_to_double(degrees));
-    sdltool->frame.axes[SDL_PEN_AXIS_ROTATION] = (rotation > 180.0f) ? (rotation - 360.0f) : rotation; // map to -180.0f ... 179.0f range
+    sdltool->frame.axes[SDL_PEN_AXIS_ROTATION] = (rotation > 180.0f) ? (rotation - 360.0f) : rotation;  // map to -180.0f ... 179.0f range
     sdltool->frame.axes_set |= (1u << SDL_PEN_AXIS_ROTATION);
 }
 
 static void tablet_tool_handle_slider(void *data, struct zwp_tablet_tool_v2 *tool, int32_t position)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     sdltool->frame.axes[SDL_PEN_AXIS_SLIDER] = position / 65535.f;
     sdltool->frame.axes_set |= (1u << SDL_PEN_AXIS_SLIDER);
 }
@@ -3524,10 +3516,10 @@ static void tablet_tool_handle_wheel(void *data, struct zwp_tablet_tool_v2 *tool
 
 static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool, uint32_t time)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)data;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) data;
     const SDL_PenID instance_id = sdltool->instance_id;
     if (!instance_id) {
-        return; // Not a pen we report on.
+        return;  // Not a pen we report on.
     }
 
     const Uint64 timestamp = Wayland_AdjustEventTimestampBase(Wayland_EventTimestampMSToNS(time));
@@ -3544,14 +3536,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame.have_motion && sdltool->frame.tool_state) {
         if (sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN) {
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
-            SDL_SendPenTouch(timestamp, instance_id, window, false, true); // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, false, true);  // !!! FIXME: how do we know what tip is in use?
         } else {
             SDL_SendPenTouch(timestamp, instance_id, window, false, false); // !!! FIXME: how do we know what tip is in use?
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
         }
     } else {
         if (sdltool->frame.tool_state) {
-            SDL_SendPenTouch(timestamp, instance_id, window, false, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN); // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, false, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN);  // !!! FIXME: how do we know what tip is in use?
         }
 
         if (sdltool->frame.have_motion) {
@@ -3604,6 +3596,7 @@ static const struct zwp_tablet_tool_v2_listener tablet_tool_listener = {
     tablet_tool_handle_frame
 };
 
+
 static void tablet_seat_handle_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *tablet)
 {
     // don't care atm.
@@ -3614,7 +3607,7 @@ static void tablet_seat_handle_tool_added(void *data, struct zwp_tablet_seat_v2 
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     SDL_WaylandPenTool *sdltool = SDL_calloc(1, sizeof(*sdltool));
 
-    if (sdltool) { // if allocation failed, oh well, we won't report this device.
+    if (sdltool) {  // if allocation failed, oh well, we won't report this device.
         sdltool->wltool = tool;
         sdltool->info.max_tilt = -1.0f;
         sdltool->info.num_buttons = -1;
@@ -3658,7 +3651,7 @@ void Wayland_DisplayInitTabletManager(SDL_VideoData *display)
 
 static void Wayland_remove_all_pens_callback(SDL_PenID instance_id, void *handle, void *userdata)
 {
-    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *)handle;
+    SDL_WaylandPenTool *sdltool = (SDL_WaylandPenTool *) handle;
 
     Wayland_CursorStateRelease(&sdltool->cursor_state);
     zwp_tablet_tool_v2_destroy(sdltool->wltool);
@@ -3718,7 +3711,8 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
 void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window)
 {
     SDL_WaylandSeat *seat;
-    wl_list_for_each (seat, &display->seat_list, link) {
+    wl_list_for_each (seat, &display->seat_list, link)
+    {
         if (seat->keyboard.focus == window) {
             keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, window->surface);
         }

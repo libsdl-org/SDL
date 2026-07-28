@@ -25,9 +25,9 @@
 
 #include <stdio.h> // For the definition of NULL
 
+#include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
-#include "SDL_sysjoystick_c.h"
 
 static SDL_joylist_item *JoystickByIndex(int index);
 
@@ -56,7 +56,8 @@ static int SDL_GetEmscriptenJoystickVendor(int device_index)
             return parseInt(id_split[0], 16);
         }
 
-        return 0; }, device_index);
+        return 0;
+    }, device_index);
 }
 
 static int SDL_GetEmscriptenJoystickProduct(int device_index)
@@ -80,7 +81,8 @@ static int SDL_GetEmscriptenJoystickProduct(int device_index)
             return parseInt(id_split[1], 16);
         }
 
-        return 0; }, device_index);
+        return 0;
+    }, device_index);
 }
 
 static int SDL_IsEmscriptenJoystickXInput(int device_index)
@@ -94,7 +96,8 @@ static int SDL_IsEmscriptenJoystickXInput(int device_index)
         // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
         // Firefox: xinput
         // TODO: Safari
-        return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0; }, device_index);
+        return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
+    }, device_index);
 }
 
 static int SDL_GetEmscriptenOSID()
@@ -150,7 +153,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         vendor = USB_VENDOR_MICROSOFT;
         product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
     }
-
+    
     os_id = SDL_GetEmscriptenOSID();
 
     if (os_id != 0) {
@@ -197,12 +200,12 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     int num_buttons = gamepadEvent->numButtons;
     int num_axes = gamepadEvent->numAxes;
     bool triggers_are_buttons = false;
-    if ((SDL_strcmp(gamepadEvent->mapping, "standard") == 0) && (num_buttons >= 16)) { // maps to a game console gamepad layout, turn the d-pad into a hat, treat triggers as analog.
-        num_buttons -= 4;                                                              // 4 dpad buttons become a hat.
+    if ((SDL_strcmp(gamepadEvent->mapping, "standard") == 0) && (num_buttons >= 16)) {  // maps to a game console gamepad layout, turn the d-pad into a hat, treat triggers as analog.
+        num_buttons -= 4;  // 4 dpad buttons become a hat.
         first_hat_button = 12;
 
-        if (num_axes == 4) { // Chrome gives the triggers analog button values, Firefox exposes them as extra axes. Both have the digital buttons.
-            num_axes += 2;   // the two trigger "buttons"
+        if (num_axes == 4) {  // Chrome gives the triggers analog button values, Firefox exposes them as extra axes. Both have the digital buttons.
+            num_axes += 2;  // the two trigger "buttons"
             triggers_are_buttons = true;
         }
 
@@ -224,9 +227,9 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     int buttonidx = 0;
     for (i = 0; i < real_button_count; i++, buttonidx++) {
         if (buttonidx == first_hat_button) {
-            buttonidx += 4; // skip these buttons, we're treating them as hat input.
+            buttonidx += 4;  // skip these buttons, we're treating them as hat input.
         } else if (buttonidx == first_trigger_button) {
-            buttonidx += 2; // skip these buttons, we're treating them as axes.
+            buttonidx += 2;  // skip these buttons, we're treating them as axes.
         }
         item->analogButton[i] = gamepadEvent->analogButton[buttonidx];
         item->digitalButton[i] = gamepadEvent->digitalButton[buttonidx];
@@ -238,10 +241,10 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     if (item->triggers_are_buttons) {
         item->axis[real_axis_count] = (gamepadEvent->analogButton[first_trigger_button] * 2.0f) - 1.0f;
-        item->axis[real_axis_count + 1] = (gamepadEvent->analogButton[first_trigger_button + 1] * 2.0f) - 1.0f;
+        item->axis[real_axis_count+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
     }
 
-    SDL_assert(item->nhats <= 1); // there is (currently) only ever one of these, faked from the d-pad buttons.
+    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
     if (first_hat_button != -1) {
         Uint8 value = SDL_HAT_CENTERED;
         // this currently expects the first button to be up, then down, then left, then right.
@@ -395,8 +398,8 @@ static bool EMSCRIPTEN_JoystickInit(void)
     }
 
     rc = emscripten_set_gamepaddisconnected_callback(NULL,
-                                                     0,
-                                                     Emscripten_JoyStickDisconnected);
+                                                         0,
+                                                         Emscripten_JoyStickDisconnected);
     if (rc != EMSCRIPTEN_RESULT_SUCCESS) {
         EMSCRIPTEN_JoystickQuit();
         return SDL_SetError("Could not set gamepad disconnect callback");
@@ -503,7 +506,8 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble'); }, item->index);
+        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble');
+        }, item->index);
 
     if (item->rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
@@ -511,7 +515,8 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble'); }, item->index);
+        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble');
+        }, item->index);
 
     if (item->trigger_rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
@@ -546,9 +551,9 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 int buttonidx = 0;
                 for (i = 0; i < real_button_count; i++, buttonidx++) {
                     if (buttonidx == first_hat_button) {
-                        buttonidx += 4; // skip these buttons, we're treating them as hat input.
+                        buttonidx += 4;  // skip these buttons, we're treating them as hat input.
                     } else if (buttonidx == first_trigger_button) {
-                        buttonidx += 2; // skip these buttons, we're treating them as axes.
+                        buttonidx += 2;  // skip these buttons, we're treating them as axes.
                     }
                     if (item->digitalButton[i] != gamepadState.digitalButton[buttonidx]) {
                         const bool down = (gamepadState.digitalButton[buttonidx] != 0);
@@ -569,14 +574,14 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
 
                 if (item->triggers_are_buttons) {
                     for (i = 0; i < 2; i++) {
-                        if (item->axis[real_axis_count + i] != gamepadState.analogButton[first_trigger_button + i]) {
-                            SDL_SendJoystickAxis(timestamp, item->joystick, real_axis_count + i, (Sint16)(32767.0f * ((gamepadState.analogButton[first_trigger_button + i] * 2.0f) - 1.0f)));
-                            item->axis[real_axis_count + i] = gamepadState.analogButton[first_trigger_button + i];
+                        if (item->axis[real_axis_count+i] != gamepadState.analogButton[first_trigger_button+i]) {
+                            SDL_SendJoystickAxis(timestamp, item->joystick, real_axis_count+i, (Sint16)(32767.0f * ((gamepadState.analogButton[first_trigger_button+i] * 2.0f) - 1.0f)));
+                            item->axis[real_axis_count+i] = gamepadState.analogButton[first_trigger_button+i];
                         }
                     }
                 }
 
-                SDL_assert(item->nhats <= 1); // there is (currently) only ever one of these, faked from the d-pad buttons.
+                SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
                 if (item->nhats) {
                     Uint8 value = SDL_HAT_CENTERED;
                     // this currently expects the first button to be up, then down, then left, then right.
@@ -595,6 +600,7 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                         SDL_SendJoystickHat(timestamp, item->joystick, 0, value);
                     }
                 }
+
 
                 item->timestamp = gamepadState.timestamp;
             }
@@ -634,7 +640,8 @@ static bool Emscripten_UpdateRumble(SDL_joylist_item *item)
             'rightTrigger': $4 / 0xFFFF,
         });
 
-        return true; }, item->index, item->weak_magnitude_rumble, item->strong_magnitude_rumble, item->left_trigger_rumble, item->right_trigger_rumble);
+        return true;
+        }, item->index, item->weak_magnitude_rumble, item->strong_magnitude_rumble, item->left_trigger_rumble, item->right_trigger_rumble);
     return result;
 }
 

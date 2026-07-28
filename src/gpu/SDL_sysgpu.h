@@ -517,82 +517,82 @@ static inline bool FormatHasAlpha(
     SDL_GPUTextureFormat format)
 {
     switch (format) {
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
-        // ASTC textures may or may not have alpha; return true as this is mainly intended for validation
-        return true;
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+            // ASTC textures may or may not have alpha; return true as this is mainly intended for validation
+            return true;
 
-    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
-    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
-    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
-        return true;
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+            return true;
 
-    default:
-        return false;
+        default:
+            return false;
     }
 }
 
@@ -717,7 +717,7 @@ struct SDL_GPUDevice
         const XrSessionCreateInfo *createinfo,
         XrSession *session);
 
-    SDL_GPUTextureFormat *(*GetXRSwapchainFormats)(
+    SDL_GPUTextureFormat* (*GetXRSwapchainFormats)(
         SDL_GPURenderer *driverData,
         XrSession session,
         int *num_formats);
@@ -1128,93 +1128,93 @@ struct SDL_GPUDevice
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
     result->func = name##_##func;
-#define ASSIGN_DRIVER(name)                                  \
-    ASSIGN_DRIVER_FUNC(DestroyDevice, name)                  \
-    ASSIGN_DRIVER_FUNC(DestroyXRSwapchain, name)             \
-    ASSIGN_DRIVER_FUNC(GetDeviceProperties, name)            \
-    ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)          \
-    ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)         \
-    ASSIGN_DRIVER_FUNC(CreateSampler, name)                  \
-    ASSIGN_DRIVER_FUNC(CreateShader, name)                   \
-    ASSIGN_DRIVER_FUNC(CreateTexture, name)                  \
-    ASSIGN_DRIVER_FUNC(CreateBuffer, name)                   \
-    ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)           \
-    ASSIGN_DRIVER_FUNC(CreateXRSession, name)                \
-    ASSIGN_DRIVER_FUNC(GetXRSwapchainFormats, name)          \
-    ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)              \
-    ASSIGN_DRIVER_FUNC(SetBufferName, name)                  \
-    ASSIGN_DRIVER_FUNC(SetTextureName, name)                 \
-    ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)               \
-    ASSIGN_DRIVER_FUNC(PushDebugGroup, name)                 \
-    ASSIGN_DRIVER_FUNC(PopDebugGroup, name)                  \
-    ASSIGN_DRIVER_FUNC(ReleaseTexture, name)                 \
-    ASSIGN_DRIVER_FUNC(ReleaseSampler, name)                 \
-    ASSIGN_DRIVER_FUNC(ReleaseBuffer, name)                  \
-    ASSIGN_DRIVER_FUNC(ReleaseTransferBuffer, name)          \
-    ASSIGN_DRIVER_FUNC(ReleaseShader, name)                  \
-    ASSIGN_DRIVER_FUNC(ReleaseComputePipeline, name)         \
-    ASSIGN_DRIVER_FUNC(ReleaseGraphicsPipeline, name)        \
-    ASSIGN_DRIVER_FUNC(BeginRenderPass, name)                \
-    ASSIGN_DRIVER_FUNC(BindGraphicsPipeline, name)           \
-    ASSIGN_DRIVER_FUNC(SetViewport, name)                    \
-    ASSIGN_DRIVER_FUNC(SetScissor, name)                     \
-    ASSIGN_DRIVER_FUNC(SetBlendConstants, name)              \
-    ASSIGN_DRIVER_FUNC(SetStencilReference, name)            \
-    ASSIGN_DRIVER_FUNC(BindVertexBuffers, name)              \
-    ASSIGN_DRIVER_FUNC(BindIndexBuffer, name)                \
-    ASSIGN_DRIVER_FUNC(BindVertexSamplers, name)             \
-    ASSIGN_DRIVER_FUNC(BindVertexStorageTextures, name)      \
-    ASSIGN_DRIVER_FUNC(BindVertexStorageBuffers, name)       \
-    ASSIGN_DRIVER_FUNC(BindFragmentSamplers, name)           \
-    ASSIGN_DRIVER_FUNC(BindFragmentStorageTextures, name)    \
-    ASSIGN_DRIVER_FUNC(BindFragmentStorageBuffers, name)     \
-    ASSIGN_DRIVER_FUNC(PushVertexUniformData, name)          \
-    ASSIGN_DRIVER_FUNC(PushFragmentUniformData, name)        \
-    ASSIGN_DRIVER_FUNC(DrawIndexedPrimitives, name)          \
-    ASSIGN_DRIVER_FUNC(DrawPrimitives, name)                 \
-    ASSIGN_DRIVER_FUNC(DrawPrimitivesIndirect, name)         \
-    ASSIGN_DRIVER_FUNC(DrawIndexedPrimitivesIndirect, name)  \
-    ASSIGN_DRIVER_FUNC(EndRenderPass, name)                  \
-    ASSIGN_DRIVER_FUNC(BeginComputePass, name)               \
-    ASSIGN_DRIVER_FUNC(BindComputePipeline, name)            \
-    ASSIGN_DRIVER_FUNC(BindComputeSamplers, name)            \
-    ASSIGN_DRIVER_FUNC(BindComputeStorageTextures, name)     \
-    ASSIGN_DRIVER_FUNC(BindComputeStorageBuffers, name)      \
-    ASSIGN_DRIVER_FUNC(PushComputeUniformData, name)         \
-    ASSIGN_DRIVER_FUNC(DispatchCompute, name)                \
-    ASSIGN_DRIVER_FUNC(DispatchComputeIndirect, name)        \
-    ASSIGN_DRIVER_FUNC(EndComputePass, name)                 \
-    ASSIGN_DRIVER_FUNC(MapTransferBuffer, name)              \
-    ASSIGN_DRIVER_FUNC(UnmapTransferBuffer, name)            \
-    ASSIGN_DRIVER_FUNC(BeginCopyPass, name)                  \
-    ASSIGN_DRIVER_FUNC(UploadToTexture, name)                \
-    ASSIGN_DRIVER_FUNC(UploadToBuffer, name)                 \
-    ASSIGN_DRIVER_FUNC(DownloadFromTexture, name)            \
-    ASSIGN_DRIVER_FUNC(DownloadFromBuffer, name)             \
-    ASSIGN_DRIVER_FUNC(CopyTextureToTexture, name)           \
-    ASSIGN_DRIVER_FUNC(CopyBufferToBuffer, name)             \
-    ASSIGN_DRIVER_FUNC(GenerateMipmaps, name)                \
-    ASSIGN_DRIVER_FUNC(EndCopyPass, name)                    \
-    ASSIGN_DRIVER_FUNC(Blit, name)                           \
-    ASSIGN_DRIVER_FUNC(SupportsSwapchainComposition, name)   \
-    ASSIGN_DRIVER_FUNC(SupportsPresentMode, name)            \
-    ASSIGN_DRIVER_FUNC(ClaimWindow, name)                    \
-    ASSIGN_DRIVER_FUNC(ReleaseWindow, name)                  \
-    ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name)         \
-    ASSIGN_DRIVER_FUNC(SetAllowedFramesInFlight, name)       \
-    ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)      \
-    ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)           \
-    ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)        \
-    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)               \
-    ASSIGN_DRIVER_FUNC(WaitAndAcquireSwapchainTexture, name) \
-    ASSIGN_DRIVER_FUNC(Submit, name)                         \
-    ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)          \
-    ASSIGN_DRIVER_FUNC(Cancel, name)                         \
-    ASSIGN_DRIVER_FUNC(Wait, name)                           \
-    ASSIGN_DRIVER_FUNC(WaitForFences, name)                  \
-    ASSIGN_DRIVER_FUNC(QueryFence, name)                     \
-    ASSIGN_DRIVER_FUNC(ReleaseFence, name)                   \
-    ASSIGN_DRIVER_FUNC(SupportsTextureFormat, name)          \
+#define ASSIGN_DRIVER(name)                                 \
+    ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
+    ASSIGN_DRIVER_FUNC(DestroyXRSwapchain, name)            \
+    ASSIGN_DRIVER_FUNC(GetDeviceProperties, name)      \
+    ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
+    ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
+    ASSIGN_DRIVER_FUNC(CreateSampler, name)                 \
+    ASSIGN_DRIVER_FUNC(CreateShader, name)                  \
+    ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
+    ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
+    ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(CreateXRSession, name)               \
+    ASSIGN_DRIVER_FUNC(GetXRSwapchainFormats, name)         \
+    ASSIGN_DRIVER_FUNC(CreateXRSwapchain, name)             \
+    ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
+    ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
+    ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \
+    ASSIGN_DRIVER_FUNC(PushDebugGroup, name)                \
+    ASSIGN_DRIVER_FUNC(PopDebugGroup, name)                 \
+    ASSIGN_DRIVER_FUNC(ReleaseTexture, name)                \
+    ASSIGN_DRIVER_FUNC(ReleaseSampler, name)                \
+    ASSIGN_DRIVER_FUNC(ReleaseBuffer, name)                 \
+    ASSIGN_DRIVER_FUNC(ReleaseTransferBuffer, name)         \
+    ASSIGN_DRIVER_FUNC(ReleaseShader, name)                 \
+    ASSIGN_DRIVER_FUNC(ReleaseComputePipeline, name)        \
+    ASSIGN_DRIVER_FUNC(ReleaseGraphicsPipeline, name)       \
+    ASSIGN_DRIVER_FUNC(BeginRenderPass, name)               \
+    ASSIGN_DRIVER_FUNC(BindGraphicsPipeline, name)          \
+    ASSIGN_DRIVER_FUNC(SetViewport, name)                   \
+    ASSIGN_DRIVER_FUNC(SetScissor, name)                    \
+    ASSIGN_DRIVER_FUNC(SetBlendConstants, name)             \
+    ASSIGN_DRIVER_FUNC(SetStencilReference, name)           \
+    ASSIGN_DRIVER_FUNC(BindVertexBuffers, name)             \
+    ASSIGN_DRIVER_FUNC(BindIndexBuffer, name)               \
+    ASSIGN_DRIVER_FUNC(BindVertexSamplers, name)            \
+    ASSIGN_DRIVER_FUNC(BindVertexStorageTextures, name)     \
+    ASSIGN_DRIVER_FUNC(BindVertexStorageBuffers, name)      \
+    ASSIGN_DRIVER_FUNC(BindFragmentSamplers, name)          \
+    ASSIGN_DRIVER_FUNC(BindFragmentStorageTextures, name)   \
+    ASSIGN_DRIVER_FUNC(BindFragmentStorageBuffers, name)    \
+    ASSIGN_DRIVER_FUNC(PushVertexUniformData, name)         \
+    ASSIGN_DRIVER_FUNC(PushFragmentUniformData, name)       \
+    ASSIGN_DRIVER_FUNC(DrawIndexedPrimitives, name)         \
+    ASSIGN_DRIVER_FUNC(DrawPrimitives, name)                \
+    ASSIGN_DRIVER_FUNC(DrawPrimitivesIndirect, name)        \
+    ASSIGN_DRIVER_FUNC(DrawIndexedPrimitivesIndirect, name) \
+    ASSIGN_DRIVER_FUNC(EndRenderPass, name)                 \
+    ASSIGN_DRIVER_FUNC(BeginComputePass, name)              \
+    ASSIGN_DRIVER_FUNC(BindComputePipeline, name)           \
+    ASSIGN_DRIVER_FUNC(BindComputeSamplers, name)           \
+    ASSIGN_DRIVER_FUNC(BindComputeStorageTextures, name)    \
+    ASSIGN_DRIVER_FUNC(BindComputeStorageBuffers, name)     \
+    ASSIGN_DRIVER_FUNC(PushComputeUniformData, name)        \
+    ASSIGN_DRIVER_FUNC(DispatchCompute, name)               \
+    ASSIGN_DRIVER_FUNC(DispatchComputeIndirect, name)       \
+    ASSIGN_DRIVER_FUNC(EndComputePass, name)                \
+    ASSIGN_DRIVER_FUNC(MapTransferBuffer, name)             \
+    ASSIGN_DRIVER_FUNC(UnmapTransferBuffer, name)           \
+    ASSIGN_DRIVER_FUNC(BeginCopyPass, name)                 \
+    ASSIGN_DRIVER_FUNC(UploadToTexture, name)               \
+    ASSIGN_DRIVER_FUNC(UploadToBuffer, name)                \
+    ASSIGN_DRIVER_FUNC(DownloadFromTexture, name)           \
+    ASSIGN_DRIVER_FUNC(DownloadFromBuffer, name)            \
+    ASSIGN_DRIVER_FUNC(CopyTextureToTexture, name)          \
+    ASSIGN_DRIVER_FUNC(CopyBufferToBuffer, name)            \
+    ASSIGN_DRIVER_FUNC(GenerateMipmaps, name)               \
+    ASSIGN_DRIVER_FUNC(EndCopyPass, name)                   \
+    ASSIGN_DRIVER_FUNC(Blit, name)                          \
+    ASSIGN_DRIVER_FUNC(SupportsSwapchainComposition, name)  \
+    ASSIGN_DRIVER_FUNC(SupportsPresentMode, name)           \
+    ASSIGN_DRIVER_FUNC(ClaimWindow, name)                   \
+    ASSIGN_DRIVER_FUNC(ReleaseWindow, name)                 \
+    ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name)        \
+    ASSIGN_DRIVER_FUNC(SetAllowedFramesInFlight, name)      \
+    ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)     \
+    ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)       \
+    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)              \
+    ASSIGN_DRIVER_FUNC(WaitAndAcquireSwapchainTexture, name)\
+    ASSIGN_DRIVER_FUNC(Submit, name)                        \
+    ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)         \
+    ASSIGN_DRIVER_FUNC(Cancel, name)                        \
+    ASSIGN_DRIVER_FUNC(Wait, name)                          \
+    ASSIGN_DRIVER_FUNC(WaitForFences, name)                 \
+    ASSIGN_DRIVER_FUNC(QueryFence, name)                    \
+    ASSIGN_DRIVER_FUNC(ReleaseFence, name)                  \
+    ASSIGN_DRIVER_FUNC(SupportsTextureFormat, name)         \
     ASSIGN_DRIVER_FUNC(SupportsSampleCount, name)
 
 typedef struct SDL_GPUBootstrap

@@ -41,3 +41,4 @@ typedef bool (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, vo
 extern char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
 
 #endif
+

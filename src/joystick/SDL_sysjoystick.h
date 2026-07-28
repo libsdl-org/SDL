@@ -35,9 +35,9 @@ extern "C" {
 
 typedef struct SDL_JoystickAxisInfo
 {
-    Sint16 initial_value;       // Initial axis state
-    Sint16 value;               // Current axis state
-    Sint16 zero;                // Zero point on the axis (-32768 for triggers)
+    Sint16 initial_value;           // Initial axis state
+    Sint16 value;                   // Current axis state
+    Sint16 zero;                    // Zero point on the axis (-32768 for triggers)
     bool has_initial_value;     // Whether we've seen a value on the axis yet
     bool has_second_value;      // Whether we've seen a second value on the axis yet
     bool sent_initial_value;    // Whether we've sent the initial axis value
@@ -86,7 +86,7 @@ struct SDL_Joystick
     char *name _guarded;                 // Joystick name - system dependent
     char *path _guarded;                 // Joystick path - system dependent
     char *serial _guarded;               // Joystick serial
-    SDL_GUID guid _guarded;              // Joystick guid
+    SDL_GUID guid _guarded;      // Joystick guid
     Uint16 firmware_version _guarded;    // Firmware version, if available
     Uint64 steam_handle _guarded;        // Steam controller API handle
     bool swap_face_buttons _guarded;     // Whether we should swap face buttons
@@ -95,13 +95,13 @@ struct SDL_Joystick
     int naxes _guarded; // Number of axis controls on the joystick
     SDL_JoystickAxisInfo *axes _guarded;
 
-    int nballs _guarded;                  // Number of trackballs on the joystick
+    int nballs _guarded; // Number of trackballs on the joystick
     SDL_JoystickBallData *balls _guarded; // Current ball motion deltas
 
     int nhats _guarded;   // Number of hats on the joystick
     Uint8 *hats _guarded; // Current hat states
 
-    int nbuttons _guarded;  // Number of buttons on the joystick
+    int nbuttons _guarded;   // Number of buttons on the joystick
     bool *buttons _guarded; // Current button states
 
     int ntouchpads _guarded;                      // Number of touchpads on the joystick
@@ -134,7 +134,7 @@ struct SDL_Joystick
     SDL_PowerState battery_state _guarded;
     int battery_percent _guarded;
 
-    bool delayed_guide_button _guarded; // true if this device has the guide button event delayed
+    bool delayed_guide_button _guarded;      // true if this device has the guide button event delayed
 
     SDL_SensorID accel_sensor _guarded;
     SDL_Sensor *accel _guarded;

@@ -67,7 +67,7 @@ typedef struct SDL_RenderViewState
     SDL_FPoint logical_scale;
     SDL_FPoint logical_offset;
 
-    SDL_FPoint current_scale; // this is just `scale * logical_scale`, precalculated, since we use it a lot.
+    SDL_FPoint current_scale;  // this is just `scale * logical_scale`, precalculated, since we use it a lot.
 } SDL_RenderViewState;
 
 // Define the SDL texture palette structure
@@ -76,29 +76,29 @@ typedef struct SDL_TexturePalette
     int refcount;
     Uint32 version;
     Uint32 last_command_generation; // last command queue generation this palette was in.
-    void *internal;                 // Driver specific palette representation
+    void *internal;             // Driver specific palette representation
 } SDL_TexturePalette;
 
 // Define the SDL texture structure
 struct SDL_Texture
 {
     // Public API definition
-    SDL_PixelFormat format; /**< The format of the texture, read-only */
-    int w;                  /**< The width of the texture, read-only. */
-    int h;                  /**< The height of the texture, read-only. */
+    SDL_PixelFormat format;     /**< The format of the texture, read-only */
+    int w;                      /**< The width of the texture, read-only. */
+    int h;                      /**< The height of the texture, read-only. */
 
-    int refcount; /**< Application reference count, used when freeing texture */
+    int refcount;               /**< Application reference count, used when freeing texture */
 
     // Private API definition
     SDL_Renderer *renderer;
-    SDL_Colorspace colorspace; // The colorspace of the texture
-    float SDR_white_point;     // The SDR white point for this content
-    float HDR_headroom;        // The HDR headroom needed by this content
-    SDL_TextureAccess access;  // The texture access mode
-    SDL_BlendMode blendMode;   // The texture blend mode
-    SDL_ScaleMode scaleMode;   // The texture scale mode
-    SDL_FColor color;          // Texture modulation values
-    SDL_RenderViewState view;  // Target texture view state
+    SDL_Colorspace colorspace;  // The colorspace of the texture
+    float SDR_white_point;      // The SDR white point for this content
+    float HDR_headroom;         // The HDR headroom needed by this content
+    SDL_TextureAccess access;   // The texture access mode
+    SDL_BlendMode blendMode;    // The texture blend mode
+    SDL_ScaleMode scaleMode;    // The texture scale mode
+    SDL_FColor color;           // Texture modulation values
+    SDL_RenderViewState view;   // Target texture view state
     SDL_Palette *public_palette;
     SDL_TexturePalette *palette;
     Uint32 palette_version;
@@ -116,7 +116,7 @@ struct SDL_Texture
 
     SDL_PropertiesID props;
 
-    void *internal; // Driver specific texture representation
+    void *internal;             // Driver specific texture representation
 
     SDL_Texture *prev;
     SDL_Texture *next;
@@ -228,20 +228,20 @@ struct SDL_Renderer
     bool (*QueueSetViewport)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     bool (*QueueSetDrawColor)(SDL_Renderer *renderer, SDL_RenderCommand *cmd);
     bool (*QueueDrawPoints)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
-                            int count);
+                           int count);
     bool (*QueueDrawLines)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FPoint *points,
-                           int count);
+                          int count);
     bool (*QueueFillRects)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, const SDL_FRect *rects,
-                           int count);
+                          int count);
     bool (*QueueCopy)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                      const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+                     const SDL_FRect *srcrect, const SDL_FRect *dstrect);
     bool (*QueueCopyEx)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                        const SDL_FRect *srcquad, const SDL_FRect *dstrect,
-                        const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
+                       const SDL_FRect *srcquad, const SDL_FRect *dstrect,
+                       const double angle, const SDL_FPoint *center, const SDL_FlipMode flip, float scale_x, float scale_y);
     bool (*QueueGeometry)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                          const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
-                          int num_vertices, const void *indices, int num_indices, int size_indices,
-                          float scale_x, float scale_y);
+                         const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride,
+                         int num_vertices, const void *indices, int num_indices, int size_indices,
+                         float scale_x, float scale_y);
 
     void (*InvalidateCachedState)(SDL_Renderer *renderer);
     bool (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
@@ -250,21 +250,21 @@ struct SDL_Renderer
     void (*DestroyPalette)(SDL_Renderer *renderer, SDL_TexturePalette *palette);
     bool (*ChangeTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture);
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
-                          const SDL_Rect *rect, const void *pixels,
-                          int pitch);
+                         const SDL_Rect *rect, const void *pixels,
+                         int pitch);
 #ifdef SDL_HAVE_YUV
     bool (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
-                             const SDL_Rect *rect,
-                             const Uint8 *Yplane, int Ypitch,
-                             const Uint8 *Uplane, int Upitch,
-                             const Uint8 *Vplane, int Vpitch);
-    bool (*UpdateTextureNV)(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect,
                             const Uint8 *Yplane, int Ypitch,
-                            const Uint8 *UVplane, int UVpitch);
+                            const Uint8 *Uplane, int Upitch,
+                            const Uint8 *Vplane, int Vpitch);
+    bool (*UpdateTextureNV)(SDL_Renderer *renderer, SDL_Texture *texture,
+                           const SDL_Rect *rect,
+                           const Uint8 *Yplane, int Ypitch,
+                           const Uint8 *UVplane, int UVpitch);
 #endif
     bool (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
-                        const SDL_Rect *rect, void **pixels, int *pitch);
+                       const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
     bool (*SetRenderTarget)(SDL_Renderer *renderer, SDL_Texture *texture);
     SDL_Surface *(*RenderReadPixels)(SDL_Renderer *renderer, const SDL_Rect *rect);
@@ -360,7 +360,7 @@ struct SDL_Renderer
 
     SDL_Texture *debug_char_texture_atlas;
 
-    bool destroyed; // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
+    bool destroyed;   // already destroyed by SDL_DestroyWindow; just free this struct in SDL_DestroyRenderer.
 
     void *internal;
 
@@ -394,9 +394,9 @@ extern SDL_RenderDriver GPU_RenderDriver;
 // Clean up any renderers at shutdown
 extern void SDL_QuitRender(void);
 
-#define RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v) \
-    (((scale_mode == SDL_SCALEMODE_NEAREST) << 0) |              \
-     ((address_u == SDL_TEXTURE_ADDRESS_WRAP) << 1) |            \
+#define RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v)    \
+    (((scale_mode == SDL_SCALEMODE_NEAREST) << 0) |                 \
+     ((address_u == SDL_TEXTURE_ADDRESS_WRAP) << 1) |               \
      ((address_v == SDL_TEXTURE_ADDRESS_WRAP) << 2))
 #define RENDER_SAMPLER_COUNT (((1 << 0) | (1 << 1) | (1 << 2)) + 1)
 

@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#include <errno.h>
-#include <pthread.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
+#include <pthread.h>
 
 #include "SDL_sysmutex_c.h"
 

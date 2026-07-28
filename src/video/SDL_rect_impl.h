@@ -38,15 +38,15 @@ bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    CHECK_PARAM (!A) {
+    CHECK_PARAM(!A) {
         SDL_InvalidParamError("A");
         return false;
     }
-    CHECK_PARAM (!B) {
+    CHECK_PARAM(!B) {
         SDL_InvalidParamError("B");
         return false;
     }
-    CHECK_PARAM (SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         SDL_SetError("Potential rect math overflow");
         return false;
     }
@@ -86,19 +86,19 @@ bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    CHECK_PARAM (!A) {
+    CHECK_PARAM(!A) {
         SDL_InvalidParamError("A");
         return false;
     }
-    CHECK_PARAM (!B) {
+    CHECK_PARAM(!B) {
         SDL_InvalidParamError("B");
         return false;
     }
-    CHECK_PARAM (SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         SDL_SetError("Potential rect math overflow");
         return false;
     }
-    CHECK_PARAM (!result) {
+    CHECK_PARAM(!result) {
         SDL_InvalidParamError("result");
         return false;
     }
@@ -138,21 +138,21 @@ bool SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    CHECK_PARAM (!A) {
+    CHECK_PARAM(!A) {
         return SDL_InvalidParamError("A");
     }
-    CHECK_PARAM (!B) {
+    CHECK_PARAM(!B) {
         return SDL_InvalidParamError("B");
     }
-    CHECK_PARAM (SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         return SDL_SetError("Potential rect math overflow");
     }
-    CHECK_PARAM (!result) {
+    CHECK_PARAM(!result) {
         return SDL_InvalidParamError("result");
     }
 
-    if (SDL_RECTEMPTY(A)) {     // Special cases for empty Rects
-        if (SDL_RECTEMPTY(B)) { // A and B empty
+    if (SDL_RECTEMPTY(A)) { // Special cases for empty Rects
+        if (SDL_RECTEMPTY(B)) {    // A and B empty
             SDL_zerop(result);
         } else { // A empty, B not empty
             *result = *B;
@@ -202,11 +202,11 @@ bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *clip,
     SCALARTYPE x, y;
     int i;
 
-    CHECK_PARAM (!points) {
+    CHECK_PARAM(!points) {
         SDL_InvalidParamError("points");
         return false;
     }
-    CHECK_PARAM (count < 1) {
+    CHECK_PARAM(count < 1) {
         SDL_InvalidParamError("count");
         return false;
     }
@@ -322,27 +322,27 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
     SCALARTYPE recty2;
     int outcode1, outcode2;
 
-    CHECK_PARAM (!rect) {
+    CHECK_PARAM(!rect) {
         SDL_InvalidParamError("rect");
         return false;
     }
-    CHECK_PARAM (SDL_RECT_CAN_OVERFLOW(rect)) {
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(rect)) {
         SDL_SetError("Potential rect math overflow");
         return false;
     }
-    CHECK_PARAM (!X1) {
+    CHECK_PARAM(!X1) {
         SDL_InvalidParamError("X1");
         return false;
     }
-    CHECK_PARAM (!Y1) {
+    CHECK_PARAM(!Y1) {
         SDL_InvalidParamError("Y1");
         return false;
     }
-    CHECK_PARAM (!X2) {
+    CHECK_PARAM(!X2) {
         SDL_InvalidParamError("X2");
         return false;
     }
-    CHECK_PARAM (!Y2) {
+    CHECK_PARAM(!Y2) {
         SDL_InvalidParamError("Y2");
         return false;
     }
@@ -411,16 +411,16 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
         if (outcode1) {
             if (outcode1 & CODE_TOP) {
                 y = recty1;
-                x = (SCALARTYPE)(x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode1 & CODE_BOTTOM) {
                 y = recty2;
-                x = (SCALARTYPE)(x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode1 & CODE_LEFT) {
                 x = rectx1;
-                y = (SCALARTYPE)(y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             } else if (outcode1 & CODE_RIGHT) {
                 x = rectx2;
-                y = (SCALARTYPE)(y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
             x1 = x;
             y1 = y;
@@ -429,23 +429,23 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
             if (outcode2 & CODE_TOP) {
                 SDL_assert(y2 != y1); // if equal: division by zero.
                 y = recty1;
-                x = (SCALARTYPE)(x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode2 & CODE_BOTTOM) {
                 SDL_assert(y2 != y1); // if equal: division by zero.
                 y = recty2;
-                x = (SCALARTYPE)(x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
+                x = (SCALARTYPE) (x1 + ((BIGSCALARTYPE)(x2 - x1) * (y - y1)) / (y2 - y1));
             } else if (outcode2 & CODE_LEFT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-b0d01a.html#EndPath */
                 SDL_assert(x2 != x1); // if equal: division by zero.
                 x = rectx1;
-                y = (SCALARTYPE)(y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             } else if (outcode2 & CODE_RIGHT) {
                 /* If this assertion ever fires, here's the static analysis that warned about it:
                    http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-39b114.html#EndPath */
                 SDL_assert(x2 != x1); // if equal: division by zero.
                 x = rectx2;
-                y = (SCALARTYPE)(y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
+                y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
             x2 = x;
             y2 = y;

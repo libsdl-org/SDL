@@ -41,6 +41,7 @@
 #include "D3D12_PixelShader_Advanced.h"
 #undef g_main
 
+
 #define g_mainColor D3D12_VertexShader_Colors
 #include "D3D12_VertexShader_Color.h"
 #undef g_mainColor
@@ -53,6 +54,7 @@
 #include "D3D12_VertexShader_Advanced.h"
 #undef g_mainAdvanced
 
+
 #define g_ColorRS D3D12_RootSig_Color
 #include "D3D12_RootSig_Color.h"
 #undef g_ColorRS
@@ -64,6 +66,7 @@
 #define g_AdvancedRS D3D12_RootSig_Advanced
 #include "D3D12_RootSig_Advanced.h"
 #undef g_AdvancedRS
+
 
 static struct
 {

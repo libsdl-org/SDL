@@ -25,9 +25,9 @@
 #include "../../SDL_hints_c.h"
 #include "../../misc/SDL_libusb.h"
 #include "../SDL_sysjoystick.h"
+#include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 #include "SDL_hidapi_xbox360.h"
-#include "SDL_hidapijoystick_c.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -111,37 +111,37 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         const struct libusb_interface *intf = &conf_desc->interface[device->interface_number];
         intf_desc = &intf->altsetting[0];
         if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
-            ctx->capabilities.type = intf_desc->extra[3];
-            ctx->capabilities.subType = intf_desc->extra[4];
+			ctx->capabilities.type = intf_desc->extra[3];
+			ctx->capabilities.subType = intf_desc->extra[4];
             switch (ctx->capabilities.subType) {
-            case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
-                device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-                break;
-            case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
-                device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
-                break;
-            case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
-                device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
-                break;
-            case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
-                device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-                break;
-            case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
-                device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
-                break;
-            case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
-            case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
-            case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
-                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                break;
-            case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
-                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-                break;
-            case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
-                device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
-                break;
-            default:
-                break;
+                case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                    break;
+                case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
+                    device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                    break;
+                case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+                    break;
+                case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
+                    device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+                    break;
+                case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
+                    break;
+                case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
+                case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
+                case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
+                    device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                    break;
+                case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
+                    device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                    break;
+                case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
+                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
+                    break;
+                default:
+                    break;
             }
             device->guid.data[15] = ctx->capabilities.subType;
             unsigned char buf[20];
@@ -176,7 +176,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
             SDL_Log("   wLeftMotorSpeed: %02x", ctx->capabilities.vibration.wLeftMotorSpeed);
             SDL_Log("   wRightMotorSpeed: %02x", ctx->capabilities.vibration.wRightMotorSpeed);
 #endif
-        }
+		}
         SDL_QuitLibUSB();
     }
 }
@@ -493,7 +493,7 @@ static void HIDAPI_DriverXbox360_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED,
-                           SDL_PlayerLEDHintChanged, ctx);
+                        SDL_PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
 }

@@ -25,8 +25,8 @@
 #define SDL_fribidi_h_
 
 #ifdef HAVE_FRIBIDI_H
-#include <fribidi.h>
 #include <sys/types.h> // for ssize_t
+#include <fribidi.h>
 
 typedef FriBidiStrIndex (*SDL_FriBidiUnicodeToCharset)(FriBidiCharSet, const FriBidiChar *, FriBidiStrIndex, char *);
 typedef FriBidiStrIndex (*SDL_FriBidiCharsetToUnicode)(FriBidiCharSet, const char *, FriBidiStrIndex, FriBidiChar *);
@@ -38,8 +38,7 @@ typedef void (*SDL_FriBidiJoinArabic)(const FriBidiCharType *, const FriBidiStrI
 typedef void (*SDL_FriBidiShape)(FriBidiFlags flags, const FriBidiLevel *, const FriBidiStrIndex, FriBidiArabicProp *, FriBidiChar *str);
 typedef FriBidiLevel (*SDL_FriBidiReorderLine)(FriBidiFlags flags, const FriBidiCharType *, const FriBidiStrIndex, const FriBidiStrIndex, const FriBidiParType, FriBidiLevel *, FriBidiChar *, FriBidiStrIndex *);
 
-typedef struct SDL_FriBidi
-{
+typedef struct SDL_FriBidi {
     SDL_SharedObject *lib;
     SDL_FriBidiUnicodeToCharset unicode_to_charset;
     SDL_FriBidiCharsetToUnicode charset_to_unicode;

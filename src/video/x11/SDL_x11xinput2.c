@@ -22,13 +22,13 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
+#include "SDL_x11pen.h"
+#include "SDL_x11video.h"
+#include "SDL_x11xinput2.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_pen_c.h"
 #include "../../events/SDL_touch_c.h"
-#include "SDL_x11pen.h"
-#include "SDL_x11video.h"
-#include "SDL_x11xinput2.h"
 
 #define MAX_AXIS 16
 
@@ -491,9 +491,9 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         for (i = 0; i < hierev->num_info; i++) {
             // pen stuff...
             if ((hierev->info[i].flags & (XISlaveRemoved | XIDeviceDisabled)) != 0) {
-                X11_RemovePenByDeviceID(hierev->info[i].deviceid); // it's okay if this thing isn't actually a pen, it'll handle it.
+                X11_RemovePenByDeviceID(hierev->info[i].deviceid);  // it's okay if this thing isn't actually a pen, it'll handle it.
             } else if ((hierev->info[i].flags & (XISlaveAdded | XIDeviceEnabled)) != 0) {
-                X11_MaybeAddPenByDeviceID(_this, hierev->info[i].deviceid); // this will do more checks to make sure this is valid.
+                X11_MaybeAddPenByDeviceID(_this, hierev->info[i].deviceid);  // this will do more checks to make sure this is valid.
             }
 
             // not pen stuff...
@@ -504,9 +504,9 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         videodata->xinput_hierarchy_changed = true;
     } break;
 
-        // !!! FIXME: the pen code used to rescan all devices here, but we can do this device-by-device with XI_HierarchyChanged. When do these events fire and why?
-        // case XI_PropertyEvent:
-        // case XI_DeviceChanged:
+    // !!! FIXME: the pen code used to rescan all devices here, but we can do this device-by-device with XI_HierarchyChanged. When do these events fire and why?
+    //case XI_PropertyEvent:
+    //case XI_DeviceChanged:
 
     case XI_PropertyEvent:
     {
@@ -683,14 +683,14 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
-            SDL_SendPenMotion(0, pen->pen, window, (float)xev->event_x, (float)xev->event_y);
+            SDL_SendPenMotion(0, pen->pen, window, (float) xev->event_x, (float) xev->event_y);
 
             float axes[SDL_PEN_AXIS_COUNT];
             X11_PenAxesFromValuators(pen, xev->valuators.values, xev->valuators.mask, xev->valuators.mask_len, axes);
 
             for (int i = 0; i < SDL_arraysize(axes); i++) {
                 if (pen->valuator_for_axis[i] != SDL_X11_PEN_AXIS_VALUATOR_MISSING) {
-                    SDL_SendPenAxis(0, pen->pen, window, (SDL_PenAxis)i, axes[i]);
+                    SDL_SendPenAxis(0, pen->pen, window, (SDL_PenAxis) i, axes[i]);
                 }
             }
         } else if (!pointer_emulated) {
@@ -709,8 +709,8 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             if (window && (xev->deviceid == videodata->xinput_master_pointer_device || (xinput2_active_touch_count && window->internal->mouse_grabbed))) {
                 SDL_Mouse *mouse = SDL_GetMouse();
                 if (!mouse->relative_mode) {
-                    X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);
-                    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, (float)xev->event_x, (float)xev->event_y);
+                        X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);
+                        SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, (float)xev->event_x, (float)xev->event_y);
                 }
             }
         }
@@ -769,6 +769,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     } break;
 
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
+
     }
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 }
@@ -1046,24 +1047,26 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this)
         switch (dev->use) {
         case XIMasterKeyboard:
         case XISlaveKeyboard:
-        {
-            SDL_KeyboardID keyboardID = (SDL_KeyboardID)dev->deviceid;
-            AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
-            if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                SDL_AddKeyboard(keyboardID, dev->name);
+            {
+                SDL_KeyboardID keyboardID = (SDL_KeyboardID)dev->deviceid;
+                AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
+                if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
+                    SDL_AddKeyboard(keyboardID, dev->name);
+                }
             }
-        } break;
+            break;
         case XIMasterPointer:
             data->xinput_master_pointer_device = dev->deviceid;
             SDL_FALLTHROUGH;
         case XISlavePointer:
-        {
-            SDL_MouseID mouseID = (SDL_MouseID)dev->deviceid;
-            AddDeviceID(mouseID, &new_mice, &new_mouse_count);
-            if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                SDL_AddMouse(mouseID, dev->name);
+            {
+                SDL_MouseID mouseID = (SDL_MouseID)dev->deviceid;
+                AddDeviceID(mouseID, &new_mice, &new_mouse_count);
+                if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
+                    SDL_AddMouse(mouseID, dev->name);
+                }
             }
-        } break;
+            break;
         default:
             break;
         }

@@ -150,10 +150,10 @@ void SDLTest_LogEscapedString(const char *prefix, const void *buffer, size_t siz
     if (data) {
         size_t i;
         size_t pos = 0;
-#define NEED_X_CHARS(N)                       \
-    if (pos + (N) > sizeof(logMessage) - 2) { \
-        break;                                \
-    }
+        #define NEED_X_CHARS(N) \
+            if (pos + (N) > sizeof(logMessage) - 2) { \
+                break;                                \
+            }
 
         logMessage[pos++] = '"';
         for (i = 0; i < size; i++) {
