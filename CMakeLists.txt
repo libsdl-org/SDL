@@ -1256,6 +1256,35 @@ if(SDL_JOYSTICK)
     file(GLOB JOYSTICK_VIRTUAL_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/virtual/*.c)
     list(APPEND SOURCE_FILES ${JOYSTICK_VIRTUAL_SOURCES})
   endif()
+  
+  # DSU (DualShock UDP) client support
+  option(SDL_DSU_JOYSTICK "Enable DSU client joystick support" ON)
+  if(SDL_DSU_JOYSTICK)
+    set(SDL_JOYSTICK_DSU 1)
+    file(GLOB JOYSTICK_DSU_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dsu/*.c)
+    list(APPEND SOURCE_FILES ${JOYSTICK_DSU_SOURCES})
+    
+    # DSU requires network libraries on Unix-like systems
+    if(UNIX AND NOT APPLE AND NOT ANDROID)
+      if(NOT WIN32)
+        # Check if we need to link against socket libraries
+        include(CheckFunctionExists)
+        check_function_exists(socket HAVE_SOCKET_IN_LIBC)
+        if(NOT HAVE_SOCKET_IN_LIBC)
+          # Try to find socket in libsocket (Solaris)
+          check_library_exists(socket socket "" HAVE_LIBSOCKET)
+          if(HAVE_LIBSOCKET)
+            list(APPEND EXTRA_LIBS socket)
+          endif()
+          # Try to find inet_addr in libnsl (Solaris)
+          check_library_exists(nsl inet_addr "" HAVE_LIBNSL)
+          if(HAVE_LIBNSL)
+            list(APPEND EXTRA_LIBS nsl)
+          endif()
+        endif()
+      endif()
+    endif()
+  endif()
 endif()
 
 if(SDL_VIDEO)
@@ -1995,6 +2024,10 @@ elseif(WINDOWS)
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
     list(APPEND EXTRA_LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
+    # Add Winsock library for DSU support
+    if(SDL_DSU_JOYSTICK)
+      list(APPEND EXTRA_LIBS ws2_32)
+    endif()
   endif()
 
   if(WINDOWS_STORE)
@@ -2479,6 +2512,11 @@ elseif(HAIKU)
 
   CheckPTHREAD()
   list(APPEND EXTRA_LIBS root be media game device textencoding)
+  
+  # Add network library for DSU support on Haiku
+  if(SDL_DSU_JOYSTICK)
+    list(APPEND EXTRA_LIBS network)
+  endif()
 
 elseif(RISCOS)
   if(SDL_MISC)
