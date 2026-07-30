@@ -306,6 +306,13 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to
  *   provide MSL shaders to SDL_GPURenderState, optional.
  *
+ * With the metal renderer:
+ *
+ * - `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`: the MTLDevice to use with the
+ *   renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_METAL_COMMAND_QUEUE_POINTER`: the MTLCommandQueue
+ *   to use with the renderer, optional. If you set this property it will implicitly set (and override) `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`.
+ *
  * With the vulkan renderer:
  *
  * - `SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER`: the VkInstance to use
@@ -346,6 +353,8 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN                  "SDL.renderer.create.gpu.shaders_spirv"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxil"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN                    "SDL.renderer.create.gpu.shaders_msl"
+#define SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER                       "SDL.renderer.create.metal.device"
+#define SDL_PROP_RENDERER_CREATE_METAL_COMMAND_QUEUE_POINTER                "SDL.renderer.create.metal.command_queue"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "SDL.renderer.create.vulkan.instance"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER                      "SDL.renderer.create.vulkan.surface"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER             "SDL.renderer.create.vulkan.physical_device"
@@ -518,6 +527,15 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  * - `SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER`: the ID3D12CommandQueue
  *   associated with the renderer
  *
+ * With the metal renderer:
+ *
+ * - `SDL_PROP_RENDERER_METAL_DEVICE_POINTER`: the MTLDevice associated with the
+ *   renderer
+ * - `SDL_PROP_RENDERER_METAL_COMMAND_QUEUE_POINTER`: the MTLCommandQueue
+ *   associated with the renderer. Work submitted on this queue will be ordered
+ *   relative to other rendering. SDL_FlushRenderer() can be used to guarantee
+ *   the current rendering has been submitted.
+ *
  * With the vulkan renderer:
  *
  * - `SDL_PROP_RENDERER_VULKAN_INSTANCE_POINTER`: the VkInstance associated
@@ -568,6 +586,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Rende
 #define SDL_PROP_RENDERER_D3D12_DEVICE_POINTER                      "SDL.renderer.d3d12.device"
 #define SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER                   "SDL.renderer.d3d12.swap_chain"
 #define SDL_PROP_RENDERER_D3D12_COMMAND_QUEUE_POINTER               "SDL.renderer.d3d12.command_queue"
+#define SDL_PROP_RENDERER_METAL_DEVICE_POINTER                      "SDL.renderer.metal.device"
+#define SDL_PROP_RENDERER_METAL_COMMAND_QUEUE_POINTER               "SDL.renderer.metal.command_queue"
 #define SDL_PROP_RENDERER_VULKAN_INSTANCE_POINTER                   "SDL.renderer.vulkan.instance"
 #define SDL_PROP_RENDERER_VULKAN_SURFACE_NUMBER                     "SDL.renderer.vulkan.surface"
 #define SDL_PROP_RENDERER_VULKAN_PHYSICAL_DEVICE_POINTER            "SDL.renderer.vulkan.physical_device"
@@ -736,6 +756,19 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  * - `SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER`: the CVPixelBufferRef
  *   associated with the texture, if you want to create a texture from an
  *   existing pixel buffer.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_POINTER`: the MTLTexture
+ *   associated with the texture, if you want to wrap an existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_UV_POINTER`: the MTLTexture
+ *   associated with the UV plane of an NV12 texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_U_POINTER`: the MTLTexture
+ *   associated with the U plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_V_POINTER`: the MTLTexture
+ *   associated with the V plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_USAGE_NUMBER`: any additional
+ *   MTLTextureUsage that this texture should have, defaults to 0.
  *
  * With the opengl renderer:
  *
@@ -819,6 +852,11 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
 #define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_U_POINTER         "SDL.texture.create.d3d12.texture_u"
 #define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_V_POINTER         "SDL.texture.create.d3d12.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER       "SDL.texture.create.metal.pixelbuffer"
+#define SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_POINTER           "SDL.texture.create.metal.texture"
+#define SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_UV_POINTER        "SDL.texture.create.metal.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_U_POINTER         "SDL.texture.create.metal.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_V_POINTER         "SDL.texture.create.metal.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_USAGE_NUMBER      "SDL.texture.create.metal.texture_usage"
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER           "SDL.texture.create.opengl.texture"
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER        "SDL.texture.create.opengl.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER         "SDL.texture.create.opengl.texture_u"
@@ -876,6 +914,18 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  *   with the U plane of a YUV texture
  * - `SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER`: the ID3D12Resource associated
  *   with the V plane of a YUV texture
+ *
+ * With the metal renderer:
+ *
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_POINTER`: the MTLTexture associated with
+ *   the texture
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_UV_POINTER`: the MTLTexture associated
+ *   with the UV plane of an NV12 texture
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_U_POINTER`: the MTLTexture associated with
+ *   the U plane of a YUV texture
+ *   style texture
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_V_POINTER`: the MTLTexture associated with
+ *   the V plane of a YUV texture
  *
  * With the vulkan renderer:
  *
@@ -946,6 +996,10 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_D3D12_TEXTURE_POINTER              "SDL.texture.d3d12.texture"
 #define SDL_PROP_TEXTURE_D3D12_TEXTURE_U_POINTER            "SDL.texture.d3d12.texture_u"
 #define SDL_PROP_TEXTURE_D3D12_TEXTURE_V_POINTER            "SDL.texture.d3d12.texture_v"
+#define SDL_PROP_TEXTURE_METAL_TEXTURE_POINTER              "SDL.texture.metal.texture"
+#define SDL_PROP_TEXTURE_METAL_TEXTURE_UV_POINTER           "SDL.texture.metal.texture_uv"
+#define SDL_PROP_TEXTURE_METAL_TEXTURE_U_POINTER            "SDL.texture.metal.texture_u"
+#define SDL_PROP_TEXTURE_METAL_TEXTURE_V_POINTER            "SDL.texture.metal.texture_v"
 #define SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER              "SDL.texture.opengl.texture"
 #define SDL_PROP_TEXTURE_OPENGL_TEXTURE_UV_NUMBER           "SDL.texture.opengl.texture_uv"
 #define SDL_PROP_TEXTURE_OPENGL_TEXTURE_U_NUMBER            "SDL.texture.opengl.texture_u"
