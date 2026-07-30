@@ -40,6 +40,7 @@
     boolean showToast(java.lang.String, int, int, int, int);
     boolean sendMessage(int, int);
     boolean setActivityTitle(java.lang.String);
+    void setBackButtonTrapEnabled(boolean);
     boolean setCustomCursor(int);
     void setOrientation(int, int, boolean, java.lang.String);
     boolean setRelativeMouseEnabled(boolean);
