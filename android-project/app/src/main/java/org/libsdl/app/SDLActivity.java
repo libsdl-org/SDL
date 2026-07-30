@@ -787,25 +787,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
-    static OnBackInvokedCallback backButtonCallback = new OnBackInvokedCallback() {
-        Handler mBackKeyHandler;
-
-        @Override
-        public void onBackInvoked() {
-            if (mBackKeyHandler == null) {
-                mBackKeyHandler = new Handler(Looper.getMainLooper());
-            }
-
-            onNativeKeyDown(KeyEvent.KEYCODE_BACK);
-            mBackKeyHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    onNativeKeyUp(KeyEvent.KEYCODE_BACK);
-                }
-            }, 500);
-        }
-    };
-
+    static OnBackInvokedCallback backButtonCallback;
     static boolean mBackKeyTrapEnabled = false;
     public static void setBackButtonTrapEnabled(boolean enabled) {
 
@@ -817,6 +799,27 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Check so we don't register the same callback twice.
         if (enabled == mBackKeyTrapEnabled) {
             return;
+        }
+
+        if (backButtonCallback == null) {
+            backButtonCallback = new OnBackInvokedCallback() {
+                Handler mBackKeyHandler;
+
+                @Override
+                public void onBackInvoked() {
+                    if (mBackKeyHandler == null) {
+                        mBackKeyHandler = new Handler(Looper.getMainLooper());
+                    }
+
+                    onNativeKeyDown(KeyEvent.KEYCODE_BACK);
+                    mBackKeyHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onNativeKeyUp(KeyEvent.KEYCODE_BACK);
+                        }
+                    }, 500);
+                }
+            };
         }
 
         if (enabled) {
