@@ -850,7 +850,7 @@ bool SDL_IsPhone(void)
 {
 #if defined(SDL_PLATFORM_ANDROID) || \
     (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_VISIONOS))
-    if (!SDL_IsTablet() && !SDL_IsTV()) {
+    if (!SDL_IsTablet() && !SDL_IsTV() && !SDL_IsChromebook()) {
         return true;
     }
 #endif
