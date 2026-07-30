@@ -120,6 +120,8 @@ typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
  * necessary feature. Avoid needlessly creating a tray icon, as the user may
  * feel like it clutters their interface.
  *
+ * You should set the SDL_PROP_APP_METADATA_IDENTIFIER_STRING property to ensure correct behaviour on some platforms like Linux.
+ * 
  * Using tray icons require the video subsystem.
  *
  * \param icon a surface to be used as icon. May be NULL.
@@ -145,6 +147,8 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  * necessary feature. Avoid needlessly creating a tray icon, as the user may
  * feel like it clutters their interface.
  *
+ * You should set the SDL_PROP_APP_METADATA_IDENTIFIER_STRING property to ensure correct behaviour on some platforms like Linux.
+ * 
  * Using tray icons require the video subsystem.
  *
  * These are the supported properties:
