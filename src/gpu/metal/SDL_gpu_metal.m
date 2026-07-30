@@ -2417,7 +2417,6 @@ static void METAL_BindGraphicsPipeline(
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-        MetalGraphicsPipeline *previousPipeline = metalCommandBuffer->graphics_pipeline;
         MetalGraphicsPipeline *pipeline = (MetalGraphicsPipeline *)graphicsPipeline;
         SDL_GPURasterizerState *rast = &pipeline->rasterizerState;
         Uint32 i;
@@ -2444,6 +2443,14 @@ static void METAL_BindGraphicsPipeline(
                 setDepthStencilState:pipeline->depth_stencil_state];
         }
 
+        // Mark that bindings are needed
+        metalCommandBuffer->needVertexSamplerBind = true;
+        metalCommandBuffer->needVertexStorageTextureBind = true;
+        metalCommandBuffer->needVertexStorageBufferBind = true;
+        metalCommandBuffer->needFragmentSamplerBind = true;
+        metalCommandBuffer->needFragmentStorageTextureBind = true;
+        metalCommandBuffer->needFragmentStorageBufferBind = true;
+
         for (i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
             metalCommandBuffer->needVertexUniformBufferBind[i] = true;
             metalCommandBuffer->needFragmentUniformBufferBind[i] = true;
@@ -2460,17 +2467,6 @@ static void METAL_BindGraphicsPipeline(
             if (metalCommandBuffer->fragmentUniformBuffers[i] == NULL) {
                 metalCommandBuffer->fragmentUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
-            }
-        }
-
-        if (previousPipeline && previousPipeline != pipeline) {
-            // if the number of uniform buffers has changed, the storage buffers will move as well
-            // and need a rebind at their new locations
-            if (previousPipeline->header.num_vertex_uniform_buffers != pipeline->header.num_vertex_uniform_buffers) {
-                metalCommandBuffer->needVertexStorageBufferBind = true;
-            }
-            if (previousPipeline->header.num_fragment_uniform_buffers != pipeline->header.num_fragment_uniform_buffers) {
-                metalCommandBuffer->needFragmentStorageBufferBind = true;
             }
         }
     }
@@ -3187,6 +3183,10 @@ static void METAL_BindComputePipeline(
                     metalCommandBuffer);
             }
         }
+
+        metalCommandBuffer->needComputeSamplerBind = true;
+        metalCommandBuffer->needComputeReadOnlyStorageTextureBind = true;
+        metalCommandBuffer->needComputeReadOnlyStorageBufferBind = true;
 
         // Bind write-only resources
         if (pipeline->header.numReadWriteStorageTextures > 0) {
