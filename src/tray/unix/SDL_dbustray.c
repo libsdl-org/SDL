@@ -88,7 +88,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     dbus_uint32_t uint32_val;
     dbus_bool_t bool_value;
 
-    menu_dbus = (SDL_TrayMenuDBus *)tray->menu->internal;
+    menu_dbus = tray->menu ? (SDL_TrayMenuDBus *)tray->menu->internal : NULL;
 
     empty = "";
     driver->dbus->message_iter_init(msg, &iter);
@@ -107,10 +107,11 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     key = "Id";
+    value = SDL_GetAppID();
     driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
     driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
     driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
-    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->service_name);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
@@ -234,7 +235,7 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
     const char *empty;
     dbus_bool_t bool_value;
 
-    menu_dbus = (SDL_TrayMenuDBus *)tray->menu->internal;
+    menu_dbus = tray->menu ? (SDL_TrayMenuDBus *)tray->menu->internal : NULL;
 
     empty = "";
     driver->dbus->message_iter_init(msg, &iter);
@@ -251,8 +252,9 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Id")) {
+		value = SDL_GetAppID();
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
-        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &tray_dbus->service_name);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Title")) {
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
