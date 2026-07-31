@@ -792,7 +792,11 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         mtltexture = (__bridge id<MTLTexture>)SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_POINTER, nil);
         if (mtltexture == nil) {
-            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+            if (surface) {
+                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
+            } else {
+                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+            }
         }
         if (mtltexture == nil) {
             return SDL_SetError("Texture allocation failed");
@@ -847,7 +851,11 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         } else if (nv12) {
             mtltexture = (__bridge id<MTLTexture>)SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_UV_POINTER, nil);
             if (mtltexture == nil) {
-                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                if (surface) {
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
+                } else {
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                }
             }
             if (mtltexture == nil) {
                 return SDL_SetError("Texture allocation failed");
