@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16...4.4)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(cmake_build_type_undefined 1)
@@ -1848,17 +1848,32 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
 
   set(SDL_DISABLE_DLOPEN_NOTES TRUE)
   if(SDL_DLOPEN_NOTES)
-    set(CHECK_ELF_DLNOTES_SRC [==[
-    #ifndef __ELF__
-      ELF DL notes is only supported on ELF platforms
-    #endif
-    __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
-      struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
-    } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\\"a\\":{\\"a\\":\\"1\\",\\"b\\":\\"2\\"}]" };
-    int main(int argc, char *argv[]) {
-      return argc + dlnote.hdr.a;
-    }
-    ]==])
+    if(POLICY CMP0219)
+      set(CHECK_ELF_DLNOTES_SRC [==[
+        #ifndef __ELF__
+          ELF DL notes is only supported on ELF platforms
+        #endif
+        __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
+          struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
+        } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\"a\":{\"a\":\"1\",\"b\":\"2\"}]" };
+        int main(int argc, char *argv[]) {
+          return argc + dlnote.hdr.a;
+        }
+      ]==])
+    else()
+      # FIXME: drop this once minimum CMake version is >= 4.4
+      set(CHECK_ELF_DLNOTES_SRC [==[
+        #ifndef __ELF__
+          ELF DL notes is only supported on ELF platforms
+        #endif
+        __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
+          struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
+        } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\\"a\\":{\\"a\\":\\"1\\",\\"b\\":\\"2\\"}]" };
+        int main(int argc, char *argv[]) {
+          return argc + dlnote.hdr.a;
+        }
+      ]==])
+    endif()
     check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
     if(COMPILER_SUPPORTS_ELFNOTES)
       set(SDL_DISABLE_DLOPEN_NOTES FALSE)
