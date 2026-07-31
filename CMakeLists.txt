@@ -1484,6 +1484,213 @@ if(SDL_VIDEO)
 endif()
 
 # Platform-specific options and settings
+macro(do_WIN_LIKE_steps)
+  if(WINDOWS OR CYGWIN)
+    enable_language(CXX) # Added to fix weird build error under Cygwin/X11
+    # Libraries for Win32 native and MinGW
+    sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid mincore)
+
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.c")
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/windows/*.c")
+
+    check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
+    check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
+    check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+
+    # Check for DirectX
+    if(SDL_DIRECTX)
+      cmake_push_check_state()
+      if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
+          set(USE_WINSDK_DIRECTX TRUE)
+      endif()
+      if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
+        if("$ENV{DXSDK_DIR}" STREQUAL "")
+          message(FATAL_ERROR "DIRECTX requires the \$DXSDK_DIR environment variable to be set")
+        endif()
+        string(APPEND CMAKE_REQUIRED_FLAGS " /I\"$ENV{DXSDK_DIR}\\Include\"")
+      endif()
+
+      # d3d9.h may need windows.h, but does not include it itself.
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <d3d9.h>
+        int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_D3D9_H
+      )
+      check_c_source_compiles("
+        #include <d3d11_1.h>
+        int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_D3D11_H
+      )
+      # ddraw.h, dsound.h, and dinput.h may need windows.h, but does not include it itself.
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <ddraw.h>
+        int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DDRAW_H
+      )
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <dsound.h>
+        int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DSOUND_H
+      )
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <dinput.h>
+        int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DINPUT_H
+      )
+      if(SDL_CPU_ARM32)  # !!! FIXME: this should probably check if we're !(x86 or x86-64) instead of arm.
+        set(HAVE_DINPUT_H 0)
+      endif()
+      check_include_file(dxgi.h HAVE_DXGI_H)
+      cmake_pop_check_state()
+      if(HAVE_D3D9_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
+        set(HAVE_DIRECTX TRUE)
+        if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
+          if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(PROCESSOR_ARCH "x64")
+          else()
+            set(PROCESSOR_ARCH "x86")
+          endif()
+          sdl_link_directories("$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
+          sdl_include_directories(PRIVATE SYSTEM "$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\Include>")
+        endif()
+      endif()
+    endif()
+
+    if(SDL_XINPUT)
+      # xinput.h may need windows.h, but does not include it itself.
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H
+      )
+    endif()
+
+    # headers needed elsewhere
+    check_c_source_compiles("
+      #define COBJMACROS
+      #include <windows.gaming.input.h>
+      static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+      int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
+    )
+
+    set(HAVE_GAMEINPUT_H 1)
+    sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
+    sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
+    if(USE_GCC OR USE_CLANG)
+      # Avoid a dependency on libstdc++-X.dll for `__gxx_personality_seh0`
+      check_c_compiler_flag(-fno-exceptions COMPILER_SUPPORTS_FNO_EXCEPTIONS)
+      if(COMPILER_SUPPORTS_FNO_EXCEPTIONS)
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" APPEND PROPERTY COMPILE_OPTIONS "-fno-exceptions")
+        set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" PROPERTY SKIP_PRECOMPILE_HEADERS 1)
+      endif()
+    endif()
+    set(SDL_GAMEINPUT_DYNAMIC 0)
+
+    if(SDL_AUDIO)
+      if(HAVE_DSOUND_H)
+        set(SDL_AUDIO_DRIVER_DSOUND 1)
+        sdl_glob_sources(
+          "${SDL3_SOURCE_DIR}/src/audio/directsound/*.c"
+          "${SDL3_SOURCE_DIR}/src/audio/directsound/*.h"
+        )
+        set(HAVE_SDL_AUDIO TRUE)
+      endif()
+
+      if(SDL_WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
+        set(SDL_AUDIO_DRIVER_WASAPI 1)
+        set(HAVE_WASAPI TRUE)
+        sdl_glob_sources(
+          "${SDL3_SOURCE_DIR}/src/audio/wasapi/*.c"
+          "${SDL3_SOURCE_DIR}/src/audio/wasapi/*.h"
+        )
+        set(HAVE_SDL_AUDIO TRUE)
+      endif()
+    endif()
+
+    if(SDL_VIDEO)
+      CheckOpenVR()
+
+      if(SDL_RENDER_D3D AND HAVE_D3D9_H AND NOT HAVE_X11)
+        set(SDL_VIDEO_RENDER_D3D 1)
+        set(HAVE_RENDER_D3D TRUE)
+      endif()
+      if(SDL_RENDER_D3D11 AND HAVE_D3D11_H)
+        set(SDL_VIDEO_RENDER_D3D11 1)
+        set(HAVE_RENDER_D3D11 TRUE)
+      endif()
+      if(SDL_RENDER_D3D12 AND HAVE_DXGI1_6_H)
+        set(SDL_VIDEO_RENDER_D3D12 1)
+        set(HAVE_RENDER_D3D12 TRUE)
+      endif()
+    endif()
+
+    if(SDL_VIDEO)
+      if(SDL_OPENGL)
+        set(SDL_VIDEO_OPENGL 1)
+        set(SDL_VIDEO_OPENGL_WGL 1)
+        set(SDL_VIDEO_RENDER_OGL 1)
+        set(HAVE_OPENGL TRUE)
+      endif()
+
+      if(SDL_OPENGLES)
+        set(SDL_VIDEO_OPENGL_EGL 1)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        set(SDL_VIDEO_RENDER_OGL_ES2 1)
+        set(HAVE_OPENGLES TRUE)
+      endif()
+
+      if(SDL_VULKAN)
+        set(SDL_VIDEO_VULKAN 1)
+        set(HAVE_VULKAN TRUE)
+        if(SDL_RENDER_VULKAN)
+          set(SDL_VIDEO_RENDER_VULKAN 1)
+          set(HAVE_RENDER_VULKAN TRUE)
+        endif()
+      endif()
+    endif()
+
+    if(SDL_HIDAPI)
+      CheckHIDAPI()
+    endif()
+
+    if(SDL_JOYSTICK)
+      sdl_glob_sources(
+        "${SDL3_SOURCE_DIR}/src/joystick/windows/*.c"
+        "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
+        "${SDL3_SOURCE_DIR}/src/core/windows/SDL_gameinput.cpp"
+      )
+
+      set(SDL_JOYSTICK_RAWINPUT 1)
+      if(HAVE_DINPUT_H)
+        set(SDL_JOYSTICK_DINPUT 1)
+        sdl_link_dependency(joystick LIBS dinput8)
+      endif()
+      if(HAVE_XINPUT_H)
+        set(SDL_JOYSTICK_XINPUT 1)
+        set(HAVE_XINPUT TRUE)
+      endif()
+      if(HAVE_WINDOWS_GAMING_INPUT_H)
+        set(SDL_JOYSTICK_WGI 1)
+      endif()
+      if(HAVE_GAMEINPUT_H)
+        sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")
+        set(SDL_JOYSTICK_GAMEINPUT 1)
+      endif()
+      set(HAVE_SDL_JOYSTICK TRUE)
+
+      if(SDL_HAPTIC)
+        if(HAVE_DINPUT_H)
+          sdl_glob_sources(
+            "${SDL3_SOURCE_DIR}/src/haptic/windows/*.c"
+            "${SDL3_SOURCE_DIR}/src/haptic/windows/*.h"
+          )
+          set(SDL_HAPTIC_DINPUT 1)
+          set(HAVE_SDL_HAPTIC TRUE)
+        endif()
+      endif()
+    endif()
+  endif()
+endmacro()
+
 if(ANDROID)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/android")
 
@@ -2249,6 +2456,8 @@ elseif(WINDOWS OR CYGWIN)
     #include <windows.h>
     int main(int argc, char **argv) { return 0; }" HAVE_WIN32_CC)
 
+  do_WIN_LIKE_steps()
+
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/core/windows/*.c"
     "${SDL3_SOURCE_DIR}/src/core/windows/*.cpp"
@@ -2271,100 +2480,10 @@ elseif(WINDOWS OR CYGWIN)
 
   set(HAVE_SDL_MISC TRUE)
 
-  # Check for DirectX
-  if(SDL_DIRECTX)
-    cmake_push_check_state()
-    if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
-        set(USE_WINSDK_DIRECTX TRUE)
-    endif()
-    if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
-      if("$ENV{DXSDK_DIR}" STREQUAL "")
-        message(FATAL_ERROR "DIRECTX requires the \$DXSDK_DIR environment variable to be set")
-      endif()
-      string(APPEND CMAKE_REQUIRED_FLAGS " /I\"$ENV{DXSDK_DIR}\\Include\"")
-    endif()
-
-    # d3d9.h may need windows.h, but does not include it itself.
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <d3d9.h>
-      int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_D3D9_H
-    )
-    check_c_source_compiles("
-      #include <d3d11_1.h>
-      int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_D3D11_H
-    )
-    # ddraw.h, dsound.h, and dinput.h may need windows.h, but does not include it itself.
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <ddraw.h>
-      int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DDRAW_H
-    )
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <dsound.h>
-      int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DSOUND_H
-    )
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <dinput.h>
-      int main(int argc, char **argv) { (void)argc; (void)argv; return 0; }" HAVE_DINPUT_H
-    )
-    if(SDL_CPU_ARM32)  # !!! FIXME: this should probably check if we're !(x86 or x86-64) instead of arm.
-      set(HAVE_DINPUT_H 0)
-    endif()
-    check_include_file(dxgi.h HAVE_DXGI_H)
-    cmake_pop_check_state()
-    if(HAVE_D3D9_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
-      set(HAVE_DIRECTX TRUE)
-      if(NOT (MINGW OR CYGWIN) AND NOT USE_WINSDK_DIRECTX)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-          set(PROCESSOR_ARCH "x64")
-        else()
-          set(PROCESSOR_ARCH "x86")
-        endif()
-        sdl_link_directories("$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
-        sdl_include_directories(PRIVATE SYSTEM "$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\Include>")
-      endif()
-    endif()
-  endif()
-
-  if(SDL_XINPUT)
-    # xinput.h may need windows.h, but does not include it itself.
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <xinput.h>
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H
-    )
-  endif()
-
-  # headers needed elsewhere
-  check_c_source_compiles("
-    #define COBJMACROS
-    #include <windows.gaming.input.h>
-    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
-  )
-
-  set(HAVE_GAMEINPUT_H 1)
-  sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
-  sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
-  if(USE_GCC OR USE_CLANG)
-    # Avoid a dependency on libstdc++-X.dll for `__gxx_personality_seh0`
-    check_c_compiler_flag(-fno-exceptions COMPILER_SUPPORTS_FNO_EXCEPTIONS)
-    if(COMPILER_SUPPORTS_FNO_EXCEPTIONS)
-      set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" APPEND PROPERTY COMPILE_OPTIONS "-fno-exceptions")
-      set_property(SOURCE "${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp" PROPERTY SKIP_PRECOMPILE_HEADERS 1)
-    endif()
-  endif()
-  set(SDL_GAMEINPUT_DYNAMIC 0)
-
   check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
   check_include_file(roapi.h HAVE_ROAPI_H)
-  check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
-  check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
   check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
   check_include_file(Windows.ui.notifications.h HAVE_WINDOWS_UI_NOTIFICATIONS_H)
@@ -2378,27 +2497,6 @@ elseif(WINDOWS OR CYGWIN)
     " HAVE_MFAPI_H
   )
 
-  if(SDL_AUDIO)
-    if(HAVE_DSOUND_H)
-      set(SDL_AUDIO_DRIVER_DSOUND 1)
-      sdl_glob_sources(
-        "${SDL3_SOURCE_DIR}/src/audio/directsound/*.c"
-        "${SDL3_SOURCE_DIR}/src/audio/directsound/*.h"
-      )
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-
-    if(SDL_WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
-      set(SDL_AUDIO_DRIVER_WASAPI 1)
-      set(HAVE_WASAPI TRUE)
-      sdl_glob_sources(
-        "${SDL3_SOURCE_DIR}/src/audio/wasapi/*.c"
-        "${SDL3_SOURCE_DIR}/src/audio/wasapi/*.h"
-      )
-      set(HAVE_SDL_AUDIO TRUE)
-    endif()
-  endif()
-
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_WINDOWS 1)
     sdl_glob_sources(
@@ -2406,21 +2504,6 @@ elseif(WINDOWS OR CYGWIN)
       "${SDL3_SOURCE_DIR}/src/video/windows/*.cpp"
       "${SDL3_SOURCE_DIR}/src/video/windows/*.h"
     )
-
-    CheckOpenVR()
-
-    if(SDL_RENDER_D3D AND HAVE_D3D9_H)
-      set(SDL_VIDEO_RENDER_D3D 1)
-      set(HAVE_RENDER_D3D TRUE)
-    endif()
-    if(SDL_RENDER_D3D11 AND HAVE_D3D11_H)
-      set(SDL_VIDEO_RENDER_D3D11 1)
-      set(HAVE_RENDER_D3D11 TRUE)
-    endif()
-    if(SDL_RENDER_D3D12 AND HAVE_DXGI1_6_H)
-      set(SDL_VIDEO_RENDER_D3D12 1)
-      set(HAVE_RENDER_D3D12 TRUE)
-    endif()
     set(HAVE_SDL_VIDEO TRUE)
   endif()
 
@@ -2476,9 +2559,6 @@ elseif(WINDOWS OR CYGWIN)
   )
   set(HAVE_SDL_STORAGE 1)
 
-  # Libraries for Win32 native and MinGW
-  sdl_link_dependency(base LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32 hid mincore)
-
   set(SDL_TIME_WINDOWS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/windows/*.c")
   set(HAVE_SDL_TIME TRUE)
@@ -2496,31 +2576,6 @@ elseif(WINDOWS OR CYGWIN)
     "${SDL3_SOURCE_DIR}/src/core/windows/*.h"
   )
 
-  if(SDL_VIDEO)
-    if(SDL_OPENGL)
-      set(SDL_VIDEO_OPENGL 1)
-      set(SDL_VIDEO_OPENGL_WGL 1)
-      set(SDL_VIDEO_RENDER_OGL 1)
-      set(HAVE_OPENGL TRUE)
-    endif()
-
-    if(SDL_OPENGLES)
-      set(SDL_VIDEO_OPENGL_EGL 1)
-      set(SDL_VIDEO_OPENGL_ES2 1)
-      set(SDL_VIDEO_RENDER_OGL_ES2 1)
-      set(HAVE_OPENGLES TRUE)
-    endif()
-
-    if(SDL_VULKAN)
-      set(SDL_VIDEO_VULKAN 1)
-      set(HAVE_VULKAN TRUE)
-      if(SDL_RENDER_VULKAN)
-        set(SDL_VIDEO_RENDER_VULKAN 1)
-        set(HAVE_RENDER_VULKAN TRUE)
-      endif()
-    endif()
-  endif()
-
   if(SDL_TRAY)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
     set(HAVE_SDL_TRAY TRUE)
@@ -2529,46 +2584,6 @@ elseif(WINDOWS OR CYGWIN)
   if(SDL_NOTIFICATION AND HAVE_WINDOWS_UI_NOTIFICATIONS_H)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/notification/windows/*.c")
     set(HAVE_SDL_NOTIFICATION TRUE)
-  endif()
-
-  if(SDL_HIDAPI)
-    CheckHIDAPI()
-  endif()
-
-  if(SDL_JOYSTICK)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/joystick/windows/*.c"
-      "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
-    )
-
-    set(SDL_JOYSTICK_RAWINPUT 1)
-    if(HAVE_DINPUT_H)
-      set(SDL_JOYSTICK_DINPUT 1)
-      sdl_link_dependency(joystick LIBS dinput8)
-    endif()
-    if(HAVE_XINPUT_H)
-      set(SDL_JOYSTICK_XINPUT 1)
-      set(HAVE_XINPUT TRUE)
-    endif()
-    if(HAVE_WINDOWS_GAMING_INPUT_H)
-      set(SDL_JOYSTICK_WGI 1)
-    endif()
-    if(HAVE_GAMEINPUT_H)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")
-      set(SDL_JOYSTICK_GAMEINPUT 1)
-    endif()
-    set(HAVE_SDL_JOYSTICK TRUE)
-
-    if(SDL_HAPTIC)
-      if(HAVE_DINPUT_H)
-        sdl_glob_sources(
-          "${SDL3_SOURCE_DIR}/src/haptic/windows/*.c"
-          "${SDL3_SOURCE_DIR}/src/haptic/windows/*.h"
-        )
-        set(SDL_HAPTIC_DINPUT 1)
-        set(HAVE_SDL_HAPTIC TRUE)
-      endif()
-    endif()
   endif()
 
   if(SDL_CAMERA)
