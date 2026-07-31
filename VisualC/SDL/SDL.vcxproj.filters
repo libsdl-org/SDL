@@ -268,6 +268,9 @@
     <Filter Include="notification\windows">
       <UniqueIdentifier>{0000b6590eb19c11945581d0479b0000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="core\windows\gameinput">
+      <UniqueIdentifier>{460acb7b-849b-4cfd-b829-1e90c9b58c0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL.h">
@@ -542,9 +545,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>core\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\core\windows\gameinput\gameinput.h">
-      <Filter>core\windows\gameinput</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\core\windows\SDL_gameinput.h">
       <Filter>core\windows</Filter>
@@ -1354,6 +1354,9 @@
     <ClInclude Include="..\..\src\render\gpu\shaders\tri_texture.vert.msl.h">
       <Filter>render\gpu\shaders</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\core\windows\gameinput\gameinput.h">
+      <Filter>core\windows\gameinput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1449,9 +1452,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c">
       <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\windows\gameinput\gameinput.cpp">
-      <Filter>core\windows\gameinput</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp">
       <Filter>core\windows</Filter>
@@ -2089,6 +2089,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c">
       <Filter>video\yuv2rgb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\gameinput\gameinput.cpp">
+      <Filter>core\windows\gameinput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
