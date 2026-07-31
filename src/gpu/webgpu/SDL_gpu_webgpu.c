@@ -12,6 +12,10 @@
 // - Downloading from a transfer buffer is unsupported
 // - We should warn the user if they're gonna use RGBA32 textures wrong.
 
+// FIXME: CRITICAL!!!
+// Mapping a buffer destroys the swapchain texture.
+// We'll need to find a way around this.
+
 // FIXME:
 // Issues with the shader parser:
 //
@@ -137,14 +141,6 @@ static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
     case WGPUFeatureName_Force32:
         return "WGPUFeatureName_Force32";
     }
-}
-
-static inline void WEBGPU_INTERNAL_WebGPUProcessEvents(WGPUInstance instance)
-{
-    wgpuInstanceProcessEvents(instance);
-#ifdef __EMSCRIPTEN__
-    emscripten_sleep(1);
-#endif
 }
 
 static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
@@ -1085,6 +1081,8 @@ typedef struct WebGPURenderer
     SDL_PropertiesID bindGroups;
     SDL_PropertiesID mipmapPipelines;
 
+    SDL_Mutex *queryingFenceLock;
+
     char **bindGroupsQueuedForRelease;
     uint32_t numBindGroupsQueuedForRelease;
     uint32_t bindGroupReleaseQueueSize;
@@ -1283,9 +1281,9 @@ typedef struct WebGPUSampler
     uint32_t dependantsCapacity;
 } WebGPUSampler;
 
-/// There are no fences in WebGPU, so this is a solution around it.
 typedef struct WebGPUFence
 {
+    WGPUFutureWaitInfo future;
     SDL_AtomicInt status;
 } WebGPUFence;
 
@@ -1667,7 +1665,10 @@ static void WEBGPU_RequestAdapter(WebGPURenderer *renderer, bool *success)
     wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){ .callback = WEBGPU_RequestAdapterCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
 
     while (*success == false) {
-        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
+        wgpuInstanceProcessEvents(renderer->instance);
+#ifdef __EMSCRIPTEN__
+        emscripten_sleep(1);
+#endif
     }
 }
 
@@ -1755,7 +1756,10 @@ static void WEBGPU_RequestDevice(WebGPURenderer *renderer, bool *success)
     wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){ .callback = WEBGPU_RequestDeviceCallback, .mode = WGPUCallbackMode_AllowProcessEvents, .nextInChain = NULL, .userdata1 = renderer, .userdata2 = success });
 
     while (*success == false) {
-        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
+        wgpuInstanceProcessEvents(renderer->instance);
+#ifdef __EMSCRIPTEN__
+        emscripten_sleep(1);
+#endif
     }
 
     wgpuSupportedFeaturesFreeMembers(supportedFeatures);
@@ -1900,49 +1904,88 @@ static WebGPUFence *WEBGPU_INTERNAL_CreateFence(WGPUQueue queue)
     WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
     SDL_SetAtomicInt(&fence->status, 0);
 
-    wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
-                                            .callback = WEBGPU_FenceCallback,
-                                            .mode = WGPUCallbackMode_AllowProcessEvents,
-                                            .nextInChain = NULL,
-                                            .userdata1 = fence,
-                                            .userdata2 = NULL,
-                                        });
+    fence->future.future = wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
+                                                                   .callback = WEBGPU_FenceCallback,
+                                                                   .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                   .nextInChain = NULL,
+                                                                   .userdata1 = fence,
+                                                                   .userdata2 = NULL,
+                                                               });
+
+    return fence;
+}
+
+static WebGPUFence *WEBGPU_INTERNAL_CreateFenceFromFuture(WGPUFuture future)
+{
+    WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
+    SDL_SetAtomicInt(&fence->status, 0);
+
+    fence->future.future = future;
 
     return fence;
 }
 
 static void WEBGPU_INTERNAL_ReregisterFence(WGPUQueue queue, WebGPUFence *fence)
 {
+    if (fence == NULL) {
+        return;
+    }
+    if (!fence->future.completed) {
+        SDL_Log("Attempted to reregister non-completed fence!");
+        return;
+    }
+
     SDL_SetAtomicInt(&fence->status, 0);
-    wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
-                                            .callback = WEBGPU_FenceCallback,
-                                            .mode = WGPUCallbackMode_AllowProcessEvents,
-                                            .nextInChain = NULL,
-                                            .userdata1 = fence,
-                                            .userdata2 = NULL,
-                                        });
+    fence->future.future = wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
+                                                                   .callback = WEBGPU_FenceCallback,
+                                                                   .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                   .nextInChain = NULL,
+                                                                   .userdata1 = fence,
+                                                                   .userdata2 = NULL,
+                                                               });
 }
 
 static bool WEBGPU_QueryFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
 {
-    WEBGPU_INTERNAL_WebGPUProcessEvents(((WebGPURenderer *)device)->instance);
-
     if (fence != NULL) {
-        return SDL_GetAtomicInt(&((WebGPUFence *)fence)->status) != 0;
+        SDL_LockMutex(((WebGPURenderer *)device)->queryingFenceLock);
+
+        // Despite its name, WaitAny isn't actually blocking unless the TimedWaitAny instance feature is enabled,
+        // and you give a value to the timeoutNS argument.
+        wgpuInstanceWaitAny(((WebGPURenderer *)device)->instance, 1, &((WebGPUFence *)fence)->future, 0);
+
+        SDL_SetAtomicInt(&((WebGPUFence *)fence)->status, ((WebGPUFence *)fence)->future.completed);
+        SDL_UnlockMutex(((WebGPURenderer *)device)->queryingFenceLock);
+
+        return (bool)SDL_GetAtomicInt(&((WebGPUFence *)fence)->status);
     } else {
-        return false;
+        return true;
     }
+}
+
+static bool WEBGPU_WaitForFences(SDL_GPURenderer *device, bool waitAll, SDL_GPUFence *const *fences, uint32_t num_fences)
+{
+    uint32_t triggeredFenceCount = 0;
+    uint32_t triggeredFenceThreshold = waitAll ? num_fences : 1;
+
+    while (triggeredFenceCount < triggeredFenceThreshold) {
+        for (int i = 0; i < num_fences; i++) {
+            if (WEBGPU_QueryFence(device, fences[i])) {
+                triggeredFenceCount++;
+            }
+
+            // Spin to appease Emscripten.
+            SDL_DelayNS(100);
+        }
+    }
+
+    // TODO: Timeout functionality?
+    return true;
 }
 
 static bool WEBGPU_Wait(SDL_GPURenderer *driverData)
 {
-    if (((WebGPURenderer *)driverData)->queueDoneFence != NULL) {
-        while (!WEBGPU_QueryFence(driverData, (SDL_GPUFence *)((WebGPURenderer *)driverData)->queueDoneFence)) {
-            // ladidadida
-        }
-    }
-
-    return true;
+    return WEBGPU_WaitForFences(driverData, true, (SDL_GPUFence **)&((WebGPURenderer *)driverData)->queueDoneFence, 1);
 }
 
 static size_t WEBGPU_INTERNAL_GetTokenBindGroup(const char *token)
@@ -3796,23 +3839,6 @@ static void WEBGPU_ReleaseFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
     }
 }
 
-static bool WEBGPU_WaitForFences(SDL_GPURenderer *device, bool waitAll, SDL_GPUFence *const *fences, uint32_t num_fences)
-{
-    uint32_t triggeredFenceCount = 0;
-    uint32_t triggeredFenceThreshold = waitAll ? num_fences : 1;
-
-    while (triggeredFenceCount < triggeredFenceThreshold) {
-        for (int i = 0; i < num_fences; i++) {
-            if (WEBGPU_QueryFence(device, fences[i])) {
-                triggeredFenceCount++;
-            }
-        }
-    }
-
-    // TODO: Timeout functionality?
-    return true;
-}
-
 // Should out to klukaszek for writing the blit code because wow I hate blitting
 static void WEBGPU_INTERNAL_InitBlitResources(
     WebGPURenderer *renderer)
@@ -4403,20 +4429,20 @@ static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferCont
         return false;
     }
 
-    wgpuBufferMapAsync(buffer->activeBuffer->buffer,
-                       mapMode, 0,
-                       buffer->activeBuffer->size,
-                       (WGPUBufferMapCallbackInfo){
-                           .callback = WEBGPU_INTERNAL_MapBufferCallback,
-                           .mode = WGPUCallbackMode_AllowProcessEvents,
-                           .nextInChain = NULL,
-                           .userdata1 = &success,
-                           .userdata2 = &callbackRan,
-                       });
+    WebGPUFence *bufferMapFence =
+        WEBGPU_INTERNAL_CreateFenceFromFuture(wgpuBufferMapAsync(buffer->activeBuffer->buffer,
+                                                                 mapMode, 0,
+                                                                 buffer->activeBuffer->size,
+                                                                 (WGPUBufferMapCallbackInfo){
+                                                                     .callback = WEBGPU_INTERNAL_MapBufferCallback,
+                                                                     .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                     .nextInChain = NULL,
+                                                                     .userdata1 = &success,
+                                                                     .userdata2 = &callbackRan,
+                                                                 }));
 
-    while (!callbackRan) {
-        WEBGPU_INTERNAL_WebGPUProcessEvents(renderer->instance);
-    }
+    WEBGPU_WaitForFences((SDL_GPURenderer *)renderer, true, (SDL_GPUFence **)&bufferMapFence, 1);
+
     return success;
 }
 
@@ -4732,9 +4758,6 @@ static void WEBGPU_SetScissor(SDL_GPUCommandBuffer *commandBuffer, const SDL_Rec
 
 static bool WEBGPU_WaitAndAcquireSwapchainTexture(SDL_GPUCommandBuffer *command_buffer, SDL_Window *window, SDL_GPUTexture **swapchain_texture, Uint32 *swapchain_texture_width, Uint32 *swapchain_texture_height)
 {
-    // god this is gross
-    WEBGPU_Wait((SDL_GPURenderer *)((WebGPUCommandBuffer *)command_buffer)->renderer);
-
     return WEBGPU_AcquireSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height);
 }
 
@@ -5441,6 +5464,7 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
 
     SDL_DestroyProperties(renderer->props);
     SDL_DestroyProperties(renderer->bindGroups);
+    SDL_DestroyMutex(renderer->queryingFenceLock);
     SDL_free(renderer);
     SDL_free(device);
 }
@@ -5898,6 +5922,8 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->bindGroups = SDL_CreateProperties();
     renderer->mipmapPipelines = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
+
+    renderer->queryingFenceLock = SDL_CreateMutex();
 
     if (!SDL_CopyProperties(props, renderer->props)) {
         SDL_Log("Failed to copy properties! Oh no!\n%s", SDL_GetError());
