@@ -308,10 +308,12 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *
  * With the metal renderer:
  *
- * - `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`: the MTLDevice to use with the
- *   renderer, optional.
- * - `SDL_PROP_RENDERER_CREATE_METAL_COMMAND_QUEUE_POINTER`: the MTLCommandQueue
- *   to use with the renderer, optional. If you set this property it will implicitly set (and override) `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`.
+ * - `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`: the MTLDevice to use
+ *   with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_METAL_COMMAND_QUEUE_POINTER`: the
+ *   MTLCommandQueue to use with the renderer, optional. If you set this
+ *   property it will implicitly set (and override)
+ *   `SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER`.
  *
  * With the vulkan renderer:
  *
@@ -529,12 +531,12 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  *
  * With the metal renderer:
  *
- * - `SDL_PROP_RENDERER_METAL_DEVICE_POINTER`: the MTLDevice associated with the
- *   renderer
+ * - `SDL_PROP_RENDERER_METAL_DEVICE_POINTER`: the MTLDevice associated with
+ *   the renderer
  * - `SDL_PROP_RENDERER_METAL_COMMAND_QUEUE_POINTER`: the MTLCommandQueue
- *   associated with the renderer. Work submitted on this queue will be ordered
- *   relative to other rendering. SDL_FlushRenderer() can be used to guarantee
- *   the current rendering has been submitted.
+ *   associated with the renderer. Work submitted on this queue will be
+ *   ordered relative to other rendering. SDL_FlushRenderer() can be used to
+ *   guarantee the current rendering has been submitted.
  *
  * With the vulkan renderer:
  *
@@ -921,11 +923,10 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  *   the texture
  * - `SDL_PROP_TEXTURE_METAL_TEXTURE_UV_POINTER`: the MTLTexture associated
  *   with the UV plane of an NV12 texture
- * - `SDL_PROP_TEXTURE_METAL_TEXTURE_U_POINTER`: the MTLTexture associated with
- *   the U plane of a YUV texture
- *   style texture
- * - `SDL_PROP_TEXTURE_METAL_TEXTURE_V_POINTER`: the MTLTexture associated with
- *   the V plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_U_POINTER`: the MTLTexture associated
+ *   with the U plane of a YUV texture style texture
+ * - `SDL_PROP_TEXTURE_METAL_TEXTURE_V_POINTER`: the MTLTexture associated
+ *   with the V plane of a YUV texture
  *
  * With the vulkan renderer:
  *
