@@ -830,7 +830,12 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         if (yuv) {
             mtltexture = (__bridge id<MTLTexture>)SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_U_POINTER, nil);
             if (mtltexture == nil) {
-                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                if (surface) {
+                    NSUInteger Uplane = (texture->format == SDL_PIXELFORMAT_YV12) ? 2 : 1;
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:Uplane];
+                } else {
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                }
             }
             if (mtltexture == nil) {
                 return SDL_SetError("Texture allocation failed");
@@ -840,7 +845,12 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
             mtltexture = (__bridge id<MTLTexture>)SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_METAL_TEXTURE_V_POINTER, nil);
             if (mtltexture == nil) {
-                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                if (surface) {
+                    NSUInteger Vplane = (texture->format == SDL_PIXELFORMAT_YV12) ? 1 : 2;
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:Vplane];
+                } else {
+                    mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+                }
             }
             if (mtltexture == nil) {
                 return SDL_SetError("Texture allocation failed");
