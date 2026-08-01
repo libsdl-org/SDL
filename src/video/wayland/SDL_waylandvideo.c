@@ -1604,19 +1604,23 @@ static int SDLCALL LibdecorNewInThread(void *data)
 }
 #endif
 
-#ifndef HAVE_GETRESUID
+#ifdef HAVE_GETRESUID
+#define SDL_getresuid getresuid
+#else
 // Non-POSIX, but Linux and some BSDs have it.
 // To reduce the number of code paths, if getresuid() isn't available at
 // compile-time, we behave as though it existed but failed at runtime.
-static inline int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int SDL_getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
     errno = ENOSYS;
     return -1;
 }
 #endif
 
-#ifndef HAVE_GETRESGID
+#ifdef HAVE_GETRESGID
+#define SDL_getresgid getresgid
+#else
 // Same as getresuid() but for the primary group
-static inline int getresgid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int SDL_getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid) {
     errno = ENOSYS;
     return -1;
 }
@@ -1638,12 +1642,12 @@ bool CanUseGtk(void)
     // we don't use Linux getauxval() or prctl PR_GET_DUMPABLE,
     // BSD issetugid(), or similar OS-specific detection
 
-    if (getresuid(&ruid, &euid, &suid) != 0) {
+    if (SDL_getresuid(&ruid, &euid, &suid) != 0) {
         ruid = suid = getuid();
         euid = geteuid();
     }
 
-    if (getresgid(&rgid, &egid, &sgid) != 0) {
+    if (SDL_getresgid(&rgid, &egid, &sgid) != 0) {
         rgid = sgid = getgid();
         egid = getegid();
     }
