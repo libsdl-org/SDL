@@ -49,11 +49,11 @@
 #undef g_main
 
 #define g_main D3D12_PixelShader_Textures_PQ
-#include "D3D12_PixelShader_Textures_Series_PQ.h"
+#include "D3D12_PixelShader_Textures_PQ_Series.h"
 #undef g_main
 
 #define g_main D3D12_PixelShader_Textures_Simple
-#include "D3D12_PixelShader_Textures_Series_Simple.h"
+#include "D3D12_PixelShader_Textures_Simple_Series.h"
 #undef g_main
 
 
