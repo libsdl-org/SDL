@@ -272,6 +272,7 @@ typedef struct SDL_WaylandSeat
 
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms);
+extern bool Wayland_BeginWindowDrag(SDL_WindowData *window_data, uint32_t serial);
 
 extern void Wayland_PumpEvents(SDL_VideoDevice *_this);
 extern void Wayland_SendWakeupEvent(SDL_VideoDevice *_this, SDL_Window *window);

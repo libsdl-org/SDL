@@ -1311,6 +1311,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   and "menu" window types should be automatically constrained to be
  *   entirely within display bounds (default), false if no constraints on the
  *   position are desired.
+ * - `SDL_PROP_WINDOW_CREATE_DOCKABLE_BOOLEAN`: true if the window will
+ *   initially track the mouse pointer when shown while the left button is
+ *   held, and will generate drop events when dragged over other windows in
+ *   the same process
  * - `SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN`: true if the
  *   window will be used with an externally managed graphics context.
  * - `SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN`: true if the window should
@@ -1461,6 +1465,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_ALWAYS_ON_TOP_BOOLEAN               "SDL.window.create.always_on_top"
 #define SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN                  "SDL.window.create.borderless"
 #define SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN             "SDL.window.create.constrain_popup"
+#define SDL_PROP_WINDOW_CREATE_DOCKABLE_BOOLEAN                    "SDL.window.create.dockable"
 #define SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN                   "SDL.window.create.focusable"
 #define SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN   "SDL.window.create.external_graphics_context"
 #define SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER                        "SDL.window.create.flags"
@@ -1569,6 +1574,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   that can be displayed, in terms of the SDR white point. When HDR is not
  *   enabled, this will be 1.0. This property can change dynamically when
  *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ * - 'SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER': the x offset of the cursor from
+ *   the window origin when a dockable window is being dragged
+ * - 'SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER': the y offset of the cursor from
+ *   the window origin when a dockable window is being dragged
  *
  * On Android:
  *
@@ -1698,6 +1707,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window *window);
 
+#define SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER                        "SDL.window.drag_offset.x"
+#define SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER                        "SDL.window.drag_offset.y"
 #define SDL_PROP_WINDOW_SHAPE_POINTER                               "SDL.window.shape"
 #define SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN                         "SDL.window.HDR_enabled"
 #define SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT                       "SDL.window.SDR_white_level"

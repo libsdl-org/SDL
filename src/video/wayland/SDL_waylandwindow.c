@@ -2367,6 +2367,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                                                       data->xdg_toplevel_icon_v1);
             }
 
+            if (window->dockable) {
+                SDL_WaylandSeat *seat = c->last_implicit_grab_seat;
+                if (seat->pointer.buttons_pressed & SDL_BUTTON_LMASK) {
+                    Wayland_BeginWindowDrag(data, seat->last_implicit_grab_serial);
+                }
+            }
+
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.toplevel.xdg_toplevel);
         }
     }

@@ -1631,6 +1631,19 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
+
+    if (window->dockable) {
+        float mx, my;
+        const SDL_MouseButtonFlags buttons = SDL_GetGlobalMouseState(&mx, &my);
+        if (buttons & SDL_BUTTON_LMASK) {
+            data->videodata->implicit_drag = window;
+            data->drop_offset_x = (int)SDL_floorf(mx) - window->x;
+            data->drop_offset_y = (int)SDL_floorf(my) - window->y;
+            SDL_PropertiesID props = SDL_GetWindowProperties(window);
+            SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, data->drop_offset_x);
+            SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, data->drop_offset_y);
+        }
+    }
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)

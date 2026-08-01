@@ -126,6 +126,7 @@ struct SDL_WindowData
     struct frog_color_managed_surface *frog_color_managed_surface;
     struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback;
     struct xdg_toplevel_session_v1 *xdg_toplevel_session;
+    struct xdg_toplevel_drag_v1 *toplevel_drag_v1;
 
     struct Wayland_ColorInfoState *color_info_state;
 
