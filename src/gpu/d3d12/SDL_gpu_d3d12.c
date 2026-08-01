@@ -8430,7 +8430,11 @@ static void D3D12_INTERNAL_InitBlitResources(
     shaderCreateInfo.code = (Uint8 *)D3D12_FullscreenVert;
     shaderCreateInfo.code_size = sizeof(D3D12_FullscreenVert);
     shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_VERTEX;
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     shaderCreateInfo.format = SDL_GPU_SHADERFORMAT_DXIL;
+#else
+    shaderCreateInfo.format = SDL_GPU_SHADERFORMAT_DXBC;
+#endif
 
     renderer->blitVertexShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,
