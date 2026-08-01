@@ -873,6 +873,9 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_EVENT_CASE(SDL_EVENT_DROP_TEXT)
         PRINT_DROP_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_DROP_WINDOW)
+        PRINT_DROP_EVENT(event);
+        break;
         SDL_EVENT_CASE(SDL_EVENT_DROP_BEGIN)
         PRINT_DROP_EVENT(event);
         break;

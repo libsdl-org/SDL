@@ -34,6 +34,7 @@ typedef struct Wayland_PrimarySelectionDevice Wayland_PrimarySelectionDevice;
 #define TEXT_MIME            "text/plain;charset=utf-8"
 #define FILE_MIME            "text/uri-list"
 #define FILE_PORTAL_MIME     "application/vnd.portal.filetransfer"
+#define DOCKABLE_WINDOW_MIME "application/x-sdl3-dockable-window"
 #define SDL_DATA_ORIGIN_MIME "application/x-sdl3-source-id"
 
 // Data device (clipboard and drag & drop)
@@ -45,6 +46,7 @@ extern bool Wayland_DataDeviceSetSelectionSource(Wayland_DataDevice *data_device
 extern bool Wayland_DataDeviceSelectionOfferHasMIME(Wayland_DataDevice *data_device, const char *mime_type);
 extern void *Wayland_DataDeviceReceiveSelectionOffer(Wayland_DataDevice *data_device, const char *mime_type, size_t *length);
 extern void Wayland_DataDeviceDestroySelectionOffer(Wayland_DataDevice *data_device, bool clear);
+extern bool Wayland_DataDeviceStartWindowDrag(Wayland_DataDevice *data_device, SDL_WindowData *drag_window, int offset_x, int offset_y);
 extern void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, SDL_Window *window);
 
 // Primary selection

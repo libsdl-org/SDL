@@ -756,6 +756,13 @@ bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, cons
             } else {
                 ScheduleWindowMove(_this, data, &point);
             }
+            if (data->window->dockable) {
+                data->drop_offset_x = point.x;
+                data->drop_offset_y = point.y;
+                SDL_PropertiesID props = SDL_GetWindowProperties(window);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, data->drop_offset_x);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, data->drop_offset_y);
+            }
             return true;
 
         case SDL_HITTEST_RESIZE_TOPLEFT:
@@ -775,6 +782,33 @@ bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, cons
     }
 
     return false;
+}
+
+void X11_HandleImplicitDrag(SDL_VideoDevice *_this, SDL_Point *point)
+{
+    if (_this->internal->implicit_drag) {
+        SDL_VideoData *videodata = _this->internal;
+        SDL_Window *window = videodata->implicit_drag;
+        Display *display = videodata->display;
+        XEvent evt;
+
+        // !!! FIXME: we need to regrab this if necessary when the drag is done.
+        X11_XUngrabPointer(display, 0L);
+        X11_XFlush(display);
+
+        evt.xclient.type = ClientMessage;
+        evt.xclient.window = window->internal->xwindow;
+        evt.xclient.message_type = videodata->atoms._NET_WM_MOVERESIZE;
+        evt.xclient.format = 32;
+        evt.xclient.data.l[0] = point->x;
+        evt.xclient.data.l[1] = point->y;
+        evt.xclient.data.l[2] = _NET_WM_MOVERESIZE_MOVE;
+        evt.xclient.data.l[3] = Button1;
+        evt.xclient.data.l[4] = 0;
+        X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
+
+        X11_XSync(display, 0);
+    }
 }
 
 static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
@@ -1072,6 +1106,36 @@ Uint64 X11_GetEventTimestamp(unsigned long time)
     return SDL_GetTicksNS();
 }
 
+static void X11_WalkWindowTree(SDL_VideoData *videodata, int x, int y, Display *dpy, Window root, Window ignore, SDL_Window **ret)
+{
+    unsigned int NumChildren;
+    Window Root, Parent;
+    Window *Children;
+    X11_XQueryTree(dpy, root, &Root, &Parent, &Children, &NumChildren);
+
+    for (unsigned int j = 0; j < NumChildren; ++j) {
+        if (Children[j] != ignore) {
+            SDL_WindowData *target = X11_FindWindow(videodata, Children[j]);
+
+            if (target) {
+                if (x >= target->window->x && x < target->window->x + target->window->w && y >= target->window->y && y < target->window->y + target->window->h) {
+                    *ret = target->window;
+                }
+            }
+        }
+
+        X11_WalkWindowTree(videodata, x, y, dpy, Children[j], ignore, ret);
+    }
+}
+
+static SDL_WindowData *X11_FindTopmostForPoint(SDL_VideoData *videodata, int x, int y, SDL_WindowData *ignore)
+{
+    SDL_Window *ret = NULL;
+    X11_WalkWindowTree(videodata, x, y, videodata->display, DefaultRootWindow(videodata->display), ignore->xwindow, &ret);
+
+    return ret ? ret->internal : NULL;
+}
+
 void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent)
 {
     SDL_VideoData *videodata = _this->internal;
@@ -1226,6 +1290,17 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             X11_SetWindowMouseGrab(_this, window, true);
         }
     }
+
+    if (windowdata->drop_target) {
+        SDL_SendDropWindow(windowdata->drop_target, windowdata->window);
+        SDL_SendDropComplete(windowdata->drop_target);
+    } else if (_this->internal->implicit_drag && _this->internal->implicit_drag->internal->drop_target) {
+        SDL_SendDropWindow(_this->internal->implicit_drag->internal->drop_target, _this->internal->implicit_drag);
+        SDL_SendDropComplete(_this->internal->implicit_drag->internal->drop_target);
+    }
+
+    windowdata->drop_target = NULL;
+    _this->internal->implicit_drag = NULL;
 }
 
 void X11_GetBorderValues(SDL_WindowData *data)
@@ -1731,6 +1806,31 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             data->emit_size_move_after_property_notify = true;
         }
 
+        /* Send drop events for moving, dockable windows.
+         *
+         * XWayland doesn't update global mouse coordinates while dragging a window, so the window position and local pointer
+         * position need to be used to calculate the drop location.
+         */
+        if (data->window->dockable) {
+            int x, y;
+            if (videodata->implicit_drag) {
+                x = data->window->x + data->drop_offset_x;
+                y = data->window->y + data->drop_offset_y;
+            } else {
+                SDL_Mouse *mouse = SDL_GetMouse();
+                x = data->window->x + (int)SDL_floorf(mouse->x);
+                y = data->window->y + (int)SDL_floorf(mouse->y);
+            }
+            SDL_WindowData *topmost = X11_FindTopmostForPoint(videodata, x, y, data);
+            if (topmost) {
+                SDL_SendDropPosition(topmost->window, x - topmost->window->x, y - topmost->window->y, data->window);
+                data->drop_target = topmost->window;
+            } else if (data->drop_target) {
+                SDL_SendDropComplete(data->drop_target);
+                data->drop_target = NULL;
+            }
+        }
+
         if (!data->emit_size_move_after_property_notify) {
             X11_EmitConfigureNotifyEvents(data, &xevent->xconfigure);
         }
@@ -1791,7 +1891,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 X11_XTranslateCoordinates(display, DefaultRootWindow(display), data->xwindow,
                                           root_x, root_y, &window_x, &window_y, &ChildReturn);
 
-                SDL_SendDropPosition(data->window, (float)window_x, (float)window_y);
+                SDL_SendDropPosition(data->window, (float)window_x, (float)window_y, NULL);
             }
 
             // reply with status

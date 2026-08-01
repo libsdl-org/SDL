@@ -94,6 +94,8 @@ struct SDL_WindowData
     RECT cursor_ctrlock_rect; // this is Windows-specific, but probably does not need to be per-window
     bool mouse_tracked;
     bool destroy_parent_with_window;
+    POINT drag_offset;
+    SDL_Window *dock_target;
     WCHAR *ICMFileName;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
     bool taskbar_button_created;
