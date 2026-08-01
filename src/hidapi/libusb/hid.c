@@ -143,7 +143,69 @@ struct hid_device_ {
 #ifdef DETACH_KERNEL_DRIVER
 	int is_driver_detached;
 #endif
+
+#ifdef SDL_PLATFORM_MACOS
+	/* Device path this handle was opened with, tracked so that enumeration
+	   can tell devices claimed by this backend apart from devices owned by
+	   a kernel driver */
+	char open_path[64];
+#endif
 };
+
+#ifdef SDL_PLATFORM_MACOS
+/* Paths of devices currently open by this backend.
+
+   On macOS, an Xbox controller interface that we have claimed reports a
+   kernel driver as active, the same as a device owned by the OS. If
+   enumeration dropped such devices, a controller would disappear from the
+   device list as soon as we opened it, get torn down as unplugged, be
+   re-detected once the claim is released, and oscillate forever. Devices
+   in this list are ours and are always enumerated. */
+#define MAX_OPEN_PATHS 16
+static pthread_mutex_t open_paths_lock = PTHREAD_MUTEX_INITIALIZER;
+static char open_paths[MAX_OPEN_PATHS][64];
+
+static void open_paths_add(const char *path)
+{
+	int i;
+	pthread_mutex_lock(&open_paths_lock);
+	for (i = 0; i < MAX_OPEN_PATHS; i++) {
+		if (!open_paths[i][0]) {
+			strncpy(open_paths[i], path, sizeof(open_paths[i]) - 1);
+			break;
+		}
+	}
+	pthread_mutex_unlock(&open_paths_lock);
+}
+
+static void open_paths_remove(const char *path)
+{
+	int i;
+	pthread_mutex_lock(&open_paths_lock);
+	for (i = 0; i < MAX_OPEN_PATHS; i++) {
+		if (!strcmp(open_paths[i], path)) {
+			open_paths[i][0] = '\0';
+			break;
+		}
+	}
+	pthread_mutex_unlock(&open_paths_lock);
+}
+
+static int open_paths_contains(const char *path)
+{
+	int i;
+	int found = 0;
+	pthread_mutex_lock(&open_paths_lock);
+	for (i = 0; i < MAX_OPEN_PATHS; i++) {
+		if (!strcmp(open_paths[i], path)) {
+			found = 1;
+			break;
+		}
+	}
+	pthread_mutex_unlock(&open_paths_lock);
+	return found;
+}
+#endif /* SDL_PLATFORM_MACOS */
 
 static struct hid_api_version api_version = {
 	.major = HID_API_VERSION_MAJOR,
@@ -1076,12 +1138,20 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						res = libusb_open(dev, &handle);
 #ifdef SDL_PLATFORM_MACOS
 						if (res == 0) {
-							/* Do not enumerate XInput devices already owned by a kernel driver */
+							/* Do not enumerate XInput devices already owned by a kernel driver.
+							   An interface claimed by ourselves also reports an active kernel
+							   driver, so check our open device list first, otherwise a
+							   controller would vanish from enumeration as soon as we opened
+							   it and reconnect endlessly. */
 							int is_xbox = is_xbox360(dev_vid, intf_desc) || is_xboxone(dev_vid, intf_desc);
 							if (is_xbox && libusb_kernel_driver_active(handle, intf_desc->bInterfaceNumber) == 1) {
-								libusb_close(handle);
-								handle = NULL;
-								continue;
+								char enum_path[64];
+								get_path(&enum_path, dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
+								if (!open_paths_contains(enum_path)) {
+									libusb_close(handle);
+									handle = NULL;
+									continue;
+								}
 							}
 						}
 #endif
@@ -1602,8 +1672,15 @@ HID_API_EXPORT hid_device *hid_open_path(const char *path)
 							break;
 						}
 						good_open = hidapi_initialize_device(dev, intf_desc, conf_desc);
-						if (!good_open)
+						if (!good_open) {
 							libusb_close(dev->device_handle);
+						}
+#ifdef SDL_PLATFORM_MACOS
+						else {
+							strncpy(dev->open_path, path, sizeof(dev->open_path) - 1);
+							open_paths_add(dev->open_path);
+						}
+#endif
 					}
 				}
 			}
@@ -1968,6 +2045,12 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 {
 	if (!dev)
 		return;
+
+#ifdef SDL_PLATFORM_MACOS
+	if (dev->open_path[0]) {
+		open_paths_remove(dev->open_path);
+	}
+#endif
 
 	/* Cause read_thread() to stop. */
 	dev->shutdown_thread = 1;
