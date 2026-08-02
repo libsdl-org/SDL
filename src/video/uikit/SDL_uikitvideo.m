@@ -385,7 +385,7 @@ void SDL_NSLog(const char *prefix, const char *text)
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
 
-bool SDL_GetUIKitDeviceFormFactor(void)
+SDL_FormFactor SDL_GetUIKitDeviceFormFactor(void)
 {
     // TODO: Apple Watch
     switch ([UIDevice currentDevice].userInterfaceIdiom) {
