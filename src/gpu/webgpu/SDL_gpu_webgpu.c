@@ -2635,18 +2635,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroupFromIdentifier(WebGPURendere
     return result;
 }
 
-static inline void WEBGPU_INTERNAL_DEBUG_PrintIdentifier(const char *identifier)
-{
-    for (int i = 0; i < SDL_strlen(identifier); i++) {
-        if (i < 3 || identifier[i] == '-') {
-            printf("%c", identifier[i]);
-        } else {
-            printf("%02x", (unsigned char)identifier[i]);
-        }
-    }
-
-    printf("\n");
-}
 static void WEBGPU_INTERNAL_ReleaseBindGroup(WebGPURenderer *renderer, const char *identifier)
 {
     WebGPUBindGroup *bindGroup = SDL_GetPointerProperty(renderer->bindGroups, identifier, NULL);
@@ -3080,8 +3068,7 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     bindGroup = wgpuDeviceCreateBindGroup(cmdBuf->device, &desc);
 
     if (bindGroup == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create bind group for identifier!\nIdentifier:");
-        WEBGPU_INTERNAL_DEBUG_PrintIdentifier(identifier);
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create bind group!");
     }
 
     result = SDL_calloc(1, sizeof(*result));
@@ -4261,6 +4248,7 @@ finish:
 
 static void WEBGPU_INTERNAL_CycleTextureContainer(WebGPURenderer *renderer, WebGPUTextureContainer *container)
 {
+    SDL_Log("Created new texture for cycling!");
     if (SDL_GetAtomicInt(&container->activeTexture->referenceCount) == 0) {
         goto finish;
     }
@@ -4940,6 +4928,9 @@ static void WEBGPU_BindVertexBuffers(SDL_GPUCommandBuffer *renderPass, uint32_t 
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.vertexBuffers, cmdBuf->vertexStageBinds.vertexBufferArraySize,
                                                cmdBuf->vertexStageBinds.numVertexBuffers, WebGPUQueuedResourceBindVertexBuffer, vertexBuffer);
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedBuffers, cmdBuf->submitted->usedBufferCapacity, cmdBuf->submitted->usedBufferCount,
+                                               WebGPUBuffer *, ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer);
+        SDL_AtomicIncRef(&((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -4957,11 +4948,17 @@ static void WEBGPU_BindIndexBuffer(SDL_GPUCommandBuffer *renderPass, const SDL_G
     cmdBuf->vertexStageBinds.indexFormat = SDLToWebGPU_IndexFormat[elementSize];
     cmdBuf->vertexStageBinds.shouldBindIndexBuffer = true;
     cmdBuf->hasBoundGraphicsPipelineResources = false;
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedBuffers, cmdBuf->submitted->usedBufferCapacity, cmdBuf->submitted->usedBufferCount,
+                                           WebGPUBuffer *, ((WebGPUBufferContainer *)binding->buffer)->activeBuffer);
+    SDL_AtomicIncRef(&((WebGPUBufferContainer *)binding->buffer)->activeBuffer->referenceCount);
 }
 
 static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, uint32_t firstSlot, const SDL_GPUTextureSamplerBinding *textureSamplerBindings, uint32_t numBindings)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    // TODO: Sampler tracking.
 
     for (int i = 0; i < numBindings; i++) {
         WebGPUQueuedResourceBindSampler sampler = {
@@ -4975,6 +4972,10 @@ static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, uint32_t
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.samplers, cmdBuf->vertexStageBinds.samplerArraySize,
                                                cmdBuf->vertexStageBinds.numSamplers, WebGPUQueuedResourceBindSampler, sampler);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
     }
 
     // invalidate previous binds
@@ -4996,6 +4997,10 @@ static void WEBGPU_BindVertexStorageBuffers(SDL_GPUCommandBuffer *renderPass, ui
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.storageBuffers, cmdBuf->vertexStageBinds.storageBufferArraySize,
                                                cmdBuf->vertexStageBinds.numStorageBuffers, WebGPUQueuedResourceBindStorageBuffer, buf);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedBuffers, cmdBuf->submitted->usedBufferCapacity, cmdBuf->submitted->usedBufferCount,
+                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -5016,6 +5021,10 @@ static void WEBGPU_BindVertexStorageTextures(SDL_GPUCommandBuffer *renderPass, u
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->vertexStageBinds.storageTextures, cmdBuf->vertexStageBinds.storageTextureArraySize,
                                                cmdBuf->vertexStageBinds.numStorageTextures, WebGPUQueuedResourceBindStorageTexture, storageTexture);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -5038,6 +5047,10 @@ static void WEBGPU_BindFragmentSamplers(SDL_GPUCommandBuffer *renderPass, uint32
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->fragmentStageBinds.samplers, cmdBuf->fragmentStageBinds.samplerArraySize,
                                                cmdBuf->fragmentStageBinds.numSamplers, WebGPUQueuedResourceBindSampler, sampler);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -5058,6 +5071,10 @@ static void WEBGPU_BindFragmentStorageBuffers(SDL_GPUCommandBuffer *renderPass, 
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->fragmentStageBinds.storageBuffers, cmdBuf->fragmentStageBinds.storageBufferArraySize,
                                                cmdBuf->fragmentStageBinds.numStorageBuffers, WebGPUQueuedResourceBindStorageBuffer, storageBuffer);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedBuffers, cmdBuf->submitted->usedBufferCapacity, cmdBuf->submitted->usedBufferCount,
+                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -5079,6 +5096,10 @@ static void WEBGPU_BindFragmentStorageTextures(SDL_GPUCommandBuffer *renderPass,
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->fragmentStageBinds.storageTextures, cmdBuf->fragmentStageBinds.storageTextureArraySize,
                                                cmdBuf->fragmentStageBinds.numStorageTextures, WebGPUQueuedResourceBindStorageTexture, storageTexture);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
     }
 
     cmdBuf->hasBoundGraphicsPipelineResources = false;
@@ -5100,6 +5121,9 @@ static void WEBGPU_BindComputeSamplers(SDL_GPUCommandBuffer *commandBuffer, Uint
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->computeStageBinds.samplers, cmdBuf->computeStageBinds.samplerArraySize,
                                                cmdBuf->computeStageBinds.numSamplers, WebGPUQueuedResourceBindSampler, sampler);
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
     }
 
     cmdBuf->hasBoundComputePipelineResources = false;
@@ -5120,6 +5144,10 @@ static void WEBGPU_BindComputeStorageTextures(SDL_GPUCommandBuffer *commandBuffe
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->computeStageBinds.readOnlyStorageTextures, cmdBuf->computeStageBinds.readOnlyStorageTextureArraySize,
                                                cmdBuf->computeStageBinds.numReadOnlyStorageTextures, WebGPUQueuedResourceBindStorageTexture, storageTexture);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity, cmdBuf->submitted->usedTextureCount,
+                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
     }
 
     cmdBuf->hasBoundComputePipelineResources = false;
@@ -5139,6 +5167,10 @@ static void WEBGPU_BindComputeStorageBuffers(SDL_GPUCommandBuffer *commandBuffer
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->computeStageBinds.readOnlyStorageBuffers, cmdBuf->computeStageBinds.readOnlyStorageBufferArraySize,
                                                cmdBuf->computeStageBinds.numReadOnlyStorageBuffers, WebGPUQueuedResourceBindStorageBuffer, storageBuffer);
+
+        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedBuffers, cmdBuf->submitted->usedBufferCapacity, cmdBuf->submitted->usedBufferCount,
+                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
     }
 
     cmdBuf->hasBoundComputePipelineResources = false;
@@ -5626,6 +5658,7 @@ static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window
         return;
     }
 
+    wgpuSurfaceUnconfigure(windowData->surface);
     wgpuSurfaceRelease(windowData->surface);
     SDL_ClearProperty(window->props, WINDOW_PROPERTY_DATA);
 }
