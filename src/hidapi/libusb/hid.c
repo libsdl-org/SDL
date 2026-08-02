@@ -143,6 +143,10 @@ struct hid_device_ {
 #ifdef DETACH_KERNEL_DRIVER
 	int is_driver_detached;
 #endif
+#ifdef SDL_PLATFORM_MACOS
+	char *dev_path;
+	hid_device *next;
+#endif
 };
 
 static struct hid_api_version api_version = {
@@ -152,6 +156,45 @@ static struct hid_api_version api_version = {
 };
 
 static libusb_context *usb_context = NULL;
+
+#ifdef SDL_PLATFORM_MACOS
+
+static hid_device *open_devices;
+
+static void add_open_device(hid_device *dev)
+{
+	if (open_devices) {
+		dev->next = open_devices;
+	}
+    open_devices = dev;
+}
+
+static void remove_open_device(hid_device *dev)
+{
+	hid_device *prev = NULL;
+	for (hid_device *curr = open_devices; curr; prev = curr, curr = curr->next) {
+		if (curr == dev) {
+			if (prev) {
+				prev->next = dev->next;
+			} else {
+				open_devices = dev->next;
+			}
+			break;
+		}
+	}
+}
+
+static bool has_open_path(const char *path)
+{
+	for (hid_device *curr = open_devices; curr; curr = curr->next) {
+		if (curr->dev_path && strcmp(curr->dev_path, path) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+#endif /* SDL_PLATFORM_MACOS */
 
 uint16_t get_usb_code_for_current_locale(void);
 static int return_data(hid_device *dev, unsigned char *data, size_t length);
@@ -1076,12 +1119,16 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 						res = libusb_open(dev, &handle);
 #ifdef SDL_PLATFORM_MACOS
 						if (res == 0) {
-							/* Do not enumerate XInput devices already owned by a kernel driver */
+							/* Do not enumerate XInput devices already owned by a kernel driver and not opened by us */
 							int is_xbox = is_xbox360(dev_vid, intf_desc) || is_xboxone(dev_vid, intf_desc);
 							if (is_xbox && libusb_kernel_driver_active(handle, intf_desc->bInterfaceNumber) == 1) {
-								libusb_close(handle);
-								handle = NULL;
-								continue;
+								char dev_path[64];
+								get_path(&dev_path, dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
+								if (!has_open_path(dev_path)) {
+									libusb_close(handle);
+									handle = NULL;
+									continue;
+								}
 							}
 						}
 #endif
@@ -1615,6 +1662,10 @@ HID_API_EXPORT hid_device *hid_open_path(const char *path)
 
 	/* If we have a good handle, return it. */
 	if (good_open) {
+#ifdef SDL_PLATFORM_MACOS
+		dev->dev_path = strdup(path);
+		add_open_device(dev);
+#endif
 		return dev;
 	}
 	else {
@@ -2006,6 +2057,11 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 		return_data(dev, NULL, 0);
 	}
 	hidapi_thread_mutex_unlock(&dev->thread_state);
+
+#ifdef SDL_PLATFORM_MACOS
+	remove_open_device(dev);
+	free(dev->dev_path);
+#endif
 
 	free_hid_device(dev);
 }
