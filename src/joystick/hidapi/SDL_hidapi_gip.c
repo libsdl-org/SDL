@@ -2378,8 +2378,8 @@ static bool GIP_HandleLLInputReport(
                 0);
         }
     }
-
-    if ((attachment->features & GIP_FEATURE_CONSOLE_FUNCTION_MAP) && num_bytes >= 32) {
+    // Input reports are at a minimum 5 bytes, and the console function map is always 18 bytes
+    if ((attachment->features & GIP_FEATURE_CONSOLE_FUNCTION_MAP) && num_bytes >= 23) {
         int function_map_offset = -1;
         if (attachment->features & GIP_FEATURE_DYNAMIC_LATENCY_INPUT) {
             /* The dynamic latency input bytes are after the console function map */
@@ -2389,7 +2389,7 @@ static bool GIP_HandleLLInputReport(
         } else {
             function_map_offset = num_bytes - 18;
         }
-        if (function_map_offset >= 14) {
+        if (function_map_offset >= 5) {
             if (attachment->last_input[function_map_offset] != bytes[function_map_offset]) {
                 SDL_SendJoystickButton(timestamp,
                     joystick,
@@ -2789,7 +2789,7 @@ static bool HIDAPI_DriverGIP_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
-    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, true);
+    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, false);
 
     attachment = GIP_EnsureAttachment(ctx, 0);
     GIP_HandleQuirks(attachment);
