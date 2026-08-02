@@ -161,30 +161,35 @@ struct hid_device_ {
    device list as soon as we opened it, get torn down as unplugged, be
    re-detected once the claim is released, and oscillate forever. Devices
    in this list are ours and are always enumerated. */
-#define MAX_OPEN_PATHS 16
+struct open_path_node {
+	struct open_path_node *next;
+	char path[64];
+};
+
 static pthread_mutex_t open_paths_lock = PTHREAD_MUTEX_INITIALIZER;
-static char open_paths[MAX_OPEN_PATHS][64];
+static struct open_path_node *open_paths;
 
 static void open_paths_add(const char *path)
 {
-	int i;
+	struct open_path_node *node = (struct open_path_node *)calloc(1, sizeof(*node));
+	if (!node)
+		return;
+	strncpy(node->path, path, sizeof(node->path) - 1);
 	pthread_mutex_lock(&open_paths_lock);
-	for (i = 0; i < MAX_OPEN_PATHS; i++) {
-		if (!open_paths[i][0]) {
-			strncpy(open_paths[i], path, sizeof(open_paths[i]) - 1);
-			break;
-		}
-	}
+	node->next = open_paths;
+	open_paths = node;
 	pthread_mutex_unlock(&open_paths_lock);
 }
 
 static void open_paths_remove(const char *path)
 {
-	int i;
+	struct open_path_node **curr;
 	pthread_mutex_lock(&open_paths_lock);
-	for (i = 0; i < MAX_OPEN_PATHS; i++) {
-		if (!strcmp(open_paths[i], path)) {
-			open_paths[i][0] = '\0';
+	for (curr = &open_paths; *curr; curr = &(*curr)->next) {
+		if (!strcmp((*curr)->path, path)) {
+			struct open_path_node *node = *curr;
+			*curr = node->next;
+			free(node);
 			break;
 		}
 	}
@@ -193,11 +198,11 @@ static void open_paths_remove(const char *path)
 
 static int open_paths_contains(const char *path)
 {
-	int i;
+	struct open_path_node *node;
 	int found = 0;
 	pthread_mutex_lock(&open_paths_lock);
-	for (i = 0; i < MAX_OPEN_PATHS; i++) {
-		if (!strcmp(open_paths[i], path)) {
+	for (node = open_paths; node; node = node->next) {
+		if (!strcmp(node->path, path)) {
 			found = 1;
 			break;
 		}
