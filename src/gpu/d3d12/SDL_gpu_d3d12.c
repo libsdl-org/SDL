@@ -3045,25 +3045,13 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     return (SDL_GPUComputePipeline *)computePipeline;
 }
 
-static bool D3D12_INTERNAL_ConvertRasterizerState(SDL_GPURasterizerState rasterizerState, D3D12_RASTERIZER_DESC *desc)
+static void D3D12_INTERNAL_ConvertRasterizerState(
+    SDL_GPURasterizerState rasterizerState,
+    D3D12_RASTERIZER_DESC *desc)
 {
-    if (!desc) {
-        return false;
-    }
-
     desc->FillMode = SDLToD3D12_FillMode[rasterizerState.fill_mode];
     desc->CullMode = SDLToD3D12_CullMode[rasterizerState.cull_mode];
-
-    switch (rasterizerState.front_face) {
-    case SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE:
-        desc->FrontCounterClockwise = TRUE;
-        break;
-    case SDL_GPU_FRONTFACE_CLOCKWISE:
-        desc->FrontCounterClockwise = FALSE;
-        break;
-    default:
-        return false;
-    }
+    desc->FrontCounterClockwise = (rasterizerState.front_face == SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE);
 
     if (rasterizerState.enable_depth_bias) {
         desc->DepthBias = SDL_lroundf(rasterizerState.depth_bias_constant_factor);
@@ -3080,68 +3068,42 @@ static bool D3D12_INTERNAL_ConvertRasterizerState(SDL_GPURasterizerState rasteri
     desc->AntialiasedLineEnable = FALSE;
     desc->ForcedSampleCount = 0;
     desc->ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-
-    return true;
 }
 
-static bool D3D12_INTERNAL_ConvertBlendState(
+static void D3D12_INTERNAL_ConvertBlendState(
     const SDL_GPUGraphicsPipelineCreateInfo *pipelineInfo,
     D3D12_BLEND_DESC *blendDesc)
 {
-    if (!blendDesc) {
-        return false;
-    }
-
     SDL_zerop(blendDesc);
     blendDesc->AlphaToCoverageEnable = pipelineInfo->multisample_state.enable_alpha_to_coverage;
-    blendDesc->IndependentBlendEnable = FALSE;
+    blendDesc->IndependentBlendEnable = TRUE;
 
-    for (UINT i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {
+    for (Uint32 i = 0; i < pipelineInfo->target_info.num_color_targets; i += 1) {
+        SDL_GPUColorTargetBlendState sdlBlendState = pipelineInfo->target_info.color_target_descriptions[i].blend_state;
+        SDL_GPUColorComponentFlags colorWriteMask = sdlBlendState.enable_color_write_mask ?
+            sdlBlendState.color_write_mask :
+            0xF;
+
         D3D12_RENDER_TARGET_BLEND_DESC rtBlendDesc;
-        rtBlendDesc.BlendEnable = FALSE;
+        rtBlendDesc.BlendEnable = sdlBlendState.enable_blend;
         rtBlendDesc.LogicOpEnable = FALSE;
-        rtBlendDesc.SrcBlend = D3D12_BLEND_ONE;
-        rtBlendDesc.DestBlend = D3D12_BLEND_ZERO;
-        rtBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
-        rtBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
-        rtBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
-        rtBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+        rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.src_color_blendfactor];
+        rtBlendDesc.DestBlend = SDLToD3D12_BlendFactor[sdlBlendState.dst_color_blendfactor];
+        rtBlendDesc.BlendOp = SDLToD3D12_BlendOp[sdlBlendState.color_blend_op];
+        rtBlendDesc.SrcBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.src_alpha_blendfactor];
+        rtBlendDesc.DestBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.dst_alpha_blendfactor];
+        rtBlendDesc.BlendOpAlpha = SDLToD3D12_BlendOp[sdlBlendState.alpha_blend_op];
         rtBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
-        rtBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-        // If target_info has more blend states, you can set IndependentBlendEnable to TRUE and assign different blend states to each render target slot
-        if (i < pipelineInfo->target_info.num_color_targets) {
-            SDL_GPUColorTargetBlendState sdlBlendState = pipelineInfo->target_info.color_target_descriptions[i].blend_state;
-            SDL_GPUColorComponentFlags colorWriteMask = sdlBlendState.enable_color_write_mask ?
-                sdlBlendState.color_write_mask :
-                0xF;
-
-            rtBlendDesc.BlendEnable = sdlBlendState.enable_blend;
-            rtBlendDesc.SrcBlend = SDLToD3D12_BlendFactor[sdlBlendState.src_color_blendfactor];
-            rtBlendDesc.DestBlend = SDLToD3D12_BlendFactor[sdlBlendState.dst_color_blendfactor];
-            rtBlendDesc.BlendOp = SDLToD3D12_BlendOp[sdlBlendState.color_blend_op];
-            rtBlendDesc.SrcBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.src_alpha_blendfactor];
-            rtBlendDesc.DestBlendAlpha = SDLToD3D12_BlendFactorAlpha[sdlBlendState.dst_alpha_blendfactor];
-            rtBlendDesc.BlendOpAlpha = SDLToD3D12_BlendOp[sdlBlendState.alpha_blend_op];
-            rtBlendDesc.RenderTargetWriteMask = colorWriteMask;
-
-            if (i > 0) {
-                blendDesc->IndependentBlendEnable = TRUE;
-            }
-        }
+        rtBlendDesc.RenderTargetWriteMask = colorWriteMask;
 
         blendDesc->RenderTarget[i] = rtBlendDesc;
     }
-
-    return true;
 }
 
-static bool D3D12_INTERNAL_ConvertDepthStencilState(SDL_GPUDepthStencilState depthStencilState, D3D12_DEPTH_STENCIL_DESC *desc)
+static void D3D12_INTERNAL_ConvertDepthStencilState(
+    SDL_GPUDepthStencilState depthStencilState,
+    D3D12_DEPTH_STENCIL_DESC *desc)
 {
-    if (desc == NULL) {
-        return false;
-    }
-
     desc->DepthEnable = depthStencilState.enable_depth_test == true ? TRUE : FALSE;
     desc->DepthWriteMask = depthStencilState.enable_depth_write == true ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
     desc->DepthFunc = SDLToD3D12_CompareOp[depthStencilState.compare_op];
@@ -3158,31 +3120,25 @@ static bool D3D12_INTERNAL_ConvertDepthStencilState(SDL_GPUDepthStencilState dep
     desc->BackFace.StencilDepthFailOp = SDLToD3D12_StencilOp[depthStencilState.back_stencil_state.depth_fail_op];
     desc->BackFace.StencilPassOp = SDLToD3D12_StencilOp[depthStencilState.back_stencil_state.pass_op];
     desc->BackFace.StencilFunc = SDLToD3D12_CompareOp[depthStencilState.back_stencil_state.compare_op];
-
-    return true;
 }
 
-static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState vertexInputState, D3D12_INPUT_ELEMENT_DESC *desc, const char *semantic)
+static void D3D12_INTERNAL_ConvertVertexInputState(
+    SDL_GPUVertexInputState vertexInputState,
+    D3D12_INPUT_ELEMENT_DESC *desc,
+    const char *semantic)
 {
-    if (desc == NULL || vertexInputState.num_vertex_attributes == 0) {
-        return false;
-    }
-
     for (Uint32 i = 0; i < vertexInputState.num_vertex_attributes; i += 1) {
         SDL_GPUVertexAttribute attribute = vertexInputState.vertex_attributes[i];
+        SDL_GPUVertexInputRate inputRate = vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate;
 
         desc[i].SemanticName = semantic;
         desc[i].SemanticIndex = attribute.location;
         desc[i].Format = SDLToD3D12_VertexFormat[attribute.format];
         desc[i].InputSlot = attribute.buffer_slot;
         desc[i].AlignedByteOffset = attribute.offset;
-        desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate];
-        desc[i].InstanceDataStepRate = (vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
-            ? 1
-            : 0;
+        desc[i].InputSlotClass = SDLToD3D12_InputRate[inputRate];
+        desc[i].InstanceDataStepRate = (inputRate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) ? 1 : 0;
     }
-
-    return true;
 }
 
 static bool D3D12_INTERNAL_AssignStagingDescriptorHandle(
@@ -3245,15 +3201,9 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
 
     psoDesc.PrimitiveTopologyType = SDLToD3D12_PrimitiveTopologyType[createinfo->primitive_type];
 
-    if (!D3D12_INTERNAL_ConvertRasterizerState(createinfo->rasterizer_state, &psoDesc.RasterizerState)) {
-        return NULL;
-    }
-    if (!D3D12_INTERNAL_ConvertBlendState(createinfo, &psoDesc.BlendState)) {
-        return NULL;
-    }
-    if (!D3D12_INTERNAL_ConvertDepthStencilState(createinfo->depth_stencil_state, &psoDesc.DepthStencilState)) {
-        return NULL;
-    }
+    D3D12_INTERNAL_ConvertRasterizerState(createinfo->rasterizer_state, &psoDesc.RasterizerState);
+    D3D12_INTERNAL_ConvertBlendState(createinfo, &psoDesc.BlendState);
+    D3D12_INTERNAL_ConvertDepthStencilState(createinfo->depth_stencil_state, &psoDesc.DepthStencilState);
 
     D3D12GraphicsPipeline *pipeline = (D3D12GraphicsPipeline *)SDL_calloc(1, sizeof(D3D12GraphicsPipeline));
     if (!pipeline) {
