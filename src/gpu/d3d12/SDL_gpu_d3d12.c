@@ -813,7 +813,6 @@ struct D3D12StagingDescriptor
     D3D12StagingDescriptorPool *pool;
     D3D12DescriptorHeap *heap;
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
-    Uint32 cpuHandleIndex;
 };
 
 typedef struct D3D12TextureContainer
@@ -945,9 +944,6 @@ struct D3D12Renderer
     bool debug_mode;
     bool GPUUploadHeapSupported;
     bool UnrestrictedBufferTextureCopyPitchSupported;
-    // FIXME: these might not be necessary since we're not using custom heaps
-    bool UMA;
-    bool UMACacheCoherent;
     SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
@@ -1152,7 +1148,6 @@ struct D3D12CommandBuffer
 
 struct D3D12Shader
 {
-    // todo cleanup
     void *bytecode;
     size_t bytecodeSize;
 
@@ -1239,7 +1234,6 @@ struct D3D12Buffer
     ID3D12Resource *handle;
     D3D12StagingDescriptor uavDescriptor;
     D3D12StagingDescriptor srvDescriptor;
-    D3D12StagingDescriptor cbvDescriptor;
     D3D12_GPU_VIRTUAL_ADDRESS virtualAddress;
     Uint8 *mapPointer; // NULL except for upload buffers and fast uniform buffers
     SDL_AtomicInt referenceCount;
@@ -1257,8 +1251,6 @@ struct D3D12BufferContainer
     D3D12Buffer **buffers;
     Uint32 bufferCapacity;
     Uint32 bufferCount;
-
-    D3D12_RESOURCE_DESC bufferDesc;
 
     char *debugName;
 };
@@ -1389,8 +1381,6 @@ static void D3D12_INTERNAL_DestroyBuffer(
         &buffer->srvDescriptor);
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         &buffer->uavDescriptor);
-    D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        &buffer->cbvDescriptor);
 
     if (buffer->handle) {
         ID3D12Resource_Release(buffer->handle);
@@ -2367,7 +2357,6 @@ static D3D12StagingDescriptorPool *D3D12_INTERNAL_CreateStagingDescriptorPool(
     for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
         pool->freeDescriptors[i].pool = pool;
         pool->freeDescriptors[i].heap = heap;
-        pool->freeDescriptors[i].cpuHandleIndex = i;
         pool->freeDescriptors[i].cpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (i * heap->descriptorSize);
     }
 
@@ -2402,7 +2391,6 @@ static bool D3D12_INTERNAL_ExpandStagingDescriptorPool(
     for (Uint32 i = 0; i < STAGING_HEAP_DESCRIPTOR_COUNT; i += 1) {
         pool->freeDescriptors[i].pool = pool;
         pool->freeDescriptors[i].heap = heap;
-        pool->freeDescriptors[i].cpuHandleIndex = i;
         pool->freeDescriptors[i].cpuHandle.ptr = heap->descriptorHeapCPUStart.ptr + (i * heap->descriptorSize);
     }
 
@@ -3809,7 +3797,6 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
     ID3D12Resource *handle;
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
     D3D12_HEAP_PROPERTIES heapProperties;
     D3D12_RESOURCE_DESC desc;
     D3D12_HEAP_FLAGS heapFlags = (D3D12_HEAP_FLAGS)0;
@@ -3901,7 +3888,6 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
 
     buffer->uavDescriptor.heap = NULL;
     buffer->srvDescriptor.heap = NULL;
-    buffer->cbvDescriptor.heap = NULL;
 
     if (usageFlags & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         D3D12_INTERNAL_AssignStagingDescriptorHandle(
@@ -3948,23 +3934,6 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
             handle,
             &srvDesc,
             buffer->srvDescriptor.cpuHandle);
-    }
-
-    // FIXME: we may not need a CBV since we use root descriptors
-    if (type == D3D12_BUFFER_TYPE_UNIFORM) {
-        D3D12_INTERNAL_AssignStagingDescriptorHandle(
-            renderer,
-            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-            &buffer->cbvDescriptor);
-
-        cbvDesc.BufferLocation = ID3D12Resource_GetGPUVirtualAddress(handle);
-        cbvDesc.SizeInBytes = size;
-
-        // Create CBV
-        ID3D12Device_CreateConstantBufferView(
-            renderer->device,
-            &cbvDesc,
-            buffer->cbvDescriptor.cpuHandle);
     }
 
     buffer->virtualAddress = 0;
@@ -9382,7 +9351,6 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     PFN_D3D12_GET_INTERFACE pD3D12GetInterface;
     PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
 #endif
-    D3D12_FEATURE_DATA_ARCHITECTURE architecture;
     D3D12_COMMAND_QUEUE_DESC queueDesc;
 
     bool verboseLogs = SDL_GetBooleanProperty(
@@ -9787,21 +9755,6 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(renderer);
     }
 #endif
-
-    // Check UMA
-    architecture.NodeIndex = 0;
-    res = ID3D12Device_CheckFeatureSupport(
-        renderer->device,
-        D3D12_FEATURE_ARCHITECTURE,
-        &architecture,
-        sizeof(D3D12_FEATURE_DATA_ARCHITECTURE));
-    if (FAILED(res)) {
-        D3D12_INTERNAL_DestroyRenderer(renderer);
-        CHECK_D3D12_ERROR_AND_RETURN("Could not get device architecture", NULL);
-    }
-
-    renderer->UMA = (bool)architecture.UMA;
-    renderer->UMACacheCoherent = (bool)architecture.CacheCoherentUMA;
 
 #if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     renderer->GPUUploadHeapSupported = false;
