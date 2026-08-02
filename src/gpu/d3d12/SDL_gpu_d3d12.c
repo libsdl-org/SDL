@@ -123,7 +123,6 @@
 #define WINDOW_PROPERTY_DATA                "SDL.internal.gpu.d3d12.data"
 #define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
 #define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
-#define MAX_ROOT_SIGNATURE_PARAMETERS         64
 #define D3D12_FENCE_UNSIGNALED_VALUE          0
 #define D3D12_FENCE_SIGNAL_VALUE              1
 // TODO: do these need to be tuned?
@@ -2492,9 +2491,8 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     D3D12Shader *vertexShader,
     D3D12Shader *fragmentShader)
 {
-    // FIXME: I think the max can be smaller...
-    D3D12_ROOT_PARAMETER rootParameters[MAX_ROOT_SIGNATURE_PARAMETERS];
-    D3D12_DESCRIPTOR_RANGE descriptorRanges[MAX_ROOT_SIGNATURE_PARAMETERS];
+    D3D12_ROOT_PARAMETER rootParameters[16];    // 2 stages * (1 sampler + 3 srvs + 4 cbvs)
+    D3D12_DESCRIPTOR_RANGE descriptorRanges[8]; // 2 stages * (1 sampler + 3 srvs)
     Uint32 parameterCount = 0;
     Uint32 rangeCount = 0;
     D3D12_DESCRIPTOR_RANGE descriptorRange;
@@ -2579,7 +2577,6 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     }
 
     if (vertexShader->numStorageBuffers) {
-
         // Vertex storage buffers
         descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
         descriptorRange.NumDescriptors = vertexShader->numStorageBuffers;
@@ -2693,10 +2690,6 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
         parameterCount += 1;
     }
 
-    // FIXME: shouldn't have to assert here
-    SDL_assert(parameterCount <= MAX_ROOT_SIGNATURE_PARAMETERS);
-    SDL_assert(rangeCount <= MAX_ROOT_SIGNATURE_PARAMETERS);
-
     // Create the root signature description
     D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
     rootSignatureDesc.NumParameters = parameterCount;
@@ -2708,7 +2701,11 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     // Serialize the root signature
     ID3DBlob *serializedRootSignature;
     ID3DBlob *errorBlob;
-    HRESULT res = renderer->pD3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSignature, &errorBlob);
+    HRESULT res = renderer->pD3D12SerializeRootSignature(
+        &rootSignatureDesc,
+        D3D_ROOT_SIGNATURE_VERSION_1,
+        &serializedRootSignature,
+        &errorBlob);
 
     if (FAILED(res)) {
         if (errorBlob) {
@@ -2785,9 +2782,8 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
     D3D12Renderer *renderer,
     const SDL_GPUComputePipelineCreateInfo *createInfo)
 {
-    // FIXME: I think the max can be smaller...
-    D3D12_ROOT_PARAMETER rootParameters[MAX_ROOT_SIGNATURE_PARAMETERS];
-    D3D12_DESCRIPTOR_RANGE descriptorRanges[MAX_ROOT_SIGNATURE_PARAMETERS];
+    D3D12_ROOT_PARAMETER rootParameters[10];    // 1 sampler + 3 srvs + 2 uavs + 4 cbvs
+    D3D12_DESCRIPTOR_RANGE descriptorRanges[6]; // 1 sampler + 3 srvs + 2 uavs
     Uint32 parameterCount = 0;
     Uint32 rangeCount = 0;
     D3D12_DESCRIPTOR_RANGE descriptorRange;
