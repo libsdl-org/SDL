@@ -2789,7 +2789,7 @@ static bool HIDAPI_DriverGIP_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
-    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, false);
+    ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, true);
 
     attachment = GIP_EnsureAttachment(ctx, 0);
     GIP_HandleQuirks(attachment);
