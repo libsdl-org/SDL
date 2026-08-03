@@ -128,7 +128,9 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 #endif
 
     const char **extensionNames = SDL_stack_alloc(const char *, userExtensionCount + platformExtensionCount);
-    SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
+    if (userExtensionCount > 0) {
+        SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * userExtensionCount);
+    }
     extensionNames[userExtensionCount] = gpuExtension.extensionName;
 #ifdef SDL_PLATFORM_ANDROID
     extensionNames[userExtensionCount + 1] = XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME;
