@@ -1959,22 +1959,35 @@ static void D3D12_INTERNAL_TextureTransitionToDefaultUsage(
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
     D3D12Buffer *buffer)
 {
+    D3D12_RESOURCE_STATES states = 0;
+
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
-        return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
-        return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
-        return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
-        return D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
-        return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    } else if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
+        states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+    } 
+    if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
+        states |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+    } 
+    if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+        states |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
+    } 
+    if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
+        states |= D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+    } 
+    if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
+        states |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+    }
+    
+    // If no read flags are set, read-write can be the default.
+    if (!states && buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    } else {
+    } 
+    
+    if (!states) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
     }
+
+    return states;
 }
 
 static void D3D12_INTERNAL_BufferBarrier(

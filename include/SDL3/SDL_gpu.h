@@ -884,8 +884,8 @@ typedef enum SDL_GPUTextureFormat
 /**
  * Specifies how a texture is intended to be used by the client.
  *
- * A texture must have at least one usage flag. Note that some usage flag
- * combinations are invalid.
+ * A texture must have at least one usage flag. 
+ * Note that combining SAMPLER with STORAGE_READ flags is invalid.
  *
  * With regards to compute storage usage, READ | WRITE means that you can have
  * shader A that only writes into the texture and shader B that only reads
@@ -967,8 +967,10 @@ typedef enum SDL_GPUCubeMapFace
 /**
  * Specifies how a buffer is intended to be used by the client.
  *
- * A buffer must have at least one usage flag. Note that some usage flag
- * combinations are invalid.
+ * A buffer must have at least one usage flag.
+ * 
+ * If a buffer has multiple read usages, this may lead to a performance penalty 
+ * due to more conservative memory barriers, but it also may not necessarily affect the performance.
  *
  * Unlike textures, READ | WRITE can be used for simultaneous read-write
  * usage. The same data synchronization concerns as textures apply.
