@@ -115,8 +115,7 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 
     // allocate enough space for the validation layer + the user's api layers
     const char **apiLayerNames = SDL_stack_alloc(const char *, userApiLayerCount + 1);
-    if (userApiLayerCount > 0)
-    {
+    if (userApiLayerCount > 0) {
         SDL_memcpy((void *)apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
     }
     apiLayerNames[userApiLayerCount] = VALIDATION_LAYER_API_NAME;
