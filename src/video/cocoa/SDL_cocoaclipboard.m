@@ -238,7 +238,8 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
         for (NSPasteboardItem *item in [pasteboard pasteboardItems]) {
             NSData *itemData;
             CFStringRef utiType = GetUTIType(mime_type);
-            itemData = [item dataForType: (__bridge NSString *)utiType];
+            NSString *availableType = [pasteboard availableTypeFromArray:@[(__bridge NSString *) utiType]];
+            itemData = [item dataForType: availableType];
             CFRelease(utiType);
             if (itemData != nil) {
                 NSUInteger length = [itemData length];
