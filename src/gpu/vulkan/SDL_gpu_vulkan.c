@@ -2927,8 +2927,8 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
         flags |= VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ;
     }
 
-    // If no read flags are set, let's set the read-write usage flag.
-    if (flags == 0 && buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
+    // If no read flags are set, read-write can be the default.
+    if (!flags && buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         flags = VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
     } 
 
