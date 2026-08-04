@@ -247,6 +247,88 @@ static void MIMEDataListFree(struct wl_list *list)
     }
 }
 
+static void data_source_handle_target(void *data, struct wl_data_source *wl_data_source, const char *mime_type)
+{
+}
+
+static void data_source_handle_send(void *data, struct wl_data_source *wl_data_source, const char *mime_type, int32_t fd)
+{
+    Wayland_DataSourceSend((SDL_WaylandDataSource *)data, mime_type, fd);
+}
+
+static void data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
+{
+    SDL_WaylandDataSource *source = data;
+    if (source) {
+        Wayland_DataSourceDestroy(source);
+    }
+}
+
+static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
+{
+}
+
+static void data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
+{
+}
+
+static void data_source_handle_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action)
+{
+}
+
+static const struct wl_data_source_listener data_source_listener = {
+    data_source_handle_target,
+    data_source_handle_send,
+    data_source_handle_cancelled,
+    data_source_handle_dnd_drop_performed, // Version 3
+    data_source_handle_dnd_finished,       // Version 3
+    data_source_handle_action,             // Version 3
+};
+
+SDL_WaylandDataSource *Wayland_DataSourceCreate(SDL_VideoData *video_data)
+{
+    SDL_WaylandDataSource *data_source = SDL_calloc(1, sizeof(*data_source));
+    if (!data_source) {
+        return NULL;
+    }
+
+    struct wl_data_source *id = wl_data_device_manager_create_data_source(video_data->data_device_manager);
+    data_source->source = id;
+    wl_data_source_set_user_data(id, data_source);
+    wl_data_source_add_listener(id, &data_source_listener, data_source);
+
+    return data_source;
+}
+
+static void primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1, const char *mime_type, int32_t fd)
+{
+    Wayland_PrimarySelectionSourceSend((SDL_WaylandPrimarySelectionSource *)data, mime_type, fd);
+}
+
+static void primary_selection_source_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1)
+{
+    Wayland_PrimarySelectionSourceDestroy(data);
+}
+
+static const struct zwp_primary_selection_source_v1_listener primary_selection_source_listener = {
+    primary_selection_source_send,
+    primary_selection_source_cancelled,
+};
+
+SDL_WaylandPrimarySelectionSource *Wayland_PrimarySelectionSourceCreate(SDL_VideoData *video_data)
+{
+    SDL_WaylandPrimarySelectionSource *primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
+    if (!primary_selection_source) {
+        return NULL;
+    }
+
+    struct zwp_primary_selection_source_v1 *id = zwp_primary_selection_device_manager_v1_create_source(video_data->primary_selection_device_manager);
+    primary_selection_source->source = id;
+    zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener, primary_selection_source);
+
+    return primary_selection_source;
+}
+
 static size_t SendData(const void *data, size_t length, int fd)
 {
     size_t result = 0;
