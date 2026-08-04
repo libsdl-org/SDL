@@ -52,10 +52,10 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrSystemGetInfo, XR_TYPE_SYSTEM_GET_INFO) \
     _avail(XrSystemProperties, XR_TYPE_SYSTEM_PROPERTIES) \
     _avail(XrSessionCreateInfo, XR_TYPE_SESSION_CREATE_INFO) \
-    _avail(XrSpaceVelocity, XR_TYPE_SPACE_VELOCITY) \
     _avail(XrReferenceSpaceCreateInfo, XR_TYPE_REFERENCE_SPACE_CREATE_INFO) \
     _avail(XrActionSpaceCreateInfo, XR_TYPE_ACTION_SPACE_CREATE_INFO) \
     _avail(XrSpaceLocation, XR_TYPE_SPACE_LOCATION) \
+    _avail(XrSpaceVelocity, XR_TYPE_SPACE_VELOCITY) \
     _avail(XrViewConfigurationProperties, XR_TYPE_VIEW_CONFIGURATION_PROPERTIES) \
     _avail(XrViewConfigurationView, XR_TYPE_VIEW_CONFIGURATION_VIEW) \
     _avail(XrSwapchainCreateInfo, XR_TYPE_SWAPCHAIN_CREATE_INFO) \
@@ -63,12 +63,12 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrSwapchainImageWaitInfo, XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO) \
     _avail(XrSwapchainImageReleaseInfo, XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO) \
     _avail(XrSessionBeginInfo, XR_TYPE_SESSION_BEGIN_INFO) \
-    _avail(XrFrameWaitInfo, XR_TYPE_FRAME_WAIT_INFO) \
     _avail(XrFrameState, XR_TYPE_FRAME_STATE) \
+    _avail(XrFrameWaitInfo, XR_TYPE_FRAME_WAIT_INFO) \
     _avail(XrFrameBeginInfo, XR_TYPE_FRAME_BEGIN_INFO) \
     _avail(XrFrameEndInfo, XR_TYPE_FRAME_END_INFO) \
-    _avail(XrViewLocateInfo, XR_TYPE_VIEW_LOCATE_INFO) \
     _avail(XrViewState, XR_TYPE_VIEW_STATE) \
+    _avail(XrViewLocateInfo, XR_TYPE_VIEW_LOCATE_INFO) \
     _avail(XrView, XR_TYPE_VIEW) \
     _avail(XrActionSetCreateInfo, XR_TYPE_ACTION_SET_CREATE_INFO) \
     _avail(XrActionCreateInfo, XR_TYPE_ACTION_CREATE_INFO) \
@@ -650,6 +650,8 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrHapticParametricPropertiesEXT, XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
     _avail(XrHapticParametricVibrationEXT, XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT) \
     _avail(XrSystemHapticParametricPropertiesEXT, XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
+    _avail(XrColorSpacesEnumerateInfoSONY, XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY) \
+    _avail(XrSwapchainCreateInfoColorSpaceSONY, XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY) \
     _avail(XrSpatialEntityPersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT) \
     _avail(XrPersistSpatialEntityCompletionEXT, XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
     _avail(XrSpatialEntityUnpersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT) \
