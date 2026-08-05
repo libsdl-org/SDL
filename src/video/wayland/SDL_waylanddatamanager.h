@@ -20,12 +20,12 @@
 */
 
 #include "SDL_internal.h"
-#include "SDL_waylandevents_c.h"
 
 #ifndef SDL_waylanddatamanager_h_
 #define SDL_waylanddatamanager_h_
 
 #include "SDL_waylandvideo.h"
+#include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 
 #define TEXT_MIME "text/plain;charset=utf-8"
