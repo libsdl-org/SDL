@@ -510,7 +510,6 @@ static int device_class(struct udev_device *dev)
                 }
             }
         }
-
     } else if (SDL_strcmp(subsystem, "input") == 0) {
         // udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c
 
