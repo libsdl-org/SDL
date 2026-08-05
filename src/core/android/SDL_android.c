@@ -1241,6 +1241,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     jint surfaceWidth, jint surfaceHeight,
     jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate)
 {
+#if 1
+    // Those variables are needed before SDL_Init
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
+#else
     RPC_Prepare(nativeSetScreenResolution);
     RPC_Add(surfaceWidth);
     RPC_Add(surfaceHeight);
@@ -1249,6 +1253,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     RPC_Add(density);
     RPC_Add(rate);
     RPC_Send;
+#endif
 }
 
 // Resize
@@ -1268,23 +1273,57 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetNaturalOrientation)(
     JNIEnv *env, jclass jcls,
     jint orientation)
 {
+#if 1
+    // 'displayNaturalOrientation' variable is needed before SDL_Init
+    displayNaturalOrientation = (SDL_DisplayOrientation)orientation;
+#else
     RPC_Prepare(nativeSetNaturalOrientation);
     RPC_Add(orientation);
     RPC_Send;
+#endif
 }
 
 typedef struct {
     RPC_cmd_t cmd;
     Uint64 timestamp;
-    int rotation;
+    int currentOrientation;
 } RPC_data_onNativeRotationChanged_t;
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeRotationChanged)(
     JNIEnv *env, jclass jcls,
     jint rotation)
 {
+    SDL_DisplayOrientation currentOrientation;
+
+    // 'displayCurrentOrientation' is needed before SDL_Init.
+
+    if (displayNaturalOrientation == SDL_ORIENTATION_LANDSCAPE) {
+        rotation += 90;
+    }
+
+    switch (rotation % 360) {
+        case 0:
+            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT;
+            break;
+        case 90:
+            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE;
+            break;
+        case 180:
+            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+            break;
+        case 270:
+            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+            break;
+        default:
+            displayCurrentOrientation = SDL_ORIENTATION_UNKNOWN;
+            break;
+    }
+
+    currentOrientation = displayCurrentOrientation;
+
+    // The event is sent with the window, so we keep the RPC
     RPC_Prepare(onNativeRotationChanged);
-    RPC_Add(rotation);
+    RPC_Add(currentOrientation);
     RPC_Send;
 }
 
@@ -4446,31 +4485,7 @@ void Android_PumpRPC(SDL_Window *window)
             case RPC_cmd_onNativeRotationChanged:
                 {
                     RPC_Get(onNativeRotationChanged);
-
-                    if (displayNaturalOrientation == SDL_ORIENTATION_LANDSCAPE) {
-                        data.rotation += 90;
-                    }
-
-                    switch (data.rotation % 360) {
-                        case 0:
-                            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT;
-                            break;
-                        case 90:
-                            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE;
-                            break;
-                        case 180:
-                            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
-                            break;
-                        case 270:
-                            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
-                            break;
-                        default:
-                            displayCurrentOrientation = SDL_ORIENTATION_UNKNOWN;
-                            break;
-                    }
-
-                    Android_SetOrientation(displayCurrentOrientation);
-
+                    Android_SetOrientation((SDL_DisplayOrientation)data.currentOrientation);
                 }
                 break;
 
