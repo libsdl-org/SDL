@@ -485,7 +485,7 @@ static int device_class(struct udev_device *dev)
 {
     const char *subsystem;
     const char *val = NULL;
-    const char* attr = NULL;
+    const char *attr = NULL;
     int devclass = 0;
 
     subsystem = _this->syms.udev_device_get_subsystem(dev);
