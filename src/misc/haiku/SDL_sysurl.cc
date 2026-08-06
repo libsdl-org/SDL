@@ -25,7 +25,7 @@
 
 bool SDL_SYS_OpenURL(const char *url)
 {
-#if B_BEOS_VERSION <= B_HAIKU_VERSION_1_BETA_5
+#if B_HAIKU_VERSION <= B_HAIKU_VERSION_1_BETA_5
     BUrl burl(url);
 #else
     BUrl burl(url, true);
