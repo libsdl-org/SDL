@@ -33,12 +33,22 @@ typedef struct
 
 typedef struct
 {
+	Uint32 usage;
+	Uint8  type;         /* collection type byte: 0=Physical, 1=Application,
+	                        2=Logical, 3=Report, 4=NamedArray, ... */
+} DescriptorCollection;
+
+typedef struct
+{
 	int field_count;
 	DescriptorInputField *fields;
+	int collection_count;
+	DescriptorCollection *collections;
 } SDL_ReportDescriptor;
 
 extern SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, size_t descriptor_size);
 extern bool SDL_DescriptorHasUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page, Uint16 usage);
+extern bool SDL_DescriptorHasCollectionUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page, Uint16 usage, Uint8 type);
 extern void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor);
 extern bool SDL_ReadReportData(const Uint8 *data, size_t size, int bit_offset, int bit_size, Uint32 *value);
 

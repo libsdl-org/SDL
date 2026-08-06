@@ -47,9 +47,28 @@
 #endif
 
 #include <SDL3/SDL_main.h>
+#include "joystick/usb_ids.h"
 
 #include "../src/joystick/hidapi/SDL_report_descriptor.h"
 #include "../src/joystick/hidapi/SDL_report_descriptor.c"
+
+bool IsGamepad(SDL_ReportDescriptor *descriptor)
+{
+    if ((SDL_DescriptorHasCollectionUsage(descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_JOYSTICK, 0x1)
+        || SDL_DescriptorHasCollectionUsage(descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_GAMEPAD, 0x1))
+        // Something in parsing is still not right in the parsing, the block
+        // below makes some devices to be misdetected.
+#if 0
+        && !SDL_DescriptorHasCollectionUsage(descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_KEYBOARD, 0x1)
+        && !SDL_DescriptorHasCollectionUsage(descriptor, USB_USAGEPAGE_GENERIC_DESKTOP, USB_USAGE_GENERIC_MOUSE, 0x1)) {
+#else
+        ) {
+#endif
+        return true;
+    }
+
+    return false;
+}
 
 int main(int argc, char *argv[])
 {
@@ -71,6 +90,10 @@ int main(int argc, char *argv[])
         SDL_Log("Couldn't parse %s: %s", file, SDL_GetError());
         return 3;
     }
+
+    bool is_gamepad = IsGamepad(sdl_descriptor);
+    SDL_Log("Is device \"%s\" a gamepad? %s", file, is_gamepad ? "YES" : "NO");
+
     SDL_DestroyDescriptor(sdl_descriptor);
     return 0;
 }
