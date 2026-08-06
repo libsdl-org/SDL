@@ -1275,7 +1275,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaMod(SDL_Texture *texture, Ui
 extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaModFloat(SDL_Texture *texture, float *alpha);
 
 /**
- * Set the blend mode for a texture.
+ * Set the blend mode for a texture, used by SDL_RenderTexture().
  *
  * This blend mode is used for any drawing that involves this texture.
  *
