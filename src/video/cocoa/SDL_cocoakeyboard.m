@@ -38,6 +38,7 @@
     NSRange   _markedRange;
     NSRange   _selectedRange;
     SDL_Rect  _inputRect;
+    NSMutableString *_committedText;
 }
 - (void)doCommandBySelector:(SEL)myselector;
 - (void)setInputRect:(const SDL_Rect *)rect;
@@ -52,11 +53,10 @@
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
-    /* TODO: Make use of replacementRange? */
-
     const char *str;
 
-    DEBUG_IME(@"insertText: %@", aString);
+    DEBUG_IME(@"insertText: %@ replacementRange: (%d, %d)", aString,
+              replacementRange.location, replacementRange.length);
 
     /* Could be NSString or NSAttributedString, so we have
      * to test and convert it before return as SDL event */
@@ -71,15 +71,36 @@
         [self unmarkText];
     }
 
+    /* Track committed text so the IME can query it back
+       (e.g., Korean IME needs this for Hanja candidate lookup). */
+    {
+        NSString *s = [aString isKindOfClass:[NSAttributedString class]]
+                    ? [aString string] : aString;
+        if (!_committedText) {
+            _committedText = [s mutableCopy];
+        } else {
+            [_committedText appendString:s];
+        }
+        _selectedRange = NSMakeRange([_committedText length], 0);
+    }
+
     SDL_SendKeyboardText(str);
 }
 
 - (void)doCommandBySelector:(SEL)myselector
 {
-    /* No need to do anything since we are not using Cocoa
-       selectors to handle special keys, instead we use SDL
-       key events to do the same job.
-    */
+    /* Key actions are handled via SDL key events, but we still need to keep
+       _committedText in sync so the IME can query it (e.g., Hanja lookup). */
+    if (myselector == @selector(deleteBackward:) && _committedText) {
+        NSUInteger len = [_committedText length];
+        if (len > 0) {
+            /* Remove the last character (composed character sequence). */
+            NSRange last;
+            last = [_committedText rangeOfComposedCharacterSequenceAtIndex:len - 1];
+            [_committedText deleteCharactersInRange:last];
+            _selectedRange = NSMakeRange([_committedText length], 0);
+        }
+    }
 }
 
 - (BOOL)hasMarkedText
@@ -103,9 +124,33 @@
         aString = [aString string];
     }
 
+    DEBUG_IME(@"setMarkedText: %@, (%d, %d) replacementRange: (%d, %d)", aString,
+              selectedRange.location, selectedRange.length,
+              replacementRange.location, replacementRange.length);
+
     if ([aString length] == 0) {
         [self unmarkText];
         return;
+    }
+
+    /* Delete committed text being replaced by this composition (e.g., Hanja
+       candidate replacing a previously committed Hangul syllable).
+       Clear modifier state so the backspaces aren't interpreted as
+       Option+Backspace (delete-word) by the application. */
+    if (replacementRange.location != NSNotFound && replacementRange.length > 0 &&
+        _committedText) {
+        NSUInteger end = replacementRange.location + replacementRange.length;
+        if (end <= [_committedText length]) {
+            SDL_Keymod saved = SDL_GetModState();
+            SDL_SetModState(KMOD_NONE);
+            for (NSUInteger i = 0; i < replacementRange.length; i++) {
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
+            }
+            SDL_SetModState(saved);
+            [_committedText replaceCharactersInRange:replacementRange withString:@""];
+            _selectedRange = NSMakeRange(replacementRange.location, 0);
+        }
     }
 
     if (_markedText != aString) {
@@ -117,9 +162,6 @@
 
     SDL_SendEditingText([aString UTF8String],
                         (int) selectedRange.location, (int) selectedRange.length);
-
-    DEBUG_IME(@"setMarkedText: %@, (%d, %d)", _markedText,
-          selectedRange.location, selectedRange.length);
 }
 
 - (void)unmarkText
@@ -153,6 +195,18 @@
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
     DEBUG_IME(@"attributedSubstringFromRange: (%d, %d)", aRange.location, aRange.length);
+
+    if (_committedText) {
+        NSUInteger len = [_committedText length];
+        NSRange clipped = NSIntersectionRange(aRange, NSMakeRange(0, len));
+        if (clipped.length > 0) {
+            if (actualRange) {
+                *actualRange = clipped;
+            }
+            return [[NSAttributedString alloc]
+                initWithString:[_committedText substringWithRange:clipped]];
+        }
+    }
     return nil;
 }
 
@@ -424,7 +478,12 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 #endif
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
-            [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
+            /* Let the input context handle IME events like candidate selection
+               (e.g., Option+Return for Hanja in Korean IME). Fall back to
+               interpretKeyEvents if the input context doesn't consume the event. */
+            if (![[data.fieldEdit inputContext] handleEvent:event]) {
+                [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
+            }
 #if 0
             text = [[event characters] UTF8String];
             if(text && *text) {
