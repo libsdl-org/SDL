@@ -1221,6 +1221,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaModFloat(SDL_Texture *textur
 /**
  * Set the blend mode for a texture, used by SDL_RenderTexture().
  *
+ * This blend mode is used for any drawing that involves this texture.
+ *
  * If the blend mode is not supported, the closest supported mode is chosen
  * and this function returns false.
  *
@@ -1234,6 +1236,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureAlphaModFloat(SDL_Texture *textur
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetTextureBlendMode
+ * \sa SDL_SetRenderDrawBlendMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode blendMode);
 
@@ -2054,7 +2057,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderColorScale(SDL_Renderer *renderer,
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale);
 
 /**
- * Set the blend mode used for drawing operations (Fill and Line).
+ * Set the blend mode used for drawing operations.
+ *
+ * This blend mode is used for any drawing that doesn't involve textures.
  *
  * If the blend mode is not supported, the closest supported mode is chosen.
  *
@@ -2068,6 +2073,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRenderDrawBlendMode
+ * \sa SDL_SetTextureBlendMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode);
 
