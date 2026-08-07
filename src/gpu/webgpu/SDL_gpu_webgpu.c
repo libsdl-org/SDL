@@ -3586,12 +3586,21 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
 
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL);
 
+    uint32_t blockWidth = Texture_GetBlockWidth(createInfo->format);
+    uint32_t blockHeight = Texture_GetBlockHeight(createInfo->format);
+
+    uint32_t padWidthBy =
+        (createInfo->width % blockWidth != 0) ? (blockWidth - (createInfo->width % blockWidth)) : 0;
+    uint32_t padHeightBy = (createInfo->height % blockHeight != 0)
+                               ? (blockHeight - (createInfo->height % blockHeight))
+                               : 0;
+
     desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
     desc.format = SDLToWebGPU_TextureFormat[createInfo->format];
     desc.mipLevelCount = createInfo->num_levels;
     desc.size = (WGPUExtent3D){
-        .width = createInfo->width,
-        .height = createInfo->height,
+        .width = createInfo->width + padWidthBy,
+        .height = createInfo->height + padHeightBy,
         .depthOrArrayLayers = createInfo->type == SDL_GPU_TEXTURETYPE_2D ? 1 : createInfo->layer_count_or_depth
     };
 
@@ -4897,6 +4906,16 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
         WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
     }
 
+    // ASTC support. We only care about the destination texture being aligned though.
+    uint32_t blockWidthDest = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    uint32_t blockHeightDest = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+
+    uint32_t padWidthBy =
+        (w % blockWidthDest != 0) ? (blockWidthDest - (w % blockWidthDest)) : 0;
+    uint32_t padHeightBy = (h % blockHeightDest != 0)
+                               ? (blockHeightDest - (h % blockHeightDest))
+                               : 0;
+
     sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
     sourceInfo.aspect = ((WebGPUTextureContainer *)source->texture)->activeTexture->aspect;
     sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z + source->layer };
@@ -4915,7 +4934,7 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
     WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted->usedTextures, cmdBuf->submitted->usedTextureCapacity,
                                            cmdBuf->submitted->usedTextureCount, WebGPUTexture *, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
 
-    wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ w, h, d });
+    wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ w + padWidthBy, h + padHeightBy, d });
 }
 
 static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTransferBufferLocation *source, const SDL_GPUBufferRegion *destination, bool cycle)
@@ -4943,25 +4962,46 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
         WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
     }
 
-    uint32_t pixelsPerRow = source->pixels_per_row != 0 ? source->pixels_per_row : destination->w;
-    uint32_t rowsPerLayer = source->rows_per_layer != 0 ? source->rows_per_layer : destination->h;
+    // NOTE:
+    // WebGPU requires ASTC textures to be sized as a multiple of the block size,
+    // i.e; An ASTC 4x5 texture's width must be a multiple of 4 and its height must be a multiple of 5.
+    // The backend automatically scales up ASTC textures if needed, which makes it invisible to the end-user that WebGPU has this restriction.
+    // However, we also have to pad the destination size in here since, again; it's invisible to the end user.
+    // We should probably make a note in the docs stating that ASTC textures in the WebGPU backend are not always the same size as the user expects.
+    uint32_t blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    uint32_t blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
 
-    size_t bytesPerRow = BytesPerRow(pixelsPerRow, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
-    size_t paddedBytesPerRow = (bytesPerRow + 255) & ~255;
+    uint32_t padWidthBy =
+        (destination->w % blockWidth != 0) ? (blockWidth - (destination->w % blockWidth)) : 0;
+    uint32_t padHeightBy = (destination->h % blockHeight != 0)
+                               ? (blockHeight - (destination->h % blockHeight))
+                               : 0;
+
+    uint32_t paddedWidth = destination->w + padWidthBy;
+    uint32_t paddedHeight = destination->h + padHeightBy;
+
+    uint32_t pixelsPerRowSource = source->pixels_per_row != 0 ? source->pixels_per_row : destination->w;
+    uint32_t pixelsPerRowDest = source->pixels_per_row != 0 ? source->pixels_per_row : paddedWidth;
+
+    size_t bytesPerRowSource = BytesPerRow(pixelsPerRowSource, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    size_t bytesPerRowDest = BytesPerRow(pixelsPerRowDest, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+
+    size_t paddedBytesPerRow = (bytesPerRowDest + 255) & ~255;
+    size_t blocksPerLayer = (destination->h + blockHeight - 1) / blockHeight;
 
     WebGPUBuffer *userSourceBuffer = ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer;
     WebGPUBuffer *finalSourceBuffer = userSourceBuffer;
 
     bool hadToPad = false;
 
-    if (paddedBytesPerRow != bytesPerRow) {
+    if (paddedBytesPerRow != bytesPerRowDest) {
         // FIXME: Why are we creating a whole new buffer just for a single upload? We need to create a buffer pool.
-        WebGPUBuffer *babysittingSourceBuffer = WEBGPU_INTERNAL_CreateBuffer(cmdBuf->renderer, paddedBytesPerRow * rowsPerLayer, 0,
+        WebGPUBuffer *babysittingSourceBuffer = WEBGPU_INTERNAL_CreateBuffer(cmdBuf->renderer, paddedBytesPerRow * blocksPerLayer, 0,
                                                                              WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, "Autopadded Texture Transfer Buffer");
 
-        for (int i = 0; i < rowsPerLayer; i++) {
-            wgpuCommandEncoderCopyBufferToBuffer(cmdBuf->encoder, userSourceBuffer->buffer, source->offset + i * bytesPerRow,
-                                                 babysittingSourceBuffer->buffer, i * paddedBytesPerRow, bytesPerRow);
+        for (int i = 0; i < blocksPerLayer; i++) {
+            wgpuCommandEncoderCopyBufferToBuffer(cmdBuf->encoder, userSourceBuffer->buffer, source->offset + i * bytesPerRowSource,
+                                                 babysittingSourceBuffer->buffer, i * paddedBytesPerRow, bytesPerRowSource);
         }
 
         finalSourceBuffer = babysittingSourceBuffer;
@@ -4972,7 +5012,7 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
         .buffer = finalSourceBuffer->buffer,
         .layout = (WGPUTexelCopyBufferLayout){
             .bytesPerRow = paddedBytesPerRow,
-            .rowsPerImage = rowsPerLayer,
+            .rowsPerImage = blocksPerLayer,
             .offset = hadToPad ? 0 : source->offset,
         },
     };
@@ -4997,7 +5037,7 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
                                            cmdBuf->submitted->usedTextureCount, WebGPUTexture *,
                                            ((WebGPUTextureContainer *)destination->texture)->activeTexture);
 
-    wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ destination->w, destination->h, destination->d });
+    wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ paddedWidth, paddedHeight, destination->d });
 
     if (hadToPad) {
         WEBGPU_INTERNAL_QueueBufferForRelease(cmdBuf->renderer, finalSourceBuffer);
@@ -6013,7 +6053,21 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
         .rowsPerImage = source->h,
     };
 
-    wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){ source->w, source->h, source->layer });
+    // Fucking ASTC.....
+    uint32_t blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
+    uint32_t blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
+
+    uint32_t padWidthBy =
+        (source->w % blockWidth != 0) ? (blockWidth - (source->w % blockWidth)) : 0;
+    uint32_t padHeightBy = (source->h % blockHeight != 0)
+                               ? (blockHeight - (source->h % blockHeight))
+                               : 0;
+
+    wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){
+                                                                                                                              source->w + padWidthBy,
+                                                                                                                              source->h + padHeightBy,
+                                                                                                                              source->layer,
+                                                                                                                          });
 }
 
 static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info)
