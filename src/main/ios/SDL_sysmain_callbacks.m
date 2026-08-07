@@ -37,6 +37,19 @@
 
 static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 
+static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    CADisplayLink *displayLink = (__bridge CADisplayLink *)userdata;
+    const float rate = newValue ? (float)SDL_atof(newValue) : 0.0f;
+    if (rate > 0.0f) {
+        if (@available(iOS 15.0, tvOS 15.0, *)) {
+            displayLink.preferredFrameRateRange = CAFrameRateRangeMake((rate * 2) / 3, rate, rate);
+        } else {
+            displayLink.preferredFramesPerSecond = (NSInteger)rate;
+        }
+    }
+}
+
 @implementation SDLIosMainCallbacksDisplayLink
 
 - (instancetype)init:(SDL_AppIterate_func)_appiter quitfunc:(SDL_AppQuit_func)_appquit;
@@ -83,6 +96,7 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
         if (globalDisplayLink == nil) {
             rc = SDL_APP_FAILURE;
         } else {
+            SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, (__bridge void *)globalDisplayLink.displayLink);
             return 0;  // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
         }
     }
