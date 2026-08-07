@@ -5,7 +5,7 @@ macro(check_c_source_compiles_static SOURCE VAR)
   set(CMAKE_TRY_COMPILE_TARGET_TYPE "${saved_CMAKE_TRY_COMPILE_TARGET_TYPE}")
 endmacro()
 
-macro(FindLibraryAndSONAME _LIB)
+function(FindLibraryAndSONAME _LIB)
   cmake_parse_arguments(_FLAS "" "" "LIBDIRS" ${ARGN})
 
   string(TOUPPER ${_LIB} _UPPERLNAME)
@@ -15,39 +15,18 @@ macro(FindLibraryAndSONAME _LIB)
 
   # FIXME: fail FindLibraryAndSONAME when library is not shared.
   if(${_LNAME}_LIB MATCHES ".*\\${CMAKE_SHARED_LIBRARY_SUFFIX}.*" AND NOT ${_LNAME}_LIB MATCHES ".*\\${CMAKE_STATIC_LIBRARY_SUFFIX}.*")
-    set(${_LNAME}_SHARED TRUE)
+    set(${_LNAME}_SHARED TRUE PARENT_SCOPE)
+    library_soname_from_path(soname "${${_LNAME}_LIB}")
   else()
-    set(${_LNAME}_SHARED FALSE)
+    set(${_LNAME}_SHARED FALSE PARENT_SCOPE)
+    set(soname "${_LNAME}_LIB_SONAME-NOTFOUND" PARENT_SCOPE)
   endif()
+  set(${_LNAME}_LIB_SONAME "${soname}" PARENT_SCOPE)
 
-  if(${_LNAME}_LIB)
-    # reduce the library name for shared linking
-
-    get_filename_component(_LIB_REALPATH ${${_LNAME}_LIB} REALPATH)  # resolves symlinks
-    get_filename_component(_LIB_LIBDIR ${_LIB_REALPATH} DIRECTORY)
-    get_filename_component(_LIB_JUSTNAME ${_LIB_REALPATH} NAME)
-
-    if(APPLE)
-      string(REGEX REPLACE "(\\.[0-9]*)\\.[0-9\\.]*dylib$" "\\1.dylib" _LIB_REGEXD "${_LIB_JUSTNAME}")
-    else()
-      string(REGEX REPLACE "(\\.[0-9]*)\\.[0-9\\.]*$" "\\1" _LIB_REGEXD "${_LIB_JUSTNAME}")
-    endif()
-
-    if(NOT EXISTS "${_LIB_LIBDIR}/${_LIB_REGEXD}")
-      set(_LIB_REGEXD "${_LIB_JUSTNAME}")
-    endif()
-    set(${_LNAME}_LIBDIR "${_LIB_LIBDIR}")
-
-    message(STATUS "dynamic lib${_LIB} -> ${_LIB_REGEXD}")
-    set(${_LNAME}_LIB_SONAME ${_LIB_REGEXD})
-  endif()
-
+  message(DEBUG "DYNLIB soname: ${soname}")
   message(DEBUG "DYNLIB OUTPUTVAR: ${_LIB} ... ${_LNAME}_LIB")
-  message(DEBUG "DYNLIB ORIGINAL LIB: ${_LIB} ... ${${_LNAME}_LIB}")
-  message(DEBUG "DYNLIB REALPATH LIB: ${_LIB} ... ${_LIB_REALPATH}")
-  message(DEBUG "DYNLIB JUSTNAME LIB: ${_LIB} ... ${_LIB_JUSTNAME}")
-  message(DEBUG "DYNLIB SONAME LIB: ${_LIB} ... ${_LIB_REGEXD}")
-endmacro()
+  message(DEBUG "DYNLIB SONAME LIB: ${_LIB} ... $soname}")
+endfunction()
 
 macro(CheckDLOPEN)
   check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN_IN_LIBC)
@@ -121,8 +100,6 @@ macro(CheckALSA)
         endif()
       endif()
       if(NOT HAVE_ALSA_SHARED)
-        #FIXME: remove this line and property generate sdl3.pc
-        list(APPEND SDL_PC_PRIVATE_REQUIRES alsa)
         sdl_link_dependency(alsa LIBS ALSA::ALSA CMAKE_MODULE ALSA PKG_CONFIG_SPECS "${ALSA_PKG_CONFIG_SPEC}")
       endif()
       set(HAVE_SDL_AUDIO TRUE)
