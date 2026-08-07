@@ -1,4 +1,6 @@
 
+**SEE [README-WEBGPU.md](README-WEBGPU.md) for SDLGPU WebGPU specific issues!**
+
 Simple DirectMedia Layer (SDL for short) is a cross-platform library
 designed to make it easy to write multi-media software, such as games
 and emulators.
