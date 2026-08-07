@@ -65,7 +65,7 @@ static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
 // I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
 
 #define WEBGPU_INTERNAL_RequiredFeaturesCount 4
-#define WEBGPU_INTERNAL_OptionalFeaturesCount 5
+#define WEBGPU_INTERNAL_OptionalFeaturesCount 7
 
 const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[WEBGPU_INTERNAL_RequiredFeaturesCount] = {
     // These three all have 99.98% coverage on WebGPU devices.
@@ -88,7 +88,9 @@ const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[WEBGPU_INTERNAL_OptionalF
 
     // ASTC has 44%, while BC has 86%.
     WGPUFeatureName_TextureCompressionASTC,
+    WGPUFeatureName_TextureCompressionASTCSliced3D,
     WGPUFeatureName_TextureCompressionBC,
+    WGPUFeatureName_TextureCompressionBCSliced3D,
 };
 
 static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
@@ -1740,20 +1742,6 @@ static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *rend
     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
 }
 
-static void WEBGPU_INTERNAL_QueueTextureForRelease(WebGPURenderer *renderer, WebGPUTexture *texture)
-{
-    WebGPUQueuedDestroy *destroy = NULL;
-    if (texture == NULL) {
-        return;
-    }
-
-    destroy = SDL_calloc(1, sizeof(*destroy));
-    destroy->type = WEBGPU_QUEUED_DESTROY_TEXTURE;
-    destroy->resource.texture = texture;
-
-    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
-}
-
 static void WEBGPU_INTERNAL_QueueSamplerForRelease(WebGPURenderer *renderer, WebGPUSampler *sampler)
 {
     WebGPUQueuedDestroy *destroy = NULL;
@@ -2446,12 +2434,12 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
 
     samplerStorageLayoutDesc.entryCount = numSamplerStorageEntries;
     samplerStorageLayoutDesc.entries = samplerStorageEntries;
-    samplerStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    samplerStorageLayoutDesc.label = (WGPUStringView){ 0 };
     samplerStorageLayoutDesc.nextInChain = NULL;
 
     uniformLayoutDesc.entryCount = numUniformBuffers;
     uniformLayoutDesc.entries = uniformEntries;
-    uniformLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    uniformLayoutDesc.label = (WGPUStringView){ 0 };
     uniformLayoutDesc.nextInChain = NULL;
 
     samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &samplerStorageLayoutDesc);
@@ -2722,17 +2710,17 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
 
     samplerStorageLayoutDesc.entryCount = numSamplerStorageEntries;
     samplerStorageLayoutDesc.entries = samplerStorageEntries;
-    samplerStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    samplerStorageLayoutDesc.label = (WGPUStringView){ NULL, 0 };
     samplerStorageLayoutDesc.nextInChain = NULL;
 
     readWriteStorageLayoutDesc.entryCount = numReadWriteStorageEntries;
     readWriteStorageLayoutDesc.entries = readWriteStorageEntries;
-    readWriteStorageLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    readWriteStorageLayoutDesc.label = (WGPUStringView){ NULL, 0 };
     readWriteStorageLayoutDesc.nextInChain = NULL;
 
     uniformLayoutDesc.entryCount = numUniformBuffers;
     uniformLayoutDesc.entries = uniformEntries;
-    uniformLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    uniformLayoutDesc.label = (WGPUStringView){ NULL, 0 };
     uniformLayoutDesc.nextInChain = NULL;
 
     samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &samplerStorageLayoutDesc);
@@ -3349,7 +3337,7 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     }
 
     desc.entries = entries;
-    desc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    desc.label = (WGPUStringView){ NULL, 0 };
     desc.nextInChain = NULL;
 
     bindGroup = wgpuDeviceCreateBindGroup(cmdBuf->device, &desc);
@@ -3593,7 +3581,7 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
                                ? (blockHeight - (createInfo->height % blockHeight))
                                : 0;
 
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 };
     desc.format = SDLToWebGPU_TextureFormat[createInfo->format];
     desc.mipLevelCount = createInfo->num_levels;
     desc.size = (WGPUExtent3D){
@@ -3697,7 +3685,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
 
     WGPUSamplerDescriptor desc;
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL);
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 };
     desc.nextInChain = NULL;
 
     desc.addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u];
@@ -3882,7 +3870,7 @@ static SDL_GPUShader *WEBGPU_CreateShader(
     shader = SDL_calloc(1, sizeof(*shader));
 
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING, NULL);
-    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    desc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 };
 
     WGPUShaderSourceWGSL source;
 
@@ -3935,14 +3923,14 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
                                                                                  .failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.fail_op],
                                                                                  .passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.back_stencil_state.pass_op],
                                                                              }
-                                                                           : (WGPUStencilFaceState)WGPU_STENCIL_FACE_STATE_INIT,
+                                                                           : (WGPUStencilFaceState){ 0 },
         .stencilFront = createInfo->depth_stencil_state.enable_stencil_test ? (WGPUStencilFaceState){
                                                                                   .compare = SDLToWebGPU_CompareFunc[createInfo->depth_stencil_state.front_stencil_state.compare_op],
                                                                                   .depthFailOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.depth_fail_op],
                                                                                   .failOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.fail_op],
                                                                                   .passOp = SDLToWebGPU_StencilOp[createInfo->depth_stencil_state.front_stencil_state.pass_op],
                                                                               }
-                                                                            : (WGPUStencilFaceState)WGPU_STENCIL_FACE_STATE_INIT,
+                                                                            : (WGPUStencilFaceState){ 0 },
         .stencilReadMask = createInfo->depth_stencil_state.enable_stencil_test ? createInfo->depth_stencil_state.compare_mask : 0,
         .stencilWriteMask = createInfo->depth_stencil_state.enable_stencil_test ? createInfo->depth_stencil_state.write_mask : 0,
         .format = SDLToWebGPU_TextureFormat[createInfo->target_info.depth_stencil_format],
@@ -4110,7 +4098,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(((WebGPURenderer *)driverData)->device, &pipelineLayoutDesc);
     const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
 
-    pipelineDesc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    pipelineDesc.label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 };
     pipelineDesc.vertex = vertexState;
     pipelineDesc.fragment = &fragmentState;
     pipelineDesc.multisample = multisampleState;
@@ -4387,7 +4375,7 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, uint
     buf->resourceIdentifier = WEBGPU_INTERNAL_GenerateRandomStringIdentifier();
 
     WGPUBufferDescriptor desc = {
-        .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT,
+        .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 },
         .size = size,
         .usage = usages,
         .mappedAtCreation = false,
@@ -5699,7 +5687,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
     shaderSource.chain.sType = WGPUSType_ShaderSourceWGSL;
     shaderSource.code = (WGPUStringView){ (char *)createInfo->code, createInfo->code_size };
 
-    shaderDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    shaderDesc.label = (WGPUStringView){ NULL, 0 };
     shaderDesc.nextInChain = &shaderSource.chain;
 
     pipeline = SDL_calloc(1, sizeof(*pipeline));
@@ -5733,7 +5721,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
     pipelineLayoutDesc.bindGroupLayoutCount = 3;
     pipelineLayoutDesc.bindGroupLayouts = pipelineLayoutEntries;
     pipelineLayoutDesc.immediateSize = 0;
-    pipelineLayoutDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    pipelineLayoutDesc.label = (WGPUStringView){ NULL, 0 };
     pipelineLayoutDesc.nextInChain = NULL;
 
     pipelineLayoutEntries[0] = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout;
@@ -5764,7 +5752,7 @@ static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *dev
         .module = pipeline->computeShader,
         .nextInChain = NULL,
     };
-    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : (WGPUStringView){ NULL, 0 };
     pipelineDesc.layout = pipelineLayout;
     pipelineDesc.nextInChain = NULL;
 
@@ -5853,7 +5841,7 @@ static void WEBGPU_BeginComputePass(SDL_GPUCommandBuffer *commandBuffer, const S
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
     WGPUComputePassDescriptor passDesc;
 
-    passDesc.label = (WGPUStringView)WGPU_STRING_VIEW_INIT;
+    passDesc.label = (WGPUStringView){ NULL, 0 };
     passDesc.nextInChain = NULL;
     // Timestamps are unsupported in SDLGPU.
     // 'erm acktually Cosmonaut made a PoC query API hghehgehg' Biden Blast!!!
@@ -6250,8 +6238,17 @@ static bool WEBGPU_SetAllowedFramesInFlight(SDL_GPURenderer *driverData, Uint32 
 };
 
 // -- UNIMPLEMENTED FUNCTIONS --
-static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window) {}
-static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer) {}
+static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window)
+{
+    SDL_assert_release(!"WEBGPU_WaitForSwapchain is unimplemented! Reason: WebGPU abstracts away the swapchain from the user.");
+    return true;
+}
+
+static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer)
+{
+    SDL_assert_release(!"WEBGPU_Cancel is unimpltemented! Reason: I'm lazy.");
+    return true;
+}
 
 // NOTE: A lot of this is guesswork at best. WebGPU really has no proper documentation.
 static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage)
@@ -6277,6 +6274,20 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
     case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
     case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
         return false;
     case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
@@ -6395,20 +6406,6 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
-    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
         return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
     }
 }
@@ -6429,7 +6426,7 @@ static XrResult WEBGPU_DestroyXRSwapchain(
     XrSwapchain swapchain,
     SDL_GPUTexture **swapchainImages)
 {
-    // No-op.
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 static SDL_GPUTextureFormat *WEBGPU_GetXRSwapchainFormats(
@@ -6437,7 +6434,7 @@ static SDL_GPUTextureFormat *WEBGPU_GetXRSwapchainFormats(
     XrSession session,
     int *num_formats)
 {
-    // No-op.
+    return NULL;
 }
 
 static XrResult WEBGPU_CreateXRSwapchain(
@@ -6448,7 +6445,7 @@ static XrResult WEBGPU_CreateXRSwapchain(
     XrSwapchain *swapchain,
     SDL_GPUTexture ***textures)
 {
-    // No-op.
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 static XrResult WEBGPU_CreateXRSession(
@@ -6456,7 +6453,7 @@ static XrResult WEBGPU_CreateXRSession(
     const XrSessionCreateInfo *createinfo,
     XrSession *session)
 {
-    // No-op.
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
