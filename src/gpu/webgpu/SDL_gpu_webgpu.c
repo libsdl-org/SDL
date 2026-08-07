@@ -65,7 +65,7 @@ static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
 // I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
 
 #define WEBGPU_INTERNAL_RequiredFeaturesCount 4
-#define WEBGPU_INTERNAL_OptionalFeaturesCount 6
+#define WEBGPU_INTERNAL_OptionalFeaturesCount 5
 
 const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[WEBGPU_INTERNAL_RequiredFeaturesCount] = {
     // These three all have 99.98% coverage on WebGPU devices.
@@ -86,11 +86,9 @@ const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[WEBGPU_INTERNAL_OptionalF
     WGPUFeatureName_Float32Filterable,
     WGPUFeatureName_Float32Blendable,
 
-    // ASTC and ETC2 have 44%, while BC has 86%
-    // ASTC & ETC2 are NOT supported on Windows. Why? Who knows.
+    // ASTC has 44%, while BC has 86%.
     WGPUFeatureName_TextureCompressionASTC,
     WGPUFeatureName_TextureCompressionBC,
-    WGPUFeatureName_TextureCompressionETC2,
 };
 
 static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
@@ -5990,9 +5988,6 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
 {
     WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
 
-    WebGPUFence **submittedFences = NULL;
-    uint32_t submittedFencesCapacity = 0;
-    uint32_t submittedFencesCount = 0;
     SDL_LockMutex(renderer->destroyingSelfLock);
 
     for (int i = 0; i < 12; i++) {
