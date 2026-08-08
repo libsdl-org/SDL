@@ -102,12 +102,12 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
             }
             case WSCONS_EVENT_MOUSE_DELTA_W:
             {
-                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Z:
             {
-                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
                 break;
             }
             default:
