@@ -111,10 +111,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
     JNIEnv *env, jclass cls);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetNaturalOrientation)(
-    JNIEnv *env, jclass cls,
-    jint orientation);
-
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeRotationChanged)(
     JNIEnv *env, jclass cls,
     jint rotation);
@@ -280,7 +276,6 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
-    { "nativeSetNaturalOrientation", "(I)V", SDL_JAVA_INTERFACE(nativeSetNaturalOrientation) },
     { "onNativeRotationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeRotationChanged) },
     { "onNativeInsetsChanged", "(IIII)V", SDL_JAVA_INTERFACE(onNativeInsetsChanged) },
     { "nativeAddTouch", "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
@@ -470,13 +465,6 @@ static jmethodID midHapticRumble;
 static jmethodID midHapticStop;
 #endif // !SDL_HAPTIC_DISABLED
 
-
-#ifndef SDL_VIDEO_DISABLED
-// display orientation
-static SDL_DisplayOrientation displayNaturalOrientation;
-static SDL_DisplayOrientation displayCurrentOrientation;
-#endif // !SDL_VIDEO_DISABLED
-
 static bool bHasEnvironmentVariables;
 
 // Android AssetManager
@@ -536,7 +524,6 @@ typedef enum {
 // special case with recreate activity:
 //    RPC_cmd_nativeSetenv,
 //
-    RPC_cmd_nativeSetNaturalOrientation,
     RPC_cmd_onNativeRotationChanged,
     RPC_cmd_onNativeInsetsChanged,
     RPC_cmd_nativeAddTouch,
@@ -611,7 +598,6 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     CASE(WakeUp);
     CASE(nativeFocusChanged);
 #ifndef SDL_VIDEO_DISABLED
-    CASE(nativeSetNaturalOrientation);
     CASE(onNativeRotationChanged);
     CASE(onNativeInsetsChanged);
 #endif // !SDL_VIDEO_DISABLED
@@ -1241,10 +1227,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     jint surfaceWidth, jint surfaceHeight,
     jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate)
 {
-#if 1
-    // Those variables are needed before SDL_Init
-    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
-#else
     RPC_Prepare(nativeSetScreenResolution);
     RPC_Add(surfaceWidth);
     RPC_Add(surfaceHeight);
@@ -1253,7 +1235,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     RPC_Add(density);
     RPC_Add(rate);
     RPC_Send;
-#endif
 }
 
 // Resize
@@ -1266,64 +1247,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 typedef struct {
     RPC_cmd_t cmd;
     Uint64 timestamp;
-    int orientation;
-} RPC_data_nativeSetNaturalOrientation_t;
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetNaturalOrientation)(
-    JNIEnv *env, jclass jcls,
-    jint orientation)
-{
-#if 1
-    // 'displayNaturalOrientation' variable is needed before SDL_Init
-    displayNaturalOrientation = (SDL_DisplayOrientation)orientation;
-#else
-    RPC_Prepare(nativeSetNaturalOrientation);
-    RPC_Add(orientation);
-    RPC_Send;
-#endif
-}
-
-typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
-    int currentOrientation;
+    int rotation;
 } RPC_data_onNativeRotationChanged_t;
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeRotationChanged)(
     JNIEnv *env, jclass jcls,
     jint rotation)
 {
-    SDL_DisplayOrientation currentOrientation;
-
-    // 'displayCurrentOrientation' is needed before SDL_Init.
-
-    if (displayNaturalOrientation == SDL_ORIENTATION_LANDSCAPE) {
-        rotation += 90;
-    }
-
-    switch (rotation % 360) {
-        case 0:
-            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT;
-            break;
-        case 90:
-            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE;
-            break;
-        case 180:
-            displayCurrentOrientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
-            break;
-        case 270:
-            displayCurrentOrientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
-            break;
-        default:
-            displayCurrentOrientation = SDL_ORIENTATION_UNKNOWN;
-            break;
-    }
-
-    currentOrientation = displayCurrentOrientation;
-
-    // The event is sent with the window, so we keep the RPC
     RPC_Prepare(onNativeRotationChanged);
-    RPC_Add(currentOrientation);
+    RPC_Add(rotation);
     RPC_Send;
 }
 
@@ -3280,16 +3212,6 @@ ANativeWindow *Android_JNI_GetNativeWindow(void)
     return anw;
 }
 
-SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void)
-{
-    return displayNaturalOrientation;
-}
-
-SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void)
-{
-    return displayCurrentOrientation;
-}
-
 // Clipboard support
 bool Android_JNI_SetClipboardText(const char *text)
 {
@@ -4475,17 +4397,10 @@ void Android_PumpRPC(SDL_Window *window)
                 break;
 
 #ifndef SDL_VIDEO_DISABLED
-            case RPC_cmd_nativeSetNaturalOrientation:
-                {
-                    RPC_Get(nativeSetNaturalOrientation);
-                    displayNaturalOrientation = (SDL_DisplayOrientation)data.orientation;
-                }
-                break;
-
             case RPC_cmd_onNativeRotationChanged:
                 {
                     RPC_Get(onNativeRotationChanged);
-                    Android_SetOrientation((SDL_DisplayOrientation)data.currentOrientation);
+                    Android_SetRotation(data.rotation);
                 }
                 break;
 
@@ -4733,5 +4648,46 @@ onNativeFileDialog_end:
         cmd_buffer += len;
     }
 }
+
+bool Android_JNI_ReadInt(const char *name, int *val)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    jclass clazz = (*env)->FindClass(env, "org/libsdl/app/SDLActivity");
+    jfieldID fieldID = (*env)->GetStaticFieldID(env, clazz, name, "I");
+
+    if (!val || !name) {
+        return false;
+    }
+
+    if (!clazz || !fieldID) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to find 'int' parameter '%s'", name);
+        return false;
+    }
+
+    *val = (*env)->GetStaticIntField(env, clazz, fieldID);
+
+    return true;
+}
+
+bool Android_JNI_ReadFloat(const char *name, float *val)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    jclass clazz = (*env)->FindClass(env, "org/libsdl/app/SDLActivity");
+    jfieldID fieldID = (*env)->GetStaticFieldID(env, clazz, name, "F");
+
+    if (!val || !name) {
+        return false;
+    }
+
+    if (!clazz || !fieldID) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to find 'float' parameter '%s'", name);
+        return false;
+    }
+
+    *val = (*env)->GetStaticFloatField(env, clazz, fieldID);
+
+    return true;
+}
+
 
 #endif // SDL_PLATFORM_ANDROID

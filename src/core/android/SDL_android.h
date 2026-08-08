@@ -157,6 +157,9 @@ bool Android_JNI_ShowFileDialog(SDL_DialogFileCallback callback, void *userdata,
 void Android_PumpRPC(SDL_Window *window);
 void Android_WaitForResume(void);
 
+// Access SDLActivity static java fields
+bool Android_JNI_ReadInt(const char *name, int *val);
+bool Android_JNI_ReadFloat(const char *name, float *val);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
