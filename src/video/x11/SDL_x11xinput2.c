@@ -618,7 +618,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             if (button == 1) { // button 1 is the pen tip
                 SDL_SendPenTouch(0, pen->pen, window, pen->is_eraser, down);
             } else {
-                SDL_SendPenButton(0, pen->pen, window, button - 1, down);
+                SDL_SendPenButton(0, pen->pen, window, button - 1, button, down);
             }
         } else if (!pointer_emulated) {
             // Otherwise assume a regular mouse

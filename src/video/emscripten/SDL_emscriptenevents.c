@@ -815,10 +815,10 @@ static void Emscripten_UpdatePenFromEvent(SDL_WindowData *window_data, const Ems
             SDL_SendPenTouch(0, pen, window_data->window, true, down);
         } else if (event->button == 1) {
             bool down = ((event->buttons & 4) != 0);
-            SDL_SendPenButton(0, pen, window_data->window, 2, down);
+            SDL_SendPenButton(0, pen, window_data->window, 2, SDL_BUTTON_MIDDLE, down);
         } else if (event->button == 2) {
             bool down = ((event->buttons & 2) != 0);
-            SDL_SendPenButton(0, pen, window_data->window, 1, down);
+            SDL_SendPenButton(0, pen, window_data->window, 1, SDL_BUTTON_RIGHT, down);
         }
 
         SDL_SendPenAxis(0, pen, window_data->window, SDL_PEN_AXIS_PRESSURE, event->pressure);

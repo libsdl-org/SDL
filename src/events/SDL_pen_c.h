@@ -78,8 +78,8 @@ extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Windo
 // Backend calls this when a pen's axis changes, to generate events and update state.
 extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, SDL_PenAxis axis, float value);
 
-// Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down);
+// Backend calls this when a pen's button changes, to generate events and update state. Mouse button is passed explicitly because which pen button corresponds to which mouse button is backend-dependent.
+extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 pen_button, Uint8 mouse_button, bool down);
 
 // Backend calls this when a pen's proximity changes, to generate events and update state.
 extern void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool in, bool immediate);
