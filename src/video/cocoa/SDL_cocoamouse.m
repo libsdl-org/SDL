@@ -413,7 +413,7 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
             }
             SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), mouseID,
                                horizontal, vertical,
-                               cocoa_mouse_scroll_direction);
+                               cocoa_mouse_scroll_direction, SDL_MOUSEWHEEL_SOURCE_WHEEL);
         };
     Cocoa_UpdateGCMouseScrollDirection();
     #endif // USE_GCMOUSE_SCROLL
@@ -942,7 +942,7 @@ void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
         }
     }
 
-    SDL_SendMouseWheel(Cocoa_GetEventTimestamp([event timestamp]), window, mouseID, x, y, direction);
+    SDL_SendMouseWheel(Cocoa_GetEventTimestamp([event timestamp]), window, mouseID, x, y, direction, SDL_MOUSEWHEEL_SOURCE_WHEEL);
 }
 
 void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
