@@ -6,10 +6,11 @@
 // C++ isn't a fan of forward declaring enums, so we can't use SDL_waylandvideo.h,
 // but that's fine; we're not using anything that isn't in SDL_sysvideo.h.
 // I also had to add a cast for SDL_GetPointerProperty to wl_display/surface.
+// UPDATE (2026-08-10): Yeah, I'll be perfectly honest. I probably just screwed up the build process.
 
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(WGPU_DAWN)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WAYLAND)
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_wgpu_defs.h"

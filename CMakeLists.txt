@@ -388,11 +388,8 @@ dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_REND
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
-dep_option(SDL_WGPU                "Enable experimental WGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO" OFF)
-dep_option(SDL_WGPU_STATIC         "Statically link the WebGPU library" OFF "SDL_WGPU" OFF)
-option_string(SDL_WGPU_LIB         "The library which SDL will use for WebGPU. Either 'wgpu-native' or 'dawn'" "wgpu-native")
-# TODO: Polish up this bad explanation
-dep_option(SDL_WGPU_LIB_BYO        "If this is ON, SDL will not link to the WebGPU library itself, instead relying on you to do it." OFF "SDL_WGPU_STATIC" OFF)
+dep_option(SDL_WEBGPU              "Enable experimental WebGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO;LINUX OR WINDOWS OR EMSCRIPTEN" OFF)
+dep_option(SDL_WEBGPU_USE_PORTS    "Allow SDL to automatically link with Emscripten's WebGPU implementation" "${SDL_WGPU_DEFAULT}" "SDL_WEBGPU" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -422,18 +419,13 @@ endif()
 # TODO: I'm firing blind here, I have no idea what the SDL convensions on static linking or finding libraries is.
 if(APPLE OR LINUX OR FREEBSD OR OPENBSD)
   # unix-style, default search path should be /usr/lib/
-  set(DEFAULT_WGPU_LIB_SEARCH_PATH "/usr/lib/")
+  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH "/usr/lib/")
 elseif(WINDOWS)
   # Windows has no real analogue to Unix's /usr/lib, so we're just gonna search the source dir.
-  set(DEFAULT_WGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
+  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
 else()
   # Same as Windows, we're searching the source path.
-  set(DEFAULT_WGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
-endif()
-
-# FIXME: I'm horrible at CMake so I'm not entirely sure what the best way of doing this is
-if(SDL_WGPU_STATIC)
-  option_string(WGPU_STATIC_LIB_DIR "Path to the directory containing the compiled wgpu_native library" ${DEFAULT_WGPU_LIB_SEARCH_PATH})
+  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
 endif()
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
@@ -1759,7 +1751,7 @@ elseif(EMSCRIPTEN)
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   sdl_compile_options(PRIVATE "-Wno-warn-absolute-paths")
 
-  CheckWGPU()
+  CheckWebGPU()
   if(NOT SDL_EMSCRIPTEN_PERSISTENT_PATH STREQUAL "")
     set(SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING "${SDL_EMSCRIPTEN_PERSISTENT_PATH}")
     sdl_link_dependency(idbfs LIBS idbfs.js)
@@ -1942,7 +1934,7 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
-    CheckWGPU()
+    CheckWebGPU()
   endif()
 
   if(SDL_TRAY)
@@ -2576,8 +2568,8 @@ elseif(WINDOWS OR CYGWIN)
       endif()
     endif()
 
-    if(SDL_WGPU)
-      CheckWGPU()
+    if(SDL_WEBGPU)
+      CheckWebGPU()
     endif()
   endif()
 
@@ -3637,54 +3629,33 @@ elseif(NGAGE)
   )
 endif()
 
-# webgpu static linking shenanigans
-if (SDL_WGPU_STATIC)
-  if (HAVE_DAWN)
-    if (EMSCRIPTEN)
-      # You see, I pulled what's called a "big stupid"
-      # I assumed that Dawn and Emdawnwebgpu were the same thing, so I added dawn support to SDL_WGPU.
-      # Turns out, no it isn't. (sorta)
-      # It's its own library and everything.
-      # I'm still gonna keep the native Dawn support since I strictly adhere to the sunk cost fallacy.
-      if(NOT SDL_WGPU_LIB_BYO)
-        find_library(
-          WGPU_STATIC_LIB NAMES libemdawnwebgpu_c.a emdawnwebgpu_c
-          HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
-          REQUIRED
-        )
-      endif()
-      message("-- Using Emdawnwebgpu as WebGPU implementation")
-    else()
-      if(NOT SDL_WGPU_LIB_BYO)
-        find_library(
-          WGPU_STATIC_LIB NAMES libwebgpu_dawn webgpu_dawn
-          HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
-          REQUIRED
-        )
-      endif()
-      message("-- Using Dawn as WebGPU implementation")
-    endif()
-
-  elseif(HAVE_WGPU_NATIVE)
-    if(NOT SDL_WGPU_LIB_BYO)
-      find_library(
-      WGPU_STATIC_LIB NAMES libwgpu_native wgpu_native
-      HINTS ${WGPU_STATIC_LIB_DIR} ${CMAKE_SOURCE_DIR}
+if(SDL_VIDEO_WEBGPU)
+  if(EMSCRIPTEN AND SDL_WEBGPU_USE_PORTS)
+    message("-- Using Emdawnwebgpu (remote) as WebGPU implementation")
+    
+    # NOTE: Since the Emdawnwebgpu port is the official Emscripten provided
+    # way to link WebGPU, I thought it would be okay to just have SDL do it.
+    # There's an option to disable this, and since the port is just a python script
+    # we could use our own if supply-chain attacks are an issue.
+    # (Although, if somebody's breached the Emscripten repo there's probably bigger issues.)
+    # https://github.com/emscripten-core/emscripten/blob/main/tools/ports/emdawnwebgpu.py
+    target_link_options(SDL3-static PUBLIC "--use-port=emdawnwebgpu")
+  else()
+    find_library(
+      WEBGPU_LIB NAMES libwebgpu_dawn webgpu_dawn
+      HINTS ${DEFAULT_WEBGPU_LIB_SEARCH_PATH} ${CMAKE_SOURCE_DIR}
       REQUIRED
     )
-    endif()
-    message("-- Using wgpu-native (statically linked) as WebGPU implementation")
-  endif()
+   
+    message("-- Using Dawn as WebGPU implementation")
 
-  if (SDL_STATIC AND NOT SDL_WGPU_LIB_BYO)
-    target_link_libraries(SDL3-static PRIVATE ${WGPU_STATIC_LIB})
-  elseif (SDL_SHARED AND NOT SDL_WGPU_LIB_BYO)
-    target_link_libraries(SDL3-shared PRIVATE ${WGPU_STATIC_LIB})
+    # FIXME: Almost certainly, 100% NOT how you're supposed to do this.
+    if (SDL_STATIC)
+      target_link_libraries(SDL3-static PRIVATE ${WEBGPU_LIB})
+    elseif (SDL_SHARED)
+      target_link_libraries(SDL3-shared PRIVATE ${WEBGPU_LIB})
+    endif()
   endif()
-elseif (HAVE_WGPU_NATIVE)
-  # We don't have to do anything here,
-  # but we'll still message that we're using wgpu-native (dyn) as our WebGPU lib.
-  message("-- Using wgpu-native (dynamically linked) as WebGPU implementation")
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
@@ -3808,16 +3779,12 @@ if(SDL_GPU)
     set(HAVE_SDL_GPU TRUE)
   endif()
   if(SDL_VIDEO_WEBGPU)
-    if (SDL_WGPU_STATIC)
-      sdl_glob_sources(
-        "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c"
-        "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.h"
-      )
-      set(SDL_GPU_WEBGPU 1)
-      set(HAVE_SDL_GPU TRUE)
-    else()
-      message(WARNING "The SDL_GPU WebGPU backend currently only supports statically linked WebGPU. Sorry!")
-    endif()
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c"
+      "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.h"
+    )
+    set(SDL_GPU_WEBGPU 1)
+    set(HAVE_SDL_GPU TRUE)
   endif()
   if(SDL_VIDEO_METAL)
     sdl_glob_sources(

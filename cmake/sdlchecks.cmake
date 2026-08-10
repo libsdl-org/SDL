@@ -944,52 +944,31 @@ macro(CheckVulkan)
   endif()
 endmacro()
 
-macro(CheckWGPU)
-  if(SDL_WGPU)
+macro(CheckWebGPU)
+  if(SDL_WEBGPU)
     set(SDL_VIDEO_WEBGPU 1)
 
-    if(SDL_WGPU_LIB STREQUAL "dawn")
-      set(WGPU_DAWN 1)
-      set(HAVE_DAWN TRUE)
+    # Dawn's a C++ library, so we'll have to enable C++
+    enable_language(CXX)
 
-      # Dawn's a C++ library, so we'll have to enable C++
-      enable_language(CXX)
-
-      # Dawn includes
-      if(HAVE_WAYLAND)
-        sdl_sources("${SDL3_SOURCE_DIR}/src/video/wayland/SDL_waylandwgpu_dawn.cpp")
-      endif()
-
-      if(HAVE_X11)
-        sdl_sources("${SDL3_SOURCE_DIR}/src/video/x11/SDL_x11wgpu_dawn.cpp")
-      endif()
-
-      if(WINDOWS)
-        sdl_sources("${SDL3_SOURCE_DIR}/src/video/windows/SDL_windowswgpu_dawn.cpp")
-      endif()
-
-      if(EMSCRIPTEN)
-        sdl_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/SDL_emscriptenwgpu_dawn.cpp")
-      endif()
-
-    elseif(SDL_WGPU_LIB STREQUAL "wgpu-native")
-      if(EMSCRIPTEN)
-        # wgpu-native doesn't support Emscripten. That's the entire reason we have Dawn.
-        message(FATAL_ERROR "wgpu-native doesn't support Emscripten! Use Dawn instead.")
-      endif()
-      set(WGPU_NATIVE 1)
-      set(HAVE_WGPU_NATIVE TRUE)
-    else()
-      message(FATAL_ERROR "SDL_WGPU_LIB is neither 'wgpu-native' nor 'dawn'!")
+    # Dawn includes
+    if(HAVE_WAYLAND)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/video/wayland/SDL_waylandwgpu_dawn.cpp")
     endif()
 
-    if(SDL_WGPU_STATIC)
-      set(WGPU_STATIC 1)
-    elseif(SDL_WGPU_LIB STREQUAL "dawn")
-      # SDL's been configured to use Dawn & dynamic linking, however; Dawn does not support dynamic linking.
-      # FIXME: I don't know if this should error out? Maybe just toggle on static link and warn the user?
-      message(FATAL_ERROR "SDL has been configured to use Dawn as its WebGPU implementation, however, it has also been configured to dynamically link the WebGPU library.\nDawn does not support dynamic linking.")
+    if(HAVE_X11)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/video/x11/SDL_x11wgpu_dawn.cpp")
     endif()
+
+    if(WINDOWS)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/video/windows/SDL_windowswgpu_dawn.cpp")
+    endif()
+
+    if(EMSCRIPTEN)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/SDL_emscriptenwgpu_dawn.cpp")
+    endif()
+
+    set(WEBGPU_STATIC 1)
   endif()
 endmacro()
 

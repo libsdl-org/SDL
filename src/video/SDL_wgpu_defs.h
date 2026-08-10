@@ -31,13 +31,7 @@
 #include "SDL_internal.h"
 
 // define to prevent C++ name mangling on extern functions
-#ifdef WGPU_DAWN
 #define WGPU_EXTERN extern "C"
-#endif
-
-#ifdef WGPU_NATIVE
-#define WGPU_EXTERN extern
-#endif
 
 #ifndef WEBGPU_H_
 #define NO_WEBGPU_HEADER

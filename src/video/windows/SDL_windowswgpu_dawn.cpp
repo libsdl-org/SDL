@@ -2,7 +2,7 @@
 
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS) && defined(WGPU_DAWN)
+#if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_WINDOWS)
 #include "SDL_windowsvideo.h"
 
 // Death to MSVC.
@@ -29,7 +29,7 @@ WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
     source.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
     source.chain.next = NULL;
 
-    desc.label = {NULL, WGPU_STRLEN };
+    desc.label = { NULL, WGPU_STRLEN };
     desc.nextInChain = &source.chain;
 
     return wgpuInstanceCreateSurface(instance, &desc);
