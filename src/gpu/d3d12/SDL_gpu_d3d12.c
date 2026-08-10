@@ -1996,7 +1996,7 @@ static void D3D12_INTERNAL_TextureTransitionToDefaultUsage(
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
     D3D12Buffer *buffer)
 {
-    D3D12_RESOURCE_STATES states = 0;
+    D3D12_RESOURCE_STATES states = (D3D12_RESOURCE_STATES)0;
 
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;

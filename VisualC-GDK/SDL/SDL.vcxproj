@@ -101,11 +101,9 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'" />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
+  <PropertyGroup>
+    <LibraryPath>$(Console_SdkLibPath);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(Console_SdkIncludeRoot)$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <Midl>
@@ -132,7 +130,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;appnotify.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -161,7 +159,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -199,15 +197,15 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntimed.lib;msvcrtd.lib;ucrtd.lib;msvcprtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
       <Command>
-        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
-        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call "$(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\" one
+        call "$(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\" one
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -238,7 +236,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;appnotify.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -268,7 +266,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_xs.lib;uuid.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -277,8 +275,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
-        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call "$(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
+        call "$(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -307,7 +305,7 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gameinput.lib;setupapi.lib;winmm.lib;imm32.lib;version.lib;xgameruntime.lib;d3d12_x.lib;uuid.lib;Microsoft.Xbox.Services.C.Thunks.lib;vcruntime.lib;msvcrt.lib;ucrt.lib;msvcprt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -316,8 +314,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
-        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call "$(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\" one
+        call "$(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\" one
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -658,7 +656,7 @@
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
-    <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp"/>
+    <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
@@ -942,6 +940,16 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)'=='Gaming.Desktop.x64'">
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)windows\bin\x64\libHttpClient.dll" />
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)windows\bin\x64\XCurl.dll" />
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)windows\bin\x64\Microsoft.Xbox.Services.C.Thunks.dll" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)'!='Gaming.Desktop.x64'">
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)xbox\bin\x64\libHttpClient.dll" />
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)xbox\bin\x64\XCurl.dll" />
+    <ReferenceCopyLocalPaths Include="$(GameDKCoreLatest)xbox\bin\x64\Microsoft.Xbox.Services.C.Thunks.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
