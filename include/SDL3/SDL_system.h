@@ -641,6 +641,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsPhone(void);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_IsPhone
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
 
