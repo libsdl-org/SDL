@@ -601,15 +601,14 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             scale.outY = (s16)dsty;
             scale.outW = (u16)dstw;
             scale.outH = (u16)dsth;
-            scale.ratioX = rsxGetFixedSint32(dstw / srcw);
-            scale.ratioY = rsxGetFixedSint32(dsth / srch);
+            scale.ratioX = rsxGetFixedSint32(srcrect->w / dstrect->w);
+            scale.ratioY = rsxGetFixedSint32(srcrect->h / dstrect->h);
             scale.inX = rsxGetFixedUint16(srcx);
             scale.inY = rsxGetFixedUint16(srcy);
             scale.inW = (u16)(srcw & ~1);
-            scale.inH = (u16)srch;
+            scale.inH = (u16)(srch & ~1);
             scale.offset = src_offset;
             scale.pitch = surface_src->pitch;
-
             gcmTransferSurface gcm_surface;
             gcm_surface.format = GCM_TRANSFER_SURFACE_FORMAT_A8R8G8B8;
             gcm_surface.pitch = surface->pitch;
