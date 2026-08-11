@@ -2810,7 +2810,7 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  * Texture2D StorageTextureBoundToSlot1 : register( t3, space2 );
  * // Any storage buffers come next in the `t` register set, in SDL bind slot order
  * ByteAddressBuffer StorageBufferBoundToSlot0 : register( t4, space2 );
- * ByteAddressBuffer StorageBufferBoundToSlot0 : register( t4, space2 );
+ * ByteAddressBuffer StorageBufferBoundToSlot1 : register( t5, space2 );
  * // Any uniform buffers are in the `b` register set *and* in their own space, in SDL slot order
  * cbuffer UniformDataBoundToSlot0 : register( b0, space4 ) { ... };
  * cbuffer UniformDataBoundToSlot1 : register( b1, space4 ) { ... };
