@@ -245,7 +245,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     // rsxSetBlendEquation(data->context, GCM_FUNC_ADD, GCM_FUNC_ADD);
     // rsxSetBlendEnable(data->context, GCM_TRUE);
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
 
     PS3_ActivateRenderer(renderer);
