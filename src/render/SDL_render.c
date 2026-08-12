@@ -5533,7 +5533,7 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    CHECK_PARAM(renderer->target) {
+    if (renderer->target) {
         if (!renderer->window && SDL_strcmp(renderer->name, SDL_GPU_RENDERER) == 0) {
             // We're an offscreen renderer, we must submit the command queue
         } else {
